@@ -225,11 +225,11 @@ body:has(#sn-start:not([hidden])) .sz-fs, body:has(#sn-end:not([hidden])) .sz-fs
   <div id="sn-main">
     <div class="sn-arena" id="sn-arena">
       <div class="sn-floor" id="sn-floor"></div>
-      <canvas id="sn-canvas" width="1510" height="936" aria-label="The arena. Your snake is the green one. Eat snacks and make the Rivals crash into you."></canvas>
+      <canvas id="sn-canvas" width="1510" height="936" aria-label="The arena. Your snake is the green one. Eat snacks, lasso them by circling, and make the Rivals crash into you."></canvas>
       <div class="sn-stop" id="sn-stop" hidden>
         <div class="sn-card" id="sn-q">
           <div class="sn-qhead"><span class="sn-stoptitle" id="sn-stoptitle">SNACK STOP</span><span class="sn-tag" id="sn-tag">Questions</span>
-            <div class="sn-tank"><div class="sn-tankfill" id="sn-tankfill"></div><span id="sn-tanktxt">Boost 0 / 100</span></div><span class="sn-need" id="sn-need"></span>
+            <div class="sn-tank"><div class="sn-tankfill" id="sn-tankfill"></div><span id="sn-tanktxt">Energy 0 / 100</span></div><span class="sn-need" id="sn-need"></span>
             <button class="sn-shopbtn" id="sn-shopbtn" aria-label="Open the shop, key B">Shop <kbd>B</kbd></button></div>
           <div class="sn-prompt" id="sn-prompt"></div>
           <div id="sn-body"><div id="sn-visual"></div><div class="sn-choices" id="sn-choices"></div></div>
@@ -250,20 +250,20 @@ body:has(#sn-start:not([hidden])) .sz-fs, body:has(#sn-end:not([hidden])) .sz-fs
       <div class="sn-board"><h3>Longest snakes</h3><div id="sn-rows"></div>
         <div class="sn-mini"><div><b id="sn-tk">0</b>Takedowns</div><div><b id="sn-king">0:00</b>King time</div></div></div>
       <div class="sn-gauge" id="sn-gauge"><div class="sn-ring"><svg viewBox="0 0 132 132" width="132" height="132"><circle class="bg" cx="66" cy="66" r="56"/><circle class="fg" id="sn-gfill" cx="66" cy="66" r="56"/></svg><div class="v" id="sn-gv">0</div></div>
-        <div class="t"><b>Boost</b>Hold Space<br>or click</div></div>
-      <button class="sn-btn" id="sn-stopbtn" aria-label="Snack stop: answer questions for boost, key Enter">Snack stop <kbd>Enter</kbd></button>
+        <div class="t"><b>Energy</b>Hold Space<br>to boost</div></div>
+      <button class="sn-btn" id="sn-stopbtn" aria-label="Snack stop: answer questions for energy, key Enter">Snack stop <kbd>Enter</kbd></button>
       <button class="sn-btn" id="sn-boostbtn" aria-label="Hold to boost">Hold to boost</button>
-      <div class="sn-hint">Steer with the arrows or the mouse. Get the Rivals to crash into your body.</div>
+      <div class="sn-hint">Circle around snacks or a Rival’s head to lasso them. Get the Rivals to crash into your body.</div>
     </div>
   </div>
 
   <div class="sn-over" id="sn-start"><div class="sn-box">
     <div class="sz-eyebrow">Spitz <b>Arcade</b></div><h2 class="sn-big"><svg class="sn-mark" width="190" height="111"><use href="#sn-snek"/></svg><span><b>SNAKE</b> <i>ARENA</i></span></h2>
-    <p class="sn-sub"><span class="sz-setname">Slope-intercept form.</span> You have 5 minutes: answer questions to fill your boost, then grow the longest snake in the arena.</p>
+    <p class="sn-sub"><span class="sz-setname">Slope-intercept form.</span> You have 5 minutes: answer questions for energy, then rule the arena.</p>
     <div class="sn-steps">
-      <div class="sn-step"><b>1. Snack stop</b><span id="sn-step1">Answer questions to fill your boost and earn cash. You stop here before every slither, and any time you press Enter.</span></div>
-      <div class="sn-step"><b>2. Slither</b>Eat glowing snacks to grow. Hold Space (or click) to boost. If your head hits another snake, you start small again.</div>
-      <div class="sn-step"><b>3. Cut them off</b>Boost in front of a Rival so it crashes into your body. It bursts into big snacks for you.</div>
+      <div class="sn-step"><b>1. Snack stop</b><span id="sn-step1">Answer questions for energy and cash. Slithering uses energy. When it runs out, you stop here, safe.</span></div>
+      <div class="sn-step"><b>2. Lasso</b>Eat snacks to grow. Circle around snacks to scoop them all up at once. Circle a Rival’s head to catch it!</div>
+      <div class="sn-step"><b>3. Cut them off</b>Boost in front of Rivals so they crash into you. Hunt the Wanted snake, the Titan and the Gold Rush.</div>
     </div>
     <div class="sn-rowx"><input class="sn-input" id="sn-nameinput" maxlength="24" placeholder="First name + last initial" autocomplete="off" aria-label="Your name"><button class="sz-mus" id="sz-mus" aria-label="Music on or off, key N">♪ Music on</button></div>
     <button class="sn-start" id="sn-go-start" disabled>Start</button>
@@ -334,6 +334,11 @@ var SND={
   egg:function(){ tone(E6,E6,0,0.09,'triangle',0.07); tone(A6,A6,0.07,0.14,'triangle',0.07); },
   open:function(gold){ [C6,E6,G6,C7].forEach(function(f,i){ tone(f,f,i*0.07,0.2,'triangle',0.07); }); if(gold) [E6,G6,C7].forEach(function(f,i){ tone(f,f,0.32+i*0.05,0.4,'sine',0.05); }); },
   empty:function(){ tone(330,300,0,0.06,'triangle',0.12); tone(330,300,0.1,0.06,'triangle',0.12); },
+  lasso:function(n){ var f=[C6,E6,G6,C7], k=n>=10?4:n>=4?3:2; for(var i=0;i<k;i++) tone(f[i],f[i],i*0.06,0.18,'triangle',0.07); tone(C6/2,C6/2,0,0.3,'sine',0.05); },
+  gold:function(){ var t=Date.now(); if(t-munchT<60) return; munchT=t; tone(G6,G6,0,0.07,'triangle',0.05); tone(C7,C7,0.05,0.12,'sine',0.045); },
+  goal:function(){ [E5,G5,C6].forEach(function(f,i){ tone(f,f,i*0.08,0.2,'triangle',0.09); }); tone(E6,E6,0.26,0.45,'sine',0.06); },
+  event:function(){ brass(C5,0,0.16,0.08); brass(G5,0.18,0.16,0.08); brass(C6,0.36,0.5,0.07); },
+  wanted:function(){ tone(E5,E5,0,0.14,'triangle',0.08); tone(A5,A5,0.14,0.26,'triangle',0.08); },
   correct:function(){ tone(A5,A5,0,0.14,'sine',0.13); tone(Cs6,Cs6,0.07,0.14,'sine',0.12); tone(E6,E6,0.14,0.32,'triangle',0.1); },   // a soft rising chime
   fill:function(){ tone(880,1320,0.05,0.18,'sine',0.04); },
   cash:function(){ tone(1568,1568,0,0.06,'triangle',0.1); tone(2093,2093,0.06,0.14,'triangle',0.09); },
@@ -426,9 +431,30 @@ var snToastT=0; function snToast(msg){ var t=$('sn-toast'); t.textContent=msg; v
 
 /* ================= THE ARENA: sizes and rules (world px and seconds) ================= */
 var CW=1510, CH=936, R=1200, SP=8, START=26, NBOT=7, NPEL=330, NEGG=3, STEP=1/60;
-var SPD=190, BDRAIN=30, MAXLEN=500, BOTMAX=200;
-var PTS={snack:10, orb:25, takedown:250, king:10};
+var SPD=190, BDRAIN=18, CRUISE=1.1, LOWEN=20, MAXLEN=500, BOTMAX=200;          /* energy: slithering uses CRUISE a second, boosting uses BDRAIN more */
+var PTS={snack:10, orb:25, takedown:250, king:10, gold:50, lassoSnack:15, lassoRival:400, bounty:500, titan:1500, goal:300};
 var NEED=FAST?3:2;                                    /* questions before each slither */
+var LASSO_MIN=24, LASSO_AREA=4000;                    /* a lasso needs at least 24 body pieces between the head and where it closes, and a real loop inside */
+var EVT_FIRST=35, EVT_GAP=45;                         /* arena events: the first after 35 s of slithering, then every 45 s */
+var EVENTS=[
+  {id:'rush',    name:'GOLD RUSH',  secs:15, col:'#FFD447', sub:'Gold snacks are 50 points each. Follow the gold arrow!'},
+  {id:'titan',   name:'THE TITAN',  secs:40, col:'#FF9F1C', sub:'A giant snake! Cut it off for 1,500 points.'},
+  {id:'squeeze', name:'SQUEEZE',    secs:16, col:'#FF4FB8', sub:'The wall closes in. Takedowns count double!'}
+];
+var GOALS=[
+  {id:'eat',    n:40, txt:'Eat 40 snacks'},
+  {id:'lasso',  n:5,  txt:'Lasso 5 snacks in one loop'},
+  {id:'cut',    n:1,  txt:'Cut off a Rival'},
+  {id:'len',    n:80, txt:'Grow to length 80'},
+  {id:'egg',    n:1,  txt:'Open a mystery egg'},
+  {id:'king',   n:8,  txt:'Be the King for 8 seconds'},
+  {id:'bounty', n:1,  txt:'Collect a bounty'},
+  {id:'lassoR', n:1,  txt:'Lasso a Rival'},
+  {id:'eat',    n:80, txt:'Eat 80 snacks'},
+  {id:'lasso',  n:12, txt:'Lasso 12 snacks in one loop'},
+  {id:'cut',    n:3,  txt:'Cut off 3 Rivals'},
+  {id:'len',    n:150,txt:'Grow to length 150'}
+];
 var ME_COLS=['#A6FF3C','#2BE38F'];
 var BOT_COLS=[['#FF4FB8','#FFC2E6'],['#FF9F1C','#FFE0A3'],['#FFE14D','#B88A00'],['#B07BFF','#E6D6FF'],['#4DA3FF','#CFE6FF'],['#FF6B57','#FFD0C8'],['#F2F2F2','#7C8C86'],['#2DE2E6','#0E6C6E'],['#FF8FD8','#8A2A6E']];
 var BOT_NAMES=['Noodle','Slinky','Ziggy','Wiggles','Sir Hiss','Fang','Lasso','Pretzel','Zippy','Coil','Sizzle','Doodle','Squiggle','Biscuit','Noodles','Sprinkles','Twister','Mochi'];
@@ -438,7 +464,7 @@ var LOOT=[
   {id:'double', name:'Double Points', secs:12, d:'every point counts twice'},
   {id:'magnet', name:'Mega Magnet',   secs:12, d:'pulls in snacks from far away'},
   {id:'grow',   name:'Growth Spurt',  grow:25, d:'+25 length'},
-  {id:'tank',   name:'Full Tank',     d:'boost tank filled to 100'}
+  {id:'tank',   name:'Full Tank',     d:'energy filled to 100'}
 ];
 function ri(a,b){ return a+Math.floor(Math.random()*(b-a+1)); }
 function rf(a,b){ return a+Math.random()*(b-a); }
@@ -446,7 +472,8 @@ function pick(a){ return a[Math.floor(Math.random()*a.length)]; }
 function clamp(v,a,b){ return v<a?a:v>b?b:v; }
 function angDiff(a,b){ var d=a-b; while(d>Math.PI) d-=2*Math.PI; while(d<-Math.PI) d+=2*Math.PI; return d; }
 function shuffle(a){ for(var i=a.length-1;i>0;i--){ var j=Math.floor(Math.random()*(i+1)), t=a[i]; a[i]=a[j]; a[j]=t; } return a; }
-function rad(s){ return 11+Math.min(12,Math.max(0,s.len-START)/22); }
+function rad(s){ return s.titan?30:11+Math.min(12,Math.max(0,s.len-START)/22); }
+function ringR(){ return S&&S.ring?S.ring:R; }
 function inDisk(rmax){ var a=Math.random()*6.283, d=Math.sqrt(Math.random())*rmax; return {x:Math.cos(a)*d,y:Math.sin(a)*d}; }
 
 function makeSnake(id,me,name,cols,x,y,ang,len){ var s={ id:id, me:me, name:name, cols:cols, x:x, y:y, ang:ang, want:ang, len:len, pts:[], alive:true, boost:false, ghost:me?2.5:1,
@@ -457,7 +484,7 @@ function makeSnake(id,me,name,cols,x,y,ang,len){ var s={ id:id, me:me, name:name
   return s; }
 function deadMe(){ var s=makeSnake(0,true,'You',ME_COLS,0,0,0,START); s.alive=false; s.pts=[]; return s; }
 /* the safest place to drop a snake in: far from every head and body (checks a few dozen spots and keeps the best) */
-function safeSpot(sn,minHead,rmax){ var best=null, bd=-1;
+function safeSpot(sn,minHead,rmax){ var best=null, bd=-1e9;
   for(var n=0;n<60;n++){ var p=inDisk(rmax), d=1e9;
     sn.forEach(function(o){ if(!o.alive) return; var dh=Math.hypot(o.x-p.x,o.y-p.y)-(o.me?minHead:0); d=Math.min(d,dh);
       for(var i=0;i<o.pts.length;i+=3){ var q=o.pts[i]; d=Math.min(d,Math.hypot(q[0]-p.x,q[1]-p.y)); } });
@@ -469,12 +496,12 @@ function clearOf(b,sn){ return sn.every(function(o){ if(!o.alive||o===b) return 
     for(var j=0;j<o.pts.length;j+=4) if(Math.hypot(o.pts[j][0]-q[0],o.pts[j][1]-q[1])<gap) return false; }
   return true; }); }
 function makeBot(id,sn,used){ var names=BOT_NAMES.filter(function(n){ return used.indexOf(n)<0; }), name=pick(names), col=BOT_COLS[(id*3+ri(0,8))%BOT_COLS.length], b;
-  for(var t=0;t<20;t++){ var p=safeSpot(sn,500,R-450), len=ri(30,110)-t*3;
+  for(var t=0;t<20;t++){ var p=safeSpot(sn,500,Math.max(200,ringR()-450)), len=ri(30,110)-t*3;
     b=makeSnake(id,false,name,col,p.x,p.y,Math.atan2(-p.y,-p.x)+rf(-1.2,1.2),Math.max(START,len));
     if(clearOf(b,sn)) break; }
   b.hunter=id<=2; return b; }
-function snack(){ var p=inDisk(R-30); return {x:Math.round(p.x),y:Math.round(p.y),v:1,c:ri(0,PEL_COLS.length-1),r:5,o:0}; }
-function newEgg(){ var p=inDisk(R-160); return {x:Math.round(p.x),y:Math.round(p.y),gold:Math.random()<0.25}; }
+function snack(){ var p=inDisk(ringR()-30); return {x:Math.round(p.x),y:Math.round(p.y),v:1,c:ri(0,PEL_COLS.length-1),r:5,o:0}; }
+function newEgg(){ var p=inDisk(Math.max(150,ringR()-160)); return {x:Math.round(p.x),y:Math.round(p.y),gold:Math.random()<0.25}; }
 function newWorld(w){ w.sn=[deadMe()]; var used=[];
   for(var i=1;i<=NBOT;i++){ var b=makeBot(i,w.sn,used); used.push(b.name); w.sn.push(b); }
   w.pel=[]; for(var j=0;j<NPEL;j++) w.pel.push(snack());
@@ -482,7 +509,7 @@ function newWorld(w){ w.sn=[deadMe()]; var used=[];
 
 /* ================= GAME STATE ================= */
 var UPG=[
-  {id:'snacks', name:'Boost Snacks', vals:FAST?[20,25,31,38]:[34,44,56,70], cost:[30,70,150], fmt:function(v){ return '+'+v+' boost per answer'; }, sh:function(v){ return '+'+v; }},
+  {id:'snacks', name:'Energy Snacks', vals:FAST?[12,15,19,24]:[22,28,35,44], cost:[30,70,150], fmt:function(v){ return '+'+v+' energy per answer'; }, sh:function(v){ return '+'+v; }},
   {id:'cash',   name:'Prize Money',  vals:FAST?[4,6,9,12]:[10,15,25,40], cost:[35,80,170], fmt:function(v){ return '$'+v+' per answer'; }, sh:function(v){ return '$'+v; }},
   {id:'turbo',  name:'Turbo Tail',   vals:[1.9,2.2,2.5,2.8], cost:[40,90,190], fmt:function(v){ return 'Boost speed ×'+v; }, sh:function(v){ return '×'+v; }},
   {id:'magnet', name:'Snack Magnet', vals:[0,60,110,170], cost:[30,70,150], fmt:function(v,l){ return l?'Magnet range '+l:'No magnet yet'; }, sh:function(v,l){ return 'range '+l; }}
@@ -495,12 +522,12 @@ var POW=[
 var S;
 function fresh(){ var s={ name:'', len:5, started:false, over:false, clock:300, phase:'stop', stopKind:'spawn', stopAns:[], spawned:false,
   score:0, kingAcc:0, cash:0, streak:0, best:0, answered:0, correct:0, earned:0, takedowns:0, longest:0, kingT:0, outs:0, topics:QS?QS.topicTable():{},
-  lv:{snacks:0,cash:0,turbo:0,magnet:0}, buff:{ghost:0,double:0,magnet:0}, pack:[], pendLen:0, boost:0,
+  lv:{snacks:0,cash:0,turbo:0,magnet:0}, buff:{ghost:0,double:0,magnet:0}, pack:[], pendLen:0, en:0, ver:2, ring:R, evt:null, evtN:0, nextEvt:EVT_FIRST, wanted:-1, wantT:4, goal:0, gp:0, goals:0, lassos:0, bestLasso:0, eaten:0, eggsOpened:0, bounties:0, lowWarn:false,
   q:null, qDone:false, picked:-1, playT:0, spawnT:0, outBy:'', outT:0, cd:0, feed:[], king:-1 };
   newWorld(s); return s; }
 function save(){ try{ var k=function(v){ return typeof v==='number'?Math.round(v*10)/10:v; };
     localStorage.setItem(KEY,JSON.stringify(S,function(n,v){ return typeof v==='number'?k(v):v; })); localStorage.setItem(KEY+'_mute',muted?'1':'0'); }catch(e){} }
-function load(){ try{ var v=JSON.parse(localStorage.getItem(KEY)||'null'); muted=localStorage.getItem(KEY+'_mute')==='1'; if(v&&v.topics&&v.lv&&v.sn&&v.sn.length===NBOT+1&&v.pel) return v; }catch(e){} return null; }
+function load(){ try{ var v=JSON.parse(localStorage.getItem(KEY)||'null'); muted=localStorage.getItem(KEY+'_mute')==='1'; if(v&&v.ver===2&&v.topics&&v.lv&&v.sn&&v.sn.length>=NBOT+1&&v.pel) return v; }catch(e){} return null; }
 function U(id){ var u=UPG.filter(function(x){ return x.id===id; })[0]; return u.vals[S.lv[id]]; }
 function now(){ return Date.now(); }
 function me(){ return S.sn[0]; }
@@ -513,12 +540,11 @@ function setTxt(id,v){ if(last[id]!==v){ last[id]=v; $(id).textContent=v; } }
 function hud(){ var P=me(); setTxt('sn-score',Math.floor(S.score).toLocaleString()); setTxt('sn-len',P.alive?Math.floor(P.len):(S.started?'—':0)); setTxt('sn-cash','$'+S.cash); setTxt('sn-streak',S.streak);
   setTxt('sn-tk',S.takedowns); var kt=Math.floor(S.kingT); setTxt('sn-king',Math.floor(kt/60)+':'+('0'+kt%60).slice(-2)); gauge(); if(!$('sn-stop').hidden) stopHud(); if(!$('sn-shop').hidden) drawShop(); }
 var lastG=-1;
-function gauge(){ var b=Math.round(S.boost); if(b!==lastG){ lastG=b; $('sn-gv').textContent=b; $('sn-gfill').style.strokeDashoffset=(351.86*(1-b/100)).toFixed(1); }
-  var low=S.started&&!S.over&&S.phase==='live'&&b<10; if(last.low!==low){ last.low=low; $('sn-stopbtn').classList.toggle('low',low); }
-  var em=noBoostT>0&&S.phase==='live'; if(last.em!==em){ last.em=em; $('sn-gauge').classList.toggle('empty',em); } }
+function gauge(){ var b=Math.round(S.en); if(b!==lastG){ lastG=b; $('sn-gv').textContent=b; $('sn-gfill').style.strokeDashoffset=(351.86*(1-b/100)).toFixed(1); }
+  var low=S.started&&!S.over&&S.phase==='live'&&b<LOWEN; if(last.low!==low){ last.low=low; $('sn-stopbtn').classList.toggle('low',low); $('sn-gauge').classList.toggle('empty',low); } }
 function clockDraw(){ var s=Math.ceil(Math.max(0,S.clock)); setTxt('sn-time',Math.floor(s/60)+':'+('0'+(s%60)).slice(-2)); var low=S.started&&s<=30; if(last.clow!==low){ last.clow=low; $('sn-timerchip').classList.toggle('low',low); } }
 /* the side board: every snake by length, the King on top */
-function board(){ var list=S.sn.filter(function(s){ return s.alive; }).sort(function(a,b){ return b.len-a.len||a.id-b.id; }), h='', P=me();
+function board(){ var list=S.sn.filter(function(s){ return s.alive&&!s.titan; }).sort(function(a,b){ return b.len-a.len||a.id-b.id; }), h='', P=me();
   list.forEach(function(s,i){ h+='<div class="sn-row'+(s.me?' me':'')+(i===0?' king':'')+'"><span class="rk">'+(i===0?'♛':i+1)+'</span><span class="dot" style="background:'+s.cols[0]+'"></span><span class="nm">'+(s.me?'You':s.name)+'</span><span class="ln">'+Math.floor(s.len)+'</span></div>'; });
   if(!P.alive&&S.started) h+='<div class="sn-row me gone"><span class="rk">–</span><span class="dot" style="background:'+ME_COLS[0]+'"></span><span class="nm">You</span><span class="ln" style="font:700 19px var(--body)">'+(S.spawned?'respawning':'ready')+'</span></div>';
   if(last.board!==h){ last.board=h; $('sn-rows').innerHTML=h; } }
@@ -526,14 +552,15 @@ function board(){ var list=S.sn.filter(function(s){ return s.alive; }).sort(func
 /* ================= QUESTIONS UI: the snack stop ================= */
 var nextT=0, lockT=0, fbKeep=false;
 if(FAST) $('sn-q').classList.add('fast');
-function canGo(){ return S.stopKind==='mid'||S.stopAns.length>=NEED; }
-function stopIdle(){ return S.stopKind==='spawn'? (S.outs&&S.outBy?'<span class="h" style="color:var(--pink)">'+S.outBy+' cut you off! You keep your score.</span>':'')+'Answer '+NEED+' questions to slither in. Each right answer adds +'+U('snacks')+' boost. Keep going to fill the tank.'
-  : 'Each right answer adds +'+U('snacks')+' boost and opens a mystery egg if you have one. Press Space to get back in.'; }
-function stopHud(){ var b=Math.round(S.boost), spawn=S.stopKind==='spawn';
-  $('sn-tankfill').style.width=b+'%'; $('sn-tanktxt').textContent=b>=100?'Tank full! Boost 100 / 100':'Boost '+b+' / 100 · +'+U('snacks')+' per right answer';
+function canGo(){ return S.en>0&&(S.stopKind!=='spawn'||S.stopAns.length>=NEED); }
+function stopIdle(){ return S.stopKind==='spawn'? (S.outs&&S.outBy?'<span class="h" style="color:var(--pink)">'+S.outBy+' cut you off! You keep your score.</span>':'')+'Answer '+NEED+' questions to slither in. Each right answer adds +'+U('snacks')+' energy. Slithering uses energy, so fill the tank.'
+  : S.stopKind==='empty'? '<span class="h" style="color:var(--sun)">Out of energy! Your snake is safe here.</span>Each right answer adds +'+U('snacks')+' energy. Fill up, then press Space.'
+  : 'Each right answer adds +'+U('snacks')+' energy and opens a mystery egg if you have one. Press Space to get back in.'; }
+function stopHud(){ var b=Math.round(S.en), spawn=S.stopKind==='spawn';
+  $('sn-tankfill').style.width=b+'%'; $('sn-tanktxt').textContent=b>=100?'Tank full! Energy 100 / 100':'Energy '+b+' / 100 · +'+U('snacks')+' per right answer';
   var h=''; if(spawn){ for(var i=0;i<NEED;i++) h+='<span class="sn-pip'+(i<S.stopAns.length?(S.stopAns[i]?' y':' n'):'')+'"></span>'; } $('sn-need').innerHTML=h;
   var g=$('sn-go'), left=NEED-S.stopAns.length; g.disabled=!canGo();
-  g.innerHTML=!spawn?'Back to the arena <kbd>Space</kbd>':canGo()?'Slither! <kbd>Space</kbd>':'Answer '+left+' more to slither in'; }
+  g.innerHTML=canGo()?(spawn?'Slither! <kbd>Space</kbd>':'Back to the arena <kbd>Space</kbd>'):spawn&&left>0?'Answer '+left+' more to slither in':'Get a right answer for energy'; }
 function showQ(){ var q=S.q; $('sn-tag').textContent=q.topic; $('sn-prompt').innerHTML=q.prompt; $('sn-visual').innerHTML=q.visual||''; $('sn-q').classList.toggle('vis',!!q.visual);
   $('sn-choices').innerHTML=q.choices.map(function(c,i){ return '<button class="sn-ch" data-i="'+i+'"><span class="k">'+(i+1)+'</span><span class="t">'+c.html+'</span></button>'; }).join('');
   var fb=$('sn-fb'); if(!FAST||!fbKeep){ fb.className='sn-fb'; fb.innerHTML=stopIdle(); } $('sn-next').disabled=true;
@@ -541,13 +568,13 @@ function showQ(){ var q=S.q; $('sn-tag').textContent=q.topic; $('sn-prompt').inn
 function newQ(){ clearTimeout(nextT); if(!QS) return; S.q=QS.next(); S.qDone=false; S.picked=-1; save(); showQ(); }
 function markAnswered(i,fresh){ var q=S.q, btns=$('sn-choices').querySelectorAll('.sn-ch'), c=q.choices[i], fb=$('sn-fb');
   btns.forEach(function(b,j){ b.disabled=true; if(q.choices[j].ok) b.classList.add('right'); else if(j!==i&&!FAST) b.hidden=true; }); if(!c.ok) btns[i].classList.add('wrong');
-  if(c.ok){ fb.className='sn-fb ok'; fb.innerHTML='<span class="h">Correct!'+(fresh?' +'+U('snacks')+' boost.':'')+(fresh&&S.streak>1?' Streak '+S.streak+'.':'')+'</span>'+q.explain; $('sn-next').disabled=false; }
-  else { fb.className='sn-fb bad'; fb.innerHTML='<span class="h">Not quite. No boost this time.</span>'+c.why+(FAST?' ':'<br>')+q.explain;
+  if(c.ok){ fb.className='sn-fb ok'; fb.innerHTML='<span class="h">Correct!'+(fresh?' +'+U('snacks')+' energy.':'')+(fresh&&S.streak>1?' Streak '+S.streak+'.':'')+'</span>'+q.explain; $('sn-next').disabled=false; }
+  else { fb.className='sn-fb bad'; fb.innerHTML='<span class="h">Not quite. No energy this time.</span>'+c.why+(FAST?' ':'<br>')+q.explain;
     $('sn-next').disabled=!!fresh; if(fresh&&!FAST){ clearTimeout(lockT); lockT=setTimeout(function(){ $('sn-next').disabled=false; },1800); } } }
 function answer(i){ if(!S.started||S.over||S.phase!=='stop'||!$('sn-shop').hidden||S.qDone||!S.q) return; var c=S.q.choices[i]; if(!c) return; S.qDone=true; S.picked=i; S.answered++;
   if(!S.topics[S.q.topic]) S.topics[S.q.topic]=[0,0]; S.topics[S.q.topic][1]++; S.stopAns.push(c.ok?1:0); fbKeep=true;
   if(c.ok){ S.correct++; S.topics[S.q.topic][0]++; S.streak++; S.best=Math.max(S.best,S.streak);
-    var add=Math.min(U('snacks'),100-S.boost), ca=U('cash')+streakBonus(S.streak); S.boost=Math.min(100,S.boost+U('snacks')); S.earned+=Math.round(add); S.cash+=ca;
+    var add=Math.min(U('snacks'),100-S.en), ca=U('cash')+streakBonus(S.streak); S.en=Math.min(100,S.en+U('snacks')); if(S.en>=LOWEN) S.lowWarn=false; S.earned+=Math.round(add); S.cash+=ca;
     SND.correct(); if(add>0) SND.fill(); markAnswered(i,true);
     if(S.pack.length) openEgg();
     nextT=setTimeout(function(){ if(S.qDone&&S.phase==='stop') newQ(); },FAST?150:1600); }
@@ -563,7 +590,8 @@ var reveal=null;
 function openEgg(){ var e=S.pack.shift(), gold=e.gold||S.streak>=3, L=pick(LOOT), k=gold?1.5:1, d=L.d;
   if(L.secs) S.buff[L.id]=Math.max(S.buff[L.id],0)+L.secs*k;
   if(L.grow){ grow(Math.round(L.grow*k)); d='+'+Math.round(L.grow*k)+' length'; }
-  if(L.id==='tank') S.boost=100;
+  if(L.id==='tank'){ S.en=100; S.lowWarn=false; }
+  S.eggsOpened++; goalAdd('egg',1);
   if(L.secs) d=d+' for '+Math.round(L.secs*k)+' s';
   reveal={t0:now(),gold:gold,name:L.name,d:d}; snToast((gold?'Gold egg: ':'Egg: ')+L.name+'!'); SND.open(gold); dirty=true; }
 function grow(n){ var P=me(); if(P.alive) P.len=Math.min(MAXLEN,P.len+n); else S.pendLen+=n; }
@@ -587,7 +615,8 @@ $('sn-shop').addEventListener('click',function(e){ var b=e.target.closest('.sn-b
   SND.cash(); save(); hud(); drawShop(); });
 
 /* ================= SNACK STOP, COUNTDOWN, LIVE ================= */
-function openStop(kind){ if(!S.started||S.over) return; fbKeep=false; S.phase='stop'; S.stopKind=kind; S.stopAns=[]; KD={}; boostTouch=false; ptrBoost=false; $('sn-boostbtn').classList.remove('on'); $('sn-stop').hidden=false; $('sn-toast').hidden=true; $('sn-shop').hidden=true; $('sn-q').classList.remove('shopping');
+function openStop(kind){ if(!S.started||S.over) return; fbKeep=false; S.phase='stop'; S.stopKind=kind; S.stopAns=[]; wantEmpty=false;
+  $('sn-stoptitle').textContent=kind==='empty'?'OUT OF ENERGY':'SNACK STOP'; KD={}; boostTouch=false; ptrBoost=false; $('sn-boostbtn').classList.remove('on'); $('sn-stop').hidden=false; $('sn-toast').hidden=true; $('sn-shop').hidden=true; $('sn-q').classList.remove('shopping');
   if(!S.q||S.qDone) newQ(); else showQ(); hud(); save(); dirty=true; }
 function leaveStop(){ if(S.phase!=='stop') return; if(!canGo()){ var q=$('sn-q'); q.classList.remove('nudge'); void q.offsetWidth; q.classList.add('nudge'); SND.empty(); return; }
   clearTimeout(lockT); $('sn-stop').hidden=true; $('sn-shop').hidden=true; $('sn-q').classList.remove('shopping');
@@ -595,15 +624,15 @@ function leaveStop(){ if(S.phase!=='stop') return; if(!canGo()){ var q=$('sn-q')
   S.phase='count'; S.cd=S.stopKind==='spawn'?1.5:0.9; cdShown=-1; ctrl.mode=ctrl.mode||'keys';
   if(document.activeElement&&document.activeElement.blur) document.activeElement.blur(); save(); hud(); dirty=true; }
 function goLive(){ S.phase='live'; acc=0; goT=0.7; SND.go(); save(); hud(); }
-function spawnMe(){ var p=safeSpot(S.sn,0,R-320), len=Math.min(MAXLEN,START+S.pendLen); S.pendLen=0;
+function spawnMe(){ var p=safeSpot(S.sn,0,Math.max(200,ringR()-320)), len=Math.min(MAXLEN,START+S.pendLen); S.pendLen=0;
   var P=makeSnake(0,true,'You',ME_COLS,p.x,p.y,Math.atan2(-p.y,-p.x),len); P.ghost=2.5; S.sn[0]=P; S.spawned=true; S.spawnT=S.playT;
   cam.x=P.x; cam.y=P.y; S.longest=Math.max(S.longest,P.len); }
 function playerOut(by){ var P=me(); S.outs++; S.outBy=by?by.name:'The wall'; S.phase='out'; S.outT=1.8; KD={}; boostTouch=false; ptrBoost=false;
   feed((by?by.name:'Someone')+' cut you off',true); SND.out(); save(); }
 
 /* ================= THE ARENA: moving, eating, crashing ================= */
-var KD={}, ctrl={mode:'keys', px:0, py:0, ax:0, ay:0, inside:false}, ptrBoost=false, boostTouch=false, noBoostT=0, boostWas=false;
-var cam={x:0,y:0,z:0.62}, pops=[], booms=[], acc=0, goT=0, cdShown=-1, dirty=true;
+var KD={}, ctrl={mode:'keys', px:0, py:0, ax:0, ay:0, inside:false}, ptrBoost=false, boostTouch=false, boostWas=false, wantEmpty=false;
+var cam={x:0,y:0,z:0.62}, pops=[], booms=[], loops=[], ann=null, acc=0, goT=0, cdShown=-1, dirty=true;
 function feed(txt,mine){ S.feed.unshift({txt:txt,me:!!mine,t0:now()}); S.feed=S.feed.slice(0,4); }
 function wantBoost(){ return !!(KD[' ']||KD.shift||ptrBoost||boostTouch); }
 function steerMe(P,dt){ var w=P.want;
@@ -611,14 +640,15 @@ function steerMe(P,dt){ var w=P.want;
   else if(ctrl.mode==='ptr'){ var hx=CW/2+(P.x-cam.x)*cam.z, hy=CH/2+(P.y-cam.y)*cam.z, dx=ctrl.px-hx, dy=ctrl.py-hy; if(dx*dx+dy*dy>14*14) w=Math.atan2(dy,dx); }
   P.want=w;
   var wb=wantBoost();
-  if(wb&&S.boost>0){ P.boost=true; S.boost=Math.max(0,S.boost-BDRAIN*dt); if(!boostWas) SND.boost(); }
-  else { P.boost=false; if(wb&&S.boost<=0){ if(!boostWas) SND.empty(); noBoostT=1.8; } }
-  boostWas=wb; }
+  P.boost=wb&&S.en>0; if(P.boost&&!boostWas) SND.boost(); boostWas=wb;
+  S.en=Math.max(0,S.en-(CRUISE+(P.boost?BDRAIN:0))*dt);                         /* slithering uses energy; boosting uses a lot more */
+  if(S.en<LOWEN&&!S.lowWarn){ S.lowWarn=true; SND.empty(); snToast('Low energy! Press Enter for a snack stop'); }
+  if(S.en<=0){ P.boost=false; wantEmpty=true; } }                                 /* out: the snake curls up safe in a snack stop (opened after this step) */
 function move(s,dt){ var r=rad(s), tr=(s.me?4.4:3.4)/(1+(r-11)/30), d=angDiff(s.want,s.ang), mx=tr*dt*(s.boost?0.85:1);
   s.ang+=d>mx?mx:d<-mx?-mx:d;
-  var sp=SPD*(s.boost?(s.me?U('turbo'):1.9):1)*s.spd, dx=Math.cos(s.ang)*sp*dt, dy=Math.sin(s.ang)*sp*dt; s.x+=dx; s.y+=dy; s.odo+=sp*dt;
+  var sp=SPD*(s.boost?(s.me?U('turbo'):1.9):1)*s.spd*(s.titan?0.8:1), dx=Math.cos(s.ang)*sp*dt, dy=Math.sin(s.ang)*sp*dt; s.x+=dx; s.y+=dy; s.odo+=sp*dt;
   /* the wall: you slide along it (no crash); Rivals turn back */
-  var dc=Math.hypot(s.x,s.y), lim=R-r-2; if(dc>lim){ s.x*=lim/dc; s.y*=lim/dc; var th=Math.atan2(s.y,s.x), t1=th+Math.PI/2, t2=th-Math.PI/2;
+  var dc=Math.hypot(s.x,s.y), lim=ringR()-r-2; if(dc>lim){ s.x*=lim/dc; s.y*=lim/dc; var th=Math.atan2(s.y,s.x), t1=th+Math.PI/2, t2=th-Math.PI/2;
     var tg=Math.cos(s.ang-t1)>Math.cos(s.ang-t2)?t1:t2; s.ang=tg+(s.me?0:-0.4*Math.sign(angDiff(tg,th))); if(!s.me) s.ai.t=0; }
   var p0=s.pts[0]||[s.x,s.y], dd=Math.hypot(s.x-p0[0],s.y-p0[1]);
   if(!s.pts.length){ s.pts.push([s.x,s.y]); }
@@ -634,25 +664,33 @@ function bodyHit(A,B,rA,rB){ var hh=(rA+rB)*0.85;
   for(var i=0;i<p.length;i+=2){ var q=p[i], dx=A.x-q[0], dy=A.y-q[1]; if(dx>th||dx<-th||dy>th||dy<-th) continue;
     if(dx*dx+dy*dy<th*th) return i<3?1:2; }
   return 0; }
-function bump(A,B){ var a=Math.atan2(A.y-B.y,A.x-B.x); A.ang+=angDiff(a,A.ang)>0?0.5:-0.5; A.x+=Math.cos(a)*3; A.y+=Math.sin(a)*3; if(!A.me) A.ai.t=0; }
-function die(A,B){ A.alive=false; A.dead=0; A.boost=false;
+function bump(A,B){ var a=Math.atan2(A.y-B.y,A.x-B.x); A.ang+=angDiff(a,A.ang)>0?0.5:-0.5; A.x+=Math.cos(a)*3; A.y+=Math.sin(a)*3; if(!A.me){ A.ai.t=0; escape(A,a,0.7); } }
+/* a Rival that bumps heads or stops moving turns away (and toward the middle) for a moment, so two Rivals can never stay locked together against the wall */
+function escape(b,away,secs){ var d=Math.hypot(b.x,b.y)||1, ex=Math.cos(away)-b.x/d*(d>ringR()*0.6?1.2:0), ey=Math.sin(away)-b.y/d*(d>ringR()*0.6?1.2:0);
+  b.ai.esc=secs; b.ai.escAng=Math.atan2(ey,ex); }
+function die(A,B,how){ A.alive=false; A.dead=0; A.boost=false;
   /* the body bursts into big glowing snacks */
-  var n=0; for(var i=0;i<A.pts.length;i+=2){ var q=A.pts[i]; S.pel.push({x:Math.round(q[0]+rf(-6,6)),y:Math.round(q[1]+rf(-6,6)),v:1,c:-1,col:A.cols[n++%2],r:9,o:1,life:30}); }
+  var n=0, st=A.titan?1:2; for(var i=0;i<A.pts.length;i+=st){ var q=A.pts[i]; S.pel.push({x:Math.round(q[0]+rf(-6,6)),y:Math.round(q[1]+rf(-6,6)),v:A.titan?2:1,c:-1,col:A.cols[n++%2],r:9,o:1,life:30}); }
   booms.push({x:A.x,y:A.y,c:A.cols[0],t0:now()});
   var orbs=0; for(var j=S.pel.length-1;j>=0;j--) if(S.pel[j].o) orbs++;
-  if(orbs>520){ var drop=orbs-520; S.pel=S.pel.filter(function(p){ if(p.o&&drop>0){ drop--; return false; } return true; }); }
+  if(orbs>560){ var drop=orbs-560; S.pel=S.pel.filter(function(p){ if(p.o&&drop>0){ drop--; return false; } return true; }); }
   if(A.me){ playerOut(B); return; }
-  if(B&&B.me){ var pts=PTS.takedown*dbl(); S.score+=pts; S.takedowns++; SND.takedown(); feed('You cut off '+A.name+'!',true);
-    pops.push({x:A.x,y:A.y-30,t0:now(),txt:'+'+pts,lab:'CUT OFF!',col:'#A6FF3C'});
-    var sp=stagePt(A.x,A.y); confetti(sp[0],sp[1],45,2.4); }
-  else { S.crashes=(S.crashes||0)+1; feed(A.name+' ran into '+(B?B.name:'a wall')); if(onScreen(A.x,A.y)) SND.crash(); } }
+  var wasWanted=S.wanted===A.id; if(wasWanted){ S.wanted=-1; S.wantT=6; }
+  if(B&&B.me){ var squeeze=S.evt&&S.evt.id==='squeeze'?2:1, base=A.titan?PTS.titan:how==='lasso'?PTS.lassoRival:PTS.takedown, pts=(base*squeeze+(wasWanted?PTS.bounty:0))*dbl();
+    S.score+=pts; S.takedowns++; goalAdd('cut',1); if(how==='lasso') goalAdd('lassoR',1); if(wasWanted){ S.bounties++; goalAdd('bounty',1); }
+    SND.takedown(); if(wasWanted||A.titan) SND.king();
+    feed(A.titan?'You took down the Titan!':wasWanted?'Bounty! You got '+A.name+'!':how==='lasso'?'You lassoed '+A.name+'!':'You cut off '+A.name+'!',true);
+    pops.push({x:A.x,y:A.y-30,t0:now(),txt:'+'+pts,lab:A.titan?'TITAN DOWN!':wasWanted?'BOUNTY!':how==='lasso'?'LASSOED!':'CUT OFF!',col:A.titan?'#FF9F1C':wasWanted?'#FFD447':'#A6FF3C'});
+    var sp=stagePt(A.x,A.y); confetti(sp[0],sp[1],A.titan||wasWanted?90:45,2.4); }
+  else { S.crashes=(S.crashes||0)+1; feed(A.titan?'The Titan crashed into '+(B?B.name:'the wall')+'!':A.name+' ran into '+(B?B.name:'a wall')+(wasWanted?' (bounty lost)':'')); if(onScreen(A.x,A.y)) SND.crash(); }
+  if(A.titan&&S.evt&&S.evt.id==='titan') S.evt.left=0; }
 function stagePt(x,y){ return [31+(CW/2+(x-cam.x)*cam.z), 121+(CH/2+(y-cam.y)*cam.z)]; }
 function onScreen(x,y){ return Math.abs(x-cam.x)*cam.z<CW/2+40&&Math.abs(y-cam.y)*cam.z<CH/2+40; }
 
 /* ---------- the Rivals: chase snacks, look ahead to dodge bodies and the wall, and a couple of them hunt you ---------- */
 function blocked(b,ang,look){ var r=rad(b), c=Math.cos(ang), s=Math.sin(ang), sn=S.sn;
   for(var k=0;k<2;k++){ var dist=look*(k?1:0.5), x=b.x+c*dist, y=b.y+s*dist;
-    if(x*x+y*y>(R-r-30)*(R-r-30)) return true;
+    var RR=ringR(); if(x*x+y*y>(RR-r-30)*(RR-r-30)) return true;
     for(var j=0;j<sn.length;j++){ var o=sn[j]; if(o===b||!o.alive) continue; var m=rad(o)+r+8;
       if(x<o.bx0-m||x>o.bx1+m||y<o.by0-m||y>o.by1+m) continue;
       var p=o.pts; for(var i=0;i<p.length;i+=2){ var dx=x-p[i][0], dy=y-p[i][1]; if(dx*dx+dy*dy<m*m) return true; } } }
@@ -660,16 +698,21 @@ function blocked(b,ang,look){ var r=rad(b), c=Math.cos(ang), s=Math.sin(ang), sn
 function huntersOn(){ var n=0; for(var i=1;i<S.sn.length;i++) if(S.sn[i].alive&&S.sn[i].ai.mode==='hunt') n++; return n; }
 function botThink(b,dt){ var a=b.ai, r=rad(b), P=me();
   a.t-=dt; a.hb-=dt; a.wander-=dt;
+  a.chk=(a.chk||0)-dt; if(a.chk<=0){ if(a.cx!=null&&Math.hypot(b.x-a.cx,b.y-a.cy)<45) escape(b,Math.atan2(-b.y,-b.x),1); a.chk=1; a.cx=b.x; a.cy=b.y; }   /* stuck check, once a second */
+  if(a.esc>0){ a.esc-=dt; b.want=a.escAng; b.boost=false; if(!b.titan) b.fuel=Math.min(60,b.fuel+6*dt); return; }
   if(a.t<=0){ a.t=rf(0.14,0.24);
     var hunt=false;
-    if(P.alive&&b.hunter&&P.ghost<=0&&S.buff.ghost<=0&&S.playT-S.spawnT>6&&b.len>P.len*0.7){ var dP=Math.hypot(P.x-b.x,P.y-b.y);
-      if(dP<360&&(a.mode==='hunt'||huntersOn()<(S.playT<45?1:2))) hunt=true; }
+    var isW=S.wanted===b.id, dP=P.alive?Math.hypot(P.x-b.x,P.y-b.y):1e9;                 /* the Wanted Rival and the Titan always come for you */
+    if(P.alive&&(b.hunter||isW||b.titan)&&P.ghost<=0&&S.buff.ghost<=0&&S.playT-S.spawnT>6&&(b.titan||b.len>P.len*0.7)){
+      if(dP<(b.titan?700:isW?480:360)&&(a.mode==='hunt'||isW||b.titan||huntersOn()<(S.playT<45?1:2))) hunt=true; }
     a.mode=hunt?'hunt':'eat';
-    if(hunt){ var lead=140+rad(P)*3; a.tx=P.x+Math.cos(P.ang)*lead; a.ty=P.y+Math.sin(P.ang)*lead; if(a.hb<=-1.5&&b.fuel>30&&Math.random()<0.3) a.hb=rf(0.5,1.0); }
+    if(hunt){ var lead=140+rad(P)*3; a.tx=P.x+Math.cos(P.ang)*lead; a.ty=P.y+Math.sin(P.ang)*lead; if(a.hb<=-1.5&&b.fuel>30&&Math.random()<(dP<260||isW?0.5:0.3)) a.hb=rf(0.5,1.0); }
     else { var best=null, bs=-1e9, ca=Math.cos(b.ang), sa=Math.sin(b.ang);
       for(var i=0;i<S.pel.length;i++){ var p=S.pel[i], dx=p.x-b.x, dy=p.y-b.y; if(dx>380||dx<-380||dy>380||dy<-380) continue;
-        var d=Math.sqrt(dx*dx+dy*dy)||1, sc=(p.o?140:35)-d+(dx*ca+dy*sa)/d*110; if(sc>bs){ bs=sc; best=p; } }
-      if(best){ a.tx=best.x; a.ty=best.y; }
+        var d=Math.sqrt(dx*dx+dy*dy)||1, sc=(p.g?220:p.o?140:35)-d+(dx*ca+dy*sa)/d*110; if(sc>bs){ bs=sc; best=p; } }
+      var ev=S.evt, rz=ev&&ev.id==='rush'?Math.hypot(ev.x-b.x,ev.y-b.y):1e9;
+      if(rz<1100&&rz>ev.r&&!(best&&best.g)&&b.id%2){ a.tx=ev.x; a.ty=ev.y; }                       /* in a Gold Rush, half the Rivals race you to the gold */
+      else if(best){ a.tx=best.x; a.ty=best.y; }
       else if(a.wander<=0||Math.hypot(a.tx-b.x,a.ty-b.y)<60){ var w=inDisk(R*0.75); a.tx=w.x; a.ty=w.y; a.wander=rf(2,4); } }
     var want=Math.atan2(a.ty-b.y,a.tx-b.x), look=(58+r*2.4)*b.sk+(b.boost?70:0);
     if(blocked(b,want,look)){ var side=angDiff(want,b.ang)>0?1:-1, offs=[0.5,1.0,1.6,2.3,3.0], found=false;
@@ -677,12 +720,12 @@ function botThink(b,dt){ var a=b.ai, r=rad(b), P=me();
       if(!found) want=b.ang+Math.PI*0.8; }
     a.want=want; }
   b.want=a.want; b.boost=a.hb>0&&b.fuel>0;
-  if(b.boost) b.fuel-=30*dt; else b.fuel=Math.min(60,b.fuel+6*dt); }
+  if(b.titan) b.fuel=0; else if(b.boost) b.fuel-=30*dt; else b.fuel=Math.min(60,b.fuel+6*dt); }
 
 /* ---------- one step of play time ---------- */
 function step(dt){ var sn=S.sn, P=sn[0], i, j;
   S.playT+=dt;
-  for(i=1;i<sn.length;i++){ var b=sn[i]; if(b.alive) botThink(b,dt); else { b.dead+=dt; if(b.dead>2.5) respawnBot(i); } }
+  for(i=sn.length-1;i>=1;i--){ var b=sn[i]; if(b.alive) botThink(b,dt); else { b.dead+=dt; if(b.titan) sn.splice(i,1); else if(b.dead>2.5) respawnBot(i); } }
   if(P.alive) steerMe(P,dt);
   for(i=0;i<sn.length;i++) if(sn[i].alive) move(sn[i],dt);
   for(i=0;i<sn.length;i++) if(sn[i].alive) bbox(sn[i]);
@@ -693,31 +736,87 @@ function step(dt){ var sn=S.sn, P=sn[0], i, j;
       if(!A.me&&A.ghost>0) continue;
       var h=bodyHit(A,B,rA,rB); if(h===1) bump(A,B); else if(h===2){ die(A,B); break; } }
     if(S.phase!=='live') return; }
+  if(P.alive) lasso(P,dt);
   eat(dt);
   /* mystery eggs */
   if(P.alive){ S.eggs=S.eggs.filter(function(e){ if(Math.hypot(e.x-P.x,e.y-P.y)<rad(P)+26){ if(S.pack.length<2){ S.pack.push({gold:e.gold}); SND.egg();
       pops.push({x:e.x,y:e.y-30,t0:now(),txt:e.gold?'GOLD EGG!':'EGG!',col:e.gold?'#FFD447':'#E9FFF4',sz:36}); snToast('Mystery egg! A right answer opens it (Enter)'); hud(); return false; }
       else if(!e.full){ e.full=1; snToast('Egg pouch full: press Enter and answer to open one'); } } else e.full=0; return true; }); }
   if(S.eggs.length<NEGG){ S.eggT+=dt; if(S.eggT>7){ S.eggT=0; S.eggs.push(newEgg()); } }
-  /* orbs fade after a while */
+  /* orbs and gold fade after a while */
   for(i=S.pel.length-1;i>=0;i--){ var p=S.pel[i]; if(p.o){ p.life-=dt; if(p.life<=0){ S.pel[i]=S.pel[S.pel.length-1]; S.pel.pop(); } } }
   ['ghost','double','magnet'].forEach(function(k){ if(S.buff[k]>0) S.buff[k]=Math.max(0,S.buff[k]-dt); });
-  /* the King: the longest snake. Being King pays points every second */
-  var king=null; for(i=0;i<sn.length;i++){ var s=sn[i]; if(s.alive&&(!king||s.len>king.len)) king=s; }
+  /* the King: the longest snake (the Titan does not count). Being King pays points every second */
+  var king=null; for(i=0;i<sn.length;i++){ var s=sn[i]; if(s.alive&&!s.titan&&(!king||s.len>king.len)) king=s; }
   var was=S.king; S.king=king?king.id:-1;
-  if(king&&king.me){ S.kingT+=dt; S.kingAcc+=PTS.king*dbl()*dt; if(S.kingAcc>=1){ var w=Math.floor(S.kingAcc); S.kingAcc-=w; S.score+=w; }
+  if(king&&king.me){ S.kingT+=dt; goalAdd('king',dt); S.kingAcc+=PTS.king*dbl()*dt; if(S.kingAcc>=1){ var w=Math.floor(S.kingAcc); S.kingAcc-=w; S.score+=w; }
     if(was!==0){ SND.king(); snToast('You’re the King! +'+PTS.king+' points every second'); feed('You are the longest snake!',true); var sp=stagePt(P.x,P.y); confetti(sp[0],sp[1],60,2.6); } }
-  if(P.alive) S.longest=Math.max(S.longest,Math.floor(P.len)); }
+  if(P.alive){ S.longest=Math.max(S.longest,Math.floor(P.len)); goalSet('len',Math.floor(P.len)); }
+  eventStep(dt); wantedStep(dt); }
 function eat(dt){ var sn=S.sn, P=sn[0], mag=P.alive?U('magnet')+(S.buff.magnet>0?240:0):0, pr=P.alive?rad(P):0, pel=S.pel;
   for(var i=pel.length-1;i>=0;i--){ var p=pel[i];
     if(mag>0){ var dx=P.x-p.x, dy=P.y-p.y, mr=mag+pr; if(dx<mr&&dx>-mr&&dy<mr&&dy>-mr){ var d=Math.sqrt(dx*dx+dy*dy); if(d<mr&&d>1){ var mv=Math.min(d,520*dt); p.x+=dx/d*mv; p.y+=dy/d*mv; } } }
     for(var j=0;j<sn.length;j++){ var s=sn[j]; if(!s.alive) continue; var r=rad(s)+p.r+6, ex=s.x-p.x, ey=s.y-p.y; if(ex>r||ex<-r||ey>r||ey<-r) continue;
-      if(ex*ex+ey*ey<r*r){ s.len=Math.min(s.me?MAXLEN:BOTMAX,s.len+p.v*(s.me?1:0.6));        /* Rivals grow a little slower than you */
-       
-        if(s.me){ S.score+=(p.o?PTS.orb:PTS.snack)*dbl(); if(p.o) SND.orb(); else SND.munch(); }
+      if(ex*ex+ey*ey<r*r){ s.len=Math.min(s.me?MAXLEN:s.titan?400:BOTMAX,s.len+p.v*(s.me?1:0.6));        /* Rivals grow a little slower than you */
+        if(s.me){ S.score+=(p.g?PTS.gold:p.o?PTS.orb:PTS.snack)*dbl(); S.eaten++; goalAdd('eat',1); if(p.g){ SND.gold(); pops.push({x:p.x,y:p.y-20,t0:now(),txt:'+'+PTS.gold*dbl(),col:'#FFD447',sz:30}); } else if(p.o) SND.orb(); else SND.munch(); }
         if(p.o){ pel[i]=pel[pel.length-1]; pel.pop(); } else { var n=snack(); p.x=n.x; p.y=n.y; p.c=n.c; }
         break; } } } }
 function respawnBot(i){ var used=S.sn.map(function(s){ return s.name; }), b=makeBot(i,S.sn,used); b.ghost=1; S.sn[i]=b; }
+
+/* ---------- the lasso: when your head meets your own body, everything inside the loop is yours ---------- */
+var lassoCD=0;
+function inPoly(x,y,poly){ var c=false; for(var i=0,j=poly.length-1;i<poly.length;j=i++){ var a=poly[i], b=poly[j];
+  if((a[1]>y)!==(b[1]>y)&&x<(b[0]-a[0])*(y-a[1])/(b[1]-a[1])+a[0]) c=!c; } return c; }
+function lasso(P,dt){ if(lassoCD>0){ lassoCD-=dt; return; } var p=P.pts, n=p.length, th=rad(P)*1.3;
+  for(var i=LASSO_MIN;i<n;i++){ var dx=P.x-p[i][0], dy=P.y-p[i][1]; if(dx>th||dx<-th||dy>th||dy<-th) continue;
+    if(dx*dx+dy*dy<th*th){ closeLoop(P,i); return; } } }
+function closeLoop(P,i){ var poly=[[P.x,P.y]].concat(P.pts.slice(0,i+1)), area=0, x0=1e9, x1=-1e9, y0=1e9, y1=-1e9;
+  for(var k=0,m=poly.length-1;k<poly.length;m=k++){ var a=poly[k], b=poly[m]; area+=(b[0]+a[0])*(b[1]-a[1]); if(a[0]<x0) x0=a[0]; if(a[0]>x1) x1=a[0]; if(a[1]<y0) y0=a[1]; if(a[1]>y1) y1=a[1]; }
+  if(Math.abs(area)/2<LASSO_AREA){ lassoCD=0.15; return; }
+  lassoCD=0.6;
+  var got=0, gold=0, pts=0, pel=S.pel;
+  for(var j=pel.length-1;j>=0;j--){ var q=pel[j]; if(q.x<x0||q.x>x1||q.y<y0||q.y>y1||!inPoly(q.x,q.y,poly)) continue;
+    got++; if(q.g) gold++; pts+=(q.g?PTS.gold:q.o?PTS.orb:PTS.snack)+PTS.lassoSnack; P.len=Math.min(MAXLEN,P.len+q.v);
+    if(q.o){ pel[j]=pel[pel.length-1]; pel.pop(); } else { var nq=snack(); q.x=nq.x; q.y=nq.y; q.c=nq.c; } }
+  var caught=S.sn.filter(function(o){ return o.alive&&!o.me&&o.ghost<=0&&o.x>x0&&o.x<x1&&o.y>y0&&o.y<y1&&inPoly(o.x,o.y,poly); });
+  loops.push({pts:poly.filter(function(q,k){ return k%2===0; }),t0:now(),big:got>=10||caught.length>0}); dirty=true;
+  if(got){ pts*=dbl(); S.score+=pts; S.eaten+=got; goalAdd('eat',got); S.lassos++; S.bestLasso=Math.max(S.bestLasso,got); goalSet('lasso',got);
+    var cx0=(x0+x1)/2, cy0=(y0+y1)/2; pops.push({x:cx0,y:cy0,t0:now(),txt:'+'+pts,lab:got>=10?'MEGA LASSO!':'LASSO ×'+got,col:'#A6FF3C'}); SND.lasso(got);
+    if(got>=10){ feed('Mega lasso: '+got+' snacks!',true); var sp=stagePt(cx0,cy0); confetti(sp[0],sp[1],40,2.6); } }
+  caught.forEach(function(o){ die(o,P,'lasso'); }); }
+
+/* ---------- goals: one at a time, +300 each ---------- */
+function goalNow(){ return GOALS[S.goal%GOALS.length]; }
+function goalAdd(id,n){ var g=goalNow(); if(g.id!==id||!S.started) return; S.gp+=n; if(S.gp>=g.n) goalDone(); }
+function goalSet(id,v){ var g=goalNow(); if(g.id!==id||!S.started) return; if(v>S.gp) S.gp=v; if(S.gp>=g.n) goalDone(); }
+function goalDone(){ var g=goalNow(); S.score+=PTS.goal; S.goals++; S.goal++; S.gp=0; SND.goal(); snToast('Goal done: '+g.txt+'! +'+PTS.goal); feed('Goal done! +'+PTS.goal,true);
+  var P=me(); if(P.alive) pops.push({x:P.x,y:P.y-60,t0:now(),txt:'+'+PTS.goal,lab:'GOAL!',col:'#FFD447'});
+  if(goalNow().id==='len') goalSet('len',P.alive?Math.floor(P.len):0); }
+
+/* ---------- arena events: Gold Rush, the Titan, the Squeeze ---------- */
+var RING_MIN=660;
+function eventStep(dt){ var e=S.evt;
+  if(!e){ if(S.playT>=S.nextEvt) startEvent(EVENTS[S.evtN++%EVENTS.length]); return; }
+  e.left-=dt; e.t+=dt;
+  if(e.id==='rush'){ e.acc+=dt; while(e.acc>0.3&&e.dropped<46){ e.acc-=0.3; e.dropped++; var a=Math.random()*6.283, d=Math.sqrt(Math.random())*e.r;
+      S.pel.push({x:Math.round(e.x+Math.cos(a)*d),y:Math.round(e.y+Math.sin(a)*d),v:2,c:-1,col:'#FFD447',r:8,o:1,g:1,life:22}); } }
+  if(e.id==='squeeze'){ var k=e.t<3?e.t/3:e.left<3?Math.max(0,e.left)/3:1; S.ring=R-(R-RING_MIN)*k; }
+  if(e.left<=0) endEvent(); }
+function startEvent(def){ var e={id:def.id,name:def.name,col:def.col,secs:def.secs,left:def.secs,t:0}, P=me();
+  if(def.id==='rush'){ var best=null, bd=-1; for(var n=0;n<24;n++){ var p=inDisk(R*0.6), d=P.alive?Math.hypot(p.x-P.x,p.y-P.y):500, sc=d>450&&d<1100?1000-Math.abs(d-650):-d;
+      if(sc>bd){ bd=sc; best=p; } } e.x=Math.round(best.x); e.y=Math.round(best.y); e.r=230; e.acc=0; e.dropped=0; }
+  if(def.id==='titan'){ var T=null; for(var t=0;t<12;t++){ var q=safeSpot(S.sn,700,R-520); T=makeSnake(99,false,'Titan',['#FF9F1C','#8A3D00'],q.x,q.y,Math.atan2(-q.y,-q.x),240);
+      if(clearOf(T,S.sn)) break; }
+    T.titan=true; T.spd=1; T.sk=1.25; T.fuel=0; T.ghost=1.5; bbox(T); S.sn.push(T); }
+  S.evt=e; ann={t0:now(),big:def.name,sub:def.sub,col:def.col}; SND.event(); feed('Event: '+def.name.charAt(0)+def.name.slice(1).toLowerCase(),true); dirty=true; }
+function endEvent(){ var e=S.evt; S.evt=null; S.nextEvt=S.playT+EVT_GAP; S.ring=R;
+  if(e.id==='titan') for(var i=S.sn.length-1;i>=1;i--) if(S.sn[i].titan){ if(S.sn[i].alive) feed('The Titan slithered away'); S.sn.splice(i,1); } }
+
+/* ---------- the Wanted Rival: one at a time carries a +500 bounty ---------- */
+function wantedStep(dt){ if(S.wanted>=0){ if(!S.sn.some(function(o){ return o.alive&&o.id===S.wanted; })){ S.wanted=-1; S.wantT=6; } return; }
+  S.wantT-=dt; if(S.wantT>0) return;
+  var c=S.sn.filter(function(o){ return o.alive&&!o.me&&!o.titan&&o.len>=34; }).sort(function(a,b){ return b.len-a.len; }).slice(0,3);
+  if(!c.length){ S.wantT=2; return; } var w=pick(c); S.wanted=w.id; feed('WANTED: '+w.name+' (+'+PTS.bounty+' bounty)',true); SND.wanted(); dirty=true; }
 
 /* ================= DRAWING ================= */
 var cv=$('sn-canvas'), cx=cv.getContext('2d'), RS=1, hudT=0, hudDirty=true, hudCv=document.createElement('canvas'), hudW=[0,0];
@@ -768,7 +867,11 @@ function drawSnake(c,s,t,view){ var r=rad(s), p=s.pts, n=p.length; if(!n) return
   c.globalAlpha=1;
   if(S.king===s.id) drawCrown(c,s.x,s.y-r*1.12-4,1+r/40);
   if(s.me){ c.strokeStyle='rgba(166,255,60,'+(0.35+0.25*Math.sin(t/220))+')'; c.lineWidth=3; c.beginPath(); c.arc(s.x,s.y,r*1.12+9,0,6.283); c.stroke(); }
-  else { c.font=IFONT(800,18); c.textAlign='center'; c.textBaseline='alphabetic'; var ny=s.y-r*1.12-(S.king===s.id?30:10); c.fillStyle='rgba(3,9,7,.9)'; c.fillText(s.name,s.x+2,ny+2); c.fillStyle='#E9FFF4'; c.fillText(s.name,s.x,ny); } }
+  else { var big=s.titan, nm=big?'TITAN':s.name; c.font=big?FONT(34):IFONT(800,18); c.textAlign='center'; c.textBaseline='alphabetic'; var ny=s.y-r*1.12-(S.king===s.id?30:10);
+    c.fillStyle='rgba(3,9,7,.9)'; c.fillText(nm,s.x+2,ny+2); c.fillStyle=big?'#FF9F1C':'#E9FFF4'; c.fillText(nm,s.x,ny);
+    if(S.wanted===s.id){ c.font=IFONT(900,17); var tw=c.measureText('★ WANTED +'+PTS.bounty).width+20; c.fillStyle='#FFD447'; rr(c,s.x-tw/2,ny-48,tw,28,14); c.fill();
+      c.fillStyle='#2A1E00'; c.textBaseline='middle'; c.fillText('★ WANTED +'+PTS.bounty,s.x,ny-33);
+      c.strokeStyle='rgba(255,212,71,'+(0.45+0.25*Math.sin(t/180))+')'; c.lineWidth=4; c.beginPath(); c.arc(s.x,s.y,r*1.12+10,0,6.283); c.stroke(); } } }
 function drawCrown(c,x,y,k){ c.fillStyle='#FFD447'; c.strokeStyle='#06110F'; c.lineWidth=2.5; c.beginPath(); c.moveTo(x-12*k,y); c.lineTo(x-12*k,y-11*k); c.lineTo(x-6*k,y-5*k); c.lineTo(x,y-14*k); c.lineTo(x+6*k,y-5*k); c.lineTo(x+12*k,y-11*k); c.lineTo(x+12*k,y); c.closePath(); c.fill(); c.stroke(); }
 var EGG={};
 function eggSprite(gold){ if(EGG[gold]) return EGG[gold]; var t=document.createElement('canvas'); t.width=t.height=72; var c=t.getContext('2d'); c.translate(36,36);
@@ -788,7 +891,7 @@ function drawHUD(c,t){ var P=me();
   /* power-ups */
   var pills=[]; if(S.buff.ghost>0) pills.push(['GHOST '+Math.ceil(S.buff.ghost),'#C9F7FF']); if(S.buff.double>0) pills.push(['×2 POINTS '+Math.ceil(S.buff.double),'#FFD447']); if(S.buff.magnet>0) pills.push(['MEGA MAGNET '+Math.ceil(S.buff.magnet),'#FF8FD8']);
   if(P.alive&&P.ghost>0&&S.phase==='live') pills.push(['SAFE '+Math.ceil(P.ghost),'#C9F7FF']);
-  var px=24; c.font=IFONT(800,19); hudW[1]=0; pills.forEach(function(p){ var w=c.measureText(p[0]).width+28; c.fillStyle='rgba(3,9,7,.82)'; rr(c,px,18,w,40,20); c.fill(); c.strokeStyle=p[1]; c.lineWidth=2; c.stroke(); c.fillStyle=p[1]; c.textAlign='left'; c.textBaseline='middle'; c.fillText(p[0],px+14,39); px+=w+8; }); hudW[0]=pills.length?px:0;
+  var px=24; c.font=IFONT(800,19); hudW[1]=0; pills.forEach(function(p){ var w=c.measureText(p[0]).width+28; c.fillStyle='rgba(3,9,7,.82)'; rr(c,px,CH-130,w,40,20); c.fill(); c.strokeStyle=p[1]; c.lineWidth=2; c.stroke(); c.fillStyle=p[1]; c.textAlign='left'; c.textBaseline='middle'; c.fillText(p[0],px+14,CH-109); px+=w+8; }); hudW[0]=pills.length?px:0;
   /* the feed */
   c.textAlign='right'; c.textBaseline='middle'; c.font=IFONT(800,19); S.feed.forEach(function(f,i){ var a=Math.max(0,Math.min(1,(5200-(t-f.t0))/600)); if(a<=0) return; c.globalAlpha=a; var w=c.measureText(f.txt).width+28; hudW[1]=Math.max(hudW[1],w);
     c.fillStyle=f.me?'rgba(166,255,60,.18)':'rgba(3,9,7,.72)'; rr(c,CW-18-w,18+i*38,w,32,10); c.fill(); c.fillStyle=f.me?'#A6FF3C':'#E9FFF4'; c.fillText(f.txt,CW-32,35+i*38); c.globalAlpha=1; });
@@ -797,23 +900,29 @@ function drawHUD(c,t){ var P=me();
   for(var k=0;k<2;k++){ var ex=118+k*48, has=k<S.pack.length; c.beginPath(); c.ellipse(ex,CH-46,14,18,0,0,6.283); if(has){ c.fillStyle=S.pack[k].gold?'#FFD447':'#E9FFF4'; c.fill(); } c.strokeStyle=has?'#06110F':'#2E5A4E'; c.lineWidth=2.5; c.stroke(); }
   /* the minimap */
   var mx=CW-96, my=CH-96, mr=74; c.fillStyle='rgba(3,9,7,.8)'; c.beginPath(); c.arc(mx,my,mr+6,0,6.283); c.fill(); c.strokeStyle='rgba(255,79,184,.6)'; c.lineWidth=3; c.beginPath(); c.arc(mx,my,mr,0,6.283); c.stroke();
-  var mk=mr/R; S.eggs.forEach(function(e){ c.fillStyle=e.gold?'#FFD447':'#E9FFF4'; c.fillRect(mx+e.x*mk-2,my+e.y*mk-2,4,4); });
-  S.sn.forEach(function(s){ if(!s.alive||s.me) return; c.fillStyle=S.king===s.id?'#FFD447':'rgba(255,255,255,.45)'; c.beginPath(); c.arc(mx+s.x*mk,my+s.y*mk,S.king===s.id?4.5:2.5,0,6.283); c.fill(); });
+  var mk=mr/R; if(S.ring<R-2){ c.strokeStyle='#FF4FB8'; c.lineWidth=2; c.beginPath(); c.arc(mx,my,S.ring*mk,0,6.283); c.stroke(); }
+  if(S.evt&&S.evt.id==='rush'){ c.fillStyle='rgba(255,212,71,.35)'; c.beginPath(); c.arc(mx+S.evt.x*mk,my+S.evt.y*mk,S.evt.r*mk+2,0,6.283); c.fill(); }
+  S.eggs.forEach(function(e){ c.fillStyle=e.gold?'#FFD447':'#E9FFF4'; c.fillRect(mx+e.x*mk-2,my+e.y*mk-2,4,4); });
+  S.sn.forEach(function(s){ if(!s.alive||s.me) return; var sp=s.titan||S.wanted===s.id; c.fillStyle=s.titan?'#FF9F1C':S.wanted===s.id?'#FFD447':S.king===s.id?'#FFF3B0':'rgba(255,255,255,.45)'; c.beginPath(); c.arc(mx+s.x*mk,my+s.y*mk,sp?5:S.king===s.id?4.5:2.5,0,6.283); c.fill(); });
   if(P.alive){ c.fillStyle='#A6FF3C'; c.beginPath(); c.arc(mx+P.x*mk,my+P.y*mk,5.5,0,6.283); c.fill(); c.strokeStyle='#06110F'; c.lineWidth=2; c.stroke(); }
 }
 function draw(){ var t=now(), c=cx, P=me(), Z=cam.z, k=RS;
   c.setTransform(k,0,0,k,0,0); c.clearRect(0,0,CW,CH); floorMove();
   c.setTransform(k*Z,0,0,k*Z,k*(CW/2-cam.x*Z),k*(CH/2-cam.y*Z));
   var hw=CW/2/Z+40, hh=CH/2/Z+40, view=[cam.x-hw,cam.x+hw,cam.y-hh,cam.y+hh];
-  if(Math.hypot(Math.abs(cam.x)+hw,Math.abs(cam.y)+hh)>R-30){                 /* the wall is in view: darken outside it and draw the glowing edge */
-    c.beginPath(); c.rect(view[0],view[2],hw*2,hh*2); c.moveTo(R,0); c.arc(0,0,R,0,6.283,true); c.fillStyle='#030907'; c.fill();
-    c.beginPath(); c.arc(0,0,R+12,0,6.283); c.lineWidth=24; c.strokeStyle='rgba(255,79,184,.16)'; c.stroke();
-    c.beginPath(); c.arc(0,0,R,0,6.283); c.lineWidth=8; c.strokeStyle='#FF4FB8'; c.stroke(); }
+  var RR=ringR();
+  if(Math.hypot(Math.abs(cam.x)+hw,Math.abs(cam.y)+hh)>RR-30){                /* the wall is in view: darken outside it and draw the glowing edge */
+    c.beginPath(); c.rect(view[0],view[2],hw*2,hh*2); c.moveTo(RR,0); c.arc(0,0,RR,0,6.283,true); c.fillStyle=RR<R-2?'rgba(3,9,7,.82)':'#030907'; c.fill();
+    c.beginPath(); c.arc(0,0,RR+12,0,6.283); c.lineWidth=24; c.strokeStyle='rgba(255,79,184,.16)'; c.stroke();
+    c.beginPath(); c.arc(0,0,RR,0,6.283); c.lineWidth=8; c.strokeStyle='#FF4FB8'; c.stroke(); }
+  var ev=S.evt; if(ev&&ev.id==='rush'){ c.beginPath(); c.arc(ev.x,ev.y,ev.r+20,0,6.283); c.fillStyle='rgba(255,212,71,.07)'; c.fill(); c.setLineDash([22,16]); c.lineDashOffset=-(t/40%38); c.lineWidth=5; c.strokeStyle='rgba(255,212,71,.55)'; c.stroke(); c.setLineDash([]); }
   /* snacks and orbs */
   c.setTransform(1,0,0,1,0,0); var ks=k*Z, ox=k*(CW/2-cam.x*Z), oy=k*(CH/2-cam.y*Z), s1=Math.max(4,Math.round(5*4.4*ks)), s2=Math.max(6,Math.round(9*4.4*ks));
-  for(var i=0;i<S.pel.length;i++){ var p=S.pel[i]; if(p.x<view[0]||p.x>view[1]||p.y<view[2]||p.y>view[3]) continue; var sz=p.o?s2:s1, a=p.o&&p.life<4?Math.max(0.15,p.life/4):1;
+  for(var i=0;i<S.pel.length;i++){ var p=S.pel[i]; if(p.x<view[0]||p.x>view[1]||p.y<view[2]||p.y>view[3]) continue; var sz=p.g?s2+6:p.o?s2:s1, a=p.o&&p.life<4?Math.max(0.15,p.life/4):1;
     if(a<1) c.globalAlpha=a; c.drawImage(sprite(p.o?p.col:PEL_COLS[p.c],sz),Math.round(ox+p.x*ks-sz/2),Math.round(oy+p.y*ks-sz/2)); if(a<1) c.globalAlpha=1; }
   c.setTransform(ks,0,0,ks,ox,oy);
+  loops=loops.filter(function(L){ return t-L.t0<800; }); loops.forEach(function(L){ var q=(t-L.t0)/800; c.beginPath(); L.pts.forEach(function(p,i){ if(i) c.lineTo(p[0],p[1]); else c.moveTo(p[0],p[1]); }); c.closePath();
+    c.globalAlpha=(1-q)*(L.big?0.4:0.28); c.fillStyle='#A6FF3C'; c.fill(); c.globalAlpha=1-q; c.lineWidth=6; c.strokeStyle='#E9FFF4'; c.stroke(); c.globalAlpha=1; });
   S.eggs.forEach(function(e){ if(e.x>view[0]&&e.x<view[1]&&e.y>view[2]&&e.y<view[3]) drawEgg(c,e,t); });
   for(var j=S.sn.length-1;j>=0;j--){ var s=S.sn[j]; if(s.alive) drawSnake(c,s,t,view); }
   booms=booms.filter(function(b){ return t-b.t0<600; }); booms.forEach(function(b){ var q=(t-b.t0)/600; c.strokeStyle=b.c; c.globalAlpha=1-q; c.lineWidth=10*(1-q)+2; c.beginPath(); c.arc(b.x,b.y,24+q*90,0,6.283); c.stroke(); c.globalAlpha=1; });
@@ -825,16 +934,30 @@ function draw(){ var t=now(), c=cx, P=me(), Z=cam.z, k=RS;
   c.setTransform(k,0,0,k,0,0);
   if(t-hudT>200||hudDirty){ hudT=t; hudDirty=false; var hc=hudCv.getContext('2d'); hc.setTransform(k,0,0,k,0,0); hc.clearRect(0,0,CW,CH); if(S.started&&!S.over) drawHUD(hc,t); }
   c.setTransform(1,0,0,1,0,0);
-  if(S.started&&!S.over) [[0,0,Math.min(CW,hudW[0]+30),70],[CW-hudW[1]-30,0,hudW[1]+30,180],[0,CH-84,240,84],[CW-190,CH-190,190,190]].forEach(function(q){
+  if(S.started&&!S.over) [[0,CH-150,Math.min(CW-200,Math.max(240,hudW[0]+30)),150],[CW-hudW[1]-30,0,hudW[1]+30,180],[CW-190,CH-190,190,190]].forEach(function(q){
     if(q[2]<=0||q[3]<=0) return; var a=Math.round(q[0]*k), b=Math.round(q[1]*k), w=Math.round(q[2]*k), h=Math.round(q[3]*k); c.drawImage(hudCv,a,b,w,h,a,b,w,h); });
   c.setTransform(k,0,0,k,0,0);
-  if(noBoostT>0&&S.phase==='live') pill(c,'Out of boost! Press Enter for a snack stop',CW/2,CH-46,'#FF7A7A');
+  if(S.started&&!S.over&&S.phase!=='out'){ var g=goalNow(), gp=g.id==='king'?Math.floor(S.gp):Math.min(g.n,Math.floor(S.gp));
+    pill(c,'GOAL: '+g.txt+'   '+gp+' / '+g.n+'   +'+PTS.goal,CW/2,40,'#A6FF3C');
+    if(S.evt) pill(c,S.evt.name+'  '+Math.max(0,Math.ceil(S.evt.left))+' s',CW/2,92,S.evt.col);
+    pointers(c); }
+  if(ann){ var ak=(t-ann.t0)/2800; if(ak>=1) ann=null; else { c.globalAlpha=Math.min(1,(1-ak)*4,ak*8); c.fillStyle='rgba(3,9,7,.9)'; rr(c,CW/2-390,166,780,140,24); c.fill(); c.strokeStyle=ann.col; c.lineWidth=4; c.stroke();
+      c.textAlign='center'; c.textBaseline='alphabetic'; c.font=FONT(64); c.fillStyle=ann.col; c.fillText(ann.big,CW/2,242); c.font=IFONT(700,24); c.fillStyle='#E9FFF4'; c.fillText(ann.sub,CW/2,284); c.globalAlpha=1; } }
   if(S.phase==='out'){ c.fillStyle='rgba(3,9,7,.55)'; c.fillRect(0,0,CW,CH); banner(c,'CUT OFF!',S.outBy+' got you','#FF4FB8','You keep your score. Snack stop next…'); }
-  else if(S.phase==='count'){ var n=Math.ceil(S.cd/0.5); banner(c,S.stopKind==='spawn'&&n<=3?String(Math.max(1,n)):'GET READY','',S.stopKind==='spawn'?'#A6FF3C':'#FFD447',S.stopKind==='spawn'?'Eat snacks · cut off the Rivals':''); }
+  else if(S.phase==='count'){ var n=Math.ceil(S.cd/0.5); banner(c,S.stopKind==='spawn'&&n<=3?String(Math.max(1,n)):'GET READY','',S.stopKind==='spawn'?'#A6FF3C':'#FFD447',S.stopKind==='spawn'?'Eat snacks · lasso them · cut off the Rivals':''); }
   else if(goT>0&&S.phase==='live'){ c.globalAlpha=Math.min(1,goT*2); banner(c,'SLITHER!','','#A6FF3C',''); c.globalAlpha=1; }
-  if(reveal&&S.phase!=='out'){ var rk=(t-reveal.t0)/2400; if(rk>=1) reveal=null; else { c.globalAlpha=Math.min(1,(1-rk)*4); c.fillStyle='rgba(3,9,7,.9)'; rr(c,CW/2-340,80,680,150,24); c.fill(); c.strokeStyle=reveal.gold?'#FFD447':'#A6FF3C'; c.lineWidth=4; c.stroke();
-      c.textAlign='center'; c.textBaseline='alphabetic'; c.font=IFONT(800,20); c.fillStyle=reveal.gold?'#FFD447':'#A6FF3C'; c.fillText(reveal.gold?'GOLD EGG':'MYSTERY EGG',CW/2,120);
-      c.font=FONT(56); c.fillStyle='#fff'; c.fillText(reveal.name.toUpperCase(),CW/2,176); c.font=IFONT(700,22); c.fillStyle='#E9FFF4'; c.fillText(reveal.d,CW/2,212); c.globalAlpha=1; } } }
+  if(reveal&&S.phase!=='out'){ var rk=(t-reveal.t0)/2400; if(rk>=1) reveal=null; else { c.globalAlpha=Math.min(1,(1-rk)*4); c.fillStyle='rgba(3,9,7,.9)'; rr(c,CW/2-340,326,680,150,24); c.fill(); c.strokeStyle=reveal.gold?'#FFD447':'#A6FF3C'; c.lineWidth=4; c.stroke();
+      c.textAlign='center'; c.textBaseline='alphabetic'; c.font=IFONT(800,20); c.fillStyle=reveal.gold?'#FFD447':'#A6FF3C'; c.fillText(reveal.gold?'GOLD EGG':'MYSTERY EGG',CW/2,366);
+      c.font=FONT(56); c.fillStyle='#fff'; c.fillText(reveal.name.toUpperCase(),CW/2,422); c.font=IFONT(700,22); c.fillStyle='#E9FFF4'; c.fillText(reveal.d,CW/2,458); c.globalAlpha=1; } } }
+
+/* arrows at the edge of the arena view that point to the Wanted Rival, the Titan and a Gold Rush */
+function pointers(c){ var P=me(); if(!P.alive||S.phase!=='live'&&S.phase!=='count') return; var tg=[];
+  S.sn.forEach(function(s){ if(s.alive&&(s.titan||S.wanted===s.id)) tg.push([s.x,s.y,s.titan?'#FF9F1C':'#FFD447',s.titan?'TITAN':'WANTED']); });
+  if(S.evt&&S.evt.id==='rush') tg.push([S.evt.x,S.evt.y,'#FFD447','GOLD']);
+  tg.forEach(function(g){ var sx=CW/2+(g[0]-cam.x)*cam.z, sy=CH/2+(g[1]-cam.y)*cam.z; if(sx>40&&sx<CW-40&&sy>40&&sy<CH-40) return;
+    var a=Math.atan2(sy-CH/2,sx-CW/2), mx=CW/2-90, my=CH/2-150, k=Math.min(mx/Math.abs(Math.cos(a)||1e-6),my/Math.abs(Math.sin(a)||1e-6)), x=CW/2+Math.cos(a)*k, y=CH/2+Math.sin(a)*k;
+    c.save(); c.translate(x,y); c.rotate(a); c.fillStyle=g[2]; c.strokeStyle='#06110F'; c.lineWidth=3; c.beginPath(); c.moveTo(26,0); c.lineTo(-10,-18); c.lineTo(-4,0); c.lineTo(-10,18); c.closePath(); c.fill(); c.stroke(); c.restore();
+    c.font=IFONT(900,16); c.textAlign='center'; c.textBaseline='middle'; c.lineWidth=5; c.strokeStyle='#06110F'; var lx=x-Math.cos(a)*42, ly=y-Math.sin(a)*42; c.strokeText(g[3],lx,ly); c.fillStyle=g[2]; c.fillText(g[3],lx,ly); }); }
 
 /* ================= THE LOOP ================= */
 var lastF=performance.now(), boardT=0;
@@ -844,17 +967,18 @@ function camStep(dt){ var P=me(), tz=S.spawned||P.alive? clamp(1.04-(P.len-START
 function frame(t){ var dt=Math.min(0.1,(t-lastF)/1000); lastF=t;
   if(S.started&&!S.over){ S.clock-=dt; clockDraw(); if(S.clock<=0){ endRun(); } }   /* the clock runs the whole run, snack stops too, so every run takes 5 minutes */
   if(S.started&&!S.over){
-    if(S.phase==='live'){ acc+=dt; var n=0; while(acc>=STEP&&n<5&&S.phase==='live'){ acc-=STEP; step(STEP); n++; } if(n>=5) acc=0; camStep(dt); dirty=true; if(noBoostT>0) noBoostT-=dt; hud(); perfStep(dt); }
+    if(S.phase==='live'){ acc+=dt; var n=0; while(acc>=STEP&&n<5&&S.phase==='live'&&!wantEmpty){ acc-=STEP; step(STEP); n++; } if(n>=5) acc=0; camStep(dt); dirty=true; hud(); perfStep(dt);
+      if(wantEmpty&&S.phase==='live') openStop('empty'); }
     else if(S.phase==='count'){ S.cd-=dt; var c=Math.ceil(S.cd/0.5); if(S.stopKind==='spawn'&&c!==cdShown&&c>0&&c<=3){ cdShown=c; SND.tick(); } if(S.cd<=0) goLive(); camStep(dt); dirty=true; }
     else if(S.phase==='out'){ S.outT-=dt; dirty=true; if(S.outT<=0) openStop('spawn'); }
     if(goT>0){ goT-=dt; dirty=true; } }
-  if(pops.length||booms.length||reveal) dirty=true;
+  if(pops.length||booms.length||reveal||loops.length||ann||S.evt) dirty=true;
   if(dirty){ dirty=false; draw(); }                                            /* a snack stop draws once and then the canvas rests */
   boardT-=dt; if(boardT<=0){ boardT=0.25; board(); hud(); }
   requestAnimationFrame(frame); }
 
 /* ================= START / END ================= */
-$('sn-step1').textContent='Answer '+NEED+' questions before every slither (and more any time: press Enter). Right answers fill your boost. Wrong ones fill nothing, so don’t guess.';
+$('sn-step1').textContent='Answer questions for energy and cash. Slithering uses energy. When it runs out, you stop here, safe.';
 $('sn-nameinput').addEventListener('input',function(){ $('sn-go-start').disabled=!this.value.trim(); });
 $('sn-nameinput').addEventListener('keydown',function(e){ if(e.key==='Enter'&&this.value.trim()){ e.preventDefault(); e.stopPropagation(); $('sn-go-start').click(); } });
 $('sn-go-start').addEventListener('click',function(){ var n=$('sn-nameinput').value.trim(); if(!n) return; ac(); jingle(); S.name=n; S.started=true; $('sn-start').hidden=true;
@@ -862,13 +986,13 @@ $('sn-go-start').addEventListener('click',function(){ var n=$('sn-nameinput').va
 function endRun(){ S.over=true; S.phase='over'; clearTimeout(nextT); KD={}; $('sn-stop').hidden=true; save(); hud(); showEnd(true); }
 function showEnd(celebrate){ $('sn-endname').textContent=S.name; $('sn-endscore').textContent=Math.floor(S.score).toLocaleString();
   var acc0=S.answered?Math.round(100*S.correct/S.answered):0;
-  $('sn-endstats').innerHTML=[['Correct',S.correct+' / '+S.answered],['Accuracy',acc0+'%'],['Best streak',S.best],['Takedowns',S.takedowns],['Longest',S.longest]].map(function(a){ return '<div class="sn-stat"><div class="l">'+a[0]+'</div><div class="v">'+a[1]+'</div></div>'; }).join('');
+  $('sn-endstats').innerHTML=[['Correct',S.correct+' / '+S.answered],['Accuracy',acc0+'%'],['Best streak',S.best],['Takedowns',S.takedowns],['Goals',S.goals]].map(function(a){ return '<div class="sn-stat"><div class="l">'+a[0]+'</div><div class="v">'+a[1]+'</div></div>'; }).join('');
   $('sn-endtopics').innerHTML=Object.keys(S.topics).map(function(k){ var t=S.topics[k]; return '<div class="sn-stat"><div class="l">'+k+'</div><div class="v">'+t[0]+' / '+t[1]+'</div></div>'; }).join('');
   /* LEADERBOARD HOOK: the shared score code (scorecode.js) shows the student's code here */
   if(window.SpitzCode&&SpitzCode.show) try{ SpitzCode.show('sn','snake_arena',S); }catch(e){}
   $('sn-end').hidden=false; if(celebrate){ SND.win(); [0,350,700,1100].forEach(function(ms,i){ setTimeout(function(){ confetti(200+i*500,1070,90,1.3); confetti(1720-i*500,1070,90,1.3); },ms); }); } }
 var armT=0; $('sn-again').addEventListener('click',function(){ var b=this; if(!b.classList.contains('arm')){ b.classList.add('arm'); b.textContent='Tap again to start over'; clearTimeout(armT); armT=setTimeout(function(){ b.classList.remove('arm'); b.textContent='Play again'; },3000); return; }
-  b.classList.remove('arm'); b.textContent='Play again'; var keepName=S.name; S=fresh(); S.name=keepName; pops=[]; booms=[]; reveal=null; last={}; lastG=-1;
+  b.classList.remove('arm'); b.textContent='Play again'; var keepName=S.name; S=fresh(); S.name=keepName; pops=[]; booms=[]; loops=[]; ann=null; lassoCD=0; reveal=null; last={}; lastG=-1;
   $('sn-end').hidden=true; $('sn-start').hidden=false; $('sn-nameinput').value=keepName; $('sn-go-start').disabled=!keepName; save(); hud(); clockDraw(); dirty=true;
   $('sn-choices').innerHTML=''; $('sn-prompt').innerHTML=''; $('sn-visual').innerHTML=''; });
 
@@ -937,7 +1061,8 @@ if(document.fonts&&document.fonts.ready) document.fonts.ready.then(function(){ d
 window.__G={ state:function(){ return S; }, me:me, answer:answer, next:function(){ return QS.next(); }, showQ:showQ, openStop:openStop, leaveStop:leaveStop, canGo:canGo, goLive:goLive,
   step:step, sim:function(sec,fn){ for(var i=0;i<sec*60;i++){ if(fn) fn(); if(S.phase!=='live') break; step(STEP); } return S; }, die:die, rad:rad, blocked:blocked, U:U, hud:hud, board:board,
   keys:function(){ return KD; }, ctrl:function(){ return ctrl; }, cam:function(){ return cam; }, draw:draw, openEgg:openEgg, openShop:openShop, spawnMe:spawnMe,
-  end:function(){ S.clock=0.01; }, rscap:function(){ return RSCAP; }, set:QS?QS.set:null, fast:FAST, NEED:NEED, R:R, RS:function(){ return RS; } };
+  end:function(){ S.clock=0.01; }, rscap:function(){ return RSCAP; }, closeLoop:closeLoop, lasso:lasso, inPoly:inPoly, startEvent:startEvent, endEvent:endEvent, EVENTS:EVENTS, GOALS:GOALS, goalNow:goalNow,
+  wantedStep:wantedStep, fresh:fresh, loops:function(){ return loops; }, PTS:PTS, ringR:ringR, consts:{CRUISE:CRUISE,BDRAIN:BDRAIN,LOWEN:LOWEN,LASSO_MIN:LASSO_MIN}, emptyNow:function(){ return wantEmpty; }, set:QS?QS.set:null, fast:FAST, NEED:NEED, R:R, RS:function(){ return RS; } };
 window.__verify=function(n){ var bad=[], i; for(i=0;i<n;i++){ var q=QS.next(), ok=q.choices.filter(function(c){ return c.ok; });
     if(ok.length!==1) bad.push(['not one right',q.prompt]); if(new Set(q.choices.map(function(c){ return c.html; })).size!==4) bad.push(['repeat labels',q.prompt]);
     q.choices.forEach(function(c){ if(!c.ok&&!c.why) bad.push(['no why',q.prompt]); }); }
