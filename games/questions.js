@@ -944,6 +944,79 @@ function makeStdForm(PFX){
       shuffle(q.choices); q.visual=''; delete q.check; return q; } throw new Error('generator failed: '+type); }
   return { build:build }; }
 
+function makeSlideSlice(PFX){
+  /* ================= QUESTION GENERATOR: Slide and Slice =================
+     Standard form Ax + By = C to slope-intercept form. Slide: move the x term across (By = −Ax + C).
+     Slice: divide everything by B (y = −A/B x + C/B). Every line has gcd(A, B) = 1, A > 0 and a whole-number b.
+     The checks plug points back into the standard form equation, separate from how the answer was made. */
+  var MINUS='−';
+  function gcd(a,b){ a=Math.abs(a); b=Math.abs(b); while(b){ var t=a%b; a=b; b=t; } return a; }
+  function R(n,d){ if(d<0){ n=-n; d=-d; } var g=gcd(n,d)||1; return {n:n/g,d:d/g}; }
+  function ri(a,b){ return a+Math.floor(Math.random()*(b-a+1)); }
+  function nz(a,b){ var v; do{ v=ri(a,b); }while(v===0); return v; }
+  function shuffle(a){ for(var i=a.length-1;i>0;i--){ var j=Math.floor(Math.random()*(i+1)), t=a[i]; a[i]=a[j]; a[j]=t; } return a; }
+  function num(n){ return n<0? MINUS+(-n) : ''+n; }
+  function frac(n,d){ return '<span class="'+PFX+'-fr"><span>'+n+'</span><span>'+d+'</span></span>'; }
+  function fmtR(r){ if(r.d===1) return num(r.n); return (r.n<0?MINUS:'')+frac(Math.abs(r.n),r.d); }
+  function rEq(a,b){ return a.n*b.d===b.n*a.d; }
+  function sgn(v){ return v>0? ' + '+v : v<0? ' '+MINUS+' '+(-v) : ''; }
+  function term(a,v){ return a===1? v : a===-1? MINUS+v : num(a)+v; }
+  function coefR(r,v){ if(r.d===1) return term(r.n,v); return fmtR(r)+v; }
+  function eq(h){ return '<span class="'+PFX+'-eq">'+h+'</span>'; }
+  function std(L){ return term(L.A,'x')+(L.B<0? ' '+MINUS+' ' : ' + ')+term(Math.abs(L.B),'y')+' = '+num(L.C); }
+  function expr(k,c){ return term(k,'x')+sgn(c); }                        /* −3x + 15 */
+  function yeq(m,b){ return 'y = '+coefR(m,'x')+sgn(b); }                  /* y = −3/5x + 3 */
+  function C(html,val,why){ return {html:html,val:val,why:why||'',key:html}; }
+  /* A > 0, gcd(A, B) = 1, C a multiple of B so b is whole */
+  function line(minB){ var A=ri(1,8), B=nz(-6,6), b=nz(-8,8); if(Math.abs(B)<minB||gcd(A,B)!==1) return null;
+    return {A:A,B:B,C:B*b,b:b,m:R(-A,B)}; }
+  /* (m, b) is right when (0, b) and (1, m + b) both satisfy Ax + By = C */
+  function fits(L,v){ return L.B*v.b===L.C && L.A*v.m.d+L.B*(v.m.n+v.b*v.m.d)===L.C*v.m.d; }
+  function YC(m,b,why){ return C(yeq(m,b),{m:m,b:b},why); }
+  var GEN={
+  ssSlide:function(){ var L=line(2); if(!L) return null; var A=L.A, B=L.B, c=L.C;
+    var By=term(B,'y');
+    return { topic:'Slide', prompt:'Slide the x term over. '+eq(std(L))+' becomes '+eq(By+' = ?'), data:L,
+      check:function(v){ return v.k+A===0 && v.c===c; },                                            /* Ax + (kx + c) = C for every x */
+      choices:[C(expr(-A,c),{k:-A,c:c}), C(expr(A,c),{k:A,c:c},'Sliding across the = changes the sign: '+term(A,'x')+' becomes '+term(-A,'x')+'.'),
+        C(expr(-A,-c),{k:-A,c:-c},'Only the x term moves. '+num(c)+' stays as it is.'), C(expr(A,-c),{k:A,c:-c},'Only the x term changes sign.')],
+      explain:'Subtract '+term(A,'x')+' from both sides: <span class="c-ans">'+By+' = '+expr(-A,c)+'</span>.' }; },
+  ssSlice:function(){ var L=line(2); if(!L) return null; var A=L.A, B=L.B, c=L.C, m=L.m, b=L.b;
+    var By=term(B,'y'), wrong=[YC(m,c,'Slice everything: divide '+num(c)+' by '+num(B)+' too.'), YC(R(-A,1),b,'Slice everything: divide '+term(-A,'x')+' by '+num(B)+' too.')];
+    if(B<0) wrong.push(YC(R(-A,-B),-b,'Divide by '+num(B)+', sign and all.')); else wrong.push(YC(R(A,B),b,'Check the sign of the x term.'));
+    wrong.push(YC(R(B,-A),b,'Divide by '+num(B)+'. It goes on the bottom.'));
+    return { topic:'Slice', prompt:'Slice: divide by '+num(B)+'. '+eq(By+' = '+expr(-A,c))+' becomes', data:L,
+      check:function(v){ return fits(L,v); },
+      choices:[YC(m,b)].concat(shuffle(wrong)),
+      explain:'Divide every term by '+num(B)+': <span class="c-ans">'+yeq(m,b)+'</span>.' }; },
+  ssBoth:function(){ var L=line(1); if(!L) return null; var A=L.A, B=L.B, c=L.C, m=L.m, b=L.b;
+    var wrong=[YC(R(A,B),b,'Sliding '+term(A,'x')+' across makes it '+term(-A,'x')+'.'), YC(R(B,-A),b,'Divide by '+num(B)+', the number with y.')];
+    if(Math.abs(B)!==1) wrong.push(YC(m,c,'Slice everything: divide '+num(c)+' by '+num(B)+' too.'));
+    wrong.push(YC(m,-b,'Check the sign of b.'));
+    var steps= Math.abs(B)===1&&B===1? 'Slide: <span class="c-ans">'+yeq(m,b)+'</span>.' :
+      'Slide: '+term(B,'y')+' = '+expr(-A,c)+'. Slice by '+num(B)+': <span class="c-ans">'+yeq(m,b)+'</span>.';
+    return { topic:'Both steps', prompt:'Write '+eq(std(L))+' in slope-intercept form.', data:L,
+      check:function(v){ return fits(L,v); },
+      choices:[YC(m,b)].concat(shuffle(wrong)),
+      explain:steps }; },
+  ssSlope:function(){ var L=line(1); if(!L) return null; var A=L.A, B=L.B, c=L.C, m=L.m, b=L.b; if(m.d===1&&Math.abs(m.n)===Math.abs(b)) return null;
+    function M(r,why){ return C(fmtR(r),r,why); }
+    var wrong=[M(R(A,B),'Sliding '+term(A,'x')+' across changes its sign.'), M(R(-B,A),'That is upside down. Divide by '+num(B)+', the number with y.'), M(R(b,1),'That is b, the y-intercept.')];
+    if(Math.abs(A)!==Math.abs(B)) wrong.push(M(R(B,A),'Upside down and the wrong sign.'));
+    return { topic:'Find the slope', prompt:'What is the <span class="c-m">slope</span> of '+eq(std(L))+'?', data:L,
+      check:function(v){ return rEq(v,R((c-A*B)-c,B*B)); },                                          /* from (0, C/B) to (B, (C − AB)/B) */
+      choices:[M(m)].concat(wrong),
+      explain:'Slide and slice: '+yeq(m,b)+', so the slope is <span class="c-ans">'+fmtR(m)+'</span>.' }; }
+  };
+  function build(type){ for(var tries=0;tries<400;tries++){ var q=GEN[type](); if(!q) continue;
+      var seen={}; q.choices=q.choices.filter(function(c){ if(seen[c.key]) return false; seen[c.key]=1; return true; }).slice(0,4);
+      if(q.choices.length!==4) continue;
+      if(!q.check(q.choices[0].val)) continue;                                                  // the answer must pass the independent check
+      if(q.choices.slice(1).some(function(c){ return q.check(c.val); })) continue;              // and no distractor may pass it
+      q.type=type; q.choices.forEach(function(c,i){ c.ok=i===0; });
+      shuffle(q.choices); q.visual=''; delete q.check; return q; } throw new Error('generator failed: '+type); }
+  return { build:build }; }
+
 var SETS={
   mult:{ name:'Multiplication facts', make:makeMult, big:true, topics:[['f03','Facts 0–3',['Facts 0–3'],1],['f46','Facts 4–6',['Facts 4–6'],2],['f79','Facts 7–9',['Facts 7–9'],3],['f1012','Facts 10–12',['Facts 10–12'],2]] },
   slope:{ name:'Slope-intercept form', make:makeLinear, topics:[['write','Write the equation',['siBuild']],['slope','Find the slope',['siSlope']],['yint','Find the y-intercept',['siYInt']],['graph','Read a graph',['graphSlope','graphYInt','graphXInt']]] },
@@ -957,7 +1030,8 @@ var SETS={
   plot:{ name:'Graphing y = mx + b', make:makePlotB, topics:[['match','Pick the line',['plotMatch']],['eq','Write the equation',['plotEq']]] },
   fam:{ name:'Function families', make:makeFam, topics:[['eq','From the equation',['famEq']],['graph','From the graph',['famGraph']]] },
   fslope:{ name:'Finding slope', make:makeFindSlope, topics:[['pts','From two points',['fsPoints']],['graph','From a graph',['fsGraph']],['table','From a table',['fsTable']],['eq','From an equation',['fsEq']]] },
-  stdform:{ name:'Standard form', make:makeStdForm, topics:[['x','x-intercept',['sfX']],['y','y-intercept',['sfY']]] }
+  stdform:{ name:'Standard form', make:makeStdForm, topics:[['x','x-intercept',['sfX']],['y','y-intercept',['sfY']]] },
+  slide:{ name:'Slide and Slice', make:makeSlideSlice, topics:[['slide','Slide',['ssSlide']],['slice','Slice',['ssSlice']],['both','Both steps',['ssBoth']],['slope','Find the slope',['ssSlope']]] }
 };
 
 /* Sets students can't pick right now (Kody, 2026-10-19: students picked multiplication because it's easy). Empty HIDDEN to bring it back

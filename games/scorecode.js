@@ -37,17 +37,17 @@ var GAMES={                     /* id: [number in the code, display name, how it
 };
 /* question sets in the order questions.js lists them; 0 means the game's own questions. Add new sets at the end.
    New codes have 4 bits for the set, so up to 15 sets fit. */
-var SETS=[null,'mult','slope','point','hoy','shift','func','int','sq','plot0','plot','fam','fslope','stdform'];
-var SET_NAMES={ mult:'Multiplication facts', slope:'Slope-intercept form', point:'Point-slope form', hoy:'HOY & VUX', shift:'Linear transformations', func:'Functions', int:'Integers', sq:'Squares & roots', plot0:'Graphing y = mx', plot:'Graphing y = mx + b', fam:'Function families', fslope:'Finding slope', stdform:'Standard form' };
+var SETS=[null,'mult','slope','point','hoy','shift','func','int','sq','plot0','plot','fam','fslope','stdform','slide'];
+var SET_NAMES={ mult:'Multiplication facts', slope:'Slope-intercept form', point:'Point-slope form', hoy:'HOY & VUX', shift:'Linear transformations', func:'Functions', int:'Integers', sq:'Squares & roots', plot0:'Graphing y = mx', plot:'Graphing y = mx + b', fam:'Function families', fslope:'Finding slope', stdform:'Standard form', slide:'Slide and Slice' };
 /* SET_TOPICS = topics on offer now. A topic's bit is its position, so never reorder; a dropped topic keeps its slot in TOPIC_NAMES
    (graphing's 'Plot it' and 'Points on the line', dropped Oct 10 2026) so older codes still name it. */
-var SET_TOPICS={ mult:['f03','f46','f79','f1012'], slope:['write','slope','yint','graph'], point:['write','point','slope'], hoy:['describe','graph','slope'], shift:['vs','hs','gr','ne'], func:['points','table','map','graph'], int:['add','sub','mult'], sq:['square','root','neg','est'], plot0:['match','eq'], plot:['match','eq'], fam:['eq','graph'], fslope:['pts','graph','table','eq'], stdform:['x','y'] };
+var SET_TOPICS={ mult:['f03','f46','f79','f1012'], slope:['write','slope','yint','graph'], point:['write','point','slope'], hoy:['describe','graph','slope'], shift:['vs','hs','gr','ne'], func:['points','table','map','graph'], int:['add','sub','mult'], sq:['square','root','neg','est'], plot0:['match','eq'], plot:['match','eq'], fam:['eq','graph'], fslope:['pts','graph','table','eq'], stdform:['x','y'], slide:['slide','slice','both','slope'] };
 var TOPIC_NAMES={ mult:['Facts 0–3','Facts 4–6','Facts 7–9','Facts 10–12'], slope:['Write the equation','Find the slope','Find the y-intercept','Read a graph'],
   point:['Write the equation','Find the point','Find the slope'], hoy:['Describe the line','Match the graph','Find the slope'], shift:['Vertical shifts','Horizontal shifts','Graphs','New equations'],
   func:['Ordered pairs','Tables','Mapping diagrams','Graphs'], int:['Adding','Subtracting','Multiplying'],
   sq:['Squaring','Square roots','Negatives','Estimating roots'],
   plot0:['Pick the line','Write the equation','Plot it','Points on the line'], plot:['Pick the line','Write the equation','Plot it','Points on the line'],
-  fam:['From the equation','From the graph'], fslope:['From two points','From a graph','From a table','From an equation'], stdform:['x-intercept','y-intercept'] };
+  fam:['From the equation','From the graph'], fslope:['From two points','From a graph','From a table','From an equation'], stdform:['x-intercept','y-intercept'], slide:['Slide','Slice','Both steps','Find the slope'] };
 
 /* Google Form for score submissions. With only url, the button copies the code and opens the form.
    Add the entry.NNNN ids of the Name and Score code questions (from a pre-filled link) to fill both in for the student. */
