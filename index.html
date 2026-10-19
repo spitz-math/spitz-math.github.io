@@ -139,7 +139,7 @@ a.play[aria-disabled="true"]{ opacity:.4; pointer-events:none; }
 var GAMES=window.SpitzGames;
 var SETS=[
   {id:'mult',name:'Multiplication facts',unit:'Times tables 0–12',topics:[['f03','Facts 0–3'],['f46','Facts 4–6'],['f79','Facts 7–9'],['f1012','Facts 10–12']]},
-  {id:'slope',name:'Slope-intercept form',unit:'y = mx + b',topics:[['write','Write the equation'],['slope','Find the slope'],['yint','Find the y-intercept'],['graph','Read a graph']]},
+  {id:'slope',name:'Slope-intercept form',unit:'y = mx + b',topics:[['write','Write the equation'],['slope','Find slope or y-intercept'],['graph','Read a graph']]},
   {id:'point',name:'Point-slope form',unit:'y − y₁ = m(x − x₁)',topics:[['write','Write the equation'],['point','Find the point'],['slope','Find the slope']]},
   {id:'hoy',name:'HOY & VUX',unit:'Horizontal and vertical lines',topics:[['describe','Describe the line'],['graph','Match the graph'],['slope','Find the slope']]},
   {id:'shift',name:'Linear transformations',unit:'Translating lines',topics:[['vs','Vertical shifts'],['hs','Horizontal shifts'],['gr','Graphs'],['ne','New equations']]},
@@ -157,7 +157,9 @@ var SETS=[
 var HIDE=['mult']; SETS=SETS.filter(function(x){ return HIDE.indexOf(x.id)<0; });
 var st={game:null,set:SETS[0].id,t:{}};
 SETS.forEach(function(x){ st.t[x.id]=x.topics.map(function(t){ return t[0]; }); });
-try{ var sv=JSON.parse(localStorage.getItem('spitz_hub2')||'null'); if(sv&&sv.t) SETS.forEach(function(x){ if(sv.t[x.id]) st.t[x.id]=sv.t[x.id].filter(function(t){ return x.topics.some(function(y){ return y[0]===t; }); }); }), st.game=sv.game||null, st.set=sv.set||SETS[0].id; }catch(e){}
+/* retired topic ids in saved picks: slope's 'yint' merged into 'slope' (Kody, 2026-10-19) */
+var ALIAS={ slope:{ yint:'slope' } };
+try{ var sv=JSON.parse(localStorage.getItem('spitz_hub2')||'null'); if(sv&&sv.t) SETS.forEach(function(x){ if(sv.t[x.id]) st.t[x.id]=sv.t[x.id].map(function(t){ return (ALIAS[x.id]||{})[t]||t; }).filter(function(t,i,a){ return a.indexOf(t)===i; }).filter(function(t){ return x.topics.some(function(y){ return y[0]===t; }); }); }), st.game=sv.game||null, st.set=sv.set||SETS[0].id; }catch(e){}
 if(!SETS.some(function(x){ return x.id===st.set; })) st.set=SETS[0].id;
 function $(i){ return document.getElementById(i); }
 function save(){ try{ localStorage.setItem('spitz_hub2',JSON.stringify(st)); }catch(e){} }

@@ -40,9 +40,14 @@ var GAMES={                     /* id: [number in the code, display name, how it
 var SETS=[null,'mult','slope','point','hoy','shift','func','int','sq','plot0','plot','fam','fslope','stdform','slide'];
 var SET_NAMES={ mult:'Multiplication facts', slope:'Slope-intercept form', point:'Point-slope form', hoy:'HOY & VUX', shift:'Linear transformations', func:'Functions', int:'Integers', sq:'Squares & roots', plot0:'Graphing y = mx', plot:'Graphing y = mx + b', fam:'Function families', fslope:'Finding slope', stdform:'Standard form', slide:'Slide and Slice' };
 /* SET_TOPICS = topics on offer now. A topic's bit is its position, so never reorder; a dropped topic keeps its slot in TOPIC_NAMES
-   (graphing's 'Plot it' and 'Points on the line', dropped Oct 10 2026) so older codes still name it. */
-var SET_TOPICS={ mult:['f03','f46','f79','f1012'], slope:['write','slope','yint','graph'], point:['write','point','slope'], hoy:['describe','graph','slope'], shift:['vs','hs','gr','ne'], func:['points','table','map','graph'], int:['add','sub','mult'], sq:['square','root','neg','est'], plot0:['match','eq'], plot:['match','eq'], fam:['eq','graph'], fslope:['pts','graph','table','eq'], stdform:['x','y'], slide:['slide','slice','both','slope'] };
-var TOPIC_NAMES={ mult:['Facts 0–3','Facts 4–6','Facts 7–9','Facts 10–12'], slope:['Write the equation','Find the slope','Find the y-intercept','Read a graph'],
+   (graphing's 'Plot it' and 'Points on the line', dropped Oct 10 2026) so older codes still name it. A dropped topic in the middle is null in
+   SET_TOPICS (slope's 'yint', merged into 'slope' Oct 19 2026: bit 1 is now "Find slope or y-intercept", bit 2 only appears in older codes).
+   TOPIC_ALIAS maps a retired topic id in an old link to the topic that replaced it. */
+var TOPIC_ALIAS={ slope:{ yint:'slope' } };
+/* codes made before a topic change read with the names and topics on offer then */
+var TOPIC_BEFORE={ slope:{ until:'2026-10-19', names:['Write the equation','Find the slope','Find the y-intercept','Read a graph'], topics:['write','slope','yint','graph'] } };
+var SET_TOPICS={ mult:['f03','f46','f79','f1012'], slope:['write','slope',null,'graph'], point:['write','point','slope'], hoy:['describe','graph','slope'], shift:['vs','hs','gr','ne'], func:['points','table','map','graph'], int:['add','sub','mult'], sq:['square','root','neg','est'], plot0:['match','eq'], plot:['match','eq'], fam:['eq','graph'], fslope:['pts','graph','table','eq'], stdform:['x','y'], slide:['slide','slice','both','slope'] };
+var TOPIC_NAMES={ mult:['Facts 0–3','Facts 4–6','Facts 7–9','Facts 10–12'], slope:['Write the equation','Find slope or y-intercept','Find the y-intercept','Read a graph'],
   point:['Write the equation','Find the point','Find the slope'], hoy:['Describe the line','Match the graph','Find the slope'], shift:['Vertical shifts','Horizontal shifts','Graphs','New equations'],
   func:['Ordered pairs','Tables','Mapping diagrams','Graphs'], int:['Adding','Subtracting','Multiplying'],
   sq:['Squaring','Square roots','Negatives','Estimating roots'],
@@ -78,8 +83,9 @@ function encode(f,name,salt){ var P=pack(f,LAYOUT_B), c=check(P,name,salt), full
 /* the hub link names the set and topics; no link means the game's own questions */
 function linkSet(){ var q={}; try{ (location.search||'').replace(/^\?/,'').split('&').forEach(function(kv){ var p=kv.split('='); if(p[0]) q[p[0]]=decodeURIComponent(p[1]||''); }); }catch(e){}
   var set=SETS.indexOf(q.set); if(set<1) return {set:0,topics:0};
-  var all=SET_TOPICS[q.set], want=(q.topics||'').split(','), m=0; all.forEach(function(t,i){ if(want.indexOf(t)>=0) m|=1<<i; });
-  if(m===(1<<all.length)-1) m=0;                                     /* every topic = 0, same as none picked */
+  var all=SET_TOPICS[q.set], al=TOPIC_ALIAS[q.set]||{}, want=(q.topics||'').split(',').map(function(t){ return al[t]||t; }), m=0, full=0;
+  all.forEach(function(t,i){ if(!t) return; full|=1<<i; if(want.indexOf(t)>=0) m|=1<<i; });
+  if(m===full) m=0;                                     /* every topic = 0, same as none picked */
   return {set:set,topics:m}; }
 
 var RUDE=/FUCK|FUK|FCK|CUNT|SHT|ASS|FAG|CUM|DCK|DICK|PUSS|PNS|PENS|TWAT|SLUT|WHR|NGA|NGR|NAZ|KKK|RAPE|SEX|SXY|XXX|TTS|TTY|CLT|DYKE|GAY|HTLR|PUTA|CRAP|DAMN|HELL|BUTT|PEE|POOP/;
@@ -99,8 +105,9 @@ function read(code,name,any){ var c=String(code||'').toUpperCase().replace(/[^A-
   if(!id||f.set>=SETS.length||f.correct>f.answered) return null;
   var g=GAMES[id], set=SETS[f.set], r={ code:c.slice(0,4)+'-'+c.slice(4,8)+'-'+c.slice(8,12)+'-'+c.slice(12), game:id, gameName:g[1], kind:g[2],
     set:set||'', setName:set?SET_NAMES[set]:'Game’s own questions', topics:[], len:f.len, correct:f.correct, answered:f.answered };
-  if(set){ var names=TOPIC_NAMES[set]; r.topics=f.topics? names.filter(function(n,i){ return f.topics&(1<<i); }) : names.slice(0,SET_TOPICS[set].length); r.allTopics=!f.topics; }
+  if(set){ var names=TOPIC_NAMES[set]; r.topics=f.topics? names.filter(function(n,i){ return f.topics&(1<<i); }) : names.filter(function(n,i){ return !!SET_TOPICS[set][i]; }); r.allTopics=!f.topics; }
   var d=f.day, wrap=1<<W.day, now=today(); while(d+wrap<=now) d+=wrap; r.date=new Date(BASE+d*864e5); r.day=d;
+  var old=set&&TOPIC_BEFORE[set]; if(old&&r.date<new Date(old.until+'T00:00:00Z')) r.topics=f.topics? old.names.filter(function(n,i){ return f.topics&(1<<i); }) : old.names.filter(function(n,i){ return !!old.topics[i]; });
   if(g[2]==='versus'){ r.buds=f.score>>10; r.rivals=f.score&1023; r.score=r.buds-r.rivals; r.display=r.buds+' – '+r.rivals; }
   else { r.score=f.score; r.display=f.score.toLocaleString(); }
   return r; }

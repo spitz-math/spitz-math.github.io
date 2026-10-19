@@ -1,6 +1,6 @@
 /* Spitz Arcade shared question sets.
    Every solo game loads this file. A game asks SpitzQ.forGame(prefix) for its questions,
-   and the hub link picks the set and topics:  game.html?set=slope&topics=write,yint
+   and the hub link picks the set and topics:  game.html?set=slope&topics=write,slope
    The first five sets started as the generator code in Hoop Buds, Splat Range and Shift Racer (now kept in tools/sets/).
    Every answer is checked independently before it is shown. */
 (function(){
@@ -1019,7 +1019,8 @@ function makeSlideSlice(PFX){
 
 var SETS={
   mult:{ name:'Multiplication facts', make:makeMult, big:true, topics:[['f03','Facts 0–3',['Facts 0–3'],1],['f46','Facts 4–6',['Facts 4–6'],2],['f79','Facts 7–9',['Facts 7–9'],3],['f1012','Facts 10–12',['Facts 10–12'],2]] },
-  slope:{ name:'Slope-intercept form', make:makeLinear, topics:[['write','Write the equation',['siBuild']],['slope','Find the slope',['siSlope']],['yint','Find the y-intercept',['siYInt']],['graph','Read a graph',['graphSlope','graphYInt','graphXInt']]] },
+  /* 'yint' was its own topic until 2026-10-19, when Kody merged it into 'slope'; alias keeps old links and saves working */
+  slope:{ name:'Slope-intercept form', make:makeLinear, alias:{yint:'slope'}, topics:[['write','Write the equation',['siBuild']],['slope','Find slope or y-intercept',['siSlope','siYInt']],['graph','Read a graph',['graphSlope','graphYInt','graphXInt']]] },
   point:{ name:'Point-slope form', make:makeLinear, topics:[['write','Write the equation',['psWrite']],['point','Find the point',['psPoint']],['slope','Find the slope',['psSlope']]] },
   hoy:{ name:'HOY & VUX', make:makeLinear, topics:[['describe','Describe the line',['hvType']],['graph','Match the graph',['hvGraph']],['slope','Find the slope',['slopeHV']]] },
   shift:{ name:'Linear transformations', make:makeShift, topics:[['vs','Vertical shifts',['vDescribe','vWrite','newYInt']],['hs','Horizontal shifts',['hDescribe','hWrite']],['gr','Graphs',['graphEq','graphHow','graphH']],['ne','New equations',['eqV','eqH','eqCompare','slopeStays']]] },
@@ -1047,7 +1048,7 @@ function params(){ var qs={}; try{ (location.search||'').replace(/^\?/,'').split
 /* Returns null when the link names no set, so a game opened on its own plays exactly as it always has. */
 function forGame(PFX){
   var qs=params(), id=qs.set; if(!SETS[id]) return null;
-  var set=SETS[id], want=(qs.topics||'').split(','), picked=set.topics.filter(function(t){ return want.indexOf(t[0])>=0; });
+  var set=SETS[id], want=(qs.topics||'').split(',').map(function(t){ return set.alias&&set.alias[t]||t; }), picked=set.topics.filter(function(t){ return want.indexOf(t[0])>=0; });
   if(!picked.length) picked=set.topics;
   /* sentence-length prompts: the facts games set their prompt at 104px on one line, so give it room to wrap (big sets keep the one-line prompt) */
   if(!set.big){ try{ var st=document.createElement('style'); st.textContent='.'+PFX+'-prompt{ font:700 36px/1.3 var(--body) !important; height:auto !important; min-height:96px; white-space:normal !important; overflow:visible !important; text-align:left !important; }'; document.head.appendChild(st); }catch(e){} }
