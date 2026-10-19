@@ -960,6 +960,13 @@ var SETS={
   stdform:{ name:'Standard form', make:makeStdForm, topics:[['x','x-intercept',['sfX']],['y','y-intercept',['sfY']]] }
 };
 
+/* Sets students can't pick right now (Kody, 2026-10-19: students picked multiplication because it's easy). Empty HIDDEN to bring it back
+   (index.html has the same list). A link with a hidden set, or with no set at all (most games' own questions are multiplication facts),
+   is turned into a FALLBACK link before the game reads it, so the game, its save slot and its score code all agree. */
+var HIDDEN=['mult'], FALLBACK='slope';
+(function(){ var qs=params(); if(SETS[qs.set]&&HIDDEN.indexOf(qs.set)<0) return;
+  try{ history.replaceState(history.state,'',location.pathname+'?set='+FALLBACK+location.hash); }catch(e){} })();
+
 function plain(h){ return String(h).replace(/<span class="[a-z]+-fr"><span>(.*?)<\/span><span>(.*?)<\/span><\/span>/g,'$1/$2').replace(/<[^>]+>/g,''); }
 function params(){ var qs={}; try{ (location.search||'').replace(/^\?/,'').split('&').forEach(function(kv){ var p=kv.split('='); if(p[0]) qs[decodeURIComponent(p[0])]=decodeURIComponent(p[1]||''); }); }catch(e){} return qs; }
 

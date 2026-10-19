@@ -143,9 +143,12 @@ var SETS=[
   {id:'fslope',name:'Finding slope',unit:'Rise over run',topics:[['pts','From two points'],['graph','From a graph'],['table','From a table'],['eq','From an equation']]},
   {id:'stdform',name:'Standard form',unit:'Cover-up method',topics:[['x','x-intercept'],['y','y-intercept']]}
 ];
-var st={game:null,set:'mult',t:{}};
+/* Sets students can't pick right now (Kody, 2026-10-19: students picked multiplication because it's easy). Empty HIDE to bring it back; games/questions.js has the same list. */
+var HIDE=['mult']; SETS=SETS.filter(function(x){ return HIDE.indexOf(x.id)<0; });
+var st={game:null,set:SETS[0].id,t:{}};
 SETS.forEach(function(x){ st.t[x.id]=x.topics.map(function(t){ return t[0]; }); });
-try{ var sv=JSON.parse(localStorage.getItem('spitz_hub2')||'null'); if(sv&&sv.t) SETS.forEach(function(x){ if(sv.t[x.id]) st.t[x.id]=sv.t[x.id].filter(function(t){ return x.topics.some(function(y){ return y[0]===t; }); }); }), st.game=sv.game||null, st.set=sv.set||'mult'; }catch(e){}
+try{ var sv=JSON.parse(localStorage.getItem('spitz_hub2')||'null'); if(sv&&sv.t) SETS.forEach(function(x){ if(sv.t[x.id]) st.t[x.id]=sv.t[x.id].filter(function(t){ return x.topics.some(function(y){ return y[0]===t; }); }); }), st.game=sv.game||null, st.set=sv.set||SETS[0].id; }catch(e){}
+if(!SETS.some(function(x){ return x.id===st.set; })) st.set=SETS[0].id;
 function $(i){ return document.getElementById(i); }
 function save(){ try{ localStorage.setItem('spitz_hub2',JSON.stringify(st)); }catch(e){} }
 
