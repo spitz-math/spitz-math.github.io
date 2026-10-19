@@ -39,6 +39,14 @@ h2 .n{ font:800 14px/1 var(--body); background:var(--brand); color:var(--paper);
 .sets{ display:grid; grid-template-columns:repeat(auto-fit,minmax(280px,1fr)); gap:12px; }
 .set{ background:var(--panel); border:3px solid var(--line); border-radius:16px; padding:16px; display:flex; flex-direction:column; gap:12px; }
 .set.on{ border-color:var(--brand); }
+.skill{ display:flex; flex-wrap:wrap; align-items:center; gap:12px 18px; margin:0 0 16px; padding:16px 20px; border-radius:16px; background:linear-gradient(90deg,rgba(255,176,32,.16),rgba(255,176,32,.04)); border:3px solid var(--brand); }
+.skill[hidden]{ display:none; }
+.skill .lab{ font:400 14px/1 var(--display); letter-spacing:.06em; color:var(--brand); text-transform:uppercase; }
+.skill .note{ flex-basis:100%; margin:-4px 0 0; color:var(--ink); font-size:15px; }
+.skill button{ display:flex; flex-direction:column; align-items:flex-start; gap:2px; padding:10px 16px; border-radius:12px; border:2px solid var(--brand); background:var(--panel); color:var(--ink); font:800 16px/1.2 var(--body); cursor:pointer; text-align:left; }
+.skill button:hover,.skill button:focus-visible{ background:var(--brand); color:#111; }
+.skill button small{ font-weight:400; font-size:13px; opacity:.8; }
+.set .tag{ align-self:flex-start; padding:3px 8px; border-radius:99px; background:var(--brand); color:#111; font:800 11px/1 var(--body); letter-spacing:.08em; text-transform:uppercase; }
 .set label.head{ display:flex; gap:10px; align-items:center; font:800 18px/1.2 var(--body); cursor:pointer; }
 .set .unit{ color:var(--muted); font-size:13px; }
 .chips{ display:flex; flex-wrap:wrap; gap:8px; }
@@ -108,6 +116,7 @@ a.play[aria-disabled="true"]{ opacity:.4; pointer-events:none; }
 
   <section>
     <h2><span class="n">2</span>Pick your questions</h2>
+    <div class="skill" id="skill" hidden></div>
     <div class="sets" id="sets"></div>
   </section>
 
@@ -169,6 +178,18 @@ function render(){
   $('sumtxt').textContent=!g?'Pick a game':!ts.length?'Pick at least one topic':g.name+' · '+s.name+(ts.length<s.topics.length?' ('+ts.length+' of '+s.topics.length+' topics)':'');
 }
 $('games').addEventListener('click',function(e){ var b=e.target.closest('.game'); if(!b) return; st.game=b.dataset.g; save(); render(); });
+/* Suggested skill (Kody, 2026-10-19): Mr. Spitz points students at what to practice. List set ids from SETS above, and optionally
+   which topics, e.g. {id:'slide', topics:['both']}. An empty list hides the banner. note is an optional short line from Mr. Spitz. */
+var SKILL={ sets:[{id:'slide'},{id:'stdform'}], note:'' };
+(function(){ var list=SKILL.sets.map(function(k){ var s=SETS.filter(function(x){ return x.id===k.id; })[0]; return s&&{s:s,t:(k.topics||[]).filter(function(t){ return s.topics.some(function(y){ return y[0]===t; }); })}; }).filter(Boolean);
+  if(!list.length) return;
+  $('skill').innerHTML='<span class="lab">⭐ Suggested by Mr. Spitz</span>'+list.map(function(k,i){ var tn=k.t.map(function(t){ return k.s.topics.filter(function(y){ return y[0]===t; })[0][1]; });
+      return '<button data-k="'+i+'">'+k.s.name+'<small>'+(tn.length?tn.join(', '):k.s.unit)+'</small></button>'; }).join('')+(SKILL.note?'<p class="note">'+SKILL.note+'</p>':'');
+  $('skill').hidden=false;
+  list.slice().reverse().forEach(function(k){ var el=document.querySelector('.set[data-s="'+k.s.id+'"]'); if(el){ el.insertAdjacentHTML('afterbegin','<span class="tag">Suggested</span>'); $('sets').prepend(el); } });   /* suggested cards go first */
+  $('skill').addEventListener('click',function(e){ var b=e.target.closest('[data-k]'); if(!b) return; var k=list[+b.dataset.k];
+    st.set=k.s.id; st.t[k.s.id]=k.t.length?k.t.slice():k.s.topics.map(function(t){ return t[0]; }); save(); render(); });
+})();
 $('sets').addEventListener('change',function(e){ var el=e.target;
   if(el.type==='radio'){ st.set=el.value; }
   else { var a=st.t[el.dataset.s]; if(el.checked){ if(a.indexOf(el.value)<0) a.push(el.value); } else st.t[el.dataset.s]=a.filter(function(v){ return v!==el.value; }); st.set=el.dataset.s; }
