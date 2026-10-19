@@ -193,6 +193,9 @@ button:disabled{ cursor:default; }
 @keyframes szPulseO2{ 50%{ opacity:1; } }
 @keyframes szGlowO{ to{ opacity:1; } }
 /* ================= /PERF ================= */
+.mg-fire{ position:absolute; right:14px; top:10px; z-index:5; display:flex; align-items:center; gap:7px; padding:8px 16px; border-radius:999px; background:rgba(4,10,7,.84); border:2px solid #3A4A40; font:700 20px/1 var(--display); letter-spacing:.04em; color:#F2FBF6; pointer-events:none; }
+.mg-fire i{ width:14px; height:18px; border-radius:50% 50% 45% 45%/62% 62% 38% 38%; background:#3A4A40; } .mg-fire i.on{ background:#FF8A3D; } .mg-fire b{ margin-right:4px; }
+.mg-fire.hot{ border-color:#FF8A3D; color:#FFC08A; box-shadow:0 0 18px rgba(255,138,61,.45); }
 </style>
 </head>
 <body>
@@ -219,6 +222,7 @@ button:disabled{ cursor:default; }
       <div class="mg-course" id="mg-course">
         <canvas id="mg-canvas" width="1054" height="836" aria-label="Mini golf course. Click where the ball should stop, then hold Space, the spot or the Putt button to power up and let go to putt."></canvas>
         <div class="mg-buffs" id="mg-buffs"></div>
+        <div class="mg-fire" id="mg-fire"></div>
         <div class="mg-ss" id="mg-ss" hidden>
           <div class="mg-sshead">SLOPE SHOT · free putt</div>
           <div class="mg-ssq">Which slope runs straight from the ball to the cup?</div>
@@ -244,11 +248,11 @@ button:disabled{ cursor:default; }
 
   <div class="mg-over" id="mg-start"><div class="mg-box">
     <div class="sz-eyebrow">Spitz <b>Arcade</b></div><h2 class="mg-big"><b>MINI</b> <i>GOLF</i></h2>
-    <p class="mg-sub"><span class="sz-setname">Slope-intercept form.</span> You have 5 minutes: answer questions to earn golf balls, then sink your putts.</p>
+    <p class="mg-sub"><span class="sz-setname">Slope-intercept form.</span> You have 5 minutes: answer questions to earn golf balls, then take on a wild course of spinners, portals and black holes.</p>
     <div class="mg-steps">
       <div class="mg-step"><b>1. Answer</b>Each right answer earns golf balls and cash. A wrong answer costs a little cash and breaks your streak.</div>
-      <div class="mg-step"><b>2. Putt</b>Click where the ball should stop. Hold Space to power up and let go at 100%. Each putt uses 1 ball.</div>
-      <div class="mg-step"><b>3. Upgrade</b>Spend cash in the Pro Shop on more balls, a bigger cup, more points and power-ups.</div>
+      <div class="mg-step"><b>2. Putt</b>Click where the ball should stop, hold Space and let go at 100%. Bank shots, portals and coins earn bonus points.</div>
+      <div class="mg-step"><b>3. Get hot</b>Make par or better 3 holes in a row and you are ON FIRE: double points. Spend cash in the Pro Shop.</div>
     </div>
     <div class="mg-row"><input class="mg-input" id="mg-nameinput" maxlength="24" placeholder="First name + last initial" autocomplete="off" aria-label="Your name"><button class="sz-mus" id="sz-mus" aria-label="Music on or off, key N">♪ Music on</button></div>
     <button class="mg-go" id="mg-go" disabled>Start</button>
@@ -322,6 +326,10 @@ var SND={
   cash:function(){ tone(1568,1568,0,0.06,'triangle',0.1); tone(2093,2093,0.06,0.14,'triangle',0.09); },
   miss:function(){ tone(233,175,0.02,0.36,'triangle',0.18); },
   tick:function(){ tone(1200,1200,0,0.05,'triangle',0.1); },
+  trick:function(i){ var f=[C5,E5,G5,C6,E6][Math.min(i||0,4)]; tone(f,f,0,0.18,'triangle',0.1); tone(f*1.5,f*1.5,0.07,0.22,'sine',0.05); },
+  portal:function(){ tone(300,1400,0,0.22,'sine',0.12); tone(600,2400,0.04,0.18,'triangle',0.04); },
+  zip:function(){ tone(400,1100,0,0.16,'triangle',0.09); },
+  gone:function(){ tone(700,90,0,0.6,'sine',0.14); },
   slope:function(){ [C5,E5,G5,C6].forEach(function(f,i){ tone(f,f,i*0.08,0.16,'triangle',0.1); }); },
   final:function(){ [0,0.18,0.36].forEach(function(t){ brass(G5,t,0.12,0.12); }); brass(C6,0.54,0.5,0.13); },
   win:function(){ var t=0.1; [C5,E5,G5,C6].forEach(function(f,i){ tone(f,f,t+i*0.1,0.16,'triangle',0.11); });
@@ -424,31 +432,52 @@ function txtR(r){ return r.d===1? num(r.n) : num(r.n)+'/'+r.d; }
 function clamp(v,a,b){ return v<a?a:v>b?b:v; }
 
 /* ================= THE COURSE: holes on a grid (1 square = 1 unit; y counts down the screen) ================= */
-var GW=19, GH=15, UN=52, OX=33, OY=28, W=1054, H=836, BR=0.28, DT=1/240, FR=6.5, FR_SAND=30, CAP=7.5, MAXD=12;
+var GW=19, GH=15, UN=52, OX=33, OY=28, W=1054, H=836, BR=0.28, DT=1/240, FR=6.5, FR_SAND=30, FR_ICE=1.8, CAP=7.5, MAXD=12, VMAX=14, BAR=0.16;
 var BORDER=[[-3,-3,GW+6,3],[-3,GH,GW+6,3],[-3,-3,3,GH+6],[GW,-3,3,GH+6]];
-var HOLES=[
-  {name:'Opening Drive', par:2, tee:[3,11], cup:[13,5], bump:[[9,12,0.6],[16,10,0.6]], gems:[[6,4],[16,3]]},
-  {name:'The Wall', par:3, tee:[3,12], cup:[15,3], walls:[[8,5,1,10]], bump:[[13,9,0.6]], gems:[[4,2],[14,12]]},
-  {name:'Slope Shot', par:2, slope:{tee:[3,10]}, bump:[[17,2.5,0.6],[1.5,2.5,0.6]], gems:[[10,13.5]]},
-  {name:'The Slider', par:3, tee:[2,7], cup:[17,7], walls:[[6,0,7,4.5],[6,9.5,7,5.5]], slider:{r:[9,4.5,1,1.6], range:3.4, period:3.2}, gems:[[16,2],[16,12]]},
-  {name:'Sand Trap', par:3, tee:[2,2], cup:[16,12], sand:[[7,4,6,6]], bump:[[14,5,0.6],[4,12,0.6]], gems:[[10,13],[17,2]]},
-  {name:'Slope Shot', par:2, slope:{tee:[3,11]}, water:[[14,0,5,3.5]], gems:[[2,4]]},
-  {name:'The Bridge', par:3, tee:[2,7], cup:[17,7], water:[[6,0,7,6],[6,8,7,7]], gems:[[3,2],[16,12]]},
-  {name:'The Hill', par:3, tee:[2,3], cup:[17,3], hills:[{r:[5,0,9,15],p:[0,3]}], bump:[[9.5,11,0.7]], gems:[[9,7],[15,13]]},
-  {name:'Slope Shot', par:2, slope:{tee:[2,10]}, bump:[[17,13,0.6],[10,2.5,0.6]], gems:[[16,3]]}
+/* the hole pool. A run plays the Opening Drive first, then the rest in a shuffled order, with a Slope Shot every third hole.
+   Toys: spin = turning blades, portals = a pair (in at one, out the other at the same speed), boost = speed pads,
+   ice = slippery patches, wells = black holes that pull the ball in, slider = a block that slides up and down */
+var POOL=[
+  {name:'Opening Drive', theme:'grass', par:2, tee:[3,11], cup:[13,5], bump:[[9,12,0.6],[16,10,0.6]], coins:[[6,4],[16,3]], tip:'Click the cup, then hold Space'},
+  {name:'Portal Hop', theme:'space', par:3, tee:[2.5,12], cup:[16.5,3], walls:[[13,0,1,7.4],[13,7.4,6,1]], portals:[[6,4.5],[15,6.2]], coins:[[9,9],[3,3],[17.5,1]], tip:'In one portal, out the other'},
+  {name:'Bumper Alley', theme:'neon', par:3, tee:[2,12.5], cup:[16.5,2.5], bump:[[6,9.3,0.6],[9,6.2,0.6],[12.4,4,0.6],[8.4,11.4,0.6],[11.6,8.6,0.6],[14.6,6.6,0.6],[4.6,5.2,0.6],[15.6,11,0.6],[16.8,5.2,0.6]], coins:[[10.3,10.2],[7.4,3.4],[13.2,12.6]], tip:'Bank off the bumpers'},
+  {name:'Ice Rink', theme:'ice', par:3, tee:[2.5,7.5], cup:[16.5,7.5], ice:[[5,1,9,13]], walls:[[9,4.5,1,6]], coins:[[9.5,2.5],[9.5,12.5]], tip:'Slippery! Use less power'},
+  {name:'Black Hole', theme:'space', par:3, tee:[2.5,11.5], cup:[16.5,3.5], wells:[{c:[9.5,7.5], R:3.6, g:24}], coins:[[4,3],[15,12.5],[9.5,2]], tip:'Curve around the black hole'},
+  {name:'Lava Bridge', theme:'lava', par:3, tee:[2,7.5], cup:[17,7.5], water:[[6,0,7,6],[6,9,7,6]], slider:{r:[9,6,1,1.3], range:1.7, period:2.6}, coins:[[3,2],[16,13],[16,2]], tip:'Cross the bridge, dodge the block'},
+  {name:'Spin Cycle', theme:'neon', par:3, tee:[2,7.5], cup:[17,7.5], walls:[[4.5,0,10,4.2],[4.5,10.8,10,4.2]], spin:[{c:[7.3,7.5], len:3, arms:2, w:0.6, ph:0}, {c:[11.7,7.5], len:3, arms:2, w:-0.6, ph:0.3}], coins:[[9.5,5.2],[9.5,9.8],[17,2]], tip:'Two spinners: wait for the gap'},
+  {name:'Turbo Turn', theme:'neon', par:3, tee:[2.5,11], cup:[5,3.5], walls:[[0,7,13.5,1]], boost:[{r:[6,9.2,4,3.6], d:[1,0]}, {r:[14.6,8.6,3.8,5.6], d:[0,-1]}, {r:[14.6,0.6,3.8,5.6], d:[-1,0]}], coins:[[16.5,7.5],[11,13.5],[6,2]], tip:'Ride the speed pads around'},
+  {name:'Sand Trap', theme:'desert', par:3, tee:[2,2], cup:[16,12], sand:[[7,4,6,6]], bump:[[14,5,0.6],[4,12,0.6]], coins:[[10,13],[17,2]], tip:'Sand slows you down'},
+  {name:'The Hill', theme:'grass', par:3, tee:[2,3], cup:[17,3], hills:[{r:[5,0,9,15],p:[0,3]}], bump:[[9.5,11,0.7]], coins:[[9,7],[15,13]], tip:'The hill pulls the ball down'},
+  {name:'Zig Zag', theme:'desert', par:3, tee:[2.5,12.5], cup:[16.5,2.5], walls:[[6.5,0,1,10.5],[12,4.5,1,10.5]], coins:[[4,2],[9.7,13],[15.5,13]], tip:'Bank it off the walls'},
+  {name:'The Slider', theme:'grass', par:3, tee:[2,7], cup:[17,7], walls:[[6,0,7,4.5],[6,9.5,7,5.5]], slider:{r:[9,4.5,1,1.6], range:3.4, period:3.2}, coins:[[16,2],[16,12]], tip:'Wait for the block to move'},
+  {name:'Wormhole', theme:'space', par:3, tee:[3,7.5], cup:[16,7.5], walls:[[9,0,1,15]], portals:[[6.5,11.5],[12.5,3.5]], wells:[{c:[15,12], R:2.6, g:18}], coins:[[6.5,3],[16.5,2.5]], tip:'Find the way through the wall'}
 ];
-/* the back nine is the front nine flipped left to right, so it plays differently */
-var HC={};
-function hole(n){ if(HC[n]) return HC[n]; var b=HOLES[n%9], mir=Math.floor(n/9)%2===1;
+/* slope shots: one free putt; pick the slope from the ball to the cup */
+var SLOPE=[
+  {name:'Slope Shot', theme:'grass', par:2, slope:{tee:[3,10]}, bump:[[17,2.5,0.6],[1.5,2.5,0.6]], coins:[[10,13.5]]},
+  {name:'Slope Shot', theme:'lava', par:2, slope:{tee:[3,11]}, water:[[14,0,5,3.5]], coins:[[2,4]]},
+  {name:'Slope Shot', theme:'neon', par:2, slope:{tee:[2,10]}, bump:[[17,13,0.6],[10,2.5,0.6]], coins:[[16,3]]}
+];
+var TIPS={ slope:'Pick the slope. One free putt!' };
+/* a new run's hole order: the Opening Drive, then the pool shuffled (twice over, so a long run never runs out) */
+function mkOrder(){ var o=[0]; for(var k=0;k<3;k++){ var a=[]; for(var i=1;i<POOL.length;i++) a.push(i); for(i=a.length-1;i>0;i--){ var j=Math.floor(Math.random()*(i+1)), t=a[i]; a[i]=a[j]; a[j]=t; }
+    if(o[o.length-1]===a[0]) a.push(a.shift()); o=o.concat(a); } return o; }
+/* the back nine is flipped left to right, so a hole that comes back plays differently */
+var HC={}, HCO=null;
+function hole(n){ var ord=S&&S.order||null; if(HCO!==ord){ HC={}; HCO=ord; } if(HC[n]) return HC[n];
+  var b=n%3===2? SLOPE[Math.floor(n/3)%3] : POOL[ord? ord[(n-Math.floor(n/3))%ord.length] : (n-Math.floor(n/3))%POOL.length], mir=Math.floor(n/9)%2===1;
   function mx(p){ return mir?[GW-p[0],p[1]]:[p[0],p[1]]; } function mr(r){ return mir?[GW-r[0]-r[2],r[1],r[2],r[3]]:r.slice(); }
-  var h={ n:n, name:b.name, par:b.par, slope:!!b.slope, tee:mx(b.slope?b.slope.tee:b.tee), cup:b.cup?mx(b.cup):null,
-    walls:(b.walls||[]).map(mr), sand:(b.sand||[]).map(mr), water:(b.water||[]).map(mr),
+  var h={ n:n, name:b.name, theme:b.theme||'grass', tip:b.slope?TIPS.slope:b.tip, par:b.par, slope:!!b.slope, tee:mx(b.slope?b.slope.tee:b.tee), cup:b.cup?mx(b.cup):null,
+    walls:(b.walls||[]).map(mr), sand:(b.sand||[]).map(mr), water:(b.water||[]).map(mr), ice:(b.ice||[]).map(mr),
     hills:(b.hills||[]).map(function(x){ return {r:mr(x.r), p:[mir?-x.p[0]:x.p[0], x.p[1]]}; }),
-    bump:(b.bump||[]).map(function(c){ var p=mx(c); return [p[0],p[1],c[2]]; }), gems:(b.gems||[]).map(mx),
+    bump:(b.bump||[]).map(function(c){ var p=mx(c); return [p[0],p[1],c[2]]; }), gems:(b.coins||[]).map(mx),
+    spin:(b.spin||[]).map(function(s){ return {c:mx(s.c), len:s.len, arms:s.arms, w:mir?-s.w:s.w, ph:mir?Math.PI-s.ph:s.ph, mill:!!s.mill, band:s.band||0}; }),
+    portals:b.portals?b.portals.map(mx):null, boost:(b.boost||[]).map(function(x){ return {r:mr(x.r), d:[mir?-x.d[0]:x.d[0], x.d[1]]}; }),
+    wells:(b.wells||[]).map(function(w){ return {c:mx(w.c), R:w.R, g:w.g}; }),
     slider:b.slider?{r:mr(b.slider.r), range:b.slider.range, period:b.slider.period}:null };
   h.solid=h.walls.concat(BORDER); return (HC[n]=h); }
 
-/* ---------- physics: the ball rolls to a stop exactly as far as you aimed (walls bounce it without losing speed) ---------- */
+/* ---------- physics: on plain grass the ball rolls to a stop exactly as far as you aimed (walls bounce it without losing speed) ---------- */
 function inR(r,x,y){ return x>=r[0]&&x<=r[0]+r[2]&&y>=r[1]&&y<=r[1]+r[3]; }
 function collideRect(b,r,vx0,vy0){ var cx=clamp(b.x,r[0],r[0]+r[2]), cy=clamp(b.y,r[1],r[1]+r[3]), dx=b.x-cx, dy=b.y-cy, d=Math.hypot(dx,dy), nx, ny;
   if(d>=BR) return 0;
@@ -461,26 +490,46 @@ function bumpCircle(b,c){ var dx=b.x-c[0], dy=b.y-c[1], d=Math.hypot(dx,dy); if(
   b.vx-=2.1*vn*nx; b.vy-=2.1*vn*ny; var s=Math.hypot(b.vx,b.vy); if(s>13){ b.vx*=13/s; b.vy*=13/s; } return true; }
 function sliderAt(h,t){ var s=h.slider; if(!s) return null; var w=2*Math.PI/s.period, k=0.5-0.5*Math.cos(w*t);
   return { r:[s.r[0], s.r[1]+s.range*k, s.r[2], s.r[3]], vy:s.range*0.5*w*Math.sin(w*t) }; }
+/* turning blades: each arm is a bar from the hub; a blade hits the ball with its own speed at that point */
+function armAng(s,k,t){ return s.ph+s.w*t+k*2*Math.PI/s.arms; }
+function spinHit(b,s,t){ var hit=0, hd=Math.hypot(b.x-s.c[0],b.y-s.c[1]);
+  if(hd<BR+0.42&&hd>1e-6){ var hx=(b.x-s.c[0])/hd, hy=(b.y-s.c[1])/hd; b.x=s.c[0]+hx*(BR+0.42); b.y=s.c[1]+hy*(BR+0.42); var hv=b.vx*hx+b.vy*hy; if(hv<0){ b.vx-=2*hv*hx; b.vy-=2*hv*hy; hit=Math.max(hit,-hv); } }
+  if(hd>s.len+BR+BAR) return hit;
+  for(var k=0;k<s.arms;k++){ var a=armAng(s,k,t), ux=Math.cos(a), uy=Math.sin(a), p=clamp((b.x-s.c[0])*ux+(b.y-s.c[1])*uy,0,s.len),
+      px=s.c[0]+ux*p, py=s.c[1]+uy*p, dx=b.x-px, dy=b.y-py, d=Math.hypot(dx,dy);
+    if(d>=BR+BAR||d<1e-6||s.band&&Math.abs(px-s.c[0])>s.band+BR) continue; var nx=dx/d, ny=dy/d; b.x=px+nx*(BR+BAR); b.y=py+ny*(BR+BAR);
+    var bvx=-s.w*(py-s.c[1]), bvy=s.w*(px-s.c[0]), vn=(b.vx-bvx)*nx+(b.vy-bvy)*ny;
+    if(vn<0){ b.vx-=1.9*vn*nx; b.vy-=1.9*vn*ny; hit=Math.max(hit,-vn); } }
+  var sp=Math.hypot(b.vx,b.vy); if(sp>VMAX){ b.vx*=VMAX/sp; b.vy*=VMAX/sp; } return hit; }
 function phys(b,h,t,real){ var i, fr=FR, hit, ev='';
   for(i=0;i<h.sand.length;i++) if(inR(h.sand[i],b.x,b.y)){ fr=FR_SAND; break; }
+  for(i=0;i<h.ice.length;i++) if(inR(h.ice[i],b.x,b.y)){ fr=FR_ICE; break; }
   for(i=0;i<h.hills.length;i++){ var hl=h.hills[i]; if(inR(hl.r,b.x,b.y)){ b.vx+=hl.p[0]*DT; b.vy+=hl.p[1]*DT; } }
+  for(i=0;i<h.boost.length;i++){ var bo=h.boost[i]; if(inR(bo.r,b.x,b.y)){ b.vx+=bo.d[0]*42*DT; b.vy+=bo.d[1]*42*DT; b.boost=1; } }
+  for(i=0;i<h.wells.length;i++){ var wl=h.wells[i], wx=wl.c[0]-b.x, wy=wl.c[1]-b.y, wd=Math.hypot(wx,wy);
+    if(wd<0.42){ b.lost='well'; return 'water'; } if(wd<wl.R){ var ga=wl.g/(wd*wd+0.5)*(1-wd/wl.R); b.vx+=wx/wd*ga*DT; b.vy+=wy/wd*ga*DT; } }
   var dc=Math.hypot(b.cup[0]-b.x,b.cup[1]-b.y);
   if(b.mag&&dc<2.2&&dc>0.02){ b.vx+=(b.cup[0]-b.x)/dc*16*DT; b.vy+=(b.cup[1]-b.y)/dc*16*DT; }
-  var sp=Math.hypot(b.vx,b.vy), ns=sp-fr*DT; if(ns<=0){ b.vx=0; b.vy=0; return 'stop'; } b.vx*=ns/sp; b.vy*=ns/sp;
-  b.x+=b.vx*DT; b.y+=b.vy*DT;
-  for(i=0;i<h.solid.length;i++){ hit=collideRect(b,h.solid[i],0,0); if(hit>0.6){ ev='tap'; b.tapV=hit; } }
+  var sp=Math.hypot(b.vx,b.vy); if(sp>VMAX){ b.vx*=VMAX/sp; b.vy*=VMAX/sp; sp=VMAX; }
+  var ns=sp-fr*DT; if(ns<=0){ b.vx=0; b.vy=0; return 'stop'; } b.vx*=ns/sp; b.vy*=ns/sp;
+  b.x+=b.vx*DT; b.y+=b.vy*DT; b.dist=(b.dist||0)+ns*DT;
+  for(i=0;i<h.solid.length;i++){ hit=collideRect(b,h.solid[i],0,0); if(hit>0.6){ ev='tap'; b.tapV=hit; b.banks=(b.banks||0)+1; } }
   var sl=sliderAt(h,t); if(sl){ hit=collideRect(b,sl.r,0,sl.vy); if(hit>0.6){ ev='tap'; b.tapV=hit; } }
-  for(i=0;i<h.bump.length;i++) if(bumpCircle(b,h.bump[i])) ev='boing';
-  for(i=0;i<h.water.length;i++) if(inR(h.water[i],b.x,b.y)) return 'water';
+  for(i=0;i<h.spin.length;i++){ hit=spinHit(b,h.spin[i],t); if(hit>0.6){ ev='whack'; b.tapV=hit; b.whack=1; } }
+  for(i=0;i<h.bump.length;i++) if(bumpCircle(b,h.bump[i])){ ev='boing'; b.bumps=(b.bumps||0)+1; }
+  if(h.portals){ var pa=h.portals[0], pb=h.portals[1], da=Math.hypot(pa[0]-b.x,pa[1]-b.y), db=Math.hypot(pb[0]-b.x,pb[1]-b.y);
+    if(b.pcool){ if(da>0.75&&db>0.75) b.pcool=0; }
+    else if(da<0.45||db<0.45){ var to=da<0.45?pb:pa; b.x=to[0]; b.y=to[1]; b.pcool=1; b.portal=1; return 'portal'; } }
+  for(i=0;i<h.water.length;i++) if(inR(h.water[i],b.x,b.y)){ b.lost='water'; return 'water'; }
   dc=Math.hypot(b.cup[0]-b.x,b.cup[1]-b.y);
   if(dc<b.cr){ if(Math.hypot(b.vx,b.vy)<CAP) return 'sink'; if(!b.lip){ b.lip=1; b.vx*=0.8; b.vy*=0.8; return 'lip'; } } else b.lip=0;
   if(real) for(i=0;i<h.gems.length;i++) if(S.gems.indexOf(i)<0&&Math.hypot(h.gems[i][0]-b.x,h.gems[i][1]-b.y)<0.62){ b.gem=i; return 'gem'; }
   return ev; }
 function launchVel(run,rise){ var D=Math.hypot(run,rise), v=Math.sqrt(2*FR*D); return [run/D*v, -rise/D*v]; }
 /* runs a putt ahead of time: the Guide Line power-up, the slope-shot check and the tests use it */
-function simulate(h,x,y,run,rise,t0,cr,mag){ var v=launchVel(run,rise), b={x:x,y:y,vx:v[0],vy:v[1],cup:S.cup||h.cup,cr:cr,mag:mag}, t=t0, path=[[x,y]], ev='';
-  for(var i=0;i<240*20;i++){ t+=DT; ev=phys(b,h,t,false); if(i%6===0) path.push([b.x,b.y]); if(ev==='stop'||ev==='sink'||ev==='water') break; }
-  path.push([b.x,b.y]); return { path:path, x:b.x, y:b.y, sunk:ev==='sink', water:ev==='water' }; }
+function simulate(h,x,y,run,rise,t0,cr,mag,pw,cup){ var v=launchVel(run,rise), k=Math.sqrt(pw==null?1:pw), b={x:x,y:y,vx:v[0]*k,vy:v[1]*k,cup:cup||S.cup||h.cup,cr:cr,mag:mag,pcool:1}, t=t0, path=[[x,y]], ev='';
+  for(var i=0;i<240*20;i++){ t+=DT; ev=phys(b,h,t,false); if(i%6===0||ev==='portal') path.push(ev==='portal'?null:[b.x,b.y]); if(ev==='portal') path.push([b.x,b.y]); if(ev==='stop'||ev==='sink'||ev==='water') break; }
+  path.push([b.x,b.y]); return { path:path, x:b.x, y:b.y, sunk:ev==='sink', water:ev==='water', t:t }; }
 
 /* ---------- slope shots: pick the slope from the ball to the cup; the ball rolls along the slope you pick ---------- */
 function makeSS(h){ var t=h.tee, dir=t[0]<GW/2?1:-1;
@@ -494,7 +543,7 @@ function makeSS(h){ var t=h.tee, dir=t[0]<GW/2?1:-1;
       {m:R(r2,run), why:'Count the rise again: the cup is '+Math.abs(rise)+' '+(up?'up':'down')+', not '+Math.abs(r2)+'.'} ];
     if(ch.some(function(c,i){ return ch.some(function(d,j){ return j>i&&rEq(c.m,d.m); }); })) continue;   // four different slopes
     if(ch.slice(1).some(function(c){ return rEq(c.m,m); })) continue;                                   // only one right answer
-    var save=S.cup; S.cup=[cx,cy]; var sim=simulate(h,t[0],t[1],run,rise,0,0.42,false); S.cup=save;
+    var sim=simulate(h,t[0],t[1],run,rise,0,0.42,false,1,[cx,cy]);
     if(!sim.sunk) continue;                                                                              // the right slope really sinks it
     for(var i=3;i>0;i--){ var j=Math.floor(Math.random()*(i+1)), tmp=ch[i]; ch[i]=ch[j]; ch[j]=tmp; }
     return { run:run, rise:rise, cup:[cx,cy], ch:ch.map(function(c){ return {n:c.m.n,d:c.m.d,ok:!!c.ok,why:c.why}; }), state:'pick', pick:-1, msg:'', cls:'' }; }
@@ -515,11 +564,11 @@ var POW=[
   {id:'magnet', name:'Magnet Cup', cost:30, secs:25, d:'Pulls ball in'}
 ];
 var S, B={x:0,y:0,vx:0,vy:0,moving:false,sunk:false,hidden:false};
-function fresh(){ return { name:'', len:5, started:false, over:false, endAt:0, score:0, balls:0, cash:0, streak:0, best:0, answered:0, correct:0, putts:0, holes:0, aces:0,
+function fresh(){ return { ver:2, order:mkOrder(), fire:0, tricks:0, name:'', len:5, started:false, over:false, endAt:0, score:0, balls:0, cash:0, streak:0, best:0, answered:0, correct:0, putts:0, holes:0, aces:0,
   topics:QS?QS.topicTable():{}, lv:{balls:0,cash:0,cup:0,mult:0}, buff:{guide:0,free:0,magnet:0}, q:null, qDone:false, picked:-1,
   hole:0, strokes:0, ball:null, from:null, aim:[3,0], card:[], gems:[], cup:null, ss:null, pending:false, finalShown:false }; }
 function save(){ try{ localStorage.setItem(KEY,JSON.stringify(S)); localStorage.setItem(KEY+'_mute',muted?'1':'0'); }catch(e){} }
-function load(){ try{ var v=JSON.parse(localStorage.getItem(KEY)||'null'); muted=localStorage.getItem(KEY+'_mute')==='1'; if(v&&v.topics&&v.lv) return v; }catch(e){} return null; }
+function load(){ try{ var v=JSON.parse(localStorage.getItem(KEY)||'null'); muted=localStorage.getItem(KEY+'_mute')==='1'; if(v&&v.ver===2&&v.order&&v.topics&&v.lv) return v; }catch(e){} return null; }
 function U(id){ var u=UPG.filter(function(x){ return x.id===id; })[0]; return u.vals[S.lv[id]]; }
 function now(){ return Date.now(); }
 function buffOn(id){ return S.buff[id]>now(); }
@@ -530,7 +579,9 @@ function streakBonus(st){ return FAST? Math.min(Math.floor(st/5),4) : Math.min(M
 function hud(){ $('mg-score').textContent=S.score.toLocaleString(); $('mg-balls').textContent=buffOn('free')?'∞':S.balls; $('mg-cash').textContent='$'+S.cash; $('mg-streak').textContent=S.streak;
   var empty=S.started&&!S.over&&S.balls<1&&!buffOn('free'); $('mg-ballchip').classList.toggle('empty',empty); $('mg-q').classList.toggle('need',empty);
   var nb=U('balls'); $('mg-reward').textContent='+'+nb+' ball'+(nb>1?'s':'')+' · +$'+(U('cash')+streakBonus(S.streak+1));
-  $('mg-shopcash').textContent='$'+S.cash; if(!$('mg-shop').hidden) drawShop(); drawCard(); }
+  $('mg-shopcash').textContent='$'+S.cash; if(!$('mg-shop').hidden) drawShop(); drawCard();
+  var f=S.fire||0, fe=$('mg-fire'), fh='<b>'+(f>=3?'ON FIRE ×2':'HOT STREAK')+'</b><i'+(f>0?' class=on':'')+'></i><i'+(f>1?' class=on':'')+'></i><i'+(f>2?' class=on':'')+'></i>';
+  if(fe.innerHTML!==fh){ fe.innerHTML=fh; fe.classList.toggle('hot',f>=3); } }
 function drawCard(){ var n=S.hole, base=n-n%9, h=hole(n), cells='';
   for(var i=0;i<9;i++){ var hp=hole(base+i).par, st=S.card[i], cur=i===n%9&&!S.pending, cls=cur?' cur':st==null?'':st<hp?' under':st===hp?' par':' over';
     cells+='<div class="mg-cell'+cls+'"><span class="hn">'+(base+i+1)+'</span><span class="st">'+(st!=null?st:cur&&S.strokes?S.strokes:'·')+'</span></div>'; }
@@ -588,65 +639,120 @@ $('mg-shop').addEventListener('click',function(e){ var b=e.target.closest('.mg-b
 
 /* ================= THE GREEN ================= */
 var cv=$('mg-canvas'), cx=cv.getContext('2d'), turf=document.createElement('canvas'); turf.width=W; turf.height=H; var tx=turf.getContext('2d');
-var pops=[], finalAt=0, gt=0, rollT=0, hov=null, ghostAt=0, guideKey='', guide=null, sinkAt=0;
+var pops=[], finalAt=0, gt=0, rollT=0, hov=null, ghostAt=0, guideKey='', guide=null, sinkAt=0, bannerAt=0, trail=[];
 function X(x){ return OX+x*UN; } function Y(y){ return OY+y*UN; }
 function rr(c,x,y,w,h,r){ c.beginPath(); if(c.roundRect) c.roundRect(x,y,w,h,r); else c.rect(x,y,w,h); }
 function FONT(w,px){ return w+' '+px+'px Fredoka, Inter, sans-serif'; }
-function drawTurf(){ var h=hole(S.hole), c=tx, i;
-  var g=c.createRadialGradient(W/2,H/2,80,W/2,H/2,720); g.addColorStop(0,'#10261C'); g.addColorStop(1,'#050D09'); c.fillStyle=g; c.fillRect(0,0,W,H);
+/* each hole has a look: its turf, rails, walls and what its hazard is */
+var THEMES={
+  grass: {bg:'#10261C', rail:'#EADBB6', rail2:'#CDBB92', s:['#1B6B42','#1F784A'], wall:'#EADBB6', wall2:'#B9A67C', grid:'rgba(255,255,255,.09)', haz:'#1B5FA6', haz2:'rgba(180,220,255,.35)', bump:'#FF8466', lost:'SPLASH!'},
+  desert:{bg:'#261C0E', rail:'#F0D9A8', rail2:'#CBB27E', s:['#4F7232','#567A36'], wall:'#D99A5E', wall2:'#A26B39', grid:'rgba(255,255,255,.09)', haz:'#1B5FA6', haz2:'rgba(180,220,255,.35)', bump:'#FF8466', lost:'SPLASH!'},
+  ice:   {bg:'#0E2230', rail:'#E6F4FA', rail2:'#B8D3DE', s:['#1C5868','#206273'], wall:'#E6F4FA', wall2:'#93B6C4', grid:'rgba(255,255,255,.10)', haz:'#1B5FA6', haz2:'rgba(180,220,255,.35)', bump:'#FF8466', lost:'SPLASH!'},
+  space: {bg:'#130E2E', rail:'#CFC4FF', rail2:'#9C8FD9', s:['#211A4C','#261E57'], wall:'#CFC4FF', wall2:'#8F80D6', grid:'rgba(255,255,255,.08)', haz:'#1B5FA6', haz2:'rgba(180,220,255,.35)', bump:'#FF8466', lost:'SPLASH!'},
+  lava:  {bg:'#26100D', rail:'#E8D2C0', rail2:'#BFA08A', s:['#38383E','#404047'], wall:'#E8D2C0', wall2:'#B08F78', grid:'rgba(255,255,255,.08)', haz:'#D9481C', haz2:'rgba(255,200,46,.55)', bump:'#FF8466', lost:'SIZZLE!'},
+  neon:  {bg:'#120F28', rail:'#5CF2B0', rail2:'#2FB585', s:['#1B1940','#1F1D48'], wall:'#2C2A63', wall2:'#5CF2B0', grid:'rgba(92,242,176,.10)', haz:'#1B5FA6', haz2:'rgba(180,220,255,.35)', bump:'#FF3DB4', lost:'SPLASH!'}
+};
+function TH(){ return THEMES[hole(S.hole).theme]||THEMES.grass; }
+function drawTurf(){ var h=hole(S.hole), c=tx, i, th=THEMES[h.theme]||THEMES.grass;
+  var g=c.createRadialGradient(W/2,H/2,80,W/2,H/2,720); g.addColorStop(0,th.bg); g.addColorStop(1,'#040806'); c.fillStyle=g; c.fillRect(0,0,W,H);
   c.fillStyle='rgba(0,0,0,.45)'; rr(c,X(-0.4)+8,Y(-0.4)+10,GW*UN+0.8*UN,GH*UN+0.8*UN,22); c.fill();
-  c.fillStyle='#EADBB6'; rr(c,X(-0.4),Y(-0.4),GW*UN+0.8*UN,GH*UN+0.8*UN,22); c.fill();                                     // rails
-  c.fillStyle='#CDBB92'; rr(c,X(-0.4),Y(GH)+2,GW*UN+0.8*UN,0.4*UN-2,[0,0,22,22]); c.fill();
-  for(i=0;i<GW;i+=2){ c.fillStyle=i%4?'#1B6B42':'#1F784A'; c.fillRect(X(i),Y(0),Math.min(2,GW-i)*UN,GH*UN); }          // mowing stripes
-  c.strokeStyle='rgba(255,255,255,.09)'; c.lineWidth=1.5; c.beginPath();                                                 // the grid: count rise and run on it
+  c.fillStyle=th.rail; rr(c,X(-0.4),Y(-0.4),GW*UN+0.8*UN,GH*UN+0.8*UN,22); c.fill();                                     // rails
+  c.fillStyle=th.rail2; rr(c,X(-0.4),Y(GH)+2,GW*UN+0.8*UN,0.4*UN-2,[0,0,22,22]); c.fill();
+  for(i=0;i<GW;i+=2){ c.fillStyle=i%4?th.s[0]:th.s[1]; c.fillRect(X(i),Y(0),Math.min(2,GW-i)*UN,GH*UN); }          // mowing stripes
+  if(h.theme==='space'){ c.fillStyle='rgba(255,255,255,.55)'; for(i=0;i<90;i++){ var sx=(i*197)%GW, sy=(i*131)%GH; c.fillRect(X(sx+((i*37)%10)/10),Y(sy+((i*53)%10)/10),i%7?2:3,i%7?2:3); } }
+  h.ice.forEach(function(r){ c.fillStyle='#8FCBE2'; rr(c,X(r[0]),Y(r[1]),r[2]*UN,r[3]*UN,26); c.fill(); c.strokeStyle='rgba(255,255,255,.55)'; c.lineWidth=4; c.lineCap='round';
+    for(var k=0;k<9;k++){ var ix=r[0]+0.8+((k*2.3)%(r[2]-1.6)), iy=r[1]+0.8+((k*1.7)%(r[3]-1.6)); c.beginPath(); c.moveTo(X(ix),Y(iy)); c.lineTo(X(ix+0.9),Y(iy-0.5)); c.stroke(); } });
+  c.strokeStyle=th.grid; c.lineWidth=1.5; c.beginPath();                                                 // the grid: count rise and run on it
   for(i=1;i<GW;i++){ c.moveTo(X(i),Y(0)); c.lineTo(X(i),Y(GH)); } for(i=1;i<GH;i++){ c.moveTo(X(0),Y(i)); c.lineTo(X(GW),Y(i)); } c.stroke();
+  h.ice.forEach(function(r){ c.save(); rr(c,X(r[0]),Y(r[1]),r[2]*UN,r[3]*UN,26); c.clip(); c.strokeStyle='rgba(16,60,80,.22)'; c.lineWidth=1.5; c.beginPath();
+    for(var k=1;k<GW;k++){ c.moveTo(X(k),Y(0)); c.lineTo(X(k),Y(GH)); } for(k=1;k<GH;k++){ c.moveTo(X(0),Y(k)); c.lineTo(X(GW),Y(k)); } c.stroke(); c.restore(); });
   h.hills.forEach(function(hl){ var r=hl.r; c.fillStyle='rgba(255,255,255,.05)'; c.fillRect(X(r[0]),Y(r[1]),r[2]*UN,r[3]*UN);
     var a=Math.atan2(hl.p[1],hl.p[0]); c.strokeStyle='rgba(234,219,182,.28)'; c.lineWidth=4; c.lineCap='round';
     for(var gx=r[0]+1;gx<r[0]+r[2];gx+=2) for(var gy=r[1]+1;gy<r[1]+r[3];gy+=2){ c.save(); c.translate(X(gx),Y(gy)); c.rotate(a); c.beginPath(); c.moveTo(-8,-10); c.lineTo(4,0); c.lineTo(-8,10); c.stroke(); c.restore(); } });
+  h.boost.forEach(function(bo){ var r=bo.r; c.fillStyle='rgba(255,200,46,.16)'; rr(c,X(r[0]),Y(r[1]),r[2]*UN,r[3]*UN,18); c.fill(); c.strokeStyle='rgba(255,200,46,.7)'; c.lineWidth=3; c.setLineDash([12,9]); c.stroke(); c.setLineDash([]); });
   h.sand.forEach(function(r){ c.fillStyle='#E4C88C'; rr(c,X(r[0]),Y(r[1]),r[2]*UN,r[3]*UN,40); c.fill(); c.fillStyle='rgba(120,90,40,.25)';
     for(var k=0;k<160;k++){ c.fillRect(X(r[0])+20+Math.random()*(r[2]*UN-40),Y(r[1])+20+Math.random()*(r[3]*UN-40),3,3); } });
-  h.water.forEach(function(r){ c.fillStyle='#1B5FA6'; c.fillRect(X(r[0]),Y(r[1]),r[2]*UN,r[3]*UN); c.strokeStyle='rgba(180,220,255,.35)'; c.lineWidth=3;
+  h.water.forEach(function(r){ c.fillStyle=th.haz; c.fillRect(X(r[0]),Y(r[1]),r[2]*UN,r[3]*UN); c.strokeStyle=th.haz2; c.lineWidth=3;
     for(var y=r[1]+0.6;y<r[1]+r[3];y+=1.1) for(var x=r[0]+0.5;x<r[0]+r[2]-0.6;x+=1.6){ c.beginPath(); c.moveTo(X(x),Y(y)); c.quadraticCurveTo(X(x+0.3),Y(y-0.18),X(x+0.6),Y(y)); c.stroke(); } });
-  h.walls.forEach(function(r){ c.fillStyle='rgba(0,0,0,.35)'; c.fillRect(X(r[0])+5,Y(r[1])+6,r[2]*UN,r[3]*UN); c.fillStyle='#EADBB6'; c.fillRect(X(r[0]),Y(r[1]),r[2]*UN,r[3]*UN);
-    c.strokeStyle='#B9A67C'; c.lineWidth=3; c.strokeRect(X(r[0])+1.5,Y(r[1])+1.5,r[2]*UN-3,r[3]*UN-3); });
+  h.wells.forEach(function(w){ var wg=c.createRadialGradient(X(w.c[0]),Y(w.c[1]),10,X(w.c[0]),Y(w.c[1]),w.R*UN); wg.addColorStop(0,'rgba(199,125,255,.55)'); wg.addColorStop(0.6,'rgba(120,70,220,.18)'); wg.addColorStop(1,'rgba(120,70,220,0)');
+    c.fillStyle=wg; c.beginPath(); c.arc(X(w.c[0]),Y(w.c[1]),w.R*UN,0,6.28); c.fill(); c.strokeStyle='rgba(199,125,255,.35)'; c.lineWidth=2; c.setLineDash([6,10]); c.stroke(); c.setLineDash([]); });
+  h.walls.forEach(function(r){ c.fillStyle='rgba(0,0,0,.35)'; c.fillRect(X(r[0])+5,Y(r[1])+6,r[2]*UN,r[3]*UN); c.fillStyle=th.wall; c.fillRect(X(r[0]),Y(r[1]),r[2]*UN,r[3]*UN);
+    c.strokeStyle=th.wall2; c.lineWidth=3; c.strokeRect(X(r[0])+1.5,Y(r[1])+1.5,r[2]*UN-3,r[3]*UN-3); });
   var t=h.tee; c.fillStyle='rgba(92,242,176,.22)'; rr(c,X(t[0])-30,Y(t[1])-30,60,60,12); c.fill(); }
-function draw(){ var h=hole(S.hole), t=now(), i;
+/* moving parts, drawn every frame */
+function drawSpin(s,t){ var x=X(s.c[0]), y=Y(s.c[1]), k, a;
+  if(s.mill){ cx.fillStyle='rgba(0,0,0,.35)'; rr(cx,x-26+5,y-26+6,52,52,8); cx.fill(); cx.fillStyle='#C2452A'; rr(cx,x-26,y-26,52,52,8); cx.fill(); }
+  if(s.band){ cx.save(); cx.beginPath(); cx.rect(x-s.band*UN,0,s.band*2*UN,H); cx.clip(); drawArms(s,t,x,y); cx.restore(); }   // sails turn over the windmill house: you only see (and hit) them across its tunnels
+  else drawArms(s,t,x,y);
+  cx.fillStyle=s.mill?'#5A3A20':'#2C2A63'; cx.beginPath(); cx.arc(x,y,0.42*UN,0,6.28); cx.fill(); cx.strokeStyle=s.mill?'#EADBB6':'#FFC82E'; cx.lineWidth=4; cx.stroke(); }
+function drawArms(s,t,x,y){ var k, a;
+  for(k=0;k<s.arms;k++){ a=armAng(s,k,t); cx.save(); cx.translate(x,y); cx.rotate(a);
+    if(s.mill){ cx.fillStyle='rgba(0,0,0,.3)'; cx.fillRect(10,-BAR*UN+6,s.len*UN-10,BAR*UN*2); cx.fillStyle='#F6EDD6'; cx.fillRect(14,-BAR*UN-9,s.len*UN-14,BAR*UN*2+9); cx.fillStyle='#8A5A32'; cx.fillRect(0,-4,s.len*UN,8);
+      cx.strokeStyle='#B9A67C'; cx.lineWidth=2; for(var j=30;j<s.len*UN;j+=26){ cx.beginPath(); cx.moveTo(j,-BAR*UN-9); cx.lineTo(j,BAR*UN); cx.stroke(); } }
+    else { cx.lineCap='round'; cx.strokeStyle='rgba(0,0,0,.35)'; cx.lineWidth=BAR*UN*2+2; cx.beginPath(); cx.moveTo(4,6); cx.lineTo(s.len*UN+4,6); cx.stroke();
+      cx.strokeStyle='#FFC82E'; cx.lineWidth=BAR*UN*2; cx.beginPath(); cx.moveTo(0,0); cx.lineTo(s.len*UN,0); cx.stroke(); cx.strokeStyle='#1C1A10'; cx.lineWidth=3; cx.beginPath(); cx.moveTo(14,0); cx.lineTo(s.len*UN-8,0); cx.stroke(); }
+    cx.restore(); } }
+function drawToys(h,t){ var ts=t/1000;
+  h.boost.forEach(function(bo){ var r=bo.r, ang=Math.atan2(bo.d[1],bo.d[0]); cx.save(); rr(cx,X(r[0]),Y(r[1]),r[2]*UN,r[3]*UN,18); cx.clip();
+    cx.translate(X(r[0]+r[2]/2),Y(r[1]+r[3]/2)); cx.rotate(ang); var span=Math.max(r[2],r[3])*UN, off=(ts*90)%60; cx.strokeStyle='rgba(255,200,46,.85)'; cx.lineWidth=8; cx.lineCap='round'; cx.lineJoin='round';
+    for(var x=-span/2-60+off;x<span/2+60;x+=60){ cx.beginPath(); cx.moveTo(x-14,-22); cx.lineTo(x+6,0); cx.lineTo(x-14,22); cx.stroke(); } cx.restore(); });
+  h.wells.forEach(function(w){ var x=X(w.c[0]), y=Y(w.c[1]); cx.save(); cx.translate(x,y); cx.rotate(ts*1.6); cx.strokeStyle='rgba(225,200,255,.55)'; cx.lineWidth=3;
+    for(var k=0;k<3;k++){ cx.rotate(2.094); cx.beginPath(); cx.arc(0,0,(w.R*0.55)*UN,0,1.2); cx.stroke(); cx.beginPath(); cx.arc(0,0,(w.R*0.32)*UN,0.6,1.7); cx.stroke(); } cx.restore();
+    cx.fillStyle='#000'; cx.beginPath(); cx.arc(x,y,0.42*UN,0,6.28); cx.fill(); cx.strokeStyle='#C77DFF'; cx.lineWidth=3; cx.stroke(); });
+  if(h.portals) h.portals.forEach(function(p,k){ var x=X(p[0]), y=Y(p[1]), col=k?'#3DD6FF':'#C77DFF';
+    cx.fillStyle='rgba(10,6,30,.85)'; cx.beginPath(); cx.arc(x,y,0.5*UN,0,6.28); cx.fill(); cx.strokeStyle=col; cx.lineWidth=6; cx.stroke();
+    cx.save(); cx.translate(x,y); cx.rotate((k?-1:1)*ts*2.2); cx.setLineDash([10,9]); cx.lineWidth=3; cx.beginPath(); cx.arc(0,0,0.3*UN,0,6.28); cx.stroke(); cx.restore(); });
+  h.spin.forEach(function(s){ drawSpin(s,gt); }); }
+function drawCoins(h,t){ h.gems.forEach(function(g,i){ if(S.gems.indexOf(i)>=0) return; var x=X(g[0]), y=Y(g[1])+Math.sin(t/300+i)*3, sq=Math.abs(Math.cos(t/500+i));
+  cx.fillStyle='rgba(0,0,0,.3)'; cx.beginPath(); cx.ellipse(x+3,y+18,14,5,0,0,6.28); cx.fill();
+  cx.fillStyle='#E0A21B'; cx.beginPath(); cx.ellipse(x,y,16*Math.max(0.25,sq),16,0,0,6.28); cx.fill(); cx.fillStyle='#FFC82E'; cx.beginPath(); cx.ellipse(x,y,12*Math.max(0.2,sq),12,0,0,6.28); cx.fill();
+  if(sq>0.5){ cx.fillStyle='#A86F0B'; cx.font=FONT(700,16); cx.textAlign='center'; cx.textBaseline='middle'; cx.fillText('★',x,y+1); } }); }
+function draw(){ var h=hole(S.hole), t=now(), th=THEMES[h.theme]||THEMES.grass;
   cx.drawImage(turf,0,0);
-  h.gems.forEach(function(g,i){ if(S.gems.indexOf(i)>=0) return; var x=X(g[0]), y=Y(g[1]), k=Math.sin(t/300+i)*3; cx.save(); cx.translate(x,y+k);
-    cx.fillStyle='rgba(92,242,176,.25)'; cx.beginPath(); cx.arc(0,0,22,0,6.28); cx.fill(); cx.fillStyle='#5CF2B0'; cx.beginPath(); cx.moveTo(0,-15); cx.lineTo(12,0); cx.lineTo(0,15); cx.lineTo(-12,0); cx.closePath(); cx.fill();
-    cx.fillStyle='rgba(255,255,255,.7)'; cx.beginPath(); cx.moveTo(0,-15); cx.lineTo(5,-3); cx.lineTo(-5,-3); cx.closePath(); cx.fill(); cx.restore(); });
+  drawCoins(h,t);
   var sl=sliderAt(h,gt); if(sl){ var r=sl.r; cx.fillStyle='rgba(0,0,0,.35)'; cx.fillRect(X(r[0])+5,Y(r[1])+6,r[2]*UN,r[3]*UN); cx.fillStyle='#B9A4FF'; cx.fillRect(X(r[0]),Y(r[1]),r[2]*UN,r[3]*UN);
     cx.strokeStyle='#7F69D6'; cx.lineWidth=5; for(var s=0;s<r[3]*UN;s+=18){ cx.beginPath(); cx.moveTo(X(r[0])+4,Y(r[1])+s+4); cx.lineTo(X(r[0]+r[2])-4,Y(r[1])+Math.min(s+20,r[3]*UN-4)); cx.stroke(); } }
   h.bump.forEach(function(b){ cx.fillStyle='rgba(0,0,0,.35)'; cx.beginPath(); cx.arc(X(b[0])+4,Y(b[1])+6,b[2]*UN,0,6.28); cx.fill();
-    cx.fillStyle='#FF8466'; cx.beginPath(); cx.arc(X(b[0]),Y(b[1]),b[2]*UN,0,6.28); cx.fill(); cx.strokeStyle='#fff'; cx.lineWidth=4; cx.beginPath(); cx.arc(X(b[0]),Y(b[1]),b[2]*UN*0.62,0,6.28); cx.stroke(); });
-  // the cup and its flag
+    cx.fillStyle=th.bump; cx.beginPath(); cx.arc(X(b[0]),Y(b[1]),b[2]*UN,0,6.28); cx.fill(); cx.strokeStyle='#fff'; cx.lineWidth=4; cx.beginPath(); cx.arc(X(b[0]),Y(b[1]),b[2]*UN*0.62,0,6.28); cx.stroke(); });
+  // the cup (drawn before the toys, so a windmill sail can pass over it)
   var cup=S.cup||h.cup, cr=U('cup')*UN, near=Math.hypot(B.x-cup[0],B.y-cup[1])<2.2;
   cx.fillStyle='#03080A'; cx.beginPath(); cx.arc(X(cup[0]),Y(cup[1]),cr,0,6.28); cx.fill(); cx.strokeStyle='rgba(255,255,255,.85)'; cx.lineWidth=3; cx.stroke();
+  drawToys(h,t);
   // the slope shot: the right line, shown after a miss
   var ss=S.ss; if(ss&&ss.state==='done'&&t-ghostAt<4500&&ghostAt){ cx.save(); cx.setLineDash([14,10]); cx.strokeStyle='#FFC82E'; cx.lineWidth=5; cx.beginPath(); cx.moveTo(X(h.tee[0]),Y(h.tee[1])); cx.lineTo(X(cup[0]),Y(cup[1])); cx.stroke(); cx.restore(); }
-  if(ss&&ss.state==='pick'){ cx.fillStyle='rgba(255,240,77,.9)'; [[h.tee[0],h.tee[1]]].forEach(function(p){ cx.beginPath(); cx.arc(X(p[0]),Y(p[1]),7,0,6.28); cx.fill(); }); }
-  if(ready()&&!(ss&&ss.state!=='done')){ if(buffOn('guide')) drawGuide(h); drawAim(); drawMeter(); }
+  if(ss&&ss.state==='pick'){ cx.fillStyle='rgba(255,240,77,.9)'; cx.beginPath(); cx.arc(X(h.tee[0]),Y(h.tee[1]),7,0,6.28); cx.fill(); }
+  if(ready()&&!(ss&&ss.state!=='done')){ drawAim(); if(buffOn('guide')) drawGuide(h); drawMeter(); }
+  // the fire trail of a hot streak
+  if(B.moving&&!B.hidden&&onFire()) trail.push([X(B.x),Y(B.y),t]);
+  if(trail.length){ trail=trail.filter(function(p){ return t-p[2]<380; });
+    trail.forEach(function(p){ var k=1-(t-p[2])/380; cx.fillStyle='rgba(255,'+Math.round(110+120*k)+',46,'+(0.55*k).toFixed(2)+')'; cx.beginPath(); cx.arc(p[0],p[1],BR*UN*(0.5+0.9*k),0,6.28); cx.fill(); }); }
   // ball
   if(!B.hidden){ var bx=X(B.x), by=Y(B.y), br=BR*UN, k=1;
     if(B.sunk){ k=Math.max(0,1-(t-sinkAt)/260); bx=X(cup[0])+(bx-X(cup[0]))*k; by=Y(cup[1])+(by-Y(cup[1]))*k; }
     if(k>0){ cx.fillStyle='rgba(0,0,0,.35)'; cx.beginPath(); cx.arc(bx+3,by+5,br*k,0,6.28); cx.fill();
-      var bg=cx.createRadialGradient(bx-br*0.35,by-br*0.4,1,bx,by,br*k); bg.addColorStop(0,'#fff'); bg.addColorStop(1,'#C9D4CD'); cx.fillStyle=bg; cx.beginPath(); cx.arc(bx,by,br*k,0,6.28); cx.fill();
+      var bg=cx.createRadialGradient(bx-br*0.35,by-br*0.4,1,bx,by,br*k); bg.addColorStop(0,'#fff'); bg.addColorStop(1,onFire()?'#FFB070':'#C9D4CD'); cx.fillStyle=bg; cx.beginPath(); cx.arc(bx,by,br*k,0,6.28); cx.fill();
       if(ready()){ cx.strokeStyle='rgba(255,255,255,'+(0.35+0.25*Math.sin(t/220))+')'; cx.lineWidth=3; cx.beginPath(); cx.arc(bx,by,br+8,0,6.28); cx.stroke(); } } }
   // flag on top (it fades when the ball is close, so the cup stays visible)
   cx.globalAlpha=near?0.35:1; cx.strokeStyle='#F2FBF6'; cx.lineWidth=4; cx.beginPath(); cx.moveTo(X(cup[0]),Y(cup[1])); cx.lineTo(X(cup[0]),Y(cup[1])-78); cx.stroke();
   var wv=Math.sin(t/260)*4; cx.fillStyle='#FF8466'; cx.beginPath(); cx.moveTo(X(cup[0])+2,Y(cup[1])-78); cx.lineTo(X(cup[0])+44,Y(cup[1])-66+wv); cx.lineTo(X(cup[0])+2,Y(cup[1])-52); cx.closePath(); cx.fill();
   cx.fillStyle='#062016'; cx.font=FONT(700,18); cx.textAlign='center'; cx.textBaseline='middle'; cx.fillText(''+(S.hole+1),X(cup[0])+18,Y(cup[1])-65+wv/2); cx.globalAlpha=1;
-  // popups
-  pops=pops.filter(function(p){ return t-p.t0<1400; });
-  pops.forEach(function(p){ var k=(t-p.t0)/1400, y=p.y-k*60; cx.globalAlpha=Math.min(1,(1-k)*2.5); cx.textAlign='center'; cx.textBaseline='alphabetic'; cx.lineWidth=8; cx.strokeStyle='#04100A';
-    if(p.lab){ cx.font=FONT(700,40); cx.strokeText(p.lab,p.x,y-50); cx.fillStyle=p.col||'#FFC82E'; cx.fillText(p.lab,p.x,y-50); }
-    cx.font=FONT(700,46); cx.strokeText(p.txt,p.x,y); cx.fillStyle='#fff'; cx.fillText(p.txt,p.x,y); cx.globalAlpha=1; });
+  // the hole's name card when a hole starts
+  if(bannerAt&&t-bannerAt<2800&&!S.over){ var bk=(t-bannerAt)/2800, ba=bk<0.8?1:(1-bk)/0.2, t1='HOLE '+(S.hole+1)+' · '+h.name.toUpperCase()+' · PAR '+h.par;
+    cx.globalAlpha=ba; cx.font=FONT(700,38); var bw=Math.max(cx.measureText(t1).width,480)+60;
+    cx.fillStyle='rgba(4,10,7,.86)'; rr(cx,W/2-bw/2,64,bw,104,22); cx.fill(); cx.strokeStyle='#5CF2B0'; cx.lineWidth=3; cx.stroke();
+    cx.textAlign='center'; cx.textBaseline='middle'; cx.fillStyle='#fff'; cx.fillText(t1,W/2,100); cx.font='800 26px Inter, sans-serif'; cx.fillStyle='#5CF2B0'; cx.fillText(h.tip||'',W/2,141); cx.globalAlpha=1; }
+  // popups (trick shots come in one after another)
+  pops=pops.filter(function(p){ return t-p.t0<1500; });
+  pops.forEach(function(p){ if(t<p.t0) return; var k=(t-p.t0)/1500, y=p.y-k*60, px=clamp(p.x,180,W-180); cx.globalAlpha=Math.min(1,(1-k)*2.5); cx.textAlign='center'; cx.textBaseline='alphabetic'; cx.lineWidth=8; cx.strokeStyle='#04100A';
+    if(p.small){ cx.font=FONT(700,34); cx.strokeText(p.txt,px,y); cx.fillStyle=p.col||'#FFC82E'; cx.fillText(p.txt,px,y); cx.globalAlpha=1; return; }
+    if(p.lab){ cx.font=FONT(700,40); cx.strokeText(p.lab,px,y-50); cx.fillStyle=p.col||'#FFC82E'; cx.fillText(p.lab,px,y-50); }
+    cx.font=FONT(700,46); cx.strokeText(p.txt,px,y); cx.fillStyle='#fff'; cx.fillText(p.txt,px,y); cx.globalAlpha=1; });
   if(t-finalAt<2400){ var fk=(t-finalAt)/2400; cx.globalAlpha=Math.min(1,(1-fk)*3); cx.textAlign='center'; cx.textBaseline='alphabetic'; cx.lineWidth=10; cx.strokeStyle='#04100A';
     cx.font=FONT(700,80); cx.strokeText('FINAL 30!',W/2,400); cx.fillStyle='#FF8466'; cx.fillText('FINAL 30!',W/2,400);
     cx.font=FONT(700,46); cx.strokeText('DOUBLE POINTS',W/2,466); cx.fillStyle='#FFF04D'; cx.fillText('DOUBLE POINTS',W/2,466); cx.globalAlpha=1; }
   if(S.started&&!S.over&&outOfBalls()&&!B.moving&&!S.pending&&!(ss&&ss.state==='pick')){ cx.fillStyle='rgba(4,10,7,.82)'; rr(cx,W/2-360,H/2-100,720,200,24); cx.fill(); cx.strokeStyle='#FF7A7A'; cx.lineWidth=4; cx.stroke();
     cx.textAlign='center'; cx.textBaseline='alphabetic'; cx.fillStyle='#fff'; cx.font=FONT(700,58); cx.fillText('OUT OF BALLS',W/2,H/2-12); cx.font='700 34px Inter, sans-serif'; cx.fillStyle='#5CF2B0'; cx.fillText('←  Answer a question to get more',W/2,H/2+50); } }
-function drawMeter(){ var w=300, hgt=34, x=clamp(X(B.x)-w/2,14,W-w-14), y=Y(B.y)+38; if(y+hgt+30>H) y=Y(B.y)-38-hgt-30;
+function drawMeter(){ var w=300, hgt=34, x=clamp(X(B.x)-w/2,22,W-w-22), y=Y(B.y)+38; if(y+hgt+30>H) y=Y(B.y)-38-hgt-30;
   var p=CH.on?meter():0, mark=x+w/PMAX;
   cx.fillStyle='rgba(4,10,7,.88)'; rr(cx,x-8,y-8,w+16,hgt+40,14); cx.fill();
   var g=cx.createLinearGradient(x,0,x+w,0); g.addColorStop(0,'#5CF2B0'); g.addColorStop(0.7,'#FFC82E'); g.addColorStop(1,'#FF7A7A');
@@ -674,18 +780,21 @@ function drawAim(){ var run=S.aim[0], rise=S.aim[1], bx=X(B.x), by=Y(B.y), ax=X(
   else if(m.d===1){ cx.font='800 30px Inter, sans-serif'; cx.fillText(num(m.n),vx,py+29); }
   else { cx.font='800 22px Inter, sans-serif'; var sg=m.n<0?MINUS:'', top=''+Math.abs(m.n), bot=''+m.d, fw=Math.max(cx.measureText(top).width,cx.measureText(bot).width), fx=vx+(sg?cx.measureText(sg).width+4:0);
     if(sg) cx.fillText(sg,vx,py+28); cx.textAlign='center'; cx.fillText(top,fx+fw/2,py+15); cx.fillText(bot,fx+fw/2,py+43); cx.fillRect(fx-2,py+27,fw+4,3); } }
-function drawGuide(h){ var k=[S.hole,B.x.toFixed(3),B.y.toFixed(3),S.aim[0],S.aim[1],h.slider?Math.round(gt*10):0,S.lv.cup,buffOn('magnet')].join(',');
+/* the Guide Line: the real path of a full-power putt, through portals, pads and blades (it follows the blades as they turn) */
+function drawGuide(h){ var moving=h.slider||h.spin.length, k=[S.hole,B.x.toFixed(3),B.y.toFixed(3),S.aim[0],S.aim[1],moving?Math.round(gt*8):0,S.lv.cup,buffOn('magnet')].join(',');
   if(k!==guideKey){ guideKey=k; guide=(S.aim[0]||S.aim[1])? simulate(h,B.x,B.y,S.aim[0],S.aim[1],gt,U('cup'),buffOn('magnet')) : null; }
-  if(!guide) return; cx.fillStyle='rgba(255,255,255,.75)'; guide.path.forEach(function(p,i){ if(i%3===0){ cx.beginPath(); cx.arc(X(p[0]),Y(p[1]),3.5,0,6.28); cx.fill(); } }); }
+  if(!guide) return; cx.fillStyle='#fff'; cx.strokeStyle='rgba(4,10,7,.6)'; cx.lineWidth=2; guide.path.forEach(function(p,i){ if(p&&i%3===0){ cx.beginPath(); cx.arc(X(p[0]),Y(p[1]),5,0,6.28); cx.fill(); cx.stroke(); } }); }
 
 /* ---------- putting ---------- */
 function outOfBalls(){ return S.balls<1&&!buffOn('free'); }
+function onFire(){ return S.fire>=3; }
 function ready(){ return !!(S.started&&!S.over&&!B.moving&&!B.sunk&&!B.hidden&&!S.pending&&$('mg-shop').hidden&&!(S.ss&&S.ss.state==='pick')); }
 function nudge(){ SND.empty(); var q=$('mg-q'); q.classList.remove('nudge'); void q.offsetWidth; q.classList.add('nudge'); }
 function setAim(run,rise){ var L=Math.hypot(run,rise); if(L>MAXD){ run=Math.round(run*MAXD/L); rise=Math.round(rise*MAXD/L); }
   while(Math.hypot(run,rise)>MAXD){ if(Math.abs(run)>Math.abs(rise)) run-=Math.sign(run); else rise-=Math.sign(rise); }
   S.aim=[run,rise]; }
-function startRoll(vx,vy){ var h=hole(S.hole); B.vx=vx; B.vy=vy; B.moving=true; B.cup=S.cup; B.cr=U('cup'); B.mag=buffOn('magnet'); B.lip=0; rollT=0; S.from=[B.x,B.y]; S.strokes++; SND.putt(); }
+function freshPutt(){ B.banks=0; B.bumps=0; B.portal=0; B.boost=0; B.whack=0; B.dist=0; B.lost=''; B.boostSnd=0; }
+function startRoll(vx,vy){ B.vx=vx; B.vy=vy; B.moving=true; B.cup=S.cup; B.cr=U('cup'); B.mag=buffOn('magnet'); B.lip=0; rollT=0; freshPutt(); S.from=[B.x,B.y]; S.strokes++; SND.putt(); }
 function putt(pw){ if(!ready()) return false; var run=S.aim[0], rise=S.aim[1]; if(!run&&!rise) return false;
   if(outOfBalls()){ nudge(); return false; } if(!buffOn('free')) S.balls--; S.putts++; if(pw==null) pw=1; lastPow=pw;
   var v=launchVel(run,rise), k=Math.sqrt(Math.max(0.03,pw)); startRoll(v[0]*k,v[1]*k); save(); hud(); return true; }   // power p rolls the ball p × the aim distance
@@ -699,22 +808,36 @@ function settle(){ B.moving=false; S.ball=[B.x,B.y]; if(S.ss&&S.ss.state==='roll
   if(S.strokes>=hole(S.hole).par+3){ pickUp(); return; } save(); hud(); }
 function sink(){ B.moving=false; B.sunk=true; sinkAt=now(); SND.cup(); if(S.ss&&S.ss.state==='roll') ssResult(true); holeDone(); }
 function holePoints(st,par){ var d=st-par; return st===1?[500,'HOLE IN ONE!']:d<=-2?[400,'EAGLE!']:d===-1?[300,'BIRDIE!']:d===0?[200,'PAR']:d===1?[100,'BOGEY']:d===2?[60,'DOUBLE BOGEY']:[40,'IN THE CUP']; }
-function holeDone(){ var h=hole(S.hole), hp=holePoints(S.strokes,h.par), pts=Math.round(hp[0]*U('mult')*(finalOn()?2:1)), cup=S.cup;
-  S.score+=pts; S.card[S.hole%9]=S.strokes; S.holes++; if(S.strokes===1) S.aces++; S.pending=true;
+/* trick shots: bonus points for how the ball got in */
+function tricks(h){ var o=[];
+  if(B.banks>=2) o.push(['DOUBLE BANK',100]); else if(B.banks===1) o.push(['BANK SHOT',50]);
+  if(B.bumps>=2) o.push(['PINBALL!',100]); else if(B.bumps===1) o.push(['BUMPER BOUNCE',50]);
+  if(B.portal) o.push(['PORTAL PUTT',75]); if(B.boost) o.push(['TURBO PUTT',50]);
+  if(B.whack) o.push([h.spin.some(function(s){ return s.mill; })?'WINDMILL WHACK':'SPUN IN',75]);
+  if(B.dist>=10) o.push(['LONG PUTT',50]);
+  if(h.gems.length&&S.gems.length===h.gems.length) o.push(['COIN SWEEP',100]);
+  return o; }
+function bonusK(){ return U('mult')*(finalOn()?2:1)*(onFire()?2:1); }
+function holeDone(){ var h=hole(S.hole), hp=holePoints(S.strokes,h.par), k=bonusK(), pts=Math.round(hp[0]*k), cup=S.cup, tr=tricks(h), extra=0, wasFire=onFire();
+  tr.forEach(function(x,i){ var p=Math.round(x[1]*k); extra+=p; pops.push({x:X(cup[0]),y:clamp(Y(cup[1])+70,160,H-200)+i*46,t0:now()+500+i*420,txt:x[0]+' +'+p,small:true,col:'#FFC82E'}); });
+  S.score+=pts+extra; S.tricks=(S.tricks||0)+tr.length+(S.strokes===1?1:0); S.card[S.hole%9]=S.strokes; S.holes++; if(S.strokes===1) S.aces++; S.pending=true;
+  if(S.strokes<=h.par) S.fire=Math.min(3,S.fire+1); else S.fire=0;
   pops.push({x:X(cup[0]),y:Y(cup[1])-40,t0:now(),txt:'+'+pts,lab:hp[1],col:S.strokes<h.par?'#5CF2B0':'#FFC82E'});
+  if(onFire()&&!wasFire) pops.push({x:W/2,y:H/2+40,t0:now()+600+tr.length*420,txt:'ON FIRE! ×2 POINTS',small:true,col:'#FF8A3D'});
   if(S.strokes===1){ SND.ace(); var p=stagePoint(cv,X(cup[0]),Y(cup[1])); confetti(p[0],p[1],130,2.8); } else if(S.strokes<h.par){ SND.sunk(); var p2=stagePoint(cv,X(cup[0]),Y(cup[1])); confetti(p2[0],p2[1],50,2.4); } else SND.sunk();
-  save(); hud(); setTimeout(nextHole,1900); }
-function pickUp(){ var pts=Math.round(25*U('mult')*(finalOn()?2:1)); S.score+=pts; S.card[S.hole%9]=S.strokes; S.holes++; S.pending=true;
+  tr.forEach(function(x,i){ setTimeout(function(){ SND.trick(i); },500+i*420); });
+  save(); hud(); setTimeout(nextHole,1900+tr.length*420); }
+function pickUp(){ var pts=Math.round(25*U('mult')*(finalOn()?2:1)); S.score+=pts; S.card[S.hole%9]=S.strokes; S.holes++; S.pending=true; S.fire=0;
   pops.push({x:X(B.x),y:Y(B.y)-40,t0:now(),txt:'+'+pts,lab:'PICKED UP',col:'#FF8466'}); toast('Out of strokes on this hole. On to the next!'); save(); hud(); setTimeout(nextHole,1900); }
 function nextHole(){ if(!S.pending||S.over) return; S.pending=false; startHole(S.hole+1); }
-function startHole(n){ var h=hole(n); S.hole=n; S.strokes=0; S.gems=[]; if(n%9===0) S.card=[];
+function startHole(n){ S.hole=n; S.pending=false; var h=hole(n); S.strokes=0; S.gems=[]; if(n%9===0) S.card=[];
   if(h.slope){ S.ss=makeSS(h); S.cup=S.ss.cup.slice(); } else { S.ss=null; S.cup=h.cup.slice(); }
-  S.ball=h.tee.slice(); S.from=h.tee.slice(); S.aim=[S.cup[0]>=h.tee[0]?3:-3,0]; guideKey=''; placeBall(); drawTurf(); ssDraw(); if(h.slope) SND.slope(); save(); hud(); }
+  S.ball=h.tee.slice(); S.from=h.tee.slice(); S.aim=[S.cup[0]>=h.tee[0]?3:-3,0]; guideKey=''; B.pcool=0; trail=[]; placeBall(); drawTurf(); ssDraw(); bannerAt=now(); if(h.slope) SND.slope(); save(); hud(); }
 function placeBall(){ B.x=S.ball[0]; B.y=S.ball[1]; B.vx=B.vy=0; B.moving=false; B.sunk=false; B.hidden=false; }
-function splash(){ B.moving=false; B.hidden=true; SND.splash(); pops.push({x:X(B.x),y:Y(B.y)-20,t0:now(),txt:'SPLASH!',lab:'',col:''});
+function splash(){ var well=B.lost==='well'; B.moving=false; B.hidden=true; if(well) SND.gone(); else SND.splash(); pops.push({x:X(B.x),y:Y(B.y)-20,t0:now(),txt:well?'GONE!':TH().lost,lab:'',col:''});
   if(S.ss&&S.ss.state==='roll') ssResult(false);
-  setTimeout(function(){ if(S.over) return; B.x=S.from[0]; B.y=S.from[1]; B.hidden=false; S.ball=S.from.slice(); if(S.strokes>=hole(S.hole).par+3){ pickUp(); return; } save(); hud(); },900); }
-function gem(i){ S.gems.push(i); var pts=Math.round(50*U('mult')*(finalOn()?2:1)); S.score+=pts; var g=hole(S.hole).gems[i]; pops.push({x:X(g[0]),y:Y(g[1])-20,t0:now(),txt:'+'+pts,lab:'',col:''}); SND.gem(); hud(); }
+  setTimeout(function(){ if(S.over) return; B.x=S.from[0]; B.y=S.from[1]; B.hidden=false; B.pcool=1; S.ball=S.from.slice(); if(S.strokes>=hole(S.hole).par+3){ pickUp(); return; } save(); hud(); },900); }
+function gem(i){ S.gems.push(i); var pts=Math.round(50*bonusK()); S.score+=pts; var g=hole(S.hole).gems[i]; pops.push({x:X(g[0]),y:Y(g[1])-20,t0:now(),txt:'+'+pts,lab:'',col:''}); SND.gem(); hud(); }
 
 /* ---------- slope shot ---------- */
 function ssDraw(){ var ss=S.ss, el=$('mg-ss'); if(!ss||(ss.state==='done'&&!ss.hideAt)){ el.hidden=true; return; } el.hidden=false; el.classList.toggle('done',ss.state==='done');
@@ -723,7 +846,7 @@ function ssDraw(){ var ss=S.ss, el=$('mg-ss'); if(!ss||(ss.state==='done'&&!ss.h
   var m=$('mg-ssmsg'); m.className='mg-ssmsg '+(ss.cls||''); m.innerHTML=ss.msg||''; }
 function ssPick(i){ var ss=S.ss; if(!ss||ss.state!=='pick'||!S.started||S.over||!$('mg-shop').hidden||B.moving) return; var c=ss.ch[i]; if(!c) return;
   ss.pick=i; ss.state='roll'; ss.msg='Rolling along slope '+fmtR(c)+'…'; ss.cls=''; ssDraw(); var v=ssVel(ss,c); startRoll(v[0],v[1]); }
-function ssResult(sunk){ var ss=S.ss, c=ss.ch[ss.pick], right=ss.ch.filter(function(x){ return x.ok; })[0], ex='Rise '+num(ss.rise)+' over run '+num(ss.run)+' = '+fmtR(R(ss.rise,ss.run))+'.';
+function ssResult(sunk){ var ss=S.ss, c=ss.ch[ss.pick], ex='Rise '+num(ss.rise)+' over run '+num(ss.run)+' = '+fmtR(R(ss.rise,ss.run))+'.';
   ss.state='done'; ss.hideAt=now()+(sunk?2600:6500);
   if(sunk){ ss.msg='Nailed it! '+ex; ss.cls='ok'; }
   else { ss.msg=(c.ok?'Right slope, but it did not drop. ':'Not '+fmtR(c)+'. '+c.why+' ')+ex; ss.cls='bad'; ghostAt=now(); }
@@ -731,16 +854,19 @@ function ssResult(sunk){ var ss=S.ss, c=ss.ch[ss.pick], right=ss.ch.filter(funct
 $('mg-sschoices').addEventListener('click',function(e){ var b=e.target.closest('.mg-ssb'); if(b&&!b.disabled) ssPick(+b.dataset.i); });
 
 /* ---------- the loop ---------- */
-function update(dt){ var h=hole(S.hole);
+function update(dt){ var h=hole(S.hole), i;
   if(!B.moving){ gt+=dt;
-    var sl=sliderAt(h,gt); if(sl&&!B.hidden&&!B.sunk){ var r=sl.r; if(B.x>r[0]-BR&&B.x<r[0]+r[2]+BR&&B.y>r[1]-BR&&B.y<r[1]+r[3]+BR){ B.x=B.x<r[0]+r[2]/2? r[0]-BR-0.01 : r[0]+r[2]+BR+0.01; S.ball=[B.x,B.y]; guideKey=''; } }
+    if(B.hidden||B.sunk||S.pending) return;
+    var sl=sliderAt(h,gt); if(sl){ var r=sl.r; if(B.x>r[0]-BR&&B.x<r[0]+r[2]+BR&&B.y>r[1]-BR&&B.y<r[1]+r[3]+BR){ B.x=B.x<r[0]+r[2]/2? r[0]-BR-0.01 : r[0]+r[2]+BR+0.01; S.ball=[B.x,B.y]; guideKey=''; } }
+    for(i=0;i<h.spin.length;i++){ var hit=spinHit(B,h.spin[i],gt); if(hit>0.05){ CH.on=false; B.moving=true; B.cup=S.cup; B.cr=U('cup'); B.mag=buffOn('magnet'); B.lip=0; rollT=0; freshPutt(); S.from=[B.x,B.y]; tapSnd(hit); break; } }   // a blade knocks a resting ball (no stroke)
     return; }
   var n=Math.max(1,Math.round(dt/DT)); rollT+=dt;
-  for(var i=0;i<n;i++){ gt+=DT; var ev=phys(B,h,gt,true);
-    if(ev==='tap') tapSnd(B.tapV); else if(ev==='boing') SND.boing(); else if(ev==='lip') SND.lip(); else if(ev==='gem') gem(B.gem);
+  for(i=0;i<n;i++){ gt+=DT; var ev=phys(B,h,gt,true);
+    if(ev==='tap'||ev==='whack') tapSnd(B.tapV); else if(ev==='boing') SND.boing(); else if(ev==='lip') SND.lip(); else if(ev==='gem') gem(B.gem); else if(ev==='portal'){ SND.portal(); trail=[]; }
     else if(ev==='water'){ splash(); return; } else if(ev==='sink'){ sink(); return; } else if(ev==='stop'){ settle(); return; } }
+  if(B.boost&&!B.boostSnd){ B.boostSnd=1; SND.zip(); }
   if(rollT>20){ B.vx=B.vy=0; settle(); } }
-var lastF=now(); function loop(){ var t=now(), dt=Math.min(0.05,(t-lastF)/1000); lastF=t; if(S.started&&!S.over) update(dt); draw();
+var lastF=now(); function loop(){ var t=now(), dt=Math.min(0.05,(t-lastF)/1000); lastF=t; if(S.started&&!S.over&&!window.__paused) update(dt); draw();
   var pb=$('mg-putt'), rd=ready()&&!!(S.aim[0]||S.aim[1]); if(pb.disabled===rd){ pb.disabled=!rd; pb.classList.toggle('ready',rd); } requestAnimationFrame(loop); }
 function unitPt(e){ var r=cv.getBoundingClientRect(); return [((e.clientX-r.left)*W/r.width-OX)/UN, ((e.clientY-r.top)*H/r.height-OY)/UN]; }
 function snapFrom(p){ var run=Math.round(p[0]-B.x), rise=Math.round(B.y-p[1]), L=Math.hypot(run,rise);
@@ -763,7 +889,7 @@ $('mg-go').addEventListener('click',function(){ var n=$('mg-nameinput').value.tr
 function endRun(){ S.over=true; S.pending=false; B.moving=false; clearTimeout(nextT); $('mg-shop').hidden=true; $('mg-course').classList.remove('final'); save(); showEnd(true); }
 function showEnd(celebrate){ $('mg-endname').textContent=S.name; $('mg-endscore').textContent=S.score.toLocaleString();
   var acc=S.answered?Math.round(100*S.correct/S.answered):0;
-  $('mg-endstats').innerHTML=[['Correct',S.correct+' / '+S.answered],['Accuracy',acc+'%'],['Best streak',S.best],['Holes played',S.holes],['Holes in one',S.aces]].map(function(a){ return '<div class="mg-stat"><div class="l">'+a[0]+'</div><div class="v">'+a[1]+'</div></div>'; }).join('');
+  $('mg-endstats').innerHTML=[['Correct',S.correct+' / '+S.answered],['Accuracy',acc+'%'],['Best streak',S.best],['Holes played',S.holes],['Trick shots',S.tricks||0]].map(function(a){ return '<div class="mg-stat"><div class="l">'+a[0]+'</div><div class="v">'+a[1]+'</div></div>'; }).join('');
   $('mg-endtopics').innerHTML=Object.keys(S.topics).map(function(k){ var t=S.topics[k]; return '<div class="mg-stat"><div class="l">'+k+'</div><div class="v">'+t[0]+' / '+t[1]+'</div></div>'; }).join('');
   /* LEADERBOARD HOOK: the shared score code (scorecode.js) shows the student's code here */
   if(window.SpitzCode&&SpitzCode.show) try{ SpitzCode.show('mg','mini_golf',S); }catch(e){}
@@ -813,7 +939,7 @@ hud(); timerDraw(); setInterval(timerDraw,250); requestAnimationFrame(loop);
 if(document.fonts&&document.fonts.ready) document.fonts.ready.then(function(){ /* canvas text picks up Fredoka once it loads */ });
 
 /* test hooks */
-window.__G={ state:function(){ return S; }, ball:function(){ return B; }, hole:hole, holes:HOLES, simulate:simulate, makeSS:makeSS, ssVel:ssVel, setAim:setAim, putt:putt, ssPick:ssPick, ready:ready,
+window.__G={ state:function(){ return S; }, ball:function(){ return B; }, hole:hole, pool:POOL, slopes:SLOPE, phys:phys, spinHit:spinHit, tricks:tricks, update:function(dt){ update(dt); }, pause:function(b){ window.__paused=!!b; }, onFire:onFire, drawTurf:drawTurf, simulate:simulate, makeSS:makeSS, ssVel:ssVel, setAim:setAim, putt:putt, ssPick:ssPick, ready:ready,
   startHole:startHole, chargeStart:chargeStart, chargeEnd:chargeEnd, meter:meter, lastPow:function(){ return lastPow; }, end:function(){ S.endAt=now()-1; timerDraw(); }, next:function(){ return QS.next(); }, set:QS?QS.set:null, fast:FAST, UN:UN, gt:function(){ return gt; }, showQ:showQ };
 window.__verify=function(n){ var bad=[], i; for(i=0;i<n;i++){ var q=QS.next(), ok=q.choices.filter(function(c){ return c.ok; });
     if(ok.length!==1) bad.push(['not one right',q.prompt]); if(new Set(q.choices.map(function(c){ return c.html; })).size!==4) bad.push(['repeat labels',q.prompt]);
