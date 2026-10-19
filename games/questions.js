@@ -1042,6 +1042,16 @@ var HIDDEN=['mult'], FALLBACK='slope';
 (function(){ var qs=params(); if(SETS[qs.set]&&HIDDEN.indexOf(qs.set)<0) return;
   try{ history.replaceState(history.state,'',location.pathname+'?set='+FALLBACK+location.hash); }catch(e){} })();
 
+/* Assigned skills (lock): while ASSIGN lists sets, a game only plays those sets and topics (index.html has the same list). A link with
+   any other set goes to the first assigned one, and topics outside the assignment are dropped. Empty ASSIGN to unlock.
+   e.g. [{id:'slide'},{id:'stdform',topics:['x']}]; no topics means every topic in that set. */
+var ASSIGN=[{id:'slide'},{id:'stdform'}];
+(function(){ if(!ASSIGN.length) return; var qs=params(), k=ASSIGN.filter(function(a){ return a.id===qs.set; })[0]||ASSIGN[0];
+  var all=(SETS[k.id]?SETS[k.id].topics:[]).map(function(t){ return t[0]; }), ok=(k.topics&&k.topics.length?k.topics:all).filter(function(t){ return all.indexOf(t)>=0; });
+  var want=(k.id===qs.set?(qs.topics||'').split(','):[]).filter(function(t){ return ok.indexOf(t)>=0; }); if(!want.length) want=ok;
+  if(k.id===qs.set&&want.join(',')===(qs.topics||'')) return;
+  try{ history.replaceState(history.state,'',location.pathname+'?set='+k.id+'&topics='+want.join(',')+location.hash); }catch(e){} })();
+
 function plain(h){ return String(h).replace(/<span class="[a-z]+-fr"><span>(.*?)<\/span><span>(.*?)<\/span><\/span>/g,'$1/$2').replace(/<[^>]+>/g,''); }
 function params(){ var qs={}; try{ (location.search||'').replace(/^\?/,'').split('&').forEach(function(kv){ var p=kv.split('='); if(p[0]) qs[decodeURIComponent(p[0])]=decodeURIComponent(p[1]||''); }); }catch(e){} return qs; }
 

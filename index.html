@@ -155,12 +155,18 @@ var SETS=[
 ];
 /* Sets students can't pick right now (Kody, 2026-10-19: students picked multiplication because it's easy). Empty HIDE to bring it back; games/questions.js has the same list. */
 var HIDE=['mult']; SETS=SETS.filter(function(x){ return HIDE.indexOf(x.id)<0; });
+/* Assigned skills (lock): while ASSIGN lists sets, students can only pick those sets and topics, and the banner says "Assigned by Mr. Spitz".
+   games/questions.js has the same list, so old links and bookmarks follow it too. Empty ASSIGN to unlock (SKILL below then suggests). */
+var ASSIGN=[{id:'slide'},{id:'stdform'}];
+if(ASSIGN.length) SETS=ASSIGN.map(function(k){ var s=SETS.filter(function(x){ return x.id===k.id; })[0]; if(!s) return null;
+  var tp=k.topics&&k.topics.length?s.topics.filter(function(t){ return k.topics.indexOf(t[0])>=0; }):s.topics; return {id:s.id,name:s.name,unit:s.unit,topics:tp}; }).filter(Boolean);
 var st={game:null,set:SETS[0].id,t:{}};
 SETS.forEach(function(x){ st.t[x.id]=x.topics.map(function(t){ return t[0]; }); });
 /* retired topic ids in saved picks: slope's 'yint' merged into 'slope' (Kody, 2026-10-19) */
 var ALIAS={ slope:{ yint:'slope' } };
 try{ var sv=JSON.parse(localStorage.getItem('spitz_hub2')||'null'); if(sv&&sv.t) SETS.forEach(function(x){ if(sv.t[x.id]) st.t[x.id]=sv.t[x.id].map(function(t){ return (ALIAS[x.id]||{})[t]||t; }).filter(function(t,i,a){ return a.indexOf(t)===i; }).filter(function(t){ return x.topics.some(function(y){ return y[0]===t; }); }); }), st.game=sv.game||null, st.set=sv.set||SETS[0].id; }catch(e){}
 if(!SETS.some(function(x){ return x.id===st.set; })) st.set=SETS[0].id;
+SETS.forEach(function(x){ if(!st.t[x.id].length) st.t[x.id]=x.topics.map(function(t){ return t[0]; }); });
 function $(i){ return document.getElementById(i); }
 function save(){ try{ localStorage.setItem('spitz_hub2',JSON.stringify(st)); }catch(e){} }
 
@@ -183,12 +189,12 @@ $('games').addEventListener('click',function(e){ var b=e.target.closest('.game')
 /* Suggested skill (Kody, 2026-10-19): Mr. Spitz points students at what to practice. List set ids from SETS above, and optionally
    which topics, e.g. {id:'slide', topics:['both']}. An empty list hides the banner. note is an optional short line from Mr. Spitz. */
 var SKILL={ sets:[{id:'slide'},{id:'stdform'}], note:'' };
-(function(){ var list=SKILL.sets.map(function(k){ var s=SETS.filter(function(x){ return x.id===k.id; })[0]; return s&&{s:s,t:(k.topics||[]).filter(function(t){ return s.topics.some(function(y){ return y[0]===t; }); })}; }).filter(Boolean);
+(function(){ var lock=ASSIGN.length, list=(lock?ASSIGN:SKILL.sets).map(function(k){ var s=SETS.filter(function(x){ return x.id===k.id; })[0]; return s&&{s:s,t:(k.topics||[]).filter(function(t){ return s.topics.some(function(y){ return y[0]===t; }); })}; }).filter(Boolean);
   if(!list.length) return;
-  $('skill').innerHTML='<span class="lab">⭐ Suggested by Mr. Spitz</span>'+list.map(function(k,i){ var tn=k.t.map(function(t){ return k.s.topics.filter(function(y){ return y[0]===t; })[0][1]; });
+  $('skill').innerHTML=(lock?'<span class="lab">📌 Assigned by Mr. Spitz</span>':'<span class="lab">⭐ Suggested by Mr. Spitz</span>')+list.map(function(k,i){ var tn=k.t.map(function(t){ return k.s.topics.filter(function(y){ return y[0]===t; })[0][1]; });
       return '<button data-k="'+i+'">'+k.s.name+'<small>'+(tn.length?tn.join(', '):k.s.unit)+'</small></button>'; }).join('')+(SKILL.note?'<p class="note">'+SKILL.note+'</p>':'');
   $('skill').hidden=false;
-  list.slice().reverse().forEach(function(k){ var el=document.querySelector('.set[data-s="'+k.s.id+'"]'); if(el){ el.insertAdjacentHTML('afterbegin','<span class="tag">Suggested</span>'); $('sets').prepend(el); } });   /* suggested cards go first */
+  list.slice().reverse().forEach(function(k){ var el=document.querySelector('.set[data-s="'+k.s.id+'"]'); if(el){ el.insertAdjacentHTML('afterbegin','<span class="tag">'+(lock?'Assigned':'Suggested')+'</span>'); $('sets').prepend(el); } });   /* suggested cards go first */
   $('skill').addEventListener('click',function(e){ var b=e.target.closest('[data-k]'); if(!b) return; var k=list[+b.dataset.k];
     st.set=k.s.id; st.t[k.s.id]=k.t.length?k.t.slice():k.s.topics.map(function(t){ return t[0]; }); save(); render(); });
 })();
