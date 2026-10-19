@@ -1,5 +1,5 @@
 {
- "updated": "2026-10-16T21:42:28.018Z",
+ "updated": "2026-10-19T21:19:22.247Z",
  "games": {
   "splat_range": {
    "name": "Splat Range",
@@ -8,6 +8,13 @@
      "name": "Sebastian E",
      "score": "65,480",
      "acc": 91,
+     "set": "Multiplication facts",
+     "date": "2026-10-16"
+    },
+    {
+     "name": "Tanix.B",
+     "score": "43,406",
+     "acc": 97,
      "set": "Multiplication facts",
      "date": "2026-10-16"
     },
@@ -66,6 +73,13 @@
      "date": "2026-10-16"
     },
     {
+     "name": "Tanix.B",
+     "score": "144,340",
+     "acc": 81,
+     "set": "Multiplication facts",
+     "date": "2026-10-16"
+    },
+    {
      "name": "Leonardo A",
      "score": "120,527",
      "acc": 96,
@@ -84,13 +98,6 @@
      "score": "105,675",
      "acc": 95,
      "set": "Multiplication facts",
-     "date": "2026-10-16"
-    },
-    {
-     "name": "tanix B",
-     "score": "94,501",
-     "acc": 70,
-     "set": "Slope-intercept form",
      "date": "2026-10-16"
     },
     {
@@ -186,15 +193,15 @@
    "name": "Football Buds",
    "top": [
     {
-     "name": "Marcus.Trevino",
-     "score": "35 – 7",
+     "name": "Marcus.T",
+     "score": "49 – 0",
      "acc": 100,
      "set": "Multiplication facts",
-     "date": "2026-10-16"
+     "date": "2026-10-19"
     },
     {
-     "name": "Marcus. T",
-     "score": "28 – 0",
+     "name": "Marcus.Trevino",
+     "score": "35 – 7",
      "acc": 100,
      "set": "Multiplication facts",
      "date": "2026-10-16"
@@ -273,6 +280,13 @@
    "name": "Dash",
    "top": [
     {
+     "name": "Alexander Limon",
+     "score": "14,430",
+     "acc": 100,
+     "set": "Multiplication facts · Facts 4–6, Facts 7–9, Facts 10–12",
+     "date": "2026-10-16"
+    },
+    {
      "name": "EMily R",
      "score": "13,300",
      "acc": 93,
@@ -284,13 +298,6 @@
      "score": "9,310",
      "acc": 100,
      "set": "Multiplication facts · Facts 0–3, Facts 4–6",
-     "date": "2026-10-16"
-    },
-    {
-     "name": "Alexander Limon",
-     "score": "7,440",
-     "acc": 98,
-     "set": "Multiplication facts · Facts 4–6, Facts 7–9, Facts 10–12",
      "date": "2026-10-16"
     },
     {
@@ -428,6 +435,25 @@
      "acc": 78,
      "set": "Multiplication facts",
      "date": "2026-10-16"
+    }
+   ]
+  },
+  "brick_breaker": {
+   "name": "Brick Breaker",
+   "top": [
+    {
+     "name": "Sebastian E.",
+     "score": "51,997",
+     "acc": 93,
+     "set": "Slope-intercept form · Find the y-intercept",
+     "date": "2026-10-19"
+    },
+    {
+     "name": "Sergio.C",
+     "score": "16,920",
+     "acc": 94,
+     "set": "Multiplication facts",
+     "date": "2026-10-19"
     }
    ]
   },
