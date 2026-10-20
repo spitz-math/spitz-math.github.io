@@ -83,10 +83,12 @@ header{ display:flex; align-items:center; gap:31px; }
 .toc-t a{ color:var(--chalk); text-decoration:underline; text-decoration-color:rgba(255,77,18,.75); text-decoration-thickness:.08em; text-underline-offset:.2em; }
 .toc-t tr.sec td{ background:var(--sec); color:#111; font-weight:800; }
 .toc-t tr.sec td.c-first, .toc-t tr.sec td.c-last, .toc-t tr.sec a{ color:#111; }
-.toc-t tr.newest td{ color:var(--cheese); font-weight:700; }
-.toc-t tr.newest td.c-first{ color:var(--cheese); }
-.toc-t tr.newest td:first-child{ box-shadow:inset 6px 0 0 var(--cheese); }
-.toc-t tr.sec.newest td, .toc-t tr.sec.newest td.c-first{ color:#111; }   /* a unit header keeps its own color; it just gets the marker */
+/* newest entries: the whole row is highlighted (links included), like a highlighter across the line */
+.toc-t tr.newest td{ background:var(--cheese) !important; color:#111; font-weight:700; }
+.toc-t tr.newest td.c-first, .toc-t tr.newest td.c-last, .toc-t tr.newest a{ color:#111; }
+.toc-t tr.newest a{ text-decoration-color:rgba(0,0,0,.55); }
+.toc-t tr.newest + tr.newest td{ border-top:1px solid rgba(0,0,0,.18); }
+.toc-t tr.sec.newest td{ background:var(--sec) !important; box-shadow:inset 0 -3px 0 var(--cheese); }   /* a unit header keeps its own color */
 .empty b{ color:var(--chalk); }
 
 /* warm-up */
@@ -498,7 +500,7 @@ body.nw-open #stage .tmr-chip{ left:905px; }
         <span class="hint">Leave blank to use the address built into this file.</span>
       </label>
     </details>
-    <p class="hint" style="margin:0"><b>Table of contents status:</b> <span id="tocInfo"></span><br>Board version 2026-10-20a</p>
+    <p class="hint" style="margin:0"><b>Table of contents status:</b> <span id="tocInfo"></span><br>Board version 2026-10-20b</p>
     <p class="msg" id="setupMsg" role="status"></p>
     <div class="row"><button type="button" class="pri" id="saveSetup">Save setup</button><button value="cancel">Cancel</button></div>
   </form>
@@ -666,7 +668,9 @@ const SAVE_URL = "https://script.google.com/macros/s/AKfycbx639KsczdlRGLuWguhvJO
     /* highlight every entry from the newest date (all of today's entries on a day with several),
        not just the last row. Rows without a readable date fall back to highlighting the last row. */
     const dayOf = r => { for(const c of r){ const m = c.text.match(/\b(\d{1,2})\/(\d{1,2})\/(\d{2,4})\b/); if(m){ const y = +m[3] < 100 ? 2000 + +m[3] : +m[3]; return y * 10000 + +m[1] * 100 + +m[2]; } } return 0; };
-    const days = rows.map(dayOf), last = Math.max(...days);
+    const now = new Date(), todayN = now.getFullYear() * 10000 + (now.getMonth() + 1) * 100 + now.getDate();
+    const days = rows.map(dayOf), past = days.filter(d => d && d <= todayN);   // rows dated after today (added ahead of time) wait their turn
+    const last = past.length ? Math.max(...past) : Math.max(...days);
     const newest = new Set(last ? days.map((d, i) => d === last ? i : -1).filter(i => i >= 0) : [rows.length - 1]);
     const cls = i => i === 0 ? "c-first" : (i === n - 1 && n > 2 ? "c-last" : "");
     const cell = (c, i, tag) => "<" + tag + ' class="' + cls(i) + '">' + (c.href && tag === "td" ? '<a href="' + esc(c.href) + '" target="_blank" rel="noopener">' + esc(c.text) + "</a>" : esc(c.text)) + "</" + tag + ">";
