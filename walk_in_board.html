@@ -86,6 +86,7 @@ header{ display:flex; align-items:center; gap:31px; }
 .toc-t tr.newest td{ color:var(--cheese); font-weight:700; }
 .toc-t tr.newest td.c-first{ color:var(--cheese); }
 .toc-t tr.newest td:first-child{ box-shadow:inset 6px 0 0 var(--cheese); }
+.toc-t tr.sec.newest td, .toc-t tr.sec.newest td.c-first{ color:#111; }   /* a unit header keeps its own color; it just gets the marker */
 .empty b{ color:var(--chalk); }
 
 /* warm-up */
@@ -497,7 +498,7 @@ body.nw-open #stage .tmr-chip{ left:905px; }
         <span class="hint">Leave blank to use the address built into this file.</span>
       </label>
     </details>
-    <p class="hint" style="margin:0"><b>Table of contents status:</b> <span id="tocInfo"></span><br>Board version 2026-10-15f</p>
+    <p class="hint" style="margin:0"><b>Table of contents status:</b> <span id="tocInfo"></span><br>Board version 2026-10-20a</p>
     <p class="msg" id="setupMsg" role="status"></p>
     <div class="row"><button type="button" class="pri" id="saveSetup">Save setup</button><button value="cancel">Cancel</button></div>
   </form>
@@ -662,13 +663,18 @@ const SAVE_URL = "https://script.google.com/macros/s/AKfycbx639KsczdlRGLuWguhvJO
     });
     if(!rows.length) return false;
     const n = Math.max(head ? head.length : 0, ...rows.map(r => r.length));
+    /* highlight every entry from the newest date (all of today's entries on a day with several),
+       not just the last row. Rows without a readable date fall back to highlighting the last row. */
+    const dayOf = r => { for(const c of r){ const m = c.text.match(/\b(\d{1,2})\/(\d{1,2})\/(\d{2,4})\b/); if(m){ const y = +m[3] < 100 ? 2000 + +m[3] : +m[3]; return y * 10000 + +m[1] * 100 + +m[2]; } } return 0; };
+    const days = rows.map(dayOf), last = Math.max(...days);
+    const newest = new Set(last ? days.map((d, i) => d === last ? i : -1).filter(i => i >= 0) : [rows.length - 1]);
     const cls = i => i === 0 ? "c-first" : (i === n - 1 && n > 2 ? "c-last" : "");
     const cell = (c, i, tag) => "<" + tag + ' class="' + cls(i) + '">' + (c.href && tag === "td" ? '<a href="' + esc(c.href) + '" target="_blank" rel="noopener">' + esc(c.text) + "</a>" : esc(c.text)) + "</" + tag + ">";
     const out = '<table class="toc-t">' +
       (head ? "<thead><tr>" + head.map((c, i) => cell(c, i, "th")).join("") + "</tr></thead>" : "") +
       "<tbody>" + rows.map((r, ri) => {
         const col = r.map(c => c.color).find(c => c && !/^#f{3}(f{3})?$/i.test(c));
-        const k = (col ? "sec" : "") + (ri === rows.length - 1 ? " newest" : "");
+        const k = (col ? "sec" : "") + (newest.has(ri) ? " newest" : "");
         return "<tr" + (k.trim() ? ' class="' + k.trim() + '"' : "") + (col ? ' style="--sec:' + col + '"' : "") + ">" + r.map((c, i) => cell(c, i, "td")).join("") + "</tr>";
       }).join("") + "</tbody></table>";
     const box = $("tocNative"), keep = box.scrollTop;
