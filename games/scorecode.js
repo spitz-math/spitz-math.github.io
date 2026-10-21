@@ -56,15 +56,17 @@ var TOPIC_NAMES={ mult:['Facts 0–3','Facts 4–6','Facts 7–9','Facts 10–12
 
 /* Google Form for score submissions. With only url, the button copies the code and opens the form.
    Add the entry.NNNN ids of the Name and Score code questions (from a pre-filled link) to fill both in for the student. */
-/* Suggested skill bonus (Kody, 2026-10-21): a run on the skill Mr. Spitz suggests gets BONUS.pct percent more score, shown on the end
+/* Suggested skill bonus (Kody, 2026-10-21): a run on the skill Mr. Spitz suggests or assigns gets BONUS.pct percent more score, shown on the end
    screen and sealed into the code (read() gives bonus:true), so the leaderboard ranks the boosted score. SUGGEST matches the hub's SKILL list:
    set ids, and optionally topics, e.g. {id:'slide', topics:['both']} means only runs that stick to Both steps count. A run counts when its set
    is listed and every topic it plays is a suggested one. Versus games add the bonus to the Buds' side (rounded up).
    pct 0 or an empty list turns the bonus off. When the teacher panel's data/topics.json is loaded (window.SpitzTopics, set by questions.js),
    its suggest.sets and bonus win; it is read at the end of the run, so script order doesn't matter. BONUS below is the fallback. */
-var BONUS={ pct:25, suggest:[{id:'slide'},{id:'stdform'}] };
-function bonusCfg(){ var T=window.SpitzTopics, c={ pct:BONUS.pct, suggest:BONUS.suggest }; if(!T) return c;
-  if(T.suggest) c.suggest=T.suggest.sets||[]; if(T.bonus!=null) c.pct=+T.bonus||0; return c; }
+/* Assigned sets earn it too (Kody, 2026-10-21), so assign is matched the same way as suggest. */
+var BONUS={ pct:25, suggest:[{id:'slide'},{id:'stdform'}], assign:[{id:'slide'},{id:'stdform'}] };
+function bonusCfg(){ var T=window.SpitzTopics, c={ pct:BONUS.pct, suggest:BONUS.suggest, assign:BONUS.assign }; if(T){
+  if(T.suggest) c.suggest=T.suggest.sets||[]; if(T.assign) c.assign=T.assign; if(T.bonus!=null) c.pct=+T.bonus||0; }
+  c.list=(c.suggest||[]).concat(c.assign||[]); return c; }
 
 var FORM={ url:'https://docs.google.com/forms/d/117PeTh-trNH6GQbGTRlyUHhxr6qat_FGoPFjKV_e3qY/viewform', name:'', code:'' };
 
@@ -100,12 +102,10 @@ function linkSet(){ var q={}; try{ (location.search||'').replace(/^\?/,'').split
 
 /* -> the bonus percent this run earns (0 = none) */
 function bonusPct(){ var L=linkSet(), set=SETS[L.set], B=bonusCfg(); if(!set||!(B.pct>0)) return 0;
-  var k=(B.suggest||[]).filter(function(x){ return x&&x.id===set; })[0]; if(!k) return 0;
-  if(!k.topics||!k.topics.length) return B.pct;
-  var all=SET_TOPICS[set], al=TOPIC_ALIAS[set]||{}, ok=0;
-  k.topics.forEach(function(t){ var i=all.indexOf(al[t]||t); if(i>=0) ok|=1<<i; });
-  var full=0; all.forEach(function(t,i){ if(t) full|=1<<i; });
-  var played=L.topics||full; return played&~ok?0:B.pct; }
+  var all=SET_TOPICS[set], al=TOPIC_ALIAS[set]||{}, full=0; all.forEach(function(t,i){ if(t) full|=1<<i; });
+  var played=L.topics||full;
+  return B.list.some(function(k){ if(!k||k.id!==set) return false; if(!k.topics||!k.topics.length) return true;
+    var ok=0; k.topics.forEach(function(t){ var i=all.indexOf(al[t]||t); if(i>=0) ok|=1<<i; }); return !(played&~ok); })?B.pct:0; }
 function boost(v,pct,up){ v=+v||0; return v>0&&pct? (up?Math.ceil:Math.round)(v*(100+pct)/100) : v; }
 
 var RUDE=/FUCK|FUK|FCK|CUNT|SHT|ASS|FAG|CUM|DCK|DICK|PUSS|PNS|PENS|TWAT|SLUT|WHR|NGA|NGR|NAZ|KKK|RAPE|SEX|SXY|XXX|TTS|TTY|CLT|DYKE|GAY|HTLR|PUTA|CRAP|DAMN|HELL|BUTT|PEE|POOP/;
