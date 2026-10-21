@@ -111,7 +111,7 @@ function render(){
   $('p-title').innerHTML=esc(g.name)+' <span>Top 10</span>';
   $('p-sub').textContent=top.length?'Best score for each player, all question sets':'';
   $('board').innerHTML=top.length?top.map(function(e,i){
-      var meta=[e.set,fmtDay(e.date)].filter(Boolean).join(' · ');
+      var meta=[e.bonus?'⭐ Suggested skill bonus':'',e.set,fmtDay(e.date)].filter(Boolean).join(' · ');
       return '<div class="lb'+(i<3?' g'+(i+1):'')+'" style="animation-delay:'+(i*50)+'ms"><span class="rk">'+(i+1)+'</span><span class="nm">'+esc(e.name)+(meta?'<span class="meta">'+esc(meta)+'</span>':'')+'</span><span class="sc">'+esc(e.score)+'</span><span class="ac" title="Accuracy">'+(e.acc==null?'':esc(e.acc)+'%')+'</span></div>'; }).join('')
     :'<div class="empty">No scores posted for '+esc(g.name)+' yet. Be the first!</div>';
 }

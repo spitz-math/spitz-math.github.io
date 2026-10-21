@@ -228,7 +228,7 @@ function rankFor(game,set,when){ var best={}; entries.forEach(function(e){ if(e.
 function ranked(){ return rankFor(st.game,st.set,st.when); }
 function fmtDate(d){ return d?d.toLocaleDateString(undefined,{month:'short',day:'numeric',timeZone:'UTC'}):''; }
 function rowHtml(e,i,meta,hideBtn){ var acc=e.answered?Math.round(100*e.correct/e.answered)+'%':'';
-  return '<div class="lb'+(hideBtn?' t':'')+(i<3?' g'+(i+1):'')+'" style="animation-delay:'+(i*60)+'ms"><span class="rk">'+(i+1)+'</span><span class="nm">'+esc(e.name)+(meta?'<span class="meta">'+esc(meta(e))+'</span>':'')+'</span><span class="sc">'+esc(e.display)+'</span><span class="ac" title="Accuracy">'+acc+'</span>'+
+  return '<div class="lb'+(hideBtn?' t':'')+(i<3?' g'+(i+1):'')+'" style="animation-delay:'+(i*60)+'ms"><span class="rk">'+(i+1)+'</span><span class="nm">'+esc(e.name)+(meta?'<span class="meta">'+esc(meta(e))+'</span>':'')+'</span><span class="sc">'+esc(e.display)+(e.bonus?'<span title="Suggested skill bonus"> ⭐</span>':'')+'</span><span class="ac" title="Accuracy">'+acc+'</span>'+
     (hideBtn?'<button class="hide" data-hide="'+esc(e.who)+'" data-name="'+esc(e.name)+'" title="Keep this name off every board">Hide name</button>':'')+'</div>'; }
 
 function render(){
@@ -271,7 +271,7 @@ var API='https://api.github.com/repos/spitz-math/'+REPO+'/contents/data/leaderbo
 function dayIso(d){ return d?d.toISOString().slice(0,10):''; }
 function boardData(){ var out={ updated:new Date().toISOString(), games:{} };
   Object.keys(C.GAMES).forEach(function(id){ var top=rankFor(id,'*','all').slice(0,10); if(!top.length) return;
-    out.games[id]={ name:C.GAMES[id][1], top:top.map(function(e){ return { name:e.name.slice(0,30), score:e.display, acc:e.answered?Math.round(100*e.correct/e.answered):null, set:setLabel(e), date:dayIso(e.date) }; }) }; });
+    out.games[id]={ name:C.GAMES[id][1], top:top.map(function(e){ return { name:e.name.slice(0,30), score:e.display, acc:e.answered?Math.round(100*e.correct/e.answered):null, set:setLabel(e), date:dayIso(e.date), bonus:e.bonus?1:undefined }; }) }; });
   return out; }
 function pubStatus(t,cls){ var o=$('pub-status'); o.className='status'+(cls?' '+cls:''); o.textContent=t; }
 function b64(s){ return btoa(unescape(encodeURIComponent(s))); }

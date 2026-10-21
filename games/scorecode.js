@@ -56,6 +56,16 @@ var TOPIC_NAMES={ mult:['Facts 0–3','Facts 4–6','Facts 7–9','Facts 10–12
 
 /* Google Form for score submissions. With only url, the button copies the code and opens the form.
    Add the entry.NNNN ids of the Name and Score code questions (from a pre-filled link) to fill both in for the student. */
+/* Suggested skill bonus (Kody, 2026-10-21): a run on the skill Mr. Spitz suggests gets BONUS.pct percent more score, shown on the end
+   screen and sealed into the code (read() gives bonus:true), so the leaderboard ranks the boosted score. SUGGEST matches the hub's SKILL list:
+   set ids, and optionally topics, e.g. {id:'slide', topics:['both']} means only runs that stick to Both steps count. A run counts when its set
+   is listed and every topic it plays is a suggested one. Versus games add the bonus to the Buds' side (rounded up).
+   pct 0 or an empty list turns the bonus off. When the teacher panel's data/topics.json is loaded (window.SpitzTopics, set by questions.js),
+   its suggest.sets and bonus win; it is read at the end of the run, so script order doesn't matter. BONUS below is the fallback. */
+var BONUS={ pct:25, suggest:[{id:'slide'},{id:'stdform'}] };
+function bonusCfg(){ var T=window.SpitzTopics, c={ pct:BONUS.pct, suggest:BONUS.suggest }; if(!T) return c;
+  if(T.suggest) c.suggest=T.suggest.sets||[]; if(T.bonus!=null) c.pct=+T.bonus||0; return c; }
+
 var FORM={ url:'https://docs.google.com/forms/d/117PeTh-trNH6GQbGTRlyUHhxr6qat_FGoPFjKV_e3qY/viewform', name:'', code:'' };
 
 var ALPH='ABCDEFGHJKLMNPQRSTUVWXYZ23456789', SECRET='spitz|burger|arcade', BASE=Date.UTC(2026,7,1);
@@ -88,23 +98,34 @@ function linkSet(){ var q={}; try{ (location.search||'').replace(/^\?/,'').split
   if(m===full) m=0;                                     /* every topic = 0, same as none picked */
   return {set:set,topics:m}; }
 
+/* -> the bonus percent this run earns (0 = none) */
+function bonusPct(){ var L=linkSet(), set=SETS[L.set], B=bonusCfg(); if(!set||!(B.pct>0)) return 0;
+  var k=(B.suggest||[]).filter(function(x){ return x&&x.id===set; })[0]; if(!k) return 0;
+  if(!k.topics||!k.topics.length) return B.pct;
+  var all=SET_TOPICS[set], al=TOPIC_ALIAS[set]||{}, ok=0;
+  k.topics.forEach(function(t){ var i=all.indexOf(al[t]||t); if(i>=0) ok|=1<<i; });
+  var full=0; all.forEach(function(t,i){ if(t) full|=1<<i; });
+  var played=L.topics||full; return played&~ok?0:B.pct; }
+function boost(v,pct,up){ v=+v||0; return v>0&&pct? (up?Math.ceil:Math.round)(v*(100+pct)/100) : v; }
+
 var RUDE=/FUCK|FUK|FCK|CUNT|SHT|ASS|FAG|CUM|DCK|DICK|PUSS|PNS|PENS|TWAT|SLUT|WHR|NGA|NGR|NAZ|KKK|RAPE|SEX|SXY|XXX|TTS|TTY|CLT|DYKE|GAY|HTLR|PUTA|CRAP|DAMN|HELL|BUTT|PEE|POOP/;
-function make(gameId,S){ var g=GAMES[gameId]; if(!g) throw new Error('Unknown game '+gameId); var L=linkSet(), score;
-  if(g[2]==='versus') score=(clamp(S.buds,10)<<10)|clamp(S.rivals,10); else if(g[2]==='strokes') score=S.strokes; else score=S.score;
+/* salts 4–7 mark a code that earned the Suggested skill bonus (the score in it is already boosted) */
+function make(gameId,S){ var g=GAMES[gameId]; if(!g) throw new Error('Unknown game '+gameId); var L=linkSet(), score, pct=g[2]==='strokes'?0:bonusPct(), b=pct?4:0;
+  if(g[2]==='versus') score=(clamp(boost(S.buds,pct,true),10)<<10)|clamp(S.rivals,10); else if(g[2]==='strokes') score=S.strokes; else score=boost(S.score,pct);
   var f={ ver:0, game:g[0], set:L.set, topics:L.topics, len:S.len||0, day:today()%(1<<LAYOUT_B.day), score:score, correct:S.correct, answered:S.answered }, code;
-  for(var salt=0;salt<4;salt++){ code=encode(f,S.name,salt); if(!RUDE.test(code.replace(/-/g,''))) break; }
+  for(var salt=b;salt<b+4;salt++){ code=encode(f,S.name,salt); if(!RUDE.test(code.replace(/-/g,''))) break; }
   return code; }
 
 /* -> null if the code is malformed or does not belong to this name, else what the code holds */
 /* any=true skips the name check (the teacher's override for a mistyped name); the rest of the checks still apply */
 function read(code,name,any){ var c=String(code||'').toUpperCase().replace(/[^A-Z0-9]/g,''); if(c.length!==16) return null;
   var full=0n; for(var i=0;i<16;i++){ var v=ALPH.indexOf(c[i]); if(v<0) return null; full=(full<<5n)|BigInt(v); }
-  full^=MASK; var chk=full&0xFFFFn, P=(full>>16n)^stream(chk), ok=false;
-  for(var salt=0;salt<4&&!ok;salt++) ok=check(P,name,salt)===chk; if(!ok&&!any) return null;
+  full^=MASK; var chk=full&0xFFFFn, P=(full>>16n)^stream(chk), ok=false, salt;
+  for(salt=0;salt<8&&!ok;salt++) ok=check(P,name,salt)===chk; if(!ok&&!any) return null;
   var W=(P>>62n)===0n?LAYOUT_B:LAYOUT_A, f=unpack(P,W), id=null; Object.keys(GAMES).forEach(function(k){ if(GAMES[k][0]===f.game) id=k; });
   if(!id||f.set>=SETS.length||f.correct>f.answered) return null;
   var g=GAMES[id], set=SETS[f.set], r={ code:c.slice(0,4)+'-'+c.slice(4,8)+'-'+c.slice(8,12)+'-'+c.slice(12), game:id, gameName:g[1], kind:g[2],
-    set:set||'', setName:set?SET_NAMES[set]:'Game’s own questions', topics:[], len:f.len, correct:f.correct, answered:f.answered };
+    set:set||'', setName:set?SET_NAMES[set]:'Game’s own questions', topics:[], len:f.len, correct:f.correct, answered:f.answered, bonus:ok&&salt>4 };
   if(set){ var names=TOPIC_NAMES[set]; r.topics=f.topics? names.filter(function(n,i){ return f.topics&(1<<i); }) : names.filter(function(n,i){ return !!SET_TOPICS[set][i]; }); r.allTopics=!f.topics; }
   var d=f.day, wrap=1<<W.day, now=today(); while(d+wrap<=now) d+=wrap; r.date=new Date(BASE+d*864e5); r.day=d;
   var old=set&&TOPIC_BEFORE[set]; if(old&&r.date<new Date(old.until+'T00:00:00Z')) r.topics=f.topics? old.names.filter(function(n,i){ return f.topics&(1<<i); }) : old.names.filter(function(n,i){ return !!old.topics[i]; });
@@ -118,6 +139,7 @@ function css(){ if(document.getElementById('spz-code-css')) return; var st=docum
   '.spz-code .l{ font:800 20px/1 var(--body,Inter,sans-serif); letter-spacing:.12em; text-transform:uppercase; color:var(--muted,#9AA3B8); }'+
   '.spz-code .v{ font:800 46px/1 ui-monospace,Menlo,Consolas,monospace; letter-spacing:.05em; color:var(--text,#fff); -webkit-user-select:all; user-select:all; }'+
   '.spz-code .n{ flex-basis:100%; text-align:center; font:600 20px/1.3 var(--body,Inter,sans-serif); color:var(--muted,#9AA3B8); }'+
+  '.spz-code .b{ flex-basis:100%; text-align:center; font:800 22px/1.3 var(--body,Inter,sans-serif); color:var(--accent,#FFB020); }'+
   '.spz-code a,a.spz-send{ font:800 22px/1 var(--body,Inter,sans-serif); color:var(--paper,#0E1016); background:var(--accent,#FFB020); padding:12px 20px; border-radius:12px; text-decoration:none; } a.spz-send{ display:inline-block; margin-top:6px; }';
   document.head.appendChild(st); }
 function prefilled(){ return !!(FORM.url&&FORM.name&&FORM.code); }
@@ -180,19 +202,25 @@ function button(link,code){ return '<a href="'+link+'" target="_blank" rel="noop
 /* copy the code as the form opens, so the student can paste it */
 document.addEventListener('click',function(e){ var a=e.target.closest&&e.target.closest('[data-spz-code]'); if(!a) return; var c=a.getAttribute('data-spz-code');
   try{ navigator.clipboard.writeText(c).then(function(){ a.textContent='Code copied ✓'; },function(){}); }catch(err){} },true);
+/* the bonus line on the end screen: what the run scored and what the code counts */
+function bonusLine(gameId,S){ var g=GAMES[gameId], pct=g&&g[2]!=='strokes'?bonusPct():0; if(!pct) return '';
+  var was, now; if(g[2]==='versus'){ was=(+S.buds||0)+' – '+(+S.rivals||0); now=boost(S.buds,pct,true)+' – '+(+S.rivals||0); }
+  else { was=(+S.score||0).toLocaleString(); now=boost(S.score,pct).toLocaleString(); }
+  return '<span class="b">⭐ Suggested skill bonus +'+pct+'%'+(was!==now?': '+was+' → '+now:'')+'</span>'; }
 function show(PFX,gameId,S){ try{
-  var code=make(gameId,S), link=formLink(S.name,code), old=document.getElementById(PFX+'-endcode');
+  var code=make(gameId,S), link=formLink(S.name,code), old=document.getElementById(PFX+'-endcode'), bl=bonusLine(gameId,S);
   css();
   if(old){ old.textContent=code; old.classList.add('spz-v'); var box=old.parentNode;
     if(link&&!box.querySelector('.spz-send')) box.insertAdjacentHTML('beforeend',button(link,code).replace('<a ','<a class="spz-send" '));
+    var ob=box.querySelector('.spz-code-b'); if(ob) ob.remove(); if(bl) box.insertAdjacentHTML('beforeend',bl.replace('class="b"','class="b spz-code-b" style="display:block;margin-top:6px;font:800 20px/1.3 var(--body,Inter,sans-serif);color:var(--accent,#FFB020)"'));
     return code; }
   var end=document.getElementById(PFX+'-end'); if(!end) return code;
   var el=end.querySelector('.spz-code');
   if(!el){ el=document.createElement('div'); el.className='spz-code'; var again=document.getElementById(PFX+'-again');
     if(again&&again.parentNode) again.parentNode.insertBefore(el,again); else (end.firstElementChild||end).appendChild(el); }
-  el.innerHTML='<span class="l">Score code</span><span class="v">'+code+'</span>'+(link?button(link,code):'')+
+  el.innerHTML=bl+'<span class="l">Score code</span><span class="v">'+code+'</span>'+(link?button(link,code):'')+
     '<span class="n">'+(!link?'Type your name and this code into the class Google Form.':prefilled()?'Tap Send my score, then Submit on the form.':'Tap the button, then paste the code into the form with your name.')+'</span>';
   return code; }catch(e){ return ''; } }
 
-window.SpitzCode={ GAMES:GAMES, SET_NAMES:SET_NAMES, TOPIC_NAMES:TOPIC_NAMES, make:make, read:read, show:show, normName:normName, today:today, FORM:FORM };
+window.SpitzCode={ BONUS:BONUS, bonusPct:bonusPct, GAMES:GAMES, SET_NAMES:SET_NAMES, TOPIC_NAMES:TOPIC_NAMES, make:make, read:read, show:show, normName:normName, today:today, FORM:FORM };
 })();
