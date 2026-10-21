@@ -2,7 +2,7 @@
    Every game shows one code on its end screen. The code holds the game, the question set and topics,
    the run length, the day, the score and correct/answered, sealed with a check that includes the
    student's name, so a code only checks out next to the name it was earned under.
-   Old codes keep reading after layout changes (see LAYOUT_A / LAYOUT_B below).
+   Old codes keep reading after layout changes (see LAYOUT_A / LAYOUT_B / LAYOUT_C below).
    The teacher page (../teacher.html) reads codes with SpitzCode.read(code, name) and posts the checked top 10s
    to the student leaderboard (../leaderboard.html). Games never open a leaderboard themselves.
 
@@ -36,7 +36,7 @@ var GAMES={                     /* id: [number in the code, display name, how it
   hill_climb:[19,'Hill Climb','points']
 };
 /* question sets in the order questions.js lists them; 0 means the game's own questions. Add new sets at the end.
-   New codes have 4 bits for the set, so up to 15 sets fit. */
+   New codes (layout C, since Oct 21 2026) have 6 bits for the set and 5 for topics, so up to 63 sets with up to 5 topics each fit. */
 var SETS=[null,'mult','slope','point','hoy','shift','func','int','sq','plot0','plot','fam','fslope','stdform','slide'];
 var SET_NAMES={ mult:'Multiplication facts', slope:'Slope-intercept form', point:'Point-slope form', hoy:'HOY & VUX', shift:'Linear transformations', func:'Functions', int:'Integers', sq:'Squares & roots', plot0:'Graphing y = mx', plot:'Graphing y = mx + b', fam:'Function families', fslope:'Finding slope', stdform:'Standard form', slide:'Slide and Slice' };
 /* SET_TOPICS = topics on offer now. A topic's bit is its position, so never reorder; a dropped topic keeps its slot in TOPIC_NAMES
@@ -76,11 +76,13 @@ var FORM={ url:unhide('bXJvZndlaXYvWXEzZV9WS2pGUG9HRl90YXE2cnhoSFV5bFJUR2JRRzZIT
 
 var ALPH='ABCDEFGHJKLMNPQRSTUVWXYZ23456789', SECRET='spitz|burger|arcade', BASE=Date.UTC(2026,7,1);
 var MASK=BigInt('0xB4E1C93A5D7F02E68C1A');            /* 80 bits */
-/* 64 payload bits + 16 check bits. The first 2 bits (ver) say the layout:
-   ver 0 = layout B, made since Oct 10 2026 (4-bit set, 9-bit day); ver 1–3 = layout A, the first codes (3-bit set, 10-bit day). */
+/* 64 payload bits + 16 check bits. The check's salt says the layout: salts 0–7 = the older layouts, told apart by the first 2 bits (ver):
+   ver 0 = layout B, Oct 10–21 2026 (4-bit set, 9-bit day); ver 1–3 = layout A, the first codes (3-bit set, 10-bit day).
+   Salts 8–15 = layout C, made since Oct 21 2026: no ver bits, so the set gets 6 bits (63 sets) and topics 5; len (run minutes) drops to 3 bits (up to 7). */
 var ORDER=['ver','game','set','topics','len','day','score','correct','answered'];
 var LAYOUT_A={ ver:2, game:5, set:3, topics:4, len:4, day:10, score:20, correct:8, answered:8 };
 var LAYOUT_B={ ver:2, game:5, set:4, topics:4, len:4, day:9, score:20, correct:8, answered:8 };
+var LAYOUT_C={ game:5, set:6, topics:5, len:3, day:9, score:20, correct:8, answered:8 };
 
 function h32(s){ var h=2166136261; for(var i=0;i<s.length;i++){ h^=s.charCodeAt(i); h=Math.imul(h,16777619)>>>0; } h^=h>>>13; h=Math.imul(h,0x5bd1e995)>>>0; h^=h>>>15; return h>>>0; }
 function normName(n){ return String(n||'').toLowerCase().replace(/[^a-z0-9]/g,''); }
@@ -90,10 +92,10 @@ function stream(chk){ var a=BigInt(h32(SECRET+'a'+chk)), b=BigInt(h32(SECRET+'b'
 function clamp(v,bits){ v=Math.round(+v||0); return Math.max(0,Math.min(v,Math.pow(2,bits)-1)); }
 function today(){ var d=new Date(); return Math.floor((Date.UTC(d.getFullYear(),d.getMonth(),d.getDate())-BASE)/864e5); }
 
-function pack(f,W){ var P=0n; ORDER.forEach(function(k){ P=(P<<BigInt(W[k]))|BigInt(clamp(f[k],W[k])); }); return P; }
-function unpack(P,W){ var f={}; ORDER.slice().reverse().forEach(function(k){ var w=BigInt(W[k]); f[k]=Number(P&((1n<<w)-1n)); P>>=w; }); return f; }
+function pack(f,W){ var P=0n; ORDER.forEach(function(k){ if(W[k]) P=(P<<BigInt(W[k]))|BigInt(clamp(f[k],W[k])); }); return P; }
+function unpack(P,W){ var f={ ver:0 }; ORDER.slice().reverse().forEach(function(k){ if(!W[k]) return; var w=BigInt(W[k]); f[k]=Number(P&((1n<<w)-1n)); P>>=w; }); return f; }
 
-function encode(f,name,salt){ var P=pack(f,LAYOUT_B), c=check(P,name,salt), full=(((P^stream(c))<<16n)|c)^MASK, s='';
+function encode(f,name,salt){ var P=pack(f,LAYOUT_C), c=check(P,name,salt), full=(((P^stream(c))<<16n)|c)^MASK, s='';
   for(var i=0;i<16;i++){ s=ALPH[Number(full&31n)]+s; full>>=5n; } return s.slice(0,4)+'-'+s.slice(4,8)+'-'+s.slice(8,12)+'-'+s.slice(12); }
 
 /* the hub link names the set and topics; no link means the game's own questions */
@@ -113,23 +115,29 @@ function bonusPct(){ var L=linkSet(), set=SETS[L.set], B=bonusCfg(); if(!set||!(
 function boost(v,pct,up){ v=+v||0; return v>0&&pct? (up?Math.ceil:Math.round)(v*(100+pct)/100) : v; }
 
 var RUDE=/FUCK|FUK|FCK|CUNT|SHT|ASS|FAG|CUM|DCK|DICK|PUSS|PNS|PENS|TWAT|SLUT|WHR|NGA|NGR|NAZ|KKK|RAPE|SEX|SXY|XXX|TTS|TTY|CLT|DYKE|GAY|HTLR|PUTA|CRAP|DAMN|HELL|BUTT|PEE|POOP/;
-/* salts 4–7 mark a code that earned the Suggested skill bonus (the score in it is already boosted) */
-function make(gameId,S){ var g=GAMES[gameId]; if(!g) throw new Error('Unknown game '+gameId); var L=linkSet(), score, pct=g[2]==='strokes'?0:bonusPct(), b=pct?4:0;
+/* salts 12–15 (4–7 in layout B) mark a code that earned the Suggested skill bonus (the score in it is already boosted) */
+function make(gameId,S){ var g=GAMES[gameId]; if(!g) throw new Error('Unknown game '+gameId); var L=linkSet(), score, pct=g[2]==='strokes'?0:bonusPct(), b=pct?12:8;
   if(g[2]==='versus') score=(clamp(boost(S.buds,pct,true),10)<<10)|clamp(S.rivals,10); else if(g[2]==='strokes') score=S.strokes; else score=boost(S.score,pct);
-  var f={ ver:0, game:g[0], set:L.set, topics:L.topics, len:S.len||0, day:today()%(1<<LAYOUT_B.day), score:score, correct:S.correct, answered:S.answered }, code;
+  var f={ game:g[0], set:L.set, topics:L.topics, len:S.len||0, day:today()%(1<<LAYOUT_C.day), score:score, correct:S.correct, answered:S.answered }, code;
   for(var salt=b;salt<b+4;salt++){ code=encode(f,S.name,salt); if(!RUDE.test(code.replace(/-/g,''))) break; }
   return code; }
+
+/* -> the fields of P read with layout W, or null if they can't be a real run (recent=true also wants a day in the last year) */
+function fields(P,W,recent){ var f=unpack(P,W), set=SETS[f.set]; f.W=W; f.id=null; Object.keys(GAMES).forEach(function(k){ if(GAMES[k][0]===f.game) f.id=k; });
+  if(!f.id||f.set>=SETS.length||f.correct>f.answered) return null;
+  if(recent){ var wrap=1<<W.day, now=today(), d=f.day; while(d+wrap<=now) d+=wrap; if(d>now||d<now-366||(f.topics>>(set?TOPIC_NAMES[set].length:0))) return null; }
+  return f; }
 
 /* -> null if the code is malformed or does not belong to this name, else what the code holds */
 /* any=true skips the name check (the teacher's override for a mistyped name); the rest of the checks still apply */
 function read(code,name,any){ var c=String(code||'').toUpperCase().replace(/[^A-Z0-9]/g,''); if(c.length!==16) return null;
   var full=0n; for(var i=0;i<16;i++){ var v=ALPH.indexOf(c[i]); if(v<0) return null; full=(full<<5n)|BigInt(v); }
-  full^=MASK; var chk=full&0xFFFFn, P=(full>>16n)^stream(chk), ok=false, salt;
-  for(salt=0;salt<8&&!ok;salt++) ok=check(P,name,salt)===chk; if(!ok&&!any) return null;
-  var W=(P>>62n)===0n?LAYOUT_B:LAYOUT_A, f=unpack(P,W), id=null; Object.keys(GAMES).forEach(function(k){ if(GAMES[k][0]===f.game) id=k; });
-  if(!id||f.set>=SETS.length||f.correct>f.answered) return null;
+  full^=MASK; var chk=full&0xFFFFn, P=(full>>16n)^stream(chk), prev=(P>>62n)===0n?LAYOUT_B:LAYOUT_A, f=null, bonus=false, salt;
+  for(salt=0;salt<16&&!f;salt++) if(check(P,name,salt)===chk){ f=fields(P,salt<8?prev:LAYOUT_C); bonus=!!f&&salt%8>=4; }
+  if(!f&&any){ f=fields(P,LAYOUT_C,true)||fields(P,prev,true); }   /* no name to tell the layout by: take the one that reads as a real recent run */
+  if(!f) return null; var id=f.id, W=f.W;
   var g=GAMES[id], set=SETS[f.set], r={ code:c.slice(0,4)+'-'+c.slice(4,8)+'-'+c.slice(8,12)+'-'+c.slice(12), game:id, gameName:g[1], kind:g[2],
-    set:set||'', setName:set?SET_NAMES[set]:'Game’s own questions', topics:[], len:f.len, correct:f.correct, answered:f.answered, bonus:ok&&salt>4 };
+    set:set||'', setName:set?SET_NAMES[set]:'Game’s own questions', topics:[], len:f.len, correct:f.correct, answered:f.answered, bonus:bonus };
   if(set){ var names=TOPIC_NAMES[set]; r.topics=f.topics? names.filter(function(n,i){ return f.topics&(1<<i); }) : names.filter(function(n,i){ return !!SET_TOPICS[set][i]; }); r.allTopics=!f.topics; }
   var d=f.day, wrap=1<<W.day, now=today(); while(d+wrap<=now) d+=wrap; r.date=new Date(BASE+d*864e5); r.day=d;
   var old=set&&TOPIC_BEFORE[set]; if(old&&r.date<new Date(old.until+'T00:00:00Z')) r.topics=f.topics? old.names.filter(function(n,i){ return f.topics&(1<<i); }) : old.names.filter(function(n,i){ return !!old.topics[i]; });
