@@ -68,7 +68,11 @@ function bonusCfg(){ var T=window.SpitzTopics, c={ pct:BONUS.pct, suggest:BONUS.
   if(T.suggest) c.suggest=T.suggest.sets||[]; if(T.assign) c.assign=T.assign; if(T.bonus!=null) c.pct=+T.bonus||0; }
   c.list=(c.suggest||[]).concat(c.assign||[]); return c; }
 
-var FORM={ url:'https://docs.google.com/forms/d/117PeTh-trNH6GQbGTRlyUHhxr6qat_FGoPFjKV_e3qY/viewform', name:'', code:'' };
+/* The form and answer-log links are stored scrambled (base64 of the link backwards) so search engines and link scrapers
+   don't pick them up from the public repo. A browser still has to open them, so this hides them from casual reading, not from
+   someone determined. To change one: btoa(link.split('').reverse().join('')) in the browser console. */
+function unhide(s){ try{ return s?atob(s).split('').reverse().join(''):''; }catch(e){ return ''; } }
+var FORM={ url:unhide('bXJvZndlaXYvWXEzZV9WS2pGUG9HRl90YXE2cnhoSFV5bFJUR2JRRzZITnJ0LWhUZVA3MTEvZC9zbXJvZi9tb2MuZWxnb29nLnNjb2QvLzpzcHR0aA=='), name:'', code:'' };
 
 var ALPH='ABCDEFGHJKLMNPQRSTUVWXYZ23456789', SECRET='spitz|burger|arcade', BASE=Date.UTC(2026,7,1);
 var MASK=BigInt('0xB4E1C93A5D7F02E68C1A');            /* 80 bits */
@@ -166,8 +170,8 @@ function button(link,code){ return '<a href="'+link+'" target="_blank" rel="noop
 
   /* Answer log for Kody's Class Stats page (2026-10-16). Every game saves its run right after an answer, so when a save shows
      answered going up we log that question (topic, right or wrong, the prompt) to Kody's private Google Sheet through LOG.
-     Off while LOG is empty. Nothing is shown to students and nothing here ever reaches a public page. */
-  var LOG='https://script.google.com/macros/s/AKfycbzreQYIxkM2PM_e9WxNRT5WxoRHPpeWYnC9sVelc4GNumtzgHEVElr22FmvLUA9tpgfmQ/exec', QK='spitz_log_q', DK='spitz_dev', seen={}, timer=0;
+     Off while LOG is empty (the link is scrambled, see unhide() above). Nothing is shown to students and nothing here ever reaches a public page. */
+  var LOG=unhide('Y2V4ZS9RbWZncHQ5QVVMdm1GMjJybEVWRUhnenRtdU5HNGNsZVZzOUNuWVdlcFBIUm94VzVUUk54VzllX01QMk1reElZUWVyemJjeWZLQS9zL3NvcmNhbS9tb2MuZWxnb29nLnRwaXJjcy8vOnNwdHRo'), QK='spitz_log_q', DK='spitz_dev', seen={}, timer=0;
   function plain(h){ return String(h||'').replace(/<span class="[a-z]+-fr"><span>(.*?)<\/span><span>(.*?)<\/span><\/span>/g,'$1/$2').replace(/<[^>]+>/g,'').replace(/&nbsp;/g,' ').replace(/&amp;/g,'&').replace(/&lt;/g,'<').replace(/&gt;/g,'>').replace(/\s+/g,' ').trim(); }
   function queue(){ try{ return JSON.parse(ls.getItem(QK)||'[]')||[]; }catch(e){ return []; } }
   function dev(){ var d=''; try{ d=ls.getItem(DK); if(!d){ d=Math.random().toString(36).slice(2,10); set.call(ls,DK,d); } }catch(e){} return d; }
