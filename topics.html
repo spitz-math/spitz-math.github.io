@@ -1,0 +1,267 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Spitz Topics</title>
+<meta name="robots" content="noindex,nofollow">
+<link rel="icon" href="trophy.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bungee&family=Lexend:wght@400;600;800&family=JetBrains+Mono:wght@500;700&display=swap">
+<style>
+/* Layout: teacher control panel. One card per question set (hidden / open / assigned, suggested, which topics), then note + bonus + save.
+   Saves data/topics.json in the repo with the GitHub key Spitz Scores (teacher.html) keeps in this browser. Not linked from student pages. */
+:root{
+  --paper:#0E1016; --panel:#191C25; --panel2:#222634; --line:#2E3344;
+  --ink:#F3F5FA; --muted:#9AA3B8; --brand:#FFB020; --ok:#7CE04A; --no:#FF7A7A; --pin:#6FB7FF;
+  --display:'Bungee','Arial Black',system-ui,sans-serif;
+  --body:'Lexend',system-ui,sans-serif;
+  --mono:'JetBrains Mono',ui-monospace,monospace;
+  color-scheme:dark;
+}
+*{ box-sizing:border-box; }
+[hidden]{ display:none !important; }
+html,body{ background:var(--paper); color:var(--ink); margin:0; }
+body{ font:400 16px/1.5 var(--body); padding-inline:16px; padding-block:0 120px; }
+.wrap{ max-width:1180px; margin:0 auto; display:flex; flex-direction:column; gap:24px; }
+header{ display:flex; flex-wrap:wrap; align-items:flex-end; justify-content:space-between; gap:12px; padding-top:28px; }
+.tag{ font:600 14px/1 var(--body); color:var(--muted); letter-spacing:.14em; text-transform:uppercase; }
+h1{ font:400 clamp(30px,5.4vw,52px)/1 var(--display); margin:6px 0 0; }
+h1 span{ color:var(--brand); }
+header nav{ display:flex; gap:18px; flex-wrap:wrap; }
+header a{ color:var(--muted); font-weight:600; }
+h2{ font:400 20px/1.1 var(--display); margin:0 0 12px; }
+.card{ background:var(--panel); border:1px solid var(--line); border-radius:16px; padding:18px; }
+.hint{ color:var(--muted); font-size:14px; margin:0 0 10px; }
+button{ font:800 15px/1 var(--body); border-radius:12px; padding:12px 16px; cursor:pointer; border:2px solid var(--line); background:var(--panel2); color:var(--ink); }
+button.primary{ background:var(--brand); color:var(--paper); border-color:var(--brand); }
+button:disabled{ opacity:.45; cursor:default; }
+button:focus-visible{ outline:3px solid var(--ink); outline-offset:2px; }
+input[type=text],input[type=password],input[type=number]{ background:var(--paper); color:var(--ink); border:2px solid var(--line); border-radius:12px; padding:12px; font:500 15px/1.3 var(--body); }
+input:focus{ outline:none; border-color:var(--brand); }
+.now{ display:flex; flex-direction:column; gap:8px; }
+.mode{ font:800 19px/1.3 var(--body); }
+.mode.lock{ color:var(--pin); } .mode.free{ color:var(--ok); }
+.banner{ display:flex; flex-wrap:wrap; gap:8px; align-items:center; font-size:14px; color:var(--muted); }
+.banner b{ color:var(--ink); }
+.banner .pill{ border:2px solid var(--brand); border-radius:10px; padding:4px 10px; color:var(--ink); font-weight:600; }
+.banner .pill.as{ border-color:var(--pin); }
+.sets{ display:grid; grid-template-columns:repeat(auto-fill,minmax(340px,1fr)); gap:14px; }
+@media (max-width:420px){ .sets{ grid-template-columns:1fr; } }
+.set{ background:var(--panel); border:2px solid var(--line); border-radius:16px; padding:16px; display:flex; flex-direction:column; gap:12px; }
+.set.assign{ border-color:var(--pin); } .set.sug{ box-shadow:inset 0 0 0 2px var(--brand); }
+.set.hidden{ opacity:.6; }
+.set h3{ margin:0; font:800 18px/1.2 var(--body); } .set h3 small{ display:block; font-weight:400; font-size:13px; color:var(--muted); margin-top:2px; }
+.seg{ display:grid; grid-template-columns:repeat(3,1fr); gap:6px; }
+.seg button{ padding:10px 6px; font-size:14px; border-radius:10px; }
+.seg button[aria-pressed="true"]{ background:var(--ink); color:var(--paper); border-color:var(--ink); }
+.seg button[data-v="assign"][aria-pressed="true"]{ background:var(--pin); border-color:var(--pin); }
+.star{ text-align:left; display:flex; align-items:center; gap:8px; padding:10px 12px; font-size:14px; }
+.star[aria-pressed="true"]{ background:var(--brand); color:var(--paper); border-color:var(--brand); }
+.lbl{ font:800 12px/1 var(--body); letter-spacing:.08em; text-transform:uppercase; color:var(--muted); margin:0 0 6px; }
+.chips{ display:flex; flex-wrap:wrap; gap:6px; }
+.chip{ padding:8px 12px; font:600 14px/1.2 var(--body); border-radius:99px; }
+.chip[aria-pressed="true"]{ background:var(--ok); color:var(--paper); border-color:var(--ok); }
+.chips.sug .chip[aria-pressed="true"]{ background:var(--brand); border-color:var(--brand); }
+.chip:disabled{ opacity:.35; text-decoration:line-through; }
+.warn{ font-size:13px; color:var(--brand); margin:0; }
+.foot{ display:grid; grid-template-columns:minmax(0,3fr) minmax(0,2fr); gap:18px; }
+@media (max-width:820px){ .foot{ grid-template-columns:1fr; } }
+.field{ display:flex; flex-direction:column; gap:6px; margin-bottom:14px; }
+.field label{ font-weight:800; }
+.bonusrow{ display:flex; align-items:center; gap:10px; } .bonusrow input{ width:96px; }
+.savebar{ position:fixed; left:0; right:0; bottom:0; background:rgba(14,16,22,.96); border-top:1px solid var(--line); padding:12px 16px; z-index:5; }
+.savebar .in{ max-width:1180px; margin:0 auto; display:flex; flex-wrap:wrap; gap:10px; align-items:center; }
+.status{ font-size:15px; flex:1; min-width:220px; }
+.status.good{ color:var(--ok); } .status.bad{ color:var(--no); }
+.tokrow{ display:flex; gap:8px; } .tokrow input{ flex:1; min-width:0; }
+.saved{ color:var(--ok); }
+.foot ol{ margin:0; padding-left:20px; font-size:14px; color:var(--muted); } .foot ol li{ margin:4px 0; } .foot ol b{ color:var(--ink); }
+.foot a{ color:var(--brand); }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div><div class="tag">Teacher page · Made by Spitz 🍔</div><h1>Spitz <span>Topics</span></h1></div>
+    <nav><a href="teacher.html">Spitz Scores</a><a href="stats.html">Class stats</a><a href="index.html" target="_blank" rel="noopener">Open the hub</a></nav>
+  </header>
+
+  <section class="card now" aria-live="polite">
+    <h2>What students get</h2>
+    <div class="mode" id="mode">Loading the live settings…</div>
+    <div class="banner" id="banner"></div>
+    <p class="hint" style="margin:0" id="loaded"></p>
+  </section>
+
+  <section>
+    <p class="hint"><b style="color:var(--ink)">Hidden</b>: students can't pick it. <b style="color:var(--ink)">Open</b>: students can pick it. <b style="color:var(--pin)">📌 Assigned</b>: turns on the lock, so students can only play assigned sets. <b style="color:var(--brand)">⭐ Suggest</b>: shows it in the hub's suggested banner and gives the score bonus. Green topics are the ones students can play.</p>
+    <div class="sets" id="sets"></div>
+  </section>
+
+  <section class="card foot">
+    <div>
+      <h2>Note and bonus</h2>
+      <div class="field">
+        <label for="note">Note under the suggestions (optional)</label>
+        <input type="text" id="note" maxlength="120" autocomplete="off" placeholder="Quiz Friday on slide and slice!">
+      </div>
+      <div class="field">
+        <label for="bonus">Score bonus for suggested skills</label>
+        <div class="bonusrow"><input type="number" id="bonus" min="0" max="100" step="5" inputmode="numeric"><span>% more points</span></div>
+        <p class="hint" style="margin:0">A run counts when its set is suggested and every topic played is a suggested topic. 0 turns the bonus off.</p>
+      </div>
+    </div>
+    <div>
+      <label class="field" for="token" style="font-weight:800;margin-bottom:6px">GitHub key</label>
+      <div class="tokrow"><input type="password" id="token" autocomplete="off" spellcheck="false" placeholder="github_pat_…"><button id="tok-save">Save</button></div>
+      <p class="hint" style="margin-top:8px" id="tok-state"></p>
+      <details><summary class="hint" style="cursor:pointer;margin:0">How to get the key (one time)</summary>
+        <ol>
+          <li>Open <a href="https://github.com/settings/personal-access-tokens/new" target="_blank" rel="noopener">GitHub's new fine-grained token page</a>.</li>
+          <li>Name it <b>Spitz site</b>, set <b>Resource owner</b> to <b>spitz-math</b>, and pick an expiration (up to a year).</li>
+          <li>Under <b>Repository access</b>, choose <b>Only select repositories</b> and pick <b>spitz-math.github.io</b>.</li>
+          <li>Under <b>Permissions</b>, set <b>Contents</b> to <b>Read and write</b>.</li>
+          <li>Click <b>Generate token</b>, copy it, paste it above and click Save.</li>
+        </ol>
+        <p class="hint" style="margin-top:8px">It's the same key Spitz Scores uses, so if you saved it there in this browser you're already set. It stays in this browser only.</p>
+      </details>
+    </div>
+  </section>
+</div>
+
+<div class="savebar"><div class="in">
+  <button class="primary" id="save" disabled>Save to the site</button>
+  <button id="undo" disabled>Undo changes</button>
+  <div class="status" id="status" aria-live="polite"></div>
+</div></div>
+
+<script>
+(function(){
+/* Same list as SETS in index.html (names, units, topics). Add new question sets here too. */
+var SETS=[
+  {id:'mult',name:'Multiplication facts',unit:'Times tables 0–12',topics:[['f03','Facts 0–3'],['f46','Facts 4–6'],['f79','Facts 7–9'],['f1012','Facts 10–12']]},
+  {id:'slope',name:'Slope-intercept form',unit:'y = mx + b',topics:[['write','Write the equation'],['slope','Find slope or y-intercept'],['graph','Read a graph']]},
+  {id:'point',name:'Point-slope form',unit:'y − y₁ = m(x − x₁)',topics:[['write','Write the equation'],['point','Find the point'],['slope','Find the slope']]},
+  {id:'hoy',name:'HOY & VUX',unit:'Horizontal and vertical lines',topics:[['describe','Describe the line'],['graph','Match the graph'],['slope','Find the slope']]},
+  {id:'shift',name:'Linear transformations',unit:'Translating lines',topics:[['vs','Vertical shifts'],['hs','Horizontal shifts'],['gr','Graphs'],['ne','New equations']]},
+  {id:'func',name:'Functions',unit:'Is it a function?',topics:[['points','Ordered pairs'],['table','Tables'],['map','Mapping diagrams'],['graph','Graphs']]},
+  {id:'int',name:'Integers',unit:'Positive and negative numbers',topics:[['add','Adding'],['sub','Subtracting'],['mult','Multiplying']]},
+  {id:'sq',name:'Squares & roots',unit:'n² and √n',topics:[['square','Squaring'],['root','Square roots'],['neg','Negatives'],['est','Estimating roots']]},
+  {id:'plot0',name:'Graphing y = mx',unit:'Lines through the origin',topics:[['match','Pick the line'],['eq','Write the equation']]},
+  {id:'plot',name:'Graphing y = mx + b',unit:'Slope and y-intercept',topics:[['match','Pick the line'],['eq','Write the equation']]},
+  {id:'fam',name:'Function families',unit:'Linear, quadratic or exponential',topics:[['eq','From the equation'],['graph','From the graph']]},
+  {id:'fslope',name:'Finding slope',unit:'Rise over run',topics:[['pts','From two points'],['graph','From a graph'],['table','From a table'],['eq','From an equation']]},
+  {id:'stdform',name:'Standard form',unit:'Cover-up method',topics:[['x','x-intercept'],['y','y-intercept']]},
+  {id:'slide',name:'Slide and Slice',unit:'Standard to y = mx + b',topics:[['slide','Slide'],['slice','Slice'],['both','Both steps'],['slope','Find the slope']]}
+];
+var DEF={ hidden:['mult'], off:{}, assign:[{id:'slide'},{id:'stdform'}], suggest:{ sets:[{id:'slide'},{id:'stdform'}], note:'' }, bonus:25 };
+var TKEY='spitz_gh_key', REPO=/^\/spitz-arcade(\/|$)/.test(location.pathname)?'spitz-arcade':'spitz-math.github.io';
+var API='https://api.github.com/repos/spitz-math/'+REPO+'/contents/data/topics.json';
+var st={}, note='', bonus=25, sha=null, base='', busy=false, ord={assign:[],sug:[]};
+function $(i){ return document.getElementById(i); }
+function esc(v){ return String(v).replace(/[&<>"]/g,function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]; }); }
+function all(s){ return s.topics.map(function(t){ return t[0]; }); }
+function key(){ try{ return localStorage.getItem(TKEY)||''; }catch(e){ return ''; } }
+function arr(a){ return Array.isArray(a)?a.filter(function(v){ return typeof v==='string'; }):[]; }
+function find(list,id){ return (Array.isArray(list)?list:[]).filter(function(k){ return k&&k.id===id; })[0]; }
+
+/* topics.json -> one row of state per set */
+function load(t){ t=t&&typeof t==='object'?t:DEF;
+  var off=t.off&&typeof t.off==='object'?t.off:{}, sg=t.suggest&&typeof t.suggest==='object'?t.suggest:{};
+  SETS.forEach(function(s){ var a=find(t.assign,s.id), g=find(sg.sets,s.id), ts=all(s), o=arr(off[s.id]);
+    var on=ts.filter(function(x){ return o.indexOf(x)<0; }); if(a&&arr(a.topics).length) on=on.filter(function(x){ return arr(a.topics).indexOf(x)>=0; });
+    if(!on.length) on=ts;
+    st[s.id]={ status:arr(t.hidden).indexOf(s.id)>=0?'hidden':a?'assign':'open', sug:!!g, on:on, sugT:g?arr(g.topics).filter(function(x){ return on.indexOf(x)>=0; }):[] }; });
+  ord={ assign:(Array.isArray(t.assign)?t.assign:[]).map(function(k){ return k&&k.id; }), sug:(Array.isArray(sg.sets)?sg.sets:[]).map(function(k){ return k&&k.id; }) };
+  note=typeof sg.note==='string'?sg.note:''; bonus=typeof t.bonus==='number'?Math.max(0,Math.min(100,Math.round(t.bonus))):DEF.bonus;
+  $('note').value=note; $('bonus').value=bonus; }
+/* state -> topics.json (topic lists keep the set's order) */
+function data(){ var out={ hidden:[], off:{}, assign:[], suggest:{ sets:[], note:note.trim() }, bonus:bonus };
+  SETS.forEach(function(s){ var r=st[s.id], ts=all(s), on=ts.filter(function(x){ return r.on.indexOf(x)>=0; }), every=on.length===ts.length;
+    if(r.status==='hidden'){ out.hidden.push(s.id); return; }
+    if(!every) out.off[s.id]=ts.filter(function(x){ return on.indexOf(x)<0; });
+    if(r.status==='assign') out.assign.push(every?{id:s.id}:{id:s.id,topics:on});
+    if(r.sug){ var g=on.filter(function(x){ return r.sugT.indexOf(x)>=0; }); out.suggest.sets.push(g.length&&g.length<on.length?{id:s.id,topics:g}:{id:s.id}); } });
+  /* keep the saved order (the first assigned set is where other links go), new ones after */
+  function by(o){ return function(a,b){ var i=o.indexOf(a.id), j=o.indexOf(b.id); return (i<0?99:i)-(j<0?99:j); }; }
+  out.assign.sort(by(ord.assign)); out.suggest.sets.sort(by(ord.sug));
+  return out; }
+function text(d){ return JSON.stringify(d,null,1); }
+function dirty(){ return text(data())!==base; }
+
+function name(s,t){ return s.topics.filter(function(y){ return y[0]===t; })[0][1]; }
+function render(){ var d=data(), lock=d.assign.length, open=SETS.length-d.hidden.length;
+  $('sets').innerHTML=SETS.map(function(s){ var r=st[s.id], hid=r.status==='hidden', ts=all(s);
+    var ignored=r.sug&&!hid&&lock&&r.status!=='assign';
+    return '<div class="set '+r.status+(r.sug&&!hid?' sug':'')+'" data-s="'+s.id+'">'+
+      '<h3>'+esc(s.name)+'<small>'+esc(s.unit)+'</small></h3>'+
+      '<div class="seg" role="group" aria-label="'+esc(s.name)+'">'+[['hidden','Hidden'],['open','Open'],['assign','📌 Assigned']].map(function(o){ return '<button data-a="status" data-v="'+o[0]+'" aria-pressed="'+(r.status===o[0])+'">'+o[1]+'</button>'; }).join('')+'</div>'+
+      (hid?'':'<button class="star" data-a="sug" aria-pressed="'+r.sug+'">'+(r.sug?'⭐ Suggested (click to stop suggesting)':'☆ Suggest this set')+'</button>'+
+      '<div><p class="lbl">Topics students can play</p><div class="chips">'+ts.map(function(t){ return '<button class="chip" data-a="on" data-t="'+t+'" aria-pressed="'+(r.on.indexOf(t)>=0)+'">'+esc(name(s,t))+'</button>'; }).join('')+'</div></div>'+
+      (r.sug?'<div><p class="lbl">Suggested topics (none picked = all)</p><div class="chips sug">'+ts.map(function(t){ var can=r.on.indexOf(t)>=0; return '<button class="chip" data-a="sugT" data-t="'+t+'"'+(can?'':' disabled')+' aria-pressed="'+(can&&r.sugT.indexOf(t)>=0)+'">'+esc(name(s,t))+'</button>'; }).join('')+'</div></div>':'')+
+      (ignored?'<p class="warn">The lock is on and this set isn’t assigned, so students won’t see this suggestion.</p>':''))+
+      '</div>'; }).join('');
+  /* summary + a stand-in for the hub banner */
+  var nm=function(k){ var s=SETS.filter(function(x){ return x.id===k.id; })[0]; return esc(s.name)+(k.topics?' ('+k.topics.map(function(t){ return esc(name(s,t)); }).join(', ')+')':''); };
+  var sug=d.suggest.sets.filter(function(k){ return !lock||d.assign.some(function(a){ return a.id===k.id; }); });
+  $('mode').className='mode '+(lock?'lock':'free');
+  $('mode').textContent=lock?'🔒 Locked: students can only play the '+(lock===1?'assigned set':lock+' assigned sets')+'.':'Free choice: students can pick any of the '+open+' open sets.';
+  $('banner').innerHTML=(lock?'<b>📌 Assigned:</b>'+d.assign.map(function(k){ return '<span class="pill as">'+nm(k)+'</span>'; }).join(''):'')+
+    (sug.length?'<b>⭐ Suggested'+(d.bonus?' (+'+d.bonus+'% bonus)':'')+':</b>'+sug.map(function(k){ return '<span class="pill">'+nm(k)+'</span>'; }).join(''):(lock?'':'<span>No suggestions, so the hub shows no banner.</span>'))+
+    (d.suggest.note&&(lock||sug.length)?'<span>“'+esc(d.suggest.note)+'”</span>':'');
+  var ch=dirty(); $('save').disabled=busy||!ch; $('undo').disabled=busy||!ch;
+  if(ch&&!busy&&!/bad/.test($('status').className)) say('You have changes that aren’t on the site yet.'); }
+function say(t,cls){ var o=$('status'); o.className='status'+(cls?' '+cls:''); o.textContent=t; }
+
+$('sets').addEventListener('click',function(e){ var b=e.target.closest('button[data-a]'); if(!b||b.disabled) return;
+  var id=b.closest('.set').dataset.s, r=st[id], a=b.dataset.a, t=b.dataset.t;
+  if(a==='status'){ if(b.dataset.v==='hidden'&&SETS.filter(function(s){ return st[s.id].status!=='hidden'; }).length===1&&r.status!=='hidden'){ say('Keep at least one set open for students.','bad'); return; }
+    r.status=b.dataset.v; }
+  else if(a==='sug'){ r.sug=!r.sug; if(!r.sug) r.sugT=[]; }
+  else if(a==='on'){ if(r.on.indexOf(t)>=0){ if(r.on.length===1){ say('Each set needs at least one topic. To turn the whole set off, pick Hidden.','bad'); return; } r.on=r.on.filter(function(x){ return x!==t; }); r.sugT=r.sugT.filter(function(x){ return x!==t; }); } else r.on.push(t); }
+  else if(a==='sugT'){ r.sugT=r.sugT.indexOf(t)>=0?r.sugT.filter(function(x){ return x!==t; }):r.sugT.concat(t); }
+  if(/bad/.test($('status').className)) say('');
+  var y=b.getBoundingClientRect().top; render();   /* keep the clicked card still */
+  var nb=document.querySelector('.set[data-s="'+id+'"] button[data-a="'+a+'"]'+(t?'[data-t="'+t+'"]':'')+(a==='status'?'[data-v="'+b.dataset.v+'"]':''));
+  if(nb){ window.scrollBy(0,nb.getBoundingClientRect().top-y); nb.focus({preventScroll:true}); } });
+$('note').addEventListener('input',function(){ note=this.value; render(); });
+$('bonus').addEventListener('input',function(){ var v=Math.round(+this.value); bonus=isFinite(v)?Math.max(0,Math.min(100,v)):0; render(); });
+$('bonus').addEventListener('change',function(){ this.value=bonus; });
+
+/* ---------- read and save data/topics.json in the repo ---------- */
+function hdr(k){ return { 'Authorization':'Bearer '+k, 'Accept':'application/vnd.github+json', 'X-GitHub-Api-Version':'2022-11-28' }; }
+function b64(s){ return btoa(unescape(encodeURIComponent(s))); }
+function unb64(s){ return decodeURIComponent(escape(atob(String(s).replace(/\s/g,'')))); }
+function when(iso){ var d=new Date(iso); return isNaN(d)?'':d.toLocaleString([], {weekday:'short',month:'short',day:'numeric',hour:'numeric',minute:'2-digit'}); }
+function fresh(){ var k=key();   /* with the key: straight from GitHub (newest, and the sha a save needs); without: the site's copy */
+  if(k) return fetch(API+'?ref=main&t='+Date.now(),{ headers:hdr(k), cache:'no-store' }).then(function(r){ if(r.status===404) return {t:null,sha:null}; if(!r.ok) throw r; return r.json().then(function(j){ return {t:JSON.parse(unb64(j.content)),sha:j.sha}; }); });
+  return fetch('data/topics.json?t='+Date.now(),{ cache:'no-store' }).then(function(r){ if(!r.ok) return {t:null,sha:null}; return r.json().then(function(t){ return {t:t,sha:null}; }); }); }
+function start(){ fresh().then(function(r){ sha=r.sha; load(r.t); base=text(data()); render(); say('');
+    $('loaded').textContent=r.t?'These are the live settings'+(r.t.updated&&when(r.t.updated)?', last saved '+when(r.t.updated):'')+'.':'No settings file on the site yet, so these are the starting settings.'; })
+  .catch(function(r){ load(null); base=''; render(); $('loaded').textContent='';
+    say(r&&r.status===401?'GitHub didn’t accept the key. It may have expired; make a new one with the steps below.':'Couldn’t load the live settings. Check the internet connection and reload the page.','bad'); }); }
+function save(){ var k=key(); if(!k){ say('Paste your GitHub key in the box at the bottom first (steps under it).','bad'); $('token').focus(); return; }
+  var d=data(); d.updated=new Date().toISOString(); var body=text(d)+'\n';
+  busy=true; render(); say('Saving…');
+  function put(s){ return fetch(API,{ method:'PUT', headers:hdr(k), body:JSON.stringify({ message:'Teacher settings: update topics', content:b64(body), branch:'main', sha:s||undefined }) }); }
+  put(sha).then(function(r){ if(r.status===409||r.status===422) return fresh().then(function(f){ return put(f.sha); }); return r; })   /* the file changed since this page loaded */
+  .then(function(r){ if(!r.ok) throw r; return r.json(); })
+  .then(function(j){ sha=j.content&&j.content.sha||sha; delete d.updated; base=text(data()); busy=false; render();
+    $('loaded').textContent='These are the live settings, last saved '+when(new Date().toISOString())+'.';
+    say('Saved at '+new Date().toLocaleTimeString([], {hour:'numeric',minute:'2-digit'})+'. Students get it in about a minute (a game that’s already open keeps the old settings until it’s reloaded).','good'); })
+  .catch(function(r){ busy=false; render(); var s=r&&r.status;
+    say(s===401?'GitHub didn’t accept the key. It may have expired; make a new one with the steps below.':
+      s===403||s===404?'The key can’t change '+REPO+'. Check it has Contents: Read and write on that repository.':
+      'Couldn’t reach GitHub. Check the internet connection and click Save again.','bad'); }); }
+$('save').addEventListener('click',save);
+$('undo').addEventListener('click',function(){ load(JSON.parse(base||'null')||null); render(); say('Changes undone.'); });
+function tokState(){ $('tok-state').innerHTML=key()?'<span class="saved">Key saved in this browser.</span> <a href="#" id="tok-forget" style="color:var(--muted)">Forget it</a>':'No key saved yet. Steps below.'; }
+$('tok-save').addEventListener('click',function(){ var v=$('token').value.trim(); if(!v) return; try{ localStorage.setItem(TKEY,v); }catch(e){} $('token').value=''; tokState(); if(!dirty()) start(); });
+$('tok-state').addEventListener('click',function(e){ if(e.target.id!=='tok-forget') return; e.preventDefault(); try{ localStorage.removeItem(TKEY); }catch(err){} tokState(); });
+window.addEventListener('beforeunload',function(e){ if(base&&dirty()){ e.preventDefault(); e.returnValue=''; } });
+tokState(); start();
+})();
+</script>
+</body>
+</html>

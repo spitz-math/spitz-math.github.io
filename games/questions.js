@@ -1035,22 +1035,40 @@ var SETS={
   slide:{ name:'Slide and Slice', make:makeSlideSlice, topics:[['slide','Slide',['ssSlide']],['slice','Slice',['ssSlice']],['both','Both steps',['ssBoth']],['slope','Find the slope',['ssSlope']]] }
 };
 
-/* Sets students can't pick right now (Kody, 2026-10-19: students picked multiplication because it's easy). Empty HIDDEN to bring it back
-   (index.html has the same list). A link with a hidden set, or with no set at all (most games' own questions are multiplication facts),
-   is turned into a FALLBACK link before the game reads it, so the game, its save slot and its score code all agree. */
-var HIDDEN=['mult'], FALLBACK='slope';
-(function(){ var qs=params(); if(SETS[qs.set]&&HIDDEN.indexOf(qs.set)<0) return;
-  try{ history.replaceState(history.state,'',location.pathname+'?set='+FALLBACK+location.hash); }catch(e){} })();
-
-/* Assigned skills (lock): while ASSIGN lists sets, a game only plays those sets and topics (index.html has the same list). A link with
-   any other set goes to the first assigned one, and topics outside the assignment are dropped. Empty ASSIGN to unlock.
-   e.g. [{id:'slide'},{id:'stdform',topics:['x']}]; no topics means every topic in that set. */
-var ASSIGN=[{id:'slide'},{id:'stdform'}];
-(function(){ if(!ASSIGN.length) return; var qs=params(), k=ASSIGN.filter(function(a){ return a.id===qs.set; })[0]||ASSIGN[0];
-  var all=(SETS[k.id]?SETS[k.id].topics:[]).map(function(t){ return t[0]; }), ok=(k.topics&&k.topics.length?k.topics:all).filter(function(t){ return all.indexOf(t)>=0; });
-  var want=(k.id===qs.set?(qs.topics||'').split(','):[]).filter(function(t){ return ok.indexOf(t)>=0; }); if(!want.length) want=ok;
-  if(k.id===qs.set&&want.join(',')===(qs.topics||'')) return;
-  try{ history.replaceState(history.state,'',location.pathname+'?set='+k.id+'&topics='+want.join(',')+location.hash); }catch(e){} })();
+/* Teacher settings: Mr. Spitz changes these on topics.html (the teacher control panel), which saves data/topics.json in the repo.
+   hidden: sets students can't pick. off: topics turned off, by set. assign: the lock; while it lists sets a game only plays those sets
+   and topics (no topics = every topic that is on). suggest: the hub's "Suggested by Mr. Spitz" sets, and the note under them.
+   bonus: score bonus percent for suggested runs (scorecode.js), 0 = off. Read once, before the game reads its link, so the game, its save
+   slot and its score code all agree. The last copy that loaded stays in this browser; DEF is used when neither is there.
+   Shared with scorecode.js as window.SpitzTopics; index.html reads the same file. */
+var TOPICS=window.SpitzTopics=window.SpitzTopics||(function(){
+  var DEF={ hidden:['mult'], off:{}, assign:[{id:'slide'},{id:'stdform'}], suggest:{ sets:[{id:'slide'},{id:'stdform'}], note:'' }, bonus:25 }, t=null, K='spitz_topics';
+  try{ var x=new XMLHttpRequest(), src=document.currentScript&&document.currentScript.src||location.href;
+    x.open('GET',new URL('../data/topics.json',src).href+'?v='+Math.floor(Date.now()/60000),false); x.send();
+    if(x.status===200){ t=JSON.parse(x.responseText); try{ localStorage.setItem(K,x.responseText); }catch(e){} } }catch(e){ t=null; }
+  if(!t||typeof t!=='object') try{ t=JSON.parse(localStorage.getItem(K)); }catch(e){ t=null; }
+  if(!t||typeof t!=='object') t=DEF;
+  function ids(a){ return Array.isArray(a)?a.filter(function(v){ return typeof v==='string'; }):[]; }
+  function list(a){ return Array.isArray(a)?a.filter(function(k){ return k&&typeof k.id==='string'; }).map(function(k){ return { id:k.id, topics:ids(k.topics) }; }):[]; }
+  var off={}; if(t.off&&typeof t.off==='object') Object.keys(t.off).forEach(function(s){ off[s]=ids(t.off[s]); });
+  var sg=t.suggest&&typeof t.suggest==='object'?t.suggest:{};
+  return { hidden:ids(t.hidden), off:off, assign:list(t.assign), suggest:{ sets:list(sg.sets), note:typeof sg.note==='string'?sg.note:'' },
+    bonus:typeof t.bonus==='number'&&t.bonus>=0?Math.min(100,Math.round(t.bonus)):DEF.bonus, updated:t.updated||'' };
+})();
+var HIDDEN=TOPICS.hidden, OFF=TOPICS.off, ASSIGN=TOPICS.assign.filter(function(k){ return SETS[k.id]; });
+/* where a link with a hidden set, or with no set at all (most games' own questions are multiplication facts), goes */
+var FALLBACK=ASSIGN.length?ASSIGN[0].id:HIDDEN.indexOf('slope')<0?'slope':Object.keys(SETS).filter(function(s){ return HIDDEN.indexOf(s)<0; })[0]||'slope';
+(function(){ var qs=params(), id=qs.set, k=null;
+  if(ASSIGN.length){ k=ASSIGN.filter(function(a){ return a.id===id; })[0]||ASSIGN[0]; id=k.id; }
+  else if(!SETS[id]||HIDDEN.indexOf(id)>=0) id=FALLBACK;
+  var set=SETS[id], all=set.topics.map(function(t){ return t[0]; }), on=all.filter(function(t){ return (OFF[id]||[]).indexOf(t)<0; });
+  if(!on.length) on=all;
+  var ok=k&&k.topics.length?on.filter(function(t){ return k.topics.indexOf(t)>=0; }):on; if(!ok.length) ok=on;
+  if(id===qs.set&&!qs.topics&&ok.length===all.length) return;   /* the whole set, as before */
+  var want=(id===qs.set?(qs.topics||'').split(','):[]).map(function(t){ return set.alias&&set.alias[t]||t; }).filter(function(t,i,a){ return ok.indexOf(t)>=0&&a.indexOf(t)===i; });
+  if(!want.length) want=ok;
+  if(id===qs.set&&want.join(',')===(qs.topics||'')) return;
+  try{ history.replaceState(history.state,'',location.pathname+'?set='+id+'&topics='+want.join(',')+location.hash); }catch(e){} })();
 
 function plain(h){ return String(h).replace(/<span class="[a-z]+-fr"><span>(.*?)<\/span><span>(.*?)<\/span><\/span>/g,'$1/$2').replace(/<[^>]+>/g,''); }
 function params(){ var qs={}; try{ (location.search||'').replace(/^\?/,'').split('&').forEach(function(kv){ var p=kv.split('='); if(p[0]) qs[decodeURIComponent(p[0])]=decodeURIComponent(p[1]||''); }); }catch(e){} return qs; }
