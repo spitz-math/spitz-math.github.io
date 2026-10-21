@@ -203,7 +203,7 @@ function render(){
 }
 $('games').addEventListener('click',function(e){ var b=e.target.closest('.game'); if(!b) return; st.game=b.dataset.g; save(); render(); });
 /* Suggested skills (Kody, 2026-10-19): Mr. Spitz points students at what to practice, set on topics.html (TOPICS.suggest). A suggestion can
-   name topics; its button picks exactly those. Suggested runs earn TOPICS.bonus percent on the score (scorecode.js), so the banner says so.
+   name topics; its button picks exactly those. Suggested and assigned runs earn TOPICS.bonus percent on the score (scorecode.js), so the banner says so.
    While the lock is on the banner lists the assigned sets too, and only suggestions inside the assignment show. */
 (function(){ function esc(v){ return String(v).replace(/[&<>"]/g,function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]; }); }
   var lock=ASSIGN.length, as=ASSIGN.map(function(s){ var o=OPEN.filter(function(x){ return x.id===s.id; })[0]; return {s:s,t:o&&s.topics.length<o.topics.length?s.topics.map(function(t){ return t[0]; }):[]}; }),
@@ -216,7 +216,7 @@ $('games').addEventListener('click',function(e){ var b=e.target.closest('.game')
   /* everything assigned is also suggested: one row */
   var same=lock&&sug.length===as.length&&as.every(function(a){ return sug.some(function(k){ return k.s.id===a.s.id&&(!k.t.length||k.t.join()===a.t.join()); }); });
   if(same){ sug=[]; list=as; }
-  $('skill').innerHTML=(lock?'<span class="lab">📌 Assigned by Mr. Spitz'+(same&&bonus?' · ⭐ +'+bonus+'% score bonus':'')+'</span>'+as.map(btn).join(''):'')+
+  $('skill').innerHTML=(lock?'<span class="lab">📌 Assigned by Mr. Spitz'+(bonus?' · ⭐ +'+bonus+'% score bonus':'')+'</span>'+as.map(btn).join(''):'')+
     (sug.length?(lock?'<span class="brk"></span>':'')+'<span class="lab">'+lab+'</span>'+sug.map(function(k,i){ return btn(k,as.length+i); }).join(''):'')+
     (note?'<p class="note">'+esc(note)+'</p>':'');
   $('skill').hidden=false;

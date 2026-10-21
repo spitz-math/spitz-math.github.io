@@ -95,7 +95,7 @@ input:focus{ outline:none; border-color:var(--brand); }
   </section>
 
   <section>
-    <p class="hint"><b style="color:var(--ink)">Hidden</b>: students can't pick it. <b style="color:var(--ink)">Open</b>: students can pick it. <b style="color:var(--pin)">📌 Assigned</b>: turns on the lock, so students can only play assigned sets. <b style="color:var(--brand)">⭐ Suggest</b>: shows it in the hub's suggested banner and gives the score bonus. Green topics are the ones students can play.</p>
+    <p class="hint"><b style="color:var(--ink)">Hidden</b>: students can't pick it. <b style="color:var(--ink)">Open</b>: students can pick it. <b style="color:var(--pin)">📌 Assigned</b>: turns on the lock, so students can only play assigned sets. <b style="color:var(--brand)">⭐ Suggest</b>: shows it in the hub's suggested banner. Suggested and assigned sets both earn the score bonus. Green topics are the ones students can play.</p>
     <div class="sets" id="sets"></div>
   </section>
 
@@ -107,9 +107,9 @@ input:focus{ outline:none; border-color:var(--brand); }
         <input type="text" id="note" maxlength="120" autocomplete="off" placeholder="Quiz Friday on slide and slice!">
       </div>
       <div class="field">
-        <label for="bonus">Score bonus for suggested skills</label>
+        <label for="bonus">Score bonus for suggested and assigned skills</label>
         <div class="bonusrow"><input type="number" id="bonus" min="0" max="100" step="5" inputmode="numeric"><span>% more points</span></div>
-        <p class="hint" style="margin:0">A run counts when its set is suggested and every topic played is a suggested topic. 0 turns the bonus off.</p>
+        <p class="hint" style="margin:0">A run counts when its set is suggested or assigned and every topic played is one of its suggested or assigned topics. 0 turns the bonus off.</p>
       </div>
     </div>
     <div>
@@ -207,7 +207,7 @@ function render(){ var d=data(), lock=d.assign.length, open=SETS.length-d.hidden
   var sug=d.suggest.sets.filter(function(k){ return !lock||d.assign.some(function(a){ return a.id===k.id; }); });
   $('mode').className='mode '+(lock?'lock':'free');
   $('mode').textContent=lock?'🔒 Locked: students can only play the '+(lock===1?'assigned set':lock+' assigned sets')+'.':'Free choice: students can pick any of the '+open+' open sets.';
-  $('banner').innerHTML=(lock?'<b>📌 Assigned:</b>'+d.assign.map(function(k){ return '<span class="pill as">'+nm(k)+'</span>'; }).join(''):'')+
+  $('banner').innerHTML=(lock?'<b>📌 Assigned'+(d.bonus?' (+'+d.bonus+'% bonus)':'')+':</b>'+d.assign.map(function(k){ return '<span class="pill as">'+nm(k)+'</span>'; }).join(''):'')+
     (sug.length?'<b>⭐ Suggested'+(d.bonus?' (+'+d.bonus+'% bonus)':'')+':</b>'+sug.map(function(k){ return '<span class="pill">'+nm(k)+'</span>'; }).join(''):(lock?'':'<span>No suggestions, so the hub shows no banner.</span>'))+
     (d.suggest.note&&(lock||sug.length)?'<span>“'+esc(d.suggest.note)+'”</span>':'');
   var ch=dirty(); $('save').disabled=busy||!ch; $('undo').disabled=busy||!ch;
