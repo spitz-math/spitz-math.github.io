@@ -1,8 +1,18 @@
 {
- "hidden": ["mult"],
+ "hidden": [],
  "off": {},
- "assign": [{"id": "slide"}, {"id": "stdform"}],
- "suggest": {"sets": [{"id": "slide"}, {"id": "stdform"}], "note": ""},
+ "assign": [],
+ "suggest": {
+  "sets": [
+   {
+    "id": "slide"
+   },
+   {
+    "id": "stdform"
+   }
+  ],
+  "note": ""
+ },
  "bonus": 25,
- "updated": "2026-10-21T21:45:00Z"
+ "updated": "2026-10-22T01:24:09.354Z"
 }
