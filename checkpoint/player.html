@@ -2032,11 +2032,16 @@ function load(id,done){
 const booted=()=>{ if(!window.__spitzBooted) err('That test file has a problem and could not start.'); else startSaving(); };
 
 /* ---------- talking to the Sheet (app mode only) ---------- */
-/* the Apps Script loader shows this page in a frame of its own origin, so google.script.run lives on the parent page */
-function gsRun(){ const w=[window]; try{ if(parent!==window) w.push(parent); }catch(e){}
-  for(const x of w){ try{ if(x.google&&x.google.script&&x.google.script.run) return x.google.script.run; }catch(e){} } return null; }
-function call(fn,arg){ return new Promise((res,rej)=>{ const run=APP&&gsRun(); if(!run) return rej(new Error('offline'));
-  run.withSuccessHandler(res).withFailureHandler(rej)[fn](arg); }); }
+/* the Apps Script loader shows this page in a frame of its own origin, so google.script.run lives on the parent page.
+   Google's code only accepts objects made in its own frame, so arguments are rebuilt there and results rebuilt here. */
+function gsHost(){ const w=[window]; try{ if(parent!==window) w.push(parent); }catch(e){}
+  for(const x of w){ try{ if(x.google&&x.google.script&&x.google.script.run) return x; }catch(e){} } return null; }
+function call(fn,arg){ return new Promise((res,rej)=>{ const h=APP&&gsHost(); if(!h) return rej(new Error('offline'));
+  try{ const a=arg===undefined?null:h.JSON.parse(JSON.stringify(arg));
+    h.google.script.run
+      .withSuccessHandler(r=>{ try{ res(r==null?r:JSON.parse(h.JSON.stringify(r))); }catch(e){ res(r); } })
+      .withFailureHandler(e=>{ const m=String(e&&e.message||e); console.warn('Spitz '+fn+' failed: '+m); rej(new Error(m)); })[fn](a);
+  }catch(e){ console.warn('Spitz '+fn+' could not be sent: '+(e&&e.message||e)); rej(e); } }); }
 const sleep=ms=>new Promise(r=>setTimeout(r,ms));
 async function callRetry(fn,arg,tries){ let e; for(let i=0;i<tries;i++){ try{ return await call(fn,arg); }catch(x){ e=x; if(/NOSIGNIN/.test(String(x&&x.message||x))) break; if(i<tries-1) await sleep(1200*(i+1)); } } throw e; }
 
