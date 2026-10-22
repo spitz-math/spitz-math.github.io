@@ -1,5 +1,5 @@
 {
- "updated": "2026-10-19T21:19:22.247Z",
+ "updated": "2026-10-22T21:39:07.054Z",
  "games": {
   "splat_range": {
    "name": "Splat Range",
@@ -87,16 +87,16 @@
      "date": "2026-10-16"
     },
     {
+     "name": "MarcosL.",
+     "score": "112,675",
+     "acc": 97,
+     "set": "Multiplication facts",
+     "date": "2026-10-22"
+    },
+    {
      "name": "Ethan A",
      "score": "110,010",
      "acc": 91,
-     "set": "Multiplication facts",
-     "date": "2026-10-16"
-    },
-    {
-     "name": "Marcos L",
-     "score": "105,675",
-     "acc": 95,
      "set": "Multiplication facts",
      "date": "2026-10-16"
     },
@@ -146,6 +146,13 @@
      "acc": 88,
      "set": "Multiplication facts",
      "date": "2026-10-16"
+    },
+    {
+     "name": "A. De Leon",
+     "score": "9,500",
+     "acc": 89,
+     "set": "Slope-intercept form",
+     "date": "2026-10-14"
     },
     {
      "name": "melanie guerra",
@@ -214,11 +221,11 @@
      "date": "2026-10-16"
     },
     {
-     "name": "SERGIO C",
-     "score": "14 – 7",
-     "acc": 92,
+     "name": "SERGIO.C",
+     "score": "21 – 7",
+     "acc": 94,
      "set": "Standard form",
-     "date": "2026-10-16"
+     "date": "2026-10-20"
     },
     {
      "name": "Noah Cuadra",
@@ -232,6 +239,13 @@
   "hoop_buds": {
    "name": "Hoop Buds",
    "top": [
+    {
+     "name": "Joaquin R",
+     "score": "60 – 18",
+     "acc": 88,
+     "set": "Multiplication facts",
+     "date": "2026-10-22"
+    },
     {
      "name": "Ozzy G",
      "score": "42 – 8",
@@ -449,6 +463,13 @@
      "date": "2026-10-19"
     },
     {
+     "name": "Leonardo A",
+     "score": "33,575",
+     "acc": 94,
+     "set": "Slide and Slice · Slide",
+     "date": "2026-10-21"
+    },
+    {
      "name": "Sergio.C",
      "score": "16,920",
      "acc": 94,
@@ -460,13 +481,6 @@
   "burger_shop": {
    "name": "Burger Shop",
    "top": [
-    {
-     "name": "A. De Leon",
-     "score": "9,500",
-     "acc": 89,
-     "set": "Slope-intercept form",
-     "date": "2026-10-14"
-    },
     {
      "name": "melanie guerra",
      "score": "6,909",
@@ -515,6 +529,18 @@
      "acc": 100,
      "set": "Standard form",
      "date": "2026-10-16"
+    }
+   ]
+  },
+  "snake_arena": {
+   "name": "Snake Arena",
+   "top": [
+    {
+     "name": "SERGIO.C",
+     "score": "7,832",
+     "acc": 100,
+     "set": "Slide and Slice",
+     "date": "2026-10-20"
     }
    ]
   }
