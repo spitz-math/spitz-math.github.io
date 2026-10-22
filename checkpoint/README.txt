@@ -3,6 +3,7 @@ SPITZ CHECKPOINT
 
 What's in this folder
   player.html              The test player (the whole engine).
+  dash.html                The live teacher dashboard (opens only for you).
   tests/index.js           The list of tests.
   tests/<id>/              One folder per test: test.js, img/ (graphs), rat/ (TEA explanations)
   refs/                    Reference sheets
@@ -43,6 +44,27 @@ Attempts tab
   One row per student per session. Student Code is a scrambled code, not the email. State, Items and
   Events hold the saved answers and activity record for the dashboard (next step). Don't edit those
   columns. Sorting or deleting rows is fine.
+
+Teacher dashboard
+  Open it from the Sheet: Spitz Checkpoint menu > Open the dashboard (or add ?view=dash to the end of the
+  web app link). It only opens for the account that deployed the script; anyone else sees "only for the
+  teacher", and the data calls refuse them too.
+  Live       One row per student, one square per question: green correct, red incorrect, yellow partly,
+             gray seen but blank, white not seen, blue outline = the question they are on now, orange
+             corner = flagged. Hover a square for the TEKS, time, visits and answer changes. "Time"
+             shows minutes per question instead. Status: Working, Idle (no clicks or typing for 3+ min),
+             Left the test tab, No signal (no save for 100+ s: closed or offline), Paused, Stopped,
+             Submitted. Click a name for the student's detail panel.
+  Pause      The student's screen shows "Your teacher has paused your test" with no Resume button,
+             within about 30 seconds. Resume puts them back where they were.
+  Stop       Saves and stops the test without submitting. They can't continue or sign back in until
+             you Unlock. Unlock lets them keep going (or sign back in) where they left off.
+  Standards  Class results by reporting category and by TEKS (weakest first), a student-by-category
+             table, and results and average time per question. "Submitted tests only" is on by default.
+  Filters    Session chips (pick sessions for one test at a time), period, sort and name search. The
+             page refreshes every 15 seconds and remembers your choices on that computer.
+  The dashboard adds a Control column at the end of Attempts (blank, paused or locked). Don't edit it by
+  hand; use the dashboard buttons.
 
 After changing player.html
   Push it to GitHub. Students get it the next time they open or reload the page (GitHub Pages can take a

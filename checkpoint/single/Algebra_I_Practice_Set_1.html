@@ -1515,7 +1515,7 @@ function sessionRestore(st,events){ if(!st) return;
   if(Array.isArray(events)) ACT.events=events.slice(-6000);
   Object.keys(cache).forEach(k=>delete cache[k]); lastSnap=snapNow();
   S.i=Math.max(0,Math.min(ITEMS.length-1,st.i|0)); }
-window.SpitzSession={export:sessionExport, state:sessionState, dialog:(o)=>dialog(o), toast:(t)=>toast(t),
+window.SpitzSession={export:sessionExport, state:sessionState, dialog:(o)=>dialog(o), toast:(t)=>toast(t), teacherHold:k=>teacherHold(k), get hold(){ return hold; },
   get submitted(){ return !!S.submitted; }, get started(){ return !!S.started; }, get item(){ return S.i+1; },
   answeredCount:()=>ITEMS.filter(answered).length};
 
@@ -1889,6 +1889,17 @@ $('#bSys').onclick=()=>{ if($('#sysPanel').hidden){ actTool('settings'); pend={.
 $('#btnHelp').onclick=()=>dialog({title:'Help',html:`<div class="body2"><p>Use <b>Next</b> and <b>Back</b> to move between questions, or open the <b>Items</b> list to jump to any question.</p><p>The round button by the question number opens the item menu: Tutorial, Mark for Review, Sticky Notes, Strikethrough, and Highlight Selection (select some words first).</p><p>Tools: References, Calculator, Notepad, Graph/Draw, Line Reader (use the up and down arrow keys), Zoom, and System Settings.</p></div>`,buttons:[{label:'Close',pri:true}]});
 $('#btnPause').onclick=()=>dialog({title:'Attention',msg:'Are you sure you want to pause the test? Your answers will be saved.',buttons:[{label:'Yes',pri:true,fn:()=>{ $('#pauseScreen').hidden=false; actPause(true); }},{label:'No'}]});
 $('#resumeBtn').onclick=()=>{ $('#pauseScreen').hidden=true; actPause(false); };
+/* teacher pause / stop from the dashboard: the pause screen without a Resume button, until the teacher releases it */
+let hold='';
+const PS_TXT={bar:$('#pauseScreen .sbar').textContent, p:$('#pauseScreen .scard p').textContent};
+function teacherHold(k){ k=k==='paused'||k==='locked'?k:''; if(k===hold||(S.submitted&&k)) return; hold=k; const ps=$('#pauseScreen');
+  if(k){ closeMenu(); closeItems(); $('#veil').hidden=true; $('#sysPanel').hidden=true;
+    if(lrOn){ lrOn=false; $('#bLine').setAttribute('aria-pressed',false); placeBand(); }
+    ps.querySelector('.sbar').textContent=k==='locked'?'Your test has been stopped':'Your test has been paused';
+    ps.querySelector('.scard p').textContent=k==='locked'?'Your teacher has stopped your test. Your answers have been saved. Ask your teacher for help.':'Your teacher has paused your test. Your answers have been saved. Stay on this page; your test will continue when your teacher resumes it.';
+    $('#resumeBtn').hidden=true; if(ps.hidden){ ps.hidden=false; actPause(true); } logEv('teacher',k); }
+  else { ps.querySelector('.sbar').textContent=PS_TXT.bar; ps.querySelector('.scard p').textContent=PS_TXT.p; $('#resumeBtn').hidden=false;
+    if(!ps.hidden){ ps.hidden=true; actPause(false); } logEv('teacher','resume'); } }
 
 /* ---------- end of test, submit, results ---------- */
 function openEnd(){
@@ -2112,7 +2123,7 @@ $('#startForm').addEventListener('submit',async e=>{ e.preventDefault();
     let r; try{ r=await callRetry('stcSignIn',{sessionId:ses,name:nm,period:pd},3); }
     catch(x){ return err(/NOSIGNIN/.test(String(x&&x.message||x))?'Sign in to this Chromebook with your school Google account, then reload this page.':'Could not reach the testing site. Check your internet connection and try again.'); }
     if(!r||!r.ok) return err((r&&r.msg)||'Sign in did not work. Try again.',$('#stuSession'));
-    CTX={key:'stc:'+r.sessionId+':'+r.student, sessionId:r.sessionId, student:r.student, test:r.test, name:nm.toUpperCase(), period:pd};
+    CTX={key:'stc:'+r.sessionId+':'+r.student, sessionId:r.sessionId, student:r.student, test:r.test, name:nm.toUpperCase(), period:pd, control:r.control||''};
     applyReview(r.review);
     const server=r.attempt?{state:r.attempt.state,events:r.attempt.events}:null, local=LS.get(CTX.key);
     const use=(server&&server.state&&server.state.submitted)?server:(newer(local,server)?local:server);
@@ -2131,7 +2142,7 @@ $('#startForm').addEventListener('submit',async e=>{ e.preventDefault();
 /* ---------- saving ---------- */
 let sentAt=0, sentStatus='', leaving=false, lastInput=Date.now(), localT=null, serverT=null, inflight=false, again=false, finalOK=false, beat=null, reviewPoll=null;
 ['pointerdown','keydown'].forEach(t=>addEventListener(t,()=>{ lastInput=Date.now(); },true));
-function screen(){ const ss=window.SpitzSession; if(ss.submitted) return 'submitted'; if(!$('#pauseScreen').hidden) return 'paused';
+function screen(){ const ss=window.SpitzSession; if(ss.submitted) return 'submitted'; if(ss.hold==='locked') return 'locked'; if(!$('#pauseScreen').hidden) return 'paused';
   if(document.hidden) return 'away'; if(!$('#endScreen').hidden) return 'end'; return 'active'; }
 function trimEvents(ev,limit){ let s=JSON.stringify(ev); while(s.length>limit&&ev.length){ ev=ev.slice(Math.ceil(ev.length/4)); s=JSON.stringify(ev); } return ev; }
 function saveLocal(){ clearTimeout(localT); localT=null; if(leaving||!CTX||!window.SpitzSession) return;
@@ -2144,7 +2155,7 @@ function payload(final){ const ss=window.SpitzSession, ex=ss.export(), st=ss.sta
 function saveServer(){ clearTimeout(serverT); serverT=null; if(leaving||!CTX||!CTX.sessionId||finalOK) return;
   if(inflight){ again=true; return; } inflight=true;
   const final=window.SpitzSession.submitted, body=payload(final); sentAt=Date.now(); sentStatus=body.status;
-  call('stcSave',body).then(r=>{ if(r&&r.review) applyReview(r.review); if(final&&r&&r.ok){ finalOK=true; saveNote(false); } })
+  call('stcSave',body).then(r=>{ if(r&&r.review) applyReview(r.review); if(r&&typeof r.control==='string'&&!final) window.SpitzSession.teacherHold(r.control); if(final&&r&&r.ok){ finalOK=true; saveNote(false); } })
     .catch(()=>{ again=true; })
     .finally(()=>{ inflight=false; if(again||(final&&!finalOK)){ again=false; serverT=setTimeout(saveServer,final?4000:2500); } }); }
 function saveServerSoon(ms){ if(!serverT) serverT=setTimeout(saveServer,ms); }
@@ -2158,7 +2169,7 @@ function startSaving(){
   document.addEventListener('visibilitychange',()=>{ saveLocal(); saveServer(); });
   addEventListener('pagehide',saveLocal);
   saveLocal();
-  if(CTX.sessionId){ if(window.SpitzSession.submitted) saveNote(true); saveServer();
+  if(CTX.sessionId){ if(window.SpitzSession.submitted) saveNote(true); else if(CTX.control) window.SpitzSession.teacherHold(CTX.control); saveServer();
     // heartbeat for the dashboard (who is idle or away); skipped when a save just went out and nothing changed
     beat=setInterval(()=>{ if(!finalOK&&(Date.now()-sentAt>25000||screen()!==sentStatus)) saveServer(); },30000);
     reviewPoll=setInterval(()=>{ if(!$('#resultsScreen').hidden) call('stcReview',{sessionId:CTX.sessionId}).then(r=>r&&applyReview(r.review)).catch(()=>{}); },30000); }
