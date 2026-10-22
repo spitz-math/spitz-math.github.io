@@ -45,5 +45,11 @@ Attempts tab
   columns. Sorting or deleting rows is fine.
 
 After changing player.html
-  Push it to GitHub, then Spitz Checkpoint menu > Reload the player from GitHub (or wait 10 minutes).
-  No redeploy needed. Only redeploy (Deploy > Manage deployments > edit > New version) when Code.gs changes.
+  Push it to GitHub. Students get it the next time they open or reload the page (GitHub Pages can take a
+  minute or two to update). No redeploy needed. Only redeploy (Deploy > Manage deployments > edit >
+  New version) when Code.gs changes.
+
+How the web app page works
+  Google rewrites any page an Apps Script web app serves, and that broke the player. So the web app only
+  serves a tiny loader page; the student's browser downloads player.html from GitHub and shows it in a
+  full-window frame. Saving still goes through Apps Script to your Sheet.
