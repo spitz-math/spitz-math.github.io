@@ -174,9 +174,11 @@ const keep=(k,v)=>{ try{ localStorage.setItem('spitzDash:'+k,JSON.stringify(v));
 function gsHost(){ const w=[window]; try{ if(parent!==window) w.push(parent); }catch(e){}
   for(const x of w){ try{ if(x.google&&x.google.script&&x.google.script.run) return x; }catch(e){} } return null; }
 function call(fn,arg){ return new Promise((res,rej)=>{ const h=APP&&gsHost(); if(!h) return rej(new Error('offline'));
-  try{ h.google.script.run.withSuccessHandler(r=>{ try{ res(r==null?r:JSON.parse(h.JSON.stringify(r))); }catch(e){ res(r); } })
-      .withFailureHandler(e=>rej(new Error(String(e&&e.message||e))))[fn](h.JSON.parse(JSON.stringify(arg==null?null:arg)));
-  }catch(e){ rej(e); } }); }
+  let done=false; const fin=(f,v)=>{ if(done) return; done=true; clearTimeout(tm); f(v); };
+  const tm=setTimeout(()=>fin(rej,new Error('no answer from Google')),40000);   // a lost answer must not freeze the dashboard
+  try{ h.google.script.run.withSuccessHandler(r=>{ let v=r; try{ v=r==null?r:JSON.parse(h.JSON.stringify(r)); }catch(e){} fin(res,v); })
+      .withFailureHandler(e=>fin(rej,new Error(String(e&&e.message||e))))[fn](h.JSON.parse(JSON.stringify(arg==null?null:arg)));
+  }catch(e){ fin(rej,e); } }); }
 
 /* ---------- test details (TEKS, categories) read from each test's test.js in a hidden frame ---------- */
 const META={};

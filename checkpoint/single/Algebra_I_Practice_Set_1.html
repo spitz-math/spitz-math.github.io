@@ -2097,12 +2097,15 @@ const booted=()=>{ if(!window.__spitzBooted) err('That test file has a problem a
    Google's code only accepts objects made in its own frame, so arguments are rebuilt there and results rebuilt here. */
 function gsHost(){ const w=[window]; try{ if(parent!==window) w.push(parent); }catch(e){}
   for(const x of w){ try{ if(x.google&&x.google.script&&x.google.script.run) return x; }catch(e){} } return null; }
+/* a call Google never answers must not freeze saving: give up after 25 s (a late answer is ignored; a repeated save is harmless) */
 function call(fn,arg){ return new Promise((res,rej)=>{ const h=APP&&gsHost(); if(!h) return rej(new Error('offline'));
+  let done=false; const fin=(f,v)=>{ if(done) return; done=true; clearTimeout(tm); f(v); };
+  const tm=setTimeout(()=>{ console.warn('Spitz '+fn+' got no answer in 25 s'); fin(rej,new Error('timeout')); },25000);
   try{ const a=arg===undefined?null:h.JSON.parse(JSON.stringify(arg));
     h.google.script.run
-      .withSuccessHandler(r=>{ try{ res(r==null?r:JSON.parse(h.JSON.stringify(r))); }catch(e){ res(r); } })
-      .withFailureHandler(e=>{ const m=String(e&&e.message||e); console.warn('Spitz '+fn+' failed: '+m); rej(new Error(m)); })[fn](a);
-  }catch(e){ console.warn('Spitz '+fn+' could not be sent: '+(e&&e.message||e)); rej(e); } }); }
+      .withSuccessHandler(r=>{ let v=r; try{ v=r==null?r:JSON.parse(h.JSON.stringify(r)); }catch(e){} fin(res,v); })
+      .withFailureHandler(e=>{ const m=String(e&&e.message||e); console.warn('Spitz '+fn+' failed: '+m); fin(rej,new Error(m)); })[fn](a);
+  }catch(e){ console.warn('Spitz '+fn+' could not be sent: '+(e&&e.message||e)); fin(rej,e); } }); }
 const sleep=ms=>new Promise(r=>setTimeout(r,ms));
 async function callRetry(fn,arg,tries){ let e; for(let i=0;i<tries;i++){ try{ return await call(fn,arg); }catch(x){ e=x; if(/NOSIGNIN/.test(String(x&&x.message||x))) break; if(i<tries-1) await sleep(1200*(i+1)); } } throw e; }
 
@@ -2140,7 +2143,7 @@ $('#startForm').addEventListener('submit',async e=>{ e.preventDefault();
 });
 
 /* ---------- saving ---------- */
-let sentAt=0, sentStatus='', leaving=false, lastInput=Date.now(), localT=null, serverT=null, inflight=false, again=false, finalOK=false, beat=null, reviewPoll=null;
+let sentAt=0, sentStatus='', leaving=false, lastInput=Date.now(), localT=null, serverT=null, inflight=false, again=false, finalOK=false, beat=null, reviewPoll=null, holdPoll=null, holdBusy=false;
 ['pointerdown','keydown'].forEach(t=>addEventListener(t,()=>{ lastInput=Date.now(); },true));
 function screen(){ const ss=window.SpitzSession; if(ss.submitted) return 'submitted'; if(ss.hold==='locked') return 'locked'; if(!$('#pauseScreen').hidden) return 'paused';
   if(document.hidden) return 'away'; if(!$('#endScreen').hidden) return 'end'; return 'active'; }
@@ -2172,7 +2175,10 @@ function startSaving(){
   if(CTX.sessionId){ if(window.SpitzSession.submitted) saveNote(true); else if(CTX.control) window.SpitzSession.teacherHold(CTX.control); saveServer();
     // heartbeat for the dashboard (who is idle or away); skipped when a save just went out and nothing changed
     beat=setInterval(()=>{ if(!finalOK&&(Date.now()-sentAt>25000||screen()!==sentStatus)) saveServer(); },30000);
-    reviewPoll=setInterval(()=>{ if(!$('#resultsScreen').hidden) call('stcReview',{sessionId:CTX.sessionId}).then(r=>r&&applyReview(r.review)).catch(()=>{}); },30000); }
+    reviewPoll=setInterval(()=>{ if(!$('#resultsScreen').hidden) call('stcReview',{sessionId:CTX.sessionId}).then(r=>r&&applyReview(r.review)).catch(()=>{}); },30000);
+    // while the teacher has paused or stopped this test, check every 10 s (reads one cell, writes nothing) so Resume shows up quickly
+    holdPoll=setInterval(()=>{ const ss=window.SpitzSession; if(!ss.hold||ss.submitted||holdBusy) return; holdBusy=true;
+      call('stcHold',{sessionId:CTX.sessionId}).then(r=>{ if(r&&typeof r.control==='string'&&r.control!==ss.hold){ ss.teacherHold(r.control); saveServer(); } }).catch(()=>{}).finally(()=>{ holdBusy=false; }); },10000); }
 }
 window.__spitzLogout=()=>{
   if(CTX&&CTX.sessionId&&window.SpitzSession&&window.SpitzSession.submitted&&!finalOK){ saveServer();
