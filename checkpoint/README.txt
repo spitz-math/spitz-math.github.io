@@ -12,9 +12,9 @@ What's in this folder
   apps-script/Code.gs      The saving backend for your Google Sheet (see SETUP below)
 
 Student link
-  spitz-math.github.io/checkpoint   (index.html forwards to the Apps Script web app link)
+  spitzmath.com/checkpoint         (index.html forwards to the Apps Script web app link)
   Log Out also returns there. If you ever make a NEW deployment (not a new version), put its /exec link
-  in index.html (two places, marked) and push it. Adding ?view=dash opens your dashboard.
+  in index.html (the link with id="go") and push it. Adding ?view=dash opens your dashboard.
 
 Two ways students can use it
   1. Saved to your Sheet (use this in class): the Apps Script web app link. Students type first name,
@@ -36,11 +36,13 @@ Adding or replacing a test (dashboard > Tests)
   points, wording, pictures) and warns you if an open session uses that test.
   Your tests: Hide/Show takes a test off the practice list (player.html without a Session ID) without
   deleting anything; Preview; New session.
-  Single files: "Rebuild single files" after player.html changes.
+  Single files: "Rebuild single files" after player.html changes (only then: each rebuild saves another 4 MB copy).
+  Published test.js files are scrambled so students can't read the answer key by opening them. The Tests page
+  scrambles each test when it publishes, and shows the questions and key as usual.
 
 Building a test from the warm-up bank (dashboard > Tests > Build a test from the warm-up bank)
   The questions come from the warm-up generator. Upload it to GitHub once, as warmup/index.html in
-  spitz-math.github.io (so spitz-math.github.io/warmup works). Until then, "Choose the generator file" loads it from
+  spitz-math.github.io (so spitzmath.com/warmup works). Until then, "Choose the generator file" loads it from
   your computer. Updating the generator on GitHub updates the builder; nothing is copied.
   1. Questions: Released (exact wording), Released with fresh numbers, or Practice generators.
      Years: untick years you don't want (for example 2025, which is also a full test here).
@@ -58,7 +60,7 @@ Building a test from the warm-up bank (dashboard > Tests > Build a test from the
 
 SETUP (one time)
   A. GitHub: put everything in this folder except apps-script/ into a folder named "checkpoint" in the
-     spitz-math.github.io repository, so this works:  https://spitz-math.github.io/checkpoint/player.html
+     spitz-math.github.io repository, so this works:  https://spitzmath.com/checkpoint/player.html
      (If you use a different folder, change GH_ROOT at the top of Code.gs.)
   B. Make a new Google Sheet on your school account, for example "Spitz Checkpoint Results".
   C. In the Sheet: Extensions > Apps Script. Delete what's there, paste all of apps-script/Code.gs, Save.

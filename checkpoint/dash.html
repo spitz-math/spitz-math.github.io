@@ -4,6 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Spitz Checkpoint Dashboard</title>
+<meta name="robots" content="noindex">
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='32' height='32' viewBox='0 -2 32 32'%3E%3Cpath d='M3 12C3 5 9 2 16 2s13 3 13 10z' fill='%23f2a33a'/%3E%3Cg fill='%23fff3c4'%3E%3Cellipse cx='10' cy='6.5' rx='1.1' ry='.6'/%3E%3Cellipse cx='16' cy='5' rx='1.1' ry='.6'/%3E%3Cellipse cx='21.5' cy='7' rx='1.1' ry='.6'/%3E%3Cellipse cx='13' cy='9' rx='1.1' ry='.6'/%3E%3Cellipse cx='19' cy='9.5' rx='1.1' ry='.6'/%3E%3C/g%3E%3Cpath d='M2 12.5h28l-2.5 3-3-2-3 2.5-3-2.5-3 2.5-3-2.5-3 2.5-3-2z' fill='%235fbf3a'/%3E%3Crect x='2.5' y='15' width='27' height='3' rx='1.2' fill='%23f7d13b'/%3E%3Crect x='2' y='17.5' width='28' height='4.2' rx='2' fill='%237a3b1d'/%3E%3Cpath d='M3 22h26c0 2.6-2.4 4-5 4H8c-2.6 0-5-1.4-5-4z' fill='%23e8913a'/%3E%3C/svg%3E">
 <style>
 /* Spitz Checkpoint teacher dashboard. Teacher-only: opened from the web app link with ?view=dash. */
@@ -748,6 +749,14 @@ const SAFE=/^[A-Za-z0-9._\-\/]+$/;
 /* ---------- bytes ---------- */
 async function gitSha(b){ const h=ENC.encode('blob '+b.length+'\0'), all=new Uint8Array(h.length+b.length); all.set(h); all.set(b,h.length);
   return [...new Uint8Array(await crypto.subtle.digest('SHA-1',all))].map(x=>x.toString(16).padStart(2,'0')).join(''); }
+/* published test.js files are scrambled so a student can't read the answer key by opening the file (it stops a quick look, not a
+   determined one). The file unscrambles itself when it runs, so the player, this page's checks and the single files need nothing extra. */
+const SCRAMBLE_HEAD='/* Spitz Checkpoint test, scrambled so the answer key can\'t be read at a glance. The dashboard\'s Tests page shows the questions and key. */\n';
+function scrambleTest(js){ js=String(js); if(js.startsWith(SCRAMBLE_HEAD)) return js;
+  const b=ENC.encode(js); let bin=''; for(let i=0;i<b.length;i+=8192) bin+=String.fromCharCode.apply(null,b.subarray(i,i+8192));
+  return SCRAMBLE_HEAD+'(function(s){var b=atob(s.split("").reverse().join("")),u=new Uint8Array(b.length);for(var i=0;i<b.length;i++)u[i]=b.charCodeAt(i);'
+    +'var c=new TextDecoder().decode(u),h=typeof document!=="undefined"&&(document.head||document.documentElement);'
+    +'if(h&&h.appendChild){var e=document.createElement("script");e.text=c;h.appendChild(e);h.removeChild(e);}else(0,eval)(c);})("'+btoa(bin).split('').reverse().join('')+'");\n'; }
 function b64(b){ let s=''; for(let i=0;i<b.length;i+=0x8000) s+=String.fromCharCode.apply(null,b.subarray(i,i+0x8000)); return btoa(s); }
 const dataUrl=(path,b)=>'data:'+(MIME[extOf(path)]||'application/octet-stream')+';base64,'+b64(b);
 
@@ -953,7 +962,7 @@ async function takeFiles(list,from){ if(TP.working) return; const box=$('#pkg');
     if(!tj.length) throw new Error('There is no test.js in '+from+'. A test zip has a folder with test.js in it (plus img/ and rat/ if the test has pictures).');
     if(tj.length>1) throw new Error(from+' has '+tj.length+' tests in it ('+tj.map(f=>f.path).join(', ')+'). Add one test at a time.');
     const pre=tj[0].path.slice(0,-'test.js'.length), folder=(pre.match(/([^\/]+)\/$/)||[])[1]||'';
-    const P={from, folder, testJs:DEC.decode(tj[0].bytes), testBytes:tj[0].bytes, assets:{}, refs:{}, ignored:[], badNames:[]};
+    const P={from, folder, testJs:DEC.decode(tj[0].bytes), testBytes:ENC.encode(scrambleTest(DEC.decode(tj[0].bytes))), assets:{}, refs:{}, ignored:[], badNames:[]};
     files.forEach(f=>{ if(f===tj[0]) return;
       if(f.path.startsWith(pre)){ const rel=f.path.slice(pre.length);
         if(!MIME[extOf(rel)]) P.ignored.push(rel); else if(!SAFE.test(rel)) P.badNames.push(rel); else P.assets[rel]=f.bytes; return; }
@@ -1030,7 +1039,7 @@ async function fileChanges(P){   // what one publish will write
   e.title=P.td.title; e.hidden=!P.show;
   const parts=[]; for(const f of out) if(!f.del&&f.path.startsWith('tests/'+id+'/')) parts.push(f.path+':'+await gitSha(f.bytes));
   await versions(list,{id,parts:parts.sort()}); out.push({path:'tests/index.js',bytes:ENC.encode(indexText(list))});
-  const single=await singleFor(id,P.td.title,P.td.reference,P.testJs,P.assets,P.refs);
+  const single=await singleFor(id,P.td.title,P.td.reference,scrambleTest(P.testJs),P.assets,P.refs);
   out.push({path:'single/'+singleName(P.td.title),bytes:ENC.encode(single)});
   if(P.bankSave&&P.bankSave.length) out.push({path:SAVEDPATH,bytes:ENC.encode(await savedFileWith(P.bankSave))});
   if(P.oldTitle&&singleName(P.oldTitle)!==singleName(P.td.title)&&!TP.index.some(t=>t.id!==id&&singleName(t.title)===singleName(P.oldTitle))) out.push({path:'single/'+singleName(P.oldTitle),del:true});
@@ -1114,7 +1123,7 @@ drop.addEventListener('drop',async e=>{ e.preventDefault(); const items=[...(e.d
 addEventListener('dragover',e=>{ if(!$('#tpage').hidden) e.preventDefault(); }); addEventListener('drop',e=>{ if(!$('#tpage').hidden) e.preventDefault(); });
 
 /* =================== Question bank (questions come from the question bank file) ===================
-   The question bank file (spitz-math.github.io/warmup/index.html, or a file Kody picks) runs in a sandboxed frame with a
+   The question bank file (spitzmath.com/warmup/index.html, or a file Kody picks) runs in a sandboxed frame with a
    fake page around it, so only its question bank and generators are used. That frame also converts each question to the
    player's format (BANKSANDBOX below). Built tests go through the same checks, preview and publish as an uploaded zip. */
 function BANKSANDBOX(){   // runs inside the sandboxed frame; must not use anything from the dashboard
@@ -1446,7 +1455,7 @@ $('#bkMake').onclick=async()=>{ const title=$('#bkTitle').value.trim(), id=$('#b
       if(e.rat){ const n=i+1, got=[]; for(const lab of e.rat){ try{ assets['rat/r'+pad2(n)+lab+'.png']=await fileBytes('tests/'+e.test+'/rat/r'+pad2(e.q)+lab+'.png'); got.push(lab); }catch(x){} } if(got.length) rationale[n]=got; } }
     const testJs=testJsFor(id,title,items,Object.keys(rationale).length?rationale:null); say(msg,'');
     bkClosePage();
-    await checkPackage({from:'the question bank ('+plural(QB.cart.length,'question')+')', folder:id, testJs, testBytes:ENC.encode(testJs), assets, refs:{}, ignored:[], badNames:[], bankSave, fromBank:true});
+    await checkPackage({from:'the question bank ('+plural(QB.cart.length,'question')+')', folder:id, testJs, testBytes:ENC.encode(scrambleTest(testJs)), assets, refs:{}, ignored:[], badNames:[], bankSave, fromBank:true});
     $('#pkg').scrollIntoView({behavior:'smooth',block:'start'}); }
   catch(e){ say(msg,errText(e),'err'); }
   btn.disabled=!QB.cart.length; };

@@ -453,7 +453,6 @@ body.dragging{user-select:none}
 .chooser button:hover,.chooser button:focus-visible{background:#0f5c94;color:#fff;border-color:#0f5c94;outline:none}
 .chooser .note{font-size:13px;color:#444;margin:-12px 4px 0}
 .xcirc{width:30px;height:30px;border-radius:50%;border:2px dotted #000;display:grid;place-items:center}
-#desmosHost{width:100%;height:100%;border:0;display:block}
 #desmosFrame{position:absolute;left:0;top:-50px;width:100%;height:calc(100% + 50px);border:0;display:block}
 #calcPanel .pbody{overflow:hidden}
 
@@ -742,7 +741,6 @@ body.browse>*:not(#browse):not(svg){display:none!important}
       <p class="note" id="tiNote" hidden>The TI graphing calculator isn't set up in this practice test yet. Use Desmos for now.</p>
       <button id="chDesmos">Desmos Graphing Calculator</button>
     </div>
-    <div id="desmosHost" hidden role="application" aria-label="Desmos graphing calculator"></div>
     <iframe id="desmosFrame" title="Desmos graphing calculator, Texas testing version" hidden></iframe>
   </div>
   <div class="rh" aria-label="Drag to resize"><svg><use href="#i-move"/></svg></div>
@@ -1870,49 +1868,21 @@ Object.keys(panels).forEach(k=>{
     rh.addEventListener('pointermove',mv); rh.addEventListener('pointerup',up); });
 });
 
-/* calculator: chooser, then Desmos through the Desmos API set up like the Texas STAAR version (no green banner) */
-const USE_DESMOS_API=false;  // true = Desmos API (needs a production key; a trial key shows a watermark). false = Texas testing page with the banner cropped off.
-const DESMOS_KEY='8f04c5aafb7b4926872111685875396b';   // Mr. Spitz's Desmos API key
+/* calculator: chooser, then the Desmos Texas testing page in a frame with its green banner cropped off */
 let DESMOS_BANNER_PX=50;     // height of the green "Texas Version" banner to crop off (teacher fine-tune: click the calculator title bar, then Ctrl+Alt+Up/Down)
 try{ const v=localStorage.getItem('spitzDesmosCrop'); if(v!==null&&!isNaN(+v)) DESMOS_BANNER_PX=+v; }catch(e){}
 function applyCrop(){ const f=document.getElementById('desmosFrame'); if(!f) return; f.style.top=(-DESMOS_BANNER_PX)+'px'; f.style.height=`calc(100% + ${DESMOS_BANNER_PX}px)`; }
-const DESMOS_TX={ // Texas STAAR graphing calculator restrictions (Desmos "Texas State Test" notes)
-  images:false, folders:false, notes:false,            // no images, folders, or notes
-  degreeMode:true,                                     // angle mode defaults to degrees
-  plotImplicits:false, plotSingleVariableImplicitEquations:false, // implicit equations do not graph
-  plotInequalities:false,                              // inequalities do not graph
-  forceLogModeRegressions:true,                        // log mode for exp/log/power regressions
-  sliders:false,                                       // no sliders for free variables
-  restrictedFunctions:true,                            // restricted function list (csc, sec, cot, mad, cov, distance, midpoint...)
-  links:false, pasteGraphLink:false, actions:false,    // no outside links or graph imports
-  border:false };
-let desmosCalc=null, desmosLoading=false, desmosFailed=false;
-function useFrameFallback(){ desmosFailed=true; $('#desmosHost').hidden=true; const f=$('#desmosFrame'); if(!f.src) f.src='https://www.desmos.com/testing/texas/graphing'; f.hidden=false; applyCrop(); }
+function showDesmos(){ const f=$('#desmosFrame'); if(!f.src) f.src='https://www.desmos.com/testing/texas/graphing'; f.hidden=false; applyCrop(); }
 document.addEventListener('keydown',e=>{ if(!(e.ctrlKey&&e.altKey)||$('#calcPanel').hidden||$('#desmosFrame').hidden) return; if(e.key!=='ArrowUp'&&e.key!=='ArrowDown') return; e.preventDefault(); e.stopPropagation(); DESMOS_BANNER_PX=Math.max(0,Math.min(150,DESMOS_BANNER_PX+(e.key==='ArrowUp'?2:-2))); applyCrop(); try{ localStorage.setItem('spitzDesmosCrop',DESMOS_BANNER_PX); }catch(err){} toast('Banner crop: '+DESMOS_BANNER_PX+' px'); },true);
-function startDesmos(){
-  if(!USE_DESMOS_API){ useFrameFallback(); return; }
-  if(desmosCalc||desmosFailed){ return; }
-  const make=()=>{ try{ desmosCalc=Desmos.GraphingCalculator($('#desmosHost'),DESMOS_TX); window.__desmos=desmosCalc; }catch(e){ useFrameFallback(); } };
-  if(window.Desmos){ make(); return; }
-  if(desmosLoading) return; desmosLoading=true;
-  const s=document.createElement('script'); s.src='https://www.desmos.com/api/v1.12/calculator.js?apiKey='+DESMOS_KEY;
-  s.onload=()=>{ desmosLoading=false; window.Desmos?make():useFrameFallback(); };
-  s.onerror=()=>{ desmosLoading=false; useFrameFallback(); };
-  document.head.appendChild(s);
-  setTimeout(()=>{ if(!desmosCalc&&!desmosFailed) useFrameFallback(); },12000);
-}
-function desmosResize(){ if(desmosCalc&&desmosCalc.resize) try{ desmosCalc.resize(); }catch(e){} }
-if(window.ResizeObserver) new ResizeObserver(desmosResize).observe($('#desmosHost'));
-function showChooser(){ $('#chooser').hidden=false; $('#desmosFrame').hidden=true; $('#desmosHost').hidden=true; $('#calcTtl').textContent='Choose A Calculator'; $('#calcSwitch').hidden=true; $('#calcExpand').hidden=true; $('#tiNote').hidden=true; }
+function showChooser(){ $('#chooser').hidden=false; $('#desmosFrame').hidden=true; $('#calcTtl').textContent='Choose A Calculator'; $('#calcSwitch').hidden=true; $('#calcExpand').hidden=true; $('#tiNote').hidden=true; }
 $('#chTI').onclick=()=>{ $('#tiNote').hidden=false; };
 $('#chDesmos').onclick=()=>{
   actTool('desmos');
   $('#chooser').hidden=true;
-  if(desmosFailed) $('#desmosFrame').hidden=false; else $('#desmosHost').hidden=false;
   $('#calcTtl').innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="#000" stroke-width="2"><circle cx="12" cy="12" r="10.5" stroke-width="1.4"/><path d="M5.5 9c2.5 0 4.5 6 7 6s3-6 5.5-6M5.5 15c2.5 0 4.5-6 7-6"/></svg>Calculator';
   $('#calcSwitch').hidden=false; $('#calcExpand').hidden=false;
   if(!desmosOn){ desmosOn=true; const p=panels.calc, top=Math.round(innerHeight*0.30); if(parseInt(p.style.height)<=300){ p.style.top=top+'px'; p.style.height=(innerHeight-top-18)+'px'; } }
-  startDesmos(); setTimeout(desmosResize,50);
+  showDesmos();
 };
 $('#calcSwitch').onclick=showChooser;
 
@@ -2254,51 +2224,8 @@ if(window.__spitzPending){ const p=window.__spitzPending; window.__spitzPending=
 };
 
 window.SPITZ_BUNDLE={"practice-1":function(){
-/* Algebra I Practice Set 1: original practice items written for Spitz Checkpoint. */
-(function(){
-const ITEMS=[
- {type:'mc',teks:'A.3B',label:'Multiple choice',
-  stem:`<p>The table shows some values of a linear function.</p>
-   <table class="data"><tr><th>${x}</th><td>2</td><td>5</td><td>8</td><td>11</td></tr><tr><th>${y}</th><td>7</td><td>13</td><td>19</td><td>25</td></tr></table>
-   <p>What is the rate of change of ${y} with respect to ${x}?</p>`,
-  choices:[F(1,2),'2','3','6'],answer:1},
- {type:'ms',teks:'A.10E',label:'Multiselect',
-  stem:`<p>Which expressions are factors of ${x}<sup>2</sup> − ${x} − 12?</p><p class="direct">Select TWO correct answers.</p>`,
-  choices:[`${x} + 4`,`${x} − 4`,`${x} + 3`,`${x} − 3`,`${x} − 12`],answer:[1,2]},
- {type:'num',teks:'A.5A',label:'Equation editor',
-  stem:`<p>What value of ${x} makes this equation true?</p><span class="eq">4(${x} − 3) + 2${x} = 18</span><p class="direct">Enter your answer in the box.</p>`,
-  answer:5},
- {type:'inline',teks:'A.3C',label:'Drop-down',
-  stem:`<p class="direct">Select the correct answer from each drop-down menu.</p>`,
-  text:`The graph of ${y} = 4 − 3${x} has a slope of {0} and crosses the ${y}-axis at {1}. As ${x} increases, the function is {2}.`,
-  drops:[['4','−3','3',F(1,3)],['(0, 4)','(4, 0)','(0, −3)','(−3, 0)'],['increasing','decreasing','constant']],
-  answer:[1,0,1]},
- {type:'table',teks:'A.5B',label:'Match table',
-  stem:`<p>Consider this inequality.</p><span class="eq">2${x} − 5 &lt; 7</span><p class="direct">For each value of ${x}, select whether it is a solution to the inequality.</p>`,
-  rows:[`${x} = 3`,`${x} = 6`,`${x} = −2`,`${x} = 8`],cols:['Solution','Not a solution'],answer:[0,1,0,1]},
- {type:'dnd',teks:'A.3A',label:'Drag and drop',
-  stem:`<p>Each equation represents a line.</p><p class="direct">Drag each equation into the box that shows its slope.</p>`,
-  tiles:[`${y} = 2${x} + 5`,`4${x} − 2${y} = 6`,`${y} = −${F(1,2)}${x} + 1`,`${x} + 2${y} = 8`,`${y} = 7`,`${y} − 3 = 0`],
-  zones:['Slope of 2',`Slope of −${F(1,2)}`,'Slope of 0'],answer:[0,0,1,1,2,2]},
- {type:'mc',teks:'A.2B',label:'Multiple choice with graph',
-  stem:`<p>The graph of a line is shown.</p>{GRAPH}<p>Which equation represents the line?</p>`,
-  graph:{R:6,lines:[[2,-2]]},
-  choices:[`${y} = ${F(1,2)}${x} − 2`,`${y} = 2${x} + 2`,`${y} = 2${x} − 2`,`${y} = −2${x} − 2`],answer:2},
- {type:'num',teks:'A.12B',label:'Equation editor',
-  stem:`<p>A function is shown.</p><span class="eq">${V('f')}(${x}) = ${x}<sup>2</sup> − 3${x} + 2</span><p>What is the value of ${V('f')}(−2)?</p><p class="direct">Enter your answer in the box.</p>`,
-  answer:12},
- {type:'ms',teks:'A.9C',label:'Multiselect',
-  stem:`<p>The balance of a savings account can be modeled by ${V('f')}(${x}) = 500(1.04)<sup>${x}</sup>, where ${x} is the number of years since the account was opened.</p><p>Which statements are true?</p><p class="direct">Select TWO correct answers.</p>`,
-  choices:['The balance grows by 4% each year.','The balance grows by $4 each year.','The starting balance was $500.','The starting balance was $1.04.','The balance decreases over time.'],answer:[0,2]},
- {type:'graph',teks:'A.5C',label:'Graphing (plot a point)',
-  stem:`<p>Consider this system of equations.</p><span class="eq">${y} = ${x} + 1<br>${y} = −2${x} + 7</span><p class="direct">Click the grid to plot the point that represents the solution to the system.</p>`,
-  R:10,answer:[2,3]},
- {type:'graphline',teks:'A.3C',label:'Graphing (draw a line)',
-  stem:`<p>Graph the line represented by this equation.</p><span class="eq">2${x} − 3${y} = 12</span><p class="direct">Use the Add Line tool to graph the line. Click two points on the grid to draw a line through them.</p>`,
-  R:10,eq:[2,-3,12]}
-];
-SpitzTest({ id:'practice-1', title:'Algebra I Practice Set 1', course:'Algebra I', reference:'alg1', items:ITEMS });
-})();
+/* Spitz Checkpoint test, scrambled so the answer key can't be read at a glance. The dashboard's Tests page shows the questions and key. */
+(function(s){var b=atob(s.split("").reverse().join("")),u=new Uint8Array(b.length);for(var i=0;i<b.length;i++)u[i]=b.charCodeAt(i);var c=new TextDecoder().decode(u),h=typeof document!=="undefined"&&(document.head||document.documentElement);if(h&&h.appendChild){var e=document.createElement("script");e.text=c;h.appendChild(e);h.removeChild(e);}else(0,eval)(c);})("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");
 
 }};
 
