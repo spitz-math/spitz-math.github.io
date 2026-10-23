@@ -4,6 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Spitz Checkpoint Dashboard</title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='32' height='32' viewBox='0 -2 32 32'%3E%3Cpath d='M3 12C3 5 9 2 16 2s13 3 13 10z' fill='%23f2a33a'/%3E%3Cg fill='%23fff3c4'%3E%3Cellipse cx='10' cy='6.5' rx='1.1' ry='.6'/%3E%3Cellipse cx='16' cy='5' rx='1.1' ry='.6'/%3E%3Cellipse cx='21.5' cy='7' rx='1.1' ry='.6'/%3E%3Cellipse cx='13' cy='9' rx='1.1' ry='.6'/%3E%3Cellipse cx='19' cy='9.5' rx='1.1' ry='.6'/%3E%3C/g%3E%3Cpath d='M2 12.5h28l-2.5 3-3-2-3 2.5-3-2.5-3 2.5-3-2.5-3 2.5-3-2z' fill='%235fbf3a'/%3E%3Crect x='2.5' y='15' width='27' height='3' rx='1.2' fill='%23f7d13b'/%3E%3Crect x='2' y='17.5' width='28' height='4.2' rx='2' fill='%237a3b1d'/%3E%3Cpath d='M3 22h26c0 2.6-2.4 4-5 4H8c-2.6 0-5-1.4-5-4z' fill='%23e8913a'/%3E%3C/svg%3E">
 <style>
 /* Spitz Checkpoint teacher dashboard. Teacher-only: opened from the web app link with ?view=dash. */
 :root{
@@ -22,6 +23,11 @@ button{cursor:pointer}
 .wm svg{width:30px;height:26px}
 .wm small{font-size:13px;letter-spacing:0;font-weight:600;color:#33445a;margin-left:6px;padding-left:10px;border-left:1px solid #9fb0c8}
 .topbar .sp{flex:1}
+/* header colors: red on the dashboard, purple in the Question bank (Tests page keeps the light blue) */
+.topbar.tb-red{background:#b3261e} .topbar.tb-purple{background:#5b3a9e}
+.tb-red .wm,.tb-purple .wm,.tb-red .upd,.tb-purple .upd,.tb-red .wm small,.tb-purple .wm small{color:#fff}
+.tb-red .wm small,.tb-purple .wm small{border-left-color:rgba(255,255,255,.55)}
+.tb-red .upd.err{color:#ffe08a}
 .upd{font-size:12px;color:#33445a;white-space:nowrap}
 .upd.err{color:var(--no);font-weight:600}
 .btn{border:1px solid #9fb0c8;background:#fff;border-radius:6px;padding:5px 12px;white-space:nowrap}
@@ -265,7 +271,7 @@ details summary{cursor:pointer;color:var(--blue2);font-size:13px;margin-top:8px}
 </style>
 </head>
 <body>
-<header class="topbar">
+<header class="topbar tb-red">
   <div class="wm"><svg viewBox="0 0 32 28" aria-hidden="true"><path d="M3 12C3 5 9 2 16 2s13 3 13 10z" fill="#f2a33a"/><g fill="#fff3c4"><ellipse cx="10" cy="6.5" rx="1.1" ry=".6"/><ellipse cx="16" cy="5" rx="1.1" ry=".6"/><ellipse cx="21.5" cy="7" rx="1.1" ry=".6"/><ellipse cx="13" cy="9" rx="1.1" ry=".6"/><ellipse cx="19" cy="9.5" rx="1.1" ry=".6"/></g><path d="M2 12.5h28l-2.5 3-3-2-3 2.5-3-2.5-3 2.5-3-2.5-3 2.5-3-2z" fill="#5fbf3a"/><rect x="2.5" y="15" width="27" height="3" rx="1.2" fill="#f7d13b"/><rect x="2" y="17.5" width="28" height="4.2" rx="2" fill="#7a3b1d"/><path d="M3 22h26c0 2.6-2.4 4-5 4H8c-2.6 0-5-1.4-5-4z" fill="#e8913a"/></svg>SPITZ <span>CHECKPOINT</span><small>Teacher Dashboard</small></div>
   <div class="sp"></div>
   <span class="upd" id="upd">Loading…</span>
@@ -273,7 +279,6 @@ details summary{cursor:pointer;color:var(--blue2);font-size:13px;margin-top:8px}
   <button class="btn" id="refresh">Refresh</button>
   <button class="btn" id="testsBtn">Tests</button>
 </header>
-<div class="greenbar"></div>
 <div class="controls">
   <div class="grp"><span class="lab">Session</span><div class="sesdd" id="sesDD"><button class="btn sesbtn" id="sesBtn" aria-haspopup="dialog" aria-expanded="false"><span class="sl" id="sesLabel">Loading…</span><span class="car" aria-hidden="true">&#9662;</span></button>
     <div class="sespanel" id="sesPanel" hidden role="dialog" aria-label="Pick sessions"><div class="sf"><input type="search" id="sesFind" placeholder="Find a Session ID, test or note" aria-label="Find a session"></div>
@@ -313,9 +318,8 @@ details summary{cursor:pointer;color:var(--blue2);font-size:13px;margin-top:8px}
   </div></div>
 </section>
 <section class="bkpage" id="bkpage" hidden aria-label="Question bank">
-  <header class="topbar"><div class="wm">SPITZ <span>CHECKPOINT</span><small>Question bank</small></div><div class="sp"></div>
+  <header class="topbar tb-purple"><div class="wm">SPITZ <span>CHECKPOINT</span><small>Question bank</small></div><div class="sp"></div>
     <button class="btn bkcartbtn" id="bkCartBtn">Your test (0)</button><button class="btn pri" id="bkBack">Back to Tests</button></header>
-  <div class="greenbar"></div>
   <div class="bkgrid">
     <aside class="bkside" aria-label="Find questions">
       <div class="msg2" id="bkMsg"></div>
@@ -326,7 +330,7 @@ details summary{cursor:pointer;color:var(--blue2);font-size:13px;margin-top:8px}
         <label class="lab" for="bkStd">Standard</label><select id="bkStd"></select>
         <div id="bkRelOpts" class="bkcol">
           <label class="lab" for="bkType">Question type</label>
-          <select id="bkType"><option value="">All types</option><option value="mc">Multiple choice only</option><option value="int">Everything except multiple choice</option></select>
+          <select id="bkType"><option value="">All types</option><option value="mc">Multiple choice only</option><option value="int">Interactive</option></select>
           <label class="lab" for="bkSort">Order</label>
           <select id="bkSort"><option value="new">Newest year first</option><option value="std">By standard</option></select>
         </div>
@@ -337,7 +341,6 @@ details summary{cursor:pointer;color:var(--blue2);font-size:13px;margin-top:8px}
           <div class="row" style="margin-top:2px"><button class="btn" id="bkMore">Make 5 more</button><button class="btn" id="bkRegen">Start over</button></div>
         </div>
         <label class="sw" style="margin-top:10px"><input type="checkbox" id="bkHideUsed"> Hide questions already on a test</label>
-        <label class="sw"><input type="checkbox" id="bkKey" checked> Show answers in the questions</label>
         <div class="bkcount" id="bkCount"></div>
       </div>
     </aside>
@@ -1174,7 +1177,7 @@ async function qbLoad(){ over('Loading the warm-up bank and your released tests�
   try{ await viewFrame(); }catch(e){ over('The preview could not start: '+errText(e)); QB.loading=null; return; }
   await Promise.all([bankOpen(), loadTests(), loadUsage(), loadSaved()]);
   if(!BK.ready){ over('The warm-up bank is needed for the question list. See the message on the left.'); QB.loading=null; return; }
-  $('#bkHideUsed').checked=!!store('qbHideUsed'); $('#bkKey').checked=store('qbKey')!==false;
+  $('#bkHideUsed').checked=!!store('qbHideUsed');
   QB.ready=true; fillFilters(); $('#bkFilters').hidden=false; refreshView(); }
 async function bankOpen(){ if(BK.ready) return; bankSay('Loading the warm-up bank from GitHub…');
   try{ const r=await fetch(BANKURL()+'?t='+Date.now(),{cache:'no-store'}); if(!r.ok) throw new Error(r.status===404?'notfound':'HTTP '+r.status);
@@ -1219,7 +1222,6 @@ const segSet=(sel,v)=>document.querySelectorAll(sel+' button').forEach(b=>b.setA
 document.querySelectorAll('#bkSrc button').forEach(b=>b.onclick=()=>{ if(QB.mode===b.dataset.v) return; QB.mode=b.dataset.v; segSet('#bkSrc',QB.mode); fillFilters(); refreshView(); });
 document.querySelectorAll('#bkGenMode button').forEach(b=>b.onclick=()=>{ if(QB.gmode===b.dataset.v) return; QB.gmode=b.dataset.v; segSet('#bkGenMode',QB.gmode); QB.genKey=''; refreshView(); });
 $('#bkStd').onchange=()=>refreshView(); $('#bkHideUsed').onchange=e=>{ keep('qbHideUsed',e.target.checked); refreshView(); }; $('#bkType').onchange=()=>refreshView(); $('#bkSort').onchange=()=>refreshView();
-$('#bkKey').onchange=e=>{ keep('qbKey',e.target.checked); viewPost({op:'key',on:e.target.checked}); };
 $('#bkMore').onclick=()=>genMore(5); $('#bkRegen').onclick=()=>{ QB.genKey=''; refreshView(); };
 
 /* ---------- the list ---------- */
@@ -1245,7 +1247,7 @@ function metaFor(e){ const t=stdInfo(e.std)||{};
     where:e.from==='gen'||e.from==='saved'?(e.fresh?'New numbers':'Practice'):e.q?'STAAR Q'+e.q:'STAAR',
     tag:e.from==='bank'&&e.adapted?'Adapted':e.from==='saved'||isSaved(e)?'Saved':'', used:usedIn(e), src:e.item.src||''}; }
 function sendPage(append,empty){ const part=QB.view.slice(QB.shown,QB.shown+PAGE); QB.shown+=part.length;
-  viewPost({op:'list', append, code:itemsCode(part.map(e=>e.item),false), meta:part.map(metaFor), more:QB.shown<QB.view.length, empty, added:QB.cart.map(e=>e.uid), showKey:$('#bkKey').checked});
+  viewPost({op:'list', append, code:itemsCode(part.map(e=>e.item),false), meta:part.map(metaFor), more:QB.shown<QB.view.length, empty, added:QB.cart.map(e=>e.uid)});
   over(null); }
 /* generated questions (kept until "Start over" or another standard) */
 async function genView(k,seq){ const key=k+'|'+QB.gmode+'|'+[...QB.years].join(',');
@@ -1266,7 +1268,7 @@ async function genMore(n,seq,first){ const k=$('#bkStd').value; seq=seq||viewSeq
 function showGen(){ QB.cartView=false; $('#bkViewBar').hidden=true; $('#bkMain').classList.remove('cartv'); QB.view=QB.gen.slice(); QB.shown=0; $('#bkCount').innerHTML=`<b>${QB.gen.length}</b> question${QB.gen.length===1?'':'s'} made`;
   const part=QB.view; QB.shown=part.length;
   viewPost({op:'list',append:false,code:itemsCode(part.map(e=>e.item),false),meta:part.map(metaFor),more:false,endText:QB.gmode==='gen'?'Click “Make 5 more” for more.':'End of the list.',
-    empty:QB.gmode==='gen'?'No questions could be made for this standard.':'No released questions with new numbers for this standard.',added:QB.cart.map(e=>e.uid),showKey:$('#bkKey').checked}); over(null); }
+    empty:QB.gmode==='gen'?'No questions could be made for this standard.':'No released questions with new numbers for this standard.',added:QB.cart.map(e=>e.uid)}); over(null); }
 
 /* ---------- the preview frame (player.html in browse mode, sandboxed) ---------- */
 function over(t){ const o=$('#bkOver'); o.hidden=!t; if(t) o.textContent=t; }
@@ -1301,7 +1303,7 @@ $('#bkCart').addEventListener('click',e=>{ const row=e.target.closest('.bkci'); 
   if(e.target.closest('[data-rm]')){ QB.cart.splice(i,1); cartSave(); renderCart(); if(QB.cartView) showCart(); return; }
   const uid=QB.cart[i].uid; if(!QB.cartView&&QB.view.slice(0,QB.shown).some(x=>x.uid===uid)) viewPost({op:'scrollTo',uid}); else showCart(uid); });
 function showCart(uid){ QB.cartView=true; $('#bkViewBar').hidden=false; $('#bkMain').classList.add('cartv'); $('#bkpage').classList.remove('cartopen');
-  viewPost({op:'list',append:false,code:itemsCode(QB.cart.map(e=>e.item),false),meta:QB.cart.map((e,i)=>Object.assign(metaFor(e),{year:'#'+(i+1)+' · '+(e.year||'New')})),more:false,empty:'Your test is empty.',endText:'End of your test.',added:QB.cart.map(e=>e.uid),showKey:$('#bkKey').checked,scrollTo:uid}); over(null); }
+  viewPost({op:'list',append:false,code:itemsCode(QB.cart.map(e=>e.item),false),meta:QB.cart.map((e,i)=>Object.assign(metaFor(e),{year:'#'+(i+1)+' · '+(e.year||'New')})),more:false,empty:'Your test is empty.',endText:'End of your test.',added:QB.cart.map(e=>e.uid),scrollTo:uid}); over(null); }
 $('#bkCartView').onclick=()=>showCart(); $('#bkViewBack').onclick=()=>{ if(QB.mode==='gen'){ QB.cartView=false; $('#bkViewBar').hidden=true; $('#bkMain').classList.remove('cartv'); showGen(); } else refreshView(); };
 $('#bkShuffle').onclick=()=>{ QB.cart=shuffle(QB.cart); cartSave(); renderCart(); if(QB.cartView) showCart(); };
 $('#bkCartClear').onclick=()=>{ if(!confirm('Remove all '+QB.cart.length+' questions from your test?')) return; QB.cart=[]; cartSave(); renderCart(); if(QB.cartView) showCart(); };
