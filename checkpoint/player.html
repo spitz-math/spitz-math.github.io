@@ -635,6 +635,7 @@ body.browse>*:not(#browse):not(svg){display:none!important}
 .bused{font-size:11px;background:#fde8d7;color:#8a3b00;border-radius:6px;padding:2px 7px;font-weight:700;max-width:100%;overflow-wrap:anywhere}
 .bcard.used{border-left:4px solid #e07a1f}
 .btag{font-size:11px;background:#fff1cc;color:#7a5600;border-radius:8px;padding:1px 7px;font-weight:700}
+.noadd .badd{display:none!important}
 .badd{margin-top:6px;border:1px solid #1f5fd1;background:#1f5fd1;color:#fff;border-radius:6px;padding:7px 10px;font:600 13px "Segoe UI",Roboto,Arial,sans-serif;min-width:92px;min-height:36px}
 .badd[aria-pressed="true"]{background:#fff;color:#17663a;border-color:#2e9d55}
 .bmain{min-width:0;padding:14px 16px 10px}
@@ -2224,7 +2225,7 @@ function browseStart(){
   addEventListener('message',e=>{ const q=e.data; if(!q||q.bview!==TOK||!q.op) return;
     if(q.op==='list'){ let arr; try{ arr=(0,eval)('('+q.code+')'); }catch(x){ post({op:'err',err:String(x&&x.message||x)}); return; }
       if(!q.append){ io.disconnect(); list.innerHTML=''; ITEMS.length=0; META=[]; S.answers={}; box.scrollTop=0; }
-      if(q.added) added=new Set(q.added); if(q.showKey!=null) showKey=!!q.showKey;
+      if(q.added) added=new Set(q.added); if(q.showKey!=null) showKey=!!q.showKey; if(q.noAdd!=null) document.body.classList.toggle('noadd',!!q.noAdd);   // dashboard question preview: no Add button
       const frag=document.createDocumentFragment();
       arr.forEach((it,j)=>{ it.n=ITEMS.length+1; it.letters=ODD; it.max=it.max||1; ITEMS.push(it); META.push(q.meta[j]||{}); frag.appendChild(card(ITEMS.length-1)); });
       list.appendChild(frag); more=!!q.more; asked=false;

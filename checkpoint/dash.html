@@ -142,6 +142,25 @@ table.t{width:100%;border-collapse:collapse;font-size:13px}
 .full{grid-column:1/-1}
 .hm td.hc{text-align:center;font-weight:600;font-size:12px}
 .rs{font-size:11px;color:var(--mut)}
+/* questions view */
+.qv{padding:14px 16px}
+.qv .qtop{display:flex;gap:14px;align-items:center;flex-wrap:wrap;margin-bottom:10px}
+.qv .seg button{font-size:12px}
+.qv table.t td{vertical-align:top}
+.qv tr.qr{cursor:pointer} .qv tr.qr:hover td{background:#f6f9fc} .qv tr.qr.open td{background:#eef4fb;border-bottom-color:transparent}
+.qv .qn{font-weight:700;white-space:nowrap} .qv .qn .car{display:inline-block;width:12px;color:var(--mut)}
+.qv .wa{font-size:13px} .qv .wa b{font-weight:700} .qv .wa .rs{display:block}
+.qv tr.qd td{background:#f8fafc;padding:8px 10px 12px 28px}
+.qv .ag{display:grid;grid-template-columns:minmax(150px,max-content) 64px 1fr;gap:6px 12px;align-items:start;font-size:13px;margin:4px 0 10px}
+.qv .ag .al{font-weight:600} .qv .ag .al.ok{color:#1f6b3a} .qv .ag .al.part{color:#9a6400} .qv .ag .al.no{color:#a8321f} .qv .ag .al.bl{color:var(--mut)}
+.qv .ag .ac{text-align:right;font-variant-numeric:tabular-nums}
+.qv .ag .an{color:#33414f;line-height:1.5}
+.qv .qbtns{display:flex;gap:8px;flex-wrap:wrap}
+.qvbox{background:#fff;border-radius:10px;width:min(980px,96vw);height:min(760px,92vh);display:flex;flex-direction:column;box-shadow:0 10px 30px rgba(0,0,0,.25);overflow:hidden}
+.qvh{display:flex;align-items:center;gap:10px;padding:10px 14px;border-bottom:1px solid var(--line)} .qvh h3{margin:0;font-size:16px;flex:1;min-width:0}
+.qvbox iframe{flex:1;border:0;width:100%;min-height:0;background:#f4f6f9}
+.qvmsg{padding:20px;font-size:14px;color:var(--mut)} .qvmsg[hidden]{display:none}
+@media (max-width:700px){ .qv .ag{grid-template-columns:1fr 50px} .qv .ag .an{grid-column:1/-1;margin:-4px 0 6px} .qv .hidesm{display:none} }
 /* drawer */
 .drawer{position:fixed;top:0;right:0;bottom:0;width:min(470px,100vw);background:#fff;box-shadow:-6px 0 24px rgba(0,0,0,.18);z-index:50;display:flex;flex-direction:column}
 .drawer[hidden]{display:none}
@@ -287,13 +306,14 @@ details summary{cursor:pointer;color:var(--blue2);font-size:13px;margin-top:8px}
   <div class="grp"><span class="lab">Period</span><div class="seg" id="perSeg"><button data-v="">All</button><button data-v="2">2</button><button data-v="8">8</button><button data-v="9">9</button><button data-v="G">Guest</button></div></div>
   <div class="grp"><span class="lab">Sort</span><select id="sort"><option value="name">Name</option><option value="period">Period</option><option value="status">Status</option><option value="progress">Progress</option><option value="score">Score</option><option value="input">Last activity</option></select></div>
   <div class="grp"><input id="q" type="search" placeholder="Find a name" aria-label="Find a name"></div>
-  <div class="grp"><span class="lab">View</span><div class="seg" id="viewSeg"><button data-v="live">Live</button><button data-v="std">Standards</button></div></div>
+  <div class="grp"><span class="lab">View</span><div class="seg" id="viewSeg"><button data-v="live">Live</button><button data-v="std">Standards</button><button data-v="ques">Questions</button></div></div>
 </div>
 <div class="tiles" id="tiles"></div>
 <div class="main">
   <div class="bulk" id="bulk" hidden><b id="bulkN"></b><button class="btn" data-bulk="pause">Pause</button><button class="btn" data-bulk="resume">Resume</button><button class="btn warn" data-bulk="lock">Stop</button><button class="btn" data-bulk="unlock">Unlock</button><button class="btn" id="bulkClear">Clear selection</button></div>
   <div class="card" id="card"><div class="empty">Loading…</div></div>
 </div>
+<div class="veil" id="qvVeil" hidden><div class="qvbox" role="dialog" aria-modal="true" aria-labelledby="qvTitle"><div class="qvh"><h3 id="qvTitle">Question</h3><button class="btn" id="qvClose">Close</button></div><div class="qvmsg" id="qvMsg" hidden></div><iframe id="qvFrame" title="Question preview" sandbox="allow-scripts"></iframe></div></div>
 <aside class="drawer" id="drawer" hidden aria-label="Student details"><div class="dh"><h2 id="dName"></h2><button class="btn" id="dClose">Close</button></div><div class="db" id="dBody"></div></aside>
 <section class="tpage" id="tpage" hidden aria-label="Tests">
   <header class="topbar"><div class="wm">SPITZ <span>CHECKPOINT</span><small>Tests</small></div><div class="sp"></div>
@@ -408,8 +428,8 @@ setSeg('#perSeg',per); setSeg('#viewSeg',view);
 
 /* ---------- load ---------- */
 async function load(){ if(busy) return; busy=true;
-  try{ const r=await call('stcDash',{sessions:selSes?[...selSes]:[]});
-    DATA=r; DATA.skew=Date.now()-r.now;
+  try{ const wantAns=view==='ques', r=await call('stcDash',{sessions:selSes?[...selSes]:[],answers:wantAns});
+    DATA=r; DATA.skew=Date.now()-r.now; DATA.ansReq=wantAns;
     if(!selSes){ const saved=store('ses'); const ids=new Set(r.sessions.map(s=>s.id));
       selSes=new Set((saved||[]).filter(x=>ids.has(x)));
       if(!selSes.size){ const open=r.sessions.filter(s=>s.open).sort((a,b)=>(b.created||0)-(a.created||0)); if(open.length) open.filter(s=>s.test===open[0].test).forEach(s=>selSes.add(s.id)); } }
@@ -458,7 +478,7 @@ function draw(){ renderChips(); const L=shown(); renderTiles(L);
   if(!selSes.size){ $('#card').innerHTML='<div class="empty">Pick a session in the Session menu above.</div>'; return; }
   if(!L.length){ $('#card').innerHTML='<div class="empty">No students '+(per||qtxt?'match these filters':'have signed in to '+(selSes.size>1?'these sessions':'this session'))+' yet.</div>'; return; }
   const tests=[...new Set(L.map(s=>s.test))];
-  if(view==='live') renderLive(L,tests); else renderStd(L,tests);
+  if(view==='live') renderLive(L,tests); else if(view==='ques') renderQues(L,tests); else renderStd(L,tests);
   if(openKey) openDrawer(openKey,true); }
 /* ---------- session picker (dropdown): grouped by test, several sessions can be shown together ---------- */
 let sesDraft=null;
@@ -567,6 +587,101 @@ function renderStd(L,tests){
   $('#card').innerHTML=h; bindStd(); }
 function bindStd(){ const b=$('#subOnly'); if(b) b.onchange=()=>{ keep('subOnly',b.checked); render(); }; }
 
+/* ---------- questions view: class result, blanks and the most common wrong answer for each question ----------
+   Answers come from stcDash (q[8], the student's answer as JSON text). Answer wording comes from the test's own test.js (metaOf). */
+const QV={open:new Set(), order:store('qorder')||'weak', td:{}, frame:null, tok:null, ready:null, onReady:null};
+const qvDP=new DOMParser();
+function qvTxt(h){ return (qvDP.parseFromString(String(h==null?'':h).replace(/<span class="frac"><span>([\s\S]*?)<\/span><span>([\s\S]*?)<\/span><\/span>/g,'($1)/($2)').replace(/\{GRAPH\}/g,' ').replace(/<\/(td|th|p|div|li|tr)>|<br\s*\/?>/gi,' $&'),'text/html').body.textContent||'').replace(/\s+/g,' ').trim(); }
+const qvN=v=>{ const x=+v; return isFinite(x)?String(Math.round(x*1000)/1000).replace(/^-/,'−'):String(v); };
+const qvPt=P=>`(${qvN(P[0])}, ${qvN(P[1])})`;
+const qvCut=(t,n)=>t.length>n?t.slice(0,n-1)+'…':t;
+function qvItems(test){   // the test's questions with their wording (null while loading, false if they could not be read)
+  if(!(test in QV.td)){ QV.td[test]=null; metaOf(test).then(td=>{ QV.td[test]=td&&td.items?td.items.map(it=>{ try{ return Object.assign(JSON.parse(it.body),JSON.parse(it.key),{type:it.type,teks:it.teks,rs:it.rs,cat:it.cat,max:it.max||1,label:it.label}); }catch(e){ return {type:it.type}; } }):false; if(view==='ques') render(); })
+      .catch(()=>{ QV.td[test]=false; if(view==='ques') render(); }); }
+  return QV.td[test]; }
+const L8='ABCDEFGH';
+function qvAns(it,a){   // a student's answer in words (matches the player's "Your answer")
+  if(a==null) return 'No answer'; const t=it&&it.type;
+  try{ switch(t){
+    case 'mc': return L8[a]+(it.choices&&it.choices[a]!=null?'  '+qvCut(qvTxt(it.choices[a]),60):'');
+    case 'ms': return a.length?a.map(k=>L8[k]).join(', '):'No answer';
+    case 'num': case 'eq': return String(a).replace(/-/g,'−');
+    case 'inline': return a.map((v,k)=>v==null?'—':qvCut(qvTxt(it.drops[k][v]),40)).join(' · ');
+    case 'table': return a.map((v,k)=>(it.rows?qvCut(qvTxt(it.rows[k]),24)+': ':'')+(v==null?'—':qvTxt(it.cols[v]))).join('; ');
+    case 'boxes': return a.map(q=>q==null?'—':qvTxt(it.tiles[q])).join(' , ');
+    case 'dnd': { const c=it.answer?it.answer.filter((z,k)=>a[k]===z).length:0; return `${c} of ${it.tiles?it.tiles.length:'?'} placed correctly`; }
+    case 'graph': return qvPt(a);
+    case 'hotspot': return it.spots?qvPt(it.spots[a]):'spot '+a;
+    case 'cline': return a.pts&&a.pts.length?a.pts.map(qvPt).join(' and '):'No answer';
+    case 'graphineq': return a.pts&&a.pts.length===2?`${a.dash?'Dashed':'Solid'} line through ${qvPt(a.pts[0])} and ${qvPt(a.pts[1])}${a.shade?', shaded':''}`:'No answer';
+    case 'graphsys': return (a.g||[]).map((L,k)=>`Graph ${k+1}: `+(L.pts&&L.pts.length===2?`${L.dash?'dashed':'solid'} through ${qvPt(L.pts[0])}, ${qvPt(L.pts[1])}`:'no line')).join('; ')+(a.region?'; region chosen':'; no region');
+    case 'graphfunc': return `${a.type||''} through ${(a.pts||[]).map(qvPt).join(' ')}`+(a.type==='exponential'&&a.asym!=null?', asymptote y = '+qvN(a.asym):'');
+    case 'graphexp': return `y = ${qvN(a.a)}(${qvN(a.b)})^x`;
+    case 'graphline': return [...(a.lines||[]).map(L=>`line through ${qvPt(L[0])} and ${qvPt(L[1])}`),...(a.pts||[]).map(P=>'point '+qvPt(P))].join('; ')||'No answer';
+    default: return qvCut(JSON.stringify(a),80); } }catch(e){ return qvCut(JSON.stringify(a),80); } }
+const QV_GRAPH=/^(graph|cline|hotspot)/;
+const QV_TYPES={mc:'Multiple choice',ms:'Multiselect',num:'Number entry',eq:'Equation',inline:'Drop-down',table:'Match table',dnd:'Drag and drop',graph:'Plot a point',graphline:'Graph a line',cline:'Graph a line',graphsys:'Graph a system',boxes:'Drag into boxes',hotspot:'Hot spot',graphineq:'Graph an inequality',graphexp:'Graph a function',graphfunc:'Graph a function'};
+function qvStats(L1,i,subOnly){   // one question: points, blanks and the students behind every answer
+  const g={}; let e=0,mx=0,cnt=0,blank=[],have=false;
+  L1.forEach(s=>{ const q=s.q[i]; if(!q) return; const nm={name:s.name,period:s.period,key:s.key};
+    if(q[0]==null){ if(subOnly){ mx+=q[1]; cnt++; blank.push(nm); } return; }
+    e+=q[0]||0; mx+=q[1]; cnt++; const k=q[8]||''; if(k) have=true;
+    const G=g[k]||(g[k]={k,a:k?(()=>{ try{ return JSON.parse(k); }catch(x){ return null; } })():null,pts:q[0]||0,max:q[1],names:[]}); G.pts=Math.max(G.pts,q[0]||0); G.names.push(nm); });
+  const groups=Object.values(g).sort((a,b)=>b.names.length-a.names.length||b.pts-a.pts);
+  return {i,e,mx,cnt,blank,groups,have}; }
+function renderQues(L,tests){
+  const test=tests[0], m=meta(test), subOnly=store('subOnly')!==false, its=qvItems(test);
+  const S=(subOnly?L.filter(s=>s.submitted):L).filter(s=>s.test===test);
+  let h=`<div class="qv"><div class="qtop"><label><input type="checkbox" id="subOnly" ${subOnly?'checked':''}> Submitted tests only</label>
+    <div class="seg" id="qOrder"><button data-v="weak" aria-pressed="${QV.order==='weak'}">Weakest first</button><button data-v="num" aria-pressed="${QV.order==='num'}">Question order</button></div>
+    <span class="rs">${S.length} student${S.length===1?'':'s'} · ${esc(m?m.title:test)}${tests.length>1?' · only the first test is shown here; pick sessions for one test at a time':''}${its===null?' · loading answer choices…':''}</span></div>`;
+  if(!S.length){ $('#card').innerHTML=h+`<div class="empty">${subOnly?'No submitted tests yet. Uncheck “Submitted tests only” to include tests in progress (answered questions only).':'No answers yet.'}</div></div>`; bindQues(); return; }
+  const n=Math.max(...S.map(s=>s.q.length),m?m.items.length:0);
+  let rows=Array.from({length:n},(_,i)=>qvStats(S,i,subOnly));
+  const anyAns=rows.some(r=>r.have);
+  if(QV.order==='weak') rows=rows.slice().sort((a,b)=>((a.mx?a.e/a.mx:1)-(b.mx?b.e/b.mx:1))||a.i-b.i);
+  if(!anyAns&&rows.some(r=>r.groups.length)) h+=DATA.ansReq?`<p class="note">To see which answers students picked, update Code.gs in Apps Script (Deploy › Manage deployments › New version). Points and blanks still show below.</p>`:`<p class="note">Loading the students’ answers…</p>`;
+  h+=`<table class="t"><tr><th>#</th><th class="hidesm">TEKS</th><th class="hidesm">Type</th><th style="width:26%">Class result</th><th>Blank</th><th>Most common wrong answer</th></tr>`;
+  rows.forEach(r=>{ const qi=qinfo(S[0],r.i), it=its&&its[r.i]||null, mi=m&&m.items[r.i]||{}, open=QV.open.has(r.i);
+    const wrong=r.groups.filter(G=>G.pts<G.max&&G.k), top=wrong[0];
+    let wa='–';
+    if(top){ const vary=QV_GRAPH.test(mi.type||(it&&it.type)||'')&&top.names.length===1&&wrong.length>1;
+      wa=vary?`<span class="rs">Answers vary (${wrong.reduce((a,G)=>a+G.names.length,0)} students)</span>`:`<b>${esc(qvAns(it,top.a))}</b><span class="rs">${top.names.length} of ${r.cnt} student${r.cnt===1?'':'s'} (${Math.round(100*top.names.length/r.cnt)}%)${top.pts>0?' · partly correct':''}</span>`; }
+    else if(!anyAns) wa='<span class="rs">–</span>';
+    h+=`<tr class="qr${open?' open':''}" data-q="${r.i}" tabindex="0" aria-expanded="${open}"><td class="qn"><span class="car">${open?'▾':'▸'}</span>${r.i+1}</td><td class="hidesm">${esc(qi.teks)} <span class="rs">${esc(qi.rs)}</span></td><td class="hidesm rs">${esc(QV_TYPES[mi.type]||mi.type||'')}</td><td>${pctBar(r.e,r.mx)}</td><td class="n">${r.blank.length||(subOnly?0:'–')}</td><td class="wa">${wa}</td></tr>`;
+    if(open){ const nm=L=>L.slice().sort((a,b)=>String(a.name).localeCompare(String(b.name))).map(x=>esc(x.name)+(x.period&&x.period!=='G'?' ('+esc(x.period)+')':'')).join(', ');
+      const gl=r.groups.map(G=>{ const c=!G.k?'bl':G.pts>=G.max?'ok':G.pts>0?'part':'no', mark=c==='ok'?'✓ ':c==='part'?'◐ ':c==='no'?'✗ ':'';
+          return `<div class="al ${c}">${mark}${esc(G.k?qvAns(it,G.a):'Answer not available')}${c==='part'?` <span class="rs">(${G.pts} of ${G.max})</span>`:''}</div><div class="ac">${G.names.length}</div><div class="an">${nm(G.names)}</div>`; }).join('')
+        +(r.blank.length?`<div class="al bl">No answer</div><div class="ac">${r.blank.length}</div><div class="an">${nm(r.blank)}</div>`:'');
+      h+=`<tr class="qd"><td colspan="6"><div class="ag">${gl||'<div class="rs">No answers yet.</div>'}</div><div class="qbtns"><button class="btn" data-see="${r.i}">See the question</button></div></td></tr>`; } });
+  $('#card').innerHTML=h+'</table></div>'; bindQues(); }
+function bindQues(){ bindStd();
+  document.querySelectorAll('#qOrder button').forEach(b=>b.onclick=()=>{ QV.order=b.dataset.v; keep('qorder',QV.order); render(); });
+  document.querySelectorAll('.qv tr.qr').forEach(tr=>{ const t=()=>{ const i=+tr.dataset.q; QV.open.has(i)?QV.open.delete(i):QV.open.add(i); render(); };
+    tr.onclick=t; tr.onkeydown=e=>{ if(e.key==='Enter'||e.key===' '){ e.preventDefault(); t(); } }; });
+  document.querySelectorAll('.qv [data-see]').forEach(b=>b.onclick=e=>{ e.stopPropagation(); const L=shown(), test=[...new Set(L.map(s=>s.test))][0]; qvShow(test,+b.dataset.see); }); }
+/* "See the question": the question as students see it, with the correct answer (player.html in browse mode, sandboxed) */
+function qvMsg(t){ const m=$('#qvMsg'); m.hidden=!t; m.textContent=t||''; $('#qvFrame').hidden=!!t; }
+async function qvFrameReady(){ if(QV.ready) return QV.ready;
+  return QV.ready=(async()=>{ const p=await ensurePlayer(), tok=Math.random().toString(36).slice(2); QV.tok=tok;
+    const A='<script>window.SPITZ_ROOT="";<\/script>\n<script src="tests/'+'index.js"><\/script>';
+    if(p.indexOf(A)<0||p.indexOf('SPITZ_BROWSE')<0) throw new Error('the player.html on GitHub is older than this dashboard. Upload the new player.html first.');
+    const f=$('#qvFrame'); QV.frame=f;
+    const ready=new Promise((res,rej)=>{ const tm=setTimeout(()=>rej(new Error('it took more than 20 seconds')),20000); QV.onReady=()=>{ clearTimeout(tm); res(); }; });
+    f.srcdoc=p.replace(A,()=>'<script>window.SPITZ_ROOT='+JSON.stringify(pagesBase())+';window.SPITZ_TESTS=[];window.SPITZ_BROWSE='+JSON.stringify(tok)+';<\/script>');
+    await ready; })().catch(e=>{ QV.ready=null; throw e; }); }
+addEventListener('message',e=>{ const m=e.data; if(!m||!QV.tok||m.bview!==QV.tok||!QV.frame||e.source!==QV.frame.contentWindow) return;
+  if(m.op==='ready'&&QV.onReady) QV.onReady(); else if(m.op==='err') qvMsg('The question could not be shown: '+m.err); });
+async function qvShow(test,i){ const v=$('#qvVeil'), mt=meta(test); v.hidden=false; $('#qvTitle').textContent=`Question ${i+1} · ${mt?mt.title:test}`; qvMsg('Loading the question…'); $('#qvClose').focus();
+  try{ const td=await metaOf(test), it=td&&td.items&&td.items[i]; if(!it) throw new Error('this test could not be read');
+    const body=JSON.parse(it.body.replace(/src=\\"(img\/[A-Za-z0-9._\-\/]+)\\"/g,'src=\\"@@'+test+'/$1@@\\"')), item=Object.assign(body,JSON.parse(it.key),{type:it.type,teks:it.teks,cat:it.cat,rs:it.rs,max:it.max||1,label:it.label});
+    await qvFrameReady(); if(v.hidden) return; qvMsg('');
+    QV.frame.contentWindow.postMessage({bview:QV.tok,op:'list',append:false,code:itemsCode([item],false),meta:[{uid:'qv',year:'Q'+(i+1),teks:it.teks,rs:it.rs,where:mt?mt.title:test}],more:false,endText:' ',noAdd:true,added:[]},'*'); }
+  catch(e){ qvMsg('The question could not be shown: '+(e&&e.message||e)); } }
+function qvClose(){ $('#qvVeil').hidden=true; }
+$('#qvClose').onclick=qvClose; $('#qvVeil').addEventListener('click',e=>{ if(e.target.id==='qvVeil') qvClose(); });
+addEventListener('keydown',e=>{ if(e.key==='Escape'&&!$('#qvVeil').hidden) qvClose(); });
+
 /* ---------- student drawer ---------- */
 function openDrawer(key,quiet){ const s=DATA&&DATA.students.find(x=>x.key===key); if(!s){ closeDrawer(); return; } openKey=key;
   const [k,label]=stat(s), m=meta(s.test), l=lvl(s.pct||0), d=v=>v?new Date(v).toLocaleString([], {month:'short',day:'numeric',hour:'numeric',minute:'2-digit'}):'–';
@@ -605,7 +720,7 @@ $('#bulkClear').onclick=()=>{ sel.clear(); render(); };
 
 /* ---------- filters ---------- */
 document.querySelectorAll('#perSeg button').forEach(b=>b.onclick=()=>{ per=b.dataset.v; keep('per',per); setSeg('#perSeg',per); render(); });
-document.querySelectorAll('#viewSeg button').forEach(b=>b.onclick=()=>{ view=b.dataset.v; keep('view',view); setSeg('#viewSeg',view); render(); });
+document.querySelectorAll('#viewSeg button').forEach(b=>b.onclick=()=>{ const was=view; view=b.dataset.v; keep('view',view); setSeg('#viewSeg',view); render(); if(view==='ques'&&was!=='ques') load(); });   // the Questions view needs the students' answers
 $('#sort').onchange=()=>{ sortBy=$('#sort').value; keep('sort',sortBy); render(); };
 $('#q').oninput=()=>{ qtxt=$('#q').value.trim().toLowerCase(); render(); };
 
