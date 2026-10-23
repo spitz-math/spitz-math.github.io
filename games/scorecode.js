@@ -63,7 +63,7 @@ var TOPIC_NAMES={ mult:['Facts 0–3','Facts 4–6','Facts 7–9','Facts 10–12
    pct 0 or an empty list turns the bonus off. When the teacher panel's data/topics.json is loaded (window.SpitzTopics, set by questions.js),
    its suggest.sets and bonus win; it is read at the end of the run, so script order doesn't matter. BONUS below is the fallback. */
 /* Assigned sets earn it too (Kody, 2026-10-21), so assign is matched the same way as suggest. */
-var BONUS={ pct:25, suggest:[{id:'slide'},{id:'stdform'}], assign:[{id:'slide'},{id:'stdform'}] };
+var BONUS={ pct:25, suggest:[], assign:[] };
 function bonusCfg(){ var T=window.SpitzTopics, c={ pct:BONUS.pct, suggest:BONUS.suggest, assign:BONUS.assign }; if(T){
   if(T.suggest) c.suggest=T.suggest.sets||[]; if(T.assign) c.assign=T.assign; if(T.bonus!=null) c.pct=+T.bonus||0; }
   c.list=(c.suggest||[]).concat(c.assign||[]); return c; }

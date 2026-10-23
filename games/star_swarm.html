@@ -137,20 +137,7 @@ button:disabled{ cursor:default; }
 .sw-code .l{ font:800 22px/1 var(--body); letter-spacing:.12em; text-transform:uppercase; color:var(--muted); }
 #sw-endcode{ font:800 52px/1 ui-monospace,Menlo,Consolas,monospace; letter-spacing:.06em; -webkit-user-select:text; user-select:text; }
 .sw-note{ font:700 28px/1.3 var(--body); color:var(--muted); margin:12px 0 22px; }
-#sw-lb{ background:var(--paper); }
-.sw-lbbtn{ position:absolute; left:44px; bottom:30px; height:64px; padding:0 26px; border-radius:16px; background:var(--panel); border:2px solid var(--border); font:800 24px/1 var(--body); color:var(--muted); }
-.sw-lbbox{ position:absolute; left:60px; right:60px; top:36px; bottom:36px; display:flex; flex-direction:column; gap:18px; text-align:left; }
-.sw-lbhead{ display:flex; align-items:center; gap:16px; } .sw-lbhead h2{ margin:0; font:400 64px/1 var(--display); color:var(--lime); }
-#sw-lbin p{ font:600 30px/1.35 var(--body); color:var(--muted); margin:0 0 14px; }
-#sw-lbtext{ display:block; width:100%; height:560px; margin-bottom:18px; border-radius:20px; border:3px solid var(--border); background:var(--panel); color:var(--text); font:600 26px/1.4 ui-monospace,Menlo,Consolas,monospace; padding:18px; -webkit-user-select:text; user-select:text; resize:none; }
-#sw-lbtext:focus{ outline:none; border-color:var(--lime); }
-.sw-lbgrid{ display:grid; gap:10px 24px; grid-auto-flow:column; }
-.sw-lbrow{ display:grid; grid-template-columns:76px minmax(0,1fr) auto 84px; align-items:center; gap:14px; padding:0 20px; border-radius:16px; background:var(--panel); border:3px solid var(--border); font:800 30px/1 var(--body); animation:swIn .45s both; min-width:0; }
-.sw-lbrow .rk{ font:400 32px/1 var(--display); color:var(--muted); } .sw-lbrow .nm{ overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
-.sw-lbrow .sc{ font:400 34px/1 var(--display); color:var(--lime); } .sw-lbrow .ac{ font:700 24px/1 var(--body); color:var(--muted); text-align:right; }
-.sw-lbrow.g1{ border-color:#FFC82E; } .sw-lbrow.g1 .rk{ color:#FFC82E; } .sw-lbrow.g2{ border-color:#C9D1E0; } .sw-lbrow.g2 .rk{ color:#C9D1E0; } .sw-lbrow.g3{ border-color:#D08A4E; } .sw-lbrow.g3 .rk{ color:#D08A4E; }
 @keyframes swIn{ from{ opacity:0; transform:translateY(24px); } }
-.sw-lbbad{ font:600 24px/1.4 var(--body); color:var(--no); margin-top:14px; }
 .sw-toast{ position:absolute; left:50%; top:110px; transform:translateX(-50%); z-index:30; padding:16px 30px; border-radius:999px; background:#fff; color:#0E1016; font:800 30px/1 var(--body); }
 .sw-ask h2{ margin:0; font:400 84px/1.05 var(--display); color:var(--cyan); }
 .sw-ask .sw-row{ margin:0; gap:20px; } .sw-ask .sw-again{ height:96px; padding:0 44px; font-size:32px; } .sw-ask .sw-go{ padding:0 50px; font-size:36px; background:var(--hot); color:#14060A; }
@@ -274,7 +261,7 @@ var szm=/[?&]set=([a-z]+)/.exec(location.search); if(szm) document.documentEleme
     <div class="sw-row"><input class="sw-input" id="sw-nameinput" maxlength="24" placeholder="First name + last initial" autocomplete="off" aria-label="Your name"><button class="sz-mus" id="sz-mus" aria-label="Music on or off, key N">♪ Music on</button></div>
     <button class="sw-go" id="sw-go" disabled>Start</button>
     <div class="sw-keys">Keys: 1–4 answer · Enter next · A D or ← → move · hold Space or W to fire · B shop · N music · M mute · Shift+R new game · F full screen</div>
-  </div><button class="sw-lbbtn" id="sw-lbopen">Teacher: Leaderboard</button><span class="sw-credit sz-credit">Made by Spitz 🍔</span></div>
+  </div><span class="sw-credit sz-credit">Made by Spitz 🍔</span></div>
 
   <div class="sw-over" id="sw-end" hidden><div class="sw-box"><div class="sz-eyebrow">Spitz <b>Arcade</b></div>
     <p class="sw-sub" style="margin:0">Time!</p>
@@ -287,12 +274,6 @@ var szm=/[?&]set=([a-z]+)/.exec(location.search); if(szm) document.documentEleme
     <button class="sw-again" id="sw-again">Play again</button>
   </div><span class="sw-credit sz-credit">Made by Spitz 🍔</span></div>
 
-  <div class="sw-over" id="sw-lb" hidden><div class="sw-lbbox">
-    <div class="sw-lbhead"><h2>LEADERBOARD</h2><span class="sw-sp"></span><button class="sw-again" id="sw-lbedit" hidden>Edit list</button><button class="sw-x" id="sw-lbx" aria-label="Close the leaderboard">×</button></div>
-    <div id="sw-lbin"><p>Paste the name and code columns from the Google Form responses sheet, one student per line. Codes that don’t check out are listed separately.</p>
-      <textarea id="sw-lbtext" spellcheck="false" placeholder="Ava Martinez&#9;SW-ABCD-EFGH-JKLM"></textarea><button class="sw-go" id="sw-lbgo">Show leaderboard</button></div>
-    <div id="sw-lbout" hidden><div class="sw-lbgrid" id="sw-lbrows"></div><div class="sw-lbbad" id="sw-lbbad"></div></div>
-  </div></div>
   <div class="sw-over" id="sw-confirm" hidden><div class="sw-box sw-ask" role="dialog" aria-modal="true" aria-labelledby="sw-asktitle">
     <h2 id="sw-asktitle">Start a new game?</h2>
     <p class="sw-sub">This erases the current run: score, energy, cash and upgrades.</p>
@@ -1077,33 +1058,7 @@ function readCode(code){ var c=String(code).toUpperCase().replace(/[^A-Z0-9]/g,'
   var p=full>>16n; if(h16('spitz'+p.toString()+'swarm')!==Number(full&0xFFFFn)) return null;
   var r={ score:Number(p>>24n), correct:Number((p>>16n)&255n), answered:Number((p>>8n)&255n) }; return r.correct<=r.answered? r : null; }
 
-/* ================= LEADERBOARD (teacher pastes name + code rows from the form's sheet) ================= */
-function parseBoard(text){ var people={}, seen={}, bad=[];
-  text.split(/\r?\n/).forEach(function(line){ if(!line.trim()) return; var m=line.match(/sw[\s-]*[a-z0-9]{4}[\s-]*[a-z0-9]{4}[\s-]*[a-z0-9]{4}/i);
-    var rest=m? line.replace(m[0],' ') : line, name='';
-    rest.split(/\t|,/).some(function(f){ f=f.trim(); if(!f||/\d{1,4}[\/\-]\d{1,2}[\/\-]\d{1,4}/.test(f)||/^\d{1,2}:\d{2}/.test(f)||!/[a-z]/i.test(f)) return false; name=f; return true; });
-    name=name||'Unknown';
-    if(!m){ bad.push(name+': no code found'); return; }
-    var key=m[0].toUpperCase().replace(/[^A-Z0-9]/g,''), r=readCode(m[0]);
-    if(!r){ bad.push(name+': code doesn’t check out'); return; }
-    if(seen[key]&&seen[key]!==name.toLowerCase()){ bad.push(name+': same code as '+seen[key]); return; } seen[key]=name.toLowerCase();
-    var k=name.toLowerCase(); if(!people[k]||r.score>people[k].score) people[k]={name:name,score:r.score,correct:r.correct,answered:r.answered}; });
-  var rows=Object.keys(people).map(function(k){ return people[k]; }).sort(function(a,b){ return b.score-a.score||(b.correct/(b.answered||1))-(a.correct/(a.answered||1)); });
-  return {rows:rows,bad:bad}; }
 function esc(t){ return String(t).replace(/[&<>"]/g,function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]; }); }
-function showBoard(){ var txt=$('sw-lbtext').value; try{ localStorage.setItem(KEY+'_board',txt); }catch(e){} var b=parseBoard(txt), rows=b.rows.slice(0,36), n=rows.length;
-  var cols=n>12?2:1, per=Math.ceil(n/cols)||1, rh=Math.max(40,Math.min(66,Math.floor((800-(b.bad.length?60:0)-(per-1)*10)/per))), g=$('sw-lbrows');
-  g.style.gridTemplateRows='repeat('+per+','+rh+'px)'; g.style.gridTemplateColumns=cols===2?'1fr 1fr':'minmax(0,1100px)'; g.style.justifyContent='center';
-  g.innerHTML=rows.map(function(r,i){ var acc=r.answered?Math.round(100*r.correct/r.answered):0;
-    return '<div class="sw-lbrow'+(i<3?' g'+(i+1):'')+'" style="animation-delay:'+((n-1-i)*90)+'ms"><span class="rk">'+(i+1)+'</span><span class="nm">'+esc(r.name)+'</span><span class="sc">'+r.score.toLocaleString()+'</span><span class="ac">'+acc+'%</span></div>'; }).join('')||'<p class="sw-note">No valid codes yet.</p>';
-  $('sw-lbbad').textContent=b.bad.length? 'Check these: '+b.bad.join(' · ') : '';
-  $('sw-lbin').hidden=true; $('sw-lbout').hidden=false; $('sw-lbedit').hidden=false;
-  if(n){ setTimeout(function(){ if($('sw-lb').hidden) return; SND.win(); confetti(400,1070,120,1.3); confetti(1520,1070,120,1.3); confetti(960,300,120,2.6); }, (n-1)*90+400); } }
-function openBoard(o){ $('sw-lb').hidden=!o; if(o){ try{ $('sw-lbtext').value=localStorage.getItem(KEY+'_board')||''; }catch(e){} $('sw-lbin').hidden=false; $('sw-lbout').hidden=true; $('sw-lbedit').hidden=true; } }
-$('sw-lbopen').addEventListener('click',function(){ openBoard(true); });
-$('sw-lbx').addEventListener('click',function(){ openBoard(false); });
-$('sw-lbgo').addEventListener('click',function(){ ac(); showBoard(); });
-$('sw-lbedit').addEventListener('click',function(){ $('sw-lbin').hidden=false; $('sw-lbout').hidden=true; $('sw-lbedit').hidden=true; });
 
 /* ================= START / END ================= */
 document.querySelectorAll('.sw-len').forEach(function(b){ b.addEventListener('click',function(){ document.querySelectorAll('.sw-len').forEach(function(x){ x.classList.toggle('on',x===b); }); S.len=+b.dataset.len; timerDraw(); }); });
@@ -1135,7 +1090,7 @@ function newGame(){ clearTimeout(nextT); clearTimeout(lockT); var keepName=S.nam
   $('sw-choices').innerHTML=''; $('sw-prompt').innerHTML=''; $('sw-visual').innerHTML=''; $('sw-q').classList.remove('vis'); var fb=$('sw-fb'); fb.className='sw-fb'; fb.innerHTML='Answer correctly to power up your ship and earn cash.'; $('sw-next').disabled=true; }
 $('sw-askyes').addEventListener('click',function(){ askNew(false); newGame(); });
 $('sw-askno').addEventListener('click',function(){ askNew(false); });
-document.addEventListener('keydown',function(e){ if(e.metaKey||e.ctrlKey||e.altKey) return; if(e.target&&/^(INPUT|TEXTAREA)$/.test(e.target.tagName)) return; if(!$('sw-lb').hidden){ if(e.key==='Escape') openBoard(false); return; } var k=e.key.toLowerCase(), d=keyDir(e);
+document.addEventListener('keydown',function(e){ if(e.metaKey||e.ctrlKey||e.altKey) return; if(e.target&&/^(INPUT|TEXTAREA)$/.test(e.target.tagName)) return; var k=e.key.toLowerCase(), d=keyDir(e);
   if(!$('sw-confirm').hidden){ e.preventDefault(); if(k==='y'){ askNew(false); newGame(); } else if(k==='n'||e.key==='Escape') askNew(false); return; }   // only Y says yes: Enter and Space do nothing
   if(k==='r'&&e.shiftKey){ e.preventDefault(); if(S.started) askNew(true); return; }
   if(k==='f'){ e.preventDefault(); fullscreen(); return; }
@@ -1171,7 +1126,7 @@ window.__G={ state:function(){ return S; }, aliens:function(){ return aliens; },
   dropCapsule:function(x,y){ dropCapsule(x,y,true); }, grab:grab, hurt:hurt, hitAlien:hitAlien, hitPart:hitPart, momOpen:momOpen, goal:function(){ return {def:goalDef(),prog:goalProg()}; }, goals:GOALS,
   chainUntil:function(){ return chainUntil; }, consts:{W:W,H:H,SHIP_Y:SHIP_Y,TWIN:TWIN,FIRE_GAP:FIRE_GAP},
   build:build, show:function(type){ S.q=build(type); S.qDone=false; S.picked=-1; showQ(); }, end:function(){ S.endAt=now()-1; timerDraw(); }, types:Object.keys(GEN),
-  startWave:startWave, wave:function(){ return wave; }, makeCode:makeCode, readCode:readCode, parseBoard:parseBoard, frenzy:frenzy };
+  startWave:startWave, wave:function(){ return wave; }, makeCode:makeCode, readCode:readCode, frenzy:frenzy };
 })();
 </script>
 <script>/* the start screen names the question set the hub link picked */

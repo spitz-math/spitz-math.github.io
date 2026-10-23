@@ -148,7 +148,7 @@ select{ background:var(--paper); color:var(--ink); border:2px solid var(--line);
         <ol>
           <li>Open <a href="https://github.com/settings/personal-access-tokens/new" target="_blank" rel="noopener">GitHub's new fine-grained token page</a>.</li>
           <li>Name it <b>Spitz leaderboard</b>, set <b>Resource owner</b> to <b>spitz-math</b>, and pick an expiration (up to a year).</li>
-          <li>Under <b>Repository access</b>, choose <b>Only select repositories</b> and pick the site’s repository (<b>spitz-math.github.io</b>, or <b>spitz-arcade</b> before the rename).</li>
+          <li>Under <b>Repository access</b>, choose <b>Only select repositories</b> and pick the site’s repository (<b>spitz-math.github.io</b>).</li>
           <li>Under <b>Permissions</b>, set <b>Contents</b> to <b>Read and write</b>.</li>
           <li>Click <b>Generate token</b>, copy it, paste it above and click Save.</li>
         </ol>
@@ -265,8 +265,8 @@ function checkOne(){ var n=$('one-name').value.trim(), c=$('one-code').value.tri
   o.className='check good'; o.innerHTML='<b>'+esc(r.gameName)+'</b> · '+esc(r.display)+'<br>'+r.correct+' of '+r.answered+' correct · '+esc(setLabel(r))+(r.len?' · '+r.len+' min':'')+(r.date?' · '+fmtDate(r.date):'')+(r.old?' · older code':''); }
 
 /* ---------- post to the student leaderboard (data/leaderboard.json in the repo) ---------- */
-/* The repo is spitz-arcade while the site lives at /spitz-arcade/, and spitz-math.github.io once it is renamed to serve from the root */
-var REPO=/^\/spitz-arcade(\/|$)/.test(location.pathname)?'spitz-arcade':'spitz-math.github.io';
+/* the site's repository (the site itself is served at spitzmath.com) */
+var REPO='spitz-math.github.io';
 var API='https://api.github.com/repos/spitz-math/'+REPO+'/contents/data/leaderboard.json';
 function dayIso(d){ return d?d.toISOString().slice(0,10):''; }
 function boardData(){ var out={ updated:new Date().toISOString(), games:{} };
