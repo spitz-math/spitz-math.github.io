@@ -4,6 +4,8 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Spitzlberger Algebra 1 · Walk-in board</title>
+<meta name="robots" content="noindex">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Caveat:wght@500&family=Rubik:wght@700;800&family=Bangers&display=swap" rel="stylesheet">
@@ -481,6 +483,16 @@ body.nw-open #stage .tmr-chip{ left:905px; }
   </form>
 </dialog>
 
+<!-- Teacher PIN: asked before E, M or S opens on a computer that doesn't have it yet -->
+<dialog id="dlgPin">
+  <form method="dialog" class="dlg">
+    <h3>Teacher PIN</h3>
+    <label>PIN<input id="pinAsk" type="password" autocomplete="off" placeholder="The PIN in your Apps Script"><span class="hint">Asked once on each computer. Without it the board still shows, but the warm-ups, answers and setup stay closed.</span></label>
+    <p class="msg" id="pinMsg" role="status"></p>
+    <div class="row"><button type="button" class="pri" id="pinGo">Unlock</button><button value="cancel">Cancel</button></div>
+  </form>
+</dialog>
+
 <!-- Setup -->
 <dialog id="dlgSetup">
   <form method="dialog" class="dlg">
@@ -500,7 +512,7 @@ body.nw-open #stage .tmr-chip{ left:905px; }
         <span class="hint">Leave blank to use the address built into this file.</span>
       </label>
     </details>
-    <p class="hint" style="margin:0"><b>Table of contents status:</b> <span id="tocInfo"></span><br>Board version 2026-10-20b</p>
+    <p class="hint" style="margin:0"><b>Table of contents status:</b> <span id="tocInfo"></span><br>Board version 2026-10-23</p>
     <p class="msg" id="setupMsg" role="status"></p>
     <div class="row"><button type="button" class="pri" id="saveSetup">Save setup</button><button value="cancel">Cancel</button></div>
   </form>
@@ -703,14 +715,6 @@ const SAVE_URL = "https://script.google.com/macros/s/AKfycbx639KsczdlRGLuWguhvJO
       return ok;
     }catch(e){ tocInfo = "Couldn't reach your Apps Script (" + e.message + ")."; return false; }
   }
-  function embedUrl(raw){
-    const u = (raw || "").trim(); if(!u) return "";
-    let m = u.match(/docs\.google\.com\/document\/d\/e\/([\w-]+)/);
-    if(m) return "https://docs.google.com/document/d/e/" + m[1] + "/pub?embedded=true";
-    m = u.match(/docs\.google\.com\/document\/d\/([\w-]+)/);
-    if(m) return "https://docs.google.com/document/d/" + m[1] + "/preview";
-    return /^https?:\/\//.test(u) ? u : "";
-  }
   function fitDoc(){
     const f = $("doc"), w = $("docwrap");
     f.style.width = (w.clientWidth / zoom) + "px"; f.style.height = (w.clientHeight / zoom) + "px"; f.style.transform = "scale(" + zoom + ")";
@@ -848,6 +852,37 @@ const SAVE_URL = "https://script.google.com/macros/s/AKfycbx639KsczdlRGLuWguhvJO
     try{ await navigator.clipboard.writeText(txt); $("editMsg").textContent = "Copied (pictures aren't included)."; }
     catch(e){ $("fImport").value = txt; $("editMsg").textContent = "Copy the code from the box above."; }
   };
+
+  /* E, M and S open only on a computer with the teacher PIN, so students who open the board can't read the week's answers.
+     The PIN is checked by saving the board's current data back to Google (no change), and kept on this computer once it works. */
+  let pinNext = null;
+  function teacherOnly(fn){
+    if(local.get("pin", "") || !serverUrl()) return fn();
+    pinNext = fn; $("pinAsk").value = ""; $("pinMsg").textContent = ""; $("dlgPin").showModal();
+  }
+  async function checkPin(pin){
+    const url = serverUrl();
+    try{
+      if(!pending){                                              // start from Google's copy so nothing older is saved over it
+        const r = await fetch(url + (url.includes("?") ? "&" : "?") + "t=" + Date.now()), j = await r.json();
+        if(!j.ok) return "offline";
+        const d = j.data || {};
+        if(d.warmups || d.docUrl || d.needs){ state = tidy(d); stamp = j.updated; }
+      }
+      const r = await fetch(url, { method:"POST", headers:{ "Content-Type":"text/plain;charset=utf-8" }, body: JSON.stringify({ pin, data: state }) }), j = await r.json();
+      if(j.ok){ pending = false; stamp = j.updated; cache(); loadDoc(); render(); renderNeeds(); idleStatus(); return "ok"; }
+      return j.error === "pin" ? "badpin" : "offline";
+    }catch(e){ return "offline"; }
+  }
+  $("pinGo").onclick = async () => {
+    const pin = $("pinAsk").value.trim(); if(!pin) return;
+    $("pinMsg").textContent = "Checking with Google…";
+    const r = await checkPin(pin);
+    if(r !== "ok"){ $("pinMsg").textContent = r === "badpin" ? "That PIN doesn't match the one in your Apps Script." : "Google didn't answer. Try again in a moment."; return; }
+    local.set("pin", pin); $("dlgPin").close();
+    const fn = pinNext; pinNext = null; if(fn) fn();
+  };
+  $("pinAsk").addEventListener("keydown", e => { if(e.key === "Enter"){ e.preventDefault(); $("pinGo").click(); } });
 
   /* setup */
   function openSetup(){
@@ -1257,9 +1292,9 @@ function timerPanelKeys(e){
     if(["ArrowRight","PageDown"," ","Enter","ArrowDown"].includes(k)){ e.preventDefault(); reveal(true); }
     else if(["ArrowLeft","PageUp","ArrowUp","Backspace"].includes(k)){ e.preventDefault(); reveal(false); }
     else if(k === "f" || k === "F") full();
-    else if(k === "e" || k === "E"){ e.preventDefault(); openEdit(); }
-    else if(k === "s" || k === "S"){ e.preventDefault(); openSetup(); }
-    else if(k === "m" || k === "M"){ e.preventDefault(); openNeeds(); }
+    else if(k === "e" || k === "E"){ e.preventDefault(); teacherOnly(openEdit); }
+    else if(k === "s" || k === "S"){ e.preventDefault(); teacherOnly(openSetup); }
+    else if(k === "m" || k === "M"){ e.preventDefault(); teacherOnly(openNeeds); }
     else if(k === "h" || k === "H"){ e.preventDefault(); toggleToc(); }
     else if(k === "t" || k === "T"){ e.preventDefault(); tKey(); }
     else if(k === "q" || k === "Q"){ e.preventDefault(); setDrawing(!drawing); }

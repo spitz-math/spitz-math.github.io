@@ -453,7 +453,6 @@ body.dragging{user-select:none}
 .chooser button:hover,.chooser button:focus-visible{background:#0f5c94;color:#fff;border-color:#0f5c94;outline:none}
 .chooser .note{font-size:13px;color:#444;margin:-12px 4px 0}
 .xcirc{width:30px;height:30px;border-radius:50%;border:2px dotted #000;display:grid;place-items:center}
-#desmosHost{width:100%;height:100%;border:0;display:block}
 #desmosFrame{position:absolute;left:0;top:-50px;width:100%;height:calc(100% + 50px);border:0;display:block}
 #calcPanel .pbody{overflow:hidden}
 
@@ -742,7 +741,6 @@ body.browse>*:not(#browse):not(svg){display:none!important}
       <p class="note" id="tiNote" hidden>The TI graphing calculator isn't set up in this practice test yet. Use Desmos for now.</p>
       <button id="chDesmos">Desmos Graphing Calculator</button>
     </div>
-    <div id="desmosHost" hidden role="application" aria-label="Desmos graphing calculator"></div>
     <iframe id="desmosFrame" title="Desmos graphing calculator, Texas testing version" hidden></iframe>
   </div>
   <div class="rh" aria-label="Drag to resize"><svg><use href="#i-move"/></svg></div>
@@ -1869,49 +1867,21 @@ Object.keys(panels).forEach(k=>{
     rh.addEventListener('pointermove',mv); rh.addEventListener('pointerup',up); });
 });
 
-/* calculator: chooser, then Desmos through the Desmos API set up like the Texas STAAR version (no green banner) */
-const USE_DESMOS_API=false;  // true = Desmos API (needs a production key; a trial key shows a watermark). false = Texas testing page with the banner cropped off.
-const DESMOS_KEY='8f04c5aafb7b4926872111685875396b';   // Mr. Spitz's Desmos API key
+/* calculator: chooser, then the Desmos Texas testing page in a frame with its green banner cropped off */
 let DESMOS_BANNER_PX=50;     // height of the green "Texas Version" banner to crop off (teacher fine-tune: click the calculator title bar, then Ctrl+Alt+Up/Down)
 try{ const v=localStorage.getItem('spitzDesmosCrop'); if(v!==null&&!isNaN(+v)) DESMOS_BANNER_PX=+v; }catch(e){}
 function applyCrop(){ const f=document.getElementById('desmosFrame'); if(!f) return; f.style.top=(-DESMOS_BANNER_PX)+'px'; f.style.height=`calc(100% + ${DESMOS_BANNER_PX}px)`; }
-const DESMOS_TX={ // Texas STAAR graphing calculator restrictions (Desmos "Texas State Test" notes)
-  images:false, folders:false, notes:false,            // no images, folders, or notes
-  degreeMode:true,                                     // angle mode defaults to degrees
-  plotImplicits:false, plotSingleVariableImplicitEquations:false, // implicit equations do not graph
-  plotInequalities:false,                              // inequalities do not graph
-  forceLogModeRegressions:true,                        // log mode for exp/log/power regressions
-  sliders:false,                                       // no sliders for free variables
-  restrictedFunctions:true,                            // restricted function list (csc, sec, cot, mad, cov, distance, midpoint...)
-  links:false, pasteGraphLink:false, actions:false,    // no outside links or graph imports
-  border:false };
-let desmosCalc=null, desmosLoading=false, desmosFailed=false;
-function useFrameFallback(){ desmosFailed=true; $('#desmosHost').hidden=true; const f=$('#desmosFrame'); if(!f.src) f.src='https://www.desmos.com/testing/texas/graphing'; f.hidden=false; applyCrop(); }
+function showDesmos(){ const f=$('#desmosFrame'); if(!f.src) f.src='https://www.desmos.com/testing/texas/graphing'; f.hidden=false; applyCrop(); }
 document.addEventListener('keydown',e=>{ if(!(e.ctrlKey&&e.altKey)||$('#calcPanel').hidden||$('#desmosFrame').hidden) return; if(e.key!=='ArrowUp'&&e.key!=='ArrowDown') return; e.preventDefault(); e.stopPropagation(); DESMOS_BANNER_PX=Math.max(0,Math.min(150,DESMOS_BANNER_PX+(e.key==='ArrowUp'?2:-2))); applyCrop(); try{ localStorage.setItem('spitzDesmosCrop',DESMOS_BANNER_PX); }catch(err){} toast('Banner crop: '+DESMOS_BANNER_PX+' px'); },true);
-function startDesmos(){
-  if(!USE_DESMOS_API){ useFrameFallback(); return; }
-  if(desmosCalc||desmosFailed){ return; }
-  const make=()=>{ try{ desmosCalc=Desmos.GraphingCalculator($('#desmosHost'),DESMOS_TX); window.__desmos=desmosCalc; }catch(e){ useFrameFallback(); } };
-  if(window.Desmos){ make(); return; }
-  if(desmosLoading) return; desmosLoading=true;
-  const s=document.createElement('script'); s.src='https://www.desmos.com/api/v1.12/calculator.js?apiKey='+DESMOS_KEY;
-  s.onload=()=>{ desmosLoading=false; window.Desmos?make():useFrameFallback(); };
-  s.onerror=()=>{ desmosLoading=false; useFrameFallback(); };
-  document.head.appendChild(s);
-  setTimeout(()=>{ if(!desmosCalc&&!desmosFailed) useFrameFallback(); },12000);
-}
-function desmosResize(){ if(desmosCalc&&desmosCalc.resize) try{ desmosCalc.resize(); }catch(e){} }
-if(window.ResizeObserver) new ResizeObserver(desmosResize).observe($('#desmosHost'));
-function showChooser(){ $('#chooser').hidden=false; $('#desmosFrame').hidden=true; $('#desmosHost').hidden=true; $('#calcTtl').textContent='Choose A Calculator'; $('#calcSwitch').hidden=true; $('#calcExpand').hidden=true; $('#tiNote').hidden=true; }
+function showChooser(){ $('#chooser').hidden=false; $('#desmosFrame').hidden=true; $('#calcTtl').textContent='Choose A Calculator'; $('#calcSwitch').hidden=true; $('#calcExpand').hidden=true; $('#tiNote').hidden=true; }
 $('#chTI').onclick=()=>{ $('#tiNote').hidden=false; };
 $('#chDesmos').onclick=()=>{
   actTool('desmos');
   $('#chooser').hidden=true;
-  if(desmosFailed) $('#desmosFrame').hidden=false; else $('#desmosHost').hidden=false;
   $('#calcTtl').innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="#000" stroke-width="2"><circle cx="12" cy="12" r="10.5" stroke-width="1.4"/><path d="M5.5 9c2.5 0 4.5 6 7 6s3-6 5.5-6M5.5 15c2.5 0 4.5-6 7-6"/></svg>Calculator';
   $('#calcSwitch').hidden=false; $('#calcExpand').hidden=false;
   if(!desmosOn){ desmosOn=true; const p=panels.calc, top=Math.round(innerHeight*0.30); if(parseInt(p.style.height)<=300){ p.style.top=top+'px'; p.style.height=(innerHeight-top-18)+'px'; } }
-  startDesmos(); setTimeout(desmosResize,50);
+  showDesmos();
 };
 $('#calcSwitch').onclick=showChooser;
 
