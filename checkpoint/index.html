@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Spitz Checkpoint</title>
+<!-- Clean student link: spitz-math.github.io/checkpoint forwards to the Apps Script web app.
+     If the web app link ever changes, change APP below (and the link in the page) — nothing else. -->
+<meta http-equiv="refresh" content="0; url=https://script.google.com/a/macros/misdtx.net/s/AKfycbxwfpF4OShK8S_QJJ_AUYrxYUwNc5TSs2No5i6_D95a8C24cPhCnXHhHEKr7KbMgWA2/exec">
+<style>
+html,body{margin:0;height:100%;background:#0a3ca5;color:#fff;font:16px Arial,sans-serif}
+main{min-height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;padding:24px;box-sizing:border-box;text-align:center}
+a{color:#fff;font-weight:bold}
+</style>
+</head>
+<body>
+<main><p>Opening Spitz Checkpoint…</p><p><a id="go" href="https://script.google.com/a/macros/misdtx.net/s/AKfycbxwfpF4OShK8S_QJJ_AUYrxYUwNc5TSs2No5i6_D95a8C24cPhCnXHhHEKr7KbMgWA2/exec">Click here if it doesn't open</a></p></main>
+<script>
+(function(){
+  var APP = 'https://script.google.com/a/macros/misdtx.net/s/AKfycbxwfpF4OShK8S_QJJ_AUYrxYUwNc5TSs2No5i6_D95a8C24cPhCnXHhHEKr7KbMgWA2/exec';
+  var q = location.search && /^\?[\w=&%.-]+$/.test(location.search) ? location.search : '';   // keeps ?view=dash
+  document.getElementById('go').href = APP + q;
+  location.replace(APP + q);   // replace: the Back button doesn't bounce students into this page again
+})();
+</script>
+</body>
+</html>

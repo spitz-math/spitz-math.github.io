@@ -810,7 +810,7 @@ body.th-maroon .clonebadge,body.th-black .clonebadge,body.th-blue .clonebadge{ba
 /* ================= Spitz Checkpoint: helpers available to every test file ================= */
 window.SPITZ_BASE=window.SPITZ_BASE||'';
 /* asset lookup: inlined data (single-file build) first, then a file next to the test */
-const ASSET=p=>(window.SPITZ_ASSETS&&window.SPITZ_ASSETS[window.SPITZ_TESTID+'/'+p])||(window.SPITZ_BASE+p);
+const ASSET=p=>(window.SPITZ_ASSETS&&window.SPITZ_ASSETS[window.SPITZ_TESTID+'/'+p])||(window.SPITZ_BASE+p+(window.SPITZ_VER?'?v='+window.SPITZ_VER:''));
 const $=s=>document.querySelector(s);
 const F=(a,b)=>`<span class="frac"><span>${a}</span><span>${b}</span></span>`;
 const V=s=>`<var>${s}</var>`;
@@ -1463,6 +1463,24 @@ function key(it){ switch(it.type){
     case 'eq': return String(it.answer);
     case 'graphexp': return `Curve through (0, ${it.a}) with base ${fmtV(it.b)}`; } }
 /* points earned, with partial credit on 2-point items (null = no response) */
+/* answer-key self-check for the dashboard's Tests page (only when the page sets SPITZ_SELFCHECK; students never do):
+   each question is answered with its own key, then left blank, and the points are reported */
+if(window.SPITZ_SELFCHECK) window.__spitzSelfCheck=function(){
+  const lattice=(R,f)=>{ const P=[]; for(let x=-R;x<=R&&P.length<2;x++){ const y=f(x); if(y!=null&&Number.isInteger(y)&&Math.abs(y)<=R) P.push([x,y]); } return P; };
+  const keyAns=it=>{ const R=it.R||(it.graph&&it.graph.R)||10; switch(it.type){
+    case 'mc': case 'hotspot': return it.answer;
+    case 'ms': case 'inline': case 'table': case 'boxes': case 'graph': return it.answer.slice();
+    case 'num': case 'eq': return String(it.answer);
+    case 'dnd': { const o={}; it.answer.forEach((z,t)=>o[t]=z); return o; }
+    case 'graphline': { let P=lattice(R,x=>it.eq[1]?(it.eq[2]-it.eq[0]*x)/it.eq[1]:null);
+      if(P.length<2&&it.eq[0]&&!it.eq[1]&&Number.isInteger(it.eq[2]/it.eq[0])) P=[[it.eq[2]/it.eq[0],0],[it.eq[2]/it.eq[0],1]];   // vertical line
+      if(P.length<2) throw new Error('the correct line does not go through two grid points'); return {lines:[P],pts:[]}; }
+    case 'graphineq': { const pts=lattice(R,x=>it.m*x+it.b); if(pts.length<2) throw new Error('the boundary line does not go through two grid points'); return {pts,dash:it.op.length===1,shade:[pts[0]?pts[0][0]:0,(pts[0]?pts[0][1]:it.b)+(it.op[0]==='>'?1:-1)]}; }
+    case 'graphfunc': return {type:it.ftype,asym:it.asym,pts:[[0,it.fn(0)],[1,it.fn(1)]]};
+    case 'graphexp': return {a:it.a,b:it.b}; } };
+  const keep=S.answers, out=ITEMS.map(it=>{ const r={n:it.n,type:it.type,max:it.max};
+    try{ S.answers={}; r.blank=earn(it); S.answers={[it.n]:keyAns(it)}; r.key=earn(it); }catch(e){ r.err=String(e&&e.message||e); } return r; });
+  S.answers=keep; return out; };
 function earn(it){ const a=S.answers[it.n]; if(a==null) return null; const full=score(it)===true; if(it.max===1||full) return full?it.max:0;
   let hit=0, parts=2;
   if(it.type==='boxes'){ if(it.unordered){ const left=[...it.answer]; a.forEach(q=>{ const i=left.indexOf(q); if(q!=null&&i>=0){ hit++; left.splice(i,1); } }); } else hit=it.answer.filter((q,i)=>a[i]===q).length; parts=it.answer.length; }
@@ -2026,17 +2044,19 @@ if(window.__spitzPending){ const p=window.__spitzPending; window.__spitzPending=
 const $=s=>document.querySelector(s);
 const APP=window.SPITZ_APP||null;
 const params=new URLSearchParams(location.search);
-const tests=window.SPITZ_TESTS||[];
+const allTests=window.SPITZ_TESTS||[], tests=allTests.filter(t=>!t.hidden);   // hidden tests stay reachable with ?test=<id>
 const fixed=APP?null:(params.get('test')||(tests.length===1?tests[0].id:null));
 const pick=$('#stuTest'), shown=$('#siTestName');
 if(APP){ pick.closest('.sif').hidden=true; $('#siSesRow').hidden=false; }
-else if(fixed){ const t=tests.find(t=>t.id===fixed); shown.textContent=t?t.title:fixed; shown.hidden=false; pick.hidden=true; }
+else if(fixed){ const t=allTests.find(t=>t.id===fixed); shown.textContent=t?t.title:fixed; shown.hidden=false; pick.hidden=true; }
 else { pick.innerHTML='<option value="" hidden></option>'+tests.map(t=>`<option value="${t.id}">${t.title}</option>`).join(''); pick.hidden=false; shown.hidden=true; }
 const err=(t,focus)=>{ $('#siErr').textContent=t; $('#siErr').hidden=false; $('#siBtn').disabled=false; if(focus) focus.focus(); };
 function load(id,done){
   window.SPITZ_TESTID=id; window.SPITZ_BASE=window.SPITZ_ROOT+'tests/'+id+'/';
   if(window.SPITZ_BUNDLE&&window.SPITZ_BUNDLE[id]){ window.SPITZ_BUNDLE[id](); done(); return; }
-  const s=document.createElement('script'); s.src=window.SPITZ_BASE+'test.js';
+  /* v (set by the dashboard's Tests page) changes whenever the test's files change, so a browser never keeps an old copy */
+  const ent=allTests.find(t=>t.id===id); window.SPITZ_VER=ent&&ent.v?String(ent.v).replace(/[^0-9a-z]/gi,''):'';
+  const s=document.createElement('script'); s.src=window.SPITZ_BASE+'test.js'+(window.SPITZ_VER?'?v='+window.SPITZ_VER:'');
   s.onload=done; s.onerror=()=>err(APP?'The test could not be loaded. Check your internet connection and try again.':'That test could not be loaded. Check that its folder is next to this page.');
   document.head.appendChild(s);
 }

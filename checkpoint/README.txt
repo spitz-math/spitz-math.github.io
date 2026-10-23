@@ -2,6 +2,7 @@ SPITZ CHECKPOINT
 ================
 
 What's in this folder
+  index.html               The clean student link: forwards to the web app.
   player.html              The test player (the whole engine).
   dash.html                The live teacher dashboard (opens only for you).
   tests/index.js           The list of tests.
@@ -10,14 +11,34 @@ What's in this folder
   single/                  Each test as one self-contained file. Saves on that computer only, no Session ID.
   apps-script/Code.gs      The saving backend for your Google Sheet (see SETUP below)
 
+Student link
+  spitz-math.github.io/checkpoint   (index.html forwards to the Apps Script web app link)
+  Log Out also returns there. If you ever make a NEW deployment (not a new version), put its /exec link
+  in index.html (two places, marked) and push it. Adding ?view=dash opens your dashboard.
+
 Two ways students can use it
   1. Saved to your Sheet (use this in class): the Apps Script web app link. Students type first name,
      class period and a Session ID. Their school Google account identifies them; emails are never stored.
   2. Practice only: player.html on GitHub, or a single/ file. Work is kept on that computer only.
 
-Adding a test
-  1. Make a folder in tests/ (for example tests/alg1-2024/) with test.js, and img/ and rat/ if needed.
-  2. Add one line for it in tests/index.js. Push to GitHub. Nothing else changes.
+Adding or replacing a test (dashboard > Tests)
+  Claude hands you one zip per test, for example alg1-2024.zip (a folder with test.js, plus img/ and rat/ if
+  the test has pictures, and refs/ if it needs a new reference sheet).
+  1. Open the dashboard and click Tests (top right).
+  2. Drop the zip on the page (or Choose a zip file / Choose a folder). The page checks it: answer keys,
+     pictures, TEA explanation images, reference sheet. Problems are marked with an X and block publishing.
+     "Show every question and its answer key" lists the key so you can compare it with TEA's.
+  3. Preview opens the test exactly as students will see it. Nothing is saved to your Sheet.
+  4. Publish. Everything goes to GitHub in one commit: the test folder, the line in tests/index.js and the
+     test's single/ file. The page says "Live on the site" when GitHub Pages has updated (1-2 minutes).
+  5. "Make a session for this test" gives you the Session ID (same as the Sheet menu).
+  Replacing: drop a fixed version of a test that's already there. The page lists what changes (answer keys,
+  points, wording, pictures) and warns you if an open session uses that test.
+  Your tests: Hide/Show takes a test off the practice list (player.html without a Session ID) without
+  deleting anything; Preview; New session.
+  Single files: "Rebuild single files" after player.html changes.
+  Browsers never use an old copy of a test: tests/index.js carries a version code (v) for each test, which
+  the Tests page updates on every publish.
 
 SETUP (one time)
   A. GitHub: put everything in this folder except apps-script/ into a folder named "checkpoint" in the
@@ -29,8 +50,14 @@ SETUP (one time)
      permissions it asks for. This makes the Sessions and Attempts tabs.
   E. Deploy > New deployment > type: Web app. Execute as: Me. Who has access: Anyone within
      misdtx.net. Deploy and copy the web app link. That link is what students open.
-  F. Reload the Sheet. Use the "Spitz Checkpoint" menu > New session... and type the test ID
+  F. Reload the Sheet. Use the "Spitz Checkpoint" menu > New session... (or the dashboard's Tests page) and type the test ID
      (for example alg1-2025). Give students the Session ID it shows.
+  G. GitHub token for the Tests page: on GitHub, Settings > Developer settings > Fine-grained tokens >
+     Generate new token. Repository access: only spitz-math.github.io. Permissions: Contents: Read and write.
+     Pick the longest expiration it allows. In the Sheet: Spitz Checkpoint > Set GitHub token... and paste it
+     (the first time, Google asks you to allow "Connect to an external service"). The token is kept in the
+     script's properties, never in the Sheet or a browser. Spitz Checkpoint > Remove GitHub token turns it off.
+     When it expires, the Tests page says so; make a new one and set it again.
 
 Each session (Sessions tab)
   Status   Open = students can sign in. Closed = only students who already submitted can sign in
