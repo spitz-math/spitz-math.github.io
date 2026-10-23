@@ -1039,10 +1039,10 @@ var SETS={
    hidden: sets students can't pick. off: topics turned off, by set. assign: the lock; while it lists sets a game only plays those sets
    and topics (no topics = every topic that is on). suggest: the hub's "Suggested by Mr. Spitz" sets, and the note under them.
    bonus: score bonus percent for suggested runs (scorecode.js), 0 = off. Read once, before the game reads its link, so the game, its save
-   slot and its score code all agree. The last copy that loaded stays in this browser; DEF is used when neither is there.
+   slot and its score code all agree. The last copy that loaded stays in this browser; DEF (no limits) is used when neither is there.
    Shared with scorecode.js as window.SpitzTopics; index.html reads the same file. */
 var TOPICS=window.SpitzTopics=window.SpitzTopics||(function(){
-  var DEF={ hidden:['mult'], off:{}, assign:[{id:'slide'},{id:'stdform'}], suggest:{ sets:[{id:'slide'},{id:'stdform'}], note:'' }, bonus:25 }, t=null, K='spitz_topics';
+  var DEF={ hidden:[], off:{}, assign:[], suggest:{ sets:[], note:'' }, bonus:25 }, t=null, K='spitz_topics';
   try{ var x=new XMLHttpRequest(), src=document.currentScript&&document.currentScript.src||location.href;
     x.open('GET',new URL('../data/topics.json',src).href+'?v='+Math.floor(Date.now()/60000),false); x.send();
     if(x.status===200){ t=JSON.parse(x.responseText); try{ localStorage.setItem(K,x.responseText); }catch(e){} } }catch(e){ t=null; }

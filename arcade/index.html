@@ -4,6 +4,17 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Spitz Arcade</title>
+<meta name="description" content="Math games from Mr. Spitz. Pick a game and a skill, then climb the leaderboard.">
+<!-- link preview card (Google Classroom, email, texts) -->
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Spitz Math">
+<meta property="og:title" content="Spitz Arcade">
+<meta property="og:description" content="Math games from Mr. Spitz. Pick a game and a skill, then climb the leaderboard.">
+<meta property="og:url" content="https://spitzmath.com/arcade/">
+<meta property="og:image" content="https://spitzmath.com/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
 <link rel="icon" href="../favicon.svg" type="image/svg+xml">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bungee&family=Lilita+One&family=Racing+Sans+One&family=Pixelify+Sans:wght@600&family=Graduate&family=Righteous&family=Russo+One&family=Permanent+Marker&family=Bangers&family=Exo+2:ital,wght@1,900&family=Dela+Gothic+One&family=Shrikhand&family=Bowlby+One&family=Lexend:wght@400;600;800&family=JetBrains+Mono:wght@500&display=swap">
@@ -161,7 +172,7 @@ var SETS=[
    file. hidden sets go away, topics that are off go away, and while assign lists sets students can only pick those sets and topics
    (the banner says "Assigned by Mr. Spitz"). The last copy that loaded stays in this browser; DEF is used when neither is there. */
 var TOPICS=(function(){
-  var DEF={ hidden:['mult'], off:{}, assign:[{id:'slide'},{id:'stdform'}], suggest:{ sets:[{id:'slide'},{id:'stdform'}], note:'' }, bonus:25 }, t=null, K='spitz_topics';
+  var DEF={ hidden:[], off:{}, assign:[], suggest:{ sets:[], note:'' }, bonus:25 }, t=null, K='spitz_topics';
   try{ var x=new XMLHttpRequest(); x.open('GET','../data/topics.json?v='+Math.floor(Date.now()/60000),false); x.send();
     if(x.status===200){ t=JSON.parse(x.responseText); try{ localStorage.setItem(K,x.responseText); }catch(e){} } }catch(e){ t=null; }
   if(!t||typeof t!=='object') try{ t=JSON.parse(localStorage.getItem(K)); }catch(e){ t=null; }

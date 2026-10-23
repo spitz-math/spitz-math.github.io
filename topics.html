@@ -155,8 +155,8 @@ var SETS=[
   {id:'stdform',name:'Standard form',unit:'Cover-up method',topics:[['x','x-intercept'],['y','y-intercept']]},
   {id:'slide',name:'Slide and Slice',unit:'Standard to y = mx + b',topics:[['slide','Slide'],['slice','Slice'],['both','Both steps'],['slope','Find the slope']]}
 ];
-var DEF={ hidden:['mult'], off:{}, assign:[{id:'slide'},{id:'stdform'}], suggest:{ sets:[{id:'slide'},{id:'stdform'}], note:'' }, bonus:25 };
-var TKEY='spitz_gh_key', REPO=/^\/spitz-arcade(\/|$)/.test(location.pathname)?'spitz-arcade':'spitz-math.github.io';
+var DEF={ hidden:[], off:{}, assign:[], suggest:{ sets:[], note:'' }, bonus:25 };
+var TKEY='spitz_gh_key', REPO='spitz-math.github.io';
 var API='https://api.github.com/repos/spitz-math/'+REPO+'/contents/data/topics.json';
 var st={}, note='', bonus=25, sha=null, base='', busy=false, ord={assign:[],sug:[]};
 function $(i){ return document.getElementById(i); }
