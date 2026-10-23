@@ -298,7 +298,6 @@ details summary{cursor:pointer;color:var(--blue2);font-size:13px;margin-top:8px}
 <section class="tpage" id="tpage" hidden aria-label="Tests">
   <header class="topbar"><div class="wm">SPITZ <span>CHECKPOINT</span><small>Tests</small></div><div class="sp"></div>
     <button class="btn" id="tpReload">Reload</button><button class="btn pri" id="tpBack">Back to dashboard</button></header>
-  <div class="greenbar"></div>
   <div class="tbody"><div class="tcol">
     <div class="ghs" id="ghs">Checking GitHub…</div>
     <section class="tcard"><h2>Add or replace a test</h2>
@@ -307,7 +306,7 @@ details summary{cursor:pointer;color:var(--blue2);font-size:13px;margin-top:8px}
       <div id="pkg"></div>
     </section>
     <section class="tcard"><h2>Question bank</h2>
-      <p class="hint">Browse released STAAR questions by standard and year, or make new ones with the warm-up generator. Each question shows just as students see it, with its answer. Add the ones you want, then make a test from them.</p>
+      <p class="hint">Browse released STAAR questions by standard and year, or make new ones. Each question shows just as students see it, with its answer. Add the ones you want, then make a test from them.</p>
       <div class="row"><button class="btn pri" id="bkOpen">Open the question bank</button><span class="hint" id="bkCartNote"></span></div>
     </section>
     <section class="tcard"><h2>Your tests</h2><div id="tlist"><p class="hint">Loading…</p></div><div class="msg2" id="tlMsg"></div></section>
@@ -323,7 +322,7 @@ details summary{cursor:pointer;color:var(--blue2);font-size:13px;margin-top:8px}
   <div class="bkgrid">
     <aside class="bkside" aria-label="Find questions">
       <div class="msg2" id="bkMsg"></div>
-      <div class="row" id="bkFileRow" hidden><button class="btn" id="bkFileBtn">Choose the generator file</button><input type="file" id="bkFile" accept=".html,text/html" hidden></div>
+      <div class="row" id="bkFileRow" hidden><button class="btn" id="bkFileBtn">Choose the question bank file</button><input type="file" id="bkFile" accept=".html,text/html" hidden></div>
       <div id="bkFilters" class="bkcol" hidden>
         <span class="lab">Questions</span>
         <div class="seg" id="bkSrc"><button data-v="rel" aria-pressed="true">Released</button><button data-v="saved" aria-pressed="false">Saved</button><button data-v="gen" aria-pressed="false">Generated</button></div>
@@ -999,13 +998,13 @@ drop.addEventListener('drop',async e=>{ e.preventDefault(); const items=[...(e.d
   catch(x){ $('#pkg').innerHTML='<p class="msg2 err">'+errText(x)+'</p>'; } });
 addEventListener('dragover',e=>{ if(!$('#tpage').hidden) e.preventDefault(); }); addEventListener('drop',e=>{ if(!$('#tpage').hidden) e.preventDefault(); });
 
-/* =================== Build a test from the warm-up bank ===================
-   The warm-up generator (spitz-math.github.io/warmup/index.html, or a file Kody picks) runs in a sandboxed frame with a
+/* =================== Question bank (questions come from the question bank file) ===================
+   The question bank file (spitz-math.github.io/warmup/index.html, or a file Kody picks) runs in a sandboxed frame with a
    fake page around it, so only its question bank and generators are used. That frame also converts each question to the
    player's format (BANKSANDBOX below). Built tests go through the same checks, preview and publish as an uploaded zip. */
 function BANKSANDBOX(){   // runs inside the sandboxed frame; must not use anything from the dashboard
   const G=window.__GEN, post=m=>parent.postMessage(Object.assign({bank:'__TOK__'},m),'*');
-  if(!G||!G.B||!G.R){ post({op:'ready',err:'That file loaded, but it is not the warm-up generator (no question bank inside).'}); return; }
+  if(!G||!G.B||!G.R){ post({op:'ready',err:'That file loaded, but it is not the question bank (no questions inside).'}); return; }
   const CATN={RC1:1,RC2:2,RC3:3,RC4:4,RC5:5}, ORDER=['RC1','RC2','RC3','RC4','RC5'];
   const newCode=(k,c)=>{ const m=String(k).match(/^A\.(\d+)([A-Z])$/); return m?'A1.'+c+'.'+m[1]+'.'+m[2]:k; };
   const COLOR=/\b(orange|blue|gr[ae]y|green|red|purple)\b/i, GRAPHWORDS=/graph|grid|shown|plotted|plane|line/i;
@@ -1101,7 +1100,7 @@ const BANKURL=()=>(TP.gh&&TP.gh.pages||ROOT).replace(/checkpoint\/?$/,'')+'warmu
 function bankSay(t,cls){ say($('#bkMsg'),t,cls); }
 async function bankLoad(html,from){
   const a=html.search(/<script>/i), b=html.lastIndexOf('</'+'script>');
-  if(a<0||b<a) throw new Error('That file has no script in it, so it is not the warm-up generator.');
+  if(a<0||b<a) throw new Error('That file has no script in it, so it is not the question bank.');
   const gen=html.slice(a+8,b).replace(/<\/(script)/gi,'<\\/$1');
   if(BK.frame){ BK.frame.remove(); BK.frame=null; }
   const tok=Math.random().toString(36).slice(2); BK.tok=tok; BK.ready=false; BK.cat=null;
@@ -1111,22 +1110,22 @@ async function bankLoad(html,from){
     +'<scr'+'ipt>window.__GEN=(function('+names+'){\n'+gen+'\n;return {B:typeof TEKS_BANK!=="undefined"?TEKS_BANK:null,R:typeof TEKS_REGISTRY!=="undefined"?TEKS_REGISTRY:null,CL:typeof CATEGORY_LABELS!=="undefined"?CATEGORY_LABELS:null};})('+names.split(',').map(()=>'__F').join(',')+');<\/script>'
     +'<scr'+'ipt>('+BANKSANDBOX.toString().split('__TOK__').join(tok)+')();<\/script></body></html>';
   const f=document.createElement('iframe'); f.style.display='none'; f.setAttribute('aria-hidden','true'); f.setAttribute('sandbox','allow-scripts');
-  const ready=new Promise((res,rej)=>{ const tm=setTimeout(()=>rej(new Error('The warm-up generator did not start (it took more than 20 seconds).')),20000);
+  const ready=new Promise((res,rej)=>{ const tm=setTimeout(()=>rej(new Error('The question bank did not start (it took more than 20 seconds).')),20000);
     BK.onReady=m=>{ clearTimeout(tm); m.err?rej(new Error(m.err)):res(m); }; });
   f.srcdoc=srcdoc; document.body.appendChild(f); BK.frame=f;
   const m=await ready; BK.ready=true; BK.cat=m.teks; BK.from=from; return m; }
 addEventListener('message',e=>{ const m=e.data; if(!m||!BK.tok||m.bank!==BK.tok||!BK.frame||e.source!==BK.frame.contentWindow) return;
   if(m.op==='ready'){ if(BK.onReady) BK.onReady(m); return; }
   const w=BK.wait[m.rid]; if(w){ delete BK.wait[m.rid]; w(m); } });
-function bankAsk(q){ return new Promise(res=>{ const rid=++BK.rid; const tm=setTimeout(()=>{ delete BK.wait[rid]; res({err:'The warm-up generator did not answer.'}); },15000);
+function bankAsk(q){ return new Promise(res=>{ const rid=++BK.rid; const tm=setTimeout(()=>{ delete BK.wait[rid]; res({err:'The question bank did not answer.'}); },15000);
   BK.wait[rid]=m=>{ clearTimeout(tm); res(m); }; BK.frame.contentWindow.postMessage(Object.assign({bank:BK.tok,rid},q),'*'); }); }
 
 const fnBack=s=>s.replace(/"fn:((?:[^"\\]|\\.)*)"/g,(q,src)=>'('+JSON.parse('"'+src+'"')+')');
 const shuffle=a=>{ a=a.slice(); for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } return a; };
 /* ---------- the Question bank page ----------
    Released questions come from two places: years with a full released test published in tests/alg1-<year>/ use that test's
-   real questions (interactive types, pictures, TEA explanations); every other year uses the warm-up bank's version.
-   Generated questions come from the warm-up generator's practice generators or a released question's "new numbers" version.
+   real questions (interactive types, pictures, TEA explanations); every other year uses the question bank file's version.
+   Generated questions come from the question bank file's practice makers or a released question's "new numbers" version.
    Every question is shown by player.html in browse mode (a sandboxed frame), so it looks and works exactly as students see it. */
 const QB={usage:{}, saved:[], savedSha:null, ready:false, loading:null, tests:{}, testYears:new Set(), bankCache:{}, skipped:{}, entries:{}, view:[], shown:0, mode:'rel', gmode:'gen', gen:[], genKey:'',
   cart:[], frame:null, tok:null, frameReady:null, cartView:false, years:null, gid:0 };
@@ -1173,22 +1172,22 @@ function bkClosePage(){ $('#bkpage').hidden=true; $('#bkpage').classList.remove(
 $('#bkOpen').onclick=bkOpenPage; $('#bkBack').onclick=bkClosePage;
 $('#bkCartBtn').onclick=()=>$('#bkpage').classList.toggle('cartopen'); $('#bkCartClose').onclick=()=>$('#bkpage').classList.remove('cartopen');
 function bkNote(){ const c=store('qbCart'), n=c&&c.cart?c.cart.length:0; $('#bkCartNote').textContent=n?'Your test so far: '+plural(n,'question')+'.':''; }
-async function qbLoad(){ over('Loading the warm-up bank and your released tests…');
+async function qbLoad(){ over('Loading the question bank and your released tests…');
   try{ await viewFrame(); }catch(e){ over('The preview could not start: '+errText(e)); QB.loading=null; return; }
   await Promise.all([bankOpen(), loadTests(), loadUsage(), loadSaved()]);
-  if(!BK.ready){ over('The warm-up bank is needed for the question list. See the message on the left.'); QB.loading=null; return; }
+  if(!BK.ready){ over('The question bank file is needed for the question list. See the message on the left.'); QB.loading=null; return; }
   $('#bkHideUsed').checked=!!store('qbHideUsed');
   QB.ready=true; fillFilters(); $('#bkFilters').hidden=false; refreshView(); }
-async function bankOpen(){ if(BK.ready) return; bankSay('Loading the warm-up bank from GitHub…');
+async function bankOpen(){ if(BK.ready) return; bankSay('Loading the question bank from GitHub…');
   try{ const r=await fetch(BANKURL()+'?t='+Date.now(),{cache:'no-store'}); if(!r.ok) throw new Error(r.status===404?'notfound':'HTTP '+r.status);
     await bankLoad(await r.text(),'GitHub (warmup/index.html)'); bankReady(); }
-  catch(e){ bankSay(e.message==='notfound'?'The warm-up generator is not on GitHub yet. Upload it to a <b>warmup</b> folder in spitz-math.github.io, named <b>index.html</b>, or choose the file:':'Could not load the warm-up bank: '+errText(e)+' You can also choose the file:', e.message==='notfound'?'':'err');
+  catch(e){ bankSay(e.message==='notfound'?'The question bank file is not on GitHub yet. Upload it to a <b>warmup</b> folder in spitz-math.github.io, named <b>index.html</b>, or choose the file:':'Could not load the question bank: '+errText(e)+' You can also choose the file:', e.message==='notfound'?'':'err');
     $('#bkFileRow').hidden=false; } }
 $('#bkFileBtn').onclick=()=>$('#bkFile').click();
 $('#bkFile').onchange=async e=>{ const f=e.target.files[0]; e.target.value=''; if(!f) return; bankSay('Loading '+esc(f.name)+'…');
   try{ await bankLoad(await f.text(),f.name); bankReady(); QB.bankCache={}; QB.ready=true; fillFilters(); $('#bkFilters').hidden=false; refreshView(); }catch(x){ bankSay(errText(x),'err'); } };
 function bankReady(){ const n=BK.cat.reduce((a,t)=>a+t.bank.length,0);
-  bankSay(`Warm-up bank loaded (${n} released questions, ${BK.cat.length} standards).`+(QB.testYears.size?` ${[...QB.testYears].sort().join(' and ')} use${QB.testYears.size===1?'s':''} your published full test${QB.testYears.size===1?'':'s'}.`:''));
+  bankSay(`Question bank loaded (${n} released questions, ${BK.cat.length} standards).`+(QB.testYears.size?` ${[...QB.testYears].sort().join(' and ')} use${QB.testYears.size===1?'s':''} your published full test${QB.testYears.size===1?'':'s'}.`:''));
   $('#bkFileRow').hidden=/GitHub/.test(BK.from); }
 /* full released tests already published (tests/alg1-<year>/): their questions replace the bank's version of that year */
 async function loadTests(){ const ids=[...new Set(TP.index.map(t=>t.id).concat(testFolders()))].filter(id=>/^alg1-20\d\d$/.test(id)).sort();
@@ -1199,7 +1198,7 @@ async function loadTests(){ const ids=[...new Set(TP.index.map(t=>t.id).concat(t
       const labs=td.rationale&&td.rationale[q];
       return {uid:'t:'+id+'#'+q, from:'test', test:id, year, q, std:teksKey(it.teks), item, rat:labs&&labs.length?labs.slice():null}; }).filter(Boolean); }));
   if(BK.ready) bankReady(); }
-/* one standard's released questions from the warm-up bank, converted to the player's format (cached) */
+/* one standard's released questions from the question bank file, converted to the player's format (cached) */
 async function bankStd(k){ if(QB.bankCache[k]) return QB.bankCache[k];
   const r=await bankAsk({op:'all',teks:k}); const out=[]; let skip=0;
   (r.list||[]).forEach(x=>{ if(!x.item){ skip++; return; } const src=x.item.src||''; out.push({uid:'b:'+k+'#'+x.i, from:'bank', i:x.i, year:yearOf(src), q:qOf(src), std:k, item:x.item, adapted:/adapted/i.test(src)}); });
@@ -1251,7 +1250,7 @@ function sendPage(append,empty){ const part=QB.view.slice(QB.shown,QB.shown+PAGE
   over(null); }
 /* generated questions (kept until "Start over" or another standard) */
 async function genView(k,seq){ const key=k+'|'+QB.gmode+'|'+[...QB.years].join(',');
-  const t=stdInfo(k); $('#bkGenHint').textContent=!t?'':QB.gmode==='gen'?(t.gens?plural(t.gens,'practice generator')+' for this standard. Each click makes new questions.':'No practice generators for this standard.'):'Released questions for this standard, with new numbers.';
+  const t=stdInfo(k); $('#bkGenHint').textContent=!t?'':QB.gmode==='gen'?(t.gens?plural(t.gens,'kind')+' of practice question for this standard. Each click makes new ones.':'No practice questions for this standard.'):'Released questions for this standard, with new numbers.';
   $('#bkMore').hidden=QB.gmode!=='gen';
   if(QB.genKey!==key){ QB.genKey=key; QB.gen=[]; over('Making questions…');
     if(QB.gmode==='gen'){ await genMore(5,seq,true); return; }
@@ -1318,7 +1317,7 @@ async function fileBytes(path){ if(TP.files&&TP.files[path]) return repoBytes(pa
 function testJsFor(id,title,items,rationale){ const js=v=>itemsCode(v,true);
   return '/* '+title.replace(/\*\//g,'')+': built '+new Date().toLocaleDateString()+' on the Spitz Checkpoint Question bank page.\n'
     +'   Each question keeps its source in "src". Released questions from a published full test keep its pictures (img/) and TEA explanations (rat/);\n'
-    +'   warm-up bank questions keep the bank\'s worked solution in "notes" for writing explanations later. */\n'
+    +'   question bank questions keep the bank\'s worked solution in "notes" for writing explanations later. */\n'
     +'SpitzTest({id:'+JSON.stringify(id)+',title:'+JSON.stringify(title)+',course:"Algebra I",reference:"alg1",categories:'+JSON.stringify(CATNAMES)
     +(rationale?',rationale:'+JSON.stringify(rationale):'')+',items:'+js(items)+'});\n'; }
 $('#bkMake').onclick=async()=>{ const title=$('#bkTitle').value.trim(), id=$('#bkId').value.trim(), msg=$('#bkMakeMsg');
