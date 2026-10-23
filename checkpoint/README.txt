@@ -37,6 +37,22 @@ Adding or replacing a test (dashboard > Tests)
   Your tests: Hide/Show takes a test off the practice list (player.html without a Session ID) without
   deleting anything; Preview; New session.
   Single files: "Rebuild single files" after player.html changes.
+
+Building a test from the warm-up bank (dashboard > Tests > Build a test from the warm-up bank)
+  The questions come from the warm-up generator. Upload it to GitHub once, as warmup/index.html in
+  spitz-math.github.io (so spitz-math.github.io/warmup works). Until then, "Choose the generator file" loads it from
+  your computer. Updating the generator on GitHub updates the builder; nothing is copied.
+  1. Questions: Released (exact wording), Released with fresh numbers, or Practice generators.
+     Years: untick years you don't want (for example 2025, which is also a full test here).
+  2. Use + and - to pick how many questions from each standard (grouped by reporting category).
+  3. Draw questions. Swap any question for another from the same standard, or remove it.
+  4. Give it a title (the test ID is made from it), then Make the test. It goes through the same checks as an
+     uploaded zip, including the answer-key check in the real player, then Preview and Publish.
+  What the builder changes so questions look like the online test: paper wording becomes "Enter your answer in
+  the box provided.", x/y lists become tables, fractions are stacked, minus signs and variables are set like the
+  test, and graphs are redrawn in black (questions that name a color keep their colors). Gridded questions
+  become equation-editor questions; multiselect questions are worth 2 points.
+  Not yet: written explanations in review, and the warm-up's ordered-pair practice questions (skipped).
   Browsers never use an old copy of a test: tests/index.js carries a version code (v) for each test, which
   the Tests page updates on every publish.
 

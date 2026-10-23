@@ -37,6 +37,31 @@ button{cursor:pointer}
 .chip{border:1px solid var(--line);background:#f6f8fb;border-radius:16px;padding:3px 10px;font-size:13px;white-space:nowrap}
 .chip[aria-pressed="true"]{background:#e3ecfb;border-color:var(--blue2);color:var(--blue);font-weight:600}
 .chip .st{font-size:11px;margin-left:4px;color:var(--mut);font-weight:400}
+/* session picker */
+.sesdd{position:relative}
+.sesbtn{display:flex;align-items:center;gap:8px;max-width:min(460px,70vw);text-align:left}
+.sesbtn .sl{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.sesbtn .sl small{color:var(--mut);font-weight:400}
+.sesbtn .car{flex:0 0 auto;font-size:11px;color:var(--mut)}
+.sespanel{position:absolute;left:0;top:calc(100% + 6px);z-index:60;width:min(440px,calc(100vw - 32px));background:#fff;border:1px solid var(--line);border-radius:10px;box-shadow:0 10px 30px rgba(0,0,0,.18);display:flex;flex-direction:column;max-height:min(70vh,520px)}
+.sespanel[hidden]{display:none}
+.sespanel .sf{padding:10px 12px 6px;border-bottom:1px solid var(--line)}
+.sespanel .sf input{width:100%;border:1px solid var(--line);border-radius:6px;padding:6px 8px}
+.seslist{overflow:auto;padding:4px 0;flex:1;min-height:60px}
+.sesgrp{padding:2px 0 6px}
+.sesgh{display:flex;align-items:center;gap:8px;padding:8px 12px 4px;font-weight:700;font-size:13px;cursor:pointer}
+.sesgh .gt{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.sesgh .gn{font-weight:400;font-size:12px;color:var(--mut)}
+.sesrow{display:flex;align-items:center;gap:8px;padding:6px 12px 6px 30px;cursor:pointer;font-size:13px;min-height:34px}
+.sesrow:hover,.sesgh:hover{background:#f4f8ff}
+.sesrow .sid2{font-family:Consolas,"Courier New",monospace;font-weight:700;letter-spacing:.03em}
+.sesrow .sm{color:var(--mut);font-size:12px;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.sesrow .op{font-size:11px;font-weight:700;border-radius:8px;padding:1px 7px;background:#dff3e6;color:#17663a}
+.sesrow .op.cl{background:#eceff3;color:#4b5563}
+.sesfoot{display:flex;align-items:center;gap:8px;padding:8px 12px;border-top:1px solid var(--line);flex-wrap:wrap}
+.sesfoot label{font-size:13px;display:flex;align-items:center;gap:5px;margin-right:auto}
+.sesnone{padding:16px 12px;color:var(--mut);font-size:13px}
+.sesrow input,.sesgh input{width:16px;height:16px;margin:0;flex:0 0 auto}
 .seg{display:inline-flex;border:1px solid var(--line);border-radius:6px;overflow:hidden}
 .seg button{border:0;background:#fff;padding:4px 10px;border-left:1px solid var(--line)}
 .seg button:first-child{border-left:0}
@@ -130,6 +155,28 @@ table.t{width:100%;border-collapse:collapse;font-size:13px}
 .dlg .btns{display:flex;justify-content:flex-end;gap:8px;margin-top:14px}
 .legend{display:flex;gap:10px;align-items:center;font-size:12px;color:var(--mut);flex-wrap:wrap}
 .legend .cell{display:inline-grid;width:16px;height:14px;vertical-align:-3px;margin-right:3px}
+/* bank builder */
+details.tcard>summary{list-style:none;cursor:pointer;display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
+details.tcard>summary::-webkit-details-marker{display:none}
+details.tcard>summary h2{margin:0}
+details.tcard>summary::before{content:"\25B8";color:var(--blue2);font-size:14px}
+details.tcard[open]>summary::before{content:"\25BE"}
+details.tcard[open]>summary{margin-bottom:10px}
+.bkopts{display:flex;flex-wrap:wrap;gap:10px 22px;align-items:center;margin:10px 0}
+.bkyears{display:flex;flex-wrap:wrap;gap:6px 12px;align-items:center;margin:0 0 10px;font-size:13px}
+.bkyears #bkYears{display:flex;flex-wrap:wrap;gap:4px 12px}
+.yr{display:inline-flex;align-items:center;gap:4px;white-space:nowrap}
+.bktable{max-height:440px;overflow:auto;border:1px solid var(--line);border-radius:8px}
+.bktable table.t td{padding:4px 8px}
+.bktable tr.bkcat td{position:sticky;top:0;background:#f6f8fb;font-size:12px;font-weight:700;color:#33445a;text-transform:uppercase;letter-spacing:.03em;padding:7px 8px;z-index:1}
+.bktable tr.on td{background:#f4f8ff}
+.step{display:inline-flex;align-items:center;gap:6px}
+.step .btn{width:32px;height:30px;padding:0;font-size:17px;line-height:1}
+.step b{min-width:16px;text-align:center}
+#bkDraft{margin-top:12px}
+#bkDraft table.t td.k{max-width:300px}
+#bkMakeRow input{border:1px solid var(--line);border-radius:6px;padding:5px 8px;width:260px;max-width:60vw}
+#bkMakeRow #bkId{width:180px;font-family:Consolas,"Courier New",monospace}
 /* tests page */
 .tpage{position:fixed;inset:0;background:var(--bg);z-index:45;display:flex;flex-direction:column}
 .tpage[hidden]{display:none}
@@ -180,7 +227,10 @@ details summary{cursor:pointer;color:var(--blue2);font-size:13px;margin-top:8px}
 </header>
 <div class="greenbar"></div>
 <div class="controls">
-  <div class="grp"><span class="lab">Sessions</span><div class="chips" id="sesChips"></div></div>
+  <div class="grp"><span class="lab">Session</span><div class="sesdd" id="sesDD"><button class="btn sesbtn" id="sesBtn" aria-haspopup="dialog" aria-expanded="false"><span class="sl" id="sesLabel">Loading…</span><span class="car" aria-hidden="true">&#9662;</span></button>
+    <div class="sespanel" id="sesPanel" hidden role="dialog" aria-label="Pick sessions"><div class="sf"><input type="search" id="sesFind" placeholder="Find a Session ID, test or note" aria-label="Find a session"></div>
+      <div class="seslist" id="sesList"></div>
+      <div class="sesfoot"><label><input type="checkbox" id="sesClosed"> Show closed sessions</label><button class="btn" id="sesClear">Clear</button><button class="btn pri" id="sesDone">Show</button></div></div></div></div>
   <div class="grp"><span class="lab">Period</span><div class="seg" id="perSeg"><button data-v="">All</button><button data-v="2">2</button><button data-v="8">8</button><button data-v="9">9</button><button data-v="G">Guest</button></div></div>
   <div class="grp"><span class="lab">Sort</span><select id="sort"><option value="name">Name</option><option value="period">Period</option><option value="status">Status</option><option value="progress">Progress</option><option value="score">Score</option><option value="input">Last activity</option></select></div>
   <div class="grp"><input id="q" type="search" placeholder="Find a name" aria-label="Find a name"></div>
@@ -203,6 +253,20 @@ details summary{cursor:pointer;color:var(--blue2);font-size:13px;margin-top:8px}
         <input type="file" id="zipIn" accept=".zip,application/zip" hidden><input type="file" id="dirIn" webkitdirectory hidden></div>
       <div id="pkg"></div>
     </section>
+    <details class="tcard" id="bkSection"><summary><h2>Build a test from the warm-up bank</h2><span class="hint">Pick standards and how many questions from each. The questions come from your warm-up generator.</span></summary>
+      <div class="msg2" id="bkMsg"></div>
+      <div class="row" id="bkFileRow" hidden><button class="btn" id="bkFileBtn">Choose the generator file</button><input type="file" id="bkFile" accept=".html,text/html" hidden></div>
+      <div id="bkBody" hidden>
+        <div class="bkopts"><div class="grp"><span class="lab">Questions</span><div class="seg" id="bkMode"><button data-v="real" aria-pressed="true">Released (exact)</button><button data-v="fresh" aria-pressed="false">Released, fresh numbers</button><button data-v="gen" aria-pressed="false">Practice generators</button></div></div>
+          <div class="grp"><span class="lab">Order</span><div class="seg" id="bkOrder"><button data-v="group" aria-pressed="true">By standard</button><button data-v="mix" aria-pressed="false">Mixed</button></div></div></div>
+        <div class="bkyears" id="bkYearRow"><span class="lab">Years</span><span id="bkYears"></span></div>
+        <div class="bktable" id="bkTable"></div>
+        <div class="row"><b id="bkTotal"></b><span style="flex:1"></span><button class="btn" id="bkClear">Clear</button><button class="btn pri" id="bkDraw" disabled>Draw questions</button></div>
+        <div id="bkDraft"></div>
+        <div class="row" id="bkMakeRow" hidden><label class="sw">Title <input id="bkTitle" maxlength="80"></label><label class="sw">Test ID <input id="bkId" maxlength="40" spellcheck="false"></label><span style="flex:1"></span><button class="btn pri" id="bkMake">Make the test</button></div>
+        <p class="hint">Next: the test goes through the same checks as an uploaded zip (answer keys in the real player, preview), then Publish. For now, review shows no written explanations for these questions.</p>
+      </div>
+    </details>
     <section class="tcard"><h2>Your tests</h2><div id="tlist"><p class="hint">Loading…</p></div><div class="msg2" id="tlMsg"></div></section>
     <section class="tcard"><h2>Single files</h2>
       <p class="hint">Each test as one file that works without internet or a Session ID (saved on that computer only). They are rebuilt every time you publish a test; use this after player.html changes.</p>
@@ -305,15 +369,48 @@ function render(){ if(!DATA) return; const card=$('#card'), sx=card.scrollLeft, 
 function draw(){ renderChips(); const L=shown(); renderTiles(L);
   [...sel].forEach(k=>{ if(!L.some(s=>s.key===k)) sel.delete(k); }); renderBulk();
   if(!DATA.sessions.length){ $('#card').innerHTML='<div class="empty">No sessions yet. In the Sheet use <b>Spitz Checkpoint &gt; New session…</b></div>'; return; }
-  if(!selSes.size){ $('#card').innerHTML='<div class="empty">Pick a session above.</div>'; return; }
+  if(!selSes.size){ $('#card').innerHTML='<div class="empty">Pick a session in the Session menu above.</div>'; return; }
   if(!L.length){ $('#card').innerHTML='<div class="empty">No students '+(per||qtxt?'match these filters':'have signed in to '+(selSes.size>1?'these sessions':'this session'))+' yet.</div>'; return; }
   const tests=[...new Set(L.map(s=>s.test))];
   if(view==='live') renderLive(L,tests); else renderStd(L,tests);
   if(openKey) openDrawer(openKey,true); }
-function renderChips(){ const box=$('#sesChips');
-  const list=DATA.sessions.slice().sort((a,b)=>(b.open-a.open)||((b.created||0)-(a.created||0)));
-  box.innerHTML=list.map(s=>{ const m=meta(s.test); return `<button class="chip" data-id="${esc(s.id)}" aria-pressed="${selSes.has(s.id)}" title="${esc((m?m.title:s.test)+' · Review: '+s.review+(s.notes?' · '+s.notes:''))}">${esc(s.id)}<span class="st">${esc(m?m.title:s.test)} · ${s.open?'Open':'Closed'}</span></button>`; }).join('')||'<span class="rs">none yet</span>';
-  box.querySelectorAll('.chip').forEach(b=>b.onclick=()=>{ const id=b.dataset.id; selSes.has(id)?selSes.delete(id):selSes.add(id); keep('ses',[...selSes]); render(); load(); }); }
+/* ---------- session picker (dropdown): grouped by test, several sessions can be shown together ---------- */
+let sesDraft=null;
+const fmtDay=t=>t?new Date(t).toLocaleDateString([], {month:'short',day:'numeric'}):'';
+const testTitle=id=>{ const m=meta(id); return m?m.title:id; };
+function renderChips(){ renderSesLabel(); if(sesDraft) renderSesList(); }
+function renderSesLabel(){ const L=DATA.sessions.filter(s=>selSes.has(s.id)), tests=[...new Set(L.map(s=>s.test))];
+  let h; if(!DATA.sessions.length) h='No sessions yet'; else if(!L.length) h='Pick a session';
+  else if(L.length===1) h=`${esc(L[0].id)} <small>· ${esc(testTitle(L[0].test))}${L[0].open?'':' · closed'}</small>`;
+  else if(tests.length===1) h=`${L.length} sessions <small>· ${esc(testTitle(tests[0]))}</small>`;
+  else h=`${L.length} sessions <small>· ${tests.length} tests</small>`;
+  $('#sesLabel').innerHTML=h; $('#sesBtn').title=L.map(s=>s.id+' · '+testTitle(s.test)).join('\n'); }
+function renderSesList(){ const box=$('#sesList'), keepTop=box.scrollTop; const q=$('#sesFind').value.trim().toLowerCase(), showClosed=$('#sesClosed').checked||!!q;
+  const match=s=>!q||[s.id,s.test,testTitle(s.test),s.notes].join(' ').toLowerCase().includes(q);
+  const vis=DATA.sessions.filter(s=>(s.open||showClosed||sesDraft.has(s.id))&&match(s));
+  const groups={}; vis.forEach(s=>(groups[s.test]=groups[s.test]||[]).push(s));
+  const order=Object.keys(groups).sort((a,b)=>Math.max(...groups[b].map(s=>s.created||0))-Math.max(...groups[a].map(s=>s.created||0)));
+  const hid=DATA.sessions.filter(s=>!s.open&&!showClosed&&!sesDraft.has(s.id)).length;
+  $('#sesList').innerHTML=order.length?order.map(t=>{ const G=groups[t].sort((a,b)=>(b.open-a.open)||((b.created||0)-(a.created||0))), on=G.filter(s=>sesDraft.has(s.id)).length;
+      return `<div class="sesgrp"><label class="sesgh"><input type="checkbox" data-grp="${esc(t)}" ${on===G.length?'checked':''} ${on&&on<G.length?'data-mixed="1"':''}><span class="gt">${esc(testTitle(t))}</span><span class="gn">${G.length} session${G.length===1?'':'s'}</span></label>
+        ${G.map(s=>`<label class="sesrow"><input type="checkbox" data-sid="${esc(s.id)}" ${sesDraft.has(s.id)?'checked':''}><span class="sid2">${esc(s.id)}</span><span class="op${s.open?'':' cl'}">${s.open?'Open':'Closed'}</span><span class="sm">${esc([fmtDay(s.created),s.notes].filter(Boolean).join(' · '))}</span></label>`).join('')}</div>`; }).join('')
+    :`<div class="sesnone">${q?'No sessions match “'+esc(q)+'”.':DATA.sessions.length?'No open sessions. Tick “Show closed sessions” below.':'No sessions yet. Make one on the Tests page or from the Sheet menu.'}</div>`;
+  if(hid&&!q) $('#sesList').insertAdjacentHTML('beforeend',`<div class="sesnone" style="padding-top:4px">${hid} closed session${hid===1?'':'s'} hidden.</div>`);
+  box.querySelectorAll('input[data-mixed]').forEach(x=>x.indeterminate=true); box.scrollTop=keepTop; }
+function openSes(){ if(!DATA) return; sesDraft=new Set(selSes); $('#sesFind').value=''; $('#sesPanel').hidden=false; $('#sesBtn').setAttribute('aria-expanded','true');
+  renderSesList(); const others=[...new Set(DATA.sessions.map(s=>s.test))].filter(t=>!META[t]); if(others.length) Promise.all(others.map(loadMeta)).then(()=>{ if(sesDraft) renderSesList(); renderSesLabel(); }); }
+function closeSes(apply){ if(!sesDraft) return; const d=sesDraft; sesDraft=null; $('#sesPanel').hidden=true; $('#sesBtn').setAttribute('aria-expanded','false');
+  if(apply&&(d.size!==selSes.size||[...d].some(x=>!selSes.has(x)))){ selSes=d; keep('ses',[...selSes]); render(); load(); } }
+$('#sesBtn').onclick=()=>sesDraft?closeSes(true):openSes();
+$('#sesDone').onclick=()=>closeSes(true);
+$('#sesClear').onclick=()=>{ sesDraft.clear(); renderSesList(); };
+$('#sesFind').oninput=renderSesList; $('#sesClosed').onchange=renderSesList;
+$('#sesList').addEventListener('change',e=>{ const x=e.target; if(!sesDraft) return;
+  if(x.dataset.sid){ x.checked?sesDraft.add(x.dataset.sid):sesDraft.delete(x.dataset.sid); }
+  else if(x.dataset.grp!=null){ const ids=[...$('#sesList').querySelectorAll('input[data-sid]')].filter(i=>i.closest('.sesgrp')===x.closest('.sesgrp')).map(i=>i.dataset.sid); ids.forEach(id=>x.checked?sesDraft.add(id):sesDraft.delete(id)); }
+  renderSesList(); });
+document.addEventListener('pointerdown',e=>{ if(sesDraft&&!e.target.closest('#sesDD')) closeSes(true); });
+document.addEventListener('keydown',e=>{ if(e.key==='Escape'&&sesDraft){ closeSes(false); $('#sesBtn').focus(); } });
 function renderTiles(L){ const c={work:0,idle:0,away:0,nosig:0,paused:0,locked:0,sub:0,end:0}; L.forEach(s=>c[stat(s)[0]]++);
   const subs=L.filter(s=>s.submitted), avg=subs.length?Math.round(subs.reduce((a,s)=>a+(s.pct||0),0)/subs.length):null, meets=subs.filter(s=>(s.pct||0)>=52).length;
   const T=(v,l)=>`<div class="tile"><b>${v}</b><span>${l}</span></div>`;
@@ -484,7 +581,7 @@ function helpersOf(player){ const a=player.indexOf('/* ================= Spitz C
   if(a<0||b<a) throw new Error('player.html looks different than expected (no test helpers found).'); return player.slice(a,b); }
 const DESCRIBE=`(function(){ var TD=window.__TD, keys=['answer','m','b','op','a','ftype','asym','fn','unordered'];
   var fnr=function(k,v){ return typeof v==='function'?'fn:'+v.toString():v; };
-  var dp=new DOMParser(), txt=function(h){ return (dp.parseFromString(String(h==null?'':h).replace(/\\{GRAPH\\}/g,' ').replace(/<\\/(td|th|p|div|li|tr|table)>|<br\\s*\\/?>|<p[\\s>]/gi,' $&'),'text/html').body.textContent||'').replace(/\\s+/g,' ').trim(); };
+  var dp=new DOMParser(), txt=function(h){ return (dp.parseFromString(String(h==null?'':h).replace(/<span class="frac"><span>([\\s\\S]*?)<\\/span><span>([\\s\\S]*?)<\\/span><\\/span>/g,'$1/$2').replace(/\\{GRAPH\\}/g,' ').replace(/<\\/(td|th|p|div|li|tr|table)>|<br\\s*\\/?>|<p[\\s>]/gi,' $&'),'text/html').body.textContent||'').replace(/\\s+/g,' ').trim(); };
   var disp=function(it){ var a=it.answer; try{ switch(it.type){
     case 'mc': return ODD[a]+'  '+txt((it.choices||[])[a]); case 'ms': return a.map(function(i){ return ODD[i]; }).join(', ');
     case 'num': case 'eq': return String(a); case 'hotspot': return 'spot '+a;
@@ -661,6 +758,11 @@ async function takeFiles(list,from){ if(TP.working) return; const box=$('#pkg');
         if(!MIME[extOf(rel)]) P.ignored.push(rel); else if(!SAFE.test(rel)) P.badNames.push(rel); else P.assets[rel]=f.bytes; return; }
       const m=f.path.match(/(^|\/)refs\/([^\/]+)$/); if(m&&MIME[extOf(m[2])]){ if(SAFE.test(m[2])) P.refs['refs/'+m[2]]=f.bytes; else P.badNames.push('refs/'+m[2]); return; }
       P.ignored.push(f.path); });
+    await checkPackage(P); }
+  catch(e){ box.innerHTML='<p class="msg2 err">'+errText(e)+'</p>'; } }
+/* run every check on a package (from a zip, a folder or the bank builder), then show it */
+async function checkPackage(P){ const box=$('#pkg'); TP.pkg=null;
+  try{ box.innerHTML='<p class="msg2">Checking '+esc(P.from)+'…</p>';
     const r=await evalTest(P.testJs); P.errs=r.errs||[]; P.calls=r.calls; P.td=r.td; P.used=new Set(r.used||[]);
     if(P.td&&P.td.id){ const id=P.td.id; P.listed=TP.index.find(t=>t.id===id)||null; P.exists=!!(P.listed||(TP.files&&TP.files['tests/'+id+'/test.js']));
       P.old=P.exists?await metaOf(id):null; P.oldTitle=P.listed?P.listed.title:(P.old&&P.old.title)||''; P.show=P.listed?!P.listed.hidden:true; }
@@ -802,6 +904,209 @@ drop.addEventListener('drop',async e=>{ e.preventDefault(); const items=[...(e.d
     const f=e.dataTransfer.files[0]; if(f) await takeFiles(await unzip(await f.arrayBuffer()),f.name); }
   catch(x){ $('#pkg').innerHTML='<p class="msg2 err">'+errText(x)+'</p>'; } });
 addEventListener('dragover',e=>{ if(!$('#tpage').hidden) e.preventDefault(); }); addEventListener('drop',e=>{ if(!$('#tpage').hidden) e.preventDefault(); });
+
+/* =================== Build a test from the warm-up bank ===================
+   The warm-up generator (spitz-math.github.io/warmup/index.html, or a file Kody picks) runs in a sandboxed frame with a
+   fake page around it, so only its question bank and generators are used. That frame also converts each question to the
+   player's format (BANKSANDBOX below). Built tests go through the same checks, preview and publish as an uploaded zip. */
+function BANKSANDBOX(){   // runs inside the sandboxed frame; must not use anything from the dashboard
+  const G=window.__GEN, post=m=>parent.postMessage(Object.assign({bank:'__TOK__'},m),'*');
+  if(!G||!G.B||!G.R){ post({op:'ready',err:'That file loaded, but it is not the warm-up generator (no question bank inside).'}); return; }
+  const CATN={RC1:1,RC2:2,RC3:3,RC4:4,RC5:5}, ORDER=['RC1','RC2','RC3','RC4','RC5'];
+  const newCode=(k,c)=>{ const m=String(k).match(/^A\.(\d+)([A-Z])$/); return m?'A1.'+c+'.'+m[1]+'.'+m[2]:k; };
+  const COLOR=/\b(orange|blue|gr[ae]y|green|red|purple)\b/i, GRAPHWORDS=/graph|grid|shown|plotted|plane|line/i;
+  const dp=new DOMParser(), esc=s=>String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  const vars=h=>String(h).replace(/<i>([\s\S]*?)<\/i>/g,'<var>$1</var>');
+  const text=h=>dp.parseFromString(String(h),'text/html').body.textContent.replace(/\s+/g,' ').trim();
+  /* Cambium look for plain text: real minus signs, stacked fractions, italic variables (x, f(x)); svg, var and sup/sub are left alone */
+  function fixText(s,inScript){ let h=esc(s);
+    h=h.replace(/(^|[\s(\[{,=:;<>≤≥+×÷$])-(?=\d|\.\d)/g,'$1−').replace(/ - /g,' − ').replace(/(^|\s)-(?=[a-z(]\b|\()/g,'$1−');
+    if(inScript) return h;
+    h=h.replace(/(^|[^\w.\/&;])(\d+)\/(\d+)(?![\d.\/])/g,(m,p,a,b)=>p+'<span class="frac"><span>'+a+'</span><span>'+b+'</span></span>');
+    h=h.replace(/(^|[^A-Za-z'’&;#])([b-df-hj-np-tv-z])(?![A-Za-z'’])/g,'$1<var>$2</var>');
+    h=h.replace(/(^|[^A-Za-z'’&;#])([A-Z])(?=\()/g,'$1<var>$2</var>');
+    return h; }
+  function polish(html){ const doc=dp.parseFromString('<div id="r">'+html+'</div>','text/html'), r=doc.getElementById('r');
+    const walk=n=>[...n.childNodes].forEach(c=>{ if(c.nodeType===3){ const inS=!!(c.parentNode.closest&&c.parentNode.closest('sup,sub')), h=fixText(c.data,inS);
+        if(h!==esc(c.data)){ const t=doc.createElement('template'); t.innerHTML=h; c.replaceWith(t.content); } }
+      else if(c.nodeType===1&&c.namespaceURI==='http://www.w3.org/1999/xhtml'&&!/^(VAR|STYLE|SCRIPT)$/.test(c.nodeName)&&!(c.classList&&c.classList.contains('frac'))) walk(c); });
+    walk(r); return r.innerHTML; }
+  function fixSvg(s,keep,cls,w){ let t=String(s).replace(/var\(--rule\)/g,'#999');
+    if(!keep) t=t.replace(/(stroke|fill)="#(e8590c|1a3a8f)"/gi,'$1="#000"');
+    t=t.replace(/<div style="[^"]*">(\s*<svg)/i,'<div>$1');
+    t=t.replace(/(<text\b[^>]*>)([^<]*)(<\/text>)/g,(m,a,b,c)=>a+b.replace(/(^|[\s(,])-(?=\d|\.\d)/g,'$1−')+c);   // minus signs in graph labels
+    return t.replace(/<svg\b([^>]*)>/gi,(m,a)=>'<svg'+a.replace(/\s(width|height|class)="[^"]*"/g,'').replace(/\sstyle="[^"]*"/,' style="background:#fff"')+' class="'+cls+'"'+(w?' width="'+w+'"':'')+'>'); }
+  function mathTable(span){ const t=span.textContent.replace(/−/g,'−');
+    const segs=t.split(/\s* [\s ]*/).map(x=>x.trim()).filter(Boolean); if(segs.length<2) return null;
+    const cols=segs.map(sg=>{ const m=sg.match(/^([^:]{1,30}):\s*(.+)$/); return m?{h:m[1].trim(),v:m[2].split(/\s*,\s*/)}:null; });
+    if(cols.some(c=>!c)||cols.some(c=>c.v.length!==cols[0].v.length)||cols[0].v.length<2||cols.some(c=>c.v.some(v=>!v||v.length>16))) return null;
+    const lab=h=>esc(h).replace(/\b([a-zA-Z])\b/g,'<var>$1</var>');
+    return '<table class="data"><tr>'+cols.map(c=>'<th>'+lab(c.h)+'</th>').join('')+'</tr>'+cols[0].v.map((_,r)=>'<tr>'+cols.map(c=>'<td>'+esc(c.v[r])+'</td>').join('')+'</tr>').join('')+'</table>'; }
+  function block(el){ const c=el.cloneNode(true);
+    [c,...c.querySelectorAll('*')].forEach(e=>{ if(/^(TABLE|TH|TD|TR)$/.test(e.nodeName)) e.removeAttribute('style'); if(e.nodeName==='TABLE') e.className='data';
+      if(e.nodeName==='DIV'){ const st=e.getAttribute('style')||''; if(/display:\s*flex/.test(st)) e.setAttribute('style','display:flex;gap:24px;flex-wrap:wrap;align-items:flex-start'); else e.removeAttribute('style'); } });
+    return polish(vars(c.outerHTML)); }
+  function blocks(html){ const doc=dp.parseFromString('<div id="r">'+html+'</div>','text/html'), kids=[...doc.getElementById('r').childNodes], out=[]; let cur=[];
+    const ser=n=>n.nodeType===3?esc(n.data):n.nodeType===1?n.outerHTML:'';
+    const flush=()=>{ const h=cur.map(ser).join('').trim(); if(h.replace(/&nbsp;| |\s/g,'')) out.push('<p>'+polish(vars(h))+'</p>'); cur=[]; };
+    const blank=n=>n&&n.nodeType===3&&!n.data.trim();
+    const near=(i,d)=>{ let j=i+d; while(kids[j]&&blank(kids[j])) j+=d; return kids[j]; };
+    kids.forEach((n,i)=>{ if(n.nodeName==='BR'){ flush(); return; }
+      if(n.nodeName==='TABLE'||n.nodeName==='DIV'){ flush(); out.push(block(n)); return; }
+      if(n.nodeName==='SPAN'&&n.classList.contains('math')){ const a=near(i,-1), b=near(i,1);
+        if((!a||a.nodeName==='BR')&&(!b||b.nodeName==='BR')){ flush(); out.push(polish(mathTable(n)||'<span class="eq">'+vars(n.innerHTML)+'</span>')); return; }
+        cur.push(dp.parseFromString('<span>'+n.innerHTML+'</span>','text/html').body.firstChild); return; }
+      cur.push(n); });
+    flush(); return out; }
+  function convert(raw,teks,src){ const r=G.R[teks], cat=CATN[r.category]||0;
+    if(!raw||!raw.kind) throw new Error('no question');
+    if(!/^(mc|mcgraphic|multiselect|griddable)$/.test(raw.kind)) return {skip:'This kind of question ('+raw.kind+') has no matching question type yet.'};
+    let p=String(raw.prompt||'').replace(/(?:<br>\s*)*Record your answer and fill in the bubbles on your answer document\.?/gi,'');
+    let direct=''; p=p.replace(/\s*Select (TWO|THREE|FOUR|ALL) correct answers\.?/gi,(m,w)=>{ direct='Select '+w+' correct answers.'; return ''; });
+    const allText=text(p)+' '+JSON.stringify(raw.choices||''), keep=COLOR.test(allText);
+    const bl=blocks(p);
+    if(raw.svg){ const fig=fixSvg(raw.svg,keep,'fig',340); if(bl.length>1&&GRAPHWORDS.test(text(bl[0]))) bl.splice(1,0,fig); else bl.push(fig); }
+    const it={teks:newCode(teks,cat), cat:cat||null, rs:r.r?'Readiness':'Supporting', src:src};
+    if(raw.kind==='griddable'){ const a=Number(String(raw.answerText).replace(/,/g,'').replace(/−/g,'-'));
+      if(!isFinite(a)) return {skip:'Its answer ('+raw.answerText+') is not a number.'};
+      bl.push('<p>Enter your answer in the box provided.</p>'); Object.assign(it,{type:'eq',label:'Equation editor',answer:a}); }
+    else if(raw.kind==='multiselect'){ const ch=raw.choices||[], ans=ch.map((c,i)=>c&&c.correct?i:-1).filter(i=>i>=0);
+      if(ans.length<2) return {skip:'It has fewer than two correct answers.'};
+      if(!direct) direct='Select '+(['','','TWO','THREE','FOUR'][ans.length]||'ALL')+' correct answers.';
+      Object.assign(it,{type:'ms',label:'Multiselect',choices:ch.map(c=>polish(vars(c.text))),answer:ans,max:2}); }
+    else { const graphic=raw.kind==='mcgraphic', ch=graphic?(raw.graphicChoices||[]).map(s=>fixSvg(s,keep,'sgraph')):(raw.choices||[]).map(c=>polish(vars(String(c))));
+      if(!Number.isInteger(raw.correctIndex)||raw.correctIndex<0||raw.correctIndex>=ch.length) return {skip:'Its answer key is missing.'};
+      Object.assign(it,{type:'mc',label:graphic||raw.svg?'Multiple choice with graph':'Multiple choice',choices:ch,answer:raw.correctIndex}); if(graphic) it.grid=true; }
+    if(direct) bl.push('<p class="direct">'+direct+'</p>');
+    it.stem=bl.join('');
+    // kept for writing student explanations later (not shown to students)
+    it.notes={work:raw.work||'', why:Array.isArray(raw.misconceptions)?raw.misconceptions:null};
+    return {item:it}; }
+  const year=s=>+((String(s||'').match(/\b(20\d\d)\b/)||[])[1]||0);
+  const gensOf=k=>{ const out=[]; (G.R[k].skills||[]).forEach(sk=>(sk.gens||[]).forEach(g=>out.push({g,name:String(sk.name||'').replace(/<[^>]+>|&[a-z]+;/g,' ').replace(/\s+/g,' ').trim()}))); return out; };
+  const teksList=Object.keys(G.R).sort((a,b)=>(ORDER.indexOf(G.R[a].category)-ORDER.indexOf(G.R[b].category))||a.localeCompare(b,undefined,{numeric:true}));
+  addEventListener('message',e=>{ const q=e.data; if(!q||q.bank!=='__TOK__'||!q.op) return;
+    try{
+      if(q.op==='item'){ const r=G.R[q.teks]; if(!r) throw new Error('Unknown standard '+q.teks);
+        if(q.mode==='gen'){ const gs=gensOf(q.teks); if(!gs.length) throw new Error('No practice generators for '+q.teks); let why='';
+          for(let t=0;t<16;t++){ const pick=gs[Math.floor(Math.random()*gs.length)]; const c=convert(pick.g(),q.teks,'Practice: '+pick.name);
+            if(c.item&&!(q.avoid||[]).includes(c.item.stem)){ post({rid:q.rid,item:c.item}); return; } why=c.skip||'repeats'; }
+          post({rid:q.rid,skip:'Could not make a new practice question ('+why+').'}); return; }
+        const raw=(G.B[q.teks]||[])[q.i]; if(!raw) throw new Error('No released question #'+q.i+' for '+q.teks);
+        const c=q.mode==='fresh'?convert(raw.regen(),q.teks,'Based on '+raw.source+' (fresh numbers)'):convert(raw,q.teks,raw.source);
+        post(Object.assign({rid:q.rid},c)); return; }
+    }catch(err){ post({rid:q.rid,err:String(err&&err.message||err)}); } });
+  post({op:'ready', cats:G.CL||null, teks:teksList.map(k=>{ const r=G.R[k]; return {k, label:String(r.label||'').replace(/<[^>]+>/g,''), cat:CATN[r.category]||0, r:!!r.r,
+    bank:(G.B[k]||[]).map((b,i)=>({i,year:year(b.source),kind:b.kind,src:b.source||'',regen:typeof b.regen==='function'})), gens:gensOf(k).length }; })});
+}
+
+const BK={frame:null, tok:null, ready:false, cat:null, wait:{}, rid:0, draft:[], from:''};
+const CATNAMES={1:'Number and Algebraic Methods',2:'Describing and Graphing Linear Functions, Equations, and Inequalities',3:'Writing and Solving Linear Functions, Equations, and Inequalities',4:'Quadratic Functions and Equations',5:'Exponential Functions and Equations'};
+const BANKURL=()=>(TP.gh&&TP.gh.pages||ROOT).replace(/checkpoint\/?$/,'')+'warmup/index.html';
+function bankSay(t,cls){ say($('#bkMsg'),t,cls); }
+async function bankLoad(html,from){
+  const a=html.search(/<script>/i), b=html.lastIndexOf('</'+'script>');
+  if(a<0||b<a) throw new Error('That file has no script in it, so it is not the warm-up generator.');
+  const gen=html.slice(a+8,b).replace(/<\/(script)/gi,'<\\/$1');
+  if(BK.frame){ BK.frame.remove(); BK.frame=null; }
+  const tok=Math.random().toString(36).slice(2); BK.tok=tok; BK.ready=false; BK.cat=null;
+  const fake='var __F=new Proxy(function(){},{get:function(t,k){ return k===Symbol.toPrimitive?function(){ return ""; }:__F; },apply:function(){ return __F; },construct:function(){ return __F; },set:function(){ return true; }});';
+  const names='document,window,localStorage,sessionStorage,navigator,location,setTimeout,setInterval,clearTimeout,clearInterval,addEventListener,alert,print,confirm,requestAnimationFrame,history';
+  const srcdoc='<!DOCTYPE html><html><body><scr'+'ipt>'+fake+'<\/script>'
+    +'<scr'+'ipt>window.__GEN=(function('+names+'){\n'+gen+'\n;return {B:typeof TEKS_BANK!=="undefined"?TEKS_BANK:null,R:typeof TEKS_REGISTRY!=="undefined"?TEKS_REGISTRY:null,CL:typeof CATEGORY_LABELS!=="undefined"?CATEGORY_LABELS:null};})('+names.split(',').map(()=>'__F').join(',')+');<\/script>'
+    +'<scr'+'ipt>('+BANKSANDBOX.toString().split('__TOK__').join(tok)+')();<\/script></body></html>';
+  const f=document.createElement('iframe'); f.style.display='none'; f.setAttribute('aria-hidden','true'); f.setAttribute('sandbox','allow-scripts');
+  const ready=new Promise((res,rej)=>{ const tm=setTimeout(()=>rej(new Error('The warm-up generator did not start (it took more than 20 seconds).')),20000);
+    BK.onReady=m=>{ clearTimeout(tm); m.err?rej(new Error(m.err)):res(m); }; });
+  f.srcdoc=srcdoc; document.body.appendChild(f); BK.frame=f;
+  const m=await ready; BK.ready=true; BK.cat=m.teks; BK.from=from; return m; }
+addEventListener('message',e=>{ const m=e.data; if(!m||!BK.tok||m.bank!==BK.tok||!BK.frame||e.source!==BK.frame.contentWindow) return;
+  if(m.op==='ready'){ if(BK.onReady) BK.onReady(m); return; }
+  const w=BK.wait[m.rid]; if(w){ delete BK.wait[m.rid]; w(m); } });
+function bankAsk(q){ return new Promise(res=>{ const rid=++BK.rid; const tm=setTimeout(()=>{ delete BK.wait[rid]; res({err:'The warm-up generator did not answer.'}); },15000);
+  BK.wait[rid]=m=>{ clearTimeout(tm); res(m); }; BK.frame.contentWindow.postMessage(Object.assign({bank:BK.tok,rid},q),'*'); }); }
+
+/* ---------- the card ---------- */
+const bkPick={};   // teks -> how many
+let bkMode='real', bkYears=null, bkOrder='group';
+async function bankOpen(){ if(BK.ready||BK.loading) return; BK.loading=true; bankSay('Loading the warm-up bank from GitHub…');
+  try{ const r=await fetch(BANKURL()+'?t='+Date.now(),{cache:'no-store'}); if(!r.ok) throw new Error(r.status===404?'notfound':'HTTP '+r.status);
+    await bankLoad(await r.text(),'GitHub (warmup/index.html)'); bankReady(); }
+  catch(e){ BK.loading=false; $('#bkBody').hidden=true;
+    bankSay(e.message==='notfound'?'The warm-up generator is not on GitHub yet. Upload it to a <b>warmup</b> folder in spitz-math.github.io, named <b>index.html</b>, or choose the file:':'Could not load the warm-up bank: '+errText(e)+' You can also choose the file:', e.message==='notfound'?'':'err');
+    $('#bkFileRow').hidden=false; }
+  BK.loading=false; }
+$('#bkFileBtn').onclick=()=>$('#bkFile').click();
+$('#bkFile').onchange=async e=>{ const f=e.target.files[0]; e.target.value=''; if(!f) return; bankSay('Loading '+esc(f.name)+'…');
+  try{ await bankLoad(await f.text(),f.name); bankReady(); }catch(x){ bankSay(errText(x),'err'); } };
+function bankReady(){ const n=BK.cat.reduce((a,t)=>a+t.bank.length,0);
+  bankSay(`Warm-up bank loaded from ${esc(BK.from)}: <b>${n}</b> released questions and practice generators for <b>${BK.cat.length}</b> standards.`,'ok');
+  $('#bkFileRow').hidden=!/GitHub/.test(BK.from)?false:true; $('#bkBody').hidden=false;
+  const years=[...new Set(BK.cat.flatMap(t=>t.bank.map(b=>b.year)).filter(Boolean))].sort();
+  if(!bkYears) bkYears=new Set(years);
+  $('#bkYears').innerHTML=years.map(y=>`<label class="yr"><input type="checkbox" data-yr="${y}" ${bkYears.has(y)?'checked':''}>${y}</label>`).join('');
+  bankTable(); }
+function avail(t){ if(bkMode==='gen') return t.gens?10:0; return t.bank.filter(b=>bkYears.has(b.year)&&(bkMode!=='fresh'||b.regen)).length; }
+function bankTable(){ let h='', last=0;
+  BK.cat.forEach(t=>{ if(t.cat!==last){ last=t.cat; h+=`<tr class="bkcat"><td colspan="5">${t.cat}. ${esc(CATNAMES[t.cat]||'')}</td></tr>`; }
+    const a=avail(t), n=Math.min(bkPick[t.k]||0,a);
+    h+=`<tr data-k="${esc(t.k)}" class="${n?'on':''}"><td class="bkn"><div class="step"><button class="btn" data-d="-1" aria-label="One fewer ${esc(t.k)}" ${n?'':'disabled'}>−</button><b>${n}</b><button class="btn" data-d="1" aria-label="One more ${esc(t.k)}" ${n<a?'':'disabled'}>+</button></div></td>
+      <td><b>${esc(t.k)}</b></td><td>${esc(t.label)}</td><td>${t.r?'<span class="badge rep">Readiness</span>':'<span class="rs">Supporting</span>'}</td>
+      <td class="rs">${bkMode==='gen'?(t.gens?t.gens+' generator'+(t.gens===1?'':'s'):'none'):a+' available'}</td></tr>`; });
+  $('#bkTable').innerHTML='<table class="t">'+h+'</table>'; bankTotal(); }
+function bankTotal(){ const n=BK.cat.reduce((a,t)=>a+Math.min(bkPick[t.k]||0,avail(t)),0); $('#bkTotal').textContent=n?n+' question'+(n===1?'':'s')+' picked':'Pick how many questions from each standard.'; $('#bkDraw').disabled=!n; }
+$('#bkTable').addEventListener('click',e=>{ const b=e.target.closest('button[data-d]'); if(!b) return; const k=b.closest('tr').dataset.k, t=BK.cat.find(x=>x.k===k);
+  bkPick[k]=Math.max(0,Math.min(avail(t),(Math.min(bkPick[k]||0,avail(t)))+ +b.dataset.d)); bankTable(); });
+document.querySelectorAll('#bkMode button').forEach(b=>b.onclick=()=>{ bkMode=b.dataset.v; document.querySelectorAll('#bkMode button').forEach(x=>x.setAttribute('aria-pressed',x===b)); $('#bkYearRow').hidden=bkMode==='gen'; bankTable(); });
+document.querySelectorAll('#bkOrder button').forEach(b=>b.onclick=()=>{ bkOrder=b.dataset.v; document.querySelectorAll('#bkOrder button').forEach(x=>x.setAttribute('aria-pressed',x===b)); });
+$('#bkYears').addEventListener('change',e=>{ const y=+e.target.dataset.yr; e.target.checked?bkYears.add(y):bkYears.delete(y); bankTable(); });
+$('#bkClear').onclick=()=>{ Object.keys(bkPick).forEach(k=>delete bkPick[k]); bankTable(); };
+
+/* ---------- drawing questions ---------- */
+const shuffle=a=>{ a=a.slice(); for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } return a; };
+const usedKey=d=>d.mode==='gen'?null:d.teks+'#'+d.i;
+async function drawOne(teks,mode,avoid){ const t=BK.cat.find(x=>x.k===teks), used=new Set(BK.draft.map(usedKey).filter(Boolean).concat(avoid||[]));
+  if(mode==='gen'){ const r=await bankAsk({op:'item',teks,mode,avoid:BK.draft.map(d=>d.item.stem)}); return r.item?{teks,mode,item:r.item}:{teks,mode,err:r.skip||r.err}; }
+  const pool=shuffle(t.bank.filter(b=>bkYears.has(b.year)&&(mode!=='fresh'||b.regen)&&!used.has(teks+'#'+b.i)));
+  let why='no more questions for this standard with the years picked';
+  for(const b of pool.slice(0,8)){ const r=await bankAsk({op:'item',teks,mode,i:b.i}); if(r.item) return {teks,mode,i:b.i,item:r.item}; why=r.skip||r.err||why; used.add(teks+'#'+b.i); }
+  return {teks,mode,err:why}; }
+$('#bkDraw').onclick=async()=>{ const btn=$('#bkDraw'); btn.disabled=true; BK.draft=[]; const miss=[];
+  const want=BK.cat.map(t=>[t,Math.min(bkPick[t.k]||0,avail(t))]).filter(x=>x[1]>0);
+  let done=0; const total=want.reduce((a,x)=>a+x[1],0);
+  for(const [t,n] of want) for(let i=0;i<n;i++){ bankSay('Drawing questions… '+(++done)+' of '+total); const d=await drawOne(t.k,bkMode); if(d.item) BK.draft.push(d); else miss.push(t.k+': '+d.err); }
+  if(bkOrder==='mix') BK.draft=shuffle(BK.draft);
+  bankSay(BK.draft.length+' question'+(BK.draft.length===1?'':'s')+' drawn.'+(miss.length?' Not drawn: '+[...new Set(miss)].map(esc).join('; ')+'.':''),miss.length?'':'ok');
+  if(!$('#bkTitle').value.trim()) $('#bkTitle').value='Algebra I Practice: '+new Date().toLocaleDateString([], {month:'short',day:'numeric'});
+  bkIdAuto(); renderDraft(); btn.disabled=false; };
+function slug(s){ return String(s).toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'').slice(0,40)||'practice'; }
+function bkIdAuto(){ const el=$('#bkId'); if(el.dataset.touched) return; let base=slug($('#bkTitle').value), id=base, n=2;
+  const taken=new Set(TP.index.map(t=>t.id).concat(testFolders())); while(taken.has(id)) id=base+'-'+(n++); el.value=id; }
+$('#bkTitle').oninput=bkIdAuto; $('#bkId').oninput=e=>{ e.target.dataset.touched=1; };
+const plainText=h=>new DOMParser().parseFromString(String(h).replace(/<span class="frac"><span>([\s\S]*?)<\/span><span>([\s\S]*?)<\/span><\/span>/g,'$1/$2').replace(/<svg[\s\S]*?<\/svg>/gi,' [graph] ').replace(/<sup>([\s\S]*?)<\/sup>/gi,'^$1').replace(/<\/(p|td|th|tr)>/gi,' $&'),'text/html').body.textContent.replace(/\s+/g,' ').trim();
+function keyText(it){ const L='ABCDE'; if(it.type==='mc') return L[it.answer]+(it.grid?'':'  '+plainText(it.choices[it.answer])); if(it.type==='ms') return it.answer.map(i=>L[i]).join(', '); return String(it.answer); }
+function renderDraft(){ const box=$('#bkDraft'); if(!BK.draft.length){ box.innerHTML=''; $('#bkMakeRow').hidden=true; return; }
+  box.innerHTML=`<table class="t"><tr><th>#</th><th>Standard</th><th>Question starts</th><th>Key</th><th>From</th><th></th></tr>${BK.draft.map((d,i)=>`<tr><td><b>${i+1}</b></td><td>${esc(d.teks)}<div class="rs">${esc(d.item.label)}</div></td>
+    <td class="k rs" title="${esc(plainText(d.item.stem))}">${esc(plainText(d.item.stem).slice(0,140))}</td><td class="k" title="${esc(keyText(d.item))}">${esc(keyText(d.item))}</td><td class="rs">${esc(d.item.src)}</td>
+    <td><div class="acts" style="gap:6px"><button class="btn" data-sw="${i}">Swap</button><button class="btn" data-rm="${i}" aria-label="Remove question ${i+1}">✕</button></div></td></tr>`).join('')}</table>`;
+  $('#bkMakeRow').hidden=false; }
+$('#bkDraft').addEventListener('click',async e=>{ const sw=e.target.closest('[data-sw]'), rm=e.target.closest('[data-rm]');
+  if(rm){ BK.draft.splice(+rm.dataset.rm,1); renderDraft(); return; }
+  if(sw){ const i=+sw.dataset.sw, d=BK.draft[i]; sw.disabled=true; sw.textContent='…';
+    const n=await drawOne(d.teks,d.mode,[usedKey(d)].filter(Boolean)); if(n.item) BK.draft[i]=n; else bankSay('No other question to swap in for '+esc(d.teks)+' ('+esc(n.err)+').','err'); renderDraft(); } });
+
+/* ---------- make the test (then the normal checks, preview and publish) ---------- */
+function testJsFor(id,title,items){ const js=v=>JSON.stringify(v,null,1).replace(/<\/(script)/gi,'<\\/$1');
+  return '/* '+title.replace(/\*\//g,'')+': built '+new Date().toLocaleDateString()+' on the Spitz Checkpoint Tests page from the warm-up question bank.\n'
+    +'   Each question keeps its source in "src"; "notes" holds the bank\'s worked solution for writing explanations later. */\n'
+    +'SpitzTest('+js({id,title,course:'Algebra I',reference:'alg1',categories:CATNAMES,items})+');\n'; }
+$('#bkMake').onclick=async()=>{ const title=$('#bkTitle').value.trim(), id=$('#bkId').value.trim();
+  if(!title) return bankSay('Give the test a title first.','err'); if(!/^[a-z0-9-]+$/.test(id)) return bankSay('The test ID can only use lowercase letters, numbers and dashes.','err');
+  if(!BK.draft.length) return;
+  const testJs=testJsFor(id,title,BK.draft.map(d=>d.item));
+  await checkPackage({from:'the warm-up bank ('+BK.draft.length+' questions)', folder:id, testJs, testBytes:ENC.encode(testJs), assets:{}, refs:{}, ignored:[], badNames:[]});
+  $('#pkg').scrollIntoView({behavior:'smooth',block:'start'}); };
+$('#bkSection').addEventListener('toggle',e=>{ if(e.target.open) bankOpen(); });
 
 /* ---------- rebuild every single file ---------- */
 $('#rebuild').onclick=async()=>{ if(TP.working) return; const msg=$('#rbMsg'), btn=$('#rebuild');
