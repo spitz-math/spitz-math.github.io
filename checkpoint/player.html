@@ -367,6 +367,16 @@ svg.hs .spot:focus{outline:none} svg.hs .spot:focus-visible{stroke:#1d2f9c}
 .rxtime{font-size:12.5px;margin:6px 0 2px}
 .rvact{font-size:12.5px;color:#444;margin:-6px 0 12px}
 .rvnone{color:#555;font-size:14px;margin:0}
+/* student-friendly explanations (it.explain) on the review screen */
+.rvwhy .xwhy{background:#fdf1ee;border:1px solid #f0c9c1;border-left:5px solid #c0392b;border-radius:6px;padding:10px 12px;margin:0 0 12px}
+.rvwhy .xok{background:#ecf7ef;border:1px solid #bfe3c9;border-left:5px solid #2b7d47;border-radius:6px;padding:10px 12px;margin:0 0 12px}
+.rvwhy .xwhy h4,.rvwhy .xok h4{margin:0 0 4px}
+.rvwhy .xwhy p,.rvwhy .xok p{margin:4px 0;font-size:15px;line-height:1.45}
+.rvwhy ol.xhow{margin:4px 0 0;padding-left:24px;font-size:15px;line-height:1.5} .rvwhy ol.xhow li{margin:4px 0;padding-left:2px}
+.rvwhy .xcalc{margin-top:12px;font-size:14px;line-height:1.45;background:#f2f7fa;border:1px solid #d3e3ec;border-radius:6px;padding:8px 12px}
+.rvwhy .xcalc p{margin:4px 0} .rvwhy .xcalc .xl{color:#246d86;font-weight:700}
+.rvwhy .xo p{margin:4px 0 8px;font-size:14px}
+.rvwhy .xtea .ratimg{margin-top:6px}
 
 
 /* item content restyled to match the testing site */
@@ -2142,10 +2152,25 @@ function render(){
     const others=[...L.slice(0,it.choices.length)].map((x,k)=>k).filter(k=>!correct.includes(k)&&!wrong.includes(k));
     if(others.length) why+=`<details><summary>Why the other answer choices are incorrect</summary>${others.map(k=>`<h4 class="no">Why ${L[k]} is incorrect</h4>${rimg(it.n,L[k])}`).join('')}</details>`;
   } else why=`<h4 class="ok">How to solve it</h4>${rimg(it.n,'all')}`;
+  /* student-friendly explanation (it.explain): used instead of TEA's pictures, which stay one click away below it */
+  const X=it.explain, hasTEA=!!(TD.rationale&&TD.rationale[it.n]); let xh='';
+  if(X){ const xw=X.why||{}, chosenWrong=chosen.filter(k=>!correct.includes(k));
+    if(e===null) xh+=`<div class="xwhy"><h4 class="no">You left this one blank</h4><p>Here is how to get it.</p></div>`;
+    else if(e<it.max){ const parts=correct.length?chosenWrong.map(k=>xw[k]?`<p><b>${L[k]}:</b> ${xw[k]}</p>`:'').join(''):(X.miss?`<p>${X.miss}</p>`:'');
+      const missed=it.type==='ms'?correct.filter(k=>!chosen.includes(k)):[];
+      xh+=`<div class="xwhy"><h4 class="no">Why your answer doesn't work</h4>${parts}${missed.length?`<p>You also missed ${missed.map(k=>L[k]).join(' and ')}.</p>`:''}${e>0?`<p>You earned ${e} of ${it.max} points.</p>`:''}</div>`; }
+    else xh+=`<div class="xok"><h4 class="ok">You got it!</h4><p>${X.right||'Nice work.'}</p></div>`;
+    xh+=`<h4 class="ok">How to solve it</h4><ol class="xhow">${(X.how||[]).map(h=>`<li>${h}</li>`).join('')}</ol>`;
+    const tips=[['Check it',X.check],['Desmos',X.desmos],['NumWorks',X.numworks]].filter(x=>x[1]);
+    if(tips.length) xh+=`<div class="xcalc">${tips.map(([l,v])=>`<p><span class="xl">${l}:</span> ${v}</p>`).join('')}</div>`;
+    const others=correct.length?Object.keys(xw).map(Number).filter(k=>!chosenWrong.includes(k)&&!correct.includes(k)):[];
+    if(others.length) xh+=`<details class="xo"><summary>Why the other answer choices are wrong</summary>${others.map(k=>`<p><b>${L[k]}:</b> ${xw[k]}</p>`).join('')}</details>`;
+    if(hasTEA) xh+=`<details class="xtea"><summary>Explanation from TEA</summary>${why}</details>`;
+  }
   m.innerHTML=`<div class="rvhead"><span class="inum">${it.n}</span><span class="rvst ${c}">${t}</span><span class="rvpts">${e===null?0:e} of ${it.max} point${it.max>1?'s':''}</span><span class="rvteks">${[it.teks,it.rs,it.cat?'Category '+it.cat:''].filter(Boolean).join(' · ')}</span></div><div class="rvact">Time on this question: <b>${fmtMs(ACT.items[it.n].ms)}</b> · Visits: <b>${ACT.items[it.n].visits}</b> · Answer changed: <b>${ACT.items[it.n].changes}</b> time${ACT.items[it.n].changes===1?'':'s'}</div>
     <div class="rvgrid"><section class="rvq-item"><h3>The question and your answer</h3><div class="rvclone" id="rvClone"></div>
       <div class="rvans"><div><b>Your answer:</b> ${show(it,a)}</div><div><b>Correct answer:</b> ${key(it)}</div></div></section>
-      <section class="rvwhy"><h3>${TD.rationale&&TD.rationale[it.n]?'Explanation from TEA':'Explanation'}</h3>${TD.rationale&&TD.rationale[it.n]?why:'<p class="rvnone">There is no written explanation for this question yet. Compare your answer with the correct answer, then ask Mr. Spitz.</p>'}</section></div>
+      <section class="rvwhy"><h3>${X?'Explanation':hasTEA?'Explanation from TEA':'Explanation'}</h3>${X?xh:hasTEA?why:'<p class="rvnone">There is no written explanation for this question yet. Compare your answer with the correct answer, then ask Mr. Spitz.</p>'}</section></div>
     <div class="rvfoot"><button class="sbtn" id="rvPrev" ${cur===0?'disabled':''}>‹ Previous</button><button class="sbtn" id="rvNext" ${cur===ITEMS.length-1?'disabled':''}>Next ›</button></div>`;
   const src=cache[it.n]||build(it); const cl=src.cloneNode(true); cl.querySelectorAll('[id]').forEach(x=>{ if(!x.closest('svg')) x.removeAttribute('id'); }); cl.querySelectorAll('mark.hl').forEach(x=>x.replaceWith(...x.childNodes));
   if(it.type==='mc'||it.type==='ms') cl.querySelectorAll('.choice').forEach(ch=>{ const k=+ch.dataset.k; if(correct.includes(k)) ch.classList.add('rv-right'); else if(chosen.includes(k)) ch.classList.add('rv-wrong'); });
