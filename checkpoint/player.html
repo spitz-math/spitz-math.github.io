@@ -140,9 +140,9 @@ table.grid{border-collapse:collapse;margin-top:6px}
 table.grid th,table.grid td{border:1.5px solid var(--line);padding:.5em 1.2em;text-align:center}
 table.grid th{background:var(--surface-2);font-size:.9em}
 table.grid td:first-child{font-weight:700;text-align:left}
-.gcell{width:1.6em;height:1.6em;border-radius:50%;border:2px solid var(--muted);background:var(--surface);display:inline-grid;place-items:center;padding:0}
-.gcell[aria-checked="true"]{background:var(--accent);border-color:var(--accent)}
-.gcell[aria-checked="true"]::after{content:"";width:.55em;height:.55em;border-radius:50%;background:var(--accent-ink)}
+.gcell{width:1.15em;height:1.15em;border-radius:2px;border:1.5px solid #8a8a8a;background:#fff;display:inline-grid;place-items:center;padding:0;cursor:pointer}
+.gcell[aria-checked="true"]{background:#333;border-color:#333}
+.gcell[aria-checked="true"]::after{content:"";width:.32em;height:.6em;border:solid #fff;border-width:0 .16em .16em 0;transform:translate(0,-.08em) rotate(45deg)}
 .scroll-x{overflow-x:auto;max-width:100%}
 .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
 
@@ -223,6 +223,7 @@ svg.hs .spot[aria-checked="true"]{fill:rgba(90,80,210,.35);stroke:#4b3fc4;stroke
 ul.steps{margin:0 0 1.2em;padding-left:1.3em} ul.steps li{margin:.15em 0 .5em}
 .cgwrap{display:flex;gap:14px;align-items:flex-start;flex-wrap:wrap}
 .cgplot{flex:0 1 auto;min-width:0}
+.cgline .cgplot{width:min(400px,100%)} .cgline svg.cgrid{width:100%}
 svg.cgrid{width:min(440px,100%);height:auto;display:block;background:transparent;touch-action:none;user-select:none}
 svg.cgrid .gl{stroke:#d3d3d3;stroke-width:1}
 svg.cgrid text{fill:#222;font-size:8.5px;font-family:Verdana,sans-serif}
@@ -248,6 +249,13 @@ svg.cgrid .asym .aline{stroke:#25606a;stroke-width:2;stroke-dasharray:12 4 2 4}
 .cgbtn[data-m="graph"].on{border:3px solid #25606a}
 .cgbtn[data-m="graph"].on::after{content:"";position:absolute;right:-22px;top:2px;border:11px solid transparent;border-left:20px solid #25606a;border-right:0}
 .cgbtn[data-m="set"].on{border:3px solid #8a2aa8}
+/* system of two inequalities: Graph 1 (teal), Graph 2 (purple), Solution Set (blue), as in Cambium */
+.cgsys .cgbtn[data-m="g0"]{border-color:#25606a} .cgsys .cgbtn[data-m="g1"]{border-color:#8b1a9b} .cgsys .cgbtn[data-m="set"]{border-color:#1446c9}
+.cgsys .cgbtn.on{border-width:3px;padding:1px 2px 3px}
+.cgsys .cgbtn.on::after{content:"";position:absolute;right:-22px;top:2px;border:11px solid transparent;border-right:0;border-left:20px solid #25606a}
+.cgsys .cgbtn[data-m="g1"].on::after{border-left-color:#8b1a9b} .cgsys .cgbtn[data-m="set"].on::after{border-left-color:#1446c9}
+svg.cgrid .cline.g1{stroke:#8b1a9b} svg.cgrid .dpt.g1 .dot{fill:#8b1a9b;stroke:#4a0d53} svg.cgrid .dpt.g1 .halo{fill:rgba(139,26,155,.12)}
+svg.cgrid .dpt.idle{pointer-events:none} svg.cgrid .dpt.idle .halo{display:none}
 .cgbtn[data-m="set"].on::after{content:"";position:absolute;right:-22px;top:2px;border:11px solid transparent;border-left:20px solid #9b3fc0;border-right:0}
 .typebtns{display:flex;flex-direction:column;width:150px;flex:none;border:1px solid #bbb;border-radius:3px;overflow:hidden}
 .typebtns button{border:0;border-bottom:1px solid #ccc;background:#f8f8f8;font-weight:700;font-size:13px;padding:11px 6px;color:#000}
@@ -320,6 +328,11 @@ select.inl.filled{background-color:#ececec;border-color:#9a9a9a}
 .choices.grid2{display:flex;flex-direction:column;gap:12px}
 .choices.grid2 .choice{align-items:flex-start;padding:14px 16px;width:fit-content;min-width:min(440px,100%);max-width:100%}
 .choices.grid2 .sgraph{display:block;margin:6px 0 0 18px;width:250px!important}
+/* two columns, read down each column (A B | C D), as some released items show their graph or table choices */
+.choices.grid2.cols2{display:grid;grid-template-columns:repeat(2,max-content);grid-template-rows:repeat(2,auto);grid-auto-flow:column;gap:12px 16px}
+.choices.grid2.cols2 .choice{min-width:0;width:auto}
+.choices.grid2.cols2 .sgraph{width:220px!important}
+@media (max-width:900px){.choices.grid2.cols2{grid-template-columns:1fr;grid-template-rows:none;grid-auto-flow:row}}
 /* drag tiles and boxes */
 .tilebank{display:flex;flex-wrap:wrap;gap:6px;border:0;margin:.6em 0 1.4em 2.4em}
 .btile{min-width:2.4em;height:2em;padding:0 .55em;border:0;border-right:0;border-radius:4px;background:#dcdcdc;color:#5a5a5a;font-size:.95em}
@@ -327,6 +340,11 @@ select.inl.filled{background-color:#ececec;border-color:#9a9a9a}
 .btile.used{background:#dcdcdc;opacity:.55}
 .btile .frac{font-size:.8em}
 .boxline{margin-left:2.4em}
+.boxfrac{display:inline-flex;flex-direction:column;align-items:center;vertical-align:middle;line-height:1.2}
+.boxfrac>span{display:block;padding:5px 8px} .boxfrac>span:first-child{border-bottom:1.6px solid #000}
+.boxfrac .dbox{display:inline-flex;align-items:center;justify-content:center;min-width:3em;min-height:2.1em}
+.boxline.flow{display:block;line-height:2.4} .boxline.flow .dbox{display:inline-block;vertical-align:middle;margin:0 .2em}
+.boxline .brk{flex-basis:100%;height:0}   /* line break between answer rows (e.g. PR = __ cm / RQ = __ cm) */
 .dbox{border:1.5px dashed #5aa6d6;border-radius:2px;background:transparent;min-width:3.6em;min-height:1.75em}
 .dbox.filled{border:1.5px dashed #5aa6d6;cursor:grab}
 sup.boxsup{vertical-align:top;position:relative;top:-.55em;margin-left:.15em;font-size:1em}
@@ -815,7 +833,7 @@ const $=s=>document.querySelector(s);
 const F=(a,b)=>`<span class="frac"><span>${a}</span><span>${b}</span></span>`;
 const V=s=>`<var>${s}</var>`;
 const x=V('x'), y=V('y');
-const ODD=['A','B','C','D','E'], EVEN=['F','G','H','J','K'];
+const ODD=['A','B','C','D','E','F','G','H'], EVEN=['F','G','H','J','K'];
 const j=V('j'),k=V('k'),m=V('m'),p=V('p'),c=V('c'),t=V('t'),v=V('v'),z=V('z'),a=V('a'),n=V('n'),f=V('f'),g=V('g'),h=V('h'),P=V('P'),A=V('A');
 const IMG=(name,w)=>`<img class="fig" src="${ASSET('img/'+name+'.png')}" style="width:${w}px" alt="Graph for this question">`;
 const T=(head,rows,cls='')=>`<table class="data ${cls}"><tr>${head.map(x=>`<th>${x}</th>`).join('')}</tr>${rows.map(r=>`<tr>${r.map(x=>`<td>${x}</td>`).join('')}</tr>`).join('')}</table>`;
@@ -885,7 +903,7 @@ function build(it){
   root.innerHTML=`<div class="stem">${stem}</div>`;
   const id=it.n;
   if(it.type==='mc'||it.type==='ms'){
-    const wrap=document.createElement('div'); wrap.className='choices'; if(it.grid) wrap.classList.add('grid2');
+    const wrap=document.createElement('div'); wrap.className='choices'; if(it.grid) wrap.classList.add('grid2'); if(it.grid&&it.cols2) wrap.classList.add('cols2');
     wrap.setAttribute('role',it.type==='mc'?'radiogroup':'group');
     it.choices.forEach((c,k)=>{
       const d=document.createElement('div'); d.className='choice'+(it.type==='ms'?' ms':'');
@@ -928,19 +946,17 @@ function build(it){
     const p=document.createElement('p'); p.className='inline-stem';
     let html=it.text;
     it.drops.forEach((opts,k)=>{
-      html=html.replace(`{${k}}`,`<select class="inl" data-k="${k}" aria-label="Drop-down ${k+1}"><option value="" hidden></option>${opts.map((o,j)=>`<option value="${j}">${o.replace(/<[^>]+>/g,'').replace(/^(\d)(\d)$/,'$1/$2')}</option>`).join('')}</select>`);
+      html=html.replace(`{${k}}`,`<select class="inl" data-k="${k}" aria-label="Drop-down ${k+1}"><option value="" hidden></option>${opts.map((o,j)=>`<option value="${j}">${/class="frac"/.test(o)?o.replace(/<span class="frac"><span>([\s\S]*?)<\/span><span>([\s\S]*?)<\/span><\/span>/g,'$1/$2').replace(/<[^>]+>/g,''):o.replace(/<[^>]+>/g,'')}</option>`).join('')}</select>`);
     });
     p.innerHTML=html;
     p.querySelectorAll('select').forEach(sel=>{
-      // fraction option text: "1" + "3" from F() -> render as 1/3
-      sel.querySelectorAll('option').forEach(o=>{ if(/^13$/.test(o.textContent)) o.textContent='1/3'; });
       sel.addEventListener('change',()=>{ const a=S.answers[id]||Array(it.drops.length).fill(null); a[+sel.dataset.k]=sel.value===''?null:+sel.value; S.answers[id]=a; sel.classList.toggle('filled',sel.value!==''); if(a.every(v=>v===null)) delete S.answers[id]; refresh(); });
     });
     root.appendChild(p);
   }
   else if(it.type==='table'){
     const w=document.createElement('div'); w.className='scroll-x';
-    let h=`<table class="grid"><tr><th scope="col"><span class="sr">Value</span></th>${it.cols.map(c=>`<th scope="col">${c}</th>`).join('')}</tr>`;
+    let h=`<table class="grid"><tr>${it.head?`<th scope="col">${it.head}</th>`:'<th scope="col"><span class="sr">Value</span></th>'}${it.cols.map(c=>`<th scope="col">${c}</th>`).join('')}</tr>`;
     it.rows.forEach((r,ri)=>{ h+=`<tr><td>${r}</td>${it.cols.map((c,ci)=>`<td><button type="button" class="gcell" role="radio" aria-checked="false" data-r="${ri}" data-c="${ci}" aria-label="${r.replace(/<[^>]+>/g,'')}: ${c}"></button></td>`).join('')}</tr>`; });
     w.innerHTML=h+'</table>';
     w.querySelectorAll('.gcell').forEach(b=>b.addEventListener('click',()=>{
@@ -955,6 +971,8 @@ function build(it){
   else if(it.type==='boxes'){ buildBoxes(it,root); }
   else if(it.type==='hotspot'){ buildHotspot(it,root); }
   else if(it.type==='graphineq'){ buildGraphIneq(it,root); }
+  else if(it.type==='cline'){ buildCLine(it,root); }
+  else if(it.type==='graphsys'){ buildGraphSys(it,root); }
   else if(it.type==='graphexp'){ buildGraphExp(it,root); }
   else if(it.type==='graphfunc'){ buildGraphFunc(it,root); }
   else if(it.type==='eq'){ buildEqEntry(it,root); }
@@ -1132,7 +1150,7 @@ function buildBoxes(it,root){
   const id=it.n, nb=(it.tpl.match(/\{\d\}/g)||[]).length;
   const bank=document.createElement('div'); bank.className='tilebank';
   it.tiles.forEach((tl,q)=>{ const d=document.createElement('div'); d.className='btile'; d.dataset.t=q; d.innerHTML=tl; d.tabIndex=0; d.setAttribute('role','button'); bank.appendChild(d); });
-  const line=document.createElement('div'); line.className='boxline';
+  const line=document.createElement('div'); line.className='boxline'+(it.flow?' flow':'');
   line.innerHTML=it.tpl.replace(/\{(\d)\}/g,(_,q)=>`<span class="dbox" data-b="${q}" tabindex="0" role="button" aria-label="Answer box ${+q+1}"></span>`);
   const hint=document.createElement('p'); hint.className='hint'; hint.textContent='Drag an answer into a box, or click an answer and then click a box. Drag an answer out of a box to remove it.';
   let picked=null; // {from:'bank',t} or {from:'box',b}
@@ -1340,6 +1358,74 @@ function buildGraphIneq(it,root){
   root.appendChild(w); draw();
 }
 
+/* ---------- graph a line: select two points, a line connects them (no tool panel) ---------- */
+function buildCLine(it,root){
+  const id=it.n, g=cgrid({xr:it.R,yr:it.R}), w=document.createElement('div'); w.className='cgwrap cgline';
+  w.innerHTML=`<div class="cgplot">${g.html}</div>`;
+  const svg=w.querySelector('svg'), marks=svg.querySelector('.marks'), pts=svg.querySelector('.pts');
+  const A=()=>S.answers[id]||(S.answers[id]={pts:[]});
+  const lineOf=a=>{ marks.innerHTML=''; if(a&&a.pts.length===2){ const [e0,e1]=clipLine(g,a.pts[0],a.pts[1]); marks.appendChild(mk('line',{x1:g.X(e0[0]),y1:g.Y(e0[1]),x2:g.X(e1[0]),y2:g.Y(e1[1]),class:'cline'})); } };
+  function draw(){ pts.innerHTML=''; const a=S.answers[id]; lineOf(a);
+    if(a) a.pts.forEach((P,k)=>{ const el=ptEl(g,P,k); pts.appendChild(el);
+      dragOn(svg,g,el,(q,d)=>{ const np=d?[Math.max(-g.xr,Math.min(g.xr,P[0]+d[0])),Math.max(-g.yr,Math.min(g.yr,P[1]+d[1]))]:[q.gx,q.gy];
+        const o=a.pts[1-k]; if(o&&o[0]===np[0]&&o[1]===np[1]) return; a.pts[k]=np; P=np; lineOf(a);
+        el.querySelectorAll('circle').forEach(c=>{ c.setAttribute('cx',g.X(np[0])); c.setAttribute('cy',g.Y(np[1])); }); },()=>draw()); });
+    if(a&&!a.pts.length) delete S.answers[id];
+    refresh(); }
+  svg.addEventListener('click',e=>{ if(e.target.closest('.dpt')) return; const q=cpos(svg,g,e); if(!q.inside) return; const a=A();
+    if(a.pts.length>=2) return; const P=[q.gx,q.gy]; if(a.pts.some(o=>o[0]===P[0]&&o[1]===P[1])) return; a.pts.push(P); draw(); });
+  root.appendChild(w); draw();
+}
+
+/* ---------- graph a system of two linear inequalities (Graph 1 / Graph 2 / Solution Set) ----------
+   Kody's scoring for 2-point items: 1 point when both boundary lines are right (place and solid/dashed),
+   1 point when the selected region is the solution region. */
+function sysParts(it,a){ const near=(u,v)=>Math.abs(u-v)<1e-9;
+  const onL=(q,P)=>near(P[1],q.m*P[0]+q.b), fits=(L,q)=>L.pts.length===2&&L.pts.every(P=>onL(q,P));
+  const [q0,q1]=it.ineqs, [L0,L1]=a.g;
+  const place=(fits(L0,q0)&&fits(L1,q1))?[q0,q1]:(fits(L0,q1)&&fits(L1,q0))?[q1,q0]:null;
+  const lines=!!place&&place[0].op.length===(L0.dash?1:2)&&place[1].op.length===(L1.dash?1:2);
+  const region=!!place&&!!a.region&&it.ineqs.every(q=>q.op[0]==='>'?a.region[1]>q.m*a.region[0]+q.b:a.region[1]<q.m*a.region[0]+q.b);
+  return {lines,region}; }
+function clipHalf(poly,a,b,side){ const cr=p=>(b[0]-a[0])*(p[1]-a[1])-(b[1]-a[1])*(p[0]-a[0]), s=Math.sign(cr(side))||1, out=[];
+  for(let q=0;q<poly.length;q++){ const P1=poly[q],P2=poly[(q+1)%poly.length],c1=cr(P1)*s,c2=cr(P2)*s; if(c1>=0) out.push(P1); if((c1>=0)!==(c2>=0)){ const t=c1/(c1-c2); out.push([P1[0]+t*(P2[0]-P1[0]),P1[1]+t*(P2[1]-P1[1])]); } }
+  return out; }
+function buildGraphSys(it,root){
+  const id=it.n, g=cgrid({xr:it.R,yr:it.R}), w=document.createElement('div'); w.className='cgwrap big cgsys';
+  const LT=k=>`<label class="lt">Line Type <select aria-label="Graph ${k+1} line type" data-k="${k}"><option value="solid">solid</option><option value="dashed">dashed</option></select></label>`;
+  w.innerHTML=`<div class="cgpanel"><div class="cgbtn on" data-m="g0"><button type="button" class="cgb">Graph 1</button>${LT(0)}</div><div class="cgbtn" data-m="g1"><button type="button" class="cgb">Graph 2</button>${LT(1)}</div>
+    <div class="cgbtn" data-m="set"><button type="button" class="cgb">Solution Set</button></div></div><div class="cgplot">${g.html}</div>`;
+  const svg=w.querySelector('svg'), shade=svg.querySelector('.shade'), marks=svg.querySelector('.marks'), pts=svg.querySelector('.pts'), sels=w.querySelectorAll('select');
+  let mode='g0', hover=null;
+  const A=()=>S.answers[id]||(S.answers[id]={g:[{pts:[],dash:false},{pts:[],dash:false}],region:null});
+  const ready=a=>a&&a.g.every(L=>L.pts.length===2);
+  const regionPoly=(a,P)=>{ let poly=[[-g.xr,-g.yr],[g.xr,-g.yr],[g.xr,g.yr],[-g.xr,g.yr]]; a.g.forEach(L=>{ poly=clipHalf(poly,L.pts[0],L.pts[1],P); }); return poly.map(p=>g.X(p[0])+','+g.Y(p[1])).join(' '); };
+  const same=(a,P,Q)=>a.g.every(L=>{ const [p,q]=L.pts, cr=z=>(q[0]-p[0])*(z[1]-p[1])-(q[1]-p[1])*(z[0]-p[0]); return Math.sign(cr(P))===Math.sign(cr(Q)); });
+  const setMode=m=>{ mode=m; w.querySelectorAll('.cgbtn').forEach(b=>b.classList.toggle('on',b.dataset.m===m)); svg.classList.toggle('setmode',m==='set'); hover=null; draw(); };
+  w.querySelectorAll('.cgbtn').forEach(b=>b.querySelector('.cgb').addEventListener('click',()=>setMode(b.dataset.m)));
+  sels.forEach(sel=>{ const k=+sel.dataset.k; sel.addEventListener('pointerdown',()=>{ if(mode!=='g'+k) setMode('g'+k); }); sel.addEventListener('focus',()=>{ if(mode!=='g'+k) setMode('g'+k); });
+    sel.addEventListener('change',()=>{ const a=A(); a.g[k].dash=sel.value==='dashed'; draw(); }); });
+  function lineEl(L,k){ const [e0,e1]=clipLine(g,L.pts[0],L.pts[1]); return mk('line',{x1:g.X(e0[0]),y1:g.Y(e0[1]),x2:g.X(e1[0]),y2:g.Y(e1[1]),class:'cline'+(k?' g1':''),'stroke-dasharray':L.dash?'8 6':'none'}); }
+  function draw(){ shade.innerHTML=''; marks.innerHTML=''; pts.innerHTML=''; const a=S.answers[id];
+    if(ready(a)){ if(a.region) shade.appendChild(mk('polygon',{points:regionPoly(a,a.region),class:'sel'}));
+      if(hover&&mode==='set'&&!(a.region&&same(a,hover,a.region))) shade.appendChild(mk('polygon',{points:regionPoly(a,hover),class:'hov'})); }
+    if(a) a.g.forEach((L,k)=>{ if(L.pts.length===2) marks.appendChild(lineEl(L,k)); });
+    if(a) a.g.forEach((L,k)=>L.pts.forEach((P,j)=>{ const el=ptEl(g,P,j); el.classList.add('g'+k); if(mode!=='g'+k) el.classList.add('idle'); pts.appendChild(el);
+      dragOn(svg,g,el,(q,d)=>{ if(mode!=='g'+k) return; const np=d?[Math.max(-g.xr,Math.min(g.xr,P[0]+d[0])),Math.max(-g.yr,Math.min(g.yr,P[1]+d[1]))]:[q.gx,q.gy];
+        const o=L.pts[1-j]; if(o&&o[0]===np[0]&&o[1]===np[1]) return; L.pts[j]=np; P=np; a.region=null;
+        el.querySelectorAll('circle').forEach(c=>{ c.setAttribute('cx',g.X(np[0])); c.setAttribute('cy',g.Y(np[1])); });
+        shade.innerHTML=''; marks.innerHTML=''; a.g.forEach((M,kk)=>{ if(M.pts.length===2){ const ln=lineEl(M,kk); if(kk===k) ln.classList.add('soft'); marks.appendChild(ln); } }); },()=>draw()); }));
+    if(a&&!a.region&&a.g.every(L=>!L.pts.length)) delete S.answers[id];
+    sels.forEach(sel=>{ sel.value=a&&a.g[+sel.dataset.k].dash?'dashed':'solid'; });
+    refresh(); }
+  svg.addEventListener('click',e=>{ if(e.target.closest('.dpt')) return; const q=cpos(svg,g,e); if(!q.inside) return; const a=A();
+    if(mode==='set'){ if(!ready(a)) return; const P=[q.fx,q.fy]; a.region=a.region&&same(a,P,a.region)?null:P; draw(); return; }   // selecting the chosen region again clears it (as in the recording)
+    const L=a.g[+mode[1]]; if(L.pts.length>=2) return; const P=[q.gx,q.gy]; if(L.pts.some(o=>o[0]===P[0]&&o[1]===P[1])) return; L.pts.push(P); a.region=null; draw(); });
+  svg.addEventListener('pointermove',e=>{ if(mode!=='set') return; const a=S.answers[id]; if(!ready(a)) return; const q=cpos(svg,g,e); const h=q.inside?[q.fx,q.fy]:null; if(!h&&!hover) return; if(h&&hover&&same(a,h,hover)) return; hover=h; draw(); });
+  svg.addEventListener('pointerleave',()=>{ if(hover){ hover=null; draw(); } });
+  root.appendChild(w); draw();
+}
+
 /* ---------- graph a function by type (Linear / Quadratic / Exponential) ---------- */
 function curveOf(a){ const [p,q]=a.pts;
   if(a.type==='linear'){ if(p[0]===q[0]) return null; const m=(q[1]-p[1])/(q[0]-p[0]); return x=>p[1]+m*(x-p[0]); }
@@ -1411,7 +1497,7 @@ function buildEqEntry(it,root){
 function answered(it){ const a=S.answers[it.n]; if(a==null) return false;
   switch(it.type){ case 'mc': return true; case 'ms': return a.length>0; case 'num': return String(a).trim()!=='';
     case 'inline': case 'table': return a.every(v=>v!==null); case 'dnd': return Object.keys(a).length===it.tiles.length; case 'graph': return true; case 'graphline': return a.lines.length>0;
-    case 'boxes': return a.every(q=>q!=null); case 'hotspot': case 'graphexp': return true; case 'graphineq': return a.pts.length===2&&!!a.shade; case 'graphfunc': return true; case 'eq': return String(a).replace(/\//g,'').trim()!==''; } }
+    case 'boxes': return a.every(q=>q!=null); case 'hotspot': case 'graphexp': return true; case 'graphineq': return a.pts.length===2&&!!a.shade; case 'cline': return a.pts.length===2; case 'graphsys': return a.g.every(L=>L.pts.length===2)&&!!a.region; case 'graphfunc': return true; case 'eq': return String(a).replace(/\//g,'').trim()!==''; } }
 function parseNum(s){ s=String(s).replace(/−/g,'-').trim(); const m=s.match(/^(-?\d+(?:\.\d+)?)\/(-?\d+(?:\.\d+)?)$/); if(m) return +m[1]/+m[2]; return s===''||isNaN(+s)?NaN:+s; }
 function score(it){ const a=S.answers[it.n]; if(a==null) return null;
   switch(it.type){
@@ -1424,6 +1510,8 @@ function score(it){ const a=S.answers[it.n]; if(a==null) return null;
     case 'graphline': return a.lines.length===1&&a.pts.length===0&&a.lines[0].every(P=>onLine(it,P));
     case 'boxes': { if(a.some(q=>q==null)) return false; const A2=it.unordered?[...a].sort():a, K=it.unordered?[...it.answer].sort():it.answer; return K.every((q,i)=>A2[i]===q); }
     case 'hotspot': return a===it.answer;
+    case 'cline': return a.pts.length===2&&a.pts.every(P=>onLine(it,P));
+    case 'graphsys': { const r=sysParts(it,a); return r.lines&&r.region; }
     case 'graphineq': { if(a.pts.length<2||!a.shade) return false; const on=P=>P[1]===it.m*P[0]+it.b; const strict=it.op==='>'||it.op==='<';
       const sideOK=(it.op[0]==='>')?a.shade[1]>it.m*a.shade[0]+it.b:a.shade[1]<it.m*a.shade[0]+it.b;
       return on(a.pts[0])&&on(a.pts[1])&&a.dash===strict&&sideOK; }
@@ -1436,7 +1524,9 @@ function show(it,a){ if(a==null) return '—';
     case 'ms': return a.map(k=>it.letters[k]).join(', ')||'—';
     case 'num': return String(a).replace(/-/g,'−');
     case 'inline': return a.map((v,k)=>v==null?'—':it.drops[k][v]).join(' · ');
-    case 'table': return a.map((v,k)=>v==null?'—':(v===0?'Yes':'No')).join(', ');
+    case 'table': return a.map((v,k)=>v==null?'—':(it.cols[v]||'')).join(', ');
+    case 'graphsys': return a.g.map((L,k)=>`Graph ${k+1}: `+(L.pts.length===2?`${L.dash?'dashed':'solid'} line through (${fmtN(L.pts[0][0])}, ${fmtN(L.pts[0][1])}) and (${fmtN(L.pts[1][0])}, ${fmtN(L.pts[1][1])})`:'no line')).join('<br>')+(a.region?'<br>Region selected':'<br>No region selected');
+    case 'cline': return a.pts.length?a.pts.map(P=>`(${fmtN(P[0])}, ${fmtN(P[1])})`).join(' and ')+(a.pts.length===2?' (line through both points)':''):'—';
     case 'dnd': { const c=it.answer.filter((z,t)=>a[t]===z).length; return `${c} of ${it.tiles.length} placed correctly`; }
     case 'graph': return `(${fmtN(a[0])}, ${fmtN(a[1])})`;
     case 'boxes': return a.map(q=>q==null?'—':it.tiles[q]).join(' , ');
@@ -1452,7 +1542,9 @@ function key(it){ switch(it.type){
     case 'ms': return it.answer.map(k=>it.letters[k]).join(', ');
     case 'num': return String(it.answer);
     case 'inline': return it.answer.map((v,k)=>it.drops[k][v]).join(' · ');
-    case 'table': return it.answer.map(v=>v===0?'Yes':'No').join(', ');
+    case 'table': return it.answer.map(v=>it.cols[v]).join(', ');
+    case 'cline': return it.keyText||'Line on the given equation';
+    case 'graphsys': return it.keyText||'Both boundary lines and the region that solves both inequalities';
     case 'dnd': return it.zones.map((z,k)=>`${z}: ${it.tiles.filter((t,ti)=>it.answer[ti]===k).join(', ')}`).join('<br>');
     case 'graph': return `(${it.answer[0]}, ${it.answer[1]})`;
     case 'graphline': return it.keyText||'Line on the given equation';
@@ -1477,6 +1569,10 @@ if(window.SPITZ_SELFCHECK) window.__spitzSelfCheck=function(){
       if(P.length<2) throw new Error('the correct line does not go through two grid points'); return {lines:[P],pts:[]}; }
     case 'graphineq': { const pts=lattice(R,x=>it.m*x+it.b); if(pts.length<2) throw new Error('the boundary line does not go through two grid points'); return {pts,dash:it.op.length===1,shade:[pts[0]?pts[0][0]:0,(pts[0]?pts[0][1]:it.b)+(it.op[0]==='>'?1:-1)]}; }
     case 'graphfunc': return {type:it.ftype,asym:it.asym,pts:[[0,it.fn(0)],[1,it.fn(1)]]};
+    case 'graphsys': { const g=it.ineqs.map(q=>{ const pts=lattice(it.R,x=>{ const y=q.m*x+q.b; return Math.abs(y-Math.round(y))<1e-9?Math.round(y):null; }); if(pts.length<2) throw new Error('a boundary line does not go through two grid points'); return {pts,dash:q.op.length===1}; });
+      let region=null; for(let X=-it.R+0.5;X<it.R&&!region;X+=1) for(let Y=-it.R+0.5;Y<it.R&&!region;Y+=1) if(it.ineqs.every(q=>q.op[0]==='>'?Y>q.m*X+q.b:Y<q.m*X+q.b)) region=[X,Y];
+      if(!region) throw new Error('the two inequalities have no region in common on the grid'); return {g,region}; }
+    case 'cline': { const P=lattice(R,x=>it.eq[1]?(it.eq[2]-it.eq[0]*x)/it.eq[1]:null); if(P.length<2) throw new Error('the correct line does not go through two grid points'); return {pts:P}; }
     case 'graphexp': return {a:it.a,b:it.b}; } };
   const keep=S.answers, out=ITEMS.map(it=>{ const r={n:it.n,type:it.type,max:it.max};
     try{ S.answers={}; r.blank=earn(it); S.answers={[it.n]:keyAns(it)}; r.key=earn(it); }catch(e){ r.err=String(e&&e.message||e); } return r; });
@@ -1486,6 +1582,8 @@ function earn(it){ const a=S.answers[it.n]; if(a==null) return null; const full=
   if(it.type==='boxes'){ if(it.unordered){ const left=[...it.answer]; a.forEach(q=>{ const i=left.indexOf(q); if(q!=null&&i>=0){ hit++; left.splice(i,1); } }); } else hit=it.answer.filter((q,i)=>a[i]===q).length; parts=it.answer.length; }
   else if(it.type==='ms'){ hit=Math.max(0,a.filter(q=>it.answer.includes(q)).length-Math.max(0,a.length-it.answer.length)); parts=it.answer.length; }
   else if(it.type==='inline'){ hit=it.answer.filter((q,i)=>a[i]===q).length; parts=it.answer.length; }
+  else if(it.type==='graphsys'){ const r=sysParts(it,a); hit=(r.lines?1:0)+(r.region?1:0); }
+  else if(it.type==='table'){ const c=it.answer.filter((v,k)=>a[k]===v).length; return Math.floor(c*it.max/it.answer.length); }
   else if(it.type==='graphineq'){ const on=P=>P[1]===it.m*P[0]+it.b; const lineOK=a.pts.length===2&&on(a.pts[0])&&on(a.pts[1])&&a.dash===(it.op.length===1);
     const sideOK=!!a.shade&&((it.op[0]==='>')?a.shade[1]>it.m*a.shade[0]+it.b:a.shade[1]<it.m*a.shade[0]+it.b); hit=(lineOK?1:0)+(sideOK&&a.pts.length===2?1:0); }
   return parts===3? (hit>=2?1:0) : Math.min(1,hit); }
@@ -1684,6 +1782,8 @@ const TUT={
   table:'<p><b>Table Match</b></p><p>For each row, click the circle in the column that correctly describes it. Each row has one answer.</p>',
   dnd:'<p><b>Drag and Drop</b></p><p>Drag each answer into the correct box. To move an answer back, drag it to where it started. You can also click an answer and then click a box.</p>',
   graph:'<p><b>Graphing</b></p><p>Click a point on the grid to plot it. Click the point again to remove it.</p>',
+  cline:'<p><b>Graphing a Line</b></p><p>Click two points on the grid. A line connects the points. Drag a point to move it.</p>',
+  graphsys:'<p><b>Graphing a System of Inequalities</b></p><p>Select <b>Graph 1</b>, choose the line type, and select two points. Do the same with <b>Graph 2</b>. Then select <b>Solution Set</b> and select the region that is the solution.</p>',
   graphline:'<p><b>Graphing a Line</b></p><p>Choose <b>Add Line</b>, then click two points on the grid. A line is drawn through both points. Use <b>Delete</b> to remove a point or line.</p>'};
 
 /* ---------- panels ---------- */
@@ -1987,7 +2087,7 @@ function fillBreakdown(){
 new MutationObserver(()=>{ if(!document.getElementById('resultsScreen').hidden) fillBreakdown(); }).observe(document.getElementById('resultsScreen'),{attributes:true,attributeFilter:['hidden']});
 
 /* --- review screen --- */
-const L='ABCDE';
+const L='ABCDEFGH';
 let cur=0;
 function status(it){ const e=earn(it); if(e===null) return ['blank','No answer']; if(e===it.max) return ['ok','Correct']; if(e>0) return ['part','Partly correct']; return ['no','Incorrect']; }
 function buildNav(){ const nav=document.getElementById('rvNav'); nav.innerHTML='';

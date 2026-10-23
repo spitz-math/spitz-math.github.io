@@ -302,7 +302,7 @@ function call(fn,arg,ms){ return new Promise((res,rej)=>{ const h=APP&&gsHost();
 
 /* ---------- test details (TEKS, categories) read from each test's test.js in a hidden frame ---------- */
 const META={}, LOADED=Date.now();
-const STUBS=`window.SPITZ_BASE='';const ASSET=p=>'';const $=s=>null;const F=(a,b)=>'';const V=s=>'';const x='',y='';const ODD=['A','B','C','D','E'],EVEN=['F','G','H','J','K'];
+const STUBS=`window.SPITZ_BASE='';const ASSET=p=>'';const $=s=>null;const F=(a,b)=>'';const V=s=>'';const x='',y='';const ODD=['A','B','C','D','E','F','G','H'],EVEN=['F','G','H','J','K'];
 const j='',k='',m='',p='',c='',t='',v='',z='',a='',n='',f='',g='',h='',P='',A='';const IMG=()=>'';const T=()=>'';const SYS=()=>'';let SGID=0;function SG(){return '';}const SEL1='';
 window.SpitzTest=function(TD){ parent.postMessage({spitzMeta:{id:TD.id,title:TD.title,categories:TD.categories||null,items:(TD.items||[]).map((it,i)=>({n:i+1,teks:it.teks||'',rs:it.rs||'',cat:it.cat||null,max:it.max||1,type:it.label||it.type}))}},'*'); };`;
 function loadMeta(id){ if(META[id]) return META[id].p;
@@ -536,7 +536,7 @@ document.addEventListener('scroll',()=>{ tip.hidden=true; },true);
    Every publish is one commit: the test folder, tests/index.js and the test's single/ file together. */
 const TP={gh:null, files:null, index:[], player:null, pkg:null, cache:{}, metas:{}, working:false, watch:null};
 const MIME={png:'image/png',jpg:'image/jpeg',jpeg:'image/jpeg',gif:'image/gif',svg:'image/svg+xml',webp:'image/webp'};
-const TYPES=['mc','ms','num','inline','table','dnd','graph','graphline','boxes','hotspot','graphineq','graphexp','graphfunc','eq'];
+const TYPES=['mc','ms','num','inline','table','dnd','graph','graphline','cline','graphsys','boxes','hotspot','graphineq','graphexp','graphfunc','eq'];
 const ENC=new TextEncoder(), DEC=new TextDecoder();
 const extOf=p=>(String(p).match(/\.([a-z0-9]+)$/i)||[])[1]?.toLowerCase()||'';
 const pad2=n=>String(n).padStart(2,'0');
@@ -579,7 +579,7 @@ function sandbox(html,ms){ return new Promise(res=>{ const tok=Math.random().toS
 const noClose=s=>String(s).replace(/<\/(script)/gi,'<\\/$1');
 function helpersOf(player){ const a=player.indexOf('/* ================= Spitz Checkpoint: helpers available to every test file'), b=player.indexOf('window.SpitzTest=function(TD){');
   if(a<0||b<a) throw new Error('player.html looks different than expected (no test helpers found).'); return player.slice(a,b); }
-const DESCRIBE=`(function(){ var TD=window.__TD, keys=['answer','m','b','op','a','ftype','asym','fn','unordered'];
+const DESCRIBE=`(function(){ var TD=window.__TD, keys=['answer','m','b','op','a','ftype','asym','fn','unordered','eq','ineqs'];
   var fnr=function(k,v){ return typeof v==='function'?'fn:'+v.toString():v; };
   var dp=new DOMParser(), txt=function(h){ return (dp.parseFromString(String(h==null?'':h).replace(/<span class="frac"><span>([\\s\\S]*?)<\\/span><span>([\\s\\S]*?)<\\/span><\\/span>/g,'$1/$2').replace(/\\{GRAPH\\}/g,' ').replace(/<\\/(td|th|p|div|li|tr|table)>|<br\\s*\\/?>|<p[\\s>]/gi,' $&'),'text/html').body.textContent||'').replace(/\\s+/g,' ').trim(); };
   var disp=function(it){ var a=it.answer; try{ switch(it.type){
@@ -590,7 +590,7 @@ const DESCRIBE=`(function(){ var TD=window.__TD, keys=['answer','m','b','op','a'
     case 'dnd': return a.map(function(z,t){ return txt(it.tiles[t])+' → '+txt(it.zones[z]); }).join('; ');
     case 'graph': return '('+a.join(', ')+')'; case 'boxes': return a.map(txt).join(', ');
     case 'graphineq': return 'y '+it.op+' '+it.m+'x + '+it.b; case 'graphexp': return 'y = '+it.a+'('+it.b+')^x';
-    case 'graphfunc': return it.ftype+(it.asym!=null?', asymptote '+it.asym:''); case 'graphline': return 'graph a line';
+    case 'graphfunc': return it.ftype+(it.asym!=null?', asymptote '+it.asym:''); case 'graphline': return 'graph a line'; case 'graphsys': return it.keyText||'system of inequalities'; case 'cline': return it.keyText||('line '+JSON.stringify(it.eq));
     default: return a==null?'':JSON.stringify(a,fnr); } }catch(e){ return '?'; } };
   var out=null; if(TD){ out={ id:TD.id, title:TD.title, course:TD.course||'', reference:TD.reference||'alg1', categories:TD.categories||null, rationale:TD.rationale||null,
     items:(TD.items||[]).map(function(it){ var key={}, body={}; Object.keys(it).forEach(function(k){ if(keys.indexOf(k)>=0) key[k]=it[k]; else if(['max','teks','rs','cat','label'].indexOf(k)<0) body[k]=it[k]; });
@@ -1062,6 +1062,22 @@ document.querySelectorAll('#bkOrder button').forEach(b=>b.onclick=()=>{ bkOrder=
 $('#bkYears').addEventListener('change',e=>{ const y=+e.target.dataset.yr; e.target.checked?bkYears.add(y):bkYears.delete(y); bankTable(); });
 $('#bkClear').onclick=()=>{ Object.keys(bkPick).forEach(k=>delete bkPick[k]); bankTable(); };
 
+/* ---------- link table: a released question the bank flattened (its source says "adapted") is swapped for the real
+   interactive version from that year's published test (tests/alg1-<year>/), matched by question number and checked by TEKS.
+   Questions that need picture files from their own test folder are not swapped. */
+const LINK={};   // test id -> Promise of the evaluated test (or null)
+function linkTest(id){ if(id in LINK) return LINK[id];
+  return LINK[id]=(async()=>{ try{ if(!TP.files||!TP.files['tests/'+id+'/test.js']) return null; const r=await evalTest(await repoText('tests/'+id+'/test.js')); return r.td?r.td:null; }catch(e){ return null; } })(); }
+async function linkReal(item){ const m=String(item.src||'').match(/STAAR Algebra I (20\d\d), Q(\d+)\b/); if(!m||!/adapted/i.test(item.src)) return item;
+  const td=await linkTest('alg1-'+m[1]); const real=td&&td.items[+m[2]-1]; if(!real) return item;
+  if(real.teks&&item.teks&&real.teks!==item.teks) return item;               // numbering does not line up: keep the bank's version
+  if(/(img|rat)\/[^"]*\.(png|jpe?g|gif)/i.test(real.body)) return item;       // needs picture files from its own folder
+  let body, key; try{ body=JSON.parse(real.body); key=JSON.parse(real.key); }catch(e){ return item; }
+  return Object.assign(body,key,{type:real.type,teks:real.teks||item.teks,cat:real.cat==null?item.cat:real.cat,rs:real.rs||item.rs,max:real.max||1,label:real.label||item.label,
+    src:'STAAR Algebra I '+m[1]+', Q'+m[2]+' (released interactive version, from '+td.title+')',notes:item.notes}); }
+/* functions (a hot spot's curve, a graphed function) come back from the describe step as "fn:<source>" strings; write them as code */
+const fnBack=s=>s.replace(/"fn:((?:[^"\\]|\\.)*)"/g,(q,src)=>'('+JSON.parse('"'+src+'"')+')');
+
 /* ---------- drawing questions ---------- */
 const shuffle=a=>{ a=a.slice(); for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } return a; };
 const usedKey=d=>d.mode==='gen'?null:d.teks+'#'+d.i;
@@ -1069,7 +1085,7 @@ async function drawOne(teks,mode,avoid){ const t=BK.cat.find(x=>x.k===teks), use
   if(mode==='gen'){ const r=await bankAsk({op:'item',teks,mode,avoid:BK.draft.map(d=>d.item.stem)}); return r.item?{teks,mode,item:r.item}:{teks,mode,err:r.skip||r.err}; }
   const pool=shuffle(t.bank.filter(b=>bkYears.has(b.year)&&(mode!=='fresh'||b.regen)&&!used.has(teks+'#'+b.i)));
   let why='no more questions for this standard with the years picked';
-  for(const b of pool.slice(0,8)){ const r=await bankAsk({op:'item',teks,mode,i:b.i}); if(r.item) return {teks,mode,i:b.i,item:r.item}; why=r.skip||r.err||why; used.add(teks+'#'+b.i); }
+  for(const b of pool.slice(0,8)){ const r=await bankAsk({op:'item',teks,mode,i:b.i}); if(r.item) return {teks,mode,i:b.i,item:mode==='real'?await linkReal(r.item):r.item}; why=r.skip||r.err||why; used.add(teks+'#'+b.i); }
   return {teks,mode,err:why}; }
 $('#bkDraw').onclick=async()=>{ const btn=$('#bkDraw'); btn.disabled=true; BK.draft=[]; const miss=[];
   const want=BK.cat.map(t=>[t,Math.min(bkPick[t.k]||0,avail(t))]).filter(x=>x[1]>0);
@@ -1084,7 +1100,7 @@ function bkIdAuto(){ const el=$('#bkId'); if(el.dataset.touched) return; let bas
   const taken=new Set(TP.index.map(t=>t.id).concat(testFolders())); while(taken.has(id)) id=base+'-'+(n++); el.value=id; }
 $('#bkTitle').oninput=bkIdAuto; $('#bkId').oninput=e=>{ e.target.dataset.touched=1; };
 const plainText=h=>new DOMParser().parseFromString(String(h).replace(/<span class="frac"><span>([\s\S]*?)<\/span><span>([\s\S]*?)<\/span><\/span>/g,'$1/$2').replace(/<svg[\s\S]*?<\/svg>/gi,' [graph] ').replace(/<sup>([\s\S]*?)<\/sup>/gi,'^$1').replace(/<\/(p|td|th|tr)>/gi,' $&'),'text/html').body.textContent.replace(/\s+/g,' ').trim();
-function keyText(it){ const L='ABCDE'; if(it.type==='mc') return L[it.answer]+(it.grid?'':'  '+plainText(it.choices[it.answer])); if(it.type==='ms') return it.answer.map(i=>L[i]).join(', '); return String(it.answer); }
+function keyText(it){ const L='ABCDEFGH'; if(it.type==='mc') return L[it.answer]+(it.grid?'':'  '+plainText(it.choices[it.answer])); if(it.type==='ms') return it.answer.map(i=>L[i]).join(', '); return String(it.answer); }
 function renderDraft(){ const box=$('#bkDraft'); if(!BK.draft.length){ box.innerHTML=''; $('#bkMakeRow').hidden=true; return; }
   box.innerHTML=`<table class="t"><tr><th>#</th><th>Standard</th><th>Question starts</th><th>Key</th><th>From</th><th></th></tr>${BK.draft.map((d,i)=>`<tr><td><b>${i+1}</b></td><td>${esc(d.teks)}<div class="rs">${esc(d.item.label)}</div></td>
     <td class="k rs" title="${esc(plainText(d.item.stem))}">${esc(plainText(d.item.stem).slice(0,140))}</td><td class="k" title="${esc(keyText(d.item))}">${esc(keyText(d.item))}</td><td class="rs">${esc(d.item.src)}</td>
@@ -1096,7 +1112,7 @@ $('#bkDraft').addEventListener('click',async e=>{ const sw=e.target.closest('[da
     const n=await drawOne(d.teks,d.mode,[usedKey(d)].filter(Boolean)); if(n.item) BK.draft[i]=n; else bankSay('No other question to swap in for '+esc(d.teks)+' ('+esc(n.err)+').','err'); renderDraft(); } });
 
 /* ---------- make the test (then the normal checks, preview and publish) ---------- */
-function testJsFor(id,title,items){ const js=v=>JSON.stringify(v,null,1).replace(/<\/(script)/gi,'<\\/$1');
+function testJsFor(id,title,items){ const js=v=>fnBack(JSON.stringify(v,null,1)).replace(/<\/(script)/gi,'<\\/$1');
   return '/* '+title.replace(/\*\//g,'')+': built '+new Date().toLocaleDateString()+' on the Spitz Checkpoint Tests page from the warm-up question bank.\n'
     +'   Each question keeps its source in "src"; "notes" holds the bank\'s worked solution for writing explanations later. */\n'
     +'SpitzTest('+js({id,title,course:'Algebra I',reference:'alg1',categories:CATNAMES,items})+');\n'; }
