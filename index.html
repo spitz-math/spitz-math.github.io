@@ -74,14 +74,14 @@ body:has(.door.b:hover,.door.b:focus-visible) .patty{translate:10px 0;rotate:6de
 /* doors, one on each side */
 .door{--c:var(--pink);grid-row:2;position:relative;display:grid;justify-items:center;text-align:center;gap:8px;text-decoration:none;color:var(--fg);min-width:0;width:100%;max-width:380px;
   padding:clamp(18px,2.4vw,30px) clamp(14px,2vw,26px);border-radius:18px;border:3px solid var(--c);background:rgba(4,6,28,.72);
-  box-shadow:0 0 12px var(--c),inset 0 0 26px color-mix(in srgb,var(--c) 28%,transparent);transition:transform .25s cubic-bezier(.3,1.4,.5,1),box-shadow .25s}
+  container-type:inline-size;box-shadow:0 0 12px var(--c),inset 0 0 26px color-mix(in srgb,var(--c) 28%,transparent);transition:transform .25s cubic-bezier(.3,1.4,.5,1),box-shadow .25s}
 .door.a{grid-column:1;justify-self:end}
 .door.b{--c:var(--cyan);grid-column:3;justify-self:start}
 .door:hover,.door:focus-visible{transform:translateY(-4px) scale(1.02);outline:none;
   box-shadow:0 0 22px var(--c),0 0 50px color-mix(in srgb,var(--c) 50%,transparent),inset 0 0 26px color-mix(in srgb,var(--c) 40%,transparent)}
 .door:focus-visible{outline:3px solid #fff;outline-offset:4px}
-.door h2{font-family:var(--display);font-weight:400;margin:0;line-height:.95;text-transform:uppercase;letter-spacing:.04em;font-size:clamp(28px,3vw,54px);color:#fff;text-shadow:0 0 8px var(--c),0 0 22px var(--c)}
-.door p{margin:4px 0 10px;font-family:var(--pixel);font-size:clamp(9px,.85vw,12px);line-height:1.6;letter-spacing:.08em;text-transform:uppercase;white-space:nowrap;color:var(--c);text-shadow:0 0 8px var(--c)}
+.door h2{font-family:var(--display);font-weight:400;margin:0;line-height:.95;text-transform:uppercase;letter-spacing:.04em;font-size:min(54px,10cqi);color:#fff;text-shadow:0 0 8px var(--c),0 0 22px var(--c)}
+.door p{margin:4px 0 10px;font-family:var(--pixel);font-size:min(12px,3.6cqi);line-height:1.6;letter-spacing:.08em;text-transform:uppercase;white-space:nowrap;color:var(--c);text-shadow:0 0 8px var(--c)}
 .btn{font-family:var(--pixel);font-size:clamp(10px,1vw,13px);letter-spacing:.06em;text-transform:uppercase;background:var(--c);color:var(--bg);padding:12px 18px;border-radius:8px;border:2px solid #fff;
   box-shadow:0 0 10px var(--c),0 0 24px var(--c);animation:pulse 2.4s ease-in-out infinite}
 .door.b .btn{animation-delay:-1.2s}
