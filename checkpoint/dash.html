@@ -32,6 +32,11 @@ button{cursor:pointer}
 .upd.err{color:var(--no);font-weight:600}
 .btn{border:1px solid #9fb0c8;background:#fff;border-radius:6px;padding:5px 12px;white-space:nowrap}
 .btn:hover{background:#f3f6fb}
+.btn.del{color:var(--no);border-color:#e3a7a2}
+.btn.del:hover{background:var(--nobg)}
+.btn.delgo{background:var(--no);border-color:var(--no);color:#fff}
+.btn.delgo:disabled{opacity:.45}
+.deltbl{margin:8px 0;font-size:13.5px;border-collapse:collapse}.deltbl td{padding:2px 10px 2px 0;vertical-align:top}
 .btn.pri{background:var(--blue2);border-color:var(--blue2);color:#fff}
 .btn.pri:hover{background:var(--blue)}
 .btn.warn{border-color:#d9a19b;color:#9d2a20}
@@ -907,13 +912,13 @@ function renderList(){ const box=$('#tlist'); const folders=testFolders(), ids=T
     return `<tr data-id="${esc(r.id)}"><td><b class="ttl">${esc(r.title||r.id)}</b>${r.hidden?'<span class="badge hid">'+(r.listed?'Hidden':'Not on the list')+'</span>':''}<div class="rs">${esc(r.id)}${r.folder?'':' · <span style="color:var(--no)">folder missing on GitHub</span>'}</div></td>
       <td class="n nq">…</td><td class="n np">…</td><td class="rs">${S.length?S.length+(open?' ('+open+' open)':''):'none'}</td>
       <td><button class="btn" data-hide="${esc(r.id)}" ${TP.files&&r.folder?'':'disabled'}>${r.hidden?'Show':'Hide'}</button></td>
-      <td><div class="acts" style="gap:6px"><button class="btn" data-pv="${esc(r.id)}" ${r.folder?'':'disabled'}>Preview</button><button class="btn" data-ns="${esc(r.id)}" ${r.folder?'':'disabled'}>New session</button></div></td></tr>`; }).join('')}</table>
+      <td><div class="acts" style="gap:6px"><button class="btn" data-pv="${esc(r.id)}" ${r.folder?'':'disabled'}>Preview</button><button class="btn" data-ns="${esc(r.id)}" ${r.folder?'':'disabled'}>New session</button><button class="btn del" data-del="${esc(r.id)}" ${TP.files?'':'disabled'} title="Remove this test from GitHub">Delete</button></div></td></tr>`; }).join('')}</table>
     <p class="hint" style="margin-top:8px">The practice list is the test menu on the practice page (player.html without a Session ID). In class, the Session ID decides the test, so a hidden test still works there.</p>`;
   rows.forEach(async r=>{ const m=await metaOf(r.id), tr=box.querySelector(`tr[data-id="${CSS.escape(r.id)}"]`); if(!tr) return;
     tr.querySelector('.nq').textContent=m?m.items.length:'–'; tr.querySelector('.np').textContent=m?m.items.reduce((a,i)=>a+i.max,0):'–';
     if(m&&!r.title) tr.querySelector('.ttl').textContent=m.title; }); }
-document.addEventListener('click',e=>{ const t=e.target.closest('[data-hide],[data-pv],[data-ns]'); if(!t||$('#tpage').hidden) return;
-  if(t.dataset.hide) toggleHide(t.dataset.hide,t); else if(t.dataset.pv) previewRepo(t.dataset.pv); else newSession(t.dataset.ns); });
+document.addEventListener('click',e=>{ const t=e.target.closest('[data-hide],[data-pv],[data-ns],[data-del]'); if(!t||$('#tpage').hidden) return;
+  if(t.dataset.del) askDelete(t.dataset.del); else if(t.dataset.hide) toggleHide(t.dataset.hide,t); else if(t.dataset.pv) previewRepo(t.dataset.pv); else newSession(t.dataset.ns); });
 async function toggleHide(id,btn){ if(TP.working) return; const m=await metaOf(id);
   let list=TP.index.map(t=>Object.assign({},t)); const e=list.find(t=>t.id===id);
   if(e) e.hidden=!e.hidden; else list.push({id,title:(m&&m.title)||id});
@@ -921,6 +926,49 @@ async function toggleHide(id,btn){ if(TP.working) return; const m=await metaOf(i
   try{ await versions(list); const r=await publish([{path:'tests/index.js',bytes:ENC.encode(indexText(list))}],(show?'Show ':'Hide ')+id+' on the practice list',$('#tlMsg'));
     $('#tlMsg').textContent=''; TP.working=false; if(!r.nothing) await tpLoad(); }
   catch(x){ TP.working=false; btn.disabled=false; btn.textContent=old; dlg('Could not save',errText(x)); } }
+/* ---------- delete a test: its folder, its line in tests/index.js and its single file go in one commit ---------- */
+function zipStore(files){   // files: [{name, bytes}] -> a plain (stored) zip, so a deleted test can be saved first and dropped back on this page
+  const T=zipStore.T||(zipStore.T=Array.from({length:256},(_,n)=>{ let c=n; for(let k=0;k<8;k++) c=c&1?0xEDB88320^(c>>>1):c>>>1; return c>>>0; }));
+  const crc=b=>{ let c=0xFFFFFFFF; for(let i=0;i<b.length;i++) c=T[(c^b[i])&255]^(c>>>8); return (c^0xFFFFFFFF)>>>0; };
+  const parts=[], cen=[]; let off=0;
+  const h=(n,len)=>{ const a=new Uint8Array(len), v=new DataView(a.buffer); return [a,v]; };
+  for(const f of files){ const nm=ENC.encode(f.name), c=crc(f.bytes), n=f.bytes.length;
+    const [L,l]=h(0,30); l.setUint32(0,0x04034b50,true); l.setUint16(4,20,true); l.setUint16(8,0,true); l.setUint32(14,c,true); l.setUint32(18,n,true); l.setUint32(22,n,true); l.setUint16(26,nm.length,true);
+    const [C,cv]=h(0,46); cv.setUint32(0,0x02014b50,true); cv.setUint16(4,20,true); cv.setUint16(6,20,true); cv.setUint32(16,c,true); cv.setUint32(20,n,true); cv.setUint32(24,n,true); cv.setUint16(28,nm.length,true); cv.setUint32(42,off,true);
+    parts.push(L,nm,f.bytes); cen.push(C,nm); off+=30+nm.length+n; }
+  const csz=cen.reduce((a,x)=>a+x.length,0); const [E,ev]=h(0,22); ev.setUint32(0,0x06054b50,true); ev.setUint16(8,files.length,true); ev.setUint16(10,files.length,true); ev.setUint32(12,csz,true); ev.setUint32(16,off,true);
+  return new Blob([...parts,...cen,E],{type:'application/zip'}); }
+async function askDelete(id){ if(TP.working||!TP.files) return;
+  const m=await metaOf(id), entry=TP.index.find(t=>t.id===id), title=(entry&&entry.title)||(m&&m.title)||id;
+  const folder=Object.keys(TP.files).filter(p=>p.startsWith('tests/'+id+'/')).sort();
+  const singles=Object.keys(TP.files).filter(p=>p==='single/'+singleName(title)||(m&&m.title&&p==='single/'+singleName(m.title)));
+  const S=(DATA?DATA.sessions:[]).filter(x=>x.test===id), open=S.filter(x=>x.open);
+  const released=/^alg1-\d{4}$/.test(id)&&m&&m.items&&m.items.length>=40;
+  $('#vTitle').textContent='Delete '+title+'?';
+  let h=`<table class="deltbl"><tr><td>Test ID</td><td><b>${esc(id)}</b></td></tr><tr><td>Removed from GitHub</td><td>the folder tests/${esc(id)}/ (${folder.length} file${folder.length===1?'':'s'})${entry?', its line on the practice list':''}${singles.length?', its single file':''}</td></tr>
+    <tr><td>Kept</td><td>every student result in the Sheet${S.length?' ('+S.length+' session'+(S.length===1?'':'s')+')':''}. Scores and the Standards view still work; the Questions view can’t show answer wording or “See the question” for it.</td></tr></table>`;
+  if(released) h+=`<p class="hint">This is a full released test. The Question bank goes back to its adapted copies of these questions.</p>`;
+  if(open.length){ h+=`<p style="color:var(--no)"><b>${open.length} open session${open.length===1?' uses':'s use'} this test</b> (${open.map(x=>esc(x.id)).join(', ')}). Close ${open.length===1?'it':'them'} in the Sessions tab first, so no student is in the middle of it.</p>`;
+    $('#vMsg').innerHTML=h; const b=$('#vBtns'); b.innerHTML=''; const ok=document.createElement('button'); ok.className='btn pri'; ok.textContent='OK'; ok.onclick=()=>{ $('#veil').hidden=true; }; b.appendChild(ok); $('#veil').hidden=false; ok.focus(); return; }
+  h+=`<p>GitHub keeps old versions, and a copy you save now can be dropped back on this page to put the test back.</p><label style="display:block;margin-top:8px">Type <b>${esc(id)}</b> to confirm: <input id="delConfirm" autocomplete="off" spellcheck="false" style="font:inherit;padding:3px 6px;width:13em"></label><div class="msg2" id="delMsg"></div>`;
+  $('#vMsg').innerHTML=h; const b=$('#vBtns'); b.innerHTML='';
+  const mk=(t,c,f)=>{ const x=document.createElement('button'); x.className=c; x.textContent=t; x.onclick=f; b.appendChild(x); return x; };
+  const save=mk('Save a copy (.zip)','btn',async()=>{ save.disabled=true; save.textContent='Saving…';
+    try{ const files=[]; for(const p of folder) files.push({name:p.slice(6),bytes:await repoBytes(p)});
+      const a=document.createElement('a'); a.href=URL.createObjectURL(zipStore(files)); a.download=id+'.zip'; document.body.appendChild(a); a.click(); a.remove(); setTimeout(()=>URL.revokeObjectURL(a.href),60000);
+      save.textContent='Saved ✓'; }catch(e){ save.disabled=false; save.textContent='Save a copy (.zip)'; say($('#delMsg'),errText(e),'err'); } });
+  mk('Cancel','btn',()=>{ $('#veil').hidden=true; });
+  const go=mk('Delete','btn delgo',()=>doDelete(id,title,folder,singles,go)); go.disabled=true;
+  $('#delConfirm').oninput=e=>{ go.disabled=e.target.value.trim()!==id; };
+  $('#delConfirm').onkeydown=e=>{ if(e.key==='Enter'&&!go.disabled) go.click(); };
+  $('#veil').hidden=false; $('#delConfirm').focus(); }
+async function doDelete(id,title,folder,singles,go){ if(TP.working) return; TP.working=true; go.disabled=true; go.textContent='Deleting…';
+  const list=TP.index.filter(t=>t.id!==id).map(t=>Object.assign({},t)); const msg=$('#delMsg');
+  try{ const changes=folder.concat(singles).map(p=>({path:p,del:true}));
+    if(TP.index.some(t=>t.id===id)) changes.push({path:'tests/index.js',bytes:ENC.encode(indexText(list))});
+    const r=await publish(changes,'Delete test '+id,msg); TP.working=false; $('#veil').hidden=true;
+    await tpLoad(); say($('#tlMsg'),r.nothing?'Nothing to delete.':'Deleted <b>'+esc(title)+'</b>. The practice page stops offering it within a few minutes.','ok'); }
+  catch(e){ TP.working=false; go.textContent='Delete'; go.disabled=false; say(msg,'Not deleted: '+errText(e),'err'); } }
 async function newSession(id){ const m=await metaOf(id); if(TP.working) return;
   try{ const r=await call('stcNewSession',{test:id}); load();
     dlg('New session',`<p>${esc((m&&m.title)||id)}</p><div class="sid">${esc(r.id)}</div><p class="hint">Students type this on the sign-in screen. It is open now with Review set to “Score only”; change that in the Sessions tab, and close it there when you are done.</p>`); }
