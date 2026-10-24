@@ -43,7 +43,7 @@ body{ background:var(--board); color:var(--chalk); font-family:var(--font-body);
 /* title bar */
 header{ display:flex; align-items:center; gap:31px; }
 .brand{ display:flex; align-items:center; gap:19px; min-width:0; }
-.burger{ width:115px; height:auto; flex:none; filter:drop-shadow(.06em .1em 0 rgba(0,0,0,.6)); }
+.burger{ width:150px; height:auto; flex:none; margin:-12px -8px -30px -14px; filter:drop-shadow(.06em .1em 0 rgba(0,0,0,.6)); }
 .title{ margin:0; font-family:var(--font-title); font-weight:400; line-height:.95; color:var(--sauce);
   font-size:96px; letter-spacing:.03em; white-space:nowrap;
   -webkit-text-stroke:.09em var(--black); paint-order:stroke fill; text-shadow:.05em .07em 0 var(--black); }
@@ -188,7 +188,7 @@ body.in-desmos .handback{ display:inline-flex; }
 body.nw-open .corner{ right:auto; left:12px; }
 /* with NumWorks docked, the header tightens so the title and date still fit */
 body.nw-open .title{ font-size:70px; }
-body.nw-open .burger{ width:84px; }
+body.nw-open .burger{ width:110px; margin:-8px -6px -22px -10px; }
 body.nw-open .date{ font-size:34px; }
 body.nw-open .clock{ font-size:30px; }
 body.nw-open #stage .tmr-chip{ left:905px; }
@@ -368,7 +368,7 @@ body.nw-open #stage .tmr-chip{ left:905px; }
 <main class="main">
   <header>
     <div class="brand">
-      <img class="burger" src="/burger_mark.png" alt="">
+      <img class="burger" src="/burst_logo.png" alt="">
       <h1 class="title">Spitzlberger<span>Algebra 1</span></h1>
     </div>
     <div class="when">
