@@ -95,6 +95,12 @@ window.SpitzGames=[
    '<path d="M-36 51q0-26 36-26t36 26z" fill="#E8A24A"/><g fill="#F6E3C2"><ellipse cx="-14" cy="38" rx="2" ry="1.2"/><ellipse cx="0" cy="33" rx="2" ry="1.2"/><ellipse cx="14" cy="38" rx="2" ry="1.2"/><ellipse cx="-4" cy="43" rx="2" ry="1.2"/><ellipse cx="8" cy="44" rx="2" ry="1.2"/></g></g>'+
    '<g transform="translate(150 16)"><rect width="36" height="44" rx="3" fill="#F6E3C2"/><path d="M6 12h24M6 20h18M6 28h22M6 36h14" stroke="#C4AA98" stroke-width="3" stroke-linecap="round"/><circle cx="18" cy="0" r="3" fill="#43302A"/></g>'+
    '<g transform="translate(22 40)"><rect x="0" y="10" width="16" height="38" rx="5" fill="#FF3B2E"/><rect x="4" y="2" width="8" height="10" rx="2" fill="#FF3B2E"/><rect x="5" y="-4" width="6" height="7" rx="1.5" fill="#F6E3C2"/><rect x="3" y="22" width="10" height="12" rx="2" fill="#F6E3C2" opacity=".85"/></g>'},
+  {id:'fit_check',name:'Fit Check',d:'Dress up and win the runway',font:"'Paytone One'",paper:'#130A1A',panel:'#1F1229',acc:'#FF6CB3',
+   art:'<defs><radialGradient id="fcspot" cx=".5" cy="0" r="1"><stop offset="0" stop-color="#FF6CB3" stop-opacity=".55"/><stop offset=".7" stop-color="#FF6CB3" stop-opacity="0"/></radialGradient></defs><rect width="200" height="110" fill="#130A1A"/><path d="M70 0H130L170 110H30Z" fill="url(#fcspot)"/>'+
+   '<path d="M60 110L84 70H116L140 110Z" fill="#2A1A36"/><path d="M100 72V110" stroke="#FF6CB3" stroke-width="2" stroke-dasharray="5 5"/>'+
+   '<g transform="translate(100 22)"><circle cx="0" cy="0" r="7" fill="#F2C49B"/><path d="M-7 -2Q0 -12 7 -2L8 4Q0 -4 -8 4Z" fill="#43302A"/><path d="M-8 9H8L6 22L22 54H-22L-6 22Z" fill="#FF6CB3"/><path d="M-6 22H6" stroke="#FFD84A" stroke-width="3"/>'+
+   '<path d="M-9 10L-16 30M9 10L16 30" stroke="#F2C49B" stroke-width="4" stroke-linecap="round"/><path d="M-7 54V66M7 54V66" stroke="#F2C49B" stroke-width="4" stroke-linecap="round"/></g>'+
+   '<g fill="#FFD84A"><path d="M36 30l3 7 7 1-5 5 1 7-6-4-6 4 1-7-5-5 7-1z"/><path d="M164 40l2 5 5 1-4 3 1 5-4-3-4 3 1-5-4-3 5-1z"/></g>'},
   {id:'hill_climb',name:'Hill Climb',d:'Monster truck over the hills',font:"'Bowlby One'",paper:'#0F0B08',panel:'#1B1510',acc:'#FFB21E',
    art:'<defs><linearGradient id="hcsky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#1C1446"/><stop offset=".55" stop-color="#5A2E6E"/><stop offset="1" stop-color="#E8774A"/></linearGradient></defs><rect width="200" height="110" fill="url(#hcsky)"/>'+
    '<circle cx="152" cy="52" r="15" fill="#FFE1A0"/><path d="M0 74L30 58L58 70L92 50L126 66L160 54L200 64V110H0z" fill="#3A2A5E"/>'+
@@ -152,8 +158,8 @@ window.SpitzGames=[
    so it has a spot once its NEW badge runs out. */
 (function(){
   var NEW_DAYS=7;
-  var ADDED={ brick_breaker:'2026-10-10T20:16', mini_golf:'2026-10-10T20:30', burger_blaster:'2026-10-11T04:15', rocket_buds:'2026-10-11T04:25', paint_royale:'2026-10-11T04:30', snake_arena:'2026-10-11T19:20', brawl_buds:'2026-10-11T19:25', pinball:'2026-10-11T20:00' };
-  var BEST=['hoop_buds','football_buds','rocket_buds','paint_royale','snake_arena','brawl_buds','pinball','hill_climb','burger_blaster','burger_shop','mini_golf','skate','dash','fishing','brick_breaker','star_swarm','splat_range','shift_racer','jump_man_multiplication'];
+  var ADDED={ brick_breaker:'2026-10-10T20:16', mini_golf:'2026-10-10T20:30', burger_blaster:'2026-10-11T04:15', rocket_buds:'2026-10-11T04:25', paint_royale:'2026-10-11T04:30', snake_arena:'2026-10-11T19:20', brawl_buds:'2026-10-11T19:25', pinball:'2026-10-11T20:00', fit_check:'2026-10-24T14:30' };
+  var BEST=['hoop_buds','football_buds','rocket_buds','paint_royale','snake_arena','brawl_buds','pinball','hill_climb','fit_check','burger_blaster','burger_shop','mini_golf','skate','dash','fishing','brick_breaker','star_swarm','splat_range','shift_racer','jump_man_multiplication'];
   /* Drip release (Kody, 2026-10-11): students start with 10 games and more unlock each week. A game listed in UNLOCK is hidden from the hub
      and leaderboard until its date (UTC); null = locked until Kody says so. To unlock, set the date: the game appears then with a NEW badge.
      Games not listed here are always shown. Hidden games' files stay on the site. */
