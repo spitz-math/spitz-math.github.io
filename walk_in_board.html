@@ -14,8 +14,8 @@
 /* Walk-in board · Spitzlberger Algebra 1
    Left: the table of contents (a published Google Doc). Right: today's warm-up.
    Saves to Google (Apps Script) so every computer shows the same board.
-   Clicker / keyboard: → PageDown Space = show answer · ← PageUp = hide · E edit warm-ups · M what you'll need · H hide/show contents
-   T timer · Q pen (1–6 colors, H highlighter, X eraser, Z undo, Delete clear) · W whiteboard · C NumWorks · D Desmos · Esc close · F fullscreen · S setup */
+   Clicker / keyboard: → PageDown Space = show answer · ← PageUp = hide · P teacher menu (asks the PIN: warm-ups, what you'll need, setup) · H hide/show contents
+   T timer · Q pen (1–6 colors, H highlighter, X eraser, Z undo, Delete clear) · W whiteboard · C NumWorks · D Desmos · Esc close · F fullscreen */
 :root{
   --board:#2B2B2B; --grid:rgba(255,255,255,.075); --chalk:#F2F0EA; --dust:#A9A6A0;
   --panel:#1D1D1D; --panel-glass:rgba(26,26,26,.8); --panel-edge:#444; --black:#0A0A0A;
@@ -393,7 +393,7 @@ body.nw-open #stage .tmr-chip{ left:905px; }
       <div class="docwrap" id="docwrap">
         <div class="tocn" id="tocNative" hidden></div>
         <iframe id="doc" title="Table of contents" hidden></iframe>
-        <div class="empty" id="docEmpty"><p>No table of contents linked yet.<br>Press <b>S</b> and paste your Google Doc's published link.</p></div>
+        <div class="empty" id="docEmpty"><p>No table of contents linked yet.</p></div>
       </div>
     </section>
     <section class="panel warm" aria-live="polite">
@@ -467,11 +467,20 @@ body.nw-open #stage .tmr-chip{ left:905px; }
   </form>
 </dialog>
 
-<!-- Teacher PIN: asked before E, M or S opens on a computer that doesn't have it yet -->
+<!-- Teacher menu (P): opens after the teacher PIN, every time -->
+<dialog id="dlgMenu">
+  <form method="dialog" class="dlg">
+    <h3>Teacher menu</h3>
+    <div class="row"><button type="button" class="pri" data-open="edit">1 · Warm-ups</button><button type="button" class="pri" data-open="needs">2 · What you'll need</button><button type="button" class="pri" data-open="setup">3 · Setup</button></div>
+    <div class="row"><button value="cancel">Close</button></div>
+  </form>
+</dialog>
+
+<!-- Teacher PIN: asked each time P opens the teacher menu -->
 <dialog id="dlgPin">
   <form method="dialog" class="dlg">
     <h3>Teacher PIN</h3>
-    <label>PIN<input id="pinAsk" type="password" autocomplete="off" placeholder="The PIN in your Apps Script"><span class="hint">Asked once on each computer. Without it the board still shows, but the warm-ups, answers and setup stay closed.</span></label>
+    <label>PIN<input id="pinAsk" type="password" autocomplete="off" placeholder="The PIN in your Apps Script"><span class="hint">Asked each time you open the teacher menu, so students can't open it. Without it the board still shows, but the warm-ups, answers and setup stay closed.</span></label>
     <p class="msg" id="pinMsg" role="status"></p>
     <div class="row"><button type="button" class="pri" id="pinGo">Unlock</button><button value="cancel">Cancel</button></div>
   </form>
@@ -496,7 +505,7 @@ body.nw-open #stage .tmr-chip{ left:905px; }
         <span class="hint">Leave blank to use the address built into this file.</span>
       </label>
     </details>
-    <p class="hint" style="margin:0"><b>Table of contents status:</b> <span id="tocInfo"></span><br>Board version 2026-10-23</p>
+    <p class="hint" style="margin:0"><b>Table of contents status:</b> <span id="tocInfo"></span><br>Board version 2026-10-24</p>
     <p class="msg" id="setupMsg" role="status"></p>
     <div class="row"><button type="button" class="pri" id="saveSetup">Save setup</button><button value="cancel">Cancel</button></div>
   </form>
@@ -746,7 +755,7 @@ const SAVE_URL = "https://script.google.com/macros/s/AKfycbx639KsczdlRGLuWguhvJO
     const ch = (w.choices || []).filter(c => String(c).trim());
     const body = $("wbody");
     if(!w.prompt && !w.image){
-      body.innerHTML = '<p class="prompt" style="color:var(--dust)">No warm-up for ' + today() + ' yet.</p><p class="cue">Press E to add one.</p>';
+      body.innerHTML = '<p class="prompt" style="color:var(--dust)">No warm-up for ' + today() + ' yet.</p>';
       return;
     }
     body.innerHTML =
@@ -837,13 +846,22 @@ const SAVE_URL = "https://script.google.com/macros/s/AKfycbx639KsczdlRGLuWguhvJO
     catch(e){ $("fImport").value = txt; $("editMsg").textContent = "Copy the code from the box above."; }
   };
 
-  /* E, M and S open only on a computer with the teacher PIN, so students who open the board can't read the week's answers.
-     The PIN is checked by saving the board's current data back to Google (no change), and kept on this computer once it works. */
+  /* P opens the teacher menu (warm-ups, what you'll need, setup) only after the teacher PIN, every time, so students can't read the week's answers.
+     A PIN this computer already has is checked here; a new one is checked by saving the board's current data back to Google (no change), then kept. */
   let pinNext = null;
   function teacherOnly(fn){
-    if(local.get("pin", "") || !serverUrl()) return fn();
+    if(!local.get("pin", "") && !serverUrl()) return fn();   // first setup, before there's a PIN to ask for
     pinNext = fn; $("pinAsk").value = ""; $("pinMsg").textContent = ""; $("dlgPin").showModal();
   }
+  const MENU = { edit: openEdit, needs: openNeeds, setup: openSetup };
+  function openMenu(){ $("dlgMenu").showModal(); }
+  function menuPick(id){ $("dlgMenu").close(); MENU[id](); }
+  $("dlgMenu").addEventListener("click", e => { const b = e.target.closest("[data-open]"); if(b) menuPick(b.dataset.open); });
+  $("dlgMenu").addEventListener("keydown", e => {
+    const id = { "1":"edit", "2":"needs", "3":"setup", e:"edit", m:"needs", s:"setup", p:"" }[e.key.toLowerCase()];
+    if(id === undefined) return;
+    e.preventDefault(); if(id) menuPick(id); else $("dlgMenu").close();
+  });
   async function checkPin(pin){
     const url = serverUrl();
     try{
@@ -860,8 +878,8 @@ const SAVE_URL = "https://script.google.com/macros/s/AKfycbx639KsczdlRGLuWguhvJO
   }
   $("pinGo").onclick = async () => {
     const pin = $("pinAsk").value.trim(); if(!pin) return;
-    $("pinMsg").textContent = "Checking with Google…";
-    const r = await checkPin(pin);
+    let r = pin === local.get("pin", "") ? "ok" : "";       // matches the PIN this computer already has
+    if(!r){ $("pinMsg").textContent = "Checking with Google…"; r = serverUrl() ? await checkPin(pin) : "badpin"; }
     if(r !== "ok"){ $("pinMsg").textContent = r === "badpin" ? "That PIN doesn't match the one in your Apps Script." : "Google didn't answer. Try again in a moment."; return; }
     local.set("pin", pin); $("dlgPin").close();
     const fn = pinNext; pinNext = null; if(fn) fn();
@@ -1276,9 +1294,7 @@ function timerPanelKeys(e){
     if(["ArrowRight","PageDown"," ","Enter","ArrowDown"].includes(k)){ e.preventDefault(); reveal(true); }
     else if(["ArrowLeft","PageUp","ArrowUp","Backspace"].includes(k)){ e.preventDefault(); reveal(false); }
     else if(k === "f" || k === "F") full();
-    else if(k === "e" || k === "E"){ e.preventDefault(); teacherOnly(openEdit); }
-    else if(k === "s" || k === "S"){ e.preventDefault(); teacherOnly(openSetup); }
-    else if(k === "m" || k === "M"){ e.preventDefault(); teacherOnly(openNeeds); }
+    else if(k === "p" || k === "P"){ e.preventDefault(); teacherOnly(openMenu); }
     else if(k === "h" || k === "H"){ e.preventDefault(); toggleToc(); }
     else if(k === "t" || k === "T"){ e.preventDefault(); tKey(); }
     else if(k === "q" || k === "Q"){ e.preventDefault(); setDrawing(!drawing); }
