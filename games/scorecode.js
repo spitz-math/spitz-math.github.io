@@ -212,6 +212,22 @@ function button(link,code){ return '<a href="'+link+'" target="_blank" rel="noop
   (document.head||document.documentElement).appendChild(l); })();
 /* the leaderboard lives on the site, not in the games: hide any old in-game leaderboard button (Star Swarm's #sw-lbopen) */
 (function(){ var st=document.createElement('style'); st.textContent='[id$="-lbopen"]{ display:none !important; }'; (document.head||document.documentElement).appendChild(st); })();
+/* back to the arcade hub (Kody, 2026-10-24): a link in the top left of each game's start and end screens (the F hint waits top right).
+   It borrows the game's own music button look, so it matches each game's colors and fonts. Test copies opened from a file go to the live hub.
+   Shift Racer and Star Swarm line their title up on the left, so there it waits top right, beside the F hint. */
+(function(){ function add(){ if(document.querySelector('.spz-hub')) return;
+    var ov=[].filter.call(document.querySelectorAll('[id$="-start"],[id$="-end"]'),function(e){ return /^[a-z]{2}-(start|end)$/.test(e.id); }); if(!ov.length) return;
+    var mus=document.getElementById('sz-mus'), go=document.querySelector('[id$="-start"] button[id$="-go"],[id$="-start"] button[id$="-go-start"]'), m=mus?getComputedStyle(mus):null, g=go?getComputedStyle(go):m,
+      line=m&&m.borderTopStyle!=='none'&&m.borderTopWidth!=='0px'?m.borderTopColor:'rgba(255,255,255,.45)', font=g?g.fontFamily:'Inter,system-ui,sans-serif', rad=m?m.borderRadius:'999px',
+      href=location.protocol==='file:'?'https://spitzmath.com/arcade/':'../arcade/', st=document.createElement('style');
+    st.textContent='.spz-hub{ position:absolute; left:24px; top:24px; z-index:6; display:inline-flex; align-items:center; gap:12px; min-height:64px; box-sizing:border-box; padding:12px 28px 12px 20px; '+
+      'border:3px solid '+line+'; border-radius:'+rad+'; background:rgba(8,8,12,.85); color:#fff; font:400 27px/1 '+font+'; letter-spacing:.02em; text-decoration:none; cursor:pointer; transition:background .15s; }'+
+      '.spz-hub.r{ left:auto; right:310px; }'+
+      '.spz-hub b{ font:800 30px/1 Inter,system-ui,sans-serif; color:'+line+'; }'+
+      '.spz-hub:hover,.spz-hub:focus-visible{ background:rgba(255,255,255,.14); outline:none; }';
+    (document.head||document.documentElement).appendChild(st);
+    ov.forEach(function(o){ var a=document.createElement('a'); a.className='spz-hub'+(/^(rc|sw)-/.test(o.id)?' r':''); a.href=href; a.innerHTML='<b aria-hidden="true">←</b>Back to Arcade'; a.setAttribute('aria-label','Back to the Spitz Arcade'); o.appendChild(a); }); }
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',add); else add(); })();
 /* copy the code as the form opens, so the student can paste it */
 document.addEventListener('click',function(e){ var a=e.target.closest&&e.target.closest('[data-spz-code]'); if(!a) return; var c=a.getAttribute('data-spz-code');
   try{ navigator.clipboard.writeText(c).then(function(){ a.textContent='Code copied ✓'; },function(){}); }catch(err){} },true);

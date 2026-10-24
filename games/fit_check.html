@@ -165,9 +165,7 @@ button:disabled{ cursor:default; }
 [class$="-logo"]{ cursor:pointer; }
 
 /* the full-screen reminder sits in the empty middle of the top bar */
-.sz-fs{ top:30px !important; bottom:auto !important; left:42% !important; }
-body:has(#fc-start:not([hidden])) .sz-fs, body:has(#fc-end:not([hidden])) .sz-fs{ top:24px !important; left:auto !important; right:24px; transform:none !important; }
-:root{ --sz-fs-corner:0; }   /* this game places the full screen hint itself */
+body:not(:has(#fc-start:not([hidden]))):not(:has(#fc-end:not([hidden]))) .sz-fs{ top:30px !important; bottom:auto !important; left:42% !important; }   /* during play only */
 </style>
 </head>
 <body>
