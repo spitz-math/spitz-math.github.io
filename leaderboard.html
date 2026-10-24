@@ -55,8 +55,15 @@ h1{font-family:var(--display);font-weight:400;margin:0;line-height:1;text-align:
 
 /* two columns: game list | board */
 .hall{display:grid;grid-template-columns:minmax(260px,330px) minmax(0,1fr);gap:20px;align-items:start}
-.list h2{margin:0 0 10px;font:400 10px/1.4 var(--pixel);letter-spacing:.08em;text-transform:uppercase;color:var(--pink);text-shadow:0 0 8px var(--pink)}
+.list h2{margin:0 0 10px;display:flex;justify-content:space-between;gap:8px;font:400 10px/1.4 var(--pixel);letter-spacing:.08em;text-transform:uppercase;color:var(--pink);text-shadow:0 0 8px var(--pink)}
 .games{display:flex;flex-direction:column;gap:8px}
+/* the game list scrolls in its own box beside the board, so the page stays one screen tall however many games there are */
+@media (min-width:861px){
+  .list{position:sticky;top:12px}
+  .games{max-height:calc(100vh - 56px);overflow-y:auto;overscroll-behavior:contain;padding:9px 10px 9px 5px;margin:-9px -10px 0 -5px;
+    scrollbar-width:thin;scrollbar-color:var(--pink) rgba(17,22,63,.6);
+    -webkit-mask-image:linear-gradient(180deg,transparent 0,#000 10px,#000 calc(100% - 22px),transparent);mask-image:linear-gradient(180deg,transparent 0,#000 10px,#000 calc(100% - 22px),transparent)}
+}
 .game{all:unset;box-sizing:border-box;position:relative;cursor:pointer;display:grid;grid-template-columns:72px minmax(0,1fr);align-items:center;gap:12px;padding:6px 10px 6px 6px;border-radius:12px;
   background:var(--panel);border:2px solid color-mix(in srgb,var(--acc) 35%,#1b2155);transition:transform .2s,box-shadow .2s,border-color .2s}
 .game .art{display:block;width:72px;height:40px;border-radius:7px;overflow:hidden;background:var(--gpanel,#11163f)}
@@ -138,7 +145,7 @@ h1{font-family:var(--display);font-weight:400;margin:0;line-height:1;text-align:
 
   <div class="hall">
     <section class="list" aria-label="Pick a game">
-      <h2>Pick a game</h2>
+      <h2><span>Pick a game</span><span id="count"></span></h2>
       <div class="games" id="games"></div>
     </section>
 
@@ -170,6 +177,7 @@ function render(){
   var games=list();
   $('games').innerHTML=games.map(function(g){ var b=data.games[g.id], t=b&&b.top&&b.top[0];
     return '<button class="game" type="button" style="'+vars(g)+'" data-g="'+esc(g.id)+'" aria-pressed="'+(g.id===sel)+'">'+(g.isNew?'<span class="new">NEW</span>':'')+artOf(g)+'<span style="min-width:0"><b>'+esc(g.name)+'</b><small>'+(t?'👑 <i>'+esc(t.name)+'</i> · '+esc(t.score):'No scores yet')+'</small></span></button>'; }).join('');
+  $('count').textContent=games.length+' games';
   var g=games.filter(function(x){ return x.id===sel; })[0];
   if(!g){ $('panel').hidden=true; return; }
   var b=data.games[g.id], top=(b&&b.top)||[];
@@ -193,7 +201,8 @@ fetch('data/leaderboard.json?t='+Date.now(),{ cache:'no-store' }).then(function(
   .catch(function(){ $('upd').textContent='Couldn’t load the scores. Refresh to try again.'; })
   .then(function(){ var h=decodeURIComponent((location.hash||'').slice(1)), ids=list().map(function(g){ return g.id; });
     sel=ids.indexOf(h)>=0?h:(ids.filter(function(id){ return data.games[id]&&data.games[id].top&&data.games[id].top.length; })[0]||ids[0]||null);
-    render(); });
+    render(); var on=document.querySelector('.game[aria-pressed="true"]'), box=$('games');
+    if(on&&box.scrollHeight>box.clientHeight) box.scrollTop=on.offsetTop-box.offsetTop-box.clientHeight/3; });
 render();
 })();
 </script>
