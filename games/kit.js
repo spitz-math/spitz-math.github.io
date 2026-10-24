@@ -30,7 +30,10 @@ var css=[
 '  border:2px solid rgba(255,255,255,.4); background:rgba(0,0,0,.78); color:#fff; font:700 18px/1 Inter,system-ui,sans-serif; cursor:pointer; box-shadow:0 8px 24px rgba(0,0,0,.4); transition:opacity .4s; }',
 '.sz-fs kbd{ display:inline-grid; place-items:center; min-width:34px; height:34px; border-radius:8px; background:#fff; color:#111; font:800 20px/1 Inter,system-ui,sans-serif; }',
 '.sz-fs.quiet{ opacity:.4; } .sz-fs:hover{ opacity:1; }',
-'.sz-fs[hidden]{ display:none; }'
+'.sz-fs[hidden]{ display:none; }',
+/* "reduce motion" turned on in the Chromebook's settings (2026-10-24): pulses, pops and slides on the page finish at once (the end state still shows).
+   The canvas games themselves and confetti keep moving; a few games also calm their own shake for it. */
+'@media (prefers-reduced-motion:reduce){ *,*::before,*::after{ animation-duration:.01ms !important; animation-iteration-count:1 !important; animation-delay:0s !important; transition-duration:.01ms !important; transition-delay:0s !important; scroll-behavior:auto !important; } }'
 ].join('\n');
 var st=document.createElement('style'); st.id='sz-kit-css'; st.textContent=css;
 /* first in <head>, so each game's own styles still win over the shared ones */

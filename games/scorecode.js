@@ -200,6 +200,15 @@ function button(link,code){ return '<a href="'+link+'" target="_blank" rel="noop
     var all=queue(); all.push(row); if(all.length>500) all=all.slice(-500); try{ set.call(ls,QK,JSON.stringify(all)); }catch(e){}
     if(all.length>=10) flush(); else if(!timer) timer=setTimeout(flush,60e3); }
   try{ Object.keys(ls).filter(run).forEach(function(k){ var m=/"answered":(\d+)/.exec(ls.getItem(k)||''); seen[k]=m?+m[1]:0; }); }catch(e){}
+  /* Game errors (2026-10-24): a script error on a student's Chromebook goes into the same log as a row with topic ERROR (message, file:line,
+     browser), at most 5 per page, so Class Stats can list what broke without a student having to tell anyone. */
+  var errs=0; function oops(msg,where){ if(!LOG||errs>=5) return; errs++; var nm=''; try{ Object.keys(ls).filter(run).some(function(k){ var m=/"name":"([^"]{0,40})"/.exec(ls.getItem(k)||''); return m&&(nm=m[1]); }); }catch(e){}
+    var p={}; (location.search||'').replace(/^\?/,'').split('&').forEach(function(kv){ var a=kv.split('='); if(a[0]) try{ p[a[0]]=decodeURIComponent(a[1]||''); }catch(e){} });
+    var row={ t:Date.now(), d:dev(), n:nm, g:f, s:p.set||'', ts:'', r:0, tp:'ERROR', ty:(/(CrOS|Windows|Mac OS X|iPhone|iPad|Android|Linux)/.exec(navigator.userAgent)||[''])[0]+' '+((/Chrome\/(\d+)/.exec(navigator.userAgent)||['',''])[1]?'Chrome '+/Chrome\/(\d+)/.exec(navigator.userAgent)[1]:''),
+      ok:'', q:String(msg||'error').slice(0,120), a:String(where||'').slice(0,40), c:'' };
+    var all=queue(); all.push(row); if(all.length>500) all=all.slice(-500); try{ set.call(ls,QK,JSON.stringify(all)); }catch(e){} if(!timer) timer=setTimeout(flush,5e3); }
+  addEventListener('error',function(e){ if(!e||!e.message||/^Script error|ResizeObserver/.test(e.message)) return; oops(e.message,(String(e.filename||'').split('/').pop().split('?')[0])+':'+(e.lineno||0)); });
+  addEventListener('unhandledrejection',function(e){ var r=e&&e.reason; oops('Promise: '+(r&&r.message||r),''); });
   if(LOG){ setTimeout(flush,4000); addEventListener('pagehide',function(){ flush(true); }); document.addEventListener('visibilitychange',function(){ if(document.visibilityState==='hidden') flush(true); }); }
 })();
 /* tab icon: each game has its own emoji icon (Kody, 2026-10-11), picked from the file name; unknown pages get the Spitz burger */

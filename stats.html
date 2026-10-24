@@ -135,6 +135,11 @@ details summary{ cursor:pointer; color:var(--muted); font-size:14px; font-weight
         <div><h3>Most missed questions</h3><div class="scroll"><table class="tbl" id="t-missed"></table></div></div>
         <div><h3>Games</h3><div class="scroll"><table class="tbl" id="t-games"></table></div></div>
       </div>
+      <div id="err-wrap" hidden>
+        <h3>Game errors</h3>
+        <p class="hint" style="margin-bottom:8px">When a game breaks on a student's Chromebook, it sends the error here. Send any you see to Claude to fix.</p>
+        <div class="scroll"><table class="tbl" id="t-errs"></table></div>
+      </div>
       <details><summary>Change the Google Sheet connection</summary><div class="row" style="margin-top:10px"><button id="disconnect">Forget the link and key</button></div></details>
     </div>
   </section>
@@ -162,7 +167,7 @@ details summary{ cursor:pointer; color:var(--muted); font-size:14px; font-weight
 var $=function(i){ return document.getElementById(i); }, C=window.SpitzCode;
 var UK='spitz_stats_url', KK='spitz_stats_key', PK='spitz_stats_paste', TEACH='spitz_leaderboard_v1', OKEY='spitz_counted_v1';
 var COLS=['t','d','n','g','s','ts','r','tp','ty','ok','q','a','c'];
-var answers=[], fetchedDays=0, codes=[], st={ days:7, set:'*', game:'*' }, sorts={};
+var answers=[], errors=[], fetchedDays=0, codes=[], st={ days:7, set:'*', game:'*' }, sorts={};
 function ls(k,v){ try{ if(v===undefined) return localStorage.getItem(k)||''; if(v===null) localStorage.removeItem(k); else localStorage.setItem(k,v); }catch(e){ return ''; } }
 function esc(t){ return String(t==null?'':t).replace(/[&<>"]/g,function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]; }); }
 function pct(c,a){ return a?Math.round(100*c/a):0; }
@@ -202,6 +207,7 @@ function load(){ if(!connected()) return; var days=st.days; liveStatus('Loading�
   .then(function(r){ if(!r.ok) throw new Error('http'); return r.json(); })
   .then(function(d){ if(d.error==='key') throw new Error('key');
     answers=(d.rows||[]).map(function(a){ var o={}; COLS.forEach(function(k,i){ o[k]=a[i]; }); o.t=+o.t; o.who=C.normName(o.n)||'#'+o.d; o.ok=o.ok===''||o.ok==null?null:+o.ok; return o; });
+    errors=answers.filter(function(r){ return r.tp==='ERROR'; }); answers=answers.filter(function(r){ return r.tp!=='ERROR'; });   /* game errors share the log (scorecode.js) */
     fetchedDays=days; liveStatus('Updated '+new Date().toLocaleTimeString([],{hour:'numeric',minute:'2-digit'})); fillFilters(); render(); })
   .catch(function(e){ liveStatus(e.message==='key'?'The key doesn’t match. Check it against the one setup() showed you.':'Couldn’t reach your Google Sheet. Check the link, then Refresh.',true); })
   .then(function(){ $('refresh').disabled=false; }); }
@@ -211,6 +217,12 @@ function renderLive(){ var on=connected(); $('connect-box').hidden=on; $('live-b
       D=A.filter(function(r){ return r.ok!==null; }), right=D.filter(function(r){ return r.ok; }).length, names={};
   A.forEach(function(r){ if(!names[r.who]||r.n) names[r.who]=r.n||'(no name)'; });
   tiles('live-tiles',[['Questions answered',A.length.toLocaleString()],['Accuracy',D.length?pct(right,D.length)+'%':'–'],['Students',Object.keys(group(A,function(r){ return r.who; })).length],['Games played',Object.keys(group(A,function(r){ return r.g; })).length]]);
+  var E=errors.filter(function(r){ return r.t>=from&&(st.game==='*'||r.g===st.game); }); $('err-wrap').hidden=!E.length;
+  if(E.length) table('t-errs',[
+    { h:'When', v:function(r){ return r.t; }, html:function(r){ return esc(new Date(r.t).toLocaleString([],{month:'short',day:'numeric',hour:'numeric',minute:'2-digit'})); } },
+    { h:'Game', v:function(r){ return gameName(r.g); }, html:function(r){ return esc(gameName(r.g)); } },
+    { h:'Student', v:function(r){ return r.n||''; }, html:function(r){ return esc(r.n||'–'); } },
+    { h:'Error', v:function(r){ return r.q; }, html:function(r){ return esc(r.q)+'<div class="hint">'+esc(r.a+' '+r.ty)+'</div>'; } } ],E,{c:0,up:false},'',30);
   if(!A.length){ ['t-topics','t-students','t-missed','t-games'].forEach(function(id){ table(id,[],[],{c:0},'No answers yet for these filters.'); }); $('heat').innerHTML='<div class="empty">No answers yet for these filters.</div>'; return; }
   function stat(list){ var d=list.filter(function(r){ return r.ok!==null; }); return { n:d.length, c:d.filter(function(r){ return r.ok; }).length }; }
 

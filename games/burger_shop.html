@@ -532,6 +532,13 @@ function drawTicket(t,x,y,w,h,active){ var c=cx;
   c.textAlign='right'; c.fillStyle='#2A1508'; c.font=FONT(400,30); c.fillText(t.layers.length*30*kmult(t),x+w-12,y+h-60);
   c.font=IFONT(700,16); c.fillStyle='#6B4F40'; c.fillText('points',x+w-12,y+h-40); }
 
+/* each ticket is drawn into its own small canvas and redrawn only when it changes (about 100 shapes a frame were slow on Chromebooks) */
+var TKC=[]; if(document.fonts&&document.fonts.addEventListener) document.fonts.addEventListener('loadingdone',function(){ TKC=[]; });
+function ticketImg(i,t,w,h,active){ var o=TKC[i]||(TKC[i]={c:document.createElement('canvas'),key:null}),
+    key=[t.n,t.name,t.kind,t.vip,t.layers.join(),kmult(t),active,active?S.build:0,active&&hidden()].join('|');
+  if(o.key!==key){ o.key=key; o.c.width=w+12; o.c.height=h+14; var keep=cx; cx=o.c.getContext('2d'); try{ drawTicket(t,4,4,w,h,active); } finally{ cx=keep; } }
+  return o.c; }
+
 /* ---------- patties: raw pink, then brown, then charred ---------- */
 var PCOL=[[0,[224,122,128]],[0.55,[176,96,80]],[0.8,[138,76,42]],[1.25,[110,58,32]],[1.6,[58,29,16]],[2.3,[21,16,16]]];
 function pcol(v){ for(var i=1;i<PCOL.length;i++) if(v<=PCOL[i][0]||i===PCOL.length-1){ var a=PCOL[i-1], b=PCOL[i], k=Math.max(0,Math.min(1,(v-a[0])/(b[0]-a[0])));
@@ -587,7 +594,7 @@ function draw(){ var t=now(), c=cx, tk=cur(), L=tk.layers, i;
   var slide=S.serving? Math.min(1,(t-serveAt)/700) : 0;
   for(i=0;i<S.tickets.length;i++){ var tx=16+i*258-(i>0?slide*258:0), ty=26+(i===0?8:0);
     if(i===0&&S.serving){ c.save(); c.globalAlpha=1-slide; ty-=slide*60; }
-    drawTicket(S.tickets[i],tx,ty,242,156,i===0); if(i===0&&S.serving) c.restore(); }
+    c.drawImage(ticketImg(i,S.tickets[i],242,156,i===0),tx-4,ty-4); if(i===0&&S.serving) c.restore(); }
   // the order board, with the three stars this burger can still earn
   var ox=16, oy=212, ow=262, oh=544; c.fillStyle='rgba(14,8,6,.92)'; rr(c,ox,oy,ow,oh,18); c.fill(); c.strokeStyle='#43302A'; c.lineWidth=3; c.stroke();
   c.textAlign='left'; c.textBaseline='alphabetic'; c.fillStyle='#FF7A3D'; c.font=FONT(400,28); c.fillText('ORDER #'+tk.n,ox+16,oy+40);

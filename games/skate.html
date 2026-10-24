@@ -753,10 +753,14 @@ function palms(par){ var off=GX*par, sp=380, i0=Math.floor(off/sp)-1, i, x, hgt,
     cx.lineWidth=13; cx.beginPath(); cx.moveTo(x,530); cx.quadraticCurveTo(x+26,530-hgt*0.5,x+10,530-hgt); cx.stroke();
     cx.lineWidth=9; for(k=0;k<7;k++){ a=-2.9+k*0.45; cx.beginPath(); cx.moveTo(x+10,530-hgt); cx.quadraticCurveTo(x+10+Math.cos(a)*60,530-hgt+Math.sin(a)*60-22,x+10+Math.cos(a)*96,530-hgt+Math.sin(a)*96+26); cx.stroke(); } }
   cx.lineCap='butt'; }
-function drawBack(){ var g=cx.createLinearGradient(0,0,0,520), x, off, j, j0, sp=700, TC=[PINK,LIME,CYAN,'#FFD23F'];
-  g.addColorStop(0,'#2B1B5A'); g.addColorStop(0.6,'#B8367A'); g.addColorStop(1,'#FFA552'); cx.fillStyle=g; cx.fillRect(0,0,W,522);
-  g=cx.createRadialGradient(770,440,10,770,440,300); g.addColorStop(0,'rgba(255,243,166,.55)'); g.addColorStop(1,'rgba(255,243,166,0)'); cx.fillStyle=g; cx.fillRect(470,140,584,382);
-  cx.fillStyle='#FFE08A'; cx.beginPath(); cx.arc(770,440,96,0,6.28); cx.fill();
+/* the sky and sun never move: painted once into SKY and copied each frame (two big gradients a frame were slow on Chromebooks) */
+var SKY=null;
+function sky(){ SKY=document.createElement('canvas'); SKY.width=W; SKY.height=522; var c=SKY.getContext('2d'), g=c.createLinearGradient(0,0,0,520);
+  g.addColorStop(0,'#2B1B5A'); g.addColorStop(0.6,'#B8367A'); g.addColorStop(1,'#FFA552'); c.fillStyle=g; c.fillRect(0,0,W,522);
+  g=c.createRadialGradient(770,440,10,770,440,300); g.addColorStop(0,'rgba(255,243,166,.55)'); g.addColorStop(1,'rgba(255,243,166,0)'); c.fillStyle=g; c.fillRect(470,140,584,382);
+  c.fillStyle='#FFE08A'; c.beginPath(); c.arc(770,440,96,0,6.28); c.fill(); }
+function drawBack(){ var x, off, j, j0, sp=700, TC=[PINK,LIME,CYAN,'#FFD23F'];
+  if(!SKY) sky(); cx.drawImage(SKY,0,0);
   city(0.05,'#6A2E7E',90,7,90,230,false); city(0.12,'#40205F',70,31,60,170,true); palms(0.28);
   // the wall, with tags
   cx.fillStyle='#8573AE'; cx.fillRect(0,520,W,122); cx.fillStyle='#5B4A86'; cx.fillRect(0,510,W,14);
