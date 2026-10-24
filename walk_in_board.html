@@ -5,7 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Spitzlberger Algebra 1 · Walk-in board</title>
 <meta name="robots" content="noindex">
-<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="icon" href="/burger_icon.png" type="image/png">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Caveat:wght@500&family=Rubik:wght@700;800&family=Bangers&display=swap" rel="stylesheet">
@@ -42,7 +43,7 @@ body{ background:var(--board); color:var(--chalk); font-family:var(--font-body);
 /* title bar */
 header{ display:flex; align-items:center; gap:31px; }
 .brand{ display:flex; align-items:center; gap:19px; min-width:0; }
-.burger{ width:115px; height:auto; flex:none; filter:drop-shadow(.06em .1em 0 rgba(0,0,0,.6)); }
+.burger{ width:150px; height:auto; flex:none; margin:-12px -8px -30px -14px; filter:drop-shadow(.06em .1em 0 rgba(0,0,0,.6)); }
 .title{ margin:0; font-family:var(--font-title); font-weight:400; line-height:.95; color:var(--sauce);
   font-size:96px; letter-spacing:.03em; white-space:nowrap;
   -webkit-text-stroke:.09em var(--black); paint-order:stroke fill; text-shadow:.05em .07em 0 var(--black); }
@@ -187,7 +188,7 @@ body.in-desmos .handback{ display:inline-flex; }
 body.nw-open .corner{ right:auto; left:12px; }
 /* with NumWorks docked, the header tightens so the title and date still fit */
 body.nw-open .title{ font-size:70px; }
-body.nw-open .burger{ width:84px; }
+body.nw-open .burger{ width:110px; margin:-8px -6px -22px -10px; }
 body.nw-open .date{ font-size:34px; }
 body.nw-open .clock{ font-size:30px; }
 body.nw-open #stage .tmr-chip{ left:905px; }
@@ -367,24 +368,7 @@ body.nw-open #stage .tmr-chip{ left:905px; }
 <main class="main">
   <header>
     <div class="brand">
-      <svg class="burger" viewBox="0 0 120 110" aria-hidden="true">
-        <defs>
-          <linearGradient id="bun" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FFC15E"/><stop offset=".6" stop-color="#F29A2E"/><stop offset="1" stop-color="#D9761A"/></linearGradient>
-          <linearGradient id="patty" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#9A5228"/><stop offset="1" stop-color="#5C2C12"/></linearGradient>
-        </defs>
-        <g stroke="#3B1F0E" stroke-width="2" stroke-linejoin="round">
-          <path d="M12 92 H108 Q108 106 92 106 H28 Q12 106 12 92 Z" fill="url(#bun)"/>
-          <rect x="9" y="75" width="102" height="19" rx="9.5" fill="url(#patty)"/>
-          <path d="M8 67 H112 L108 74 L100 74 L96 87 L90 74 L74 74 L69 91 L63 74 L42 74 L37 85 L31 74 L12 74 Z" fill="#FFD23F"/>
-          <rect x="13" y="60" width="94" height="9" rx="4.5" fill="#FF3B30"/>
-          <path d="M5 55 q6 9 12 0 q6 9 12 0 q6 9 12 0 q6 9 12 0 q6 9 12 0 q6 9 12 0 q6 9 12 0 q6 9 12 0 q6 9 12 0 q6 9 12 0 V61 q-6 7 -12 0 q-6 7 -12 0 q-6 7 -12 0 q-6 7 -12 0 q-6 7 -12 0 q-6 7 -12 0 q-6 7 -12 0 q-6 7 -12 0 q-6 7 -12 0 q-6 7 -12 0 Z" fill="#58C93A"/>
-          <path d="M10 56 Q8 5 60 5 Q112 5 110 56 Z" fill="url(#bun)"/>
-        </g>
-        <g fill="none" stroke="#FF8A7F" stroke-width="1.6" stroke-linecap="round"><path d="M28 64.5 h10 M55 64.5 h10 M82 64.5 h10"/></g>
-        <g fill="none" stroke="#B66A3A" stroke-width="2" stroke-linecap="round"><path d="M24 81 l6 6 M44 80 l6 6 M64 80 l6 6 M84 80 l6 6"/></g>
-        <ellipse cx="38" cy="20" rx="15" ry="6" fill="#fff" opacity=".35" transform="rotate(-22 38 20)"/>
-        <g fill="#FFF4D6" stroke="#C98A3A" stroke-width=".6"><ellipse cx="34" cy="31" rx="3" ry="1.6" transform="rotate(-25 34 31)"/><ellipse cx="52" cy="17" rx="3" ry="1.6" transform="rotate(-8 52 17)"/><ellipse cx="70" cy="14" rx="3" ry="1.6" transform="rotate(12 70 14)"/><ellipse cx="86" cy="24" rx="3" ry="1.6" transform="rotate(28 86 24)"/><ellipse cx="50" cy="38" rx="3" ry="1.6" transform="rotate(8 50 38)"/><ellipse cx="68" cy="30" rx="3" ry="1.6" transform="rotate(-12 68 30)"/><ellipse cx="88" cy="42" rx="3" ry="1.6" transform="rotate(30 88 42)"/><ellipse cx="22" cy="46" rx="3" ry="1.6" transform="rotate(-38 22 46)"/><ellipse cx="72" cy="47" rx="3" ry="1.6" transform="rotate(5 72 47)"/></g>
-      </svg>
+      <img class="burger" src="/burst_logo.png" alt="">
       <h1 class="title">Spitzlberger<span>Algebra 1</span></h1>
     </div>
     <div class="when">
