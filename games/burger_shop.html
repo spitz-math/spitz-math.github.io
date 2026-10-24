@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Spitz Arcade - Burger Shop</title>
-<link href="https://fonts.googleapis.com/css2?family=Titan+One&family=Inter:wght@500;600;700;800&display=swap" rel="stylesheet">
+<link href="../fonts/titanone-inter-8f1b6f.css" rel="stylesheet" onerror="this.onerror=null;this.href='https://fonts.googleapis.com/css2?family=Titan+One&family=Inter:wght@500;600;700;800&display=swap'">
 <style>
 :root{ --paper:#120B09; --panel:#1E1411; --panel-2:#2B1D18; --text:#FFF6EA; --muted:#C4AA98; --border:#43302A; --accent:#FF7A3D;
   --ketchup:#FF7A3D; --pickle:#9BE15D; --cream:#F6E3C2; --bun:#E8A24A;
@@ -157,19 +157,7 @@ button:disabled{ cursor:default; }
 .bs-toast{ position:absolute; left:610px; top:300px; white-space:nowrap; transform:translateX(-50%); z-index:30; padding:16px 30px; border-radius:999px; background:var(--cream); color:#2A1508; font:800 30px/1 var(--body); }
 #bs-confetti{ position:absolute; left:0; top:0; width:1920px; height:1080px; z-index:18; pointer-events:none; }
 
-/* ================= SPITZ ARCADE BRAND (shared by every game: keep identical) ================= */
-.sz-credit{ display:inline-flex !important; align-items:center; gap:10px; font:800 18px/1 Inter,system-ui,sans-serif !important; letter-spacing:.16em !important; text-transform:uppercase; color:var(--sz-ink) !important; white-space:nowrap; }
-.sz-credit::before{ content:''; flex:none; width:26px; height:5px; border-radius:3px; background:var(--sz-mark); }
-.sz-eyebrow{ display:inline-flex; align-items:center; gap:14px; margin:0 0 18px; font:800 24px/1 Inter,system-ui,sans-serif; letter-spacing:.34em; text-transform:uppercase; color:var(--sz-ink); }
-.sz-eyebrow::before,.sz-eyebrow::after{ content:''; width:40px; height:5px; border-radius:3px; background:var(--sz-mark); }
-.sz-eyebrow b{ color:var(--sz-mark); font-weight:800; }
-.sz-mus{ height:84px; padding:0 26px; border-radius:20px; background:var(--panel); border:3px solid var(--border); font:800 30px/1 Inter,system-ui,sans-serif; color:var(--sz-ink); white-space:nowrap; }
-.sz-mus.on{ border-color:var(--sz-mark); color:var(--text); }
-.sz-ask{ z-index:40; } .sz-ask h2{ margin:0 0 6px; font:400 84px/1.05 var(--display); color:var(--text); }
-.sz-ask .sz-askrow{ display:flex; justify-content:center; gap:20px; }
-.sz-ask button{ height:96px; padding:0 44px; border-radius:22px; font:800 32px/1 Inter,system-ui,sans-serif; background:var(--panel); border:3px solid var(--border); color:var(--text); }
-.sz-ask #sz-askyes{ background:var(--sz-mark); border-color:var(--sz-mark); color:#111; }
-[class$="-logo"]{ cursor:pointer; }
+/* ================= SPITZ ARCADE BRAND: the shared styles live in games/kit.js (anything below is this game's own) ================= */
 
 /* the full-screen reminder sits in the empty middle of the top bar */
 :root{ --sz-fs-x:0.455; --sz-fs-y:top; }   /* during play the hint sits at the top of the stage, between the Time chip and the score chips, and follows the stage at any window size */
@@ -184,11 +172,12 @@ button:disabled{ cursor:default; }
 @keyframes szGlowO{ to{ opacity:1; } }
 /* ================= /PERF ================= */
 </style>
+<script src="kit.js"></script>
 </head>
 <body>
 <div id="stage">
   <div class="bs-top">
-    <div class="bs-brand"><h1 class="bs-logo"><span class="bs-mini" aria-hidden="true"><span></span><span></span><span></span><span></span><span></span></span><span><b>BURGER</b> <i>SHOP</i></span></h1><span class="bs-credit sz-credit">Made by Spitz 🍔</span></div>
+    <div class="bs-brand"><h1 class="bs-logo"><span class="bs-mini" aria-hidden="true"><span></span><span></span><span></span><span></span><span></span></span><span><b>BURGER</b> <i>SHOP</i></span></h1><span class="bs-credit sz-credit">Made by Spitz <i class="sz-burger" aria-hidden="true"></i></span></div>
     <div class="bs-chip" id="bs-timerchip"><span class="l">Time</span><span class="v" id="bs-time">5:00</span></div>
     <span class="bs-sp"></span>
     <div class="bs-chip" id="bs-scorechip"><span class="l">Score</span><span class="v" id="bs-score">0</span></div>
@@ -232,7 +221,7 @@ button:disabled{ cursor:default; }
     <div class="bs-row"><input class="bs-input" id="bs-nameinput" maxlength="24" placeholder="First name + last initial" autocomplete="off" aria-label="Your name"><button class="sz-mus" id="sz-mus" aria-label="Music on or off, key N">♪ Music on</button></div>
     <button class="bs-go" id="bs-go" disabled>Start</button>
     <div class="bs-keys">Keys: 1–4 answer · Enter next question · G grill · B P C L T K O A drop a layer (or ← → and Space)<br>S shop · N music · M mute · Shift+R new game · F full screen</div>
-  </div><span class="bs-credit sz-credit">Made by Spitz 🍔</span></div>
+  </div><span class="bs-credit sz-credit">Made by Spitz <i class="sz-burger" aria-hidden="true"></i></span></div>
 
   <div class="bs-over" id="bs-end" hidden><div class="bs-box"><div class="sz-eyebrow">Spitz <b>Arcade</b></div>
     <p class="bs-sub" style="margin:0">Time! Show this screen to your teacher.</p>
@@ -241,7 +230,7 @@ button:disabled{ cursor:default; }
     <div class="bs-stats" id="bs-endstats"></div>
     <div class="bs-topics" id="bs-endtopics"></div>
     <button class="bs-again" id="bs-again">Play again</button>
-  </div><span class="bs-credit sz-credit">Made by Spitz 🍔</span></div>
+  </div><span class="bs-credit sz-credit">Made by Spitz <i class="sz-burger" aria-hidden="true"></i></span></div>
 
   <div class="bs-over sz-ask" id="sz-ask" hidden role="dialog" aria-modal="true" aria-labelledby="sz-asktitle"><div class="bs-box">
     <h2 id="sz-asktitle">Start a new game?</h2>
@@ -337,62 +326,10 @@ var SONG={ level:0.1, echo:0.27,
     if(bar%4===3) BS_LICK.forEach(function(m){ if(m[0]===k) mNote(ctx,g.act,'triangle',c[0]*2*Math.pow(2,m[1]/12),t,sd*1.6,0.05,2600,g.echo); });
   } };
 
-/* ================= SPITZ KIT (shared by every game: music switch, jingle) =================
-   M mutes everything; N turns just the music off (remembered on this Chromebook). */
-var SZ_MUSIC_OFF=false, SZ_IN=-1e9, szOnMusic=function(){};
-try{ SZ_MUSIC_OFF=localStorage.getItem('spitz_music_off')==='1'; }catch(e){}
-['pointerdown','keydown'].forEach(function(n){ addEventListener(n,function(){ SZ_IN=Date.now(); },true); });
-function szActive(ms){ return Date.now()-SZ_IN<(ms||2500); }
-function musicToggle(){ SZ_MUSIC_OFF=!SZ_MUSIC_OFF; try{ localStorage.setItem('spitz_music_off',SZ_MUSIC_OFF?'1':'0'); }catch(e){} musBtn(); toast(SZ_MUSIC_OFF?'Music off':'Music on'); szOnMusic(); }
-function musBtn(){ var b=document.getElementById('sz-mus'); if(b){ b.textContent=SZ_MUSIC_OFF?'♪ Music off':'♪ Music on'; b.classList.toggle('on',!SZ_MUSIC_OFF); } }
-/* the Spitz jingle: the same notes open every game, played on that game's own instrument */
-var JINGLE=[[392.00,0,0.12],[523.25,0.13,0.12],[659.25,0.26,0.12],[783.99,0.40,0.34],[659.25,0.78,0.12],[783.99,0.92,0.7]];
-function jingle(){ JINGLE.forEach(function(n){ SZ_VOICE(n[0],n[1],n[2]); }); }
-
-/* ================= SPITZ MUSIC (shared engine; the game supplies SONG) =================
-   Synthesized, no audio files. It plays only during a run, sits under the sound effects (25 Chromebooks play it at once),
-   and backs off while the student reads a question. */
-var MUS={ on:false, g:null, i:0, t:0 }, SZ_VOICE=function(f,t0,dur){ SONG.voice(f,t0,dur); };
-function musGraph(ctx,dest){ var out=ctx.createGain(), act=ctx.createGain(), d=ctx.createDelay(1), fb=ctx.createGain(), wet=ctx.createGain(); out.gain.value=SONG.level; out.connect(dest); act.connect(out);
-  d.delayTime.value=SONG.echo||0.3; fb.gain.value=0.28; wet.gain.value=0.3; d.connect(fb); fb.connect(d); d.connect(wet); wet.connect(act);
-  var n=Math.floor(ctx.sampleRate*0.3), buf=ctx.createBuffer(1,n,ctx.sampleRate), ch=buf.getChannelData(0); for(var i=0;i<n;i++) ch[i]=Math.random()*2-1;
-  return {out:out,act:act,echo:d,noise:buf}; }
-function mNote(ctx,to,type,fr,t,dur,vol,cut,echo,att){ var o=ctx.createOscillator(), f=ctx.createBiquadFilter(), e=ctx.createGain(); o.type=type; o.frequency.value=fr; f.type='lowpass'; f.frequency.value=cut||2400;
-  e.gain.setValueAtTime(0.0001,t); e.gain.exponentialRampToValueAtTime(vol,t+(att||0.008)); e.gain.setValueAtTime(vol,t+Math.max(att||0.008,dur*0.55)); e.gain.exponentialRampToValueAtTime(0.0001,t+dur);
-  o.connect(f); f.connect(e); e.connect(to); if(echo) e.connect(echo); o.start(t); o.stop(t+dur+0.03); return o; }
-function mHit(ctx,g,to,t,dur,vol,hp,lp){ var s=ctx.createBufferSource(), f=ctx.createBiquadFilter(), e=ctx.createGain(); s.buffer=g.noise; f.type=lp?'lowpass':'highpass'; f.frequency.value=lp||hp;
-  e.gain.setValueAtTime(vol,t); e.gain.exponentialRampToValueAtTime(0.0001,t+dur); s.connect(f); f.connect(e); e.connect(to); s.start(t); s.stop(t+dur+0.03); }
-function mKick(ctx,to,t,vol,hi,lo){ var o=ctx.createOscillator(), e=ctx.createGain(); o.type='sine'; o.frequency.setValueAtTime(hi||200,t); o.frequency.exponentialRampToValueAtTime(lo||48,t+0.12);
-  e.gain.setValueAtTime(0.0001,t); e.gain.exponentialRampToValueAtTime(vol||0.8,t+0.005); e.gain.exponentialRampToValueAtTime(0.0001,t+0.2); o.connect(e); e.connect(to); o.start(t); o.stop(t+0.22); }
-function musicTick(){ var a=AC, want=SONG.want()&&!muted&&!SZ_MUSIC_OFF;
-  if(!want){ if(MUS.on){ MUS.on=false; var g=MUS.g; MUS.g=null; if(g&&a){ g.out.gain.setTargetAtTime(0,a.currentTime,0.2); setTimeout(function(){ try{ g.out.disconnect(); }catch(e){} },1400); } } return; }
-  if(!a||a.state!=='running') return;                                              // browsers hold sound until the first click or key press
-  if(!MUS.on){ MUS.on=true; MUS.g=musGraph(a,a.destination); MUS.g.out.gain.setValueAtTime(0.0001,a.currentTime); MUS.g.out.gain.linearRampToValueAtTime(SONG.level,a.currentTime+1.2); MUS.i=0; MUS.t=a.currentTime+0.1; }
-  MUS.g.act.gain.setTargetAtTime(SONG.busy()?1:0.35,a.currentTime,0.35);            // playing: full band. Reading a question: it backs off so they can think
-  if(MUS.t<a.currentTime) MUS.t=a.currentTime+0.05;                                 // the tab was in the background: pick up from now
-  while(MUS.t<a.currentTime+0.5){ var sd=SONG.sd(); SONG.step(a,MUS.g,MUS.i,MUS.t,sd); MUS.t+=sd; MUS.i++; } }
-setInterval(musicTick,120);
-/* test hook: render the music off line and measure it */
-window.__music=function(sec){ var C=window.OfflineAudioContext||window.webkitOfflineAudioContext, c=new C(1,44100*sec,44100), g=musGraph(c,c.destination), t=0.05, i=0;
-  while(t<sec){ var sd=SONG.sd(); SONG.step(c,g,i,t,sd); t+=sd; i++; }
-  return c.startRendering().then(function(buf){ var d=buf.getChannelData(0), pk=0, sq=0, bad=0, n=d.length; for(var j=0;j<n;j++){ var v=d[j]; if(v!==v) bad++; pk=Math.max(pk,Math.abs(v)); sq+=v*v; }
-    return {peak:pk, rms:Math.sqrt(sq/n), bad:bad, steps:i}; }); };
-
-/* ================= CONFETTI (always on, even with reduced motion) ================= */
-var parts=[], craf=0, cfLast=0, cfSeen=0, CFC=['#FF3DB4','#B6FF3D','#2DE2E6','#FF8A1F','#FFF04D','#C77DFF','#FFFFFF'];
-function confetti(x,y,n,spread){ for(var i=0;i<n;i++){ var a=-Math.PI/2+(Math.random()-0.5)*spread, sp=8+Math.random()*15;
-    parts.push({x:x,y:y,vx:Math.cos(a)*sp,vy:Math.sin(a)*sp,w:10+Math.random()*12,h:6+Math.random()*8,r:Math.random()*6.28,vr:(Math.random()-0.5)*0.5,c:CFC[i%CFC.length],life:0,max:85+Math.random()*60}); }
-  if(parts.length>700) parts=parts.slice(-700);
-  window.__conf=(window.__conf||0)+n; if(!craf||Date.now()-cfSeen>400){ if(craf) cancelAnimationFrame(craf); cfLast=0; craf=requestAnimationFrame(cfStep); } }
-function cfStep(ts){ craf=0; cfSeen=Date.now(); var f=cfLast?Math.min(6,(ts-cfLast)/16.67):1; cfLast=ts; var cfv=$('bs-confetti'), c=cfv.getContext('2d'), cfk=cfv.width/1920; c.setTransform(cfk,0,0,cfk,0,0); c.clearRect(0,0,1920,1080);
-  parts=parts.filter(function(p){ return p.life<p.max&&p.y<1120; });
-  var d1=Math.pow(0.985,f), d2=Math.pow(0.992,f);
-  parts.forEach(function(p){ p.life+=f; p.vy+=0.42*f; p.vx*=d1; p.vy*=d2; p.x+=p.vx*f; p.y+=p.vy*f; p.r+=p.vr*f; var k=Math.cos(p.life*0.2);
-    c.save(); c.translate(p.x,p.y); c.rotate(p.r); c.globalAlpha=Math.min(1,(p.max-p.life)/25); c.fillStyle=p.c; c.fillRect(-p.w/2,-p.h/2*k,p.w,p.h*k); c.restore(); });
-  craf=parts.length? requestAnimationFrame(cfStep) : (c.clearRect(0,0,1920,1080),0); }
-var toastT=0; function toast(msg){ var t=$('bs-toast'); t.textContent=msg; t.hidden=false; clearTimeout(toastT); toastT=setTimeout(function(){ t.hidden=true; },1500); }
-function stagePoint(el,dx,dy){ var r=el.getBoundingClientRect(), s=$('stage').getBoundingClientRect(), k=1920/s.width; return [(r.left-s.left)*k+(dx||0),(r.top-s.top)*k+(dy||0)]; }
-
+/* ================= SPITZ KIT (games/kit.js, shared by every game: music switch, jingle, music engine, confetti, toast) =================
+   This game hands the kit its sound, song and confetti colors; N turns the music off, M mutes everything. */
+var KIT=SpitzKit.game({ ac:function(){ return AC; }, muted:function(){ return muted; }, song:function(){ return SONG; }, confetti:'bs-confetti', toast:'bs-toast', colors:['#FF3DB4','#B6FF3D','#2DE2E6','#FF8A1F','#FFF04D','#C77DFF','#FFFFFF'] }),
+  szActive=KIT.active, musicToggle=KIT.musicToggle, musBtn=KIT.musBtn, jingle=KIT.jingle, confetti=KIT.confetti, toast=KIT.toast, stagePoint=KIT.stagePoint, musGraph=KIT.musGraph, mNote=KIT.mNote, mHit=KIT.mHit, mKick=KIT.mKick;
 
 /* ================= THE KITCHEN: ingredients, orders, customers ================= */
 var ING=[
@@ -889,33 +826,7 @@ window.__verify=function(n){ var bad=[], i; for(i=0;i<n;i++){ var q=QS.next(), o
   return { questions:n, bad:bad.slice(0,5), badCount:bad.length, tickets:tBad.slice(0,5), ticketBadCount:tBad.length }; };
 })();
 </script>
-<script>/* the start screen names the question set the hub link picked */
-(function(){ var m=/[?&]set=([a-z]+)/.exec(location.search); if(m&&window.SpitzQ&&SpitzQ.sets&&SpitzQ.sets[m[1]]) document.querySelectorAll('.sz-setname').forEach(function(e){ e.textContent=SpitzQ.sets[m[1]].name+'.'; }); })();
-</script>
 <!-- ================= FULL SCREEN REMINDER: shows until the game is full screen; click it or press F ================= -->
-<style>
-.sz-fs{ position:fixed; left:50%; bottom:16px; transform:translateX(-50%); transform-origin:50% 100%; z-index:9999; display:flex; white-space:nowrap; align-items:center; gap:10px; padding:10px 20px 10px 12px; border-radius:999px;
-  border:2px solid rgba(255,255,255,.4); background:rgba(0,0,0,.78); color:#fff; font:700 18px/1 Inter,system-ui,sans-serif; cursor:pointer; box-shadow:0 8px 24px rgba(0,0,0,.4); transition:opacity .4s; }
-.sz-fs kbd{ display:inline-grid; place-items:center; min-width:34px; height:34px; border-radius:8px; background:#fff; color:#111; font:800 20px/1 Inter,system-ui,sans-serif; }
-.sz-fs.quiet{ opacity:.4; } .sz-fs:hover{ opacity:1; }
-.sz-fs[hidden]{ display:none; }
-</style>
-<button class="sz-fs" id="sz-fs" hidden aria-label="Full screen, key F"><kbd>F</kbd>Press F for full screen</button>
-<script>
-(function(){ var b=document.getElementById('sz-fs'), t0=Date.now();
-  function fs(){ return !!(document.fullscreenElement||document.webkitFullscreenElement); }
-  function upd(){ b.hidden=fs(); var st=document.querySelector('[id$="-start"]'), onStart=!!(st&&!st.hidden&&st.offsetParent);
-    b.classList.toggle('quiet', !onStart && Date.now()-t0>8000);
-    /* sit at the same spot of the game screen at any window size: scale with the stage and follow its letterbox (a game can move it sideways with --sz-fs-x).
-       On the start and end screens it waits in the top right corner, so it never covers the keys line or the buttons (a game can opt out with --sz-fs-corner:0) */
-    var sg=document.getElementById('stage'); if(sg){ var r=sg.getBoundingClientRect(), k=r.width/1920; if(k>0){ var cs=getComputedStyle(document.documentElement),
-        x=parseFloat(cs.getPropertyValue('--sz-fs-x'))||0.5, en=document.querySelector('[id$="-end"]'), over=onStart||!!(en&&!en.hidden&&en.offsetParent);
-      if(over&&cs.getPropertyValue('--sz-fs-corner').trim()!=='0'){ b.style.top=(r.top+24*k)+'px'; b.style.bottom='auto'; b.style.left=(r.right-24*k)+'px'; b.style.transformOrigin='100% 0'; b.style.transform='translateX(-100%) scale('+k+')'; }
-      else{ var top=!over&&cs.getPropertyValue('--sz-fs-y').trim()==='top'; b.style.top=top?(r.top+(parseFloat(cs.getPropertyValue('--sz-fs-top'))||30)*k)+'px':''; b.style.transformOrigin=top?'50% 0':''; b.style.left=(r.left+r.width*x)+'px'; b.style.bottom=top?'auto':(window.innerHeight-r.bottom+16*k)+'px'; b.style.transform='translateX(-50%) scale('+k+')'; } } } }
-  b.addEventListener('click',function(){ document.dispatchEvent(new KeyboardEvent('keydown',{key:'f',bubbles:true})); setTimeout(upd,300); });
-  ['click','keydown'].forEach(function(n){ document.addEventListener(n,function(){ setTimeout(upd,60); },true); });   // follow Start / Play again right away
-  window.addEventListener('resize',function(){ setTimeout(upd,50); }); document.addEventListener('fullscreenchange',upd); document.addEventListener('webkitfullscreenchange',upd); setInterval(upd,1000); upd(); })();
-</script>
 
 </body>
 </html>

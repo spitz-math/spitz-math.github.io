@@ -175,3 +175,13 @@ window.SpitzGames=[
   G.forEach(function(g,i){ var t=ADDED[g.id]?Date.parse(ADDED[g.id]+'Z'):0; g.added=t; g.isNew=!!t&&now-t<NEW_DAYS*864e5; g.rank=BEST.indexOf(g.id)<0?BEST.length+i:BEST.indexOf(g.id); });
   G.sort(function(a,b){ if(a.isNew!==b.isNew) return a.isNew?-1:1; if(a.isNew) return b.added-a.added; return a.rank-b.rank; });
 })();
+
+/* Real screenshots on the cards (2026-10-24): a game listed in SHOTS shows a picture from the game itself (games/cards/<id>.webp, 400x220)
+   instead of its drawing. Take a game out of the list to bring its drawing back (kept in g.drawn). */
+(function(){
+  var SHOTS=['brawl_buds','brick_breaker','burger_blaster','fishing','football_buds','hill_climb','hoop_buds','pinball','rocket_buds','skate'];
+  /* pictures also ready in games/cards/ (busier at card size, so they keep their drawings for now): burger_shop, fit_check, paint_royale, snake_arena, splat_range */
+  var me=document.currentScript&&document.currentScript.src, base=me?me.replace(/catalog\.js(\?.*)?$/,''):'/games/';
+  window.SpitzGames.forEach(function(g){ if(SHOTS.indexOf(g.id)<0) return; g.drawn=g.art;
+    g.art='<rect width="200" height="110" fill="'+g.panel+'"/><image href="'+base+'cards/'+g.id+'.webp" width="200" height="110" preserveAspectRatio="xMidYMid slice"/>'; });
+})();
