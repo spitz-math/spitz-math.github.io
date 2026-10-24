@@ -173,7 +173,6 @@ button:disabled{ cursor:default; }
 
 /* the full-screen reminder sits in the empty middle of the top bar */
 :root{ --sz-fs-x:0.455; --sz-fs-y:top; }   /* during play the hint sits at the top of the stage, between the Time chip and the score chips, and follows the stage at any window size */
-body:has(#bs-start:not([hidden])) .sz-fs, body:has(#bs-end:not([hidden])) .sz-fs{ top:24px !important; left:auto !important; right:24px; transform:none !important; }
 /* ================= PERF: compositor-only pulses (games/tools/perf_pass.py) ================= */
 #bs-ingchip.empty{ animation:none; isolation:isolate; }
 #bs-ingchip.empty::after{ content:''; position:absolute; inset:0; border-radius:inherit; background:var(--no); opacity:0; z-index:-1; pointer-events:none; animation:szPulseO 1s infinite; }
@@ -184,7 +183,6 @@ body:has(#bs-start:not([hidden])) .sz-fs, body:has(#bs-end:not([hidden])) .sz-fs
 .bs-bin.glow::after{ content:''; position:absolute; inset:0; border-radius:inherit; box-shadow:0 0 26px var(--pickle); opacity:0; pointer-events:none; animation:szGlowO 0.8s infinite alternate; }
 @keyframes szGlowO{ to{ opacity:1; } }
 /* ================= /PERF ================= */
-:root{ --sz-fs-corner:0; }   /* this game places the full screen hint itself */
 </style>
 </head>
 <body>
