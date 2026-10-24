@@ -1,0 +1,1525 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Spitz Checkpoint Dashboard</title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='32' height='32' viewBox='0 -2 32 32'%3E%3Cpath d='M3 12C3 5 9 2 16 2s13 3 13 10z' fill='%23f2a33a'/%3E%3Cg fill='%23fff3c4'%3E%3Cellipse cx='10' cy='6.5' rx='1.1' ry='.6'/%3E%3Cellipse cx='16' cy='5' rx='1.1' ry='.6'/%3E%3Cellipse cx='21.5' cy='7' rx='1.1' ry='.6'/%3E%3Cellipse cx='13' cy='9' rx='1.1' ry='.6'/%3E%3Cellipse cx='19' cy='9.5' rx='1.1' ry='.6'/%3E%3C/g%3E%3Cpath d='M2 12.5h28l-2.5 3-3-2-3 2.5-3-2.5-3 2.5-3-2.5-3 2.5-3-2z' fill='%235fbf3a'/%3E%3Crect x='2.5' y='15' width='27' height='3' rx='1.2' fill='%23f7d13b'/%3E%3Crect x='2' y='17.5' width='28' height='4.2' rx='2' fill='%237a3b1d'/%3E%3Cpath d='M3 22h26c0 2.6-2.4 4-5 4H8c-2.6 0-5-1.4-5-4z' fill='%23e8913a'/%3E%3C/svg%3E">
+<style>
+/* Spitz Checkpoint teacher dashboard. Teacher-only: opened from the web app link with ?view=dash. */
+:root{
+  --bg:#eef2f7; --card:#fff; --ink:#1d2733; --mut:#5d6b7a; --line:#d5dde6; --blue:#0b3fa8; --blue2:#1f5fd1; --top:#c8d4e6; --green:#1f9e5a;
+  --ok:#2e9d55; --okbg:#d8f0df; --no:#d2453b; --nobg:#f8dcd9; --part:#e3a21a; --partbg:#fbedc9; --blank:#e7ebf0; --unseen:#fff;
+  --dnm:#b03a2e; --app:#b7791f; --meets:#2b7fb8; --mast:#1b6e3a;
+}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%}
+body{font:14px/1.35 "Segoe UI",Roboto,Arial,sans-serif;color:var(--ink);background:var(--bg);display:flex;flex-direction:column;overflow:hidden}
+button,select,input{font:inherit;color:inherit}
+button{cursor:pointer}
+.topbar{display:flex;align-items:center;gap:12px;background:var(--top);padding:8px 16px;flex:0 0 auto}
+.wm{display:flex;align-items:center;gap:8px;font-weight:800;letter-spacing:.06em;color:var(--blue);font-size:19px;white-space:nowrap}
+.wm span{font-weight:400}
+.wm svg{width:30px;height:26px}
+.wm small{font-size:13px;letter-spacing:0;font-weight:600;color:#33445a;margin-left:6px;padding-left:10px;border-left:1px solid #9fb0c8}
+.topbar .sp{flex:1}
+/* header colors: red on the dashboard, purple in the Question bank (Tests page keeps the light blue) */
+.topbar.tb-red{background:#b3261e} .topbar.tb-purple{background:#5b3a9e}
+.tb-red .wm,.tb-purple .wm,.tb-red .upd,.tb-purple .upd,.tb-red .wm small,.tb-purple .wm small{color:#fff}
+.tb-red .wm small,.tb-purple .wm small{border-left-color:rgba(255,255,255,.55)}
+.tb-red .upd.err{color:#ffe08a}
+.upd{font-size:12px;color:#33445a;white-space:nowrap}
+.upd.err{color:var(--no);font-weight:600}
+.btn{border:1px solid #9fb0c8;background:#fff;border-radius:6px;padding:5px 12px;white-space:nowrap}
+.btn:hover{background:#f3f6fb}
+.btn.del{color:var(--no);border-color:#e3a7a2}
+.btn.del:hover{background:var(--nobg)}
+.btn.delgo{background:var(--no);border-color:var(--no);color:#fff}
+.btn.delgo:disabled{opacity:.45}
+.deltbl{margin:8px 0;font-size:13.5px;border-collapse:collapse}.deltbl td{padding:2px 10px 2px 0;vertical-align:top}
+.btn.pri{background:var(--blue2);border-color:var(--blue2);color:#fff}
+.btn.pri:hover{background:var(--blue)}
+.btn.warn{border-color:#d9a19b;color:#9d2a20}
+.btn:disabled{opacity:.45;cursor:default}
+.greenbar{background:var(--green);height:6px;flex:0 0 auto}
+.controls{display:flex;flex-wrap:wrap;align-items:center;gap:8px 14px;padding:10px 16px;background:#fff;border-bottom:1px solid var(--line);flex:0 0 auto}
+.lab{font-size:12px;font-weight:700;color:var(--mut);text-transform:uppercase;letter-spacing:.04em}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{border:1px solid var(--line);background:#f6f8fb;border-radius:16px;padding:3px 10px;font-size:13px;white-space:nowrap}
+.chip[aria-pressed="true"]{background:#e3ecfb;border-color:var(--blue2);color:var(--blue);font-weight:600}
+.chip .st{font-size:11px;margin-left:4px;color:var(--mut);font-weight:400}
+/* session picker */
+.sesdd{position:relative}
+.sesbtn{display:flex;align-items:center;gap:8px;max-width:min(460px,70vw);text-align:left}
+.sesbtn .sl{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.sesbtn .sl small{color:var(--mut);font-weight:400}
+.sesbtn .car{flex:0 0 auto;font-size:11px;color:var(--mut)}
+.sespanel{position:absolute;left:0;top:calc(100% + 6px);z-index:60;width:min(440px,calc(100vw - 32px));background:#fff;border:1px solid var(--line);border-radius:10px;box-shadow:0 10px 30px rgba(0,0,0,.18);display:flex;flex-direction:column;max-height:min(70vh,520px)}
+.sespanel[hidden]{display:none}
+.sespanel .sf{padding:10px 12px 6px;border-bottom:1px solid var(--line)}
+.sespanel .sf input{width:100%;border:1px solid var(--line);border-radius:6px;padding:6px 8px}
+.seslist{overflow:auto;padding:4px 0;flex:1;min-height:60px}
+.sesgrp{padding:2px 0 6px}
+.sesgh{display:flex;align-items:center;gap:8px;padding:8px 12px 4px;font-weight:700;font-size:13px;cursor:pointer}
+.sesgh .gt{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.sesgh .gn{font-weight:400;font-size:12px;color:var(--mut)}
+.sesrow{display:flex;align-items:center;gap:8px;padding:6px 12px 6px 30px;cursor:pointer;font-size:13px;min-height:34px}
+.sesrow:hover,.sesgh:hover{background:#f4f8ff}
+.sesrow .sid2{font-family:Consolas,"Courier New",monospace;font-weight:700;letter-spacing:.03em}
+.sesrow .sm{color:var(--mut);font-size:12px;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.sesrow .op{font-size:11px;font-weight:700;border-radius:8px;padding:1px 7px;background:#dff3e6;color:#17663a}
+.sesrow .op.cl{background:#eceff3;color:#4b5563}
+.sesfoot{display:flex;align-items:center;gap:8px;padding:8px 12px;border-top:1px solid var(--line);flex-wrap:wrap}
+.sesfoot label{font-size:13px;display:flex;align-items:center;gap:5px;margin-right:auto}
+.sesnone{padding:16px 12px;color:var(--mut);font-size:13px}
+.sesrow input,.sesgh input{width:16px;height:16px;margin:0;flex:0 0 auto}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:6px;overflow:hidden}
+.seg button{border:0;background:#fff;padding:4px 10px;border-left:1px solid var(--line)}
+.seg button:first-child{border-left:0}
+.seg button[aria-pressed="true"]{background:var(--blue2);color:#fff}
+.grp{display:flex;align-items:center;gap:6px}
+#q{width:130px;border:1px solid var(--line);border-radius:6px;padding:4px 8px}
+select{border:1px solid var(--line);border-radius:6px;padding:4px 6px;background:#fff}
+.tiles{display:flex;gap:8px;padding:10px 16px 0;flex:0 0 auto;flex-wrap:wrap}
+.tile{background:#fff;border:1px solid var(--line);border-radius:8px;padding:6px 12px;min-width:92px}
+.tile b{display:block;font-size:20px;line-height:1.1}
+.tile span{font-size:11px;color:var(--mut);text-transform:uppercase;letter-spacing:.04em}
+.main{flex:1;min-height:0;padding:10px 16px 12px;display:flex;flex-direction:column}
+.card{background:#fff;border:1px solid var(--line);border-radius:8px;min-height:0;flex:1;overflow:auto;position:relative}
+.empty{padding:40px;text-align:center;color:var(--mut)}
+.bulk{display:flex;align-items:center;gap:8px;padding:6px 10px;background:#fff7e0;border:1px solid #f0d9a0;border-radius:8px;margin-bottom:8px}
+.bulk[hidden]{display:none}
+/* live grid */
+table.grid{border-collapse:separate;border-spacing:0;font-size:13px}
+.grid th,.grid td{border-bottom:1px solid #edf1f5;padding:0;white-space:nowrap}
+.grid thead th{position:sticky;top:0;background:#f6f8fb;z-index:3;font-size:11px;color:var(--mut);font-weight:700;height:30px;border-bottom:1px solid var(--line)}
+.grid tfoot td{position:sticky;bottom:0;background:#f6f8fb;z-index:3;border-top:1px solid var(--line);font-size:11px;color:var(--mut);height:26px}
+.grid .fx{position:sticky;background:#fff;z-index:2}
+.grid thead .fx,.grid tfoot .fx{z-index:4;background:#f6f8fb}
+.grid .c0{min-width:32px;max-width:32px;text-align:center}
+.grid .c1{min-width:118px;max-width:150px;padding:0 6px;overflow:hidden;text-overflow:ellipsis}
+.grid .c2{min-width:38px;text-align:center}
+.grid .c3{min-width:120px;padding:0 6px}
+.grid .c4{min-width:92px;padding:0 6px}
+.grid .c5{min-width:100px;padding:0 6px}
+.grid .c6{min-width:48px;padding:0 6px;text-align:right}
+.grid .c7{min-width:70px;padding:0 6px;border-right:2px solid var(--line)}
+.grid tbody tr:hover td.fx{background:#f4f8ff}
+.nm{border:0;background:none;padding:0;color:var(--blue);font-weight:600;max-width:140px;overflow:hidden;text-overflow:ellipsis;text-align:left}
+.nm:hover{text-decoration:underline}
+.pill{display:inline-block;border-radius:10px;padding:1px 8px;font-size:12px;font-weight:600;line-height:18px}
+.p-work{background:#dff3e6;color:#17663a}.p-idle{background:#fff1cc;color:#7a5600}.p-away{background:#ffe0d6;color:#9a3412}
+.p-nosig{background:#eceff3;color:#4b5563}.p-paused{background:#e0e7ff;color:#3730a3}.p-locked{background:#3a2f63;color:#fff}
+.p-sub{background:#d9ecf7;color:#1e5a85}.p-end{background:#e6f4f1;color:#0f5f55}
+.prog{display:flex;align-items:center;gap:5px}
+.prog i{flex:1;height:7px;background:#e6ebf1;border-radius:4px;overflow:hidden;display:block}
+.prog i b{display:block;height:100%;background:var(--blue2)}
+.prog em{font-style:normal;font-size:11px;color:var(--mut);min-width:34px;text-align:right}
+.lv{display:inline-block;width:9px;height:9px;border-radius:2px;margin-right:4px;vertical-align:0}
+.acts{display:flex;gap:3px}
+.ib{border:1px solid var(--line);background:#fff;border-radius:5px;width:28px;height:24px;padding:0;display:grid;place-items:center}
+.ib:hover{background:#f3f6fb}
+.ib svg{width:14px;height:14px}
+.ib[aria-pressed="true"]{background:#e0e7ff;border-color:#818cf8}
+.ib.lk[aria-pressed="true"]{background:#3a2f63;border-color:#3a2f63;color:#fff}
+.qh{width:28px;min-width:28px;text-align:center}
+td.q{width:28px;min-width:28px;height:28px;text-align:center;padding:2px}
+.cell{width:24px;height:22px;border-radius:4px;display:grid;place-items:center;font-size:10px;font-weight:700;position:relative;margin:auto;border:1px solid transparent}
+.cell.ok{background:var(--okbg);border-color:#9fd8b1;color:#17663a}.cell.no{background:var(--nobg);border-color:#efaaa3;color:#9d2a20}
+.cell.part{background:var(--partbg);border-color:#ecc56b;color:#7a5600}.cell.bl{background:var(--blank);color:#8a96a3}.cell.un{background:#fff;border-color:#edf1f5}
+.cell.cur{outline:2px solid var(--blue2);outline-offset:1px}
+.cell.fl::after{content:"";position:absolute;top:-1px;right:-1px;border-style:solid;border-width:0 7px 7px 0;border-color:transparent #d97706 transparent transparent;border-top-right-radius:3px}
+.tmode .cell{color:#203040}
+.qfoot{font-weight:700}
+/* standards view */
+.std{padding:14px 16px;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:16px}
+.std section{min-width:0}
+.std h2{font-size:15px;margin:0 0 8px}
+.std .note{font-size:12px;color:var(--mut);margin:-4px 0 8px}
+table.t{width:100%;border-collapse:collapse;font-size:13px}
+.t th{font-size:11px;text-transform:uppercase;letter-spacing:.04em;color:var(--mut);text-align:left;border-bottom:1px solid var(--line);padding:5px 6px;position:sticky;top:0;background:#fff}
+.t td{border-bottom:1px solid #edf1f5;padding:5px 6px;vertical-align:middle}
+.t td.n{text-align:right;font-variant-numeric:tabular-nums}
+.bar{display:flex;align-items:center;gap:6px;min-width:120px}
+.bar i{flex:1;height:9px;background:#e6ebf1;border-radius:5px;overflow:hidden;display:block}
+.bar i b{display:block;height:100%}
+.bar em{font-style:normal;font-variant-numeric:tabular-nums;min-width:36px;text-align:right;font-size:12px}
+.full{grid-column:1/-1}
+.hm td.hc{text-align:center;font-weight:600;font-size:12px}
+.rs{font-size:11px;color:var(--mut)}
+/* questions view */
+.qv{padding:14px 16px}
+.qv .qtop{display:flex;gap:14px;align-items:center;flex-wrap:wrap;margin-bottom:10px}
+.qv .seg button{font-size:12px}
+.qv table.t td{vertical-align:top}
+.qv tr.qr{cursor:pointer} .qv tr.qr:hover td{background:#f6f9fc} .qv tr.qr.open td{background:#eef4fb;border-bottom-color:transparent}
+.qv .qn{font-weight:700;white-space:nowrap} .qv .qn .car{display:inline-block;width:12px;color:var(--mut)}
+.qv .wa{font-size:13px} .qv .wa b{font-weight:700} .qv .wa .rs{display:block}
+.qv tr.qd td{background:#f8fafc;padding:8px 10px 12px 28px}
+.qv .ag{display:grid;grid-template-columns:minmax(150px,max-content) 64px 1fr;gap:6px 12px;align-items:start;font-size:13px;margin:4px 0 10px}
+.qv .ag .al{font-weight:600} .qv .ag .al.ok{color:#1f6b3a} .qv .ag .al.part{color:#9a6400} .qv .ag .al.no{color:#a8321f} .qv .ag .al.bl{color:var(--mut)}
+.qv .ag .ac{text-align:right;font-variant-numeric:tabular-nums}
+.qv .ag .an{color:#33414f;line-height:1.5}
+.qv .qbtns{display:flex;gap:8px;flex-wrap:wrap}
+.qvbox{background:#fff;border-radius:10px;width:min(980px,96vw);height:min(760px,92vh);display:flex;flex-direction:column;box-shadow:0 10px 30px rgba(0,0,0,.25);overflow:hidden}
+.qvh{display:flex;align-items:center;gap:10px;padding:10px 14px;border-bottom:1px solid var(--line)} .qvh h3{margin:0;font-size:16px;flex:1;min-width:0}
+.qvbox iframe{flex:1;border:0;width:100%;min-height:0;background:#f4f6f9}
+.qvmsg{padding:20px;font-size:14px;color:var(--mut)} .qvmsg[hidden]{display:none}
+@media (max-width:700px){ .qv .ag{grid-template-columns:1fr 50px} .qv .ag .an{grid-column:1/-1;margin:-4px 0 6px} .qv .hidesm{display:none} }
+/* drawer */
+.drawer{position:fixed;top:0;right:0;bottom:0;width:min(470px,100vw);background:#fff;box-shadow:-6px 0 24px rgba(0,0,0,.18);z-index:50;display:flex;flex-direction:column}
+.drawer[hidden]{display:none}
+.dh{display:flex;align-items:center;gap:10px;padding:12px 16px;border-bottom:1px solid var(--line)}
+.dh h2{margin:0;font-size:18px;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis}
+.db{overflow:auto;padding:12px 16px;flex:1}
+.kv{display:grid;grid-template-columns:auto 1fr;gap:3px 12px;font-size:13px;margin-bottom:12px}
+.kv b{color:var(--mut);font-weight:600}
+.dact{display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap}
+/* tooltip + dialog */
+#tip{position:fixed;z-index:80;background:#1d2733;color:#fff;font-size:12px;padding:6px 9px;border-radius:6px;pointer-events:none;max-width:260px;line-height:1.4}
+#tip[hidden]{display:none}
+.veil{position:fixed;inset:0;background:rgba(15,23,42,.45);display:grid;place-items:center;z-index:90;padding:16px}
+.veil[hidden]{display:none}
+.dlg{background:#fff;border-radius:10px;padding:18px 20px;max-width:420px;box-shadow:0 10px 30px rgba(0,0,0,.25)}
+.dlg h3{margin:0 0 8px;font-size:17px}
+.dlg .btns{display:flex;justify-content:flex-end;gap:8px;margin-top:14px}
+.legend{display:flex;gap:10px;align-items:center;font-size:12px;color:var(--mut);flex-wrap:wrap}
+.legend .cell{display:inline-grid;width:16px;height:14px;vertical-align:-3px;margin-right:3px}
+/* bank builder */
+details.tcard>summary{list-style:none;cursor:pointer;display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
+details.tcard>summary::-webkit-details-marker{display:none}
+details.tcard>summary h2{margin:0}
+details.tcard>summary::before{content:"\25B8";color:var(--blue2);font-size:14px}
+details.tcard[open]>summary::before{content:"\25BE"}
+details.tcard[open]>summary{margin-bottom:10px}
+.bkopts{display:flex;flex-wrap:wrap;gap:10px 22px;align-items:center;margin:10px 0}
+.bkyears{display:flex;flex-wrap:wrap;gap:6px 12px;align-items:center;margin:0 0 10px;font-size:13px}
+.bkyears #bkYears{display:flex;flex-wrap:wrap;gap:4px 12px}
+.yr{display:inline-flex;align-items:center;gap:4px;white-space:nowrap}
+.bktable{max-height:440px;overflow:auto;border:1px solid var(--line);border-radius:8px}
+.bktable table.t td{padding:4px 8px}
+.bktable tr.bkcat td{position:sticky;top:0;background:#f6f8fb;font-size:12px;font-weight:700;color:#33445a;text-transform:uppercase;letter-spacing:.03em;padding:7px 8px;z-index:1}
+.bktable tr.on td{background:#f4f8ff}
+.step{display:inline-flex;align-items:center;gap:6px}
+.step .btn{width:32px;height:30px;padding:0;font-size:17px;line-height:1}
+.step b{min-width:16px;text-align:center}
+#bkDraft{margin-top:12px}
+#bkDraft table.t td.k{max-width:300px}
+#bkMakeRow input{border:1px solid var(--line);border-radius:6px;padding:5px 8px;width:260px;max-width:60vw}
+#bkMakeRow #bkId{width:180px;font-family:Consolas,"Courier New",monospace}
+/* tests page */
+.tpage{position:fixed;inset:0;background:var(--bg);z-index:45;display:flex;flex-direction:column}
+.tpage[hidden]{display:none}
+.tbody{flex:1;overflow:auto;padding:14px 16px 28px}
+.tcol{max-width:1080px;margin:0 auto;display:grid;gap:14px}
+.tcard{background:#fff;border:1px solid var(--line);border-radius:8px;padding:14px 16px;min-width:0}
+.tcard h2{margin:0 0 10px;font-size:16px}
+.tcard h3{margin:14px 0 6px;font-size:14px}
+.tcard p{margin:6px 0}
+.ghs{font-size:13px;padding:8px 12px;border-radius:8px;background:#f6f8fb;border:1px solid var(--line)}
+.ghs.bad{background:#fff4f2;border-color:#efc2bc}
+.drop{border:2px dashed #9fb0c8;border-radius:10px;padding:20px;text-align:center;color:var(--mut);background:#f8fafd}
+.drop.over{border-color:var(--blue2);background:#eef4ff;color:var(--blue)}
+.drop b{display:block;font-size:15px;color:var(--ink);margin-bottom:10px}
+.drop .row{justify-content:center}
+.chk{list-style:none;margin:8px 0;padding:0;font-size:13px}
+.chk li{padding:3px 0 3px 22px;position:relative}
+.chk li::before{position:absolute;left:2px;top:3px;font-weight:800}
+.chk .e::before{content:"\2715";color:var(--no)} .chk .w::before{content:"!";color:#b7791f;left:6px} .chk .k::before{content:"\2713";color:var(--ok)}
+.chk .e{color:#8f1f17}
+.badge{display:inline-block;border-radius:10px;padding:1px 8px;font-size:12px;font-weight:700;background:#dff3e6;color:#17663a;vertical-align:2px;margin-left:6px}
+.badge.rep{background:#fff1cc;color:#7a5600} .badge.hid{background:#eceff3;color:#4b5563}
+.row{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:10px}
+.stats{display:flex;gap:6px 18px;flex-wrap:wrap;font-size:13px;color:var(--mut);margin:4px 0 6px} .stats b{color:var(--ink)}
+.msg2{font-size:13px;color:var(--mut);margin-top:8px} .msg2.err{color:var(--no);font-weight:600} .msg2.ok{color:var(--ok);font-weight:600}
+.pv{position:fixed;inset:0;z-index:60;background:#fff;display:flex;flex-direction:column}
+.pv[hidden]{display:none}
+.pvbar{display:flex;align-items:center;gap:10px;background:#3a2f63;color:#fff;padding:5px 12px;font-size:13px;flex:0 0 auto}
+.pvbar .sp{flex:1}
+.pvbar .btn{padding:3px 12px;color:var(--ink)}
+.pv iframe{flex:1;border:0;width:100%;min-height:0}
+.sid{font:700 30px/1.2 Consolas,"Courier New",monospace;letter-spacing:.06em;color:var(--blue);margin:8px 0}
+details summary{cursor:pointer;color:var(--blue2);font-size:13px;margin-top:8px}
+.t td.k{max-width:260px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.hint{font-size:12px;color:var(--mut)}
+.sw{display:inline-flex;align-items:center;gap:6px;font-size:13px}
+@media (max-width:900px){ .std{grid-template-columns:1fr} .wm small{display:none} }
+/* question bank page */
+.bkpage{position:fixed;inset:0;background:var(--bg);z-index:46;display:flex;flex-direction:column}
+.bkpage[hidden]{display:none}
+.bkgrid{flex:1;min-height:0;display:grid;grid-template-columns:250px minmax(0,1fr) 290px}
+.bkside,.bkcart{background:#fff;overflow:auto;padding:12px 14px;min-height:0}
+.bkside{border-right:1px solid var(--line);display:flex;flex-direction:column;gap:6px}
+.bkcart{border-left:1px solid var(--line);display:flex;flex-direction:column;gap:8px}
+.bkside .lab{margin-top:8px}
+.bkside select,.bkcart input{width:100%;border:1px solid #9fb0c8;border-radius:6px;padding:6px 8px;background:#fff;min-height:34px}
+.bkside .seg{display:flex}.bkside .seg button{flex:1;padding:6px 6px;min-height:34px}
+.bkyrs{display:grid;grid-template-columns:1fr 1fr 1fr;gap:4px 6px;font-size:13px}
+.bkyrs label{display:flex;align-items:center;gap:4px;min-height:26px}
+.lnk{border:0;background:none;color:var(--blue2);padding:2px 4px;font-size:12px;text-decoration:underline}
+.bkcount{font-size:13px;color:var(--mut);margin-top:10px;border-top:1px solid var(--line);padding-top:8px}
+.bkcount b{color:var(--ink);font-size:15px}
+.bkmain{position:relative;min-width:0;min-height:0;display:flex}
+.bkmain iframe{flex:1;border:0;width:100%;min-height:0;background:#eef2f7}
+.bkover{position:absolute;inset:0;display:grid;place-items:center;background:#eef2f7;color:var(--mut);font-size:14px;padding:20px;text-align:center}
+.bkover[hidden]{display:none}
+.bkviewbar{position:absolute;left:0;right:0;top:0;z-index:2;display:flex;align-items:center;gap:10px;background:#3a2f63;color:#fff;padding:5px 12px;font-size:13px}
+.bkviewbar[hidden]{display:none}
+.bkviewbar .btn{padding:3px 12px;color:var(--ink)}
+.bkmain.cartv{padding-top:34px}
+.bkch{display:flex;align-items:baseline;justify-content:space-between;gap:8px}
+.bkch h3{margin:0;font-size:16px}
+.bkch span{font-size:13px;color:var(--mut)}
+.bkclist{border:1px solid var(--line);border-radius:8px;overflow:auto;min-height:90px;flex:1 1 auto;max-height:none}
+.bkci{display:grid;grid-template-columns:24px minmax(0,1fr) auto;gap:6px;align-items:center;padding:6px 6px 6px 8px;border-top:1px solid var(--line);font-size:12px;cursor:pointer}
+.bkci:first-child{border-top:0}
+.bkci:hover{background:#f4f8ff}
+.bkci .num{font-weight:700;font-size:13px}
+.bkci .t1{font-weight:700;font-size:12px}
+.bkci .t3{color:#9a5b00;font-weight:600}
+.bkci .t2{color:var(--mut);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.bkci .mv{display:flex;gap:2px}
+.bkci .mv button{width:28px;height:28px;border:1px solid var(--line);background:#fff;border-radius:5px;padding:0;font-size:13px;line-height:1}
+.bkci .mv button:disabled{opacity:.35}
+.bkempty{padding:14px;color:var(--mut);font-size:13px;text-align:center}
+.bkcbtns{display:flex;gap:6px;flex-wrap:wrap}
+.bkcart label{font-size:12px;font-weight:700;color:var(--mut);display:flex;flex-direction:column;gap:3px}
+.bkcart .msg2{margin-top:0}
+.bkcartbtn,.bkcartx{display:none}
+@media (max-width:1100px){ .bkgrid{grid-template-columns:220px minmax(0,1fr) 250px} }
+@media (max-width:900px){ .bkgrid{grid-template-columns:minmax(0,1fr)} .bkside{border-right:0;border-bottom:1px solid var(--line);max-height:42vh}
+  .bkcart{position:fixed;top:0;right:0;bottom:0;width:min(330px,100vw);z-index:47;box-shadow:-6px 0 24px rgba(0,0,0,.18);display:none} .bkpage.cartopen .bkcart{display:flex}
+  .bkcartbtn,.bkcartx{display:inline-block} .bkcartx{padding:2px 9px} .bkgrid{grid-template-rows:auto minmax(0,1fr)} }
+#bkFileRow[hidden]{display:none}
+.bkcol{display:flex;flex-direction:column;gap:6px}.bkcol[hidden]{display:none}
+</style>
+</head>
+<body>
+<header class="topbar tb-red">
+  <div class="wm"><svg viewBox="0 0 32 28" aria-hidden="true"><path d="M3 12C3 5 9 2 16 2s13 3 13 10z" fill="#f2a33a"/><g fill="#fff3c4"><ellipse cx="10" cy="6.5" rx="1.1" ry=".6"/><ellipse cx="16" cy="5" rx="1.1" ry=".6"/><ellipse cx="21.5" cy="7" rx="1.1" ry=".6"/><ellipse cx="13" cy="9" rx="1.1" ry=".6"/><ellipse cx="19" cy="9.5" rx="1.1" ry=".6"/></g><path d="M2 12.5h28l-2.5 3-3-2-3 2.5-3-2.5-3 2.5-3-2.5-3 2.5-3-2z" fill="#5fbf3a"/><rect x="2.5" y="15" width="27" height="3" rx="1.2" fill="#f7d13b"/><rect x="2" y="17.5" width="28" height="4.2" rx="2" fill="#7a3b1d"/><path d="M3 22h26c0 2.6-2.4 4-5 4H8c-2.6 0-5-1.4-5-4z" fill="#e8913a"/></svg>SPITZ <span>CHECKPOINT</span><small>Teacher Dashboard</small></div>
+  <div class="sp"></div>
+  <span class="upd" id="upd">Loading…</span>
+  <label class="upd"><input type="checkbox" id="auto" checked> Auto-refresh</label>
+  <button class="btn" id="refresh">Refresh</button>
+  <button class="btn" id="testsBtn">Tests</button>
+</header>
+<div class="controls">
+  <div class="grp"><span class="lab">Session</span><div class="sesdd" id="sesDD"><button class="btn sesbtn" id="sesBtn" aria-haspopup="dialog" aria-expanded="false"><span class="sl" id="sesLabel">Loading…</span><span class="car" aria-hidden="true">&#9662;</span></button>
+    <div class="sespanel" id="sesPanel" hidden role="dialog" aria-label="Pick sessions"><div class="sf"><input type="search" id="sesFind" placeholder="Find a Session ID, test or note" aria-label="Find a session"></div>
+      <div class="seslist" id="sesList"></div>
+      <div class="sesfoot"><label><input type="checkbox" id="sesClosed"> Show closed sessions</label><button class="btn" id="sesClear">Clear</button><button class="btn pri" id="sesDone">Show</button></div></div></div></div>
+  <div class="grp"><span class="lab">Period</span><div class="seg" id="perSeg"><button data-v="">All</button><button data-v="2">2</button><button data-v="8">8</button><button data-v="9">9</button><button data-v="G">Guest</button></div></div>
+  <div class="grp"><span class="lab">Sort</span><select id="sort"><option value="name">Name</option><option value="period">Period</option><option value="status">Status</option><option value="progress">Progress</option><option value="score">Score</option><option value="input">Last activity</option></select></div>
+  <div class="grp"><input id="q" type="search" placeholder="Find a name" aria-label="Find a name"></div>
+  <div class="grp"><span class="lab">View</span><div class="seg" id="viewSeg"><button data-v="live">Live</button><button data-v="std">Standards</button><button data-v="ques">Questions</button></div></div>
+</div>
+<div class="tiles" id="tiles"></div>
+<div class="main">
+  <div class="bulk" id="bulk" hidden><b id="bulkN"></b><button class="btn" data-bulk="pause">Pause</button><button class="btn" data-bulk="resume">Resume</button><button class="btn warn" data-bulk="lock">Stop</button><button class="btn" data-bulk="unlock">Unlock</button><button class="btn" id="bulkClear">Clear selection</button></div>
+  <div class="card" id="card"><div class="empty">Loading…</div></div>
+</div>
+<div class="veil" id="qvVeil" hidden><div class="qvbox" role="dialog" aria-modal="true" aria-labelledby="qvTitle"><div class="qvh"><h3 id="qvTitle">Question</h3><button class="btn" id="qvClose">Close</button></div><div class="qvmsg" id="qvMsg" hidden></div><iframe id="qvFrame" title="Question preview" sandbox="allow-scripts"></iframe></div></div>
+<aside class="drawer" id="drawer" hidden aria-label="Student details"><div class="dh"><h2 id="dName"></h2><button class="btn" id="dClose">Close</button></div><div class="db" id="dBody"></div></aside>
+<section class="tpage" id="tpage" hidden aria-label="Tests">
+  <header class="topbar"><div class="wm">SPITZ <span>CHECKPOINT</span><small>Tests</small></div><div class="sp"></div>
+    <button class="btn" id="tpReload">Reload</button><button class="btn pri" id="tpBack">Back to dashboard</button></header>
+  <div class="tbody"><div class="tcol">
+    <div class="ghs" id="ghs">Checking GitHub…</div>
+    <section class="tcard"><h2>Add or replace a test</h2>
+      <div class="drop" id="drop"><b>Drop a test zip here</b>or<div class="row"><button class="btn pri" id="pickZip">Choose a zip file</button><button class="btn" id="pickDir">Choose a folder</button></div>
+        <input type="file" id="zipIn" accept=".zip,application/zip" hidden><input type="file" id="dirIn" webkitdirectory hidden></div>
+      <div id="pkg"></div>
+    </section>
+    <section class="tcard"><h2>Question bank</h2>
+      <p class="hint">Browse released STAAR questions by standard and year, or make new ones. Each question shows just as students see it, with its answer. Add the ones you want, then make a test from them.</p>
+      <div class="row"><button class="btn pri" id="bkOpen">Open the question bank</button><span class="hint" id="bkCartNote"></span></div>
+    </section>
+    <section class="tcard"><h2>Your tests</h2><div id="tlist"><p class="hint">Loading…</p></div><div class="msg2" id="tlMsg"></div></section>
+    <section class="tcard"><h2>Single files</h2>
+      <p class="hint">Each test as one file that works without internet or a Session ID (saved on that computer only). They are rebuilt every time you publish a test; use this after player.html changes.</p>
+      <div class="row"><button class="btn" id="rebuild">Rebuild single files</button></div><div class="msg2" id="rbMsg"></div>
+    </section>
+  </div></div>
+</section>
+<section class="bkpage" id="bkpage" hidden aria-label="Question bank">
+  <header class="topbar tb-purple"><div class="wm">SPITZ <span>CHECKPOINT</span><small>Question bank</small></div><div class="sp"></div>
+    <button class="btn bkcartbtn" id="bkCartBtn">Your test (0)</button><button class="btn pri" id="bkBack">Back to Tests</button></header>
+  <div class="bkgrid">
+    <aside class="bkside" aria-label="Find questions">
+      <div class="msg2" id="bkMsg"></div>
+      <div class="row" id="bkFileRow" hidden><button class="btn" id="bkFileBtn">Choose the question bank file</button><input type="file" id="bkFile" accept=".html,text/html" hidden></div>
+      <div id="bkFilters" class="bkcol" hidden>
+        <span class="lab">Questions</span>
+        <div class="seg" id="bkSrc"><button data-v="rel" aria-pressed="true">Released</button><button data-v="saved" aria-pressed="false">Saved</button><button data-v="gen" aria-pressed="false">Generated</button></div>
+        <label class="lab" for="bkStd">Standard</label><select id="bkStd"></select>
+        <div id="bkRelOpts" class="bkcol">
+          <label class="lab" for="bkType">Question type</label>
+          <select id="bkType"><option value="">All types</option><option value="mc">Multiple choice only</option><option value="int">Interactive</option></select>
+          <label class="lab" for="bkSort">Order</label>
+          <select id="bkSort"><option value="new">Newest year first</option><option value="std">By standard</option></select>
+        </div>
+        <div id="bkGenOpts" class="bkcol" hidden>
+          <span class="lab">Make</span>
+          <div class="seg" id="bkGenMode"><button data-v="gen" aria-pressed="true">Practice</button><button data-v="fresh" aria-pressed="false">Released, new numbers</button></div>
+          <p class="hint" id="bkGenHint"></p>
+          <div class="row" style="margin-top:2px"><button class="btn" id="bkMore">Make 5 more</button><button class="btn" id="bkRegen">Start over</button></div>
+        </div>
+        <label class="sw" style="margin-top:10px"><input type="checkbox" id="bkHideUsed"> Hide questions already on a test</label>
+        <div class="bkcount" id="bkCount"></div>
+      </div>
+    </aside>
+    <main class="bkmain" id="bkMain">
+      <div class="bkviewbar" id="bkViewBar" hidden><b>Your test, in order</b><span class="sp" style="flex:1"></span><button class="btn" id="bkViewBack">Back to the bank</button></div>
+      <iframe id="bkView" title="Question previews" sandbox="allow-scripts"></iframe>
+      <div class="bkover" id="bkOver">Loading…</div>
+    </main>
+    <aside class="bkcart" aria-label="Your test">
+      <div class="bkch"><h3>Your test</h3><span id="bkCartN">0 questions</span><button class="btn bkcartx" id="bkCartClose" aria-label="Close Your test">✕</button></div>
+      <div class="bkclist" id="bkCart"></div>
+      <div class="bkcbtns"><button class="btn" id="bkCartView" disabled>Preview in order</button><button class="btn" id="bkShuffle" disabled>Mix order</button><button class="btn warn" id="bkCartClear" disabled>Clear</button></div>
+      <label>Title<input id="bkTitle" maxlength="80"></label>
+      <label>Test ID<input id="bkId" maxlength="40" spellcheck="false"></label>
+      <button class="btn pri" id="bkMake" disabled>Make the test</button>
+      <div class="msg2" id="bkMakeMsg"></div>
+      <p class="hint">Next: the test gets the same checks, Preview and Publish as an uploaded test.</p>
+    </aside>
+  </div>
+</section>
+<div class="pv" id="pv" hidden><div class="pvbar"><b id="pvTitle"></b><span>Preview only: nothing is saved to your Sheet.</span><span class="sp"></span><button class="btn" id="pvClose">Close preview</button></div><iframe id="pvf" title="Test preview"></iframe></div>
+<div id="tip" hidden></div>
+<div class="veil" id="veil" hidden><div class="dlg" role="alertdialog" aria-modal="true" aria-labelledby="vTitle"><h3 id="vTitle"></h3><div id="vMsg"></div><div class="btns" id="vBtns"></div></div></div>
+
+<script>window.SPITZ_ROOT="";</script>
+<script>
+(function(){
+"use strict";
+const $=s=>document.querySelector(s), esc=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const APP=window.SPITZ_APP||null, ROOT=window.SPITZ_ROOT||'';
+const LEVELS=[[69,'Masters','var(--mast)'],[52,'Meets','var(--meets)'],[32,'Approaches','var(--app)'],[0,'Did Not Meet','var(--dnm)']];
+const lvl=p=>LEVELS.find(l=>p>=l[0]);
+const IDLE_MS=3*60*1000, NOSIG_MS=100*1000, POLL_MS=15000;
+const store=k=>{ try{ return JSON.parse(localStorage.getItem('spitzDash:'+k)); }catch(e){ return null; } };
+const keep=(k,v)=>{ try{ localStorage.setItem('spitzDash:'+k,JSON.stringify(v)); }catch(e){} };
+
+/* ---------- talking to Apps Script (same bridge as the player: Google's objects must be made in Google's frame) ---------- */
+function gsHost(){ const w=[window]; try{ if(parent!==window) w.push(parent); }catch(e){}
+  for(const x of w){ try{ if(x.google&&x.google.script&&x.google.script.run) return x; }catch(e){} } return null; }
+function call(fn,arg,ms){ return new Promise((res,rej)=>{ const h=APP&&gsHost(); if(!h) return rej(new Error('offline'));
+  let done=false; const fin=(f,v)=>{ if(done) return; done=true; clearTimeout(tm); f(v); };
+  const tm=setTimeout(()=>fin(rej,new Error('no answer from Google')),ms||40000);   // a lost answer must not freeze the dashboard
+  try{ h.google.script.run.withSuccessHandler(r=>{ let v=r; try{ v=r==null?r:JSON.parse(h.JSON.stringify(r)); }catch(e){} fin(res,v); })
+      .withFailureHandler(e=>fin(rej,new Error(String(e&&e.message||e))))[fn](h.JSON.parse(JSON.stringify(arg==null?null:arg)));
+  }catch(e){ fin(rej,e); } }); }
+
+/* ---------- test details (TEKS, categories) read from each test's test.js in a hidden frame ---------- */
+const META={}, LOADED=Date.now();
+const STUBS=`window.SPITZ_BASE='';const ASSET=p=>'';const $=s=>null;const F=(a,b)=>'';const V=s=>'';const x='',y='';const ODD=['A','B','C','D','E','F','G','H'],EVEN=['F','G','H','J','K'];
+const j='',k='',m='',p='',c='',t='',v='',z='',a='',n='',f='',g='',h='',P='',A='';const IMG=()=>'';const T=()=>'';const SYS=()=>'';let SGID=0;function SG(){return '';}const SEL1='';
+window.SpitzTest=function(TD){ parent.postMessage({spitzMeta:{id:TD.id,title:TD.title,categories:TD.categories||null,items:(TD.items||[]).map((it,i)=>({n:i+1,teks:it.teks||'',rs:it.rs||'',cat:it.cat||null,max:it.max||1,type:it.label||it.type}))}},'*'); };`;
+function loadMeta(id){ if(META[id]) return META[id].p;
+  META[id]={p:new Promise(res=>{ const f=document.createElement('iframe'); f.style.display='none'; f.setAttribute('aria-hidden','true');
+    const done=d=>{ META[id].d=d; removeEventListener('message',on); f.remove(); res(d); };
+    const on=e=>{ if(e.data&&e.data.spitzMeta&&e.data.spitzMeta.id===id) done(e.data.spitzMeta); };
+    addEventListener('message',on); setTimeout(()=>{ if(!META[id].d) done(null); },15000);
+    f.srcdoc='<!DOCTYPE html><html><body><scr'+'ipt>'+STUBS+'</scr'+'ipt><scr'+'ipt src="'+esc(ROOT+'tests/'+id+'/test.js?t='+LOADED)+'"></scr'+'ipt></body></html>';
+    document.body.appendChild(f); })};
+  return META[id].p; }
+
+/* ---------- state ---------- */
+let DATA=null, view=store('view')||'live', per=store('per')||'', sortBy=store('sort')||'name', qtxt='', selSes=null, sel=new Set(), openKey=null, timer=null, busy=false, cellMode='score';
+$('#sort').value=sortBy;
+function setSeg(id,v){ document.querySelectorAll(id+' button').forEach(b=>b.setAttribute('aria-pressed',b.dataset.v===v)); }
+setSeg('#perSeg',per); setSeg('#viewSeg',view);
+
+/* ---------- load ---------- */
+async function load(){ if(busy) return; busy=true;
+  try{ const wantAns=view==='ques', r=await call('stcDash',{sessions:selSes?[...selSes]:[],answers:wantAns});
+    DATA=r; DATA.skew=Date.now()-r.now; DATA.ansReq=wantAns;
+    if(!selSes){ const saved=store('ses'); const ids=new Set(r.sessions.map(s=>s.id));
+      selSes=new Set((saved||[]).filter(x=>ids.has(x)));
+      if(!selSes.size){ const open=r.sessions.filter(s=>s.open).sort((a,b)=>(b.created||0)-(a.created||0)); if(open.length) open.filter(s=>s.test===open[0].test).forEach(s=>selSes.add(s.id)); } }
+    await Promise.all([...new Set(r.students.map(s=>s.test).concat(r.sessions.filter(s=>selSes.has(s.id)).map(s=>s.test)))].filter(Boolean).map(loadMeta));
+    $('#upd').textContent='Updated '+new Date().toLocaleTimeString([], {hour:'numeric',minute:'2-digit',second:'2-digit'}); $('#upd').classList.remove('err');
+    render();
+  }catch(e){ const m=String(e&&e.message||e);
+    if(/NOTOWNER/.test(m)){ $('#card').innerHTML='<div class="empty">This page is only for the teacher.</div>'; stop(); }
+    else if(m==='offline'){ $('#card').innerHTML='<div class="empty">Open the dashboard from the web app link with <b>?view=dash</b> at the end (Sheet menu: Spitz Checkpoint &gt; Open the dashboard).</div>'; stop(); }
+    else { $('#upd').textContent='Could not refresh ('+m+'). Trying again…'; $('#upd').classList.add('err'); } }
+  finally{ busy=false; } }
+function stop(){ clearInterval(timer); timer=null; }
+function startAuto(){ stop(); if($('#auto').checked) timer=setInterval(()=>{ if(!document.hidden) load(); },POLL_MS); }
+$('#auto').onchange=startAuto; $('#refresh').onclick=load;
+document.addEventListener('visibilitychange',()=>{ if(!document.hidden&&$('#auto').checked) load(); });
+
+/* ---------- derived values ---------- */
+function stat(s){ const now=Date.now()-(DATA.skew||0);
+  if(s.submitted) return ['sub','Submitted',6];
+  if(s.control==='locked') return ['locked','Stopped',5];
+  if(s.control==='paused') return ['paused','Paused by you',4];
+  if(s.saved&&now-s.saved>NOSIG_MS) return ['nosig','No signal '+ago(now-s.saved),3];
+  if(s.status==='paused') return ['paused','Paused',4];
+  if(s.status==='away') return ['away','Left the test tab',2];
+  if(s.status==='end') return ['end','At end screen',1];
+  if(s.input&&now-s.input>IDLE_MS) return ['idle','Idle '+ago(now-s.input),2];
+  return ['work','Working',0]; }
+function ago(ms){ const m=Math.round(ms/60000); return m<1?'<1m':m<60?m+'m':Math.floor(m/60)+'h '+(m%60)+'m'; }
+function fmtMs(ms){ const s=Math.round(ms/1000); if(s<60) return s+'s'; const m=Math.floor(s/60); return m+'m '+String(s%60).padStart(2,'0')+'s'; }
+function meta(test){ return META[test]&&META[test].d||null; }
+function qinfo(s,i){ const m=meta(s.test), it=m&&m.items[i], q=s.q[i]||[];
+  return {teks:(it&&it.teks)||q[6]||'', rs:(it&&it.rs)||'', cat:(it&&it.cat)||q[7]||null, max:(it&&it.max)||q[1]||1}; }
+function shown(){ if(!DATA) return [];
+  let L=DATA.students.filter(s=>selSes.has(s.session)&&(!per||s.period===per)&&(!qtxt||String(s.name).toLowerCase().includes(qtxt)));
+  const by={ name:(a,b)=>String(a.name).localeCompare(String(b.name))||String(a.period).localeCompare(String(b.period)),
+    period:(a,b)=>String(a.period).localeCompare(String(b.period))||by.name(a,b), status:(a,b)=>stat(b)[2]-stat(a)[2]||by.name(a,b),
+    progress:(a,b)=>(b.answered||0)-(a.answered||0)||by.name(a,b), score:(a,b)=>(b.pct||0)-(a.pct||0)||by.name(a,b), input:(a,b)=>(a.input||0)-(b.input||0)||by.name(a,b) };
+  return L.sort(by[sortBy]||by.name); }
+
+/* ---------- render ---------- */
+function render(){ if(!DATA) return; const card=$('#card'), sx=card.scrollLeft, sy=card.scrollTop, same=card.dataset.view===view;
+  draw(); card.dataset.view=view; if(same){ card.scrollLeft=sx; card.scrollTop=sy; } }
+function draw(){ renderChips(); const L=shown(); renderTiles(L);
+  [...sel].forEach(k=>{ if(!L.some(s=>s.key===k)) sel.delete(k); }); renderBulk();
+  if(!DATA.sessions.length){ $('#card').innerHTML='<div class="empty">No sessions yet. In the Sheet use <b>Spitz Checkpoint &gt; New session…</b></div>'; return; }
+  if(!selSes.size){ $('#card').innerHTML='<div class="empty">Pick a session in the Session menu above.</div>'; return; }
+  if(!L.length){ $('#card').innerHTML='<div class="empty">No students '+(per||qtxt?'match these filters':'have signed in to '+(selSes.size>1?'these sessions':'this session'))+' yet.</div>'; return; }
+  const tests=[...new Set(L.map(s=>s.test))];
+  if(view==='live') renderLive(L,tests); else if(view==='ques') renderQues(L,tests); else renderStd(L,tests);
+  if(openKey) openDrawer(openKey,true); }
+/* ---------- session picker (dropdown): grouped by test, several sessions can be shown together ---------- */
+let sesDraft=null;
+const fmtDay=t=>t?new Date(t).toLocaleDateString([], {month:'short',day:'numeric'}):'';
+const testTitle=id=>{ const m=meta(id); return m?m.title:id; };
+function renderChips(){ renderSesLabel(); if(sesDraft) renderSesList(); }
+function renderSesLabel(){ const L=DATA.sessions.filter(s=>selSes.has(s.id)), tests=[...new Set(L.map(s=>s.test))];
+  let h; if(!DATA.sessions.length) h='No sessions yet'; else if(!L.length) h='Pick a session';
+  else if(L.length===1) h=`${esc(L[0].id)} <small>· ${esc(testTitle(L[0].test))}${L[0].open?'':' · closed'}</small>`;
+  else if(tests.length===1) h=`${L.length} sessions <small>· ${esc(testTitle(tests[0]))}</small>`;
+  else h=`${L.length} sessions <small>· ${tests.length} tests</small>`;
+  $('#sesLabel').innerHTML=h; $('#sesBtn').title=L.map(s=>s.id+' · '+testTitle(s.test)).join('\n'); }
+function renderSesList(){ const box=$('#sesList'), keepTop=box.scrollTop; const q=$('#sesFind').value.trim().toLowerCase(), showClosed=$('#sesClosed').checked||!!q;
+  const match=s=>!q||[s.id,s.test,testTitle(s.test),s.notes].join(' ').toLowerCase().includes(q);
+  const vis=DATA.sessions.filter(s=>(s.open||showClosed||sesDraft.has(s.id))&&match(s));
+  const groups={}; vis.forEach(s=>(groups[s.test]=groups[s.test]||[]).push(s));
+  const order=Object.keys(groups).sort((a,b)=>Math.max(...groups[b].map(s=>s.created||0))-Math.max(...groups[a].map(s=>s.created||0)));
+  const hid=DATA.sessions.filter(s=>!s.open&&!showClosed&&!sesDraft.has(s.id)).length;
+  $('#sesList').innerHTML=order.length?order.map(t=>{ const G=groups[t].sort((a,b)=>(b.open-a.open)||((b.created||0)-(a.created||0))), on=G.filter(s=>sesDraft.has(s.id)).length;
+      return `<div class="sesgrp"><label class="sesgh"><input type="checkbox" data-grp="${esc(t)}" ${on===G.length?'checked':''} ${on&&on<G.length?'data-mixed="1"':''}><span class="gt">${esc(testTitle(t))}</span><span class="gn">${G.length} session${G.length===1?'':'s'}</span></label>
+        ${G.map(s=>`<label class="sesrow"><input type="checkbox" data-sid="${esc(s.id)}" ${sesDraft.has(s.id)?'checked':''}><span class="sid2">${esc(s.id)}</span><span class="op${s.open?'':' cl'}">${s.open?'Open':'Closed'}</span><span class="sm">${esc([fmtDay(s.created),s.notes].filter(Boolean).join(' · '))}</span></label>`).join('')}</div>`; }).join('')
+    :`<div class="sesnone">${q?'No sessions match “'+esc(q)+'”.':DATA.sessions.length?'No open sessions. Tick “Show closed sessions” below.':'No sessions yet. Make one on the Tests page or from the Sheet menu.'}</div>`;
+  if(hid&&!q) $('#sesList').insertAdjacentHTML('beforeend',`<div class="sesnone" style="padding-top:4px">${hid} closed session${hid===1?'':'s'} hidden.</div>`);
+  box.querySelectorAll('input[data-mixed]').forEach(x=>x.indeterminate=true); box.scrollTop=keepTop; }
+function openSes(){ if(!DATA) return; sesDraft=new Set(selSes); $('#sesFind').value=''; $('#sesPanel').hidden=false; $('#sesBtn').setAttribute('aria-expanded','true');
+  renderSesList(); const others=[...new Set(DATA.sessions.map(s=>s.test))].filter(t=>!META[t]); if(others.length) Promise.all(others.map(loadMeta)).then(()=>{ if(sesDraft) renderSesList(); renderSesLabel(); }); }
+function closeSes(apply){ if(!sesDraft) return; const d=sesDraft; sesDraft=null; $('#sesPanel').hidden=true; $('#sesBtn').setAttribute('aria-expanded','false');
+  if(apply&&(d.size!==selSes.size||[...d].some(x=>!selSes.has(x)))){ selSes=d; keep('ses',[...selSes]); render(); load(); } }
+$('#sesBtn').onclick=()=>sesDraft?closeSes(true):openSes();
+$('#sesDone').onclick=()=>closeSes(true);
+$('#sesClear').onclick=()=>{ sesDraft.clear(); renderSesList(); };
+$('#sesFind').oninput=renderSesList; $('#sesClosed').onchange=renderSesList;
+$('#sesList').addEventListener('change',e=>{ const x=e.target; if(!sesDraft) return;
+  if(x.dataset.sid){ x.checked?sesDraft.add(x.dataset.sid):sesDraft.delete(x.dataset.sid); }
+  else if(x.dataset.grp!=null){ const ids=[...$('#sesList').querySelectorAll('input[data-sid]')].filter(i=>i.closest('.sesgrp')===x.closest('.sesgrp')).map(i=>i.dataset.sid); ids.forEach(id=>x.checked?sesDraft.add(id):sesDraft.delete(id)); }
+  renderSesList(); });
+document.addEventListener('pointerdown',e=>{ if(sesDraft&&!e.target.closest('#sesDD')) closeSes(true); });
+document.addEventListener('keydown',e=>{ if(e.key==='Escape'&&sesDraft){ closeSes(false); $('#sesBtn').focus(); } });
+function renderTiles(L){ const c={work:0,idle:0,away:0,nosig:0,paused:0,locked:0,sub:0,end:0}; L.forEach(s=>c[stat(s)[0]]++);
+  const subs=L.filter(s=>s.submitted), avg=subs.length?Math.round(subs.reduce((a,s)=>a+(s.pct||0),0)/subs.length):null, meets=subs.filter(s=>(s.pct||0)>=52).length;
+  const T=(v,l)=>`<div class="tile"><b>${v}</b><span>${l}</span></div>`;
+  $('#tiles').innerHTML=T(L.length,'Students')+T(c.work+c.end,'Working')+T(c.idle,'Idle 3m+')+T(c.away+c.nosig,'Away / no signal')+T(c.paused+c.locked,'Paused / stopped')+T(c.sub,'Submitted')
+    +T(avg==null?'–':avg+'%','Avg score (submitted)')+T(subs.length?Math.round(100*meets/subs.length)+'%':'–','Meets or above'); }
+function renderBulk(){ $('#bulk').hidden=!sel.size; $('#bulkN').textContent=sel.size+' selected'; }
+const ICON={pause:'<svg viewBox="0 0 14 14"><rect x="3" y="2" width="3" height="10" rx="1" fill="currentColor"/><rect x="8" y="2" width="3" height="10" rx="1" fill="currentColor"/></svg>',
+  lock:'<svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="2.5" y="6" width="9" height="6.5" rx="1.3" fill="currentColor" stroke="none"/><path d="M4.5 6V4.3a2.5 2.5 0 015 0V6"/></svg>'};
+function cellHtml(s,i,mode){ const q=s.q[i]; const cur=!s.submitted&&+s.item===i+1;
+  if(!q) return `<div class="cell un${cur?' cur':''}"></div>`;
+  const [pts,mx,ms,visits,,fl]=q; let cls, txt='';
+  if(pts==null) cls=visits?'bl':'un'; else if(pts>=mx) cls='ok'; else if(pts>0) cls='part'; else cls='no';
+  if(mode==='time'&&ms) txt=ms<60000?Math.round(ms/1000)+'s':Math.round(ms/60000)+'m'; else if(cls==='part') txt=pts;
+  return `<div class="cell ${cls}${cur?' cur':''}${fl?' fl':''}" data-k="${esc(s.key)}" data-i="${i}">${txt}</div>`; }
+function renderLive(L,tests){
+  const nq=Math.max(...L.map(s=>Math.max(s.q.length,(meta(s.test)||{items:[]}).items.length)),0);
+  const mixed=tests.length>1;
+  const head=`<tr><th class="fx c0"><input type="checkbox" id="allBox" aria-label="Select all shown"></th><th class="fx c1" style="text-align:left">Name</th><th class="fx c2">Per.</th><th class="fx c3" style="text-align:left">Status</th><th class="fx c4" style="text-align:left">Answered</th><th class="fx c5" style="text-align:left">Score</th><th class="fx c6">Time</th><th class="fx c7">Pause / Stop</th>${Array.from({length:nq},(_,i)=>`<th class="qh">${i+1}</th>`).join('')}</tr>`;
+  const rows=L.map(s=>{ const [k,label]=stat(s), n=Math.max(s.q.length,(meta(s.test)||{items:[]}).items.length)||1, ans=s.answered||0, l=lvl(s.pct||0);
+    return `<tr data-k="${esc(s.key)}"><td class="fx c0"><input type="checkbox" class="rowBox" data-k="${esc(s.key)}" ${sel.has(s.key)?'checked':''} aria-label="Select ${esc(s.name)}"></td>
+      <td class="fx c1"><button class="nm" data-open="${esc(s.key)}" title="${esc(s.name)}">${esc(s.name)}</button>${mixed?`<div class="rs">${esc(s.session)}</div>`:''}</td>
+      <td class="fx c2">${esc(s.period==='G'?'G':s.period)}</td>
+      <td class="fx c3"><span class="pill p-${k}" title="${esc(label+(s.away?' · left the tab '+s.away+'×':''))}">${esc(label)}</span></td>
+      <td class="fx c4"><div class="prog"><i><b style="width:${Math.round(100*ans/n)}%"></b></i><em>${ans}/${n}</em></div></td>
+      <td class="fx c5" title="${esc(l[1])}"><span class="lv" style="background:${l[2]}"></span>${s.score||0}/${s.max||0} <span class="rs">${s.pct||0}%</span></td>
+      <td class="fx c6">${s.minutes!==''&&s.minutes!=null?Math.round(s.minutes)+'m':''}</td>
+      <td class="fx c7"><div class="acts">${s.submitted?'':`<button class="ib" data-act="${s.control==='paused'?'resume':'pause'}" data-k="${esc(s.key)}" aria-pressed="${s.control==='paused'}" title="${s.control==='paused'?'Resume':'Pause'}">${ICON.pause}</button><button class="ib lk" data-act="${s.control==='locked'?'unlock':'lock'}" data-k="${esc(s.key)}" aria-pressed="${s.control==='locked'}" title="${s.control==='locked'?'Unlock':'Stop test'}">${ICON.lock}</button>`}</div></td>
+      ${Array.from({length:nq},(_,i)=>`<td class="q">${cellHtml(s,i,cellMode)}</td>`).join('')}</tr>`; }).join('');
+  const foot=`<tr><td class="fx c0"></td><td class="fx c1" style="font-weight:700">% correct</td><td class="fx c2"></td><td class="fx c3"></td><td class="fx c4"></td><td class="fx c5"></td><td class="fx c6"></td><td class="fx c7"></td>${Array.from({length:nq},(_,i)=>{
+      const a=L.filter(s=>s.q[i]&&s.q[i][0]!=null); if(!a.length) return '<td class="q"></td>';
+      const p=Math.round(100*a.reduce((t,s)=>t+s.q[i][0],0)/a.reduce((t,s)=>t+s.q[i][1],0)); return `<td class="q qfoot" style="color:${p>=70?'var(--ok)':p>=40?'#9a6b00':'var(--no)'}" title="${a.length} answered">${p}</td>`; }).join('')}</tr>`;
+  $('#card').innerHTML=`<div style="display:flex;justify-content:space-between;align-items:center;gap:10px;padding:8px 10px;border-bottom:1px solid var(--line);position:sticky;left:0;flex-wrap:wrap">
+      <div class="legend"><span><span class="cell ok"></span>Correct</span><span><span class="cell part"></span>Partly</span><span><span class="cell no"></span>Incorrect</span><span><span class="cell bl"></span>Seen, blank</span><span><span class="cell un"></span>Not seen</span><span><span class="cell un cur"></span>On it now</span><span><span class="cell un fl"></span>Flagged</span></div>
+      <div class="grp"><span class="lab">Cells show</span><div class="seg" id="cellSeg"><button data-v="score" aria-pressed="${cellMode==='score'}">Correctness</button><button data-v="time" aria-pressed="${cellMode==='time'}">Time</button></div></div></div>
+    <table class="grid${cellMode==='time'?' tmode':''}"><thead>${head}</thead><tbody>${rows}</tbody><tfoot>${foot}</tfoot></table>`;
+  const all=$('#allBox'); all.checked=L.length>0&&L.every(s=>sel.has(s.key)); all.indeterminate=!all.checked&&L.some(s=>sel.has(s.key));
+  all.onchange=()=>{ L.forEach(s=>all.checked?sel.add(s.key):sel.delete(s.key)); render(); };
+  document.querySelectorAll('.rowBox').forEach(b=>b.onchange=()=>{ b.checked?sel.add(b.dataset.k):sel.delete(b.dataset.k); renderBulk(); const a=$('#allBox'); a.checked=L.every(s=>sel.has(s.key)); a.indeterminate=!a.checked&&sel.size>0; });
+  document.querySelectorAll('#cellSeg button').forEach(b=>b.onclick=()=>{ cellMode=b.dataset.v; render(); });
+  pinCols();
+}
+/* frozen columns: measure the header cells and give every frozen cell its left offset */
+function pinCols(){ const g=document.querySelector('table.grid'); if(!g) return; const hs=[...g.querySelectorAll('thead th.fx')]; let x=0;
+  const lefts=hs.map(th=>{ const l=x; x+=th.getBoundingClientRect().width; return l; });
+  g.querySelectorAll('tr').forEach(tr=>{ [...tr.querySelectorAll('.fx')].forEach((td,i)=>{ td.style.left=lefts[i]+'px'; }); }); }
+addEventListener('resize',pinCols);
+function pctBar(e,m){ const p=m?Math.round(100*e/m):0, l=lvl(p); return `<div class="bar"><i><b style="width:${p}%;background:${l[2]}"></b></i><em>${m?p+'%':'–'}</em></div>`; }
+function renderStd(L,tests){
+  const test=tests[0], m=meta(test), subOnly=store('subOnly')!==false;
+  const S=subOnly?L.filter(s=>s.submitted):L;
+  let h=`<div class="std"><div class="full" style="display:flex;gap:14px;align-items:center;flex-wrap:wrap">
+    <label><input type="checkbox" id="subOnly" ${subOnly?'checked':''}> Submitted tests only</label><span class="rs">${S.length} student${S.length===1?'':'s'} · ${esc(m?m.title:test)}${tests.length>1?' · only the first test is shown here; pick sessions for one test at a time':''}</span></div>`;
+  const L1=S.filter(s=>s.test===test);
+  if(!L1.length){ $('#card').innerHTML=h+`<div class="full empty">${subOnly?'No submitted tests yet. Uncheck “Submitted tests only” to include tests in progress (answered questions only).':'No answers yet.'}</div></div>`; bindStd(); return; }
+  const n=Math.max(...L1.map(s=>s.q.length),m?m.items.length:0);
+  const per=Array.from({length:n},(_,i)=>{ const qi=qinfo(L1[0],i); let e=0,mx=0,ms=0,cnt=0; L1.forEach(s=>{ const q=s.q[i]; if(!q) return; if(subOnly||q[0]!=null){ e+=q[0]||0; mx+=q[1]; } if(q[2]){ ms+=q[2]; cnt++; } }); return {i,teks:qi.teks,rs:qi.rs,cat:qi.cat,e,mx,avgMs:cnt?ms/cnt:0}; });
+  const cats=m&&m.categories?Object.keys(m.categories).map(Number):[...new Set(per.map(p=>p.cat).filter(Boolean))].sort();
+  h+=`<section><h2>By reporting category</h2><table class="t"><tr><th>Category</th><th>Questions</th><th>Points</th><th style="width:40%">Class result</th></tr>${cats.map(c=>{ const P=per.filter(p=>p.cat===c), e=P.reduce((a,p)=>a+p.e,0), mx=P.reduce((a,p)=>a+p.mx,0);
+      return `<tr><td>${c}. ${esc(m&&m.categories?m.categories[c]:'')}</td><td class="n">${P.length}</td><td class="n">${e}/${mx}</td><td>${pctBar(e,mx)}</td></tr>`; }).join('')}</table></section>`;
+  const tk={}; per.forEach(p=>{ if(!p.teks) return; (tk[p.teks]=tk[p.teks]||{teks:p.teks,rs:p.rs,cat:p.cat,qs:[],e:0,mx:0}); const t=tk[p.teks]; t.qs.push(p.i+1); t.e+=p.e; t.mx+=p.mx; });
+  const tks=Object.values(tk).sort((a,b)=>(a.mx?a.e/a.mx:1)-(b.mx?b.e/b.mx:1));
+  h+=`<section><h2>By standard (weakest first)</h2><table class="t"><tr><th>TEKS</th><th>Type</th><th>Questions</th><th style="width:38%">Class result</th></tr>${tks.map(t=>`<tr><td><b>${esc(t.teks)}</b></td><td class="rs">${esc(t.rs)}</td><td class="rs">${t.qs.join(', ')}</td><td>${pctBar(t.e,t.mx)}</td></tr>`).join('')}</table></section>`;
+  h+=`<section class="full"><h2>Students by category</h2><p class="note">Percent of points in each reporting category${subOnly?'':' (answered questions only for tests in progress)'}.</p><table class="t hm"><tr><th>Student</th><th>Per.</th><th>Total</th>${cats.map(c=>`<th title="${esc(m&&m.categories?m.categories[c]:'')}">Cat. ${c}</th>`).join('')}</tr>${L1.slice().sort((a,b)=>String(a.name).localeCompare(String(b.name))).map(s=>{
+      const cell=(e,mx)=>{ if(!mx) return '<td class="hc">–</td>'; const p=Math.round(100*e/mx), l=lvl(p); return `<td class="hc" style="background:color-mix(in srgb, ${l[2]} 18%, white)">${p}%</td>`; };
+      const tot=s.q.reduce((a,q)=>{ if(q&&(subOnly||q[0]!=null)){ a[0]+=q[0]||0; a[1]+=q[1]; } return a; },[0,0]);
+      return `<tr><td><button class="nm" data-open="${esc(s.key)}">${esc(s.name)}</button></td><td>${esc(s.period)}</td>${cell(tot[0],tot[1])}${cats.map(c=>{ let e=0,mx=0; s.q.forEach((q,i)=>{ if(q&&qinfo(s,i).cat===c&&(subOnly||q[0]!=null)){ e+=q[0]||0; mx+=q[1]; } }); return cell(e,mx); }).join('')}</tr>`; }).join('')}</table></section>`;
+  h+=`<section class="full"><h2>By question</h2><table class="t"><tr><th>#</th><th>TEKS</th><th>Category</th><th>Avg. time</th><th style="width:45%">Class result</th></tr>${per.map(p=>`<tr><td><b>${p.i+1}</b></td><td>${esc(p.teks)} <span class="rs">${esc(p.rs)}</span></td><td class="rs">${p.cat||''}</td><td class="n">${p.avgMs?fmtMs(p.avgMs):'–'}</td><td>${pctBar(p.e,p.mx)}</td></tr>`).join('')}</table></section></div>`;
+  $('#card').innerHTML=h; bindStd(); }
+function bindStd(){ const b=$('#subOnly'); if(b) b.onchange=()=>{ keep('subOnly',b.checked); render(); }; }
+
+/* ---------- questions view: class result, blanks and the most common wrong answer for each question ----------
+   Answers come from stcDash (q[8], the student's answer as JSON text). Answer wording comes from the test's own test.js (metaOf). */
+const QV={open:new Set(), order:store('qorder')||'weak', td:{}, frame:null, tok:null, ready:null, onReady:null};
+const qvDP=new DOMParser();
+function qvTxt(h){ return (qvDP.parseFromString(String(h==null?'':h).replace(/<span class="frac"><span>([\s\S]*?)<\/span><span>([\s\S]*?)<\/span><\/span>/g,'($1)/($2)').replace(/\{GRAPH\}/g,' ').replace(/<\/(td|th|p|div|li|tr)>|<br\s*\/?>/gi,' $&'),'text/html').body.textContent||'').replace(/\s+/g,' ').trim(); }
+const qvN=v=>{ const x=+v; return isFinite(x)?String(Math.round(x*1000)/1000).replace(/^-/,'−'):String(v); };
+const qvPt=P=>`(${qvN(P[0])}, ${qvN(P[1])})`;
+const qvCut=(t,n)=>t.length>n?t.slice(0,n-1)+'…':t;
+function qvItems(test){   // the test's questions with their wording (null while loading, false if they could not be read)
+  if(!(test in QV.td)){ QV.td[test]=null; metaOf(test).then(td=>{ QV.td[test]=td&&td.items?td.items.map(it=>{ try{ return Object.assign(JSON.parse(it.body),JSON.parse(it.key),{type:it.type,teks:it.teks,rs:it.rs,cat:it.cat,max:it.max||1,label:it.label}); }catch(e){ return {type:it.type}; } }):false; if(view==='ques') render(); })
+      .catch(()=>{ QV.td[test]=false; if(view==='ques') render(); }); }
+  return QV.td[test]; }
+const L8='ABCDEFGH';
+function qvAns(it,a){   // a student's answer in words (matches the player's "Your answer")
+  if(a==null) return 'No answer'; const t=it&&it.type;
+  try{ switch(t){
+    case 'mc': return L8[a]+(it.choices&&it.choices[a]!=null?'  '+qvCut(qvTxt(it.choices[a]),60):'');
+    case 'ms': return a.length?a.map(k=>L8[k]).join(', '):'No answer';
+    case 'num': case 'eq': return String(a).replace(/\^\{([^{}]*)\}/g,'^$1').replace(/-/g,'−');
+    case 'inline': return a.map((v,k)=>v==null?'—':qvCut(qvTxt(it.drops[k][v]),40)).join(' · ');
+    case 'table': return a.map((v,k)=>(it.rows?qvCut(qvTxt(it.rows[k]),24)+': ':'')+(v==null?'—':qvTxt(it.cols[v]))).join('; ');
+    case 'boxes': return a.map(q=>q==null?'—':qvTxt(it.tiles[q])).join(' , ');
+    case 'dnd': { const c=it.answer?it.answer.filter((z,k)=>a[k]===z).length:0; return `${c} of ${it.tiles?it.tiles.length:'?'} placed correctly`; }
+    case 'graph': return qvPt(a);
+    case 'hotspot': return it.spots?qvPt(it.spots[a]):'spot '+a;
+    case 'cline': return a.pts&&a.pts.length?a.pts.map(qvPt).join(' and '):'No answer';
+    case 'graphineq': return a.pts&&a.pts.length===2?`${a.dash?'Dashed':'Solid'} line through ${qvPt(a.pts[0])} and ${qvPt(a.pts[1])}${a.shade?', shaded':''}`:'No answer';
+    case 'graphsys': return (a.g||[]).map((L,k)=>`Graph ${k+1}: `+(L.pts&&L.pts.length===2?`${L.dash?'dashed':'solid'} through ${qvPt(L.pts[0])}, ${qvPt(L.pts[1])}`:'no line')).join('; ')+(a.region?'; region chosen':'; no region');
+    case 'graphfunc': return `${a.type||''} through ${(a.pts||[]).map(qvPt).join(' ')}`+(a.type==='exponential'&&a.asym!=null?', asymptote y = '+qvN(a.asym):'');
+    case 'graphexp': return `y = ${qvN(a.a)}(${qvN(a.b)})^x`;
+    case 'graphline': return [...(a.lines||[]).map(L=>`line through ${qvPt(L[0])} and ${qvPt(L[1])}`),...(a.pts||[]).map(P=>'point '+qvPt(P))].join('; ')||'No answer';
+    default: return qvCut(JSON.stringify(a),80); } }catch(e){ return qvCut(JSON.stringify(a),80); } }
+const QV_GRAPH=/^(graph|cline|hotspot)/;
+const QV_TYPES={mc:'Multiple choice',ms:'Multiselect',num:'Number entry',eq:'Equation',inline:'Drop-down',table:'Match table',dnd:'Drag and drop',graph:'Plot a point',graphline:'Graph a line',cline:'Graph a line',graphsys:'Graph a system',boxes:'Drag into boxes',hotspot:'Hot spot',graphineq:'Graph an inequality',graphexp:'Graph a function',graphfunc:'Graph a function'};
+function qvStats(L1,i,subOnly){   // one question: points, blanks and the students behind every answer
+  const g={}; let e=0,mx=0,cnt=0,blank=[],have=false;
+  L1.forEach(s=>{ const q=s.q[i]; if(!q) return; const nm={name:s.name,period:s.period,key:s.key};
+    if(q[0]==null){ if(subOnly){ mx+=q[1]; cnt++; blank.push(nm); } return; }
+    e+=q[0]||0; mx+=q[1]; cnt++; const k=q[8]||''; if(k) have=true;
+    const G=g[k]||(g[k]={k,a:k?(()=>{ try{ return JSON.parse(k); }catch(x){ return null; } })():null,pts:q[0]||0,max:q[1],names:[]}); G.pts=Math.max(G.pts,q[0]||0); G.names.push(nm); });
+  const groups=Object.values(g).sort((a,b)=>b.names.length-a.names.length||b.pts-a.pts);
+  return {i,e,mx,cnt,blank,groups,have}; }
+function renderQues(L,tests){
+  const test=tests[0], m=meta(test), subOnly=store('subOnly')!==false, its=qvItems(test);
+  const S=(subOnly?L.filter(s=>s.submitted):L).filter(s=>s.test===test);
+  let h=`<div class="qv"><div class="qtop"><label><input type="checkbox" id="subOnly" ${subOnly?'checked':''}> Submitted tests only</label>
+    <div class="seg" id="qOrder"><button data-v="weak" aria-pressed="${QV.order==='weak'}">Weakest first</button><button data-v="num" aria-pressed="${QV.order==='num'}">Question order</button></div>
+    <span class="rs">${S.length} student${S.length===1?'':'s'} · ${esc(m?m.title:test)}${tests.length>1?' · only the first test is shown here; pick sessions for one test at a time':''}${its===null?' · loading answer choices…':''}</span></div>`;
+  if(!S.length){ $('#card').innerHTML=h+`<div class="empty">${subOnly?'No submitted tests yet. Uncheck “Submitted tests only” to include tests in progress (answered questions only).':'No answers yet.'}</div></div>`; bindQues(); return; }
+  const n=Math.max(...S.map(s=>s.q.length),m?m.items.length:0);
+  let rows=Array.from({length:n},(_,i)=>qvStats(S,i,subOnly));
+  const anyAns=rows.some(r=>r.have);
+  if(QV.order==='weak') rows=rows.slice().sort((a,b)=>((a.mx?a.e/a.mx:1)-(b.mx?b.e/b.mx:1))||a.i-b.i);
+  if(!anyAns&&rows.some(r=>r.groups.length)) h+=DATA.ansReq?`<p class="note">To see which answers students picked, update Code.gs in Apps Script (Deploy › Manage deployments › New version). Points and blanks still show below.</p>`:`<p class="note">Loading the students’ answers…</p>`;
+  h+=`<table class="t"><tr><th>#</th><th class="hidesm">TEKS</th><th class="hidesm">Type</th><th style="width:26%">Class result</th><th>Blank</th><th>Most common wrong answer</th></tr>`;
+  rows.forEach(r=>{ const qi=qinfo(S[0],r.i), it=its&&its[r.i]||null, mi=m&&m.items[r.i]||{}, open=QV.open.has(r.i);
+    const wrong=r.groups.filter(G=>G.pts<G.max&&G.k), top=wrong[0];
+    let wa='–';
+    if(top){ const vary=QV_GRAPH.test(mi.type||(it&&it.type)||'')&&top.names.length===1&&wrong.length>1;
+      wa=vary?`<span class="rs">Answers vary (${wrong.reduce((a,G)=>a+G.names.length,0)} students)</span>`:`<b>${esc(qvAns(it,top.a))}</b><span class="rs">${top.names.length} of ${r.cnt} student${r.cnt===1?'':'s'} (${Math.round(100*top.names.length/r.cnt)}%)${top.pts>0?' · partly correct':''}</span>`; }
+    else if(!anyAns) wa='<span class="rs">–</span>';
+    h+=`<tr class="qr${open?' open':''}" data-q="${r.i}" tabindex="0" aria-expanded="${open}"><td class="qn"><span class="car">${open?'▾':'▸'}</span>${r.i+1}</td><td class="hidesm">${esc(qi.teks)} <span class="rs">${esc(qi.rs)}</span></td><td class="hidesm rs">${esc(QV_TYPES[mi.type]||mi.type||'')}</td><td>${pctBar(r.e,r.mx)}</td><td class="n">${r.blank.length||(subOnly?0:'–')}</td><td class="wa">${wa}</td></tr>`;
+    if(open){ const nm=L=>L.slice().sort((a,b)=>String(a.name).localeCompare(String(b.name))).map(x=>esc(x.name)+(x.period&&x.period!=='G'?' ('+esc(x.period)+')':'')).join(', ');
+      const gl=r.groups.map(G=>{ const c=!G.k?'bl':G.pts>=G.max?'ok':G.pts>0?'part':'no', mark=c==='ok'?'✓ ':c==='part'?'◐ ':c==='no'?'✗ ':'';
+          return `<div class="al ${c}">${mark}${esc(G.k?qvAns(it,G.a):'Answer not available')}${c==='part'?` <span class="rs">(${G.pts} of ${G.max})</span>`:''}</div><div class="ac">${G.names.length}</div><div class="an">${nm(G.names)}</div>`; }).join('')
+        +(r.blank.length?`<div class="al bl">No answer</div><div class="ac">${r.blank.length}</div><div class="an">${nm(r.blank)}</div>`:'');
+      h+=`<tr class="qd"><td colspan="6"><div class="ag">${gl||'<div class="rs">No answers yet.</div>'}</div><div class="qbtns"><button class="btn" data-see="${r.i}">See the question</button></div></td></tr>`; } });
+  $('#card').innerHTML=h+'</table></div>'; bindQues(); }
+function bindQues(){ bindStd();
+  document.querySelectorAll('#qOrder button').forEach(b=>b.onclick=()=>{ QV.order=b.dataset.v; keep('qorder',QV.order); render(); });
+  document.querySelectorAll('.qv tr.qr').forEach(tr=>{ const t=()=>{ const i=+tr.dataset.q; QV.open.has(i)?QV.open.delete(i):QV.open.add(i); render(); };
+    tr.onclick=t; tr.onkeydown=e=>{ if(e.key==='Enter'||e.key===' '){ e.preventDefault(); t(); } }; });
+  document.querySelectorAll('.qv [data-see]').forEach(b=>b.onclick=e=>{ e.stopPropagation(); const L=shown(), test=[...new Set(L.map(s=>s.test))][0]; qvShow(test,+b.dataset.see); }); }
+/* "See the question": the question as students see it, with the correct answer (player.html in browse mode, sandboxed) */
+function qvMsg(t){ const m=$('#qvMsg'); m.hidden=!t; m.textContent=t||''; $('#qvFrame').hidden=!!t; }
+async function qvFrameReady(){ if(QV.ready) return QV.ready;
+  return QV.ready=(async()=>{ const p=await ensurePlayer(), tok=Math.random().toString(36).slice(2); QV.tok=tok;
+    const A='<script>window.SPITZ_ROOT="";<\/script>\n<script src="tests/'+'index.js"><\/script>';
+    if(p.indexOf(A)<0||p.indexOf('SPITZ_BROWSE')<0) throw new Error('the player.html on GitHub is older than this dashboard. Upload the new player.html first.');
+    const f=$('#qvFrame'); QV.frame=f;
+    const ready=new Promise((res,rej)=>{ const tm=setTimeout(()=>rej(new Error('it took more than 20 seconds')),20000); QV.onReady=()=>{ clearTimeout(tm); res(); }; });
+    f.srcdoc=p.replace(A,()=>'<script>window.SPITZ_ROOT='+JSON.stringify(pagesBase())+';window.SPITZ_TESTS=[];window.SPITZ_BROWSE='+JSON.stringify(tok)+';<\/script>');
+    await ready; })().catch(e=>{ QV.ready=null; throw e; }); }
+addEventListener('message',e=>{ const m=e.data; if(!m||!QV.tok||m.bview!==QV.tok||!QV.frame||e.source!==QV.frame.contentWindow) return;
+  if(m.op==='ready'&&QV.onReady) QV.onReady(); else if(m.op==='err') qvMsg('The question could not be shown: '+m.err); });
+async function qvShow(test,i){ const v=$('#qvVeil'), mt=meta(test); v.hidden=false; $('#qvTitle').textContent=`Question ${i+1} · ${mt?mt.title:test}`; qvMsg('Loading the question…'); $('#qvClose').focus();
+  try{ const td=await metaOf(test), it=td&&td.items&&td.items[i]; if(!it) throw new Error('this test could not be read');
+    const body=JSON.parse(it.body.replace(/src=\\"(img\/[A-Za-z0-9._\-\/]+)\\"/g,'src=\\"@@'+test+'/$1@@\\"')), item=Object.assign(body,JSON.parse(it.key),{type:it.type,teks:it.teks,cat:it.cat,rs:it.rs,max:it.max||1,label:it.label});
+    await qvFrameReady(); if(v.hidden) return; qvMsg('');
+    QV.frame.contentWindow.postMessage({bview:QV.tok,op:'list',append:false,code:itemsCode([item],false),meta:[{uid:'qv',year:'Q'+(i+1),teks:it.teks,rs:it.rs,where:mt?mt.title:test}],more:false,endText:' ',noAdd:true,added:[]},'*'); }
+  catch(e){ qvMsg('The question could not be shown: '+(e&&e.message||e)); } }
+function qvClose(){ $('#qvVeil').hidden=true; }
+$('#qvClose').onclick=qvClose; $('#qvVeil').addEventListener('click',e=>{ if(e.target.id==='qvVeil') qvClose(); });
+addEventListener('keydown',e=>{ if(e.key==='Escape'&&!$('#qvVeil').hidden) qvClose(); });
+
+/* ---------- student drawer ---------- */
+function openDrawer(key,quiet){ const s=DATA&&DATA.students.find(x=>x.key===key); if(!s){ closeDrawer(); return; } openKey=key;
+  const [k,label]=stat(s), m=meta(s.test), l=lvl(s.pct||0), d=v=>v?new Date(v).toLocaleString([], {month:'short',day:'numeric',hour:'numeric',minute:'2-digit'}):'–';
+  $('#dName').textContent=s.name+' · '+(s.period==='G'?'Guest':'Period '+s.period);
+  $('#dBody').innerHTML=`<div class="dact">${s.submitted?'':`<button class="btn" data-act="${s.control==='paused'?'resume':'pause'}" data-k="${esc(s.key)}">${s.control==='paused'?'Resume':'Pause'}</button><button class="btn warn" data-act="${s.control==='locked'?'unlock':'lock'}" data-k="${esc(s.key)}">${s.control==='locked'?'Unlock':'Stop test'}</button>`}</div>
+    <div class="kv"><b>Status</b><span><span class="pill p-${k}">${esc(label)}</span></span><b>Test</b><span>${esc(m?m.title:s.test)} · ${esc(s.session)}</span>
+    <b>Score</b><span><span class="lv" style="background:${l[2]}"></span>${s.score||0} of ${s.max||0} points (${s.pct||0}%) · ${esc(l[1])}${s.submitted?'':' so far'}</span>
+    <b>Answered</b><span>${s.answered||0} · on question ${esc(s.item||'–')}</span><b>Started</b><span>${d(s.started)}</span><b>Submitted</b><span>${d(s.submitted)}</span>
+    <b>Time</b><span>${s.minutes||0} min · left the tab ${s.away||0}× (${s.awayMin||0} min)</span><b>Last input</b><span>${d(s.input)}</span><b>Last save</b><span>${d(s.saved)}</span><b>Student code</b><span>${esc(s.code)}</span></div>
+    <table class="t"><tr><th>#</th><th>Result</th><th>TEKS</th><th>Time</th><th>Visits</th><th>Changes</th></tr>${s.q.map((q,i)=>{ const qi=qinfo(s,i), [pts,mx,ms,vis,ch,fl]=q;
+      const r=pts==null?(vis?'Blank':'Not seen'):pts>=mx?'Correct':pts>0?`Partly (${pts}/${mx})`:'Incorrect';
+      return `<tr><td><b>${i+1}</b>${fl?' ⚑':''}</td><td><span class="cell ${pts==null?(vis?'bl':'un'):pts>=mx?'ok':pts>0?'part':'no'}" style="display:inline-grid;width:14px;height:12px;vertical-align:-2px;margin-right:4px"></span>${r}</td><td class="rs">${esc(qi.teks)}</td><td class="n">${ms?fmtMs(ms):'–'}</td><td class="n">${vis}</td><td class="n">${ch}</td></tr>`; }).join('')}</table>`;
+  $('#drawer').hidden=false; if(!quiet) $('#dClose').focus(); }
+function closeDrawer(){ openKey=null; $('#drawer').hidden=true; }
+$('#dClose').onclick=closeDrawer;
+document.addEventListener('keydown',e=>{ if(e.key==='Escape'){ if(!$('#veil').hidden) $('#veil').hidden=true; else closeDrawer(); } });
+
+/* ---------- pause / stop ---------- */
+const WORD={pause:'Pause',resume:'Resume',lock:'Stop',unlock:'Unlock'};
+function confirmDlg(title,msg,ok,fn){ $('#vTitle').textContent=title; $('#vMsg').innerHTML=msg; const b=$('#vBtns'); b.innerHTML='';
+  [[ok,'btn pri',fn],['Cancel','btn',null]].forEach(([t,c,f])=>{ const x=document.createElement('button'); x.className=c; x.textContent=t; x.onclick=()=>{ $('#veil').hidden=true; if(f) f(); }; b.appendChild(x); });
+  $('#veil').hidden=false; b.firstChild.focus(); }
+async function control(action,keys){ keys=keys.filter(k=>{ const s=DATA.students.find(x=>x.key===k); return s&&!s.submitted; }); if(!keys.length) return;
+  const names=keys.map(k=>DATA.students.find(x=>x.key===k).name);
+  const go=async()=>{ DATA.students.forEach(s=>{ if(keys.includes(s.key)){ if(action==='pause'&&s.control!=='locked') s.control='paused'; if(action==='resume'&&s.control==='paused') s.control=''; if(action==='lock') s.control='locked'; if(action==='unlock') s.control=''; } });
+    render(); $('#upd').textContent=WORD[action]+' sent. Students see it within about 30 seconds.';
+    try{ await call('stcControl',{action,keys}); }catch(e){ $('#upd').textContent='Could not '+WORD[action].toLowerCase()+': '+(e.message||e); $('#upd').classList.add('err'); }
+    setTimeout(load,1200); };
+  if(action==='lock') confirmDlg('Stop '+(keys.length===1?names[0]+"'s test":keys.length+' tests')+'?','Their answers are saved but they can’t keep working or sign back in until you unlock. The test is <b>not</b> submitted.','Stop test',go);
+  else if(keys.length>3) confirmDlg(WORD[action]+' '+keys.length+' students?','Students see it within about 30 seconds.',WORD[action],go);
+  else go(); }
+document.addEventListener('click',e=>{ const a=e.target.closest('[data-act]'); if(a){ control(a.dataset.act,[a.dataset.k]); return; }
+  const o=e.target.closest('[data-open]'); if(o){ openDrawer(o.dataset.open); return; }
+  const b=e.target.closest('[data-bulk]'); if(b){ control(b.dataset.bulk,[...sel]); } });
+$('#bulkClear').onclick=()=>{ sel.clear(); render(); };
+
+/* ---------- filters ---------- */
+document.querySelectorAll('#perSeg button').forEach(b=>b.onclick=()=>{ per=b.dataset.v; keep('per',per); setSeg('#perSeg',per); render(); });
+document.querySelectorAll('#viewSeg button').forEach(b=>b.onclick=()=>{ const was=view; view=b.dataset.v; keep('view',view); setSeg('#viewSeg',view); render(); if(view==='ques'&&was!=='ques') load(); });   // the Questions view needs the students' answers
+$('#sort').onchange=()=>{ sortBy=$('#sort').value; keep('sort',sortBy); render(); };
+$('#q').oninput=()=>{ qtxt=$('#q').value.trim().toLowerCase(); render(); };
+
+/* ---------- question tooltip ---------- */
+const tip=$('#tip');
+document.addEventListener('pointerover',e=>{ const c=e.target.closest('.cell[data-k]'); if(!c){ tip.hidden=true; return; }
+  const s=DATA.students.find(x=>x.key===c.dataset.k), i=+c.dataset.i, q=s&&s.q[i]; if(!q) return; const qi=qinfo(s,i), [pts,mx,ms,vis,ch,fl]=q;
+  tip.innerHTML=`<b>${esc(s.name)} · Question ${i+1}</b><br>${pts==null?(vis?'Seen, no answer':'Not seen yet'):pts+' of '+mx+' point'+(mx>1?'s':'')}${fl?' · flagged':''}<br>${esc(qi.teks)}${qi.rs?' · '+esc(qi.rs):''}${qi.cat?' · Category '+qi.cat:''}<br>Time ${ms?fmtMs(ms):'–'} · visits ${vis} · changed ${ch}×`;
+  tip.hidden=false; const r=c.getBoundingClientRect(); tip.style.left=Math.min(innerWidth-tip.offsetWidth-8,r.left)+'px'; tip.style.top=(r.bottom+6+tip.offsetHeight>innerHeight?r.top-tip.offsetHeight-6:r.bottom+6)+'px'; });
+document.addEventListener('scroll',()=>{ tip.hidden=true; },true);
+
+/* =================== Tests page: add, replace, hide and preview tests, then publish them to GitHub ===================
+   The browser reads and checks everything; Apps Script holds the GitHub token and makes the commit (stcGh* in Code.gs).
+   Every publish is one commit: the test folder, tests/index.js and the test's single/ file together. */
+const TP={gh:null, files:null, index:[], player:null, pkg:null, cache:{}, metas:{}, working:false, watch:null};
+const MIME={png:'image/png',jpg:'image/jpeg',jpeg:'image/jpeg',gif:'image/gif',svg:'image/svg+xml',webp:'image/webp'};
+const TYPES=['mc','ms','num','inline','table','dnd','graph','graphline','cline','graphsys','boxes','hotspot','graphineq','graphexp','graphfunc','eq'];
+const ENC=new TextEncoder(), DEC=new TextDecoder();
+const extOf=p=>(String(p).match(/\.([a-z0-9]+)$/i)||[])[1]?.toLowerCase()||'';
+const pad2=n=>String(n).padStart(2,'0');
+const plural=(n,w)=>n+' '+w+(n===1?'':'s');
+const encPath=p=>p.split('/').map(encodeURIComponent).join('/');
+const SAFE=/^[A-Za-z0-9._\-\/]+$/;
+
+/* ---------- bytes ---------- */
+async function gitSha(b){ const h=ENC.encode('blob '+b.length+'\0'), all=new Uint8Array(h.length+b.length); all.set(h); all.set(b,h.length);
+  return [...new Uint8Array(await crypto.subtle.digest('SHA-1',all))].map(x=>x.toString(16).padStart(2,'0')).join(''); }
+function b64(b){ let s=''; for(let i=0;i<b.length;i+=0x8000) s+=String.fromCharCode.apply(null,b.subarray(i,i+0x8000)); return btoa(s); }
+const dataUrl=(path,b)=>'data:'+(MIME[extOf(path)]||'application/octet-stream')+';base64,'+b64(b);
+
+/* ---------- zip files (stored or deflated; that covers Windows, Mac and ChromeOS zips) ---------- */
+async function unzip(buf){ const u=new Uint8Array(buf), dv=new DataView(buf); let e=-1;
+  for(let i=u.length-22;i>=Math.max(0,u.length-65557);i--){ if(dv.getUint32(i,true)===0x06054b50){ e=i; break; } }
+  if(e<0) throw new Error('That file is not a zip file.');
+  const n=dv.getUint16(e+10,true); let p=dv.getUint32(e+16,true); const out=[];
+  for(let k=0;k<n;k++){ if(p+46>u.length||dv.getUint32(p,true)!==0x02014b50) throw new Error('The zip file is damaged. Download it again.');
+    const flags=dv.getUint16(p+8,true), method=dv.getUint16(p+10,true), csize=dv.getUint32(p+20,true), nl=dv.getUint16(p+28,true), xl=dv.getUint16(p+30,true), cl=dv.getUint16(p+32,true), off=dv.getUint32(p+42,true);
+    const name=DEC.decode(u.subarray(p+46,p+46+nl)).replace(/\\/g,'/'); p+=46+nl+xl+cl;
+    if(name.endsWith('/')) continue;
+    if(flags&1) throw new Error('The zip is password-protected.');
+    const start=off+30+dv.getUint16(off+26,true)+dv.getUint16(off+28,true), data=u.subarray(start,start+csize);
+    let bytes; if(method===0) bytes=data.slice();
+    else if(method===8) bytes=new Uint8Array(await new Response(new Blob([data]).stream().pipeThrough(new DecompressionStream('deflate-raw'))).arrayBuffer());
+    else throw new Error('This zip uses a kind of compression the page can\'t open ('+name+'). Unzip it and use "Choose a folder" instead.');
+    out.push({path:name,bytes}); }
+  return out; }
+async function readEntry(entry,pre,out){ if(entry.isFile){ const f=await new Promise((res,rej)=>entry.file(res,rej)); out.push({path:pre+f.name,bytes:new Uint8Array(await f.arrayBuffer())}); return; }
+  const r=entry.createReader(); let batch; do{ batch=await new Promise((res,rej)=>r.readEntries(res,rej)); for(const c of batch) await readEntry(c,pre+entry.name+'/',out); }while(batch.length); }
+
+/* ---------- running test.js / index.js safely in a hidden frame ---------- */
+function sandbox(html,ms){ return new Promise(res=>{ const tok=Math.random().toString(36).slice(2), f=document.createElement('iframe');
+  f.style.display='none'; f.setAttribute('aria-hidden','true'); f.setAttribute('sandbox','allow-scripts');   // own origin: test code can't touch this page
+  const fin=d=>{ removeEventListener('message',on); clearTimeout(tm); f.remove(); res(d); };
+  const on=e=>{ if(e.source===f.contentWindow&&e.data&&e.data.sbx===tok) fin(e.data); };
+  const tm=setTimeout(()=>fin({timeout:true}),ms||15000); addEventListener('message',on);
+  f.srcdoc=html.split('__TOK__').join(tok); document.body.appendChild(f); }); }
+const noClose=s=>String(s).replace(/<\/(script)/gi,'<\\/$1');
+function helpersOf(player){ const a=player.indexOf('/* ================= Spitz Checkpoint: helpers available to every test file'), b=player.indexOf('window.SpitzTest=function(TD){');
+  if(a<0||b<a) throw new Error('player.html looks different than expected (no test helpers found).'); return player.slice(a,b); }
+const DESCRIBE=`(function(){ var TD=window.__TD, keys=['answer','m','b','op','a','ftype','asym','fn','unordered','eq','ineqs','full'];
+  var fnr=function(k,v){ return typeof v==='function'?'fn:'+v.toString():v; };
+  var dp=new DOMParser(), txt=function(h){ return (dp.parseFromString(String(h==null?'':h).replace(/<span class="frac"><span>([\\s\\S]*?)<\\/span><span>([\\s\\S]*?)<\\/span><\\/span>/g,'$1/$2').replace(/\\{GRAPH\\}/g,' ').replace(/<\\/(td|th|p|div|li|tr|table)>|<br\\s*\\/?>|<p[\\s>]/gi,' $&'),'text/html').body.textContent||'').replace(/\\s+/g,' ').trim(); };
+  var disp=function(it){ var a=it.answer; try{ switch(it.type){
+    case 'mc': return ODD[a]+'  '+txt((it.choices||[])[a]); case 'ms': return a.map(function(i){ return ODD[i]; }).join(', ');
+    case 'num': case 'eq': return String(a).replace(/\\^\\{([^{}]*)\\}/g,'^$1'); case 'hotspot': return 'spot '+a;
+    case 'inline': return a.map(function(v,k){ return txt(it.drops[k][v]); }).join(' · ');
+    case 'table': return a.map(function(v,k){ return txt(it.rows[k])+': '+txt(it.cols[v]); }).join('; ');
+    case 'dnd': return a.map(function(z,t){ return txt(it.tiles[t])+' → '+txt(it.zones[z]); }).join('; ');
+    case 'graph': return '('+a.join(', ')+')'; case 'boxes': return a.map(txt).join(', ');
+    case 'graphineq': return 'y '+it.op+' '+it.m+'x + '+it.b; case 'graphexp': return 'y = '+it.a+'('+it.b+')^x';
+    case 'graphfunc': return it.ftype+(it.asym!=null?', asymptote '+it.asym:''); case 'graphline': return 'graph a line'; case 'graphsys': return it.keyText||'system of inequalities'; case 'cline': return it.keyText||('line '+JSON.stringify(it.eq));
+    default: return a==null?'':JSON.stringify(a,fnr); } }catch(e){ return '?'; } };
+  var out=null; if(TD){ out={ id:TD.id, title:TD.title, course:TD.course||'', reference:TD.reference||'alg1', categories:TD.categories||null, rationale:TD.rationale||null,
+    items:(TD.items||[]).map(function(it){ var key={}, body={}; Object.keys(it).forEach(function(k){ if(keys.indexOf(k)>=0) key[k]=it[k]; else if(['max','teks','rs','cat','label'].indexOf(k)<0) body[k]=it[k]; });
+      return { type:it.type, label:it.label||'', teks:it.teks||'', rs:it.rs||'', cat:it.cat==null?null:it.cat, max:it.max||1, hasAnswer:it.answer!==undefined,
+        ans:JSON.stringify(it.answer===undefined?null:it.answer,fnr), key:JSON.stringify(key,fnr), body:JSON.stringify(body,fnr), disp:disp(it), stem:txt(it.stem).slice(0,140),
+        nChoices:(it.choices||[]).length, dropLens:(it.drops||[]).map(function(d){ return d.length; }), nRows:(it.rows||[]).length, nCols:(it.cols||[]).length, nTiles:(it.tiles||[]).length, nZones:(it.zones||[]).length, full:!!it.full }; }) }; }
+  parent.postMessage({sbx:'__TOK__', calls:window.__calls||0, td:out, errs:window.__errs, used:Object.keys(window.__used||{})},'*'); })();`;
+/* a test.js that never finishes would freeze this page inside the frame below, so it first runs in a worker that can be stopped */
+function finishes(player,testJs){ return new Promise(res=>{ let w, url;
+  try{ url=URL.createObjectURL(new Blob(['self.window=self;var document={querySelector:function(){return null},querySelectorAll:function(){return []},createElement:function(){return {style:{}}}};\n'
+      +helpersOf(player)+'\nwindow.SpitzTest=function(){};\n'+testJs+'\n;postMessage(1);'],{type:'text/javascript'})); w=new Worker(url); }
+  catch(e){ if(url) URL.revokeObjectURL(url); return res(true); }   // no workers here: skip the check
+  const end=v=>{ clearTimeout(tm); w.terminate(); URL.revokeObjectURL(url); res(v); };
+  const tm=setTimeout(()=>end(false),5000); w.onmessage=()=>end(true); w.onerror=e=>{ e.preventDefault&&e.preventDefault(); end(true); }; }); }
+async function evalTest(testJs){ const player=await ensurePlayer();
+  if(!await finishes(player,testJs)) return {errs:['test.js keeps running and never finishes (is there an endless loop?).'],td:null,used:[],calls:0};
+  const head='<!DOCTYPE html><html><body><script>window.__errs=[];window.__used={};window.__off=0;\nwindow.onerror=function(m,s,l){ var n=l-window.__off; window.__errs.push(String(m)+(window.__off&&n>0?\' (test.js line \'+n+\')\':\'\')); };\n'
+    +'window.SPITZ_TESTID="@";window.SPITZ_BASE="";window.SPITZ_ASSETS=new Proxy({},{get:function(t,k){ if(typeof k==="string"&&k.indexOf("@/")===0) window.__used[k.slice(2)]=1; return undefined; }});<\/script>\n'
+    +'<script>'+noClose(helpersOf(player))+'\nwindow.SpitzTest=function(TD){ window.__calls=(window.__calls||0)+1; if(!window.__TD) window.__TD=TD; };<\/script>\n';
+  const off=head.split('\n').length;
+  const html=head.replace('window.__off=0','window.__off='+off)+'<script>\n'+noClose(testJs)+'\n<\/script>\n<script>'+DESCRIBE+'<\/script></body></html>';
+  const r=await sandbox(html,20000); if(r.timeout) return {errs:['test.js took too long to run (is there an endless loop?)'],td:null,used:[],calls:0}; return r; }
+async function evalIndex(js){ const r=await sandbox('<!DOCTYPE html><html><body><script>window.onerror=function(m){ parent.postMessage({sbx:"__TOK__",err:String(m)},"*"); };<\/script><script>'+noClose(js)+'<\/script><script>parent.postMessage({sbx:"__TOK__",tests:Array.isArray(window.SPITZ_TESTS)?window.SPITZ_TESTS:null},"*");<\/script></body></html>');
+  if(r.err||!r.tests) throw new Error('tests/index.js on GitHub has a problem'+(r.err?': '+r.err:'.')); return r.tests.filter(t=>t&&t.id); }
+
+/* ---------- reading GitHub (by commit, so a file is never an old copy) ---------- */
+async function repoBytes(path){ const f=TP.files&&TP.files[path]; if(!f) throw new Error(path+' is not on GitHub.');
+  const ck=path+'@'+f.sha; if(TP.cache[ck]) return TP.cache[ck];
+  let last=null;
+  for(const u of [TP.gh.raw+encPath(path), TP.gh.pages+encPath(path)+'?v='+f.sha.slice(0,10)]){
+    try{ const r=await fetch(u,{cache:'no-store'}); if(!r.ok) throw new Error('HTTP '+r.status); const b=new Uint8Array(await r.arrayBuffer());
+      if(await gitSha(b)!==f.sha) throw new Error('GitHub Pages still has an older copy'); return TP.cache[ck]=b; }catch(e){ last=e; } }
+  throw new Error('Could not download '+path+' ('+last.message+'). If you just published, wait a minute and click Reload.'); }
+const repoText=async p=>DEC.decode(await repoBytes(p));
+async function ensurePlayer(){ if(TP.player) return TP.player;
+  if(TP.files&&TP.files['player.html']) return TP.player=await repoText('player.html');
+  const r=await fetch(ROOT+'player.html',{cache:'no-store'}); if(!r.ok) throw new Error('Could not download player.html.'); return TP.player=await r.text(); }
+
+/* ---------- single-file build (same layout as the original single/ files) ---------- */
+/*<single-builder>*/
+function singleName(title){ return String(title||'test').replace(/[^A-Za-z0-9]+/g,'_').replace(/^_+|_+$/g,'')+'.html'; }
+function buildSingle(player,id,title,testJs,assets){
+  const A='<script>window.SPITZ_ROOT="";<\/script>\n<script src="tests/'+'index.js"><\/script>', M='/* ================= sign-in, test loading and saving';
+  if(player.indexOf(A)<0||player.indexOf(M)<0) throw new Error('player.html looks different than expected; the single file could not be built.');
+  const js=v=>JSON.stringify(v).replace(/</g,'\\u003c');
+  let s=player.replace(A,()=>'<script>window.SPITZ_ROOT="";window.SPITZ_TESTS='+js([{id:id,title:title}])+';\nwindow.SPITZ_ASSETS='+js(assets)+';\n<\/script>');
+  const i=s.indexOf(M);
+  return s.slice(0,i)+'window.SPITZ_BUNDLE={'+js(id)+':function(){\n'+String(testJs).replace(/<\/(script)/gi,'<\\/$1')+'\n}};\n\n'+s.slice(i); }
+/*</single-builder>*/
+async function versions(list,over){   // v = short hash of every file in the test's folder (over: the files about to be published)
+  for(const t of list){ const pre='tests/'+t.id+'/'; let parts;
+    if(over&&over.id===t.id) parts=over.parts; else parts=Object.keys(TP.files||{}).filter(p=>p.startsWith(pre)).map(p=>p+':'+TP.files[p].sha).sort();
+    if(parts&&parts.length){ const h=await gitSha(ENC.encode(parts.join('\n'))); t.v=h.slice(0,10); } }
+  return list; }
+function indexText(list){ const js=v=>JSON.stringify(v).replace(/</g,'\\u003c');
+  return '/* List of tests the player offers on the sign-in screen. The dashboard\'s Tests page keeps this file up to date.\n'
+    +'   hidden:true keeps a test off the list; a Session ID (or ?test=<id>) still opens it. */\nwindow.SPITZ_TESTS=[\n'
+    +list.map(t=>'  {'+Object.keys(t).filter(k=>t[k]!==undefined&&!(k==='hidden'&&!t[k])).map(k=>(/^[A-Za-z_$][\w$]*$/.test(k)?k:js(k))+':'+js(t[k])).join(', ')+'}').join(',\n')+'\n];\n'; }
+
+/* ---------- writing to GitHub ---------- */
+function say(el,t,cls){ el.className='msg2'+(cls?' '+cls:''); el.innerHTML=t; }
+async function publish(list,message,msgEl){   // list: [{path, bytes}] or [{path, del:true}]
+  const changes=[], up=[];
+  for(const f of list){ const have=TP.files[f.path];
+    if(f.del){ if(have) changes.push({path:f.path,del:true}); continue; }
+    const sha=await gitSha(f.bytes); if(have&&have.sha===sha) continue;
+    const c={path:f.path,sha}; changes.push(c); up.push({c,b:f.bytes}); }
+  if(!changes.length) return {nothing:true};
+  const batches=[]; let cur=[], size=0;
+  up.forEach(u=>{ const n=Math.ceil(u.b.length/3)*4; if(cur.length&&(size+n>3500000||cur.length>=40)){ batches.push(cur); cur=[]; size=0; } cur.push(u); size+=n; }); if(cur.length) batches.push(cur);
+  let done=0; const total=up.length;
+  for(const b of batches){ say(msgEl,'Uploading files to GitHub… '+done+' of '+total);
+    let r; for(let t=0;;t++){ try{ r=await call('stcGhBlobs',{files:b.map(u=>({b64:b64(u.b)}))},150000); break; }catch(e){ if(t>=1||/GHTOKEN|NOTOKEN|NOTOWNER/.test(e.message)) throw e; } }
+    b.forEach((u,i)=>{ if(r.shas[i]!==u.c.sha) throw new Error('GitHub stored '+u.c.path+' differently than expected. Nothing was published.'); });
+    done+=b.length; }
+  say(msgEl,'Saving the commit…');
+  const res=await call('stcGhCommit',{base:TP.gh.head,message,changes},90000);
+  res.changed=changes.length; return res; }
+function errText(e){ const m=String(e&&e.message||e);
+  if(/NOTOKEN/.test(m)) return 'No GitHub token yet. In the Sheet: Spitz Checkpoint > Set GitHub token…';
+  if(/NOTOWNER/.test(m)) return 'Only the teacher who deployed the script can publish.';
+  if(m==='no answer from Google') return 'Google did not answer. Click Reload to see whether it was published, then try again if needed.';
+  return esc(m.replace(/^(GHTOKEN|MOVED|Error): ?/,'')); }
+
+/* ---------- page ---------- */
+function openTests(){ $('#tpage').hidden=false; stop(); tpLoad(); }
+function closeTests(){ if(TP.working&&!confirm('Publishing is still running. Leave this page anyway?')) return; $('#tpage').hidden=true; startAuto(); load(); }
+$('#testsBtn').onclick=openTests; $('#tpBack').onclick=closeTests; $('#tpReload').onclick=()=>{ if(!TP.working) tpLoad(); };
+async function tpLoad(){ const g=$('#ghs'); g.className='ghs'; g.textContent='Checking GitHub…'; TP.player=null;
+  try{ const st=await call('stcGhState',null,60000); TP.gh=st;
+    if(!st.token){ TP.files=null; g.className='ghs bad'; g.innerHTML='<b>No GitHub token yet</b>, so you can check and preview a test but not publish it. In the Sheet: <b>Spitz Checkpoint &gt; Set GitHub token…</b> then click Reload.'; }
+    else { TP.files={}; st.files.forEach(f=>TP.files[f.path]=f);
+      g.innerHTML='Publishing to <b>'+esc(st.repo)+'</b> · folder <b>'+esc(st.dir)+'/</b> · branch '+esc(st.branch)+' · <a href="https://github.com/'+esc(st.repo)+'/tree/'+esc(st.branch)+'/'+esc(st.dir)+'" target="_blank" rel="noopener">open on GitHub</a>'; }
+  }catch(e){ TP.gh=null; TP.files=null; g.className='ghs bad'; g.innerHTML='Could not reach GitHub: '+errText(e); }
+  try{ let js=null;
+    if(TP.files){ if(TP.files['tests/index.js']) js=await repoText('tests/index.js'); }
+    else { const r=await fetch(ROOT+'tests/index.js?t='+Date.now(),{cache:'no-store'}); if(r.ok) js=await r.text(); }
+    TP.index=js?await evalIndex(js):[]; }catch(e){ TP.index=[]; $('#tlMsg').innerHTML='<span class="err">'+errText(e)+'</span>'; }
+  renderList(); if(TP.pkg) renderPkg(); }
+
+/* ---------- your tests ---------- */
+function testFolders(){ if(!TP.files) return []; return [...new Set(Object.keys(TP.files).map(p=>(p.match(/^tests\/([^\/]+)\/test\.js$/)||[])[1]).filter(Boolean))]; }
+async function metaOf(id){ let k, get;
+  if(TP.files){ const f=TP.files['tests/'+id+'/test.js']; if(!f) return null; k=id+'@'+f.sha; get=()=>repoText('tests/'+id+'/test.js'); }
+  else { k=id+'@pages'; get=()=>fetch(ROOT+'tests/'+encodeURIComponent(id)+'/test.js',{cache:'no-store'}).then(r=>{ if(!r.ok) throw 0; return r.text(); }); }
+  if(!TP.metas[k]) TP.metas[k]=get().then(evalTest).then(r=>r.td).catch(()=>null); return TP.metas[k]; }
+function renderList(){ const box=$('#tlist'); const folders=testFolders(), ids=TP.index.map(t=>t.id);
+  const rows=TP.index.map(t=>({id:t.id,title:t.title,hidden:!!t.hidden,listed:true,folder:!TP.files||folders.includes(t.id)}))
+    .concat(folders.filter(f=>!ids.includes(f)).map(f=>({id:f,title:'',hidden:true,listed:false,folder:true})));
+  if(!rows.length){ box.innerHTML='<p class="hint">No tests yet.</p>'; return; }
+  const ses=DATA?DATA.sessions:[];
+  box.innerHTML=`<table class="t"><tr><th>Test</th><th>Questions</th><th>Points</th><th>Sessions</th><th>Practice list</th><th></th></tr>${rows.map(r=>{ const S=ses.filter(s=>s.test===r.id), open=S.filter(s=>s.open).length;
+    return `<tr data-id="${esc(r.id)}"><td><b class="ttl">${esc(r.title||r.id)}</b>${r.hidden?'<span class="badge hid">'+(r.listed?'Hidden':'Not on the list')+'</span>':''}<div class="rs">${esc(r.id)}${r.folder?'':' · <span style="color:var(--no)">folder missing on GitHub</span>'}</div></td>
+      <td class="n nq">…</td><td class="n np">…</td><td class="rs">${S.length?S.length+(open?' ('+open+' open)':''):'none'}</td>
+      <td><button class="btn" data-hide="${esc(r.id)}" ${TP.files&&r.folder?'':'disabled'}>${r.hidden?'Show':'Hide'}</button></td>
+      <td><div class="acts" style="gap:6px"><button class="btn" data-pv="${esc(r.id)}" ${r.folder?'':'disabled'}>Preview</button><button class="btn" data-ns="${esc(r.id)}" ${r.folder?'':'disabled'}>New session</button><button class="btn del" data-del="${esc(r.id)}" ${TP.files?'':'disabled'} title="Remove this test from GitHub">Delete</button></div></td></tr>`; }).join('')}</table>
+    <p class="hint" style="margin-top:8px">The practice list is the test menu on the practice page (player.html without a Session ID). In class, the Session ID decides the test, so a hidden test still works there.</p>`;
+  rows.forEach(async r=>{ const m=await metaOf(r.id), tr=box.querySelector(`tr[data-id="${CSS.escape(r.id)}"]`); if(!tr) return;
+    tr.querySelector('.nq').textContent=m?m.items.length:'–'; tr.querySelector('.np').textContent=m?m.items.reduce((a,i)=>a+i.max,0):'–';
+    if(m&&!r.title) tr.querySelector('.ttl').textContent=m.title; }); }
+document.addEventListener('click',e=>{ const t=e.target.closest('[data-hide],[data-pv],[data-ns],[data-del]'); if(!t||$('#tpage').hidden) return;
+  if(t.dataset.del) askDelete(t.dataset.del); else if(t.dataset.hide) toggleHide(t.dataset.hide,t); else if(t.dataset.pv) previewRepo(t.dataset.pv); else newSession(t.dataset.ns); });
+async function toggleHide(id,btn){ if(TP.working) return; const m=await metaOf(id);
+  let list=TP.index.map(t=>Object.assign({},t)); const e=list.find(t=>t.id===id);
+  if(e) e.hidden=!e.hidden; else list.push({id,title:(m&&m.title)||id});
+  const show=e?!e.hidden:true; TP.working=true; btn.disabled=true; const old=btn.textContent; btn.textContent='Saving…';
+  try{ await versions(list); const r=await publish([{path:'tests/index.js',bytes:ENC.encode(indexText(list))}],(show?'Show ':'Hide ')+id+' on the practice list',$('#tlMsg'));
+    $('#tlMsg').textContent=''; TP.working=false; if(!r.nothing) await tpLoad(); }
+  catch(x){ TP.working=false; btn.disabled=false; btn.textContent=old; dlg('Could not save',errText(x)); } }
+/* ---------- delete a test: its folder, its line in tests/index.js and its single file go in one commit ---------- */
+function zipStore(files){   // files: [{name, bytes}] -> a plain (stored) zip, so a deleted test can be saved first and dropped back on this page
+  const T=zipStore.T||(zipStore.T=Array.from({length:256},(_,n)=>{ let c=n; for(let k=0;k<8;k++) c=c&1?0xEDB88320^(c>>>1):c>>>1; return c>>>0; }));
+  const crc=b=>{ let c=0xFFFFFFFF; for(let i=0;i<b.length;i++) c=T[(c^b[i])&255]^(c>>>8); return (c^0xFFFFFFFF)>>>0; };
+  const parts=[], cen=[]; let off=0;
+  const h=(n,len)=>{ const a=new Uint8Array(len), v=new DataView(a.buffer); return [a,v]; };
+  for(const f of files){ const nm=ENC.encode(f.name), c=crc(f.bytes), n=f.bytes.length;
+    const [L,l]=h(0,30); l.setUint32(0,0x04034b50,true); l.setUint16(4,20,true); l.setUint16(8,0,true); l.setUint32(14,c,true); l.setUint32(18,n,true); l.setUint32(22,n,true); l.setUint16(26,nm.length,true);
+    const [C,cv]=h(0,46); cv.setUint32(0,0x02014b50,true); cv.setUint16(4,20,true); cv.setUint16(6,20,true); cv.setUint32(16,c,true); cv.setUint32(20,n,true); cv.setUint32(24,n,true); cv.setUint16(28,nm.length,true); cv.setUint32(42,off,true);
+    parts.push(L,nm,f.bytes); cen.push(C,nm); off+=30+nm.length+n; }
+  const csz=cen.reduce((a,x)=>a+x.length,0); const [E,ev]=h(0,22); ev.setUint32(0,0x06054b50,true); ev.setUint16(8,files.length,true); ev.setUint16(10,files.length,true); ev.setUint32(12,csz,true); ev.setUint32(16,off,true);
+  return new Blob([...parts,...cen,E],{type:'application/zip'}); }
+async function askDelete(id){ if(TP.working||!TP.files) return;
+  const m=await metaOf(id), entry=TP.index.find(t=>t.id===id), title=(entry&&entry.title)||(m&&m.title)||id;
+  const folder=Object.keys(TP.files).filter(p=>p.startsWith('tests/'+id+'/')).sort();
+  const singles=Object.keys(TP.files).filter(p=>p==='single/'+singleName(title)||(m&&m.title&&p==='single/'+singleName(m.title)));
+  const S=(DATA?DATA.sessions:[]).filter(x=>x.test===id), open=S.filter(x=>x.open);
+  const released=/^alg1-\d{4}$/.test(id)&&m&&m.items&&m.items.length>=40;
+  $('#vTitle').textContent='Delete '+title+'?';
+  let h=`<table class="deltbl"><tr><td>Test ID</td><td><b>${esc(id)}</b></td></tr><tr><td>Removed from GitHub</td><td>the folder tests/${esc(id)}/ (${folder.length} file${folder.length===1?'':'s'})${entry?', its line on the practice list':''}${singles.length?', its single file':''}</td></tr>
+    <tr><td>Kept</td><td>every student result in the Sheet${S.length?' ('+S.length+' session'+(S.length===1?'':'s')+')':''}. Scores and the Standards view still work; the Questions view can’t show answer wording or “See the question” for it.</td></tr></table>`;
+  if(released) h+=`<p class="hint">This is a full released test. The Question bank goes back to its adapted copies of these questions.</p>`;
+  if(open.length){ h+=`<p style="color:var(--no)"><b>${open.length} open session${open.length===1?' uses':'s use'} this test</b> (${open.map(x=>esc(x.id)).join(', ')}). Close ${open.length===1?'it':'them'} in the Sessions tab first, so no student is in the middle of it.</p>`;
+    $('#vMsg').innerHTML=h; const b=$('#vBtns'); b.innerHTML=''; const ok=document.createElement('button'); ok.className='btn pri'; ok.textContent='OK'; ok.onclick=()=>{ $('#veil').hidden=true; }; b.appendChild(ok); $('#veil').hidden=false; ok.focus(); return; }
+  h+=`<p>GitHub keeps old versions, and a copy you save now can be dropped back on this page to put the test back.</p><label style="display:block;margin-top:8px">Type <b>${esc(id)}</b> to confirm: <input id="delConfirm" autocomplete="off" spellcheck="false" style="font:inherit;padding:3px 6px;width:13em"></label><div class="msg2" id="delMsg"></div>`;
+  $('#vMsg').innerHTML=h; const b=$('#vBtns'); b.innerHTML='';
+  const mk=(t,c,f)=>{ const x=document.createElement('button'); x.className=c; x.textContent=t; x.onclick=f; b.appendChild(x); return x; };
+  const save=mk('Save a copy (.zip)','btn',async()=>{ save.disabled=true; save.textContent='Saving…';
+    try{ const files=[]; for(const p of folder) files.push({name:p.slice(6),bytes:await repoBytes(p)});
+      const a=document.createElement('a'); a.href=URL.createObjectURL(zipStore(files)); a.download=id+'.zip'; document.body.appendChild(a); a.click(); a.remove(); setTimeout(()=>URL.revokeObjectURL(a.href),60000);
+      save.textContent='Saved ✓'; }catch(e){ save.disabled=false; save.textContent='Save a copy (.zip)'; say($('#delMsg'),errText(e),'err'); } });
+  mk('Cancel','btn',()=>{ $('#veil').hidden=true; });
+  const go=mk('Delete','btn delgo',()=>doDelete(id,title,folder,singles,go)); go.disabled=true;
+  $('#delConfirm').oninput=e=>{ go.disabled=e.target.value.trim()!==id; };
+  $('#delConfirm').onkeydown=e=>{ if(e.key==='Enter'&&!go.disabled) go.click(); };
+  $('#veil').hidden=false; $('#delConfirm').focus(); }
+async function doDelete(id,title,folder,singles,go){ if(TP.working) return; TP.working=true; go.disabled=true; go.textContent='Deleting…';
+  const list=TP.index.filter(t=>t.id!==id).map(t=>Object.assign({},t)); const msg=$('#delMsg');
+  try{ const changes=folder.concat(singles).map(p=>({path:p,del:true}));
+    if(TP.index.some(t=>t.id===id)) changes.push({path:'tests/index.js',bytes:ENC.encode(indexText(list))});
+    const r=await publish(changes,'Delete test '+id,msg); TP.working=false; $('#veil').hidden=true;
+    await tpLoad(); say($('#tlMsg'),r.nothing?'Nothing to delete.':'Deleted <b>'+esc(title)+'</b>. The practice page stops offering it within a few minutes.','ok'); }
+  catch(e){ TP.working=false; go.textContent='Delete'; go.disabled=false; say(msg,'Not deleted: '+errText(e),'err'); } }
+async function newSession(id){ const m=await metaOf(id); if(TP.working) return;
+  try{ const r=await call('stcNewSession',{test:id}); load();
+    dlg('New session',`<p>${esc((m&&m.title)||id)}</p><div class="sid">${esc(r.id)}</div><p class="hint">Students type this on the sign-in screen. It is open now with Review set to “Score only”; change that in the Sessions tab, and close it there when you are done.</p>`); }
+  catch(e){ dlg('Could not make a session',errText(e)); } }
+function dlg(title,html){ $('#vTitle').textContent=title; $('#vMsg').innerHTML=html; const b=$('#vBtns'); b.innerHTML='';
+  const x=document.createElement('button'); x.className='btn pri'; x.textContent='OK'; x.onclick=()=>{ $('#veil').hidden=true; }; b.appendChild(x); $('#veil').hidden=false; x.focus(); }
+
+/* ---------- preview ---------- */
+function showPreview(title,html){ $('#pvTitle').textContent=title; $('#pvf').srcdoc=html; $('#pv').hidden=false; $('#pvClose').focus(); }
+$('#pvClose').onclick=()=>{ $('#pv').hidden=true; $('#pvf').srcdoc=''; };
+async function previewRepo(id){ try{ const m=await metaOf(id), p=await ensurePlayer();
+    const A='<script>window.SPITZ_ROOT="";<\/script>\n<script src="tests/'+'index.js"><\/script>';
+    if(p.indexOf(A)<0) throw new Error('player.html looks different than expected.');
+    const pages=TP.gh&&TP.gh.pages||ROOT;
+    showPreview((m&&m.title)||id,p.replace(A,()=>'<script>window.SPITZ_ROOT='+JSON.stringify(pages)+';window.SPITZ_TESTS='+JSON.stringify([{id,title:(m&&m.title)||id}]).replace(/</g,'\\u003c')+';<\/script>')); }
+  catch(e){ dlg('Could not preview',errText(e)); } }
+
+/* ---------- answer-key self-check: the real player answers every question with its own key (then blank) ---------- */
+async function selfCheck(id,title,reference,testJs,assets,refs){
+  const html=(await singleFor(id,title,reference,testJs,assets,refs))
+    .replace('<head>','<head><scr'+'ipt>window.SPITZ_SELFCHECK=1;<\/script>')
+    .replace(/<\/body>\s*<\/html>\s*$/,'')+'<scr'+'ipt>addEventListener("load",function(){ try{ window.SPITZ_TESTID='+JSON.stringify(id)+'; window.SPITZ_BUNDLE['+JSON.stringify(id)+'](); parent.postMessage({sbx:"__TOK__",res:window.__spitzSelfCheck?window.__spitzSelfCheck():null},"*"); }catch(e){ parent.postMessage({sbx:"__TOK__",err:String(e&&e.message||e)},"*"); } });<\/script></body></html>';
+  const r=await sandbox(html,30000);
+  if(r.timeout) return {err:'the answer-key check took too long'}; if(r.err) return {err:r.err}; if(!r.res) return {err:'this player.html has no answer-key check (publish the newer player.html first)',old:true};
+  return {res:r.res}; }
+/* ---------- a package: one test folder (zip or folder) ---------- */
+const JUNK=p=>/(^|\/)(__MACOSX|\.git)\//.test(p)||/(^|\/)(\.DS_Store|Thumbs\.db|desktop\.ini|\._[^\/]*)$/.test(p);
+async function takeFiles(list,from){ if(TP.working) return; const box=$('#pkg'); box.innerHTML='<p class="msg2">Reading '+esc(from)+'…</p>'; TP.pkg=null;
+  try{ const files=list.filter(f=>!JUNK(f.path)), tj=files.filter(f=>/(^|\/)test\.js$/.test(f.path));
+    if(!tj.length) throw new Error('There is no test.js in '+from+'. A test zip has a folder with test.js in it (plus img/ and rat/ if the test has pictures).');
+    if(tj.length>1) throw new Error(from+' has '+tj.length+' tests in it ('+tj.map(f=>f.path).join(', ')+'). Add one test at a time.');
+    const pre=tj[0].path.slice(0,-'test.js'.length), folder=(pre.match(/([^\/]+)\/$/)||[])[1]||'';
+    const P={from, folder, testJs:DEC.decode(tj[0].bytes), testBytes:tj[0].bytes, assets:{}, refs:{}, ignored:[], badNames:[]};
+    files.forEach(f=>{ if(f===tj[0]) return;
+      if(f.path.startsWith(pre)){ const rel=f.path.slice(pre.length);
+        if(!MIME[extOf(rel)]) P.ignored.push(rel); else if(!SAFE.test(rel)) P.badNames.push(rel); else P.assets[rel]=f.bytes; return; }
+      const m=f.path.match(/(^|\/)refs\/([^\/]+)$/); if(m&&MIME[extOf(m[2])]){ if(SAFE.test(m[2])) P.refs['refs/'+m[2]]=f.bytes; else P.badNames.push('refs/'+m[2]); return; }
+      P.ignored.push(f.path); });
+    await checkPackage(P); }
+  catch(e){ box.innerHTML='<p class="msg2 err">'+errText(e)+'</p>'; } }
+/* run every check on a package (from a zip, a folder or the bank builder), then show it */
+async function checkPackage(P){ const box=$('#pkg'); TP.pkg=null;
+  try{ box.innerHTML='<p class="msg2">Checking '+esc(P.from)+'…</p>';
+    const r=await evalTest(P.testJs); P.errs=r.errs||[]; P.calls=r.calls; P.td=r.td; P.used=new Set(r.used||[]);
+    if(P.td&&P.td.id){ const id=P.td.id; P.listed=TP.index.find(t=>t.id===id)||null; P.exists=!!(P.listed||(TP.files&&TP.files['tests/'+id+'/test.js']));
+      P.old=P.exists?await metaOf(id):null; P.oldTitle=P.listed?P.listed.title:(P.old&&P.old.title)||''; P.show=P.listed?!P.listed.hidden:true; }
+    if(P.td&&P.td.items.length&&!P.errs.length){ box.innerHTML='<p class="msg2">Checking every answer key in the real player…</p>';
+      try{ P.self=await selfCheck(P.td.id,P.td.title,P.td.reference,P.testJs,P.assets,P.refs); }catch(e){ P.self={err:e.message}; } }
+    TP.pkg=P; renderPkg(); }
+  catch(e){ box.innerHTML='<p class="msg2 err">'+errText(e)+'</p>'; } }
+function itemProblem(it){ let a; try{ a=JSON.parse(it.ans); }catch(e){ a=null; }
+  const int=(v,n)=>Number.isInteger(v)&&v>=0&&v<n;
+  switch(it.type){
+    case 'mc': return int(a,it.nChoices)?'':'the answer must be the number of a choice (0 = A) and it has '+it.nChoices+' choices.';
+    case 'ms': return Array.isArray(a)&&a.length&&a.every(v=>int(v,it.nChoices))&&new Set(a).size===a.length?'':'the answer must be a list of choice numbers (0 = A).';
+    case 'eq': if(it.full) return typeof a==='string'&&a.trim()?'':'the answer must be an expression.';
+    case 'num': return typeof a==='number'&&isFinite(a)?'':'the answer must be a number.';
+    case 'inline': return Array.isArray(a)&&a.length===it.dropLens.length&&a.every((v,k)=>int(v,it.dropLens[k]))?'':'the answer needs one choice number for each of its '+it.dropLens.length+' drop-downs.';
+    case 'table': return Array.isArray(a)&&a.length===it.nRows&&a.every(v=>int(v,it.nCols))?'':'the answer needs one column number for each of its '+it.nRows+' rows.';
+    case 'dnd': return Array.isArray(a)&&a.length===it.nTiles&&a.every(v=>int(v,it.nZones))?'':'the answer needs one box number for each of its '+it.nTiles+' tiles.';
+    case 'graph': return Array.isArray(a)&&a.length===2?'':'the answer must be a point like [2, -3].';
+    case 'boxes': case 'hotspot': return it.hasAnswer?'':'it has no answer.';
+    default: return ''; } }
+function checkPkg(P){ const E=[],W=[],K=[]; const td=P.td;
+  P.errs.forEach(m=>E.push('test.js has an error: '+m));
+  if(!td){ if(!P.errs.length) E.push('test.js never calls SpitzTest({...}).'); return {E,W,K}; }
+  if(P.calls>1) W.push('test.js calls SpitzTest '+P.calls+' times; only the first counts.');
+  if(!/^[a-z0-9-]+$/.test(td.id||'')) E.push('The test id '+(td.id?'“'+esc(td.id)+'”':'is missing. It')+' must use only lowercase letters, numbers and dashes.');
+  else if(P.folder&&P.folder!==td.id) W.push('The folder is named “'+esc(P.folder)+'” but test.js says id “'+esc(td.id)+'”. It will be published as tests/'+esc(td.id)+'/.');
+  if(!td.title) E.push('test.js has no title.');
+  if(!td.items.length) E.push('test.js has no questions.');
+  td.items.forEach((it,i)=>{ const q='Question '+(i+1)+': ';
+    if(!TYPES.includes(it.type)) E.push(q+'unknown question type “'+esc(it.type)+'”.'); else { const b=itemProblem(it); if(b) E.push(q+b); }
+    if(td.categories&&it.cat!=null&&!td.categories[it.cat]) W.push(q+'category '+esc(it.cat)+' is not in the categories list.'); });
+  const noTeks=td.items.map((it,i)=>it.teks?0:i+1).filter(Boolean); if(noTeks.length) W.push('No TEKS on '+plural(noTeks.length,'question')+' ('+noTeks.join(', ')+'), so '+(noTeks.length===1?'it':'they')+' won\'t show in the Standards view.');
+  const noCat=td.items.map((it,i)=>it.cat==null?i+1:0).filter(Boolean); if(noCat.length&&noCat.length<td.items.length) W.push('No reporting category on '+plural(noCat.length,'question')+' ('+noCat.join(', ')+').');
+  P.badNames.forEach(f=>E.push('The file name “'+esc(f)+'” has spaces or symbols. Use only letters, numbers, dots, dashes and underscores.'));
+  [...P.used].forEach(u=>{ if(!P.assets[u]) E.push('Missing picture '+esc(u)+': test.js uses it but it isn\'t in the '+(/\.zip$/i.test(P.from)?'zip':'folder')+'.'); });
+  const ratNeed=new Set(), ratMiss=[];
+  Object.entries(td.rationale||{}).forEach(([n,labs])=>{ if(+n>td.items.length) W.push('The rationale list mentions question '+esc(n)+', but the test has '+td.items.length+' questions.');
+    (labs||[]).forEach(l=>{ const f='rat/r'+pad2(n)+l+'.png'; ratNeed.add(f); if(!P.assets[f]) ratMiss.push(f); }); });
+  if(ratMiss.length) W.push('Missing '+plural(ratMiss.length,'TEA explanation image')+' ('+ratMiss.slice(0,6).map(esc).join(', ')+(ratMiss.length>6?', …':'')+'). Review will show no explanation for '+(ratMiss.length===1?'that one':'those')+'.');
+  const unused=Object.keys(P.assets).filter(a=>!P.used.has(a)&&!ratNeed.has(a));
+  if(unused.length) W.push(plural(unused.length,'picture')+' not used by any question ('+unused.slice(0,6).map(esc).join(', ')+(unused.length>6?', …':'')+'). '+(unused.length===1?'It':'They')+' will still be uploaded.');
+  if(P.ignored.length) W.push('Skipped '+plural(P.ignored.length,'file')+' that '+(P.ignored.length===1?'isn\'t':'aren\'t')+' part of a test ('+P.ignored.slice(0,5).map(esc).join(', ')+(P.ignored.length>5?', …':'')+').');
+  const ref='refs/'+td.reference+'.png';
+  if(!P.refs[ref]){ if(TP.files&&!TP.files[ref]) E.push('The reference sheet '+esc(ref)+' is not on GitHub and not in the zip.'); else if(!TP.files) W.push('Could not check that the reference sheet '+esc(ref)+' is on GitHub.'); }
+  if(P.self){ if(P.self.err) (P.self.old?W:E).push('Answer-key check could not run: '+esc(P.self.err)+'.');
+    else { const bad=P.self.res.filter(r=>r.err||r.key!==r.max), notBlank=P.self.res.filter(r=>!r.err&&r.blank!==null&&r.blank!==0);
+      bad.forEach(r=>E.push('Question '+r.n+': answering with its own key '+(r.err?'causes an error ('+esc(r.err)+')':'earns '+(r.key||0)+' of '+r.max+' point'+(r.max>1?'s':''))+'. The key and the question don\'t match.'));
+      notBlank.forEach(r=>E.push('Question '+r.n+': a blank answer earns points.'));
+      if(!bad.length&&!notBlank.length) K.push('Answer-key check: in the real player, every question earns full points with its key and 0 when blank.'); } }
+  if(!E.length){ K.push(plural(td.items.length,'question')+', '+plural(td.items.reduce((a,i)=>a+i.max,0),'point')+', every answer key readable.');
+    if(P.used.size) K.push((P.used.size===1?'The picture':'All '+plural(P.used.size,'picture'))+' the questions use '+(P.used.size===1?'is':'are')+' included.');
+    if(ratNeed.size&&!ratMiss.length) K.push((ratNeed.size===1?'The TEA explanation image is':'All '+plural(ratNeed.size,'TEA explanation image')+' are')+' included.'); }
+  return {E,W,K}; }
+async function savedFileWith(add){ let cur=[];
+  if(TP.files&&TP.files[SAVEDPATH]){ const j=JSON.parse(await repoText(SAVEDPATH)); cur=Array.isArray(j.items)?j.items:[]; }
+  const have=new Set(cur.map(x=>x.bid)); add.forEach(x=>{ if(!have.has(x.bid)){ cur.push(x); have.add(x.bid); } });
+  return JSON.stringify({about:'Generated questions saved from the Spitz Checkpoint Question bank page when a test using them was published. The page reads this file; edit it only to remove a question.',items:cur},null,1)+'\n'; }
+async function fileChanges(P){   // what one publish will write
+  const id=P.td.id, out=[], have=new Set();
+  out.push({path:'tests/'+id+'/test.js',bytes:P.testBytes}); have.add('tests/'+id+'/test.js');
+  Object.entries(P.assets).forEach(([rel,b])=>{ out.push({path:'tests/'+id+'/'+rel,bytes:b}); have.add('tests/'+id+'/'+rel); });
+  Object.keys(TP.files||{}).filter(p=>p.startsWith('tests/'+id+'/')&&!have.has(p)).forEach(p=>out.push({path:p,del:true}));
+  Object.entries(P.refs).forEach(([p,b])=>out.push({path:p,bytes:b}));
+  const list=TP.index.map(t=>Object.assign({},t)); let e=list.find(t=>t.id===id); if(!e){ e={id,title:P.td.title}; list.push(e); }
+  e.title=P.td.title; e.hidden=!P.show;
+  const parts=[]; for(const f of out) if(!f.del&&f.path.startsWith('tests/'+id+'/')) parts.push(f.path+':'+await gitSha(f.bytes));
+  await versions(list,{id,parts:parts.sort()}); out.push({path:'tests/index.js',bytes:ENC.encode(indexText(list))});
+  const single=await singleFor(id,P.td.title,P.td.reference,P.testJs,P.assets,P.refs);
+  out.push({path:'single/'+singleName(P.td.title),bytes:ENC.encode(single)});
+  if(P.bankSave&&P.bankSave.length) out.push({path:SAVEDPATH,bytes:ENC.encode(await savedFileWith(P.bankSave))});
+  if(P.oldTitle&&singleName(P.oldTitle)!==singleName(P.td.title)&&!TP.index.some(t=>t.id!==id&&singleName(t.title)===singleName(P.oldTitle))) out.push({path:'single/'+singleName(P.oldTitle),del:true});
+  return out; }
+async function singleFor(id,title,reference,testJs,assets,refs){ const A={}, ref='refs/'+(reference||'alg1')+'.png';
+  const rb=(refs&&refs[ref])||(TP.files&&TP.files[ref]?await repoBytes(ref):null); if(rb) A[ref]=dataUrl(ref,rb);
+  Object.keys(assets).sort().forEach(rel=>{ A[id+'/'+rel]=dataUrl(rel,assets[rel]); });
+  return buildSingle(await ensurePlayer(),id,title,testJs,A); }
+function diffRows(P){ const o=P.old, n=P.td; if(!o) return null; const rows=[];
+  if(o.title!==n.title) rows.push(['Title','“'+esc(o.title)+'” → “'+esc(n.title)+'”']);
+  for(let i=0;i<Math.max(o.items.length,n.items.length);i++){ const a=o.items[i], b=n.items[i], q='Question '+(i+1);
+    if(!a){ rows.push([q,'new question ('+esc(b.label||b.type)+')']); continue; } if(!b){ rows.push([q,'removed']); continue; }
+    const ch=[]; if(a.type!==b.type) ch.push('question type '+esc(a.type)+' → '+esc(b.type));
+    if(a.key!==b.key) ch.push('answer key <b>'+esc(a.disp)+'</b> → <b>'+esc(b.disp)+'</b>');
+    if(a.max!==b.max) ch.push('points '+a.max+' → '+b.max);
+    if(a.teks!==b.teks||a.cat!==b.cat) ch.push('TEKS/category '+esc(a.teks)+(a.cat!=null?' ('+a.cat+')':'')+' → '+esc(b.teks)+(b.cat!=null?' ('+b.cat+')':''));
+    if(a.body!==b.body&&a.type===b.type) ch.push('wording or choices');
+    if(ch.length) rows.push([q,ch.join(' · ')]); }
+  return rows; }
+async function renderPkg(){ const P=TP.pkg, box=$('#pkg'); if(!P){ box.innerHTML=''; return; }
+  const {E,W,K}=checkPkg(P), td=P.td, can=!E.length&&!!TP.files;
+  let h=`<h3 style="margin-top:16px">${td&&td.title?esc(td.title):esc(P.from)}${td&&td.id&&!E.length?(P.exists?'<span class="badge rep">Replaces the test on GitHub</span>':'<span class="badge">New test</span>'):''}</h3>`;
+  if(td) h+=`<div class="stats"><span>ID <b>${esc(td.id||'?')}</b></span><span><b>${td.items.length}</b> questions</span><span><b>${td.items.reduce((a,i)=>a+i.max,0)}</b> points</span><span><b>${Object.keys(P.assets).length}</b> picture${Object.keys(P.assets).length===1?'':'s'}</span><span>Reference sheet <b>${esc(td.reference)}</b></span><span class="rs">from ${esc(P.from)}</span></div>`;
+  h+='<ul class="chk">'+E.map(t=>'<li class="e">'+t+'</li>').join('')+W.map(t=>'<li class="w">'+t+'</li>').join('')+K.map(t=>'<li class="k">'+t+'</li>').join('')+'</ul>';
+  if(!E.length&&P.exists){ const d=diffRows(P), ses=(DATA?DATA.sessions:[]).filter(s=>s.test===td.id&&s.open);
+    h+='<h3>What changes</h3>'+(d===null?'<p class="hint">The old test could not be read, so changes can\'t be listed.</p>':d.length?'<table class="t">'+d.map(r=>`<tr><td style="white-space:nowrap"><b>${r[0]}</b></td><td>${r[1]}</td></tr>`).join('')+'</table>':'<p class="hint">No question changes.</p>')+'<div id="fchg" class="hint" style="margin-top:6px">Comparing files…</div>';
+    if(ses.length) h+=`<ul class="chk"><li class="w"><b>${plural(ses.length,'open session')} use${ses.length===1?'s':''} this test</b> (${ses.map(s=>esc(s.id)).join(', ')}). Students who already started keep their answers by question number, so if questions were added, removed or reordered, close ${ses.length===1?'it':'them'} and make a new session.</li></ul>`; }
+  if(td&&!E.length) h+=`<details><summary>Show every question and its answer key</summary><table class="t" style="margin-top:6px"><tr><th>#</th><th>Type</th><th>Points</th><th>TEKS</th><th>Cat.</th><th>Answer key</th><th>Question starts</th></tr>${td.items.map((it,i)=>`<tr><td><b>${i+1}</b></td><td class="rs">${esc(it.label||it.type)}</td><td class="n">${it.max}</td><td>${esc(it.teks)}</td><td>${it.cat==null?'':esc(it.cat)}</td><td class="k" title="${esc(it.disp)}">${esc(it.disp)}</td><td class="k rs" title="${esc(it.stem)}">${esc(it.stem)}</td></tr>`).join('')}</table></details>`;
+  h+=`<div class="row">${td&&!E.length?`<label class="sw"><input type="checkbox" id="pkShow" ${P.show?'checked':''}> Show on the practice list</label><span class="sp" style="flex:1"></span>`:''}
+    <button class="btn" id="pkCancel">Cancel</button>${td&&!E.length?'<button class="btn" id="pkPrev">Preview</button>':''}<button class="btn pri" id="pkPub" ${can?'':'disabled'}>${P.exists?'Publish the new version':'Publish'}</button></div>
+    ${E.length?'<p class="msg2 err">Fix the problems marked ✕ in test.js or the files, then add it again.</p>':!TP.files?'<p class="msg2">Publishing needs a GitHub token (see the top of this page).</p>':''}<div class="msg2" id="pkMsg"></div>`;
+  box.innerHTML=h;
+  $('#pkCancel').onclick=()=>{ if(TP.working) return; TP.pkg=null; box.innerHTML=''; };
+  if($('#pkShow')) $('#pkShow').onchange=e=>{ P.show=e.target.checked; };
+  if($('#pkPrev')) $('#pkPrev').onclick=async()=>{ try{ showPreview(td.title,await singleFor(td.id,td.title,td.reference,P.testJs,P.assets,P.refs)); }catch(e){ dlg('Could not preview',errText(e)); } };
+  $('#pkPub').onclick=()=>pubPkg(P);
+  if($('#fchg')) fileChanges(P).then(async list=>{ const add=[],chg=[],del=[]; for(const f of list){ if(f.path==='tests/index.js'||f.path.startsWith('single/')) continue; const have=TP.files[f.path];
+      if(f.del) del.push(f.path); else if(!have) add.push(f.path); else if(have.sha!==await gitSha(f.bytes)) chg.push(f.path); }
+    const L=(t,a)=>a.length?`<div><b>${t}:</b> ${a.map(p=>esc(p.replace('tests/'+td.id+'/',''))).join(', ')}</div>`:'';
+    const el=$('#fchg'); if(!el) return; el.innerHTML=(add.length||chg.length||del.length)?'<details><summary>Files: '+[add.length&&add.length+' new',chg.length&&chg.length+' changed',del.length&&del.length+' removed'].filter(Boolean).join(', ')+'</summary>'+L('New',add)+L('Changed',chg)+L('Removed',del)+'</details>':'Files: no changes.'; })
+    .catch(e=>{ const el=$('#fchg'); if(el) el.textContent='Could not compare files: '+e.message; }); }
+async function pubPkg(P){ if(TP.working) return; const msg=$('#pkMsg'), id=P.td.id;
+  TP.working=true; ['#pkPub','#pkCancel','#pkPrev'].forEach(s=>{ if($(s)) $(s).disabled=true; }); if($('#pkShow')) $('#pkShow').disabled=true;
+  try{ say(msg,'Getting the files ready…'); const list=await fileChanges(P);
+    const r=await publish(list,(P.exists?'Replace':'Add')+' test '+id+' ('+P.td.title+')',msg);
+    TP.working=false;
+    if(r.nothing){ say(msg,'Nothing to publish: GitHub already has this exact version.','ok'); $('#pkCancel').disabled=false; return; }
+    const sha=await gitSha(P.testBytes);
+    $('#pkg').innerHTML=`<h3 style="margin-top:16px">${esc(P.td.title)} <span class="badge">Published</span></h3>
+      <p>${plural(r.changed,'file')} saved in one commit${r.url?' (<a href="'+esc(r.url)+'" target="_blank" rel="noopener">see it on GitHub</a>)':''}.</p>
+      <p class="msg2" id="liveMsg">Waiting for GitHub Pages to update (usually 1–2 minutes)…</p>
+      <div class="row"><button class="btn pri" id="pkNs">Make a session for this test</button><button class="btn" id="pkDone">Done</button></div>`;
+    $('#pkNs').onclick=()=>newSession(id); $('#pkDone').onclick=()=>{ TP.pkg=null; $('#pkg').innerHTML=''; };
+    if(P.fromBank){ keep('qbCart',null); QB.cart=[]; bkNote(); }
+    if(P.bankSave&&P.bankSave.length) $('#pkg').querySelector('p').insertAdjacentHTML('afterend','<p>'+plural(P.bankSave.length,'generated question')+' saved to the Question bank (Saved).</p>');
+    TP.pkg=null; watchLive('tests/'+id+'/test.js',sha);
+    await tpLoad(); }
+  catch(e){ TP.working=false; say(msg,'Not published. '+errText(e),'err'); ['#pkPub','#pkCancel','#pkPrev'].forEach(s=>{ if($(s)) $(s).disabled=false; }); if($('#pkShow')) $('#pkShow').disabled=false; } }
+function watchLive(path,sha){ clearTimeout(TP.watch); const t0=Date.now();
+  const tick=async()=>{ const el=$('#liveMsg'); if(!el) return;
+    try{ const r=await fetch((TP.gh&&TP.gh.pages||ROOT)+encPath(path)+'?t='+Date.now(),{cache:'no-store'}); if(r.ok&&await gitSha(new Uint8Array(await r.arrayBuffer()))===sha){ say(el,'✓ Live on the site. Students can use it now.','ok'); return; } }catch(e){}
+    if(Date.now()-t0>10*60000){ say(el,'GitHub Pages hasn\'t updated after 10 minutes. Check the Actions tab of the repository on GitHub.','err'); return; }
+    TP.watch=setTimeout(tick,10000); };
+  TP.watch=setTimeout(tick,5000); }
+
+/* ---------- choosing files ---------- */
+$('#pickZip').onclick=()=>$('#zipIn').click(); $('#pickDir').onclick=()=>$('#dirIn').click();
+$('#zipIn').onchange=async e=>{ const f=e.target.files[0]; e.target.value=''; if(!f) return;
+  try{ await takeFiles(await unzip(await f.arrayBuffer()),f.name); }catch(x){ $('#pkg').innerHTML='<p class="msg2 err">'+errText(x)+'</p>'; } };
+$('#dirIn').onchange=async e=>{ const fs=[...e.target.files]; e.target.value=''; if(!fs.length) return;
+  const list=await Promise.all(fs.map(async f=>({path:f.webkitRelativePath||f.name,bytes:new Uint8Array(await f.arrayBuffer())})));
+  takeFiles(list,'the folder '+(fs[0].webkitRelativePath||'').split('/')[0]); };
+const drop=$('#drop');
+['dragenter','dragover'].forEach(t=>drop.addEventListener(t,e=>{ e.preventDefault(); drop.classList.add('over'); }));
+['dragleave','drop'].forEach(t=>drop.addEventListener(t,()=>drop.classList.remove('over')));
+drop.addEventListener('drop',async e=>{ e.preventDefault(); const items=[...(e.dataTransfer.items||[])].map(i=>i.webkitGetAsEntry&&i.webkitGetAsEntry()).filter(Boolean);
+  try{ if(items.length===1&&items[0].isFile&&/\.zip$/i.test(items[0].name)){ const f=e.dataTransfer.files[0]; await takeFiles(await unzip(await f.arrayBuffer()),f.name); return; }
+    if(items.some(i=>i.isDirectory)||items.length){ const out=[]; for(const it of items) await readEntry(it,'',out); takeFiles(out,items.length===1?'the folder '+items[0].name:'the dropped files'); return; }
+    const f=e.dataTransfer.files[0]; if(f) await takeFiles(await unzip(await f.arrayBuffer()),f.name); }
+  catch(x){ $('#pkg').innerHTML='<p class="msg2 err">'+errText(x)+'</p>'; } });
+addEventListener('dragover',e=>{ if(!$('#tpage').hidden) e.preventDefault(); }); addEventListener('drop',e=>{ if(!$('#tpage').hidden) e.preventDefault(); });
+
+/* =================== Question bank (questions come from the question bank file) ===================
+   The question bank file (spitz-math.github.io/warmup/index.html, or a file Kody picks) runs in a sandboxed frame with a
+   fake page around it, so only its question bank and generators are used. That frame also converts each question to the
+   player's format (BANKSANDBOX below). Built tests go through the same checks, preview and publish as an uploaded zip. */
+function BANKSANDBOX(){   // runs inside the sandboxed frame; must not use anything from the dashboard
+  const G=window.__GEN, post=m=>parent.postMessage(Object.assign({bank:'__TOK__'},m),'*');
+  if(!G||!G.B||!G.R){ post({op:'ready',err:'That file loaded, but it is not the question bank (no questions inside).'}); return; }
+  const CATN={RC1:1,RC2:2,RC3:3,RC4:4,RC5:5}, ORDER=['RC1','RC2','RC3','RC4','RC5'];
+  const newCode=(k,c)=>{ const m=String(k).match(/^A\.(\d+)([A-Z])$/); return m?'A1.'+c+'.'+m[1]+'.'+m[2]:k; };
+  const COLOR=/\b(orange|blue|gr[ae]y|green|red|purple)\b/i, GRAPHWORDS=/graph|grid|shown|plotted|plane|line/i;
+  const dp=new DOMParser(), esc=s=>String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  const vars=h=>String(h).replace(/<i>([\s\S]*?)<\/i>/g,'<var>$1</var>');
+  const text=h=>dp.parseFromString(String(h),'text/html').body.textContent.replace(/\s+/g,' ').trim();
+  /* Cambium look for plain text: real minus signs, stacked fractions, italic variables (x, f(x)); svg, var and sup/sub are left alone */
+  function fixText(s,inScript){ let h=esc(s);
+    h=h.replace(/(^|[\s(\[{,=:;<>≤≥+×÷$])-(?=\d|\.\d)/g,'$1−').replace(/ - /g,' − ').replace(/(^|\s)-(?=[a-z(]\b|\()/g,'$1−');
+    if(inScript) return h;
+    h=h.replace(/(^|[^\w.\/&;])(\d+)\/(\d+)(?![\d.\/])/g,(m,p,a,b)=>p+'<span class="frac"><span>'+a+'</span><span>'+b+'</span></span>');
+    h=h.replace(/(^|[^A-Za-z'’&;#])([b-df-hj-np-tv-z])(?![A-Za-z'’])/g,'$1<var>$2</var>');
+    h=h.replace(/(^|[^A-Za-z'’&;#])([A-Z])(?=\()/g,'$1<var>$2</var>');
+    return h; }
+  function polish(html){ const doc=dp.parseFromString('<div id="r">'+html+'</div>','text/html'), r=doc.getElementById('r');
+    const walk=n=>[...n.childNodes].forEach(c=>{ if(c.nodeType===3){ const inS=!!(c.parentNode.closest&&c.parentNode.closest('sup,sub')), h=fixText(c.data,inS);
+        if(h!==esc(c.data)){ const t=doc.createElement('template'); t.innerHTML=h; c.replaceWith(t.content); } }
+      else if(c.nodeType===1&&c.namespaceURI==='http://www.w3.org/1999/xhtml'&&!/^(VAR|STYLE|SCRIPT)$/.test(c.nodeName)&&!(c.classList&&c.classList.contains('frac'))) walk(c); });
+    walk(r); return r.innerHTML; }
+  function fixSvg(s,keep,cls,w){ let t=String(s).replace(/var\(--rule\)/g,'#999');
+    if(!keep) t=t.replace(/(stroke|fill)="#(e8590c|1a3a8f)"/gi,'$1="#000"');
+    t=t.replace(/<div style="[^"]*">(\s*<svg)/i,'<div>$1');
+    t=t.replace(/(<text\b[^>]*>)([^<]*)(<\/text>)/g,(m,a,b,c)=>a+b.replace(/(^|[\s(,])-(?=\d|\.\d)/g,'$1−')+c);   // minus signs in graph labels
+    return t.replace(/<svg\b([^>]*)>/gi,(m,a)=>'<svg'+a.replace(/\s(width|height|class)="[^"]*"/g,'').replace(/\sstyle="[^"]*"/,' style="background:#fff"')+' class="'+cls+'"'+(w?' width="'+w+'"':'')+'>'); }
+  function mathTable(span){ const t=span.textContent.replace(/−/g,'−');
+    const segs=t.split(/\s* [\s ]*/).map(x=>x.trim()).filter(Boolean); if(segs.length<2) return null;
+    const cols=segs.map(sg=>{ const m=sg.match(/^([^:]{1,30}):\s*(.+)$/); return m?{h:m[1].trim(),v:m[2].split(/\s*,\s*/)}:null; });
+    if(cols.some(c=>!c)||cols.some(c=>c.v.length!==cols[0].v.length)||cols[0].v.length<2||cols.some(c=>c.v.some(v=>!v||v.length>16))) return null;
+    const lab=h=>esc(h).replace(/\b([a-zA-Z])\b/g,'<var>$1</var>');
+    return '<table class="data"><tr>'+cols.map(c=>'<th>'+lab(c.h)+'</th>').join('')+'</tr>'+cols[0].v.map((_,r)=>'<tr>'+cols.map(c=>'<td>'+esc(c.v[r])+'</td>').join('')+'</tr>').join('')+'</table>'; }
+  function block(el){ const c=el.cloneNode(true);
+    [c,...c.querySelectorAll('*')].forEach(e=>{ if(/^(TABLE|TH|TD|TR)$/.test(e.nodeName)) e.removeAttribute('style'); if(e.nodeName==='TABLE') e.className='data';
+      if(e.nodeName==='DIV'){ const st=e.getAttribute('style')||''; if(/display:\s*flex/.test(st)) e.setAttribute('style','display:flex;gap:24px;flex-wrap:wrap;align-items:flex-start'); else e.removeAttribute('style'); } });
+    return polish(vars(c.outerHTML)); }
+  function blocks(html){ const doc=dp.parseFromString('<div id="r">'+html+'</div>','text/html'), kids=[...doc.getElementById('r').childNodes], out=[]; let cur=[];
+    const ser=n=>n.nodeType===3?esc(n.data):n.nodeType===1?n.outerHTML:'';
+    const flush=()=>{ const h=cur.map(ser).join('').trim(); if(h.replace(/&nbsp;| |\s/g,'')) out.push('<p>'+polish(vars(h))+'</p>'); cur=[]; };
+    const blank=n=>n&&n.nodeType===3&&!n.data.trim();
+    const near=(i,d)=>{ let j=i+d; while(kids[j]&&blank(kids[j])) j+=d; return kids[j]; };
+    kids.forEach((n,i)=>{ if(n.nodeName==='BR'){ flush(); return; }
+      if(n.nodeName==='TABLE'||n.nodeName==='DIV'){ flush(); out.push(block(n)); return; }
+      if(n.nodeName==='SPAN'&&n.classList.contains('math')){ const a=near(i,-1), b=near(i,1);
+        if((!a||a.nodeName==='BR')&&(!b||b.nodeName==='BR')){ flush(); out.push(polish(mathTable(n)||'<span class="eq">'+vars(n.innerHTML)+'</span>')); return; }
+        cur.push(dp.parseFromString('<span>'+n.innerHTML+'</span>','text/html').body.firstChild); return; }
+      cur.push(n); });
+    flush(); return out; }
+  function convert(raw,teks,src){ const r=G.R[teks], cat=CATN[r.category]||0;
+    if(!raw||!raw.kind) throw new Error('no question');
+    if(!/^(mc|mcgraphic|multiselect|griddable)$/.test(raw.kind)) return {skip:'This kind of question ('+raw.kind+') has no matching question type yet.'};
+    let p=String(raw.prompt||'').replace(/(?:<br>\s*)*Record your answer and fill in the bubbles on your answer document\.?/gi,'');
+    let direct=''; p=p.replace(/\s*Select (TWO|THREE|FOUR|ALL) correct answers\.?/gi,(m,w)=>{ direct='Select '+w+' correct answers.'; return ''; });
+    const allText=text(p)+' '+JSON.stringify(raw.choices||''), keep=COLOR.test(allText);
+    const bl=blocks(p);
+    if(raw.svg){ const fig=fixSvg(raw.svg,keep,'fig',340); if(bl.length>1&&GRAPHWORDS.test(text(bl[0]))) bl.splice(1,0,fig); else bl.push(fig); }
+    const it={teks:newCode(teks,cat), cat:cat||null, rs:r.r?'Readiness':'Supporting', src:src};
+    if(raw.kind==='griddable'){ const a=Number(String(raw.answerText).replace(/,/g,'').replace(/−/g,'-'));
+      if(!isFinite(a)) return {skip:'Its answer ('+raw.answerText+') is not a number.'};
+      bl.push('<p>Enter your answer in the box provided.</p>'); Object.assign(it,{type:'eq',label:'Equation editor',answer:a}); }
+    else if(raw.kind==='multiselect'){ const ch=raw.choices||[], ans=ch.map((c,i)=>c&&c.correct?i:-1).filter(i=>i>=0);
+      if(ans.length<2) return {skip:'It has fewer than two correct answers.'};
+      if(!direct) direct='Select '+(['','','TWO','THREE','FOUR'][ans.length]||'ALL')+' correct answers.';
+      Object.assign(it,{type:'ms',label:'Multiselect',choices:ch.map(c=>polish(vars(c.text))),answer:ans,max:2}); }
+    else { const graphic=raw.kind==='mcgraphic', ch=graphic?(raw.graphicChoices||[]).map(s=>fixSvg(s,keep,'sgraph')):(raw.choices||[]).map(c=>polish(vars(String(c))));
+      if(!Number.isInteger(raw.correctIndex)||raw.correctIndex<0||raw.correctIndex>=ch.length) return {skip:'Its answer key is missing.'};
+      Object.assign(it,{type:'mc',label:graphic||raw.svg?'Multiple choice with graph':'Multiple choice',choices:ch,answer:raw.correctIndex}); if(graphic) it.grid=true; }
+    if(direct) bl.push('<p class="direct">'+direct+'</p>');
+    it.stem=bl.join('');
+    // kept for writing student explanations later (not shown to students)
+    it.notes={work:raw.work||'', why:Array.isArray(raw.misconceptions)?raw.misconceptions:null};
+    return {item:it}; }
+  const year=s=>+((String(s||'').match(/\b(20\d\d)\b/)||[])[1]||0);
+  const gensOf=k=>{ const out=[]; (G.R[k].skills||[]).forEach(sk=>(sk.gens||[]).forEach(g=>out.push({g,name:String(sk.name||'').replace(/<[^>]+>|&[a-z]+;/g,' ').replace(/\s+/g,' ').trim()}))); return out; };
+  const teksList=Object.keys(G.R).sort((a,b)=>(ORDER.indexOf(G.R[a].category)-ORDER.indexOf(G.R[b].category))||a.localeCompare(b,undefined,{numeric:true}));
+  addEventListener('message',e=>{ const q=e.data; if(!q||q.bank!=='__TOK__'||!q.op) return;
+    try{
+      if(q.op==='all'){ const out=(G.B[q.teks]||[]).map((raw,i)=>{ try{ const c=convert(raw,q.teks,raw.source); return c.item?{i,item:c.item}:{i,skip:c.skip}; }catch(err){ return {i,skip:String(err&&err.message||err)}; } }); post({rid:q.rid,list:out}); return; }
+      if(q.op==='item'){ const r=G.R[q.teks]; if(!r) throw new Error('Unknown standard '+q.teks);
+        if(q.mode==='gen'){ const gs=gensOf(q.teks); if(!gs.length) throw new Error('No practice generators for '+q.teks); let why='';
+          for(let t=0;t<16;t++){ const pick=gs[Math.floor(Math.random()*gs.length)]; const c=convert(pick.g(),q.teks,'Practice: '+pick.name);
+            if(c.item&&!(q.avoid||[]).includes(c.item.stem)){ post({rid:q.rid,item:c.item}); return; } why=c.skip||'repeats'; }
+          post({rid:q.rid,skip:'Could not make a new practice question ('+why+').'}); return; }
+        const raw=(G.B[q.teks]||[])[q.i]; if(!raw) throw new Error('No released question #'+q.i+' for '+q.teks);
+        const c=q.mode==='fresh'?convert(raw.regen(),q.teks,'Based on '+raw.source+' (fresh numbers)'):convert(raw,q.teks,raw.source);
+        post(Object.assign({rid:q.rid},c)); return; }
+    }catch(err){ post({rid:q.rid,err:String(err&&err.message||err)}); } });
+  post({op:'ready', cats:G.CL||null, teks:teksList.map(k=>{ const r=G.R[k]; return {k, label:String(r.label||'').replace(/<[^>]+>/g,''), cat:CATN[r.category]||0, r:!!r.r,
+    bank:(G.B[k]||[]).map((b,i)=>({i,year:year(b.source),kind:b.kind,src:b.source||'',regen:typeof b.regen==='function'})), gens:gensOf(k).length }; })});
+}
+
+const BK={frame:null, tok:null, ready:false, cat:null, wait:{}, rid:0, draft:[], from:''};
+const CATNAMES={1:'Number and Algebraic Methods',2:'Describing and Graphing Linear Functions, Equations, and Inequalities',3:'Writing and Solving Linear Functions, Equations, and Inequalities',4:'Quadratic Functions and Equations',5:'Exponential Functions and Equations'};
+const BANKURL=()=>(TP.gh&&TP.gh.pages||ROOT).replace(/checkpoint\/?$/,'')+'warmup/index.html';
+function bankSay(t,cls){ say($('#bkMsg'),t,cls); }
+async function bankLoad(html,from){
+  const a=html.search(/<script>/i), b=html.lastIndexOf('</'+'script>');
+  if(a<0||b<a) throw new Error('That file has no script in it, so it is not the question bank.');
+  const gen=html.slice(a+8,b).replace(/<\/(script)/gi,'<\\/$1');
+  if(BK.frame){ BK.frame.remove(); BK.frame=null; }
+  const tok=Math.random().toString(36).slice(2); BK.tok=tok; BK.ready=false; BK.cat=null;
+  const fake='var __F=new Proxy(function(){},{get:function(t,k){ return k===Symbol.toPrimitive?function(){ return ""; }:__F; },apply:function(){ return __F; },construct:function(){ return __F; },set:function(){ return true; }});';
+  const names='document,window,localStorage,sessionStorage,navigator,location,setTimeout,setInterval,clearTimeout,clearInterval,addEventListener,alert,print,confirm,requestAnimationFrame,history';
+  const srcdoc='<!DOCTYPE html><html><body><scr'+'ipt>'+fake+'<\/script>'
+    +'<scr'+'ipt>window.__GEN=(function('+names+'){\n'+gen+'\n;return {B:typeof TEKS_BANK!=="undefined"?TEKS_BANK:null,R:typeof TEKS_REGISTRY!=="undefined"?TEKS_REGISTRY:null,CL:typeof CATEGORY_LABELS!=="undefined"?CATEGORY_LABELS:null};})('+names.split(',').map(()=>'__F').join(',')+');<\/script>'
+    +'<scr'+'ipt>('+BANKSANDBOX.toString().split('__TOK__').join(tok)+')();<\/script></body></html>';
+  const f=document.createElement('iframe'); f.style.display='none'; f.setAttribute('aria-hidden','true'); f.setAttribute('sandbox','allow-scripts');
+  const ready=new Promise((res,rej)=>{ const tm=setTimeout(()=>rej(new Error('The question bank did not start (it took more than 20 seconds).')),20000);
+    BK.onReady=m=>{ clearTimeout(tm); m.err?rej(new Error(m.err)):res(m); }; });
+  f.srcdoc=srcdoc; document.body.appendChild(f); BK.frame=f;
+  const m=await ready; BK.ready=true; BK.cat=m.teks; BK.from=from; return m; }
+addEventListener('message',e=>{ const m=e.data; if(!m||!BK.tok||m.bank!==BK.tok||!BK.frame||e.source!==BK.frame.contentWindow) return;
+  if(m.op==='ready'){ if(BK.onReady) BK.onReady(m); return; }
+  const w=BK.wait[m.rid]; if(w){ delete BK.wait[m.rid]; w(m); } });
+function bankAsk(q){ return new Promise(res=>{ const rid=++BK.rid; const tm=setTimeout(()=>{ delete BK.wait[rid]; res({err:'The question bank did not answer.'}); },15000);
+  BK.wait[rid]=m=>{ clearTimeout(tm); res(m); }; BK.frame.contentWindow.postMessage(Object.assign({bank:BK.tok,rid},q),'*'); }); }
+
+const fnBack=s=>s.replace(/"fn:((?:[^"\\]|\\.)*)"/g,(q,src)=>'('+JSON.parse('"'+src+'"')+')');
+const shuffle=a=>{ a=a.slice(); for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } return a; };
+/* ---------- the Question bank page ----------
+   Released questions come from two places: years with a full released test published in tests/alg1-<year>/ use that test's
+   real questions (interactive types, pictures, TEA explanations); every other year uses the question bank file's version.
+   Generated questions come from the question bank file's practice makers or a released question's "new numbers" version.
+   Every question is shown by player.html in browse mode (a sandboxed frame), so it looks and works exactly as students see it. */
+const QB={usage:{}, saved:[], savedSha:null, ready:false, loading:null, tests:{}, testYears:new Set(), bankCache:{}, skipped:{}, entries:{}, view:[], shown:0, mode:'rel', gmode:'gen', gen:[], genKey:'',
+  cart:[], frame:null, tok:null, frameReady:null, cartView:false, years:null, gid:0 };
+const PAGE=30;
+const teksKey=t=>{ const m=String(t||'').match(/^A1\.\d+\.(\d+)\.([A-Z])$/); return m?'A.'+m[1]+m[2]:String(t||''); };
+const yearOf=s=>+((String(s||'').match(/\b(20\d\d)\b/)||[])[1]||0);
+const qOf=s=>+((String(s||'').match(/\bQ(\d+)\b/)||[])[1]||0);
+const plainText=h=>new DOMParser().parseFromString(String(h).replace(/<span class="frac"><span>([\s\S]*?)<\/span><span>([\s\S]*?)<\/span><\/span>/g,'$1/$2').replace(/<svg[\s\S]*?<\/svg>/gi,' [graph] ').replace(/<img[^>]*>/gi,' [picture] ').replace(/<sup>([\s\S]*?)<\/sup>/gi,'^$1').replace(/<\/(p|td|th|tr)>/gi,' $&'),'text/html').body.textContent.replace(/\s+/g,' ').trim();
+const stdInfo=k=>(BK.cat||[]).find(t=>t.k===k)||null;
+function cartSave(){ keep('qbCart',{cart:QB.cart,title:$('#bkTitle').value,id:$('#bkId').dataset.touched?$('#bkId').value:''}); }
+function cartLoad(){ const c=store('qbCart'); if(c&&Array.isArray(c.cart)){ QB.cart=c.cart.filter(e=>e&&e.uid&&e.item); if(c.title) $('#bkTitle').value=c.title; if(c.id){ $('#bkId').value=c.id; $('#bkId').dataset.touched=1; } } }
+const inCart=uid=>QB.cart.some(e=>e.uid===uid);
+
+/* the questions as code: graph functions come back as code, pictures point at GitHub Pages (preview) or the new test's own files */
+const pagesBase=()=>{ try{ return new URL(TP.gh&&TP.gh.pages||ROOT||'./',location.href).href; }catch(e){ return ROOT; } };
+function itemsCode(list,forTest){ let s=fnBack(JSON.stringify(list)).replace(/<\/(script)/gi,'<\\/$1');
+  return s.replace(/@@([a-z0-9-]+)\/(img\/[A-Za-z0-9._\-\/]+)@@/g,(m,id,p)=>forTest?'"+ASSET('+JSON.stringify('img/'+id+'-'+p.slice(4))+')+"':pagesBase()+'tests/'+id+'/'+p); }
+
+/* ---------- question IDs, where each question was used, saved generated questions ----------
+   bid = the question's lasting ID, written into every test built here: r:<year>#<Q> for a released question (any version),
+   s:<hash> for a generated one. "Used in" comes from reading every published test (the full released tests don't count).
+   Generated questions on a published test are kept in tests/_bank/saved.json (written in the same commit as the test). */
+const SAVEDPATH='tests/_bank/saved.json';
+function fnv(str){ let h=0x811c9dc5; for(let i=0;i<str.length;i++){ h^=str.charCodeAt(i); h=Math.imul(h,0x01000193)>>>0; } return h.toString(16).padStart(8,'0'); }
+function bidOf(e){ if(e.bid) return e.bid; if(e.from!=='gen'&&e.year&&e.q) return 'r:'+e.year+'#'+e.q;
+  const it=Object.assign({},e.item); delete it.src; delete it.notes; delete it.bid; return 's:'+fnv(JSON.stringify(it))+fnv(String(it.stem)+'|'+JSON.stringify(it.choices||it.tiles||it.drops||'')); }
+function bidOfItem(it){ if(it.bid) return it.bid; const m=String(it.src||'').match(/^STAAR Algebra I (20\d\d), Q(\d+)\b/); return m&&!/fresh numbers/i.test(it.src)?'r:'+m[1]+'#'+m[2]:null; }
+async function loadUsage(){ const ids=[...new Set(TP.index.map(t=>t.id).concat(testFolders()))].filter(id=>!/^alg1-20\d\d$/.test(id)), use={};
+  await Promise.all(ids.map(async id=>{ const td=await metaOf(id); if(!td) return; const title=(TP.index.find(t=>t.id===id)||{}).title||td.title||id;
+    td.items.forEach(it=>{ let b=null; try{ b=bidOfItem(JSON.parse(it.body)); }catch(e){} if(b){ (use[b]=use[b]||[]); if(!use[b].includes(title)) use[b].push(title); } }); }));
+  QB.usage=use; }
+async function loadSaved(){ QB.saved=[]; QB.savedSha=TP.files&&TP.files[SAVEDPATH]?TP.files[SAVEDPATH].sha:null;
+  try{ let txt; if(TP.files){ if(!TP.files[SAVEDPATH]) return; txt=await repoText(SAVEDPATH); }
+    else { const r=await fetch(ROOT+SAVEDPATH+'?t='+Date.now(),{cache:'no-store'}); if(!r.ok) return; txt=await r.text(); }
+    const j=JSON.parse(txt); QB.saved=(j.items||[]).filter(x=>x&&x.bid&&x.item).map(x=>({uid:x.bid, bid:x.bid, from:'saved', kind:x.kind||'practice', fresh:x.kind==='new numbers', year:x.year||0, q:x.q||0, std:x.std, item:x.item, firstTest:x.firstTest||'', savedAt:x.savedAt||''})); }
+  catch(e){ bankSay('Could not read your saved questions ('+errText(e)+').','err'); } }
+const usedIn=e=>QB.usage[bidOf(e)]||[];
+const isSaved=e=>e.from!=='gen'?false:QB.saved.some(x=>x.bid===bidOf(e));
+
+/* ---------- loading ---------- */
+function bkOpenPage(){ $('#bkpage').hidden=false; $('#tpage').hidden=true; cartLoad(); renderCart(); if(!$('#bkTitle').value.trim()) $('#bkTitle').value='Algebra I Practice: '+new Date().toLocaleDateString([], {month:'short',day:'numeric'}); bkIdAuto();
+  if(!QB.loading) QB.loading=qbLoad(); else if(QB.ready) Promise.all([loadUsage(),loadSaved()]).then(()=>{ fillFilters(); if(!QB.cartView) refreshView(); renderCart(); }); }
+function bkClosePage(){ $('#bkpage').hidden=true; $('#bkpage').classList.remove('cartopen'); $('#tpage').hidden=false; bkNote(); }
+$('#bkOpen').onclick=bkOpenPage; $('#bkBack').onclick=bkClosePage;
+$('#bkCartBtn').onclick=()=>$('#bkpage').classList.toggle('cartopen'); $('#bkCartClose').onclick=()=>$('#bkpage').classList.remove('cartopen');
+function bkNote(){ const c=store('qbCart'), n=c&&c.cart?c.cart.length:0; $('#bkCartNote').textContent=n?'Your test so far: '+plural(n,'question')+'.':''; }
+async function qbLoad(){ over('Loading the question bank and your released tests…');
+  try{ await viewFrame(); }catch(e){ over('The preview could not start: '+errText(e)); QB.loading=null; return; }
+  await Promise.all([bankOpen(), loadTests(), loadUsage(), loadSaved()]);
+  if(!BK.ready){ over('The question bank file is needed for the question list. See the message on the left.'); QB.loading=null; return; }
+  $('#bkHideUsed').checked=!!store('qbHideUsed');
+  QB.ready=true; fillFilters(); $('#bkFilters').hidden=false; refreshView(); }
+async function bankOpen(){ if(BK.ready) return; bankSay('Loading the question bank from GitHub…');
+  try{ const r=await fetch(BANKURL()+'?t='+Date.now(),{cache:'no-store'}); if(!r.ok) throw new Error(r.status===404?'notfound':'HTTP '+r.status);
+    await bankLoad(await r.text(),'GitHub (warmup/index.html)'); bankReady(); }
+  catch(e){ bankSay(e.message==='notfound'?'The question bank file is not on GitHub yet. Upload it to a <b>warmup</b> folder in spitz-math.github.io, named <b>index.html</b>, or choose the file:':'Could not load the question bank: '+errText(e)+' You can also choose the file:', e.message==='notfound'?'':'err');
+    $('#bkFileRow').hidden=false; } }
+$('#bkFileBtn').onclick=()=>$('#bkFile').click();
+$('#bkFile').onchange=async e=>{ const f=e.target.files[0]; e.target.value=''; if(!f) return; bankSay('Loading '+esc(f.name)+'…');
+  try{ await bankLoad(await f.text(),f.name); bankReady(); QB.bankCache={}; QB.ready=true; fillFilters(); $('#bkFilters').hidden=false; refreshView(); }catch(x){ bankSay(errText(x),'err'); } };
+function bankReady(){ const n=BK.cat.reduce((a,t)=>a+t.bank.length,0);
+  bankSay(`Question bank loaded (${n} released questions, ${BK.cat.length} standards).`+(QB.testYears.size?` ${[...QB.testYears].sort().join(' and ')} use${QB.testYears.size===1?'s':''} your published full test${QB.testYears.size===1?'':'s'}.`:''));
+  $('#bkFileRow').hidden=/GitHub/.test(BK.from); }
+/* full released tests already published (tests/alg1-<year>/): their questions replace the bank's version of that year */
+async function loadTests(){ const ids=[...new Set(TP.index.map(t=>t.id).concat(testFolders()))].filter(id=>/^alg1-20\d\d$/.test(id)).sort();
+  await Promise.all(ids.map(async id=>{ const td=await metaOf(id); if(!td||!td.items||td.items.length<40) return;
+    const year=+id.slice(5); QB.testYears.add(year);
+    QB.tests[id]=td.items.map((it,i)=>{ let body, key; try{ body=JSON.parse(it.body.replace(/src=\\"(img\/[A-Za-z0-9._\-\/]+)\\"/g,'src=\\"@@'+id+'/$1@@\\"')); key=JSON.parse(it.key); }catch(e){ return null; }
+      const q=i+1, item=Object.assign(body,key,{type:it.type,teks:it.teks,cat:it.cat,rs:it.rs,max:it.max||1,label:it.label,src:'STAAR Algebra I '+year+', Q'+q});
+      const labs=td.rationale&&td.rationale[q];
+      return {uid:'t:'+id+'#'+q, from:'test', test:id, year, q, std:teksKey(it.teks), item, rat:labs&&labs.length?labs.slice():null}; }).filter(Boolean); }));
+  if(BK.ready) bankReady(); }
+/* one standard's released questions from the question bank file, converted to the player's format (cached) */
+async function bankStd(k){ if(QB.bankCache[k]) return QB.bankCache[k];
+  const r=await bankAsk({op:'all',teks:k}); const out=[]; let skip=0;
+  (r.list||[]).forEach(x=>{ if(!x.item){ skip++; return; } const src=x.item.src||''; out.push({uid:'b:'+k+'#'+x.i, from:'bank', i:x.i, year:yearOf(src), q:qOf(src), std:k, item:x.item, adapted:/adapted/i.test(src)}); });
+  QB.skipped[k]=skip; return QB.bankCache[k]=out; }
+
+/* ---------- filters ---------- */
+function fillFilters(){ const sel=$('#bkStd'), cur=sel.value; let h='', last=-1;
+  const tcount=k=>Object.values(QB.tests).reduce((a,l)=>a+l.filter(e=>e.std===k).length,0);
+  const count=t=>t.bank.filter(b=>!QB.testYears.has(b.year)).length+tcount(t.k);
+  if(QB.mode!=='gen') h+='<option value="*">All standards</option>';
+  BK.cat.forEach(t=>{ if(t.cat!==last){ if(last!==-1) h+='</optgroup>'; last=t.cat; h+=`<optgroup label="${t.cat}. ${esc(CATNAMES[t.cat]||'')}">`; }
+    const n=QB.mode==='rel'?count(t):QB.mode==='saved'?QB.saved.filter(x=>x.std===t.k).length:t.gens;
+    h+=`<option value="${esc(t.k)}" ${QB.mode==='gen'&&!t.gens&&!t.bank.some(b=>b.regen)?'disabled':''}>${esc(t.k)}  ${esc(t.label)}${t.r?' (R)':''}  [${n}]</option>`; });
+  sel.innerHTML=h+'</optgroup>';
+  if([...sel.options].some(o=>o.value===cur&&!o.disabled)) sel.value=cur; else if(QB.mode==='gen') sel.value=([...sel.options].find(o=>!o.disabled)||{}).value||'';
+  const years=[...new Set(BK.cat.flatMap(t=>t.bank.map(b=>b.year)).concat([...QB.testYears]).filter(Boolean))].sort((a,b)=>b-a);
+  QB.years=new Set(years);   // every year is always shown (Kody: no year filter)
+  $('#bkRelOpts').hidden=QB.mode==='gen'; $('#bkGenOpts').hidden=QB.mode!=='gen'; }
+const segSet=(sel,v)=>document.querySelectorAll(sel+' button').forEach(b=>b.setAttribute('aria-pressed',b.dataset.v===v));
+document.querySelectorAll('#bkSrc button').forEach(b=>b.onclick=()=>{ if(QB.mode===b.dataset.v) return; QB.mode=b.dataset.v; segSet('#bkSrc',QB.mode); fillFilters(); refreshView(); });
+document.querySelectorAll('#bkGenMode button').forEach(b=>b.onclick=()=>{ if(QB.gmode===b.dataset.v) return; QB.gmode=b.dataset.v; segSet('#bkGenMode',QB.gmode); QB.genKey=''; refreshView(); });
+$('#bkStd').onchange=()=>refreshView(); $('#bkHideUsed').onchange=e=>{ keep('qbHideUsed',e.target.checked); refreshView(); }; $('#bkType').onchange=()=>refreshView(); $('#bkSort').onchange=()=>refreshView();
+$('#bkMore').onclick=()=>genMore(5); $('#bkRegen').onclick=()=>{ QB.genKey=''; refreshView(); };
+
+/* ---------- the list ---------- */
+let viewSeq=0;
+async function refreshView(){ if(!QB.ready) return; const seq=++viewSeq; QB.cartView=false; $('#bkViewBar').hidden=true; $('#bkMain').classList.remove('cartv');
+  const k=$('#bkStd').value;
+  if(QB.mode==='gen') return genView(k,seq);
+  over('Loading questions…');
+  const stds=k==='*'?BK.cat.map(t=>t.k):[k]; let list=[];
+  if(QB.mode==='saved') list=QB.saved.filter(e=>stds.includes(e.std));
+  else { for(const s of stds){ const b=await bankStd(s); if(seq!==viewSeq) return; list=list.concat(b.filter(e=>!QB.testYears.has(e.year))); }
+    Object.values(QB.tests).forEach(l=>list=list.concat(l.filter(e=>stds.includes(e.std)))); }
+  const ty=$('#bkType').value, hide=$('#bkHideUsed').checked, all=list.length;
+  list=list.filter(e=>(QB.mode==='saved'||QB.years.has(e.year))&&(!ty||(ty==='mc')===(e.item.type==='mc')));
+  const before=list.length; if(hide) list=list.filter(e=>!usedIn(e).length);
+  const order=BK.cat.map(t=>t.k);
+  list.sort($('#bkSort').value==='std'?(a,b)=>(order.indexOf(a.std)-order.indexOf(b.std))||(b.year-a.year)||(a.q-b.q):(a,b)=>(b.year-a.year)||(a.q-b.q)||(order.indexOf(a.std)-order.indexOf(b.std)));
+  const skip=stds.reduce((a,s)=>a+(QB.skipped[s]||0),0);
+  $('#bkCount').innerHTML=`<b>${list.length}</b> question${list.length===1?'':'s'}`+(hide&&before>list.length?`<div class="hint">${before-list.length} already on a test (hidden)</div>`:'')+(skip&&QB.mode!=='saved'?`<div class="hint">${plural(skip,'bank question')} can't be shown yet (a question type the player doesn't have).</div>`:'');
+  QB.view=list; QB.shown=0; sendPage(false,QB.mode==='saved'?(QB.saved.length?'No saved questions match.':'No saved questions yet. A generated question is saved here when you publish a test that uses it.'):'No released questions match. Try another standard or question type.'); }
+function metaFor(e){ const t=stdInfo(e.std)||{};
+  return {uid:e.uid, year:e.year||'', teks:e.std, tlabel:t.label||'', rs:e.item.rs||(t.r?'Readiness':'Supporting'),
+    where:e.from==='gen'||e.from==='saved'?(e.fresh?'New numbers':'Practice'):e.q?'STAAR Q'+e.q:'STAAR',
+    tag:e.from==='bank'&&e.adapted?'Adapted':e.from==='saved'||isSaved(e)?'Saved':'', used:usedIn(e), src:e.item.src||''}; }
+function sendPage(append,empty){ const part=QB.view.slice(QB.shown,QB.shown+PAGE); QB.shown+=part.length;
+  viewPost({op:'list', append, code:itemsCode(part.map(e=>e.item),false), meta:part.map(metaFor), more:QB.shown<QB.view.length, empty, added:QB.cart.map(e=>e.uid)});
+  over(null); }
+/* generated questions (kept until "Start over" or another standard) */
+async function genView(k,seq){ const key=k+'|'+QB.gmode+'|'+[...QB.years].join(',');
+  const t=stdInfo(k); $('#bkGenHint').textContent=!t?'':QB.gmode==='gen'?(t.gens?plural(t.gens,'kind')+' of practice question for this standard. Each click makes new ones.':'No practice questions for this standard.'):'Released questions for this standard, with new numbers.';
+  $('#bkMore').hidden=QB.gmode!=='gen';
+  if(QB.genKey!==key){ QB.genKey=key; QB.gen=[]; over('Making questions…');
+    if(QB.gmode==='gen'){ await genMore(5,seq,true); return; }
+    const pool=(t?t.bank:[]).filter(b=>b.regen&&QB.years.has(b.year));
+    for(const b of pool){ const r=await bankAsk({op:'item',teks:k,mode:'fresh',i:b.i}); if(seq!==viewSeq) return;
+      if(r.item) QB.gen.push({uid:'g'+(++QB.gid), from:'gen', fresh:true, year:b.year, q:qOf(b.src), std:k, item:r.item}); } }
+  showGen(false); }
+async function genMore(n,seq,first){ const k=$('#bkStd').value; seq=seq||viewSeq; const btn=$('#bkMore'); btn.disabled=true; const start=QB.gen.length;
+  for(let i=0;i<n;i++){ const r=await bankAsk({op:'item',teks:k,mode:'gen',avoid:QB.gen.concat(QB.saved).map(e=>e.item.stem)}); if(seq!==viewSeq){ btn.disabled=false; return; }
+    if(r.item) QB.gen.push({uid:'g'+(++QB.gid), from:'gen', year:0, q:0, std:k, item:r.item}); else { if(!QB.gen.length) bankSay(esc(r.skip||r.err||'Could not make a question.'),'err'); break; } }
+  btn.disabled=false;
+  if(first||QB.cartView) showGen(false); else { const add=QB.gen.slice(start); QB.view=QB.gen.slice(); QB.shown=QB.view.length; $('#bkCount').innerHTML=`<b>${QB.gen.length}</b> question${QB.gen.length===1?'':'s'} made`;
+    viewPost({op:'list',append:true,code:itemsCode(add.map(e=>e.item),false),meta:add.map(metaFor),more:false,endText:'Click “Make 5 more” for more.',added:QB.cart.map(e=>e.uid),scrollTo:add[0]&&add[0].uid}); } }
+function showGen(){ QB.cartView=false; $('#bkViewBar').hidden=true; $('#bkMain').classList.remove('cartv'); QB.view=QB.gen.slice(); QB.shown=0; $('#bkCount').innerHTML=`<b>${QB.gen.length}</b> question${QB.gen.length===1?'':'s'} made`;
+  const part=QB.view; QB.shown=part.length;
+  viewPost({op:'list',append:false,code:itemsCode(part.map(e=>e.item),false),meta:part.map(metaFor),more:false,endText:QB.gmode==='gen'?'Click “Make 5 more” for more.':'End of the list.',
+    empty:QB.gmode==='gen'?'No questions could be made for this standard.':'No released questions with new numbers for this standard.',added:QB.cart.map(e=>e.uid)}); over(null); }
+
+/* ---------- the preview frame (player.html in browse mode, sandboxed) ---------- */
+function over(t){ const o=$('#bkOver'); o.hidden=!t; if(t) o.textContent=t; }
+async function viewFrame(){ if(QB.frameReady) return QB.frameReady;
+  return QB.frameReady=(async()=>{ const p=await ensurePlayer(), tok=Math.random().toString(36).slice(2); QB.tok=tok;
+    const A='<script>window.SPITZ_ROOT="";<\/script>\n<script src="tests/'+'index.js"><\/script>';
+    if(p.indexOf(A)<0||p.indexOf('SPITZ_BROWSE')<0) throw new Error('the player.html on GitHub is older than this dashboard. Upload the new player.html first.');
+    const f=$('#bkView'); QB.frame=f;
+    const ready=new Promise((res,rej)=>{ const tm=setTimeout(()=>rej(new Error('it took more than 20 seconds')),20000); QB.onReady=()=>{ clearTimeout(tm); res(); }; });
+    f.srcdoc=p.replace(A,()=>'<script>window.SPITZ_ROOT='+JSON.stringify(pagesBase())+';window.SPITZ_TESTS=[];window.SPITZ_BROWSE='+JSON.stringify(tok)+';<\/script>');
+    await ready; })().catch(e=>{ QB.frameReady=null; throw e; }); }
+function viewPost(m){ if(QB.frame&&QB.frame.contentWindow) QB.frame.contentWindow.postMessage(Object.assign({bview:QB.tok},m),'*'); }
+addEventListener('message',e=>{ const m=e.data; if(!m||!QB.tok||m.bview!==QB.tok||!QB.frame||e.source!==QB.frame.contentWindow) return;
+  if(m.op==='ready'){ if(QB.onReady) QB.onReady(); return; }
+  if(m.op==='more'){ if(!QB.cartView&&QB.shown<QB.view.length) sendPage(true); return; }
+  if(m.op==='err'){ over('The questions could not be shown: '+m.err); return; }
+  if(m.op==='toggle'){ const pool=QB.cartView?QB.cart:QB.view, e2=pool.find(x=>x.uid===m.uid)||QB.cart.find(x=>x.uid===m.uid);
+    if(m.add&&e2&&usedIn(e2).length&&!confirm('This question is already on: '+usedIn(e2).join(', ')+'.\n\nAdd it to this test anyway?')){ viewPost({op:'added',added:QB.cart.map(e=>e.uid)}); return; }
+    if(m.add){ if(e2&&!inCart(m.uid)) QB.cart.push(e2); } else QB.cart=QB.cart.filter(x=>x.uid!==m.uid);
+    cartSave(); renderCart(); } });
+
+/* ---------- your test ---------- */
+function renderCart(){ const n=QB.cart.length, pts=QB.cart.reduce((a,e)=>a+(e.item.max||1),0);
+  $('#bkCartN').textContent=plural(n,'question')+(n?' · '+plural(pts,'point'):''); $('#bkCartBtn').textContent='Your test ('+n+')';
+  $('#bkCart').innerHTML=n?QB.cart.map((e,i)=>`<div class="bkci" data-i="${i}" title="Show this question"><span class="num">${i+1}</span><div style="min-width:0"><div class="t1">${esc(e.std)} · ${e.from==='gen'||e.from==='saved'?(e.fresh?'new numbers':'practice')+(e.from==='saved'?' (saved)':''):esc(e.year)+(e.q?' Q'+e.q:'')}</div><div class="t2">${esc(plainText(e.item.stem).slice(0,90))}</div>${usedIn(e).length?`<div class="t3">Already on: ${esc(usedIn(e).join(', '))}</div>`:''}</div>
+    <div class="mv"><button data-mv="-1" aria-label="Move question ${i+1} up" ${i?'':'disabled'}>▲</button><button data-mv="1" aria-label="Move question ${i+1} down" ${i<n-1?'':'disabled'}>▼</button><button data-rm aria-label="Remove question ${i+1}">✕</button></div></div>`).join('')
+    :'<div class="bkempty">Click <b>+ Add</b> on a question to put it in your test.</div>';
+  ['#bkCartView','#bkShuffle','#bkCartClear','#bkMake'].forEach(s=>$(s).disabled=!n); $('#bkShuffle').disabled=n<2;
+  if(QB.frame) viewPost({op:'added',added:QB.cart.map(e=>e.uid)}); }
+$('#bkCart').addEventListener('click',e=>{ const row=e.target.closest('.bkci'); if(!row) return; const i=+row.dataset.i, mv=e.target.closest('[data-mv]');
+  if(mv){ const j=i+ +mv.dataset.mv; [QB.cart[i],QB.cart[j]]=[QB.cart[j],QB.cart[i]]; cartSave(); renderCart(); if(QB.cartView) showCart(); return; }
+  if(e.target.closest('[data-rm]')){ QB.cart.splice(i,1); cartSave(); renderCart(); if(QB.cartView) showCart(); return; }
+  const uid=QB.cart[i].uid; if(!QB.cartView&&QB.view.slice(0,QB.shown).some(x=>x.uid===uid)) viewPost({op:'scrollTo',uid}); else showCart(uid); });
+function showCart(uid){ QB.cartView=true; $('#bkViewBar').hidden=false; $('#bkMain').classList.add('cartv'); $('#bkpage').classList.remove('cartopen');
+  viewPost({op:'list',append:false,code:itemsCode(QB.cart.map(e=>e.item),false),meta:QB.cart.map((e,i)=>Object.assign(metaFor(e),{year:'#'+(i+1)+' · '+(e.year||'New')})),more:false,empty:'Your test is empty.',endText:'End of your test.',added:QB.cart.map(e=>e.uid),scrollTo:uid}); over(null); }
+$('#bkCartView').onclick=()=>showCart(); $('#bkViewBack').onclick=()=>{ if(QB.mode==='gen'){ QB.cartView=false; $('#bkViewBar').hidden=true; $('#bkMain').classList.remove('cartv'); showGen(); } else refreshView(); };
+$('#bkShuffle').onclick=()=>{ QB.cart=shuffle(QB.cart); cartSave(); renderCart(); if(QB.cartView) showCart(); };
+$('#bkCartClear').onclick=()=>{ if(!confirm('Remove all '+QB.cart.length+' questions from your test?')) return; QB.cart=[]; cartSave(); renderCart(); if(QB.cartView) showCart(); };
+function slug(s){ return String(s).toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'').slice(0,40)||'practice'; }
+function bkIdAuto(){ const el=$('#bkId'); if(el.dataset.touched) return; let base=slug($('#bkTitle').value), id=base, n=2;
+  const taken=new Set(TP.index.map(t=>t.id).concat(testFolders())); while(taken.has(id)) id=base+'-'+(n++); el.value=id; }
+$('#bkTitle').oninput=()=>{ bkIdAuto(); cartSave(); }; $('#bkId').oninput=e=>{ e.target.dataset.touched=1; cartSave(); };
+
+/* ---------- make the test (then the normal checks, preview and publish) ---------- */
+async function fileBytes(path){ if(TP.files&&TP.files[path]) return repoBytes(path);
+  const r=await fetch(ROOT+encPath(path),{cache:'no-store'}); if(!r.ok) throw new Error('Could not download '+path+'.'); return new Uint8Array(await r.arrayBuffer()); }
+function testJsFor(id,title,items,rationale){ const js=v=>itemsCode(v,true);
+  return '/* '+title.replace(/\*\//g,'')+': built '+new Date().toLocaleDateString()+' on the Spitz Checkpoint Question bank page.\n'
+    +'   Each question keeps its source in "src". Released questions from a published full test keep its pictures (img/) and TEA explanations (rat/);\n'
+    +'   question bank questions keep the bank\'s worked solution in "notes" for writing explanations later. */\n'
+    +'SpitzTest({id:'+JSON.stringify(id)+',title:'+JSON.stringify(title)+',course:"Algebra I",reference:"alg1",categories:'+JSON.stringify(CATNAMES)
+    +(rationale?',rationale:'+JSON.stringify(rationale):'')+',items:'+js(items)+'});\n'; }
+$('#bkMake').onclick=async()=>{ const title=$('#bkTitle').value.trim(), id=$('#bkId').value.trim(), msg=$('#bkMakeMsg');
+  if(!title) return say(msg,'Give the test a title first.','err'); if(!/^[a-z0-9-]+$/.test(id)) return say(msg,'The test ID can only use lowercase letters, numbers and dashes.','err');
+  if(!QB.cart.length||TP.working) return; const btn=$('#bkMake'); btn.disabled=true;
+  try{ say(msg,'Getting pictures and explanations…'); const assets={}, rationale={};
+    const items=QB.cart.map(e=>{ const it=JSON.parse(JSON.stringify(e.item)); delete it.n; delete it.letters; it.bid=bidOf(e); return it; });
+    const bankSave=QB.cart.filter(e=>e.from==='gen'&&!QB.saved.some(x=>x.bid===bidOf(e))).map(e=>({bid:bidOf(e), std:e.std, kind:e.fresh?'new numbers':'practice', year:e.fresh?e.year:0, q:e.fresh?e.q:0, firstTest:id, savedAt:new Date().toISOString().slice(0,10), item:e.item}));
+    for(const [i,e] of QB.cart.entries()){ const s=JSON.stringify(e.item);
+      for(const m of s.matchAll(/@@([a-z0-9-]+)\/img\/([A-Za-z0-9._\-\/]+)@@/g)){ const rel='img/'+m[1]+'-'+m[2]; if(!assets[rel]) assets[rel]=await fileBytes('tests/'+m[1]+'/img/'+m[2]); }
+      if(e.rat){ const n=i+1, got=[]; for(const lab of e.rat){ try{ assets['rat/r'+pad2(n)+lab+'.png']=await fileBytes('tests/'+e.test+'/rat/r'+pad2(e.q)+lab+'.png'); got.push(lab); }catch(x){} } if(got.length) rationale[n]=got; } }
+    const testJs=testJsFor(id,title,items,Object.keys(rationale).length?rationale:null); say(msg,'');
+    bkClosePage();
+    await checkPackage({from:'the question bank ('+plural(QB.cart.length,'question')+')', folder:id, testJs, testBytes:ENC.encode(testJs), assets, refs:{}, ignored:[], badNames:[], bankSave, fromBank:true});
+    $('#pkg').scrollIntoView({behavior:'smooth',block:'start'}); }
+  catch(e){ say(msg,errText(e),'err'); }
+  btn.disabled=!QB.cart.length; };
+bkNote();
+
+/* ---------- rebuild every single file ---------- */
+$('#rebuild').onclick=async()=>{ if(TP.working) return; const msg=$('#rbMsg'), btn=$('#rebuild');
+  if(!TP.files) return say(msg,'Needs a GitHub token (see the top of this page).','err');
+  TP.working=true; btn.disabled=true;
+  try{ const ids=TP.index.map(t=>t.id).filter(id=>TP.files['tests/'+id+'/test.js']), out=[];
+    for(let i=0;i<ids.length;i++){ const id=ids[i]; say(msg,'Building '+(i+1)+' of '+ids.length+': '+esc(id)+'…');
+      const testJs=await repoText('tests/'+id+'/test.js'), r=await evalTest(testJs); if(!r.td) throw new Error('tests/'+id+'/test.js has a problem: '+(r.errs[0]||'no SpitzTest'));
+      const assets={}; for(const p of Object.keys(TP.files).filter(p=>p.startsWith('tests/'+id+'/')&&MIME[extOf(p)])) assets[p.slice(('tests/'+id+'/').length)]=await repoBytes(p);
+      out.push({path:'single/'+singleName(r.td.title),bytes:ENC.encode(await singleFor(id,r.td.title,r.td.reference,testJs,assets,null))}); }
+    const r=await publish(out,'Rebuild single files',msg); TP.working=false;
+    if(r.nothing) say(msg,'All '+plural(out.length,'single file')+' were already up to date.','ok');
+    else { say(msg,'Updated '+r.changed+' of '+plural(out.length,'single file')+'.','ok'); await tpLoad(); }
+    const extra=Object.keys(TP.files).filter(p=>p.startsWith('single/')&&!out.some(o=>o.path===p)); if(extra.length) msg.innerHTML+=' <span class="hint">Left alone: '+extra.map(esc).join(', ')+'</span>'; }
+  catch(e){ TP.working=false; say(msg,'Not rebuilt. '+errText(e),'err'); }
+  btn.disabled=false; };
+document.addEventListener('keydown',e=>{ if(e.key==='Escape'&&!$('#pv').hidden&&$('#veil').hidden){ $('#pvClose').click(); } });
+
+load().then(startAuto);
+})();
+</script>
+</body>
+</html>
