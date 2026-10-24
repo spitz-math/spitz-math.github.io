@@ -97,7 +97,7 @@ window.SpitzGames=[
    '<g transform="translate(22 40)"><rect x="0" y="10" width="16" height="38" rx="5" fill="#FF3B2E"/><rect x="4" y="2" width="8" height="10" rx="2" fill="#FF3B2E"/><rect x="5" y="-4" width="6" height="7" rx="1.5" fill="#F6E3C2"/><rect x="3" y="22" width="10" height="12" rx="2" fill="#F6E3C2" opacity=".85"/></g>'},
   {id:'fit_check',name:'Fit Check',d:'Dress up for the runway',font:"'Paytone One'",paper:'#130A1A',panel:'#1F1229',acc:'#FF6CB3',
    art:'<defs><radialGradient id="fcspot" cx=".5" cy="0" r="1"><stop offset="0" stop-color="#FF6CB3" stop-opacity=".55"/><stop offset=".7" stop-color="#FF6CB3" stop-opacity="0"/></radialGradient></defs><rect width="200" height="110" fill="#130A1A"/><path d="M70 0H130L170 110H30Z" fill="url(#fcspot)"/>'+
-   '<path d="M60 110L84 70H116L140 110Z" fill="#2A1A36"/><path d="M100 72V110" stroke="#FF6CB3" stroke-width="2" stroke-dasharray="5 5"/>'+
+   '<path d="M60 110L84 70H116L140 110Z" fill="#2A1A36"/>'+
    '<g transform="translate(100 22)"><circle cx="0" cy="0" r="7" fill="#F2C49B"/><path d="M-7 -2Q0 -12 7 -2L8 4Q0 -4 -8 4Z" fill="#43302A"/><path d="M-8 9H8L6 22L22 54H-22L-6 22Z" fill="#FF6CB3"/><path d="M-6 22H6" stroke="#FFD84A" stroke-width="3"/>'+
    '<path d="M-9 10L-16 30M9 10L16 30" stroke="#F2C49B" stroke-width="4" stroke-linecap="round"/><path d="M-7 54V66M7 54V66" stroke="#F2C49B" stroke-width="4" stroke-linecap="round"/></g>'+
    '<g fill="#FFD84A"><path d="M36 30l3 7 7 1-5 5 1 7-6-4-6 4 1-7-5-5 7-1z"/><path d="M164 40l2 5 5 1-4 3 1 5-4-3-4 3 1-5-4-3 5-1z"/></g>'},
