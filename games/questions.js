@@ -1043,9 +1043,11 @@ var SETS={
    Shared with scorecode.js as window.SpitzTopics; index.html reads the same file. */
 var TOPICS=window.SpitzTopics=window.SpitzTopics||(function(){
   var DEF={ hidden:[], off:{}, assign:[], suggest:{ sets:[], note:'' }, bonus:25 }, t=null, K='spitz_topics';
-  try{ var x=new XMLHttpRequest(), src=document.currentScript&&document.currentScript.src||location.href;
+  /* a copy fetched in the last minute is used as is (switching games on slow Wi-Fi doesn't wait on the site again; 2026-10-24) */
+  try{ if(Date.now()-(+localStorage.getItem(K+'_at')||0)<60e3) t=JSON.parse(localStorage.getItem(K)); }catch(e){ t=null; }
+  if(!t||typeof t!=='object') try{ var x=new XMLHttpRequest(), src=document.currentScript&&document.currentScript.src||location.href;
     x.open('GET',new URL('../data/topics.json',src).href+'?v='+Math.floor(Date.now()/60000),false); x.send();
-    if(x.status===200){ t=JSON.parse(x.responseText); try{ localStorage.setItem(K,x.responseText); }catch(e){} } }catch(e){ t=null; }
+    if(x.status===200){ t=JSON.parse(x.responseText); try{ localStorage.setItem(K,x.responseText); localStorage.setItem(K+'_at',String(Date.now())); }catch(e){} } }catch(e){ t=null; }
   if(!t||typeof t!=='object') try{ t=JSON.parse(localStorage.getItem(K)); }catch(e){ t=null; }
   if(!t||typeof t!=='object') t=DEF;
   function ids(a){ return Array.isArray(a)?a.filter(function(v){ return typeof v==='string'; }):[]; }
