@@ -1,0 +1,76 @@
+/* Neon look for the teacher pages (teacher.html, stats.html, topics.html), to match the launch pad, arcade hub and leaderboard.
+   Loaded after each page's own <style>: it swaps the color tokens and restyles the shared parts (header, nav, cards, buttons, inputs).
+   These are working tools, so text stays in Lexend on solid dark panels; the neon is in the frame (sky, grid, glows, headings).
+   No flashing: the only motion is the slow burger bob and star twinkle, both off with reduced motion. */
+:root{
+  --paper:#070a22; --panel:#0c1132; --panel2:#151c4a; --line:#2b347a;
+  --ink:#eef6ff; --muted:#a9b5d8; --brand:#ffe13a;
+  --pink:#ff2bd6; --cyan:#21e6ff; --yellow:#ffe13a; --orange:#ff7a1a; --pin:#21e6ff;
+  --pixel:'Press Start 2P',monospace;
+  --ms:3600ms;
+}
+html,body{ background:transparent; }
+html{ background:#02030c; }
+body{ position:relative; min-height:100vh; overflow-x:hidden;
+  background:linear-gradient(180deg,#0a0f33 0%,#06081a 40%,#02030c 100%) fixed #06081a; }
+.wrap{ position:relative; z-index:1; }
+
+/* night sky, scanlines and floor grid, same as the leaderboard */
+.bgfx{ position:fixed; inset:0; pointer-events:none; z-index:0; overflow:hidden;
+  background:repeating-linear-gradient(180deg,rgba(255,255,255,.025) 0 1px,transparent 1px 4px),radial-gradient(ellipse at 50% 120%,rgba(33,230,255,.12),transparent 55%); }
+.bgfx::after{ content:""; position:absolute; left:-20%; right:-20%; bottom:0; height:30%; opacity:.45;
+  background:repeating-linear-gradient(90deg,rgba(255,43,214,.28) 0 2px,transparent 2px 70px),repeating-linear-gradient(180deg,rgba(33,230,255,.28) 0 2px,transparent 2px 46px);
+  transform:perspective(500px) rotateX(62deg); transform-origin:50% 100%;
+  -webkit-mask-image:linear-gradient(180deg,transparent,#000 60%); mask-image:linear-gradient(180deg,transparent,#000 60%); }
+.bgfx i{ position:absolute; width:3px; height:3px; border-radius:50%; background:#fff; opacity:.45; animation:tw 2.6s ease-in-out infinite; }
+@keyframes tw{ 50%{ opacity:.1; } }
+
+/* header: burger + page name on the left, page links on the right */
+header{ align-items:center; padding-top:22px; gap:14px 20px; }
+.brand{ display:flex; align-items:center; gap:14px; min-width:0; }
+.logo{ position:relative; flex:none; width:clamp(58px,6vw,78px); aspect-ratio:1312/1199; }
+.logo img{ position:absolute; inset:0; width:100%; height:100%; display:block; }
+.logo .burst{ animation:tburst calc(var(--ms)*1.25) ease-in-out infinite; filter:drop-shadow(0 0 3px #fff7b0) drop-shadow(0 0 8px var(--yellow)); }
+.logo .patty{ animation:tbob var(--ms) ease-in-out infinite; animation-delay:-700ms; transform-origin:50% 60%; filter:drop-shadow(0 5px 5px rgba(0,0,0,.5)); }
+@keyframes tbob{ 0%,100%{ transform:translateY(0) rotate(-2deg); } 50%{ transform:translateY(-4px) rotate(2deg); } }
+@keyframes tburst{ 0%,100%{ transform:scale(.95) rotate(-4deg); } 50%{ transform:scale(1.05) rotate(4deg); } }
+.tag{ font:400 10px/1.6 var(--pixel); letter-spacing:.12em; color:var(--pink); text-shadow:0 0 8px rgba(255,43,214,.7); }
+h1{ text-transform:uppercase; letter-spacing:.04em; margin-top:8px; font-size:clamp(28px,4.6vw,48px);
+  color:var(--ink); text-shadow:0 0 10px rgba(33,230,255,.55),0 0 24px rgba(33,230,255,.25); }
+h1 span{ color:var(--yellow); text-shadow:0 0 10px rgba(255,225,58,.6),0 0 24px rgba(255,122,26,.45); }
+.tnav{ display:flex; flex-wrap:wrap; gap:8px; }
+.tnav a{ font:400 9px/1 var(--pixel); letter-spacing:.08em; text-transform:uppercase; text-decoration:none; color:var(--cyan);
+  padding:11px 12px; border:2px solid var(--line); border-radius:10px; background:rgba(12,17,50,.8); }
+.tnav a:hover,.tnav a:focus-visible{ border-color:var(--cyan); box-shadow:0 0 10px rgba(33,230,255,.6); outline:none; }
+.tnav a[aria-current="page"]{ color:#140800; background:var(--yellow); border-color:var(--yellow); box-shadow:0 0 12px rgba(255,225,58,.5); }
+
+/* panels: solid enough to read on, with a soft neon edge */
+.card,.set{ background:rgba(12,17,50,.94); border:2px solid var(--line); box-shadow:0 0 0 1px rgba(33,230,255,.06),0 10px 30px rgba(0,0,0,.35); }
+h2{ color:var(--cyan); text-transform:uppercase; letter-spacing:.03em; text-shadow:0 0 10px rgba(33,230,255,.45); }
+.hint a,.post a,.foot a{ color:var(--yellow); }
+
+/* buttons and inputs */
+button{ transition:box-shadow .15s,border-color .15s; }
+button:hover:not(:disabled){ border-color:var(--cyan); box-shadow:0 0 10px rgba(33,230,255,.45); }
+button.primary{ color:#140800; box-shadow:0 0 12px rgba(255,225,58,.35); }
+button.primary:hover:not(:disabled){ border-color:#fff3a0; box-shadow:0 0 16px rgba(255,225,58,.6); }
+button:focus-visible{ outline-color:var(--cyan); }
+textarea,input[type=text],input[type=password],input[type=number],select{ background:#050720; border-color:var(--line); }
+textarea:focus,input:focus,select:focus{ border-color:var(--cyan); box-shadow:0 0 10px rgba(33,230,255,.35); }
+.tabs button[aria-pressed="true"]{ background:var(--cyan); color:#02030c; border-color:var(--cyan); box-shadow:0 0 10px rgba(33,230,255,.45); }
+.check,.big .lb,.lb{ background:#121947; }
+.check{ background:#050720; }
+/* Topics: Open stays white and Assigned stays cyan, so the two never look alike */
+.seg button[data-v="assign"][aria-pressed="true"]{ color:#02030c; box-shadow:0 0 10px rgba(33,230,255,.45); }
+.lb.g1{ box-shadow:0 0 12px rgba(255,210,63,.4); }
+.empty{ border-color:var(--line); }
+
+/* page-specific bars that sit over the sky */
+.filters[role=group]{ background:rgba(6,8,26,.94); -webkit-backdrop-filter:blur(6px); backdrop-filter:blur(6px); padding:10px 12px; margin-inline:-12px; border-radius:0 0 12px 12px; }
+.savebar{ background:rgba(6,8,26,.96); border-top:2px solid var(--line); box-shadow:0 -6px 20px rgba(0,0,0,.4); }
+.big{ background:linear-gradient(180deg,#0a0f33 0%,#06081a 45%,#02030c 100%); }
+.big h3{ text-transform:uppercase; color:var(--ink); text-shadow:0 0 12px rgba(33,230,255,.5); }
+.big h3 span{ color:var(--yellow); text-shadow:0 0 12px rgba(255,225,58,.6); }
+
+@media (prefers-reduced-motion:reduce){ .bgfx i,.logo img{ animation:none; } button{ transition:none; } }
+@media (max-width:640px){ .tnav a{ padding:10px; font-size:8px; } }
