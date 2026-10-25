@@ -1137,6 +1137,69 @@ function makeSlideSlice(PFX){
       shuffle(q.choices); q.visual=''; delete q.check; return q; } throw new Error('generator failed: '+type); }
   return { build:build }; }
 
+function makeParPerp(PFX){
+  /* ================= QUESTION GENERATOR: parallel and perpendicular slopes (Kody, 2026-10-25) =================
+     Only finding the slope: no writing equations. Parallel = same slope, perpendicular = opposite reciprocal.
+     Wrong choices are the usual slips: sign only, flip only, and mixing up parallel with perpendicular.
+     Slopes of 1 and −1 are left out (their flip is themselves, so the slips would be the same number). */
+  var MINUS='−';
+  function gcd(a,b){ a=Math.abs(a); b=Math.abs(b); while(b){ var t=a%b; a=b; b=t; } return a; }
+  function R(n,d){ if(d<0){ n=-n; d=-d; } var g=gcd(n,d)||1; return {n:n/g,d:d/g}; }
+  function ri(a,b){ return a+Math.floor(Math.random()*(b-a+1)); }
+  function nz(a,b){ var v; do{ v=ri(a,b); }while(v===0); return v; }
+  function pick(a){ return a[Math.floor(Math.random()*a.length)]; }
+  function shuffle(a){ for(var i=a.length-1;i>0;i--){ var j=Math.floor(Math.random()*(i+1)), t=a[i]; a[i]=a[j]; a[j]=t; } return a; }
+  function num(n){ return n<0? MINUS+(-n) : ''+n; }
+  function frac(n,d){ return '<span class="'+PFX+'-fr"><span>'+n+'</span><span>'+d+'</span></span>'; }
+  function fmtR(r){ if(r.d===1) return num(r.n); return (r.n<0?MINUS:'')+frac(Math.abs(r.n),r.d); }
+  function coef(r,v){ return fmtR(r)+v; }
+  function sgn(v){ return v>0? ' + '+v : v<0? ' '+MINUS+' '+(-v) : ''; }
+  function rEq(a,b){ return a.n*b.d===b.n*a.d; }
+  function perpTo(a,b){ return a.n*b.n===-a.d*b.d; }                                  /* slopes multiply to −1 */
+  function C(html,val,why){ return {html:html,val:val,why:why||'',key:html}; }
+  function eq(h){ return '<span class="'+PFX+'-eq">'+h+'</span>'; }
+  function M(r){ return '<span class="c-m">'+fmtR(r)+'</span>'; }
+  function opp(r){ return R(-r.n,r.d); }
+  function flip(r){ return R(r.d,r.n); }
+  function negRec(r){ return R(-r.d,r.n); }
+  var SLOPES=[2,-2,3,-3,4,-4,5,-5].map(function(n){ return R(n,1); }).concat(
+    [[1,2],[-1,2],[1,3],[-1,3],[1,4],[-1,4],[2,3],[-2,3],[3,2],[-3,2],[3,4],[-3,4],[4,3],[-4,3],[2,5],[-2,5],[5,2],[-5,2]].map(function(a){ return R(a[0],a[1]); }));
+  /* the line: half the time its slope is given, half the time it's read from y = mx + b */
+  function given(m){ if(Math.random()<0.5) return { txt:'a line with slope '+M(m), fromEq:false };
+    return { txt:eq('y = '+coef(m,'x')+sgn(nz(-9,9))), fromEq:true }; }
+  var W_PAR='Parallel lines have the same slope.', W_PERP='Perpendicular slopes are opposite reciprocals: flip it and change the sign.';
+
+  var GEN={
+  ppPar:function(){ var m=pick(SLOPES), g=given(m);
+    return { topic:'Parallel slopes', prompt:'What is the slope of a line <b>parallel</b> to '+g.txt+'?', data:{m:m},
+      check:function(v){ return rEq(v,m); },
+      choices:[ C(fmtR(m),m), C(fmtR(opp(m)),opp(m),W_PAR+' Keep the sign.'), C(fmtR(negRec(m)),negRec(m),'That one is perpendicular. '+W_PAR),
+        C(fmtR(flip(m)),flip(m),W_PAR+' Don’t flip it.') ],
+      explain:(g.fromEq?'The slope is the number with x: '+M(m)+'. ':'')+'Parallel lines have the same slope, so it is '+M(m)+'.' }; },
+  ppPerp:function(){ var m=pick(SLOPES), g=given(m), p=negRec(m);
+    return { topic:'Perpendicular slopes', prompt:'What is the slope of a line <b>perpendicular</b> to '+g.txt+'?', data:{m:m},
+      check:function(v){ return perpTo(v,m); },
+      choices:[ C(fmtR(p),p), C(fmtR(flip(m)),flip(m),'You flipped it. Now change the sign too.'), C(fmtR(opp(m)),opp(m),'You changed the sign. Now flip it too.'),
+        C(fmtR(m),m,'That is the same slope, so it’s parallel. '+W_PERP) ],
+      explain:(g.fromEq?'The slope is the number with x: '+M(m)+'. ':'')+'Flip '+M(m)+' and change the sign: '+M(p)+'.' }; },
+  ppPair:function(){ var want=Math.random()<0.5?'par':'perp', ms=shuffle(SLOPES.slice()).slice(0,4);
+    function pair(a,b,why){ return C(fmtR(a)+' and '+fmtR(b),{a:a,b:b},why); }
+    var ok=want==='par'?function(v){ return rEq(v.a,v.b); }:function(v){ return perpTo(v.a,v.b); };
+    var choices=want==='par'?
+      [ pair(ms[0],ms[0]), pair(ms[1],negRec(ms[1]),'Those are perpendicular. '+W_PAR), pair(ms[2],opp(ms[2]),W_PAR+' The signs must match too.'), pair(ms[3],flip(ms[3]),W_PAR+' Flipped slopes aren’t the same.') ] :
+      [ pair(ms[0],negRec(ms[0])), pair(ms[1],ms[1],'Those are the same slope, so they’re parallel.'), pair(ms[2],flip(ms[2]),'Flipped, but the sign didn’t change. '+W_PERP), pair(ms[3],opp(ms[3]),'The sign changed, but it wasn’t flipped. '+W_PERP) ];
+    return { topic:'Spot the pair', prompt:'Which pair of slopes belongs to <b>'+(want==='par'?'parallel':'perpendicular')+'</b> lines?', data:{want:want},
+      check:ok, choices:choices,
+      explain:want==='par'?'Parallel slopes are the same: '+M(ms[0])+' and '+M(ms[0])+'.':'Opposite reciprocals: '+M(ms[0])+' flipped with the sign changed is '+M(negRec(ms[0]))+'.' }; }
+  };
+  function build(type){ for(var tries=0;tries<400;tries++){ var q=GEN[type](); if(!q||q.choices.length!==4) continue;
+      if(new Set(q.choices.map(function(c){ return c.key; })).size!==4) continue;
+      if(!q.check(q.choices[0].val)) continue;                                                  // the answer must pass the independent check
+      if(q.choices.slice(1).some(function(c){ return q.check(c.val); })) continue;              // and no distractor may pass it
+      q.type=type; q.choices.forEach(function(c,i){ c.ok=i===0; });
+      shuffle(q.choices); q.visual=''; delete q.check; return q; } throw new Error('generator failed: '+type); }
+  return { build:build }; }
+
 var SETS={
   mult:{ name:'Multiplication facts', make:makeMult, big:true, topics:[['f03','Facts 0–3',['Facts 0–3'],1],['f46','Facts 4–6',['Facts 4–6'],2],['f79','Facts 7–9',['Facts 7–9'],3],['f1012','Facts 10–12',['Facts 10–12'],2]] },
   /* 'yint' was its own topic until 2026-10-19, when Kody merged it into 'slope'; alias keeps old links and saves working */
@@ -1152,7 +1215,8 @@ var SETS={
   fam:{ name:'Function families', make:makeFam, topics:[['eq','From the equation',['famEq']],['graph','From the graph',['famGraph']]] },
   fslope:{ name:'Finding slope', make:makeFindSlope, topics:[['pts','From two points',['fsPoints']],['graph','From a graph',['fsGraph']],['table','From a table',['fsTable']],['eq','From an equation',['fsEq']]] },
   stdform:{ name:'Standard form', make:makeStdForm, topics:[['x','x-intercept',['sfX']],['y','y-intercept',['sfY']]] },
-  slide:{ name:'Slide and Slice', make:makeSlideSlice, topics:[['slide','Slide',['ssSlide']],['slice','Slice',['ssSlice']],['both','Both steps',['ssBoth']],['slope','Find the slope',['ssSlope']]] }
+  slide:{ name:'Slide and Slice', make:makeSlideSlice, topics:[['slide','Slide',['ssSlide']],['slice','Slice',['ssSlice']],['both','Both steps',['ssBoth']],['slope','Find the slope',['ssSlope']]] },
+  perp:{ name:'Parallel & perpendicular', make:makeParPerp, topics:[['par','Parallel slopes',['ppPar']],['perp','Perpendicular slopes',['ppPerp']],['pair','Spot the pair',['ppPair']]] }
 };
 
 /* Teacher settings: Mr. Spitz changes these on topics.html (the teacher control panel), which saves data/topics.json in the repo.
