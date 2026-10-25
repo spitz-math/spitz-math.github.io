@@ -1250,24 +1250,35 @@ function buildBoxes(it,root){
 
 /* ---------- hot spot on a graph ---------- */
 function buildHotspot(it,root){
-  const id=it.n, R=6, cell=20, pad=26, X=v=>pad+(v+R)*cell, Y=v=>pad+(R-v)*cell;
-  const w=document.createElement('div'); w.className='hswrap'; w.innerHTML=SG({R,w:330});
+  /* options: R (grid radius, default 6); curve (function) and/or lines ([[m,b,dash]]) to draw; spots [[x,y]];
+     pick (how many points the student picks; 1 = one answer index, more = array of indices, Cambium "Select TWO/THREE correct answers");
+     open: true draws the pick circles hollow with no black dot (the paper/online practice-test look) */
+  const id=it.n, R=it.R||6, cell=20, pad=26, X=v=>pad+(v+R)*cell, Y=v=>pad+(R-v)*cell, pick=it.pick||1, multi=pick>1;
+  const w=document.createElement('div'); w.className='hswrap'; w.innerHTML=SG({R,w:R>=6?330:290,lines:it.lines||[]});
   const svg=w.querySelector('svg'); svg.classList.add('hs');
-  const cp=mk('clipPath',{id:'hsclip'+id}); cp.appendChild(mk('rect',{x:X(-R),y:Y(R),width:2*R*cell,height:2*R*cell})); svg.appendChild(cp);
-  let d=''; for(let q=-R;q<=R;q+=0.02){ const yv=it.curve(q); if(Math.abs(yv)>R+1) continue; d+=(d?'L':'M')+X(q).toFixed(1)+' '+Y(yv).toFixed(1); }
-  // arrowheads where the curve leaves the grid
-  const g=mk('g',{'clip-path':`url(#hsclip${id})`}); g.appendChild(mk('path',{d,fill:'none',stroke:'#000','stroke-width':2.4})); svg.appendChild(g);
-  const ends=[]; for(const sgn of [-1,1]){ let x0=sgn<0?-R:R; while(Math.abs(it.curve(x0))>R-0.3) x0-=sgn*0.01; const x1=x0-sgn*0.15; ends.push([x0,it.curve(x0),x1,it.curve(x1)]); }
-  const mid=svg.querySelector('marker').id;
-  ends.forEach(([ax,ay,bx,by])=>svg.appendChild(mk('line',{x1:X(bx),y1:Y(by),x2:X(ax),y2:Y(ay),stroke:'#000','stroke-width':2.4,'marker-end':`url(#${mid})`})));
+  if(it.curve){
+    const cp=mk('clipPath',{id:'hsclip'+id}); cp.appendChild(mk('rect',{x:X(-R),y:Y(R),width:2*R*cell,height:2*R*cell})); svg.appendChild(cp);
+    let d=''; for(let q=-R;q<=R;q+=0.02){ const yv=it.curve(q); if(Math.abs(yv)>R+1) continue; d+=(d?'L':'M')+X(q).toFixed(1)+' '+Y(yv).toFixed(1); }
+    // arrowheads where the curve leaves the grid
+    const g=mk('g',{'clip-path':`url(#hsclip${id})`}); g.appendChild(mk('path',{d,fill:'none',stroke:'#000','stroke-width':2.4})); svg.appendChild(g);
+    const ends=[]; for(const sgn of [-1,1]){ let x0=sgn<0?-R:R; while(Math.abs(it.curve(x0))>R-0.3) x0-=sgn*0.01; const x1=x0-sgn*0.15; ends.push([x0,it.curve(x0),x1,it.curve(x1)]); }
+    const mid=svg.querySelector('marker').id;
+    ends.forEach(([ax,ay,bx,by])=>svg.appendChild(mk('line',{x1:X(bx),y1:Y(by),x2:X(ax),y2:Y(ay),stroke:'#000','stroke-width':2.4,'marker-end':`url(#${mid})`})));
+  }
   const pts=mk('g',{}); svg.appendChild(pts);
-  it.spots.forEach(([sx,sy],q)=>{ pts.appendChild(mk('circle',{cx:X(sx),cy:Y(sy),r:4,fill:'#000'}));
-    const c=mk('circle',{cx:X(sx),cy:Y(sy),r:11,class:'spot',tabindex:0,role:'radio','aria-checked':'false','aria-label':`Point (${fmtV(sx)}, ${fmtV(sy)})`}); c.dataset.k=q; pts.appendChild(c); });
-  const sync=()=>{ pts.querySelectorAll('.spot').forEach(c=>c.setAttribute('aria-checked',S.answers[id]===+c.dataset.k)); refresh(); };
-  pts.addEventListener('click',e=>{ const c=e.target.closest('.spot'); if(!c) return; const q=+c.dataset.k; if(S.answers[id]===q) delete S.answers[id]; else S.answers[id]=q; sync(); });
+  it.spots.forEach(([sx,sy],q)=>{ if(it.open) pts.appendChild(mk('circle',{cx:X(sx),cy:Y(sy),r:6,fill:'#fff',stroke:'#000','stroke-width':1.4}));
+    else pts.appendChild(mk('circle',{cx:X(sx),cy:Y(sy),r:4,fill:'#000'}));
+    const c=mk('circle',{cx:X(sx),cy:Y(sy),r:11,class:'spot',tabindex:0,role:multi?'checkbox':'radio','aria-checked':'false','aria-label':`Point (${fmtV(sx)}, ${fmtV(sy)})`}); c.dataset.k=q; pts.appendChild(c); });
+  const has=q=>multi?(S.answers[id]||[]).includes(q):S.answers[id]===q;
+  const sync=()=>{ pts.querySelectorAll('.spot').forEach(c=>c.setAttribute('aria-checked',has(+c.dataset.k))); refresh(); };
+  pts.addEventListener('click',e=>{ const c=e.target.closest('.spot'); if(!c) return; const q=+c.dataset.k;
+    if(multi){ const a=(S.answers[id]||[]).slice(); const i=a.indexOf(q); if(i>=0) a.splice(i,1); else a.push(q); a.sort((p,r)=>p-r); if(a.length) S.answers[id]=a; else delete S.answers[id]; }
+    else { if(S.answers[id]===q) delete S.answers[id]; else S.answers[id]=q; }
+    sync(); });
   pts.addEventListener('keydown',e=>{ if(e.key===' '||e.key==='Enter'){ e.preventDefault(); e.target.dispatchEvent(new MouseEvent('click',{bubbles:true})); } });
   root.appendChild(w); sync();
 }
+const hsPts=(it,a)=>[].concat(a).map(q=>`(${fmtN(it.spots[q][0])}, ${fmtN(it.spots[q][1])})`).join(', ');
 
 /* ---------- graph a linear inequality ---------- */
 function halfPlane(R,a,b,side){ // polygon of the grid square on the side of line ab containing point side
@@ -1656,7 +1667,7 @@ function score(it){ const a=S.answers[it.n]; if(a==null) return null;
     case 'graph': return a[0]===it.answer[0]&&a[1]===it.answer[1];
     case 'graphline': return a.lines.length===1&&a.pts.length===0&&a.lines[0].every(P=>onLine(it,P));
     case 'boxes': { if(a.some(q=>q==null)) return false; const A2=it.unordered?[...a].sort():a, K=it.unordered?[...it.answer].sort():it.answer; return K.every((q,i)=>A2[i]===q); }
-    case 'hotspot': return a===it.answer;
+    case 'hotspot': return Array.isArray(it.answer)?a.length===it.answer.length&&it.answer.every(v=>a.includes(v)):a===it.answer;
     case 'cline': return a.pts.length===2&&a.pts.every(P=>onLine(it,P));
     case 'graphsys': { const r=sysParts(it,a); return r.lines&&r.region; }
     case 'graphineq': { if(a.pts.length<2||!a.shade) return false; const on=P=>P[1]===it.m*P[0]+it.b; const strict=it.op==='>'||it.op==='<';
@@ -1677,7 +1688,7 @@ function show(it,a){ if(a==null) return '—';
     case 'dnd': { const c=it.answer.filter((z,t)=>a[t]===z).length; return `${c} of ${it.tiles.length} placed correctly`; }
     case 'graph': return `(${fmtN(a[0])}, ${fmtN(a[1])})`;
     case 'boxes': return a.map(q=>q==null?'—':it.tiles[q]).join(' , ');
-    case 'hotspot': return `(${fmtN(it.spots[a][0])}, ${fmtN(it.spots[a][1])})`;
+    case 'hotspot': return hsPts(it,a)||'—';
     case 'graphfunc': return `${a.type}, points ${a.pts.map(P=>`(${fmtN(P[0])}, ${fmtN(P[1])})`).join(' ')}${a.type==='exponential'?', asymptote y = '+a.asym:''}`;
     case 'eq': return it.full?EQX.show(a):String(a).replace(/-/g,'−');
     case 'graphineq': return a.pts.length===2?`${a.dash?'Dashed':'Solid'} line through (${fmtN(a.pts[0][0])}, ${fmtN(a.pts[0][1])}) and (${fmtN(a.pts[1][0])}, ${fmtN(a.pts[1][1])})${a.shade?', shaded':''}`:'—';
@@ -1696,7 +1707,7 @@ function key(it){ switch(it.type){
     case 'graph': return `(${it.answer[0]}, ${it.answer[1]})`;
     case 'graphline': return it.keyText||'Line on the given equation';
     case 'boxes': return it.answer.map(q=>it.tiles[q]).join(' , ');
-    case 'hotspot': return `(${fmtN(it.spots[it.answer][0])}, ${fmtN(it.spots[it.answer][1])})`;
+    case 'hotspot': return hsPts(it,it.answer);
     case 'graphineq': return it.keyText||`${it.op.length===1?'Dashed':'Solid'} line y = ${fmtN(it.m)}x ${it.b<0?'− '+fmtN(-it.b):'+ '+fmtN(it.b)}, shaded ${it.op[0]==='>'?'above':'below'}`;
     case 'graphfunc': { const f=String(it.ftype||'function'); return f[0].toUpperCase()+f.slice(1)+(it.asym!=null?', asymptote y = '+fmtN(it.asym):'')+', points (0, '+fmtN(it.fn(0))+') and (1, '+fmtN(it.fn(1))+')'; }
     case 'eq': return it.full?EQX.show(it.answer):String(it.answer);
@@ -1706,7 +1717,8 @@ function key(it){ switch(it.type){
    each question is answered with its own key, then left blank, and the points are reported */
 const lattice=(R,f)=>{ const P=[]; for(let x=-R;x<=R&&P.length<2;x++){ const y=f(x); if(y!=null&&Number.isInteger(y)&&Math.abs(y)<=R) P.push([x,y]); } return P; };
   const keyAns=it=>{ const R=it.R||(it.graph&&it.graph.R)||10; switch(it.type){
-    case 'mc': case 'hotspot': return it.answer;
+    case 'mc': return it.answer;
+    case 'hotspot': return Array.isArray(it.answer)?it.answer.slice():it.answer;
     case 'ms': case 'inline': case 'table': case 'boxes': case 'graph': return it.answer.slice();
     case 'num': case 'eq': return String(it.answer);
     case 'dnd': { const o={}; it.answer.forEach((z,t)=>o[t]=z); return o; }
@@ -1727,7 +1739,7 @@ if(window.SPITZ_SELFCHECK) window.__spitzSelfCheck=function(){
 function earn(it){ const a=S.answers[it.n]; if(a==null) return null; const full=score(it)===true; if(it.max===1||full) return full?it.max:0;
   let hit=0, parts=2;
   if(it.type==='boxes'){ if(it.unordered){ const left=[...it.answer]; a.forEach(q=>{ const i=left.indexOf(q); if(q!=null&&i>=0){ hit++; left.splice(i,1); } }); } else hit=it.answer.filter((q,i)=>a[i]===q).length; parts=it.answer.length; }
-  else if(it.type==='ms'){ hit=Math.max(0,a.filter(q=>it.answer.includes(q)).length-Math.max(0,a.length-it.answer.length)); parts=it.answer.length; }
+  else if(it.type==='ms'||(it.type==='hotspot'&&Array.isArray(it.answer))){ hit=Math.max(0,a.filter(q=>it.answer.includes(q)).length-Math.max(0,a.length-it.answer.length)); parts=it.answer.length; }
   else if(it.type==='inline'){ hit=it.answer.filter((q,i)=>a[i]===q).length; parts=it.answer.length; }
   else if(it.type==='graphsys'){ const r=sysParts(it,a); hit=(r.lines?1:0)+(r.region?1:0); }
   else if(it.type==='table'){ const c=it.answer.filter((v,k)=>a[k]===v).length; return Math.floor(c*it.max/it.answer.length); }

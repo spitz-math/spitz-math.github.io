@@ -616,7 +616,7 @@ function qvAns(it,a){   // a student's answer in words (matches the player's "Yo
     case 'boxes': return a.map(q=>q==null?'—':qvTxt(it.tiles[q])).join(' , ');
     case 'dnd': { const c=it.answer?it.answer.filter((z,k)=>a[k]===z).length:0; return `${c} of ${it.tiles?it.tiles.length:'?'} placed correctly`; }
     case 'graph': return qvPt(a);
-    case 'hotspot': return it.spots?qvPt(it.spots[a]):'spot '+a;
+    case 'hotspot': return [].concat(a).map(q=>it.spots?qvPt(it.spots[q]):'spot '+q).join(', ');
     case 'cline': return a.pts&&a.pts.length?a.pts.map(qvPt).join(' and '):'No answer';
     case 'graphineq': return a.pts&&a.pts.length===2?`${a.dash?'Dashed':'Solid'} line through ${qvPt(a.pts[0])} and ${qvPt(a.pts[1])}${a.shade?', shaded':''}`:'No answer';
     case 'graphsys': return (a.g||[]).map((L,k)=>`Graph ${k+1}: `+(L.pts&&L.pts.length===2?`${L.dash?'dashed':'solid'} through ${qvPt(L.pts[0])}, ${qvPt(L.pts[1])}`:'no line')).join('; ')+(a.region?'; region chosen':'; no region');
@@ -790,7 +790,7 @@ const DESCRIBE=`(function(){ var TD=window.__TD, keys=['answer','m','b','op','a'
   var dp=new DOMParser(), txt=function(h){ return (dp.parseFromString(String(h==null?'':h).replace(/<span class="frac"><span>([\\s\\S]*?)<\\/span><span>([\\s\\S]*?)<\\/span><\\/span>/g,'$1/$2').replace(/\\{GRAPH\\}/g,' ').replace(/<\\/(td|th|p|div|li|tr|table)>|<br\\s*\\/?>|<p[\\s>]/gi,' $&'),'text/html').body.textContent||'').replace(/\\s+/g,' ').trim(); };
   var disp=function(it){ var a=it.answer; try{ switch(it.type){
     case 'mc': return ODD[a]+'  '+txt((it.choices||[])[a]); case 'ms': return a.map(function(i){ return ODD[i]; }).join(', ');
-    case 'num': case 'eq': return String(a).replace(/\\^\\{([^{}]*)\\}/g,'^$1'); case 'hotspot': return 'spot '+a;
+    case 'num': case 'eq': return String(a).replace(/\\^\\{([^{}]*)\\}/g,'^$1'); case 'hotspot': return [].concat(a).map(function(q){ return it.spots?'('+it.spots[q].join(', ')+')':'spot '+q; }).join(', ');
     case 'inline': return a.map(function(v,k){ return txt(it.drops[k][v]); }).join(' · ');
     case 'table': return a.map(function(v,k){ return txt(it.rows[k])+': '+txt(it.cols[v]); }).join('; ');
     case 'dnd': return a.map(function(z,t){ return txt(it.tiles[t])+' → '+txt(it.zones[z]); }).join('; ');
@@ -1317,7 +1317,9 @@ function fnv(str){ let h=0x811c9dc5; for(let i=0;i<str.length;i++){ h^=str.charC
 function bidOf(e){ if(e.bid) return e.bid; if(e.from!=='gen'&&e.year&&e.q) return 'r:'+e.year+'#'+e.q;
   const it=Object.assign({},e.item); delete it.src; delete it.notes; delete it.bid; return 's:'+fnv(JSON.stringify(it))+fnv(String(it.stem)+'|'+JSON.stringify(it.choices||it.tiles||it.drops||'')); }
 function bidOfItem(it){ if(it.bid) return it.bid; const m=String(it.src||'').match(/^STAAR Algebra I (20\d\d), Q(\d+)\b/); return m&&!/fresh numbers/i.test(it.src)?'r:'+m[1]+'#'+m[2]:null; }
-async function loadUsage(){ const ids=[...new Set(TP.index.map(t=>t.id).concat(testFolders()))].filter(id=>!/^alg1-20\d\d$/.test(id)), use={};
+/* full practice tests (not a released year) whose questions are added to Released next to that year's real questions (Kody 10/24) */
+const PRACTICE_FULL={'alg1-redesign':{year:2022,label:'2022 Practice'}};
+async function loadUsage(){ const ids=[...new Set(TP.index.map(t=>t.id).concat(testFolders()))].filter(id=>!/^alg1-20\d\d$/.test(id)&&!PRACTICE_FULL[id]), use={};
   await Promise.all(ids.map(async id=>{ const td=await metaOf(id); if(!td) return; const title=(TP.index.find(t=>t.id===id)||{}).title||td.title||id;
     td.items.forEach(it=>{ let b=null; try{ b=bidOfItem(JSON.parse(it.body)); }catch(e){} if(b){ (use[b]=use[b]||[]); if(!use[b].includes(title)) use[b].push(title); } }); }));
   QB.usage=use; }
@@ -1354,13 +1356,14 @@ function bankReady(){ const n=BK.cat.reduce((a,t)=>a+t.bank.length,0);
   bankSay(`Question bank loaded (${n} released questions, ${BK.cat.length} standards).`+(QB.testYears.size?` ${[...QB.testYears].sort().join(' and ')} use${QB.testYears.size===1?'s':''} your published full test${QB.testYears.size===1?'':'s'}.`:''));
   $('#bkFileRow').hidden=/GitHub/.test(BK.from); }
 /* full released tests already published (tests/alg1-<year>/): their questions replace the bank's version of that year */
-async function loadTests(){ const ids=[...new Set(TP.index.map(t=>t.id).concat(testFolders()))].filter(id=>/^alg1-20\d\d$/.test(id)).sort();
+async function loadTests(){ const ids=[...new Set(TP.index.map(t=>t.id).concat(testFolders()))].filter(id=>/^alg1-20\d\d$/.test(id)||PRACTICE_FULL[id]).sort();
   await Promise.all(ids.map(async id=>{ const td=await metaOf(id); if(!td||!td.items||td.items.length<40) return;
-    const year=+id.slice(5); QB.testYears.add(year);
+    const P=PRACTICE_FULL[id], year=P?P.year:+id.slice(5); if(!P) QB.testYears.add(year);
     QB.tests[id]=td.items.map((it,i)=>{ let body, key; try{ body=JSON.parse(it.body.replace(/src=\\"(img\/[A-Za-z0-9._\-\/]+)\\"/g,'src=\\"@@'+id+'/$1@@\\"')); key=JSON.parse(it.key); }catch(e){ return null; }
-      const q=i+1, item=Object.assign(body,key,{type:it.type,teks:it.teks,cat:it.cat,rs:it.rs,max:it.max||1,label:it.label,src:'STAAR Algebra I '+year+', Q'+q});
+      const q=i+1, item=Object.assign(body,key,{type:it.type,teks:it.teks,cat:it.cat,rs:it.rs,max:it.max||1,label:it.label,src:P?(td.title||id)+' ('+year+'), Q'+q:'STAAR Algebra I '+year+', Q'+q});
+      if(P) item.bid='p:'+id+'#'+q;   // its own ID: never the same as the released question r:<year>#<Q>
       const labs=td.rationale&&td.rationale[q];
-      return {uid:'t:'+id+'#'+q, from:'test', test:id, year, q, std:teksKey(it.teks), item, rat:labs&&labs.length?labs.slice():null}; }).filter(Boolean); }));
+      return {uid:'t:'+id+'#'+q, from:'test', test:id, year, q, pr:P?1:0, ylabel:P?P.label:'', bid:P?item.bid:undefined, std:teksKey(it.teks), item, rat:labs&&labs.length?labs.slice():null}; }).filter(Boolean); }));
   if(BK.ready) bankReady(); }
 /* one standard's released questions from the question bank file, converted to the player's format (cached) */
 async function bankStd(k){ if(QB.bankCache[k]) return QB.bankCache[k];
@@ -1401,13 +1404,14 @@ async function refreshView(){ if(!QB.ready) return; const seq=++viewSeq; QB.cart
   list=list.filter(e=>(QB.mode==='saved'||QB.years.has(e.year))&&(!ty||(ty==='mc')===(e.item.type==='mc')));
   const before=list.length; if(hide) list=list.filter(e=>!usedIn(e).length);
   const order=BK.cat.map(t=>t.k);
-  list.sort($('#bkSort').value==='std'?(a,b)=>(order.indexOf(a.std)-order.indexOf(b.std))||(b.year-a.year)||(a.q-b.q):(a,b)=>(b.year-a.year)||(a.q-b.q)||(order.indexOf(a.std)-order.indexOf(b.std)));
+  const pr=(a,b)=>(a.pr||0)-(b.pr||0);
+  list.sort($('#bkSort').value==='std'?(a,b)=>(order.indexOf(a.std)-order.indexOf(b.std))||(b.year-a.year)||pr(a,b)||(a.q-b.q):(a,b)=>(b.year-a.year)||pr(a,b)||(a.q-b.q)||(order.indexOf(a.std)-order.indexOf(b.std)));
   const skip=stds.reduce((a,s)=>a+(QB.skipped[s]||0),0);
   $('#bkCount').innerHTML=`<b>${list.length}</b> question${list.length===1?'':'s'}`+(hide&&before>list.length?`<div class="hint">${before-list.length} already on a test (hidden)</div>`:'')+(skip&&QB.mode!=='saved'?`<div class="hint">${plural(skip,'bank question')} can't be shown yet (a question type the player doesn't have).</div>`:'');
   QB.view=list; QB.shown=0; sendPage(false,QB.mode==='saved'?(QB.saved.length?'No saved questions match.':'No saved questions yet. A generated question is saved here when you publish a test that uses it.'):'No released questions match. Try another standard or question type.'); }
 function metaFor(e){ const t=stdInfo(e.std)||{};
-  return {uid:e.uid, year:e.year||'', teks:e.std, tlabel:t.label||'', rs:e.item.rs||(t.r?'Readiness':'Supporting'),
-    where:e.from==='gen'||e.from==='saved'?(e.fresh?'New numbers':'Practice'):e.q?'STAAR Q'+e.q:'STAAR',
+  return {uid:e.uid, year:e.ylabel||e.year||'', teks:e.std, tlabel:t.label||'', rs:e.item.rs||(t.r?'Readiness':'Supporting'),
+    where:e.from==='gen'||e.from==='saved'?(e.fresh?'New numbers':'Practice'):e.pr?'Q'+e.q:e.q?'STAAR Q'+e.q:'STAAR',
     tag:e.from==='bank'&&e.adapted?'Adapted':e.from==='saved'||isSaved(e)?'Saved':'', used:usedIn(e), src:e.item.src||''}; }
 function sendPage(append,empty){ const part=QB.view.slice(QB.shown,QB.shown+PAGE); QB.shown+=part.length;
   viewPost({op:'list', append, code:itemsCode(part.map(e=>e.item),false), meta:part.map(metaFor), more:QB.shown<QB.view.length, empty, added:QB.cart.map(e=>e.uid)});
@@ -1456,7 +1460,7 @@ addEventListener('message',e=>{ const m=e.data; if(!m||!QB.tok||m.bview!==QB.tok
 /* ---------- your test ---------- */
 function renderCart(){ const n=QB.cart.length, pts=QB.cart.reduce((a,e)=>a+(e.item.max||1),0);
   $('#bkCartN').textContent=plural(n,'question')+(n?' · '+plural(pts,'point'):''); $('#bkCartBtn').textContent='Your test ('+n+')';
-  $('#bkCart').innerHTML=n?QB.cart.map((e,i)=>`<div class="bkci" data-i="${i}" title="Show this question"><span class="num">${i+1}</span><div style="min-width:0"><div class="t1">${esc(e.std)} · ${e.from==='gen'||e.from==='saved'?(e.fresh?'new numbers':'practice')+(e.from==='saved'?' (saved)':''):esc(e.year)+(e.q?' Q'+e.q:'')}</div><div class="t2">${esc(plainText(e.item.stem).slice(0,90))}</div>${usedIn(e).length?`<div class="t3">Already on: ${esc(usedIn(e).join(', '))}</div>`:''}</div>
+  $('#bkCart').innerHTML=n?QB.cart.map((e,i)=>`<div class="bkci" data-i="${i}" title="Show this question"><span class="num">${i+1}</span><div style="min-width:0"><div class="t1">${esc(e.std)} · ${e.from==='gen'||e.from==='saved'?(e.fresh?'new numbers':'practice')+(e.from==='saved'?' (saved)':''):esc(e.ylabel||e.year)+(e.q?' Q'+e.q:'')}</div><div class="t2">${esc(plainText(e.item.stem).slice(0,90))}</div>${usedIn(e).length?`<div class="t3">Already on: ${esc(usedIn(e).join(', '))}</div>`:''}</div>
     <div class="mv"><button data-mv="-1" aria-label="Move question ${i+1} up" ${i?'':'disabled'}>▲</button><button data-mv="1" aria-label="Move question ${i+1} down" ${i<n-1?'':'disabled'}>▼</button><button data-rm aria-label="Remove question ${i+1}">✕</button></div></div>`).join('')
     :'<div class="bkempty">Click <b>+ Add</b> on a question to put it in your test.</div>';
   ['#bkCartView','#bkShuffle','#bkCartClear','#bkMake'].forEach(s=>$(s).disabled=!n); $('#bkShuffle').disabled=n<2;
@@ -1466,7 +1470,7 @@ $('#bkCart').addEventListener('click',e=>{ const row=e.target.closest('.bkci'); 
   if(e.target.closest('[data-rm]')){ QB.cart.splice(i,1); cartSave(); renderCart(); if(QB.cartView) showCart(); return; }
   const uid=QB.cart[i].uid; if(!QB.cartView&&QB.view.slice(0,QB.shown).some(x=>x.uid===uid)) viewPost({op:'scrollTo',uid}); else showCart(uid); });
 function showCart(uid){ QB.cartView=true; $('#bkViewBar').hidden=false; $('#bkMain').classList.add('cartv'); $('#bkpage').classList.remove('cartopen');
-  viewPost({op:'list',append:false,code:itemsCode(QB.cart.map(e=>e.item),false),meta:QB.cart.map((e,i)=>Object.assign(metaFor(e),{year:'#'+(i+1)+' · '+(e.year||'New')})),more:false,empty:'Your test is empty.',endText:'End of your test.',added:QB.cart.map(e=>e.uid),scrollTo:uid}); over(null); }
+  viewPost({op:'list',append:false,code:itemsCode(QB.cart.map(e=>e.item),false),meta:QB.cart.map((e,i)=>Object.assign(metaFor(e),{year:'#'+(i+1)+' · '+(e.ylabel||e.year||'New')})),more:false,empty:'Your test is empty.',endText:'End of your test.',added:QB.cart.map(e=>e.uid),scrollTo:uid}); over(null); }
 $('#bkCartView').onclick=()=>showCart(); $('#bkViewBack').onclick=()=>{ if(QB.mode==='gen'){ QB.cartView=false; $('#bkViewBar').hidden=true; $('#bkMain').classList.remove('cartv'); showGen(); } else refreshView(); };
 $('#bkShuffle').onclick=()=>{ QB.cart=shuffle(QB.cart); cartSave(); renderCart(); if(QB.cartView) showCart(); };
 $('#bkCartClear').onclick=()=>{ if(!confirm('Remove all '+QB.cart.length+' questions from your test?')) return; QB.cart=[]; cartSave(); renderCart(); if(QB.cartView) showCart(); };
