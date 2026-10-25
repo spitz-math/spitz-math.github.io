@@ -46,6 +46,7 @@ button:disabled{ cursor:default; }
 /* main: questions on the left, the arena fills the right */
 #pr-main{ display:grid; grid-template-columns:minmax(0,1fr) 1060px; gap:20px; min-height:0; }
 .pr-arena{ position:relative; width:1060px; height:942px; border-radius:22px; overflow:hidden; border:3px solid #3B3166; background:#120E22; box-shadow:0 0 0 6px #140F26, 0 22px 50px rgba(0,0,0,.45); }
+#pr-floor,#pr-obs{ position:absolute; left:0; top:0; width:1054px; height:936px; pointer-events:none; }
 #pr-canvas{ position:absolute; left:0; top:0; width:1054px; height:936px; cursor:crosshair; touch-action:none; }
 
 /* questions: a slanted scoreboard panel */
@@ -172,6 +173,8 @@ button:disabled{ cursor:default; }
       <button class="pr-next" id="pr-next" disabled>Next question ›</button>
     </div>
     <div class="pr-arena" id="pr-arena">
+      <canvas id="pr-floor" width="1054" height="936" aria-hidden="true"></canvas>
+      <canvas id="pr-obs" width="1054" height="936" aria-hidden="true"></canvas>
       <canvas id="pr-canvas" width="1054" height="936" aria-label="The arena. Your Bud wears the crown. Splat the rival Buds and stay inside the circle."></canvas>
       <div class="pr-shop" id="pr-shop" hidden>
         <div class="pr-shophead"><h2>Paint Shop</h2><span class="cash" id="pr-shopcash">$0</span><span class="pr-sp"></span><button class="pr-x" id="pr-shopx" aria-label="Close the shop">×</button></div>
@@ -440,7 +443,8 @@ $('pr-shop').addEventListener('click',function(e){ var b=e.target.closest('.pr-b
 
 /* ================= THE ARENA: play ================= */
 var cv=$('pr-canvas'), cx=cv.getContext('2d');
-var floorCv=document.createElement('canvas'); floorCv.width=W; floorCv.height=H; var fx=floorCv.getContext('2d');
+/* the floor is its own canvas under the arena canvas: it only changes when a splat lands, so each frame just clears the top canvas instead of copying the whole floor (that copy was most of the frame on slow Chromebooks) */
+var floorCv=$('pr-floor'), fx=floorCv.getContext('2d'), obsCx=$('pr-obs').getContext('2d');   /* the cans and plants never move during a match: they get their own canvas too, drawn once per match */
 var HELD={}, aim={x:W/2,y:H/2,t:-1e9}, drag=null, ptr=null, queued=null, burst=0, TS=0, pops=[], booms=[], reveal=null, lastStormPing=0;
 function FONT(px){ return '400 '+px+"px 'Spitz Digits', Bangers, Inter, sans-serif"; }
 function IFONT(w,px){ return w+' '+px+'px Inter, sans-serif'; }
@@ -455,7 +459,8 @@ function splatShape(c,x,y,r,col,seed){ var R=rng(seed); c.fillStyle=col; c.globa
 function floorBase(){ var c=fx; c.fillStyle='#16112B'; c.fillRect(0,0,W,H);
   c.fillStyle='#1B1534'; for(var y=0;y<H;y+=62) for(var x=((y/62)%2)*31;x<W;x+=62) c.fillRect(x+2,y+2,58,58);
   c.strokeStyle='rgba(255,255,255,.035)'; c.lineWidth=2; c.beginPath(); c.arc(W/2,H/2,150,0,6.28); c.stroke(); c.beginPath(); c.arc(W/2,H/2,330,0,6.28); c.stroke(); }
-function floorRebuild(){ floorBase(); S.m.splats.forEach(function(s){ splatShape(fx,s.x,s.y,s.r,s.c,s.s); }); }
+function floorRebuild(){ floorBase(); S.m.splats.forEach(function(s){ splatShape(fx,s.x,s.y,s.r,s.c,s.s); });
+  obsCx.clearRect(0,0,W,H); S.m.obs.forEach(function(o){ drawCan(obsCx,o); }); }
 function paintFloor(x,y,r,col){ var s={x:Math.round(x),y:Math.round(y),r:Math.round(r),c:col,s:ri(1,1e9)}; S.m.splats.push(s); if(S.m.splats.length>320) S.m.splats.shift(); splatShape(fx,s.x,s.y,s.r,s.c,s.s); }
 
 /* ---------- movement and collisions ---------- */
@@ -574,7 +579,7 @@ function drawCan(c,o){ c.fillStyle='rgba(0,0,0,.35)'; c.beginPath(); c.ellipse(o
     c.fillStyle=o.c; for(var j=0;j<4;j++){ var a2=R()*6.28, d2=o.r*(0.2+R()*0.45); c.beginPath(); c.arc(o.x+Math.cos(a2)*d2,o.y+Math.sin(a2)*d2,4,0,6.28); c.fill(); } } }
 function drawCrown(c,x,y,s){ c.fillStyle='#FFC93C'; c.strokeStyle='#0C0919'; c.lineWidth=2.5; c.beginPath(); c.moveTo(x-12*s,y); c.lineTo(x-12*s,y-11*s); c.lineTo(x-6*s,y-5*s); c.lineTo(x,y-14*s); c.lineTo(x+6*s,y-5*s); c.lineTo(x+12*s,y-11*s); c.lineTo(x+12*s,y); c.closePath(); c.fill(); c.stroke(); }
 function drawBud(c,b,t){ var x=b.x, y=b.y, r=BR;
-  if(b.me){ c.strokeStyle='rgba(46,242,196,'+(0.35+0.25*Math.sin(t/220))+')'; c.lineWidth=4; c.beginPath(); c.arc(x,y,r+16,0,6.28); c.stroke(); }
+  if(b.me){ c.strokeStyle='rgba(46,242,196,'+(0.35+0.25*Math.sin(AT/220))+')'; c.lineWidth=4; c.beginPath(); c.arc(x,y,r+16,0,6.28); c.stroke(); }
   c.fillStyle='rgba(0,0,0,.35)'; c.beginPath(); c.ellipse(x+3,y+7,r,r*0.75,0,0,6.28); c.fill();
   c.save(); c.translate(x,y); c.rotate(b.dir); c.fillStyle='#2A2342'; rr(c,r-8,-7,26,14,5); c.fill(); c.fillStyle=b.col; c.fillRect(r+12,-5,6,10); c.restore();
   c.fillStyle=b.col; c.beginPath(); c.arc(x,y,r,0,6.28); c.fill();
@@ -584,21 +589,21 @@ function drawBud(c,b,t){ var x=b.x, y=b.y, r=BR;
   var ex=Math.cos(b.dir), ey=Math.sin(b.dir);
   [-1,1].forEach(function(s){ var px=x+ex*6-ey*s*7, py=y+ey*6+ex*s*7; c.fillStyle='#fff'; c.beginPath(); c.arc(px,py,5.5,0,6.28); c.fill(); c.fillStyle='#0C0919'; c.beginPath(); c.arc(px+ex*2.2,py+ey*2.2,2.8,0,6.28); c.fill(); });
   if(t-b.hitT<130){ c.fillStyle='rgba(255,255,255,.6)'; c.beginPath(); c.arc(x,y,r,0,6.28); c.fill(); }
-  if(b.me){ if(S.buff.shield>0){ c.strokeStyle='rgba(159,231,255,'+(0.55+0.2*Math.sin(t/160))+')'; c.lineWidth=4; c.beginPath(); c.arc(x,y,r+9,0,6.28); c.stroke(); }
+  if(b.me){ if(S.buff.shield>0){ c.strokeStyle='rgba(159,231,255,'+(0.55+0.2*Math.sin(AT/160))+')'; c.lineWidth=4; c.beginPath(); c.arc(x,y,r+9,0,6.28); c.stroke(); }
     drawCrown(c,x,y-r-2,1); }
   else { var k=b.hp/b.max; if(k<1){ c.strokeStyle='rgba(0,0,0,.5)'; c.lineWidth=5; c.beginPath(); c.arc(x,y,r+7,-Math.PI/2,Math.PI*1.5); c.stroke();
       c.strokeStyle=k>0.5?'#9BEA3C':k>0.25?'#FFC93C':'#FF6B57'; c.lineWidth=4; c.beginPath(); c.arc(x,y,r+7,-Math.PI/2,-Math.PI/2+6.283*k); c.stroke(); }
     c.font=IFONT(800,15); c.textAlign='center'; c.textBaseline='alphabetic'; c.lineWidth=4; c.strokeStyle='#0C0919'; c.strokeText(b.name,x,y+r+20); c.fillStyle='#E9E3FF'; c.fillText(b.name,x,y+r+20); } }
 function drawCrate(c,k,t){ var x=k.x, y=k.y, f=k.fall, s=1-f*0.4;
   if(f>0){ c.fillStyle='rgba(0,0,0,'+(0.25+0.2*(1-f))+')'; c.beginPath(); c.ellipse(x,y+10,22*(1-f*0.5),9*(1-f*0.5),0,0,6.28); c.fill(); y-=f*260; }
-  var bob=f>0?0:Math.sin(t/300+x)*3; y+=bob;
+  var bob=f>0?0:Math.sin(AT/300+x)*3; y+=bob;
   c.save(); c.translate(x,y); c.scale(s,s);
   if(f>0){ c.strokeStyle='rgba(255,255,255,.6)'; c.lineWidth=2; c.beginPath(); c.moveTo(-14,-18); c.lineTo(0,-46); c.lineTo(14,-18); c.stroke(); c.fillStyle='#E8D9FF'; c.beginPath(); c.arc(0,-54,18,Math.PI,0); c.fill(); }
   c.fillStyle=k.gold?'#FFC93C':'#9C6BFF'; rr(c,-19,-19,38,38,7); c.fill(); c.strokeStyle='#0C0919'; c.lineWidth=3; c.stroke();
   c.fillStyle=k.gold?'#FFF0B8':'#E8D9FF'; c.fillRect(-4,-19,8,38); c.fillRect(-19,-4,38,8);
   c.fillStyle='#0C0919'; c.font=FONT(22); c.textAlign='center'; c.textBaseline='middle'; c.fillText('?',0,1); c.restore(); }
 function drawStorm(c,z,t){ c.save(); c.beginPath(); c.rect(0,0,W,H); c.moveTo(z.x+Math.max(1,z.r),z.y); c.arc(z.x,z.y,Math.max(1,z.r),0,Math.PI*2); c.fillStyle='rgba(84,40,140,.42)'; c.fill('evenodd');
-  c.clip('evenodd'); c.strokeStyle='rgba(200,160,255,.08)'; c.lineWidth=18; var o=(t/40)%80; c.beginPath(); for(var i=-H;i<W+H;i+=80){ c.moveTo(i+o,0); c.lineTo(i+o-H,H); } c.stroke(); c.restore();
+  c.clip('evenodd'); c.strokeStyle='rgba(200,160,255,.08)'; c.lineWidth=18; var o=(AT/40)%80; c.beginPath(); for(var i=-H;i<W+H;i+=80){ c.moveTo(i+o,0); c.lineTo(i+o-H,H); } c.stroke(); c.restore();
   c.strokeStyle='#FFC93C'; c.lineWidth=4; c.beginPath(); c.arc(z.x,z.y,Math.max(1,z.r),0,6.283); c.stroke(); }
 function drawHUD(c,t){ var m=S.m, P=me(), z=zoneAt(m.zone,m.t), nz=zoneNext(m.zone,m.t);
   /* alive: one dot per Bud */
@@ -625,9 +630,8 @@ function banner(c,t,big,small,col,sub){ c.textAlign='center'; c.textBaseline='al
   if(small){ c.font=FONT(44); c.strokeText(small,W/2,H/2+30); c.fillStyle='#fff'; c.fillText(small,W/2,H/2+30); }
   if(sub){ c.font=IFONT(800,26); c.lineWidth=6; c.strokeText(sub,W/2,H/2+78); c.fillStyle='#E9E3FF'; c.fillText(sub,W/2,H/2+78); } }
 function draw(){ var t=now(), c=cx, m=S.m, P=me();
-  c.drawImage(floorCv,0,0);
+  c.clearRect(0,0,W,H);
   m.crates.forEach(function(k){ if(k.fall<=0) drawCrate(c,k,t); });
-  m.obs.forEach(function(o){ drawCan(c,o); });
   m.buds.forEach(function(b){ if(b.alive) drawBud(c,b,t); });
   m.balls.forEach(function(o){ c.fillStyle=o.c==='rainbow'?'hsl('+((t/3+o.x)%360)+',90%,62%)':o.c; c.beginPath(); c.arc(o.x,o.y,o.r,0,6.28); c.fill(); c.strokeStyle='rgba(12,9,25,.7)'; c.lineWidth=2; c.stroke(); });
   m.crates.forEach(function(k){ if(k.fall>0) drawCrate(c,k,t); });
@@ -635,8 +639,8 @@ function draw(){ var t=now(), c=cx, m=S.m, P=me();
   var z=zoneAt(m.zone,m.t), nz=zoneNext(m.zone,m.t); drawStorm(c,z,t);
   if(nz&&!nz.closing){ c.save(); c.setLineDash([14,12]); c.strokeStyle='rgba(255,255,255,.55)'; c.lineWidth=3; c.beginPath(); c.arc(nz.x,nz.y,nz.r,0,6.283); c.stroke(); c.restore(); }
   /* aim line for mouse players */
-  if(P.alive&&canPlay()&&!m.over&&S.paint>0&&!ptr){ var tg=autoTarget(); if(tg){ var pr=0.5+0.5*Math.sin(t/180); c.strokeStyle='rgba(255,201,60,'+(0.55+0.35*pr)+')'; c.lineWidth=3;
-      c.beginPath(); c.arc(tg.x,tg.y,BR+12+pr*3,0,6.28); c.stroke(); [0,1,2,3].forEach(function(q){ var a=q*Math.PI/2+t/900, r0=BR+8, r1=BR+20; c.beginPath(); c.moveTo(tg.x+Math.cos(a)*r0,tg.y+Math.sin(a)*r0); c.lineTo(tg.x+Math.cos(a)*r1,tg.y+Math.sin(a)*r1); c.stroke(); }); } }
+  if(P.alive&&canPlay()&&!m.over&&S.paint>0&&!ptr){ var tg=autoTarget(); if(tg){ var pr=0.5+0.5*Math.sin(AT/180); c.strokeStyle='rgba(255,201,60,'+(0.55+0.35*pr)+')'; c.lineWidth=3;
+      c.beginPath(); c.arc(tg.x,tg.y,BR+12+pr*3,0,6.28); c.stroke(); [0,1,2,3].forEach(function(q){ var a=q*Math.PI/2+AT/900, r0=BR+8, r1=BR+20; c.beginPath(); c.moveTo(tg.x+Math.cos(a)*r0,tg.y+Math.sin(a)*r0); c.lineTo(tg.x+Math.cos(a)*r1,tg.y+Math.sin(a)*r1); c.stroke(); }); } }
   if(P.alive&&canPlay()&&(ptr||t-aim.t<600)){ c.save(); c.setLineDash([6,10]); c.strokeStyle='rgba(46,242,196,.35)'; c.lineWidth=2; c.beginPath(); c.moveTo(P.x,P.y); c.lineTo(aim.x,aim.y); c.stroke(); c.restore();
     c.strokeStyle='#2EF2C4'; c.lineWidth=2.5; c.beginPath(); c.arc(aim.x,aim.y,11,0,6.28); c.moveTo(aim.x-17,aim.y); c.lineTo(aim.x-6,aim.y); c.moveTo(aim.x+6,aim.y); c.lineTo(aim.x+17,aim.y); c.moveTo(aim.x,aim.y-17); c.lineTo(aim.x,aim.y-6); c.moveTo(aim.x,aim.y+6); c.lineTo(aim.x,aim.y+17); c.stroke(); }
   pops=pops.filter(function(p){ return t-p.t0<1400; });
@@ -659,12 +663,21 @@ function draw(){ var t=now(), c=cx, m=S.m, P=me();
     c.fillStyle='#9FB6FF'; c.textAlign='center'; c.textBaseline='middle'; c.fillText('TIME FROZEN · MOVE TO PLAY',W/2,H-104); } }
 
 /* ---------- the loop: play time only runs while you move or shoot ---------- */
-var lastF=now();
+/* while time is frozen (reading a question) nothing in the arena moves, so it is drawn only when something on it changes.
+   Redrawing an unchanged arena every frame is what made slow Chromebooks choppy. AT is the clock for the glows, the crate bob
+   and the storm stripes: it runs with play time, so they rest when time freezes (and keep going the moment you move). */
+var lastF=now(), AT=0, lastDraw=-1e9, lastSig='';
+function arenaBusy(t){ var m=S.m;
+  return TS>0||pops.length||booms.length||reveal||m.over||ptr||drag||t-aim.t<700||m.balls.length||m.crates.some(function(k){ return k.fall>0; })
+    ||m.feed.some(function(f){ return t-f.t0<5300; })||m.buds.some(function(b){ return t-b.hitT<200; }); }
+function arenaSig(){ var m=S.m, P=me();
+  return [S.started,S.over,S.paint,S.seenTip,canPlay(),P.alive,P.hp,P.max,alive(),m.n,m.t,m.crates.length,JSON.stringify(S.buff),JSON.stringify(S.pack)].join('|'); }
 function loop(){ var t=now(), dt=Math.min(0.05,(t-lastF)/1000); lastF=t;
   var want=canPlay()&&me().alive&&(moving()||burst>0||((HELD.fire||ptr)&&S.paint>0))?1:0; burst=Math.max(0,burst-dt);
-  TS+=(want-TS)*Math.min(1,dt*14); if(TS<0.02) TS=0;
+  TS+=(want-TS)*Math.min(1,dt*14); if(TS<0.02) TS=0; AT+=dt*1000*TS;
   if(canPlay()&&TS>0){ if(S.m.t===0){ S.seenTip=true; } update(dt*TS); }
-  draw(); requestAnimationFrame(loop); }
+  var sig=arenaSig(); if(arenaBusy(t)||sig!==lastSig||t-lastDraw>1000){ lastSig=sig; lastDraw=t; draw(); }
+  requestAnimationFrame(loop); }
 
 /* ---------- pointer: tap or click to splat at that spot (hold to keep splatting); press on your Bud and drag to walk ---------- */
 function toWorld(e){ var r=cv.getBoundingClientRect(); return {x:(e.clientX-r.left)*W/r.width,y:(e.clientY-r.top)*H/r.height}; }
