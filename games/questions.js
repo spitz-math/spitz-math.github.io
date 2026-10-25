@@ -278,6 +278,47 @@ function makeShift(PFX){
        '<path d="M'+(lx+12)+' 60h40" stroke="#FF4B4B" stroke-width="6"/><text x="'+(lx+64)+'" y="68" font-size="24" font-weight="800" fill="#FF4B4B" font-family="Inter,sans-serif">g</text>';
     return '<svg class="'+PFX+'-graph" width="'+S+'" height="'+S+'" viewBox="0 0 '+S+' '+S+'" role="img" aria-label="Graph of two lines: f dashed and g solid red">'+h+'</svg>'; }
   
+  /* stretch / compression / reflection helpers (a·f(x) + d topics) */
+  var Z=R(0,1), ONE=R(1,1);
+  var A_BIG=[R(2,1),R(3,1),R(4,1),R(3,2),R(5,2)], A_SMALL=[R(1,2),R(1,3),R(1,4),R(2,3),R(3,4)], A_FRAC=[R(5,4),R(7,4),R(4,3)];
+  function neg(r){ return R(-r.n,r.d); }
+  function inv(r){ return R(r.d,r.n); }
+  function absA(r){ return Math.abs(r.n/r.d); }
+  function steepOf(a){ var v=absA(a); return v>1?'steeper':v<1?'less':'same'; }
+  function sgnR(r){ if(r.n===0) return ''; return (r.n>0?' + ':' '+MINUS+' ')+(r.d===1?Math.abs(r.n):frac(Math.abs(r.n),r.d)); }
+  function gfx(a,D){ return 'g(x) = '+coef(a,'f(x)')+sgnR(D); }
+  function CGf(a,D,why){ return C(gfx(a,D),{a:a,d:D},why); }
+  function CGb(a,D,why){ return C(coef(a,'f(x)')+sgnR(D),{a:a,d:D},why); }                  /* bare, for answers beside a graph */
+  function sizeWhy(a){ return absA(a)>1? (a.d>1? fmtR(a)+' is a fraction, but it’s bigger than 1: steeper.' : fmtR(a)+' is bigger than 1, so it gets steeper.') : fmtR(a)+' is between 0 and 1, so it gets less steep.'; }
+  function descTxt(v){ if(v.steep==='same'&&!v.flip&&v.dy.n!==0) return 'Shifted '+(v.dy.n>0?'up ':'down ')+fmtR(R(Math.abs(v.dy.n),v.dy.d));
+    var s=v.steep==='steeper'?'steeper':v.steep==='less'?'less steep':'same steepness'; return v.flip?'Reflected, '+s:s.charAt(0).toUpperCase()+s.slice(1); }
+  function CDs(v,why){ return C(descTxt(v),v,why); }
+  function truthDesc(a,d){ return function(v){ return v.flip!==undefined&&v.dy!==undefined&&v.flip===(a.n<0)&&v.steep===steepOf(a)&&rEq(v.dy,R(d,1)); }; }
+  function truthFn(a,d){ return function(v){ return v.a!==undefined&&rEq(v.a,a)&&rEq(v.d,R(d,1)); }; }
+  var W_MULT='Multiplying changes the steepness. Adding is what moves the line up or down.';
+  var W_NOFLIP='Nothing negative is out front, so it isn’t reflected.';
+  /* f(x) = x dashed, g(x) = a·x + d red, window −6..6. The f/g key goes in whichever corner no line or point crosses (null if none is clear). */
+  function tfSVG(a,d){ var S=380, u=S/12, X=function(x){ return (x+6)*u; }, Y=function(y){ return (6-y)*u; }, h='', m=a.n/a.d;
+    var pts=[[0,d]], x2=a.d, y2=d+a.n; if(Math.abs(y2)<=5&&Math.abs(x2)<=5) pts.push([x2,y2]); else if(Math.abs(d-a.n)<=5) pts.push([-a.d,d-a.n]);
+    if(Math.abs(d)>5) return null;
+    function hits(cx,cy){ for(var t=0;t<=240;t++){ var x=-6+12*t/240, A=[[x,x],[x,m*x+d]];
+        for(var k=0;k<2;k++){ var px=X(A[k][0]), py=Y(A[k][1]); if(px>=cx-8&&px<=cx+112&&py>=cy-8&&py<=cy+80) return true; } }
+      return pts.some(function(p){ var px=X(p[0]), py=Y(p[1]); return px>=cx-14&&px<=cx+118&&py>=cy-14&&py<=cy+86; }); }
+    var spot=null; [[8,8],[S-112,8],[8,S-80],[S-112,S-80]].some(function(c){ if(!hits(c[0],c[1])){ spot=c; return true; } return false; });
+    if(!spot) return null;
+    for(var i=-6;i<=6;i++){ h+='<line x1="'+X(i).toFixed(1)+'" y1="0" x2="'+X(i).toFixed(1)+'" y2="'+S+'" stroke="#2A3142" stroke-width="2"/><line x1="0" y1="'+Y(i).toFixed(1)+'" x2="'+S+'" y2="'+Y(i).toFixed(1)+'" stroke="#2A3142" stroke-width="2"/>'; }
+    h+='<line x1="0" y1="'+Y(0)+'" x2="'+S+'" y2="'+Y(0)+'" stroke="#C9D1E0" stroke-width="3"/><line x1="'+X(0)+'" y1="0" x2="'+X(0)+'" y2="'+S+'" stroke="#C9D1E0" stroke-width="3"/>';
+    [-4,-2,2,4].forEach(function(n){ h+='<text x="'+X(n)+'" y="'+(Y(0)+24)+'" text-anchor="middle" font-size="20" font-weight="800" fill="#9BA5B8" font-family="Inter,sans-serif">'+num(n)+'</text>'+
+      '<text x="'+(X(0)-8)+'" y="'+(Y(n)+7)+'" text-anchor="end" font-size="20" font-weight="800" fill="#9BA5B8" font-family="Inter,sans-serif">'+num(n)+'</text>'; });
+    h+='<line x1="'+X(-7)+'" y1="'+Y(-7)+'" x2="'+X(7)+'" y2="'+Y(7)+'" stroke="#C9D1E0" stroke-width="5" stroke-dasharray="14 10"/>';
+    h+='<line x1="'+X(-7)+'" y1="'+Y(-7*m+d)+'" x2="'+X(7)+'" y2="'+Y(7*m+d)+'" stroke="#FF4B4B" stroke-width="6" stroke-linecap="round"/>';
+    pts.forEach(function(p,i){ h+='<circle cx="'+X(p[0])+'" cy="'+Y(p[1])+'" r="9" fill="'+(i?'#FFE14D':'#FF3DB4')+'" stroke="#0E1016" stroke-width="3"/>'; });
+    var lx=spot[0], ly=spot[1];
+    h+='<rect x="'+lx+'" y="'+ly+'" width="104" height="72" rx="10" fill="#0E1016" fill-opacity=".88" stroke="#343B4D" stroke-width="2"/>'+
+       '<path d="M'+(lx+12)+' '+(ly+22)+'h40" stroke="#C9D1E0" stroke-width="5" stroke-dasharray="12 8"/><text x="'+(lx+64)+'" y="'+(ly+30)+'" font-size="24" font-weight="800" fill="#C9D1E0" font-family="Inter,sans-serif">f</text>'+
+       '<path d="M'+(lx+12)+' '+(ly+52)+'h40" stroke="#FF4B4B" stroke-width="6"/><text x="'+(lx+64)+'" y="'+(ly+60)+'" font-size="24" font-weight="800" fill="#FF4B4B" font-family="Inter,sans-serif">g</text>';
+    return '<svg class="'+PFX+'-graph" width="'+S+'" height="'+S+'" viewBox="0 0 '+S+' '+S+'" role="img" aria-label="Graph of two lines: f dashed and g solid red">'+h+'</svg>'; }
+
   /* ================= QUESTION GENERATORS =================
      Each returns {topic,prompt,visual,choices[0]=correct,explain,data,check}. check(val) is an independent
      test of whether a choice is right; the build step rejects any question where a distractor also passes. */
@@ -358,7 +399,86 @@ function makeShift(PFX){
       visual:graphSVG({m:m,px:a,py:0},{m:m,px:a+c,py:0},[[a,0],[a+c,0]],'#2DE2C8'),
       check:function(v){ return v.dx!==undefined&&sameLine(moved(m,a,0,v.dx,v.dy),L); },
       choices:[ CN(c,0,'',1), CN(-c,0,'Inside goes opposite the sign: the line moved '+(c>0?'right':'left')+', so it is x '+(c>0?MINUS:'+')+' '+Math.abs(c)+'.',1), CN(0,c,w,1), CN(0,-c,w,1) ],
-      explain:'Count between the x-intercepts: '+low(dirStr(c,0))+'. Inside goes opposite the sign: '+eq('g(x) = '+fnot(c,0))+'.' }; }
+      explain:'Count between the x-intercepts: '+low(dirStr(c,0))+'. Inside goes opposite the sign: '+eq('g(x) = '+fnot(c,0))+'.' }; },
+  /* ===== Stretches, compressions and reflections: g(x) = a·f(x) + d with f(x) = x (added Oct 2026) =====
+     Same words as the lesson: |a| > 1 is a vertical stretch (steeper), 0 < |a| < 1 is a vertical compression (less steep),
+     a negative a reflects the line across the x-axis, and d moves the y-intercept. Wrong choices are the documented errors:
+     a fraction read as steeper, a read as a shift, a missed reflection, a negative read as less steep, 1/a for the slope,
+     the sign of d, and a and d swapped. Text is kept as short as the shift questions so every game's panel fits. */
+  stDescribe:function(){ var big=Math.random()<0.5, a=big?pick(A_BIG.concat(A_FRAC)):pick(A_SMALL), s=steepOf(a), o=s==='steeper'?'less':'steeper';
+    return { topic:'Stretches & compressions', prompt:eq('g(x) = '+coef(a,'f(x)'))+'. How does the graph of g compare to '+eq('f(x) = x')+'?', data:{a:a,d:0},
+      check:truthDesc(a,0),
+      choices:[ CDs({flip:false,steep:s,dy:Z}), CDs({flip:false,steep:o,dy:Z}, sizeWhy(a)), CDs({flip:false,steep:'same',dy:a}, W_MULT), CDs({flip:true,steep:s,dy:Z}, W_NOFLIP) ],
+      explain:fmtR(a)+' is '+(s==='steeper'?'bigger than 1: a vertical <b>stretch</b>, so g is steeper.':'between 0 and 1: a vertical <b>compression</b>, so g is less steep.')+' It still crosses at (0, 0).' }; },
+  stWrite:function(){ var want=Math.random()<0.5?'steeper':'less', a=want==='steeper'?pick(A_BIG):pick(A_SMALL), k=ri(1,4);
+    return { topic:'Stretches & compressions', prompt:'Which graph is <b>'+(want==='steeper'?'steeper':'less steep')+'</b> than '+eq('f(x) = x')+' and still goes through (0, 0)?', data:{a:a,d:0},
+      check:function(v){ return v.a!==undefined&&rEq(v.d,Z)&&v.a.n>0&&steepOf(v.a)===want; },
+      choices:[ CGf(a,Z), CGf(inv(a),Z, want==='steeper'?'A number between 0 and 1 out front makes it less steep.':'A number bigger than 1 out front makes it steeper.'),
+        C('g(x) = f(x)'+sgn(k),{a:ONE,d:R(k,1)},'Adding '+k+' moves the line up, so it misses (0, 0).'),
+        C('g(x) = f(x '+MINUS+' '+k+')',{a:ONE,d:R(-k,1)},'That moves the line right, so it misses (0, 0).') ],
+      explain:(want==='steeper'?'Bigger than 1':'Between 0 and 1')+' out front makes it '+(want==='steeper'?'steeper':'less steep')+' and keeps (0, 0): '+eq(gfx(a,Z))+'.' }; },
+  stGraph:function(){ var a=pick([R(2,1),R(3,1),R(1,2),R(1,3),R(3,2),R(2,3)]), k=ri(1,3), vis=tfSVG(a,0); if(!vis) return null;
+    return { topic:'Stretches & compressions', prompt:'f(x) = x is dashed. Which is g(x) (red)?', data:{a:a,d:0}, visual:vis,
+      check:truthFn(a,0),
+      choices:[ CGb(a,Z), CGb(inv(a),Z,'Rise over run: count up first, then right. That one is flipped.'),
+        CGb(neg(a),Z,'The red line goes up from left to right, so it isn’t reflected.'),
+        C('f(x)'+sgn(k),{a:ONE,d:R(k,1)},'g still crosses at (0, 0). It got '+(absA(a)>1?'steeper':'less steep')+', not shifted.') ],
+      explain:'From (0, 0): up '+a.n+', right '+a.d+'. The slope is '+M(a)+', so g(x) = '+eq(coef(a,'f(x)'))+'.' }; },
+
+  flDescribe:function(){ var p=pick(A_BIG.concat(A_SMALL)), a=neg(p), s=steepOf(a), o=s==='steeper'?'less':'steeper';
+    return { topic:'Reflections', prompt:eq('g(x) = '+coef(a,'f(x)'))+'. How does the graph of g compare to '+eq('f(x) = x')+'?', data:{a:a,d:0},
+      check:truthDesc(a,0),
+      choices:[ CDs({flip:true,steep:s,dy:Z}), CDs({flip:false,steep:s,dy:Z},'The minus out front reflects the line across the x-axis.'),
+        CDs({flip:true,steep:o,dy:Z},'The minus flips it, but '+fmtR(p)+(s==='steeper'?' is bigger than 1: still steeper.':' is between 0 and 1: still less steep.')),
+        CDs({flip:false,steep:'same',dy:a}, W_MULT) ],
+      explain:'The minus reflects it across the x-axis, and '+fmtR(p)+(s==='steeper'?' is bigger than 1, so it’s steeper too.':' is between 0 and 1, so it’s less steep too.') }; },
+  flGraph:function(){ var a=pick([R(-2,1),R(-3,1),R(-1,2),R(-1,3),R(-3,2),R(-2,3)]), k=ri(1,3), vis=tfSVG(a,0); if(!vis) return null;
+    return { topic:'Reflections', prompt:'f(x) = x is dashed. Which is g(x) (red)?', data:{a:a,d:0}, visual:vis,
+      check:truthFn(a,0),
+      choices:[ CGb(a,Z), CGb(neg(a),Z,'The red line goes down from left to right, so a is negative.'),
+        CGb(inv(a),Z,'Rise over run: count down first, then right. That one is flipped.'),
+        C('f(x) '+MINUS+' '+k,{a:ONE,d:R(-k,1)},'g still crosses at (0, 0). It was reflected, not shifted down.') ],
+      explain:'From (0, 0): down '+(-a.n)+', right '+a.d+'. The slope is '+M(a)+', so g(x) = '+eq(coef(a,'f(x)'))+'.' }; },
+  flStmt:function(){ var p=pick(A_BIG.concat(A_SMALL)), a=Math.random()<0.6?neg(p):p, flip=a.n<0, s=steepOf(a), o=s==='steeper'?'less':'steeper';
+    function T(f,st,why){ return C((f?'is':'is not')+' / '+(st==='steeper'?'steeper than':'less steep than'),{flip:f,steep:st},why); }
+    var wF=flip?'There’s a minus out front, so it is reflected.':'Nothing negative is out front, so it isn’t reflected.',
+        wS=fmtR(p)+(s==='steeper'?' is bigger than 1, so it’s steeper.':' is between 0 and 1, so it’s less steep.');
+    return { topic:'Reflections', prompt:eq(gfx(a,Z))+'. The graph of g <b>___</b> reflected across the x-axis and is <b>___</b> the graph of '+eq('f(x) = x')+'.', data:{a:a,d:0},
+      check:function(v){ return v.flip===flip&&v.steep===s; },
+      choices:[ T(flip,s), T(!flip,s,wF), T(flip,o,wS), T(!flip,o,'Both blanks are off: it '+(flip?'is':'isn’t')+' reflected, and it’s '+(s==='steeper'?'steeper':'less steep')+'.') ],
+      explain:(flip?'The minus reflects it':'No minus, so no reflection')+', and '+wS }; },
+
+  adStmt:function(){ var p=pick(A_BIG.concat(A_SMALL,A_FRAC)), a=Math.random()<0.3?neg(p):p, d=nz(-9,9), s=steepOf(a), o=s==='steeper'?'less':'steeper', it=d>0?'greater':'less', io=d>0?'less':'greater';
+    function T(st,i,why){ return C((st==='steeper'?'steeper than':'less steep than')+' / '+(i==='same'?'the same as':i+' than'),{steep:st,int:i},why); }
+    var wS='a = '+fmtR(a)+': '+fmtR(p)+(s==='steeper'?' is bigger than 1, so g is steeper.':' is between 0 and 1, so g is less steep.'),
+        wI='d = '+num(d)+', so g crosses at '+num(d)+': '+it+' than f’s 0.';
+    return { topic:'All together: a·f(x) + d', prompt:eq(gfx(a,R(d,1)))+'. The graph of g is <b>___</b> the graph of '+eq('f(x) = x')+' and has a y-intercept <b>___</b> that of f.', data:{a:a,d:d},
+      check:function(v){ return v.steep===s&&v.int===it; },
+      choices:[ T(s,it), T(o,it,wS), T(s,io,wI), T(s,'same','d isn’t 0, so the y-intercept moved. '+wI) ],
+      explain:wS+' '+wI }; },
+  adNew:function(){ var a=pick(A_BIG.concat(A_SMALL,A_FRAC)), d=nz(-9,9), s=steepOf(a), o=s==='steeper'?'less':'steeper', up=d>0;
+    function T(st,u,why){ return C((st==='steeper'?'Steeper':'Less steep')+'; y-intercept '+(u?'up':'down'),{steep:st,up:u},why); }
+    var wS=fmtR(a)+(s==='steeper'?' is bigger than 1, so it’s steeper.':' is between 0 and 1, so it’s less steep.'),
+        wI='The y-intercept went from 0 to '+num(d)+': '+(up?'up':'down')+'.';
+    return { topic:'All together: a·f(x) + d', prompt:eq('f(x) = x')+' gets a new slope of '+M(a)+' and a new y-intercept of '+B(num(d))+'. Which is true?', data:{a:a,d:d},
+      check:function(v){ return v.steep===s&&v.up===up; },
+      choices:[ T(s,up), T(o,up,wS), T(s,!up,wI), T(o,!up,'Both are off: it’s '+(s==='steeper'?'steeper':'less steep')+', and the y-intercept went '+(up?'up':'down')+'.') ],
+      explain:wS+' '+wI }; },
+  adWrite:function(){ var a=pick(A_BIG.concat(A_SMALL,[R(-2,1),R(-3,1),R(-1,2),R(-2,3)])), d=nz(-9,9), D=R(d,1), aTxt=(a.n<0?' '+MINUS+' ':' + ')+fmtR(R(Math.abs(a.n),a.d));
+    return { topic:'All together: a·f(x) + d', prompt:eq('f(x) = x')+' gets a new slope of '+M(a)+' and a new y-intercept of '+B(num(d))+'. Which is the new function?', data:{a:a,d:d},
+      check:truthFn(a,d),
+      choices:[ CGf(a,D), CGf(a,R(-d,1),'Check the sign of d: the y-intercept is '+num(d)+'.'),
+        CGf(inv(a),D,'The slope goes out front as it is: '+fmtR(a)+', not '+fmtR(inv(a))+'.'),
+        C('g(x) = '+coef(D,'f(x)')+aTxt,{a:D,d:a},'a and d are swapped: slope out front, y-intercept at the end.') ],
+      explain:'Slope out front, y-intercept at the end: '+eq(gfx(a,D))+'.' }; },
+  adGraph:function(){ var a=pick([R(2,1),R(3,1),R(-2,1),R(-3,1),R(1,2),R(-1,2),R(2,3),R(-2,3)]), d=nz(-4,4), D=R(d,1), vis=tfSVG(a,d); if(!vis) return null;
+    return { topic:'All together: a·f(x) + d', prompt:'f(x) = x is dashed. Which is g(x) (red)?', data:{a:a,d:d}, visual:vis,
+      check:truthFn(a,d),
+      choices:[ CGb(a,D), CGb(a,R(-d,1),'Look where g crosses the y-axis: at '+num(d)+'.'),
+        CGb(neg(a),D,'g goes '+(a.n>0?'up':'down')+' from left to right, so a is '+(a.n>0?'positive':'negative')+'.'),
+        CGb(inv(a),D,'Rise over run: count '+(a.n>0?'up':'down')+' first, then right.') ],
+      explain:'Begin at '+B(num(d))+', then move '+(a.n>0?'up ':'down ')+Math.abs(a.n)+', right '+a.d+': g(x) = '+eq(coef(a,'f(x)')+sgnR(D))+'.' }; }
+
   };
   var TOPICS={ 'Vertical shifts':['vDescribe','vWrite','newYInt'], 'Horizontal shifts':['hDescribe','hWrite'], 'Graphs':['graphEq','graphHow','graphH'], 'New equations':['eqV','eqH','eqCompare','slopeStays'] };
   var BAG=['Vertical shifts','Vertical shifts','Horizontal shifts','Horizontal shifts','Graphs','Graphs','New equations','New equations'];
@@ -1023,7 +1143,7 @@ var SETS={
   slope:{ name:'Slope-intercept form', make:makeLinear, alias:{yint:'slope'}, topics:[['write','Write the equation',['siBuild']],['slope','Find slope or y-intercept',['siSlope','siYInt']],['graph','Read a graph',['graphSlope','graphYInt','graphXInt']]] },
   point:{ name:'Point-slope form', make:makeLinear, topics:[['write','Write the equation',['psWrite']],['point','Find the point',['psPoint']],['slope','Find the slope',['psSlope']]] },
   hoy:{ name:'HOY & VUX', make:makeLinear, topics:[['describe','Describe the line',['hvType']],['graph','Match the graph',['hvGraph']],['slope','Find the slope',['slopeHV']]] },
-  shift:{ name:'Linear transformations', make:makeShift, topics:[['vs','Vertical shifts',['vDescribe','vWrite','newYInt']],['hs','Horizontal shifts',['hDescribe','hWrite']],['gr','Graphs',['graphEq','graphHow','graphH']],['ne','New equations',['eqV','eqH','eqCompare','slopeStays']]] },
+  shift:{ name:'Linear transformations', make:makeShift, topics:[['vs','Vertical shifts',['vDescribe','vWrite','newYInt']],['hs','Horizontal shifts',['hDescribe','hWrite']],['gr','Graphs',['graphEq','graphHow','graphH']],['ne','New equations',['eqV','eqH','eqCompare','slopeStays']],['st','Stretches & compressions',['stDescribe','stWrite','stGraph']],['fl','Reflections',['flDescribe','flGraph','flStmt']],['af','All together: a·f(x) + d',['adStmt','adNew','adWrite','adGraph']]] },
   func:{ name:'Functions', make:makeFunc, topics:[['points','Ordered pairs',['fnPoints']],['table','Tables',['fnTable']],['map','Mapping diagrams',['fnMap']],['graph','Graphs',['fnGraph']]] },
   int:{ name:'Integers', make:makeInt, big:true, topics:[['add','Adding',['intAdd']],['sub','Subtracting',['intSub']],['mult','Multiplying',['intMul']]] },
   sq:{ name:'Squares & roots', make:makeSq, big:true, topics:[['square','Squaring',['sqSquare']],['root','Square roots',['sqRoot']],['neg','Negatives',['sqNeg']],['est','Estimating roots',['sqEst']]] },
