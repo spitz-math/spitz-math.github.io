@@ -1710,7 +1710,7 @@ function key(it){ switch(it.type){
     case 'hotspot': return hsPts(it,it.answer);
     case 'graphineq': return it.keyText||`${it.op.length===1?'Dashed':'Solid'} line y = ${fmtN(it.m)}x ${it.b<0?'− '+fmtN(-it.b):'+ '+fmtN(it.b)}, shaded ${it.op[0]==='>'?'above':'below'}`;
     case 'graphfunc': { const f=String(it.ftype||'function'); return f[0].toUpperCase()+f.slice(1)+(it.asym!=null?', asymptote y = '+fmtN(it.asym):'')+', points (0, '+fmtN(it.fn(0))+') and (1, '+fmtN(it.fn(1))+')'; }
-    case 'eq': return it.full?EQX.show(it.answer):String(it.answer);
+    case 'eq': return it.full?EQX.show(it.answer):String(it.answer).replace(/-/g,'−');
     case 'graphexp': return `Curve through (0, ${it.a}) with base ${fmtV(it.b)}`; } }
 /* points earned, with partial credit on 2-point items (null = no response) */
 /* answer-key self-check for the dashboard's Tests page (only when the page sets SPITZ_SELFCHECK; students never do):

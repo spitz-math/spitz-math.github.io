@@ -790,7 +790,7 @@ const DESCRIBE=`(function(){ var TD=window.__TD, keys=['answer','m','b','op','a'
   var dp=new DOMParser(), txt=function(h){ return (dp.parseFromString(String(h==null?'':h).replace(/<span class="frac"><span>([\\s\\S]*?)<\\/span><span>([\\s\\S]*?)<\\/span><\\/span>/g,'$1/$2').replace(/\\{GRAPH\\}/g,' ').replace(/<\\/(td|th|p|div|li|tr|table)>|<br\\s*\\/?>|<p[\\s>]/gi,' $&'),'text/html').body.textContent||'').replace(/\\s+/g,' ').trim(); };
   var disp=function(it){ var a=it.answer; try{ switch(it.type){
     case 'mc': return ODD[a]+'  '+txt((it.choices||[])[a]); case 'ms': return a.map(function(i){ return ODD[i]; }).join(', ');
-    case 'num': case 'eq': return String(a).replace(/\\^\\{([^{}]*)\\}/g,'^$1'); case 'hotspot': return [].concat(a).map(function(q){ return it.spots?'('+it.spots[q].join(', ')+')':'spot '+q; }).join(', ');
+    case 'num': case 'eq': return String(a).replace(/\\^\\{([^{}]*)\\}/g,'^$1').replace(/-/g,'−'); case 'hotspot': return [].concat(a).map(function(q){ return it.spots?'('+it.spots[q].join(', ')+')':'spot '+q; }).join(', ');
     case 'inline': return a.map(function(v,k){ return txt(it.drops[k][v]); }).join(' · ');
     case 'table': return a.map(function(v,k){ return txt(it.rows[k])+': '+txt(it.cols[v]); }).join('; ');
     case 'dnd': return a.map(function(z,t){ return txt(it.tiles[t])+' → '+txt(it.zones[z]); }).join('; ');
