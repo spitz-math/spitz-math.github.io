@@ -1200,6 +1200,71 @@ function makeParPerp(PFX){
       shuffle(q.choices); q.visual=''; delete q.check; return q; } throw new Error('generator failed: '+type); }
   return { build:build }; }
 
+function makeSolve(PFX){
+  /* ================= QUESTION GENERATOR: solving equations (Kody, 2026-10-25) =================
+     Two-step, distributing, variables on both sides, and combining like terms. Every answer is a whole number
+     from −12 to 12. Wrong choices are the usual slips (wrong operation, sign, forgetting a step); the check plugs
+     the choice back into the equation. */
+  var MINUS='−';
+  function ri(a,b){ return a+Math.floor(Math.random()*(b-a+1)); }
+  function nz(a,b){ var v; do{ v=ri(a,b); }while(v===0); return v; }
+  function shuffle(a){ for(var i=a.length-1;i>0;i--){ var j=Math.floor(Math.random()*(i+1)), t=a[i]; a[i]=a[j]; a[j]=t; } return a; }
+  function num(n){ return n<0? MINUS+(-n) : ''+n; }
+  function frac(n,d){ return '<span class="'+PFX+'-fr"><span>'+n+'</span><span>'+d+'</span></span>'; }
+  function sgn(v){ return v>0? ' + '+v : v<0? ' '+MINUS+' '+(-v) : ''; }
+  function term(a,v){ return a===1? v : a===-1? MINUS+v : num(a)+v; }        /* leading term: 3x, −x */
+  function sterm(a,v){ return a===1? ' + '+v : a===-1? ' '+MINUS+' '+v : a>0? ' + '+a+v : ' '+MINUS+' '+(-a)+v; }   /* later term: + 3x, − x */
+  function par(n){ return n<0? '('+num(n)+')' : num(n); }
+  function eq(h){ return '<span class="'+PFX+'-eq">'+h+'</span>'; }
+  function ans(v){ return '<span class="c-ans">x = '+num(v)+'</span>'; }
+  function C(v,why){ return {html:'x = '+num(v),val:v,why:why||'',key:'x'+v}; }
+  function whole(n,d){ return d!==0 && n%d===0; }
+  var W_PLUG='Plug it back in: it doesn’t make both sides equal.';
+  /* answer first, then the slips that come out whole and different, then near misses to fill four */
+  function choices(x,slips){ var out=[C(x)], seen={}; seen[x]=1;
+    if(Math.random()<0.5) seen[-x]=1;                    /* the sign slip only half the time, so the answer isn't always half of a ± pair */
+    shuffle(slips).forEach(function(s){ if(out.length<4&&s[0]!==null&&isFinite(s[0])&&Math.round(s[0])===s[0]&&Math.abs(s[0])<=40&&!seen[s[0]]){ seen[s[0]]=1; out.push(C(s[0],s[1])); } });
+    shuffle([1,-1,2,-2,3,-3,4,-4]).forEach(function(k){ if(out.length<4&&!seen[x+k]){ seen[x+k]=1; out.push(C(x+k,W_PLUG)); } });
+    return out; }
+  function div(n,d){ return whole(n,d)? n/d : null; }
+
+  var GEN={
+  slTwo:function(){ var x=nz(-12,12), a=nz(-9,9); if(Math.abs(a)===1) return null; var b=nz(-15,15);
+    if(Math.random()<0.3){ var A=Math.abs(a), c2=x+b; if(!whole(x,A)) return null; var q=x/A;   /* x/a + b = c */
+      var c=q+b;
+      return { topic:'Two-step', prompt:'Solve: '+eq(frac('x',A)+sgn(b)+' = '+num(c)), data:{x:x},
+        check:function(v){ return v/A+b===c; },
+        choices:choices(x,[[(c+b)*A,'Undo '+(b>0?'+ '+b+' by subtracting':MINUS+' '+(-b)+' by adding')+' it.'],[(c-b),'Then multiply by '+A+' to undo the division.'],[div(c-b,A),'Dividing by x’s '+A+' is undone by multiplying, not dividing.'],[-x,'Check the sign.']]),
+        explain:'Undo '+num(b)+': '+eq(frac('x',A)+' = '+num(c-b))+'. Multiply by '+A+': '+ans(x)+'.' }; }
+    var c=a*x+b;
+    return { topic:'Two-step', prompt:'Solve: '+eq(term(a,'x')+sgn(b)+' = '+num(c)), data:{x:x},
+      check:function(v){ return a*v+b===c; },
+      choices:choices(x,[[div(c+b,a),'To undo '+(b>0?'+ '+b+', subtract':MINUS+' '+(-b)+', add')+' '+Math.abs(b)+' on both sides.'],[-x,'Check the sign when you divide by '+num(a)+'.'],[c-b,'One more step: divide by '+num(a)+'.'],[div(c,a)!==null?div(c,a)-b:null,'Undo the '+Math.abs(b)+' first, then divide.']]),
+      explain:(b>0?'Subtract '+b:'Add '+(-b))+': '+eq(term(a,'x')+' = '+num(c-b))+'. Divide by '+num(a)+': '+ans(x)+'.' }; },
+  slDist:function(){ var x=nz(-12,12), a=nz(-6,6); if(Math.abs(a)===1) return null; var b=nz(-9,9), c=a*(x+b);
+    return { topic:'Distributing', prompt:'Solve: '+eq(num(a)+'(x'+sgn(b)+') = '+num(c)), data:{x:x},
+      check:function(v){ return a*(v+b)===c; },
+      choices:choices(x,[[div(c-b,a),'Distribute to both terms: '+num(a)+' times '+num(b)+' is '+num(a*b)+'.'],[c/a+b,'Undo '+(b>0?'+ '+b+' by subtracting':MINUS+' '+(-b)+' by adding')+'.'],[-x,'Check the sign when you divide by '+num(a)+'.'],[c-a*b,'One more step: divide by '+num(a)+'.']]),
+      explain:'Divide both sides by '+num(a)+': '+eq('x'+sgn(b)+' = '+num(c/a))+'. Then '+(b>0?'subtract '+b:'add '+(-b))+': '+ans(x)+'.' }; },
+  slBoth:function(){ var x=nz(-12,12), a=nz(-9,9), c=nz(-9,9); if(a===c||Math.abs(a-c)===1&&Math.random()<0.5) return null; var b=nz(-15,15), d=a*x+b-c*x; if(d===0||Math.abs(d)>40) return null;
+    return { topic:'Both sides', prompt:'Solve: '+eq(term(a,'x')+sgn(b)+' = '+term(c,'x')+sgn(d)), data:{x:x},
+      check:function(v){ return a*v+b===c*v+d; },
+      choices:choices(x,[[div(d-b,a+c),'Subtract '+term(c,'x')+' from both sides, don’t add it.'],[div(d+b,a-c),'Move '+num(b)+' by doing the opposite: '+(b>0?'subtract':'add')+' it.'],[-x,'Check the sign when you divide by '+num(a-c)+'.'],[d-b,'One more step: divide by '+num(a-c)+'.']]),
+      explain:'Get x on one side: '+eq(term(a-c,'x')+sgn(b)+' = '+num(d))+'. Then '+eq(term(a-c,'x')+' = '+num(d-b))+', so '+ans(x)+'.' }; },
+  slCombine:function(){ var x=nz(-12,12), a=nz(-7,9), c=nz(-7,9); if(a+c===0||Math.abs(a+c)===1) return null; var b=nz(-15,15), d=(a+c)*x+b;
+    return { topic:'Combine like terms', prompt:'Solve: '+eq(term(a,'x')+sgn(b)+sterm(c,'x')+' = '+num(d)), data:{x:x},
+      check:function(v){ return a*v+b+c*v===d; },
+      choices:choices(x,[[div(d-b,a),'Combine both x terms first: '+term(a,'x')+sterm(c,'x')+' = '+term(a+c,'x')+'.'],[div(d+b,a+c),'Undo '+(b>0?'+ '+b+' by subtracting':MINUS+' '+(-b)+' by adding')+'.'],[-x,'Check the sign when you divide by '+num(a+c)+'.'],[div(d-b,a-c),'Combine '+term(a,'x')+' and '+term(c,'x')+' carefully: '+num(a)+' + '+par(c)+' = '+num(a+c)+'.']]),
+      explain:'Combine like terms: '+eq(term(a+c,'x')+sgn(b)+' = '+num(d))+'. Then '+eq(term(a+c,'x')+' = '+num(d-b))+', so '+ans(x)+'.' }; }
+  };
+  function build(type){ for(var tries=0;tries<400;tries++){ var q=GEN[type](); if(!q||q.choices.length!==4) continue;
+      if(new Set(q.choices.map(function(c){ return c.key; })).size!==4) continue;
+      if(!q.check(q.choices[0].val)) continue;                                                  // the answer must pass the independent check
+      if(q.choices.slice(1).some(function(c){ return q.check(c.val); })) continue;              // and no distractor may pass it
+      q.type=type; q.choices.forEach(function(c,i){ c.ok=i===0; });
+      shuffle(q.choices); q.visual=''; delete q.check; return q; } throw new Error('generator failed: '+type); }
+  return { build:build }; }
+
 var SETS={
   mult:{ name:'Multiplication facts', make:makeMult, big:true, topics:[['f03','Facts 0–3',['Facts 0–3'],1],['f46','Facts 4–6',['Facts 4–6'],2],['f79','Facts 7–9',['Facts 7–9'],3],['f1012','Facts 10–12',['Facts 10–12'],2]] },
   /* 'yint' was its own topic until 2026-10-19, when Kody merged it into 'slope'; alias keeps old links and saves working */
@@ -1216,7 +1281,8 @@ var SETS={
   fslope:{ name:'Finding slope', make:makeFindSlope, topics:[['pts','From two points',['fsPoints']],['graph','From a graph',['fsGraph']],['table','From a table',['fsTable']],['eq','From an equation',['fsEq']]] },
   stdform:{ name:'Standard form', make:makeStdForm, topics:[['x','x-intercept',['sfX']],['y','y-intercept',['sfY']]] },
   slide:{ name:'Slide and Slice', make:makeSlideSlice, topics:[['slide','Slide',['ssSlide']],['slice','Slice',['ssSlice']],['both','Both steps',['ssBoth']],['slope','Find the slope',['ssSlope']]] },
-  perp:{ name:'Parallel & perpendicular', make:makeParPerp, topics:[['par','Parallel slopes',['ppPar']],['perp','Perpendicular slopes',['ppPerp']],['pair','Spot the pair',['ppPair']]] }
+  perp:{ name:'Parallel & perpendicular', make:makeParPerp, topics:[['par','Parallel slopes',['ppPar']],['perp','Perpendicular slopes',['ppPerp']],['pair','Spot the pair',['ppPair']]] },
+  solve:{ name:'Solving equations', make:makeSolve, topics:[['two','Two-step',['slTwo']],['dist','Distributing',['slDist']],['both','Both sides',['slBoth']],['comb','Combine like terms',['slCombine']]] }
 };
 
 /* Teacher settings: Mr. Spitz changes these on topics.html (the teacher control panel), which saves data/topics.json in the repo.
