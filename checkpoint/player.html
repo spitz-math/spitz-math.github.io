@@ -1749,7 +1749,7 @@ function earn(it){ const a=S.answers[it.n]; if(a==null) return null; const full=
 
 /* ================= activity record: time on each question, visits, answer changes, tools, leaving the tab =================
    Nothing here is shown during the test. It feeds the review screen and, in step 2, the teacher dashboard. */
-const ACT={ t0:Date.now(), events:[], items:{}, cur:null, since:null, away:0, awayMs:0, awaySince:null, paused:false, lastAns:{} };
+const ACT={ t0:Date.now(), events:[], items:{}, cur:null, since:null, away:0, awayMs:0, awaySince:null, paused:false, lastAns:{}, rc:0, rcAt:0 };
 ITEMS.forEach(it=>{ ACT.items[it.n]={ms:0,visits:0,changes:0,firstAnswerAt:null,lastAnswerAt:null,tools:{}}; ACT.lastAns[it.n]='null'; });
 const now=()=>Date.now()-ACT.t0;
 function logEv(type,detail){ if(ACT.events.length<6000) ACT.events.push(detail===undefined?{t:now(),type,n:ACT.cur}:{t:now(),type,n:ACT.cur,detail}); }
@@ -1771,7 +1771,7 @@ function fmtMs(ms){ const s=Math.round(ms/1000); if(s<60) return s+'s'; const m=
 function sessionExport(){ clockStop(); const out={
   test:TD.id, testTitle:TD.title, student:{name:S.name, period:S.period},
   startedAt:new Date(ACT.t0).toISOString(), submittedAt:S.submittedAt||null, elapsedMs:now(),
-  awayCount:ACT.away, awayMs:ACT.awayMs,
+  awayCount:ACT.away, awayMs:ACT.awayMs, rclicks:ACT.rc,
   score:ITEMS.reduce((s,it)=>s+(earn(it)||0),0), maxScore:ITEMS.reduce((s,it)=>s+(it.max||1),0),
   items:ITEMS.map(it=>({n:it.n, type:it.type, teks:it.teks||'', cat:it.cat||null, answer:S.answers[it.n]??null, points:earn(it), max:it.max||1,
     flagged:!!S.flags[it.n], ms:ACT.items[it.n].ms, visits:ACT.items[it.n].visits, changes:ACT.items[it.n].changes, tools:ACT.items[it.n].tools})),
@@ -1780,10 +1780,10 @@ function sessionExport(){ clockStop(); const out={
 /* everything needed to put a student back where they were (refresh, sleep, sign in again) */
 function sessionState(){ clockStop(); const st={v:1, rev:Date.now(), i:S.i, answers:S.answers, flags:S.flags, sticky:S.sticky, notes:S.notes, gd:S.gd,
   submitted:!!S.submitted, submittedAt:S.submittedAt||null,
-  act:{elapsedMs:now(), away:ACT.away, awayMs:ACT.awayMs+(ACT.awaySince?Date.now()-ACT.awaySince:0), items:ACT.items}}; clockStart(); return st; }
+  act:{elapsedMs:now(), away:ACT.away, rc:ACT.rc, awayMs:ACT.awayMs+(ACT.awaySince?Date.now()-ACT.awaySince:0), items:ACT.items}}; clockStart(); return st; }
 function sessionRestore(st,events){ if(!st) return;
   S.answers=st.answers||{}; S.flags=st.flags||{}; S.sticky=st.sticky||{}; S.notes=st.notes||{}; S.gd=st.gd||{};
-  if(st.act){ ACT.t0=Date.now()-(st.act.elapsedMs||0); ACT.away=st.act.away||0; ACT.awayMs=st.act.awayMs||0;
+  if(st.act){ ACT.t0=Date.now()-(st.act.elapsedMs||0); ACT.away=st.act.away||0; ACT.rc=st.act.rc||0; ACT.awayMs=st.act.awayMs||0;
     ITEMS.forEach(it=>{ const r=st.act.items&&st.act.items[it.n]; if(r) Object.assign(ACT.items[it.n],r); }); }
   ITEMS.forEach(it=>{ ACT.lastAns[it.n]=JSON.stringify(S.answers[it.n]??null); });
   if(Array.isArray(events)) ACT.events=events.slice(-6000);
@@ -1929,7 +1929,12 @@ menu.addEventListener('click',e=>{
 });
 menu.addEventListener('keydown',e=>{ const bs=[...menu.querySelectorAll('button')]; const i=bs.indexOf(document.activeElement);
   if(e.key==='ArrowDown'){ e.preventDefault(); bs[(i+1)%bs.length].focus(); } if(e.key==='ArrowUp'){ e.preventDefault(); bs[(i-1+bs.length)%bs.length].focus(); } });
-host.addEventListener('contextmenu',e=>{ if(e.target.closest('input,textarea,select')) return; e.preventDefault(); openMenu(e.clientX,e.clientY); });
+host.addEventListener('contextmenu',e=>{ if(e.target.closest('input,textarea,select')) return; e.preventDefault(); e.spitzMenu=true; openMenu(e.clientX,e.clientY); });
+/* Chrome's own right-click menu (and its "Search with Google Lens") never opens during a test, anywhere on the page.
+   Each try is counted (at most one every 3 s) and goes to the teacher dashboard; right-clicking a question for this
+   page's own tool menu is normal and not counted. */
+document.addEventListener('contextmenu',e=>{ e.preventDefault(); if(e.spitzMenu||S.submitted) return;
+  const t=Date.now(); if(t-ACT.rcAt<3000) return; ACT.rcAt=t; ACT.rc++; logEv('rightclick'); if(window.__spitzChanged) window.__spitzChanged(); });
 document.addEventListener('mousedown',e=>{ if(menuOpen()&&!menu.contains(e.target)&&!$('#ctxBtn').contains(e.target)) closeMenu(); });
 document.addEventListener('keydown',e=>{ if(e.key==='Escape'){ closeMenu(); closeItems(); if(S.modes.elim) setStrike(false); } });
 function setStrike(on){ if(on&&!S.modes.elim) actTool('strikethrough'); S.modes.elim=on; host.classList.toggle('elimmode',on); }
@@ -2463,7 +2468,7 @@ $('#startForm').addEventListener('submit',async e=>{ e.preventDefault();
 });
 
 /* ---------- saving ---------- */
-let sentAt=0, sentStatus='', leaving=false, lastInput=Date.now(), localT=null, serverT=null, inflight=false, again=false, finalOK=false, beat=null, reviewPoll=null, holdPoll=null, holdBusy=false, fails=0, confirmed=false;
+let sentAt=0, sentStatus='', leaving=false, lastInput=Date.now(), localT=null, serverT=null, inflight=false, again=false, finalOK=false, beat=null, reviewPoll=null, holdPoll=null, holdBusy=false, fails=0, confirmed=false, rcSent=null;   // rcSent: right-click count the Sheet already has
 /* when Google is busy, wait longer each time (3, 6, 12, 24, 30 s; a submitted test 3, 6, 12, 15 s), give or take a third, so a whole class never retries in step */
 const backoff=final=>Math.min(final?15000:30000,3000*Math.pow(2,Math.min(fails-1,4)))*(0.67+Math.random()*0.66);
 ['pointerdown','keydown'].forEach(t=>addEventListener(t,()=>{ lastInput=Date.now(); },true));
@@ -2475,12 +2480,12 @@ function saveLocal(){ clearTimeout(localT); localT=null; if(leaving||!CTX||!wind
 function saveLocalSoon(){ if(!localT) localT=setTimeout(saveLocal,400); }
 function payload(final){ const ss=window.SpitzSession, ex=ss.export(), st=ss.state();
   return {sessionId:CTX.sessionId, name:CTX.name, period:CTX.period, test:CTX.test, final:!!final, status:screen(), lastInputAt:lastInput, state:st,
-    sum:{item:ss.item, answered:ss.answeredCount(), score:ex.score, max:ex.maxScore, elapsedMs:ex.elapsedMs, awayCount:ex.awayCount, awayMs:ex.awayMs, startedAt:ex.startedAt, submittedAt:ex.submittedAt},
+    sum:{item:ss.item, answered:ss.answeredCount(), score:ex.score, max:ex.maxScore, elapsedMs:ex.elapsedMs, awayCount:ex.awayCount, awayMs:ex.awayMs, startedAt:ex.startedAt, submittedAt:ex.submittedAt, rclicks:ex.rclicks||0},
     items:ex.items.map(({answer,...r})=>r), events:trimEvents(ex.events,40000)}; }
 function saveServer(){ clearTimeout(serverT); serverT=null; if(leaving||!CTX||!CTX.sessionId||finalOK) return;
   if(inflight){ again=true; return; } inflight=true;
-  const final=window.SpitzSession.submitted, body=payload(final); sentAt=Date.now(); sentStatus=body.status;
-  call('stcSave',body).then(r=>{ if(!r||!r.ok){ fails++; again=true; return; } fails=0;
+  const final=window.SpitzSession.submitted, body=payload(final); sentAt=Date.now(); sentStatus=body.status; if(body.sum.rclicks!==rcSent) body.rcNew=true;
+  call('stcSave',body).then(r=>{ if(!r||!r.ok){ fails++; again=true; return; } fails=0; if(body.rcNew) rcSent=body.sum.rclicks;
       if(r.review) applyReview(r.review); if(typeof r.control==='string'&&!final) window.SpitzSession.teacherHold(r.control);
       if(final){ finalOK=true; saveNote(false);
         // one quiet repeat 20 s later puts "submitted" back if a late, older save from before Submit lands after it

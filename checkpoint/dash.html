@@ -176,6 +176,7 @@ table.t{width:100%;border-collapse:collapse;font-size:13px}
 .kv b{color:var(--mut);font-weight:600}
 .dact{display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap}
 /* tooltip + dialog */
+.rcb{display:inline-block;margin-left:6px;padding:0 6px;border-radius:9px;background:#fde8e8;color:#a61b1b;font-size:11px;font-weight:700;white-space:nowrap;vertical-align:middle}
 #tip{position:fixed;z-index:80;background:#1d2733;color:#fff;font-size:12px;padding:6px 9px;border-radius:6px;pointer-events:none;max-width:260px;line-height:1.4}
 #tip[hidden]{display:none}
 .veil{position:fixed;inset:0;background:rgba(15,23,42,.45);display:grid;place-items:center;z-index:90;padding:16px}
@@ -702,7 +703,7 @@ function renderLive(L,tests){
   const head=`<tr><th class="fx c0"><input type="checkbox" id="allBox" aria-label="Select all shown"></th><th class="fx c1" style="text-align:left">Name</th><th class="fx c2">Per.</th><th class="fx c3" style="text-align:left">Status</th><th class="fx c4" style="text-align:left">Answered</th><th class="fx c5" style="text-align:left">Score</th><th class="fx c6">Time</th><th class="fx c7">Pause / Stop</th>${Array.from({length:nq},(_,i)=>`<th class="qh">${i+1}</th>`).join('')}</tr>`;
   const rows=L.map(s=>{ const [k,label]=stat(s), n=Math.max(s.q.length,(meta(s.test)||{items:[]}).items.length)||1, ans=s.answered||0, l=lvl(s.pct||0);
     return `<tr data-k="${esc(s.key)}"><td class="fx c0"><input type="checkbox" class="rowBox" data-k="${esc(s.key)}" ${sel.has(s.key)?'checked':''} aria-label="Select ${esc(s.name)}"></td>
-      <td class="fx c1"><button class="nm" data-open="${esc(s.key)}" title="${esc(s.name)}">${esc(s.name)}</button>${mixed?`<div class="rs">${esc(s.session)}</div>`:''}</td>
+      <td class="fx c1"><button class="nm" data-open="${esc(s.key)}" title="${esc(s.name)}">${esc(s.name)}</button>${s.rclicks?`<span class="rcb" title="Tried to right-click ${s.rclicks}× (Chrome's menu, where Google Lens is). The test blocked it.">Right-click ${s.rclicks}×</span>`:''}${mixed?`<div class="rs">${esc(s.session)}</div>`:''}</td>
       <td class="fx c2">${esc(s.period==='G'?'G':s.period)}</td>
       <td class="fx c3"><span class="pill p-${k}" title="${esc(label+(s.away?' · left the tab '+s.away+'×':''))}">${esc(label)}</span></td>
       <td class="fx c4"><div class="prog"><i><b style="width:${Math.round(100*ans/n)}%"></b></i><em>${ans}/${n}</em></div></td>
@@ -855,7 +856,7 @@ function openDrawer(key,quiet){ const s=DATA&&DATA.students.find(x=>x.key===key)
     <div class="kv"><b>Status</b><span><span class="pill p-${k}">${esc(label)}</span></span><b>Test</b><span>${esc(m?m.title:s.test)} · ${esc(s.session)}</span>
     <b>Score</b><span><span class="lv" style="background:${l[2]}"></span>${s.score||0} of ${s.max||0} points (${s.pct||0}%) · ${esc(l[1])}${s.submitted?'':' so far'}</span>
     <b>Answered</b><span>${s.answered||0} · on question ${esc(s.item||'–')}</span><b>Started</b><span>${d(s.started)}</span><b>Submitted</b><span>${d(s.submitted)}</span>
-    <b>Time</b><span>${s.minutes||0} min · left the tab ${s.away||0}× (${s.awayMin||0} min)</span><b>Last input</b><span>${d(s.input)}</span><b>Last save</b><span>${d(s.saved)}</span><b>Student code</b><span>${esc(s.code)}</span></div>
+    <b>Time</b><span>${s.minutes||0} min · left the tab ${s.away||0}× (${s.awayMin||0} min)${s.rclicks?` · tried to right-click ${s.rclicks}× (blocked)`:''}</span><b>Last input</b><span>${d(s.input)}</span><b>Last save</b><span>${d(s.saved)}</span><b>Student code</b><span>${esc(s.code)}</span></div>
     <table class="t"><tr><th>#</th><th>Result</th><th>TEKS</th><th>Time</th><th>Visits</th><th>Changes</th></tr>${s.q.map((q,i)=>{ const qi=qinfo(s,i), [pts,mx,ms,vis,ch,fl]=q;
       const r=pts==null?(vis?'Blank':'Not seen'):pts>=mx?'Correct':pts>0?`Partly (${pts}/${mx})`:'Incorrect';
       return `<tr><td><b>${i+1}</b>${fl?' ⚑':''}</td><td><span class="cell ${pts==null?(vis?'bl':'un'):pts>=mx?'ok':pts>0?'part':'no'}" style="display:inline-grid;width:14px;height:12px;vertical-align:-2px;margin-right:4px"></span>${r}</td><td class="rs">${esc(qi.teks)}</td><td class="n">${ms?fmtMs(ms):'–'}</td><td class="n">${vis}</td><td class="n">${ch}</td></tr>`; }).join('')}</table>`;
