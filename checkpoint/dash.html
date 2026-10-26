@@ -548,9 +548,15 @@ function renderMs(){ const box=$('#msList'); if(!DATA){ box.innerHTML='<p class=
     <td><b>${esc(short(s.id))}</b></td><td>${esc(testTitle(s.test))}</td>${admin?`<td>${esc(teaName(s.teacher))}</td>`:''}<td class="rs">${esc(fmtDay(s.created))}</td><td class="rs">${esc(s.notes)}</td>
     <td><span class="op${s.open?'':' cl'}">${s.open?'Open':'Closed'}</span> <button class="btn" data-ms="${s.open?'Closed':'Open'}">${s.open?'Close':'Reopen'}</button></td>
     <td><select class="rv" aria-label="After they submit">${RV.map(v=>`<option${v===s.review?' selected':''}>${v}</option>`).join('')}</select></td>
-    <td><button class="btn" data-mr="1" title="Add everyone who signed in to this session to your roster">Add to roster</button></td></tr>`).join('')}</table></div>`;
+    <td><div class="acts"><button class="btn" data-mr="1" title="Add everyone who signed in to this session to your roster">Add to roster</button><button class="btn" data-rms="1" title="Take this session off the dashboard. Students' results stay in the Sheet.">Remove</button></div></td></tr>`).join('')}</table></div>`;
   [...new Set(L.map(s=>s.test))].filter(t=>!META[t]).forEach(t=>loadMeta(t).then(()=>{ if(!$('#mpage').hidden) renderMs(); })); }
-$('#msList').addEventListener('click',async e=>{ const b=e.target.closest('button'); if(!b) return; const id=b.closest('tr').dataset.sid; b.disabled=true;
+$('#msList').addEventListener('click',async e=>{ const b=e.target.closest('button'); if(!b) return; const id=b.closest('tr').dataset.sid;
+  if(b.dataset.rms){ const s=DATA.sessions.find(x=>x.id===id);
+    if(!await ask('Remove session '+short(id)+'?',`<p>${esc(s?testTitle(s.test):'')}</p><p>It comes off the dashboard and students can no longer sign in with it. Results students already have stay in the Sheet (Attempts tab). This can't be undone here.</p>`,'Remove')) return;
+    b.disabled=true;
+    try{ const r=await call('stcSessionSet',{id,remove:true}); if(!r||r.removed!==id) throw new Error('Not removed: the Apps Script needs the latest Code.gs (paste it, then Deploy › New version).'); DATA.sessions=DATA.sessions.filter(x=>x.id!==id); if(selSes) selSes.delete(id); keep('ses',[...(selSes||[])]); renderMs(); say($('#msMsg'),short(id)+' is removed.','ok'); }
+    catch(x){ b.disabled=false; say($('#msMsg'),errText(x),'err'); } return; }
+  b.disabled=true;
   try{ if(b.dataset.ms){ await call('stcSessionSet',{id,status:b.dataset.ms}); const s=DATA.sessions.find(x=>x.id===id); if(s) s.open=b.dataset.ms==='Open'; renderMs(); say($('#msMsg'),id+(b.dataset.ms==='Open'?' is open again.':' is closed. Students can still see a test they already turned in.'),'ok'); }
     else { const r=await call('stcRosterAdd',{session:id},120000); b.disabled=false;
       say($('#msMsg'),r.added?`Added ${r.added} student${r.added===1?'':'s'} from ${esc(short(id))} to your roster${r.skipped?' ('+r.skipped+' already on it)':''}. Fix any names in My roster.`:`Everyone who signed in to ${esc(short(id))} is already on your roster.`,'ok'); } }
