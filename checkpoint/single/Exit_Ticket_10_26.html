@@ -822,15 +822,15 @@ body.browse>*:not(#browse):not(svg){display:none!important}
 <!-- Sign in -->
 <div class="endscreen" id="startScreen">
   <div class="resbar"><b class="wm"><svg class="burger wmb" viewBox="0 0 32 28" aria-hidden="true"><path d="M3 12C3 5 9 2 16 2s13 3 13 10z" fill="#f2a33a"/><g fill="#fff3c4"><ellipse cx="10" cy="6.5" rx="1.1" ry=".6"/><ellipse cx="16" cy="5" rx="1.1" ry=".6"/><ellipse cx="21.5" cy="7" rx="1.1" ry=".6"/><ellipse cx="13" cy="9" rx="1.1" ry=".6"/><ellipse cx="19" cy="9.5" rx="1.1" ry=".6"/></g><path d="M2 12.5h28l-2.5 3-3-2-3 2.5-3-2.5-3 2.5-3-2.5-3 2.5-3-2z" fill="#5fbf3a"/><rect x="2.5" y="15" width="27" height="3" rx="1.2" fill="#f7d13b"/><rect x="2" y="17.5" width="28" height="4.2" rx="2" fill="#7a3b1d"/><path d="M3 22h26c0 2.6-2.4 4-5 4H8c-2.6 0-5-1.4-5-4z" fill="#e8913a"/></svg>SPITZ <span>CHECKPOINT</span></b></div>
-  <div class="resbar2"><span>Practice Test Site</span><span>Mr. Spitz · Algebra I · Chacon Middle School</span></div>
+  <div class="resbar2"><span>Practice Test Site</span><span id="siWho">Mr. Spitz · Algebra I · Chacon Middle School</span></div>
   <div class="scroller"><div class="waves"></div><div class="endwrap">
     <form class="rescard sicard" id="startForm" autocomplete="off">
       <h1>Please Sign In</h1>
       <div class="rb">
         <label class="sif"><span>Test</span><b class="sitestname" id="siTestName" hidden></b><select id="stuTest" hidden aria-label="Test"></select></label>
-        <label class="sif"><span>First name or initials</span><input id="stuName" maxlength="20" spellcheck="false"></label>
-        <label class="sif"><span>Class period</span><select id="stuPeriod"><option value="" hidden></option><option value="2">2nd period</option><option value="8">8th period</option><option value="9">9th period</option><option value="G">Guest</option></select></label>
         <label class="sif" id="siSesRow" hidden><span>Session ID</span><input id="stuSession" maxlength="20" spellcheck="false" autocapitalize="characters" style="text-transform:uppercase"></label>
+        <label class="sif" id="siNameRow"><span>First name or initials</span><input id="stuName" maxlength="20" spellcheck="false"></label>
+        <label class="sif" id="siPerRow"><span>Class period</span><select id="stuPeriod"></select></label>
         <p class="sierr" id="siErr" hidden>Enter your name and choose your class period.</p>
         <button class="logout sibtn" id="siBtn" type="submit">Sign In</button>
       </div>
@@ -2389,7 +2389,18 @@ const testOrder=L=>{ const yr=t=>{ const m=/^alg1-(\d{4})$/.exec(t.id); return m
 const allTests=testOrder(window.SPITZ_TESTS||[]), tests=allTests.filter(t=>!t.hidden);   // hidden tests stay reachable with ?test=<id>
 const fixed=APP?null:(params.get('test')||(tests.length===1?tests[0].id:null));
 const pick=$('#stuTest'), shown=$('#siTestName');
-if(APP){ pick.closest('.sif').hidden=true; $('#siSesRow').hidden=false; }
+/* class periods: a session's teacher has their own list (from the server); the file version offers 1st to 9th */
+const ord=n=>n+((n%100>10&&n%100<14)?'th':({1:'st',2:'nd',3:'rd'}[n%10]||'th'));
+function setPeriods(L){ const sel=$('#stuPeriod'), was=sel.value;
+  sel.innerHTML='<option value="" hidden></option>'+L.map(p=>`<option value="${String(p).replace(/[^0-9A-Z]/gi,'')}">${/^\d+$/.test(p)?ord(+p)+' period':'Period '+String(p).replace(/[^0-9A-Z]/gi,'')}</option>`).join('')+'<option value="G">Guest</option>';
+  if([...sel.options].some(o=>o.value===was)) sel.value=was; }
+setPeriods(['1','2','3','4','5','6','7','8','9']);
+/* in class a student on the teacher's roster only types the Session ID; name and period appear only for a student who isn't on it */
+const askName=on=>{ $('#siNameRow').hidden=!on; $('#siPerRow').hidden=!on; };
+const SCHOOL='Chacon Middle School', whoDefault=$('#siWho').textContent;
+const setWho=r=>{ $('#siWho').textContent=r&&r.by?[r.by,r.subject,SCHOOL].filter(Boolean).join(' · '):whoDefault; };
+if(APP){ pick.closest('.sif').hidden=true; $('#siSesRow').hidden=false; askName(false);
+  $('#stuSession').addEventListener('input',()=>{ if(!$('#siNameRow').hidden){ askName(false); $('#siErr').hidden=true; setWho(null); } }); }
 else if(fixed){ const t=allTests.find(t=>t.id===fixed); shown.textContent=t?t.title:fixed; shown.hidden=false; pick.hidden=true; }
 else { pick.innerHTML='<option value="" hidden></option>'+tests.map(t=>`<option value="${t.id}">${t.title}</option>`).join(''); pick.hidden=false; shown.hidden=true; }
 const err=(t,focus)=>{ $('#siErr').textContent=t; $('#siErr').hidden=false; $('#siBtn').disabled=false; if(focus) focus.focus(); };
@@ -2432,17 +2443,22 @@ const newer=(a,b)=>!!(a&&a.state&&(!b||!b.state||(a.state.rev||0)>(b.state.rev||
 $('#startForm').addEventListener('submit',async e=>{ e.preventDefault();
   const nm=$('#stuName').value.trim(), pd=$('#stuPeriod').value;
   if(APP){
-    const ses=$('#stuSession').value.trim().toUpperCase();
-    if(!nm||!pd||!ses) return err('Enter your name, choose your class period, and enter the Session ID.',!nm?$('#stuName'):!pd?$('#stuPeriod'):$('#stuSession'));
+    const ses=$('#stuSession').value.trim().toUpperCase(), asked=!$('#siNameRow').hidden;
+    if(!ses) return err('Enter the Session ID.',$('#stuSession'));
+    if(asked&&(!nm||!pd)) return err('Type your first name or initials and choose your class period.',!nm?$('#stuName'):$('#stuPeriod'));
     $('#siErr').hidden=true; $('#siBtn').disabled=true;
-    let r; try{ r=await callRetry('stcSignIn',{sessionId:ses,name:nm,period:pd},3); }
+    let r; try{ r=await callRetry('stcSignIn',asked?{sessionId:ses,name:nm,period:pd}:{sessionId:ses},3); }
     catch(x){ return err(/NOSIGNIN/.test(String(x&&x.message||x))?'Sign in to this Chromebook with your school Google account, then reload this page.':'Could not reach the testing site. Check your internet connection and try again.'); }
+    if(r&&!r.ok&&r.need==='name'){ setPeriods(r.periods||[]); setWho(r); const first=!asked; askName(true);
+      return err(first?'You are not on this class list yet. Type your first name or initials and choose your class period.':r.msg,first||!nm?$('#stuName'):$('#stuPeriod')); }
     if(!r||!r.ok) return err((r&&r.msg)||'Sign in did not work. Try again.',$('#stuSession'));
-    CTX={key:'stc:'+r.sessionId+':'+r.student, sessionId:r.sessionId, student:r.student, test:r.test, name:nm.toUpperCase(), period:pd, control:r.control||''};
+    setWho(r);
+    const name=String(r.name||nm).toUpperCase(), period=String(r.period||pd);
+    CTX={key:'stc:'+r.sessionId+':'+r.student, sessionId:r.sessionId, student:r.student, test:r.test, name, period, control:r.control||''};
     applyReview(r.review);
     const server=r.attempt?{state:r.attempt.state,events:r.attempt.events}:null, local=LS.get(CTX.key);
     const use=(server&&server.state&&server.state.submitted)?server:(newer(local,server)?local:server);
-    window.__spitzPending={name:CTX.name,period:pd,state:use&&use.state,events:use&&use.events};
+    window.__spitzPending={name:CTX.name,period,state:use&&use.state,events:use&&use.events};
     load(r.test,booted); return;
   }
   const id=fixed||pick.value;
