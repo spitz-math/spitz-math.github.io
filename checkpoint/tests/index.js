@@ -1,6 +1,8 @@
 /* List of tests the player offers on the sign-in screen. The dashboard's Tests page keeps this file up to date.
    hidden:true keeps a test off the list; a Session ID (or ?test=<id>) still opens it. */
 window.SPITZ_TESTS=[
+  {id:"alg1-2026", title:"Algebra I 2026 Released Test", v:"b4147fbac5"},
+  {id:"alg1-2025", title:"Algebra I 2025 Released Test", v:"6b6a3b1c6c"},
   {id:"alg1-2024", title:"Algebra I 2024 Released Test", v:"61ddf671a3"},
   {id:"alg1-2023", title:"Algebra I 2023 Released Test", v:"081cc33468"},
   {id:"alg1-2022", title:"Algebra I 2022 Released Test", v:"d83c96739d"},
