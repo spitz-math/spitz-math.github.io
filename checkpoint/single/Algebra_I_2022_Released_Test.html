@@ -2621,7 +2621,8 @@ if(window.SPITZ_BROWSE){ window.SpitzTest({id:'bank',title:'Question bank',cours
 const $=s=>document.querySelector(s);
 const APP=window.SPITZ_APP||null;
 const params=new URLSearchParams(location.search);
-const allTests=window.SPITZ_TESTS||[], tests=allTests.filter(t=>!t.hidden);   // hidden tests stay reachable with ?test=<id>
+const testOrder=L=>{ const yr=t=>{ const m=/^alg1-(\d{4})$/.exec(t.id); return m?+m[1]:null; }; return L.map((t,i)=>({t,i})).sort((a,b)=>{ const A=yr(a.t), B=yr(b.t); if(A!=null&&B!=null) return B-A; if(A!=null) return -1; if(B!=null) return 1; return a.i-b.i; }).map(o=>o.t); }; // released tests newest year first, then the rest in list order
+const allTests=testOrder(window.SPITZ_TESTS||[]), tests=allTests.filter(t=>!t.hidden);   // hidden tests stay reachable with ?test=<id>
 const fixed=APP?null:(params.get('test')||(tests.length===1?tests[0].id:null));
 const pick=$('#stuTest'), shown=$('#siTestName');
 if(APP){ pick.closest('.sif').hidden=true; $('#siSesRow').hidden=false; }
@@ -2690,7 +2691,9 @@ $('#startForm').addEventListener('submit',async e=>{ e.preventDefault();
 });
 
 /* ---------- saving ---------- */
-let sentAt=0, sentStatus='', leaving=false, lastInput=Date.now(), localT=null, serverT=null, inflight=false, again=false, finalOK=false, beat=null, reviewPoll=null, holdPoll=null, holdBusy=false;
+let sentAt=0, sentStatus='', leaving=false, lastInput=Date.now(), localT=null, serverT=null, inflight=false, again=false, finalOK=false, beat=null, reviewPoll=null, holdPoll=null, holdBusy=false, fails=0, confirmed=false;
+/* when Google is busy, wait longer each time (3, 6, 12, 24, 30 s; a submitted test 3, 6, 12, 15 s), give or take a third, so a whole class never retries in step */
+const backoff=final=>Math.min(final?15000:30000,3000*Math.pow(2,Math.min(fails-1,4)))*(0.67+Math.random()*0.66);
 ['pointerdown','keydown'].forEach(t=>addEventListener(t,()=>{ lastInput=Date.now(); },true));
 function screen(){ const ss=window.SpitzSession; if(ss.submitted) return 'submitted'; if(ss.hold==='locked') return 'locked'; if(!$('#pauseScreen').hidden) return 'paused';
   if(document.hidden) return 'away'; if(!$('#endScreen').hidden) return 'end'; return 'active'; }
@@ -2705,23 +2708,29 @@ function payload(final){ const ss=window.SpitzSession, ex=ss.export(), st=ss.sta
 function saveServer(){ clearTimeout(serverT); serverT=null; if(leaving||!CTX||!CTX.sessionId||finalOK) return;
   if(inflight){ again=true; return; } inflight=true;
   const final=window.SpitzSession.submitted, body=payload(final); sentAt=Date.now(); sentStatus=body.status;
-  call('stcSave',body).then(r=>{ if(r&&r.review) applyReview(r.review); if(r&&typeof r.control==='string'&&!final) window.SpitzSession.teacherHold(r.control); if(final&&r&&r.ok){ finalOK=true; saveNote(false); } })
-    .catch(()=>{ again=true; })
-    .finally(()=>{ inflight=false; if(again||(final&&!finalOK)){ again=false; serverT=setTimeout(saveServer,final?4000:2500); } }); }
-function saveServerSoon(ms){ if(!serverT) serverT=setTimeout(saveServer,ms); }
+  call('stcSave',body).then(r=>{ if(!r||!r.ok){ fails++; again=true; return; } fails=0;
+      if(r.review) applyReview(r.review); if(typeof r.control==='string'&&!final) window.SpitzSession.teacherHold(r.control);
+      if(final){ finalOK=true; saveNote(false);
+        // one quiet repeat 20 s later puts "submitted" back if a late, older save from before Submit lands after it
+        if(!confirmed){ confirmed=true; setTimeout(()=>{ if(!leaving) call('stcSave',payload(true)).catch(()=>{}); },20000); } } })
+    .catch(()=>{ fails++; again=true; })
+    .finally(()=>{ inflight=false; if(again||(final&&!finalOK)){ again=false; serverT=setTimeout(saveServer,fails?backoff(final):1000); } }); }
+/* after a change: save in 6–10 s (each Chromebook picks its own time, so a class clicking Next together doesn't save together) */
+function saveServerSoon(ms){ if(!serverT) serverT=setTimeout(saveServer,fails?Math.max(ms,backoff(false)):ms+Math.random()*4000); }
 function saveNote(on){ let n=$('#saveNote'); if(on&&!n){ n=document.createElement('p'); n.id='saveNote'; n.className='savenote'; n.textContent='Saving your test… keep this page open.'; $('#logout').after(n); } if(!on&&n) n.remove(); }
 function applyReview(mode){ if(APP&&mode) $('#resultsScreen').dataset.review=mode; }
 function startSaving(){
-  window.__spitzChanged=()=>{ saveLocalSoon(); if(CTX.sessionId) saveServerSoon(4000); };
+  window.__spitzChanged=()=>{ saveLocalSoon(); if(CTX.sessionId) saveServerSoon(6000); };
   window.__spitzSubmitted=()=>{ saveLocal(); if(CTX.sessionId){ saveNote(true); saveServer(); } };
-  const watch=el=>new MutationObserver(()=>{ saveLocal(); saveServer(); }).observe(el,{attributes:true,attributeFilter:['hidden']});
+  const now_=()=>{ if(fails) saveServerSoon(0); else saveServer(); };   // while Google is busy, wait the backoff instead of adding another call
+  const watch=el=>new MutationObserver(()=>{ saveLocal(); now_(); }).observe(el,{attributes:true,attributeFilter:['hidden']});
   watch($('#pauseScreen')); watch($('#endScreen'));
-  document.addEventListener('visibilitychange',()=>{ saveLocal(); saveServer(); });
+  document.addEventListener('visibilitychange',()=>{ saveLocal(); now_(); });
   addEventListener('pagehide',saveLocal);
   saveLocal();
   if(CTX.sessionId){ if(window.SpitzSession.submitted) saveNote(true); else if(CTX.control) window.SpitzSession.teacherHold(CTX.control); saveServer();
     // heartbeat for the dashboard (who is idle or away); skipped when a save just went out and nothing changed
-    beat=setInterval(()=>{ if(!finalOK&&(Date.now()-sentAt>25000||screen()!==sentStatus)) saveServer(); },30000);
+    beat=setInterval(()=>{ if(!finalOK&&!fails&&(Date.now()-sentAt>25000||screen()!==sentStatus)) saveServer(); },30000);
     reviewPoll=setInterval(()=>{ if(!$('#resultsScreen').hidden) call('stcReview',{sessionId:CTX.sessionId}).then(r=>r&&applyReview(r.review)).catch(()=>{}); },30000);
     // while the teacher has paused or stopped this test, check every 10 s (reads one cell, writes nothing) so Resume shows up quickly
     holdPoll=setInterval(()=>{ const ss=window.SpitzSession; if(!ss.hold||ss.submitted||holdBusy) return; holdBusy=true;
