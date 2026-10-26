@@ -441,6 +441,14 @@ details summary{cursor:pointer;color:var(--blue2);font-size:13px;margin-top:8px}
 const $=s=>document.querySelector(s), esc=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const short=id=>String(id==null?'':id).replace(/^SPITZ-/,'');   // Session IDs are stored as SPITZ-XXXX; teachers and students only see XXXX
 const APP=window.SPITZ_APP||null, ROOT=window.SPITZ_ROOT||'';
+/* Some school browsers block the dashboard's downloads from spitz-math.github.io (it forwards to spitzmath.com), 10/26.
+   siteGet reads a checkpoint/ file from raw.githubusercontent.com first (no forward), then from the site itself. */
+const RAWROOT=/^https:\/\/spitz-math\.github\.io\//.test(ROOT)?'https://raw.githubusercontent.com/spitz-math/spitz-math.github.io/main/checkpoint/'
+  :/^http:\/\/localhost:\d+\/checkpoint\/$/.test(ROOT)?ROOT.replace(/checkpoint\/$/,'raw/spitz-math/spitz-math.github.io/main/checkpoint/'):'';
+async function siteGet(path){ let err=null;
+  for(const u of [RAWROOT&&RAWROOT+path, ROOT+path+(path.includes('?')?'&':'?')+'t='+Date.now()].filter(Boolean)){
+    try{ const r=await fetch(u,{cache:'no-store'}); if(r.ok) return r; err=err||r; }catch(e){ err=err||e; } }
+  if(err instanceof Error) throw err; return err; }
 const LEVELS=[[69,'Masters','var(--mast)'],[52,'Meets','var(--meets)'],[32,'Approaches','var(--app)'],[0,'Did Not Meet','var(--dnm)']];
 const lvl=p=>LEVELS.find(l=>p>=l[0]);
 const IDLE_MS=3*60*1000, NOSIG_MS=100*1000, POLL_MS=15000;
@@ -526,7 +534,7 @@ let MP={tests:null};
 function openPage(id){ $(id).hidden=false; stop(); }
 function closePage(id){ $(id).hidden=true; startAuto(); load(); }
 async function publishedTests(){ if(MP.tests) return MP.tests;
-  const r=await fetch(ROOT+'tests/index.js?t='+Date.now(),{cache:'no-store'}); if(!r.ok) throw new Error('Could not read the list of tests.');
+  const r=await siteGet('tests/index.js'); if(!r.ok) throw new Error('Could not read the list of tests.');
   MP.tests=testOrder(await evalIndex(await r.text())); return MP.tests; }
 async function openMySessions(){ openPage('#mpage'); renderMs();
   try{ const L=await publishedTests(); $('#nsTest').innerHTML='<option value="" hidden>Choose a test</option>'+L.map(t=>`<option value="${esc(t.id)}">${esc(t.title||t.id)}</option>`).join(''); }
@@ -1046,7 +1054,7 @@ async function tpLoad(){ const g=$('#ghs'); g.className='ghs'; g.textContent='Ch
   }catch(e){ TP.gh=null; TP.files=null; g.className='ghs bad'; g.innerHTML='Could not reach GitHub: '+errText(e); }
   try{ let js=null;
     if(TP.files){ if(TP.files['tests/index.js']) js=await repoText('tests/index.js'); }
-    else { const r=await fetch(ROOT+'tests/index.js?t='+Date.now(),{cache:'no-store'}); if(r.ok) js=await r.text(); }
+    else { const r=await siteGet('tests/index.js'); if(r.ok) js=await r.text(); }
     TP.index=js?testOrder(await evalIndex(js)):[]; }catch(e){ TP.index=[]; $('#tlMsg').innerHTML='<span class="err">'+errText(e)+'</span>'; }
   renderList(); if(TP.pkg) renderPkg(); }
 
@@ -1054,7 +1062,7 @@ async function tpLoad(){ const g=$('#ghs'); g.className='ghs'; g.textContent='Ch
 function testFolders(){ if(!TP.files) return []; return [...new Set(Object.keys(TP.files).map(p=>(p.match(/^tests\/([^\/]+)\/test\.js$/)||[])[1]).filter(Boolean))]; }
 async function metaOf(id){ let k, get;
   if(TP.files){ const f=TP.files['tests/'+id+'/test.js']; if(!f) return null; k=id+'@'+f.sha; get=()=>repoText('tests/'+id+'/test.js'); }
-  else { k=id+'@pages'; get=()=>fetch(ROOT+'tests/'+encodeURIComponent(id)+'/test.js',{cache:'no-store'}).then(r=>{ if(!r.ok) throw 0; return r.text(); }); }
+  else { k=id+'@pages'; get=()=>siteGet('tests/'+encodeURIComponent(id)+'/test.js').then(r=>{ if(!r.ok) throw 0; return r.text(); }); }
   if(!TP.metas[k]) TP.metas[k]=get().then(evalTest).then(r=>r.td).catch(()=>null); return TP.metas[k]; }
 function renderList(){ const box=$('#tlist'); const folders=testFolders(), ids=TP.index.map(t=>t.id);
   const rows=TP.index.map(t=>({id:t.id,title:t.title,hidden:!!t.hidden,listed:true,folder:!TP.files||folders.includes(t.id)}))
@@ -1479,7 +1487,7 @@ async function loadUsage(){ const ids=[...new Set(TP.index.map(t=>t.id).concat(t
   QB.usage=use; }
 async function loadSaved(){ QB.saved=[]; QB.savedSha=TP.files&&TP.files[SAVEDPATH]?TP.files[SAVEDPATH].sha:null;
   try{ let txt; if(TP.files){ if(!TP.files[SAVEDPATH]) return; txt=await repoText(SAVEDPATH); }
-    else { const r=await fetch(ROOT+SAVEDPATH+'?t='+Date.now(),{cache:'no-store'}); if(!r.ok) return; txt=await r.text(); }
+    else { const r=await siteGet(SAVEDPATH); if(!r.ok) return; txt=await r.text(); }
     const j=JSON.parse(txt); QB.saved=(j.items||[]).filter(x=>x&&x.bid&&x.item).map(x=>({uid:x.bid, bid:x.bid, from:'saved', kind:x.kind||'practice', fresh:x.kind==='new numbers', year:x.year||0, q:x.q||0, std:x.std, item:x.item, firstTest:x.firstTest||'', savedAt:x.savedAt||''})); }
   catch(e){ bankSay('Could not read your saved questions ('+errText(e)+').','err'); } }
 const usedIn=e=>QB.usage[bidOf(e)]||[];
