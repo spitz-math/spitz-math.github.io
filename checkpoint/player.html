@@ -1736,6 +1736,45 @@ if(window.SPITZ_SELFCHECK) window.__spitzSelfCheck=function(){
   const keep=S.answers, out=ITEMS.map(it=>{ const r={n:it.n,type:it.type,max:it.max};
     try{ S.answers={}; r.blank=earn(it); S.answers={[it.n]:keyAns(it)}; r.key=earn(it); }catch(e){ r.err=String(e&&e.message||e); } return r; });
   S.answers=keep; return out; };
+/* paper copy for the dashboard's Print buttons (only when the page sets SPITZ_PRINT; students never do): every question
+   on one long page, a name line on top; withKey marks the right choices, adds "Answer:" under each question and a key table */
+if(window.SPITZ_PRINT) window.__spitzPrint=function(withKey){
+  const esc=t=>String(t).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+  const st=document.createElement('style'); st.textContent=`html,body{height:auto!important;overflow:visible!important;background:#fff!important;color:#000}
+body>*:not(#printDoc){display:none!important}
+#printDoc{max-width:860px;margin:0 auto;padding:18px 18px 40px;font-size:15px;line-height:1.45}
+#printDoc .phead{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:flex-end;gap:10px;border-bottom:2px solid #000;padding-bottom:8px;margin-bottom:6px}
+#printDoc .phead h1{font-size:20px;margin:0}#printDoc .pline{display:flex;gap:18px;flex-wrap:wrap;font-size:14px}#printDoc .pline span{white-space:nowrap}
+#printDoc .pkt{border-collapse:collapse;font-size:13px;margin:8px 0 14px;width:100%}#printDoc .pkt td,#printDoc .pkt th{border:1px solid #999;padding:2px 6px;text-align:left;vertical-align:top}
+#printDoc .pq{display:flex;gap:10px;padding:12px 0 14px;border-bottom:1px solid #bbb;break-inside:avoid;page-break-inside:avoid}
+#printDoc .pn{font-weight:700;min-width:1.8em;font-size:16px}#printDoc .pb{flex:1;min-width:0}
+#printDoc .item{max-width:none;padding:0;margin:0}#printDoc .choice{cursor:default;box-shadow:none;background:#fff;break-inside:avoid}
+#printDoc .choice.pright{border:3px solid #1b6e3a}#printDoc .choice.pright .bubble{background:#1b6e3a;border-color:#1b6e3a;color:#fff}
+#printDoc .pkey{margin-top:8px;padding:5px 9px;border:2px solid #1b6e3a;color:#13512a;display:inline-block;font-weight:600}
+#printDoc .pmeta{font-size:12px;color:#444;margin-top:4px}
+#printDoc input,#printDoc select,#printDoc textarea{pointer-events:none}
+@media print{#printDoc{max-width:none;padding:0;font-size:12.5px;line-height:1.35}#printDoc .pq{padding:8px 0 10px}
+#printDoc .choice{padding:4px 10px!important;border-width:1px!important;margin:0!important}#printDoc .choices{gap:5px!important}
+#printDoc svg{max-width:3.3in;height:auto}#printDoc img{max-width:5.5in}#printDoc .choice.pright{border:3px solid #1b6e3a!important}}
+#printDoc .choice.pright::after{content:'✓ correct';margin-left:auto;padding-left:12px;font-weight:700;color:#13512a;white-space:nowrap}
+@page{margin:.5in}`;
+  document.head.appendChild(st);
+  const doc=document.createElement('div'); doc.id='printDoc';
+  const pts=ITEMS.reduce((s,it)=>s+(it.max||1),0);
+  doc.innerHTML=`<div class="phead"><h1>${esc(TD.title||'')}${withKey?' · Answer Key':''}</h1>`+(withKey?`<div class="pline"><span>${ITEMS.length} questions · ${pts} points</span></div>`
+    :`<div class="pline"><span>Name ______________________</span><span>Date __________</span><span>Period ____</span></div>`)+`</div>`
+    +(withKey?`<table class="pkt"><tr><th>#</th><th>Answer</th><th>Points</th><th>TEKS</th></tr>${ITEMS.map(it=>`<tr><td><b>${it.n}</b></td><td>${key(it)}</td><td>${it.max||1}</td><td>${esc(it.teks||'')}</td></tr>`).join('')}</table>`:'');
+  ITEMS.forEach(it=>{ const q=document.createElement('div'); q.className='pq'; q.innerHTML=`<div class="pn">${it.n}</div><div class="pb"></div>`;
+    const el=build(it); el.querySelectorAll('[id]').forEach(x=>{ if(!x.closest('svg')) x.removeAttribute('id'); });
+    el.querySelectorAll('[tabindex]').forEach(x=>x.removeAttribute('tabindex'));
+    if(withKey&&(it.type==='mc'||it.type==='ms')){ const ok=it.type==='mc'?[it.answer]:it.answer; el.querySelectorAll('.choice').forEach(ch=>{ if(ok.includes(+ch.dataset.k)) ch.classList.add('pright'); }); }
+    const b=q.querySelector('.pb'); b.appendChild(el);
+    if(withKey){ b.insertAdjacentHTML('beforeend',`<div class="pkey">Answer: ${key(it)}</div><div class="pmeta">${[it.teks,it.max>1?it.max+' points':''].filter(Boolean).map(esc).join(' · ')}</div>`); }
+    doc.appendChild(q); });
+  document.body.appendChild(doc); scrollTo(0,0);
+  // ready once every picture has loaded (or failed), so nothing prints blank
+  return Promise.all([...doc.querySelectorAll('img')].map(i=>i.complete?0:new Promise(r=>{ i.onload=i.onerror=r; setTimeout(r,15000); })));
+};
 function earn(it){ const a=S.answers[it.n]; if(a==null) return null; const full=score(it)===true; if(it.max===1||full) return full?it.max:0;
   let hit=0, parts=2;
   if(it.type==='boxes'){ if(it.unordered){ const left=[...it.answer]; a.forEach(q=>{ const i=left.indexOf(q); if(q!=null&&i>=0){ hit++; left.splice(i,1); } }); } else hit=it.answer.filter((q,i)=>a[i]===q).length; parts=it.answer.length; }
@@ -2214,9 +2253,10 @@ $('#logout').onclick=()=>{ try{ sessionStorage.removeItem('spitzSignedIn'); }cat
 gdApplyLook(); setZoom(0); render(applied);
 addEventListener('resize',()=>{ Object.values(panels).forEach(p=>{ if(p.hidden||p.classList.contains('max')) return; const r=p.getBoundingClientRect(); if(r.right>innerWidth) p.style.left=Math.max(0,innerWidth-r.width)+'px'; if(r.top>innerHeight-44) p.style.top=Math.max(0,innerHeight-44)+'px'; }); });
 /* the testing window never scrolls as a whole (a panel dragged past the edge must not shift the toolbar) */
-addEventListener('scroll',()=>{ if(scrollX||scrollY) scrollTo(0,0); });
-document.documentElement.addEventListener('scroll',()=>{ document.documentElement.scrollTop=0; document.documentElement.scrollLeft=0; });
-document.body.addEventListener('scroll',()=>{ document.body.scrollTop=0; document.body.scrollLeft=0; });
+const PRINTING=()=>!!document.getElementById('printDoc');   // the paper copy scrolls like a normal page
+addEventListener('scroll',()=>{ if(!PRINTING()&&(scrollX||scrollY)) scrollTo(0,0); });
+document.documentElement.addEventListener('scroll',()=>{ if(PRINTING()) return; document.documentElement.scrollTop=0; document.documentElement.scrollLeft=0; });
+document.body.addEventListener('scroll',()=>{ if(PRINTING()) return; document.body.scrollTop=0; document.body.scrollLeft=0; });
 window.__test={ITEMS,S,score,parseNum,earn};
 
 /* ================= results breakdown + answer review with TEA rationales ================= */

@@ -367,6 +367,11 @@ details summary{cursor:pointer;color:var(--blue2);font-size:13px;margin-top:8px}
         <label class="fl">Note (optional)<input id="nsNote" maxlength="60" placeholder="for example 3rd period"></label>
         <button class="btn pri" id="nsGo">Make the session</button></div>
       <div class="msg2" id="nsMsg"></div></section>
+    <section class="tcard"><h2>Print a test</h2>
+      <p class="hint">A paper copy of any test: one for students (name line on top), or one with the answers marked and a key table.</p>
+      <div class="row fr"><label class="fl">Test<select id="prTest"><option value="">Loading…</option></select></label>
+        <button class="btn" id="prPlain">Print the test</button><button class="btn" id="prKey">Print with answers</button></div>
+      <div class="msg2" id="prMsg"></div></section>
     <section class="tcard"><h2>Your sessions</h2>
       <p class="hint">Close a session when the class is done. “After they submit” is what students see once they turn the test in: just their score, their score and every question with the answers, or nothing.</p>
       <div id="msList"><p class="hint">Loading…</p></div><div class="msg2" id="msMsg"></div></section>
@@ -431,7 +436,7 @@ details summary{cursor:pointer;color:var(--blue2);font-size:13px;margin-top:8px}
     </aside>
   </div>
 </section>
-<div class="pv" id="pv" hidden><div class="pvbar"><b id="pvTitle"></b><span>Preview only: nothing is saved to your Sheet.</span><span class="sp"></span><button class="btn" id="pvClose">Close preview</button></div><iframe id="pvf" title="Test preview"></iframe></div>
+<div class="pv" id="pv" hidden><div class="pvbar"><b id="pvTitle"></b><span id="pvNote">Preview only: nothing is saved to your Sheet.</span><span class="sp"></span><button class="btn pri" id="pvPrint" hidden>Print</button><button class="btn" id="pvClose">Close preview</button></div><iframe id="pvf" title="Test preview"></iframe></div>
 <div id="tip" hidden></div>
 <div class="veil" id="veil" hidden><div class="dlg" role="alertdialog" aria-modal="true" aria-labelledby="vTitle"><h3 id="vTitle"></h3><div id="vMsg"></div><div class="btns" id="vBtns"></div></div></div>
 
@@ -538,8 +543,9 @@ async function publishedTests(){ if(MP.tests) return MP.tests;
   const r=await siteGet('tests/index.js'); if(!r.ok) throw new Error('Could not read the list of tests.');
   MP.tests=testOrder(await evalIndex(await r.text())); return MP.tests; }
 async function openMySessions(){ openPage('#mpage'); renderMs();
-  try{ const L=await publishedTests(); $('#nsTest').innerHTML='<option value="" hidden>Choose a test</option>'+L.map(t=>`<option value="${esc(t.id)}">${esc(t.title||t.id)}</option>`).join(''); }
-  catch(e){ $('#nsTest').innerHTML='<option value="">Could not load the tests</option>'; say($('#nsMsg'),errText(e),'err'); } }
+  try{ const L=await publishedTests(), o='<option value="" hidden>Choose a test</option>'+L.map(t=>`<option value="${esc(t.id)}">${esc(t.title||t.id)}</option>`).join('');
+    const keepPr=$('#prTest').value; $('#nsTest').innerHTML=o; $('#prTest').innerHTML=o; if(keepPr) $('#prTest').value=keepPr; }
+  catch(e){ $('#nsTest').innerHTML=$('#prTest').innerHTML='<option value="">Could not load the tests</option>'; say($('#nsMsg'),errText(e),'err'); } }
 function renderMs(){ const box=$('#msList'); if(!DATA){ box.innerHTML='<p class="hint">Loading…</p>'; return; }
   const admin=DATA.me&&DATA.me.admin, L=DATA.sessions.filter(s=>!teaF||s.teacher===teaF).sort((a,b)=>(b.open-a.open)||((b.created||0)-(a.created||0)));
   if(!L.length){ box.innerHTML='<p class="hint">No sessions yet. Make one above.</p>'; return; }
@@ -1000,7 +1006,7 @@ async function repoBytes(path){ const f=TP.files&&TP.files[path]; if(!f) throw n
 const repoText=async p=>DEC.decode(await repoBytes(p));
 async function ensurePlayer(){ if(TP.player) return TP.player;
   if(TP.files&&TP.files['player.html']) return TP.player=await repoText('player.html');
-  const r=await fetch(ROOT+'player.html',{cache:'no-store'}); if(!r.ok) throw new Error('Could not download player.html.'); return TP.player=await r.text(); }
+  const r=await siteGet('player.html'); if(!r.ok) throw new Error('Could not download player.html.'); return TP.player=await r.text(); }
 
 /* ---------- single-file build (same layout as the original single/ files) ---------- */
 /*<single-builder>*/
@@ -1145,7 +1151,25 @@ function dlg(title,html){ $('#vTitle').textContent=title; $('#vMsg').innerHTML=h
   const x=document.createElement('button'); x.className='btn pri'; x.textContent='OK'; x.onclick=()=>{ $('#veil').hidden=true; }; b.appendChild(x); $('#veil').hidden=false; x.focus(); }
 
 /* ---------- preview ---------- */
-function showPreview(title,html){ $('#pvTitle').textContent=title; $('#pvf').srcdoc=html; $('#pv').hidden=false; $('#pvClose').focus(); }
+function showPreview(title,html){ $('#pvTitle').textContent=title; $('#pvNote').textContent='Preview only: nothing is saved to your Sheet.'; $('#pvPrint').hidden=true; $('#pvf').srcdoc=html; $('#pv').hidden=false; $('#pvClose').focus(); }
+/* paper copy: the player draws every question on one page (window.SPITZ_PRINT), shown here with a Print button */
+async function printTest(id,withKey){ const L=await publishedTests(), t=L.find(x=>x.id===id); if(!t) throw new Error('Choose a test.');
+  const r=await siteGet('tests/'+encodeURIComponent(id)+'/test.js'); if(!r.ok) throw new Error('Could not download the test.');
+  const pages=TP.gh&&TP.gh.pages||ROOT, title=t.title||id;
+  let html=buildSingle(await ensurePlayer(),id,title,await r.text(),{});
+  html=html.replace('window.SPITZ_ROOT="";window.SPITZ_TESTS=',()=>'window.SPITZ_ROOT='+JSON.stringify(pages)+';window.SPITZ_PRINT=1;window.SPITZ_TESTS=')
+    .replace(/<\/body>\s*<\/html>\s*$/,'')+'<scr'+'ipt>addEventListener("load",function(){ window.SPITZ_TESTID='+JSON.stringify(id)+'; window.SPITZ_BASE=window.SPITZ_ROOT+"tests/"+'+JSON.stringify(id)+'+"/"; window.SPITZ_BUNDLE['+JSON.stringify(id)+'](); window.__spitzPrintReady=window.__spitzPrint('+(withKey?'true':'false')+'); });<\/scr'+'ipt></body></html>';
+  $('#pvTitle').textContent=title+(withKey?' · Answer Key':''); $('#pvNote').textContent='Check it, then press Print. In the print box, choose your printer or Save as PDF.';
+  $('#pvPrint').hidden=false; $('#pvPrint').disabled=true; $('#pvf').srcdoc=html; $('#pv').hidden=false;
+  const f=$('#pvf'); for(let i=0;i<150;i++){ await new Promise(z=>setTimeout(z,200)); try{ if(f.contentWindow.__spitzPrintReady){ await f.contentWindow.__spitzPrintReady; break; } }catch(e){} }
+  if(!f.contentWindow.__spitzPrintReady) throw new Error('The test could not be drawn for printing.');
+  $('#pvPrint').disabled=false; $('#pvPrint').focus(); }
+$('#pvPrint').onclick=()=>{ try{ $('#pvf').contentWindow.focus(); $('#pvf').contentWindow.print(); }catch(e){ dlg('Could not print',errText(e)); } };
+const prGo=withKey=>async()=>{ const id=$('#prTest').value; if(!id) return say($('#prMsg'),'Choose a test first.','err');
+  const bs=[$('#prPlain'),$('#prKey')]; bs.forEach(b=>b.disabled=true); say($('#prMsg'),'Getting the test ready to print…','');
+  try{ await printTest(id,withKey); $('#prMsg').textContent=''; }catch(e){ say($('#prMsg'),errText(e),'err'); $('#pv').hidden=true; }
+  finally{ bs.forEach(b=>b.disabled=false); } };
+$('#prPlain').onclick=prGo(false); $('#prKey').onclick=prGo(true);
 $('#pvClose').onclick=()=>{ $('#pv').hidden=true; $('#pvf').srcdoc=''; };
 async function previewRepo(id){ try{ const m=await metaOf(id), p=await ensurePlayer();
     const A='<script>window.SPITZ_ROOT="";<\/script>\n<script src="tests/'+'index.js"><\/script>';
