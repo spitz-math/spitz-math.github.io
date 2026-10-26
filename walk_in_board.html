@@ -97,6 +97,23 @@ header{ display:flex; align-items:center; gap:31px; }
 /* warm-up */
 .warm{ border-color:var(--sauce); border-width:3px; }
 .warm h2{ background:var(--sauce); color:var(--black); border-bottom:3px solid var(--black); }
+/* Checkpoint screen (K): swaps the to-do list and panels for how to get on Checkpoint, with today's Session ID */
+.cp{ display:none; flex:1; min-height:0; grid-template-columns:minmax(0,1.25fr) minmax(0,1fr); gap:31px; }
+body.cpon .cp{ display:grid; }
+body.cpon .todo, body.cpon .needs, body.cpon .split{ display:none; }
+.cp .panel h2{ background:var(--sauce); color:var(--black); border-bottom:3px solid var(--black); }
+.cpsteps{ list-style:none; margin:0; padding:40px 44px; display:flex; flex-direction:column; justify-content:space-evenly; flex:1; counter-reset:c; }
+.cpsteps li{ counter-increment:c; display:flex; align-items:center; gap:.7em; font-size:46px; font-weight:700; line-height:1.2; }
+.cpsteps li::before{ content:counter(c); flex:none; display:grid; place-items:center; width:1.6em; height:1.6em; border-radius:50%;
+  background:var(--sauce); color:var(--black); border:.1em solid var(--black); font-family:var(--font-display); font-weight:800; }
+.cpsteps b{ color:var(--cheese); }
+.cpsteps .key{ display:inline-block; padding:0 .35em; border-radius:10px; background:var(--chalk); color:var(--black); font-family:var(--font-display); font-weight:800; }
+.cpid{ flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:30px; padding:30px; text-align:center; }
+.cpid input{ width:100%; background:transparent; border:3px dashed transparent; border-radius:18px; color:var(--cheese); text-align:center; outline:none;
+  font-family:var(--font-display); font-weight:800; font-size:190px; line-height:1.1; letter-spacing:.08em; text-transform:uppercase; padding:0; }
+.cpid input:hover, .cpid input:focus{ border-color:var(--panel-edge); }
+.cpid input::placeholder{ color:var(--dust); font-size:48px; letter-spacing:0; text-transform:none; }
+.cpid p{ margin:0; font-size:30px; line-height:1.35; color:var(--dust); }
 .wbody{ flex:1; min-height:0; overflow:auto; padding:27px 35px; display:flex; flex-direction:column; gap:15px; }
 .prompt{ margin:0; font-size:41px; line-height:1.35; white-space:pre-wrap; overflow-wrap:anywhere; }
 .wimg{ max-width:100%; max-height:410px; object-fit:contain; align-self:flex-start; border-radius:8px; background:#fff; }
@@ -401,6 +418,23 @@ body.nw-open #stage .tmr-chip{ left:905px; }
       <div class="wbody" id="wbody"></div>
     </section>
   </div>
+  <div class="cp" id="cp">
+    <section class="panel">
+      <h2>Today: Checkpoint</h2>
+      <ol class="cpsteps">
+        <li><span>Go to <b>spitzmath.com</b> and click <span class="key">Checkpoint</span></span></li>
+        <li><span>Type the <b>Session ID</b> and click <span class="key">Sign In</span></span></li>
+        <li><span>Answer every question, then click <b>Submit Test</b></span></li>
+      </ol>
+    </section>
+    <section class="panel">
+      <h2>Session ID</h2>
+      <div class="cpid">
+        <input id="cpCode" maxlength="12" spellcheck="false" autocomplete="off" placeholder="Click here and type the code" aria-label="Today's Session ID">
+        <p>If it asks for your name, type your first name and last initial and pick your class period.</p>
+      </div>
+    </section>
+  </div>
 </main>
 
 <div class="corner">
@@ -471,7 +505,7 @@ body.nw-open #stage .tmr-chip{ left:905px; }
 <dialog id="dlgMenu">
   <form method="dialog" class="dlg">
     <h3>Teacher menu</h3>
-    <div class="row"><button type="button" class="pri" data-open="edit">1 · Warm-ups</button><button type="button" class="pri" data-open="needs">2 · What you'll need</button><button type="button" class="pri" data-open="setup">3 · Setup</button></div>
+    <div class="row"><button type="button" class="pri" data-open="edit">1 · Warm-ups</button><button type="button" class="pri" data-open="needs">2 · What you'll need</button><button type="button" class="pri" data-open="setup">3 · Setup</button><button type="button" class="pri" data-open="cp">4 · Checkpoint</button></div>
     <div class="row"><button value="cancel">Close</button></div>
   </form>
 </dialog>
@@ -853,12 +887,12 @@ const SAVE_URL = "https://script.google.com/macros/s/AKfycbx639KsczdlRGLuWguhvJO
     if(!local.get("pin", "") && !serverUrl()) return fn();   // first setup, before there's a PIN to ask for
     pinNext = fn; $("pinAsk").value = ""; $("pinMsg").textContent = ""; $("dlgPin").showModal();
   }
-  const MENU = { edit: openEdit, needs: openNeeds, setup: openSetup };
+  const MENU = { edit: openEdit, needs: openNeeds, setup: openSetup, cp: () => setCp(true) };
   function openMenu(){ $("dlgMenu").showModal(); }
   function menuPick(id){ $("dlgMenu").close(); MENU[id](); }
   $("dlgMenu").addEventListener("click", e => { const b = e.target.closest("[data-open]"); if(b) menuPick(b.dataset.open); });
   $("dlgMenu").addEventListener("keydown", e => {
-    const id = { "1":"edit", "2":"needs", "3":"setup", e:"edit", m:"needs", s:"setup", p:"" }[e.key.toLowerCase()];
+    const id = { "1":"edit", "2":"needs", "3":"setup", "4":"cp", e:"edit", m:"needs", s:"setup", p:"" }[e.key.toLowerCase()];
     if(id === undefined) return;
     e.preventDefault(); if(id) menuPick(id); else $("dlgMenu").close();
   });
@@ -1280,6 +1314,19 @@ function timerPanelKeys(e){
 }
 
 
+  /* Checkpoint screen (K): the code is typed right on the board (click it) and kept on this computer. Students may type it without SPITZ-. */
+  const cpIn = $("cpCode");
+  let cpOn = false;
+  cpIn.value = local.get("cpCode", "");
+  function setCp(on){
+    cpOn = !!on; document.body.classList.toggle("cpon", cpOn);
+    if(cpOn){ if(!cpIn.value) cpIn.focus(); else toast("Checkpoint. K returns to the board"); }
+    else cpIn.blur();
+  }
+  cpIn.addEventListener("input", () => { cpIn.value = cpIn.value.toUpperCase().replace(/[^A-Z0-9-]/g, ""); });
+  cpIn.addEventListener("change", () => { cpIn.value = cpIn.value.replace(/^SPITZ-?/, ""); local.set("cpCode", cpIn.value); });
+  cpIn.addEventListener("keydown", e => { if(e.key === "Enter" || e.key === "Escape"){ e.preventDefault(); cpIn.blur(); } });
+
   /* fullscreen */
   const full = () => document.fullscreenElement ? document.exitFullscreen() : document.documentElement.requestFullscreen?.();
 
@@ -1289,7 +1336,10 @@ function timerPanelKeys(e){
     if(T.panel.classList.contains("open") && timerPanelKeys(e)) return;
     if(T.done.classList.contains("show") && (e.key === "t" || e.key === "T" || e.key === "Escape")){ e.preventDefault(); tClear(); return; }
     if(drawing && penKeys(e)) return;
+    if(e.target === cpIn) return;                                 // typing today's Session ID
     const k = e.key;
+    if(cpOn && ["ArrowRight","PageDown"," ","Enter","ArrowDown","ArrowLeft","PageUp","ArrowUp","Backspace","Escape"].includes(k)){ e.preventDefault(); setCp(false); return; }   // clicker returns to the board
+    if(k === "k" || k === "K"){ e.preventDefault(); setCp(!cpOn); return; }
     if(wbOn && ["ArrowRight","PageDown"," ","Enter","ArrowDown","ArrowLeft","PageUp","ArrowUp"].includes(k)){ e.preventDefault(); setWb(false); return; }   // clicker returns from the whiteboard, like the decks
     if(["ArrowRight","PageDown"," ","Enter","ArrowDown"].includes(k)){ e.preventDefault(); reveal(true); }
     else if(["ArrowLeft","PageUp","ArrowUp","Backspace"].includes(k)){ e.preventDefault(); reveal(false); }
