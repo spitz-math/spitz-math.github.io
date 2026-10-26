@@ -1265,6 +1265,86 @@ function makeSolve(PFX){
       shuffle(q.choices); q.visual=''; delete q.check; return q; } throw new Error('generator failed: '+type); }
   return { build:build }; }
 
+function makeEvalF(PFX){
+  /* ================= QUESTION GENERATOR: evaluating functions (Kody, 2026-10-26) =================
+     Only "here's the input, find the output": f(3) from an equation, a squared term, a graph or a table.
+     Whole-number answers. Wrong choices are the usual slips (adding instead of multiplying, the sign of a
+     negative input, x² read as 2x, and reading the table or graph backwards, finding x instead of f(x)). */
+  var MINUS='−';
+  function ri(a,b){ return a+Math.floor(Math.random()*(b-a+1)); }
+  function nz(a,b){ var v; do{ v=ri(a,b); }while(v===0); return v; }
+  function pick(a){ return a[Math.floor(Math.random()*a.length)]; }
+  function shuffle(a){ for(var i=a.length-1;i>0;i--){ var j=Math.floor(Math.random()*(i+1)), t=a[i]; a[i]=a[j]; a[j]=t; } return a; }
+  function num(n){ return n<0? MINUS+(-n) : ''+n; }
+  function frac(n,d){ return '<span class="'+PFX+'-fr"><span>'+n+'</span><span>'+d+'</span></span>'; }
+  function sgn(v){ return v>0? ' + '+v : v<0? ' '+MINUS+' '+(-v) : ''; }
+  function term(a,v){ return a===1? v : a===-1? MINUS+v : num(a)+v; }
+  function par(n){ return n<0? '('+num(n)+')' : num(n); }
+  function eq(h){ return '<span class="'+PFX+'-eq">'+h+'</span>'; }
+  function F(k){ return '<span class="c-m">f('+num(k)+')</span>'; }
+  function ans(v){ return '<span class="c-ans">'+num(v)+'</span>'; }
+  function C(v,why){ return {html:num(v),val:v,why:why||'',key:'v'+v}; }
+  var W_PLUG='Put the input in for x and work it out again.';
+  /* answer first, then the slips that are whole and new, then near misses to fill four */
+  function choices(y,slips){ var out=[C(y)], seen={}; seen[y]=1;
+    if(Math.random()<0.5) seen[-y]=1;                    /* the sign slip only half the time, so the answer isn't always half of a ± pair */
+    shuffle(slips).forEach(function(s){ if(out.length<4&&s[0]!==null&&Math.round(s[0])===s[0]&&Math.abs(s[0])<=99&&!seen[s[0]]){ seen[s[0]]=1; out.push(C(s[0],s[1])); } });
+    shuffle([1,-1,2,-2,3,-3]).forEach(function(k){ if(out.length<4&&!seen[y+k]){ seen[y+k]=1; out.push(C(y+k,W_PLUG)); } });
+    return out; }
+  var FONT=' font-family="Inter,sans-serif" font-weight="800"';
+  function gridSVG(m,b){ var S=380, u=S/12, X=function(x){ return ((x+6)*u).toFixed(1); }, Y=function(y){ return ((6-y)*u).toFixed(1); }, h='';
+    for(var i=-6;i<=6;i++){ h+='<line x1="'+X(i)+'" y1="0" x2="'+X(i)+'" y2="'+S+'" stroke="#2A3142" stroke-width="2"/><line x1="0" y1="'+Y(i)+'" x2="'+S+'" y2="'+Y(i)+'" stroke="#2A3142" stroke-width="2"/>'; }
+    h+='<line x1="0" y1="'+Y(0)+'" x2="'+S+'" y2="'+Y(0)+'" stroke="#C9D1E0" stroke-width="3"/><line x1="'+X(0)+'" y1="0" x2="'+X(0)+'" y2="'+S+'" stroke="#C9D1E0" stroke-width="3"/>';
+    [-4,-2,2,4].forEach(function(n){ h+='<text x="'+X(n)+'" y="'+(+Y(0)+24)+'" text-anchor="middle" font-size="20" fill="#9BA5B8"'+FONT+'>'+num(n)+'</text>'+
+      '<text x="'+(+X(0)-8)+'" y="'+(+Y(n)+7)+'" text-anchor="end" font-size="20" fill="#9BA5B8"'+FONT+'>'+num(n)+'</text>'; });
+    h+='<line x1="'+X(-7)+'" y1="'+Y(-7*m+b)+'" x2="'+X(7)+'" y2="'+Y(7*m+b)+'" stroke="#FF4B4B" stroke-width="6" stroke-linecap="round"/>';
+    h+='<text x="'+(S-10)+'" y="30" text-anchor="end" font-size="26" fill="#FF4B4B"'+FONT+'>f</text>';
+    return '<svg class="'+PFX+'-graph" width="'+S+'" height="'+S+'" viewBox="0 0 '+S+' '+S+'" role="img" aria-label="Graph of the line f">'+h+'</svg>'; }
+  function tableSVG(rows){ var n=rows.length, h=380/(n+1), s='<rect x="0" y="0" width="380" height="'+h+'" fill="#232838"/>';
+    s+='<text x="95" y="'+(h/2+12)+'" text-anchor="middle" font-size="34" fill="#C9D1E0"'+FONT+'>x</text><text x="285" y="'+(h/2+12)+'" text-anchor="middle" font-size="34" fill="#C9D1E0"'+FONT+'>f(x)</text>';
+    rows.forEach(function(p,i){ var yy=(i+1)*h+h/2+11;
+      s+='<text x="95" y="'+yy+'" text-anchor="middle" font-size="32" fill="#F2F4F8"'+FONT+'>'+num(p[0])+'</text><text x="285" y="'+yy+'" text-anchor="middle" font-size="32" fill="#F2F4F8"'+FONT+'>'+num(p[1])+'</text>'; });
+    for(var i=1;i<=n;i++) s+='<line x1="0" y1="'+(i*h)+'" x2="380" y2="'+(i*h)+'" stroke="#343B4D" stroke-width="2"/>';
+    s+='<line x1="190" y1="0" x2="190" y2="380" stroke="#343B4D" stroke-width="3"/>';
+    return '<svg class="'+PFX+'-graph" width="380" height="380" viewBox="0 0 380 380" role="img" aria-label="Table of x and f(x) values">'+s+'</svg>'; }
+
+  var GEN={
+  efLin:function(){ var m=nz(-6,6), b=nz(-12,12), k=nz(-6,6); if(Math.abs(m)===1&&Math.random()<0.6) return null; var y=m*k+b;
+    return { topic:'From an equation', prompt:'If '+eq('f(x) = '+term(m,'x')+sgn(b))+', what is '+F(k)+'?', data:{y:y},
+      check:function(v){ return v===m*k+b; },
+      choices:choices(y,[[m+k+b,'Multiply '+num(m)+' by '+par(k)+', don’t add them.'],[m*k-b,'Keep the sign: it’s '+num(m)+' · '+par(k)+sgn(b)+'.'],[-m*k+b,'Check the sign: '+num(m)+' times '+par(k)+' is '+num(m*k)+'.'],[m*k,'Don’t forget the '+num(b)+' at the end.']]),
+      explain:'Put '+num(k)+' in for x: '+eq(num(m)+' · '+par(k)+sgn(b))+' = '+num(m*k)+sgn(b)+' = '+ans(y)+'.' }; },
+  efSq:function(){ var k=Math.random()<0.7? -ri(1,5) : ri(2,5), y, prompt, slips, explain;
+    if(Math.random()<0.6){ var b=nz(-12,12); y=k*k+b; prompt='If '+eq('f(x) = x²'+sgn(b))+', what is '+F(k)+'?';
+      slips=[[-k*k+b,par(k)+'² is '+par(k)+' · '+par(k)+' = '+(k*k)+'. A negative times a negative is positive.'],[2*k+b,'x² means x times x, not 2 times x.'],[k*k-b,'Keep the sign of the '+num(b)+'.'],[k+b,'Square the input first: '+par(k)+'² = '+(k*k)+'.']];
+      explain=par(k)+'² = '+(k*k)+', then '+(k*k)+sgn(b)+' = '+ans(y)+'.'; }
+    else { var a=pick([2,3,-2,-1,4]); y=a*k*k; prompt='If '+eq('f(x) = '+term(a,'x²'))+', what is '+F(k)+'?';
+      slips=[[(a*k)*(a*k),'Square only x, then multiply by '+num(a)+'.'],[2*a*k,'x² means x times x, not 2 times x.'],[-y,par(k)+'² is positive, so the sign comes from '+num(a)+'.'],[a*k,'Square the input first: '+par(k)+'² = '+(k*k)+'.']];
+      explain=par(k)+'² = '+(k*k)+', then '+num(a)+' · '+(k*k)+' = '+ans(y)+'.'; }
+    return { topic:'With x²', prompt:prompt, data:{y:y}, check:function(v){ return v===y; }, choices:choices(y,slips), explain:explain }; },
+  efGraph:function(){ var m=pick([1,-1,2,-2,0.5,-0.5,3,-3]), b=ri(-4,4), k=nz(-4,4), y=m*k+b; if(y!==Math.round(y)||Math.abs(y)>5) return null;
+    var back=(k-b)/m; if(Math.abs(back)>6) back=null;                          /* the x where f(x) = k: reading the graph backwards */
+    return { topic:'From a graph', prompt:'What is '+F(k)+'?', visual:gridSVG(m,b), data:{y:y},
+      check:function(v){ return v===m*k+b; },
+      choices:choices(y,[[back,'That’s the x where f(x) = '+num(k)+'. '+F(k)+' means go to x = '+num(k)+' and read the y.'],[-y,'Check the sign: the line is '+(y>0?'above':'below')+' the x-axis at x = '+num(k)+'.'],[b,'That’s f(0). Go to x = '+num(k)+'.'],[k,'That’s the input. The output is the y-value there.']]),
+      explain:'Go to x = '+num(k)+' and read the line’s y-value: '+F(k)+' = '+ans(y)+'.' }; },
+  efTable:function(){ var m=nz(-4,4), b=nz(-9,9), x0=ri(-6,0), dx=pick([1,2]), rows=[];
+    for(var i=0;i<4;i++){ var x=x0+i*dx; rows.push([x,m*x+b]); } if(rows.some(function(r){ return Math.abs(r[1])>30; })) return null;
+    var r=pick(rows), k=r[0], y=r[1], other=rows.filter(function(q){ return q[1]===k; })[0];
+    var near=rows[(rows.indexOf(r)+1)%4][1];
+    return { topic:'From a table', prompt:'What is '+F(k)+'?', visual:tableSVG(rows), data:{y:y},
+      check:function(v){ return v===y; },
+      choices:choices(y,[[other?other[0]:null,'That’s the x where f(x) = '+num(k)+'. Find '+num(k)+' in the x column.'],[near,'That’s the output for a different row. Use the row where x = '+num(k)+'.'],[k,'That’s the input. Read across to the f(x) column.'],[-y,'Check the sign in the table.']]),
+      explain:'Find x = '+num(k)+' in the table and read across: '+F(k)+' = '+ans(y)+'.' }; }
+  };
+  function build(type){ for(var tries=0;tries<400;tries++){ var q=GEN[type](); if(!q||q.choices.length!==4) continue;
+      if(new Set(q.choices.map(function(c){ return c.key; })).size!==4) continue;
+      if(!q.check(q.choices[0].val)) continue;                                                  // the answer must pass the independent check
+      if(q.choices.slice(1).some(function(c){ return q.check(c.val); })) continue;              // and no distractor may pass it
+      q.type=type; q.choices.forEach(function(c,i){ c.ok=i===0; });
+      shuffle(q.choices); q.visual=q.visual||''; delete q.check; return q; } throw new Error('generator failed: '+type); }
+  return { build:build }; }
+
 var SETS={
   mult:{ name:'Multiplication facts', make:makeMult, big:true, topics:[['f03','Facts 0–3',['Facts 0–3'],1],['f46','Facts 4–6',['Facts 4–6'],2],['f79','Facts 7–9',['Facts 7–9'],3],['f1012','Facts 10–12',['Facts 10–12'],2]] },
   /* 'yint' was its own topic until 2026-10-19, when Kody merged it into 'slope'; alias keeps old links and saves working */
@@ -1282,7 +1362,8 @@ var SETS={
   stdform:{ name:'Standard form', make:makeStdForm, topics:[['x','x-intercept',['sfX']],['y','y-intercept',['sfY']]] },
   slide:{ name:'Slide and Slice', make:makeSlideSlice, topics:[['slide','Slide',['ssSlide']],['slice','Slice',['ssSlice']],['both','Both steps',['ssBoth']],['slope','Find the slope',['ssSlope']]] },
   perp:{ name:'Parallel & perpendicular', make:makeParPerp, topics:[['par','Parallel slopes',['ppPar']],['perp','Perpendicular slopes',['ppPerp']],['pair','Spot the pair',['ppPair']]] },
-  solve:{ name:'Solving equations', make:makeSolve, topics:[['two','Two-step',['slTwo']],['dist','Distributing',['slDist']],['both','Both sides',['slBoth']],['comb','Combine like terms',['slCombine']]] }
+  solve:{ name:'Solving equations', make:makeSolve, topics:[['two','Two-step',['slTwo']],['dist','Distributing',['slDist']],['both','Both sides',['slBoth']],['comb','Combine like terms',['slCombine']]] },
+  evalf:{ name:'Evaluating functions', make:makeEvalF, topics:[['eq','From an equation',['efLin']],['sq','With x²',['efSq']],['graph','From a graph',['efGraph']],['table','From a table',['efTable']]] }
 };
 
 /* Teacher settings: Mr. Spitz changes these on topics.html (the teacher control panel), which saves data/topics.json in the repo.
