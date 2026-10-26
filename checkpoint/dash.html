@@ -1413,6 +1413,7 @@ function BANKSANDBOX(){   // runs inside the sandboxed frame; must not use anyth
 const BK={frame:null, tok:null, ready:false, cat:null, wait:{}, rid:0, draft:[], from:''};
 const CATNAMES={1:'Number and Algebraic Methods',2:'Describing and Graphing Linear Functions, Equations, and Inequalities',3:'Writing and Solving Linear Functions, Equations, and Inequalities',4:'Quadratic Functions and Equations',5:'Exponential Functions and Equations'};
 const BANKURL=()=>(TP.gh&&TP.gh.pages||ROOT).replace(/checkpoint\/?$/,'')+'warmup/index.html';
+const BANKRAW=()=>(TP.gh&&TP.gh.raw||'https://raw.githubusercontent.com/spitz-math/spitz-math.github.io/main/checkpoint/').replace(/checkpoint\/?$/,'')+'warmup/index.html';
 function bankSay(t,cls){ say($('#bkMsg'),t,cls); }
 async function bankLoad(html,from){
   const a=html.search(/<script>/i), b=html.lastIndexOf('</'+'script>');
@@ -1497,8 +1498,10 @@ async function qbLoad(){ over('Loading the question bank and your released tests
   $('#bkHideUsed').checked=!!store('qbHideUsed');
   QB.ready=true; fillFilters(); $('#bkFilters').hidden=false; refreshView(); }
 async function bankOpen(){ if(BK.ready) return; bankSay('Loading the question bank from GitHub…');
-  try{ const r=await fetch(BANKURL()+'?t='+Date.now(),{cache:'no-store'}); if(!r.ok) throw new Error(r.status===404?'notfound':'HTTP '+r.status);
-    await bankLoad(await r.text(),'GitHub (warmup/index.html)'); bankReady(); }
+  try{ let txt=null, err=null;   // raw.githubusercontent.com first: no redirect to spitzmath.com (a browser can block that hop), then the site itself
+    for(const u of [BANKRAW(), BANKURL()+'?t='+Date.now()]){ try{ const r=await fetch(u,{cache:'no-store'}); if(r.ok){ txt=await r.text(); break; } err=err||new Error(r.status===404?'notfound':'HTTP '+r.status); }catch(e){ err=e; } }
+    if(txt===null) throw err;
+    await bankLoad(txt,'GitHub (warmup/index.html)'); bankReady(); }
   catch(e){ bankSay(e.message==='notfound'?'The question bank file is not on GitHub yet. Upload it to a <b>warmup</b> folder in spitz-math.github.io, named <b>index.html</b>, or choose the file:':'Could not load the question bank: '+errText(e)+' You can also choose the file:', e.message==='notfound'?'':'err');
     $('#bkFileRow').hidden=false; } }
 $('#bkFileBtn').onclick=()=>$('#bkFile').click();
