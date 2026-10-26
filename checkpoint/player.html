@@ -2434,7 +2434,8 @@ const newer=(a,b)=>!!(a&&a.state&&(!b||!b.state||(a.state.rev||0)>(b.state.rev||
 $('#startForm').addEventListener('submit',async e=>{ e.preventDefault();
   const nm=$('#stuName').value.trim(), pd=$('#stuPeriod').value;
   if(APP){
-    const ses=$('#stuSession').value.trim().toUpperCase(), asked=!$('#siNameRow').hidden;
+    // students may type just the code (3KG7) or skip the dash; every Session ID is stored as SPITZ-XXXX
+    const raw=$('#stuSession').value.toUpperCase().replace(/[^A-Z0-9]/g,''), ses=raw?'SPITZ-'+raw.replace(/^SPITZ/,''):'', asked=!$('#siNameRow').hidden;
     if(!ses) return err('Enter the Session ID.',$('#stuSession'));
     if(asked&&(!nm||!pd)) return err('Type your first name or initials and choose your class period.',!nm?$('#stuName'):$('#stuPeriod'));
     $('#siErr').hidden=true; $('#siBtn').disabled=true;
