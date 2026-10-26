@@ -2376,7 +2376,8 @@ if(window.SPITZ_BROWSE){ window.SpitzTest({id:'bank',title:'Question bank',cours
 const $=s=>document.querySelector(s);
 const APP=window.SPITZ_APP||null;
 const params=new URLSearchParams(location.search);
-const allTests=window.SPITZ_TESTS||[], tests=allTests.filter(t=>!t.hidden);   // hidden tests stay reachable with ?test=<id>
+const testOrder=L=>{ const yr=t=>{ const m=/^alg1-(\d{4})$/.exec(t.id); return m?+m[1]:null; }; return L.map((t,i)=>({t,i})).sort((a,b)=>{ const A=yr(a.t), B=yr(b.t); if(A!=null&&B!=null) return B-A; if(A!=null) return -1; if(B!=null) return 1; return a.i-b.i; }).map(o=>o.t); }; // released tests newest year first, then the rest in list order
+const allTests=testOrder(window.SPITZ_TESTS||[]), tests=allTests.filter(t=>!t.hidden);   // hidden tests stay reachable with ?test=<id>
 const fixed=APP?null:(params.get('test')||(tests.length===1?tests[0].id:null));
 const pick=$('#stuTest'), shown=$('#siTestName');
 if(APP){ pick.closest('.sif').hidden=true; $('#siSesRow').hidden=false; }

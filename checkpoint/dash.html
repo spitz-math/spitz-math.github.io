@@ -851,7 +851,8 @@ async function versions(list,over){   // v = short hash of every file in the tes
     if(over&&over.id===t.id) parts=over.parts; else parts=Object.keys(TP.files||{}).filter(p=>p.startsWith(pre)).map(p=>p+':'+TP.files[p].sha).sort();
     if(parts&&parts.length){ const h=await gitSha(ENC.encode(parts.join('\n'))); t.v=h.slice(0,10); } }
   return list; }
-function indexText(list){ const js=v=>JSON.stringify(v).replace(/</g,'\\u003c');
+const testOrder=L=>{ const yr=t=>{ const m=/^alg1-(\d{4})$/.exec(t.id); return m?+m[1]:null; }; return L.map((t,i)=>({t,i})).sort((a,b)=>{ const A=yr(a.t), B=yr(b.t); if(A!=null&&B!=null) return B-A; if(A!=null) return -1; if(B!=null) return 1; return a.i-b.i; }).map(o=>o.t); }; // released tests newest year first, then the rest in list order
+function indexText(list){ list=testOrder(list); const js=v=>JSON.stringify(v).replace(/</g,'\\u003c');
   return '/* List of tests the player offers on the sign-in screen. The dashboard\'s Tests page keeps this file up to date.\n'
     +'   hidden:true keeps a test off the list; a Session ID (or ?test=<id>) still opens it. */\nwindow.SPITZ_TESTS=[\n'
     +list.map(t=>'  {'+Object.keys(t).filter(k=>t[k]!==undefined&&!(k==='hidden'&&!t[k])).map(k=>(/^[A-Za-z_$][\w$]*$/.test(k)?k:js(k))+':'+js(t[k])).join(', ')+'}').join(',\n')+'\n];\n'; }
@@ -894,7 +895,7 @@ async function tpLoad(){ const g=$('#ghs'); g.className='ghs'; g.textContent='Ch
   try{ let js=null;
     if(TP.files){ if(TP.files['tests/index.js']) js=await repoText('tests/index.js'); }
     else { const r=await fetch(ROOT+'tests/index.js?t='+Date.now(),{cache:'no-store'}); if(r.ok) js=await r.text(); }
-    TP.index=js?await evalIndex(js):[]; }catch(e){ TP.index=[]; $('#tlMsg').innerHTML='<span class="err">'+errText(e)+'</span>'; }
+    TP.index=js?testOrder(await evalIndex(js)):[]; }catch(e){ TP.index=[]; $('#tlMsg').innerHTML='<span class="err">'+errText(e)+'</span>'; }
   renderList(); if(TP.pkg) renderPkg(); }
 
 /* ---------- your tests ---------- */
