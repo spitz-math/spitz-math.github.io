@@ -1,0 +1,34 @@
+{
+ "about": "Generated questions saved from the Spitz Checkpoint Question bank page when a test using them was published. The page reads this file; edit it only to remove a question.",
+ "items": [
+  {
+   "bid": "s:94a6918e989d4fe1",
+   "std": "A.12B",
+   "kind": "new numbers",
+   "year": 2023,
+   "q": 47,
+   "firstTest": "exit-ticket-10-26",
+   "savedAt": "2026-10-26",
+   "item": {
+    "teks": "A1.1.12.B",
+    "cat": 1,
+    "rs": "Supporting",
+    "src": "Based on STAAR Algebra I 2023, Q47 (fresh numbers)",
+    "type": "mc",
+    "label": "Multiple choice",
+    "choices": [
+     "−69",
+     "−80",
+     "38",
+     "−136"
+    ],
+    "answer": 1,
+    "stem": "<p>A function is shown: <var>g</var>(<var>x</var>) = 8(−3<var>x</var> + 8).</p><p>What is the value of <var>g</var>(6)?</p>",
+    "notes": {
+     "work": "g(6) = 8(-3(6) + 8) = 8(-10) = -80.",
+     "why": null
+    }
+   }
+  }
+ ]
+}

@@ -6,5 +6,6 @@ window.SPITZ_TESTS=[
   {id:"alg1-2024", title:"Algebra I 2024 Released Test", v:"61ddf671a3"},
   {id:"alg1-2023", title:"Algebra I 2023 Released Test", v:"081cc33468"},
   {id:"alg1-redesign", title:"Algebra 1 Redesign Practice Test", v:"e96c711076"},
-  {id:"alg1-2022", title:"Algebra I 2022 Released Test", v:"d83c96739d"}
+  {id:"alg1-2022", title:"Algebra I 2022 Released Test", v:"d83c96739d"},
+  {id:"exit-ticket-10-26", title:"Exit Ticket 10/26", v:"80c6fc2e2d"}
 ];
