@@ -368,6 +368,10 @@ details summary{cursor:pointer;color:var(--blue2);font-size:13px;margin-top:8px}
         <label class="fl">Note (optional)<input id="nsNote" maxlength="60" placeholder="for example 3rd period"></label>
         <button class="btn pri" id="nsGo">Make the session</button></div>
       <div class="msg2" id="nsMsg"></div></section>
+    <section class="tcard" id="mtCard"><h2>My tests</h2>
+      <p class="hint">Build your own test from released STAAR questions in the question bank. Your tests show up only in your own lists, not on the students' practice list.</p>
+      <div class="row"><button class="btn pri" id="mtBank">Make a test from the question bank</button><label class="hint" id="mtRevWrap" hidden><input type="checkbox" id="mtRev"> Check teachers' new tests before they can be used</label></div>
+      <div id="mtList"></div><div class="msg2" id="mtMsg"></div></section>
     <section class="tcard"><h2>Print a test</h2>
       <p class="hint">A paper copy of any test: one for students (name line on top), or one with the answers marked and a key table.</p>
       <div class="row fr"><label class="fl">Test<select id="prTest"><option value="">Loading…</option></select></label>
@@ -553,10 +557,17 @@ $('#teaSel').onchange=()=>{ teaF=$('#teaSel').value; keep('tea',teaF);
 let MP={tests:null};
 function openPage(id){ $(id).hidden=false; stop(); }
 function closePage(id){ $(id).hidden=true; startAuto(); load(); }
-async function publishedTests(){ if(MP.tests) return MP.tests;
+async function campusTests(){ if(MP.campus) return MP.campus;
   const r=await siteGet('tests/index.js'); if(!r.ok) throw new Error('Could not read the list of tests.');
-  MP.tests=testOrder(await evalIndex(await r.text())); return MP.tests; }
-async function openMySessions(){ openPage('#mpage'); if(arc){ setArc(''); selSes=null; DATA=null; await loadSoon(); } renderMs(); $('#arcCard').hidden=!(DATA&&DATA.me&&DATA.me.admin);
+  MP.campus=testOrder(await evalIndex(await r.text())); return MP.campus; }
+function myTests(force){ if(MP.myP&&!force) return MP.myP;   // one request at a time; everyone waits for the newest
+  MP.myP=call('stcMyTests',{}).catch(()=>({tests:[],review:false,admin:false,old:true})).then(r=>MP.my=r); return MP.myP; }
+async function publishedTests(){ if(MP.tests) return MP.tests;
+  const [L,M]=await Promise.all([campusTests(),myTests()]), admin=DATA&&DATA.me&&DATA.me.admin;
+  const mine=M.tests.filter(t=>t.status==='live'||admin).sort((a,b)=>(b.created||0)-(a.created||0))
+    .map(t=>({id:t.id,title:t.title+(admin&&t.by!==(DATA.me||{}).email?' · '+(t.name||t.by):'')+(t.status==='waiting'?' (waiting)':''),own:true}));
+  MP.tests=mine.concat(L); return MP.tests; }
+async function openMySessions(){ openPage('#mpage'); MP.tests=null; myTests(true).then(renderMt); if(arc){ setArc(''); selSes=null; DATA=null; await loadSoon(); } renderMs(); $('#arcCard').hidden=!(DATA&&DATA.me&&DATA.me.admin);
   try{ const L=await publishedTests(), o='<option value="" hidden>Choose a test</option>'+L.map(t=>`<option value="${esc(t.id)}">${esc(t.title||t.id)}</option>`).join('');
     const keepPr=$('#prTest').value; $('#nsTest').innerHTML=o; $('#prTest').innerHTML=o; if(keepPr) $('#prTest').value=keepPr; }
   catch(e){ $('#nsTest').innerHTML=$('#prTest').innerHTML='<option value="">Could not load the tests</option>'; say($('#nsMsg'),errText(e),'err'); } }
@@ -594,6 +605,29 @@ $('#nsGo').onclick=async()=>{ const test=$('#nsTest').value; if(!test) return sa
     dlg('New session',`<p>${esc(testTitle(test))}</p><div class="sid">${esc(short(r.id))}</div><p class="hint">Students type this Session ID to sign in. It is open now; close it in My sessions when the class is done.</p>`); }
   catch(e){ say($('#nsMsg'),'Not made: '+errText(e),'err'); }
   finally{ b.disabled=false; b.textContent='Make the session'; } };
+/* ---------- My tests: a teacher's own tests from the question bank (stcTeacherPublish); the admin approves them when review is on ---------- */
+function renderMt(){ const M=MP.my, box=$('#mtList'); if(!M) return; const admin=M.admin;
+  $('#mtRevWrap').hidden=!admin; $('#mtRev').checked=!!M.review;
+  if(M.old){ box.innerHTML='<p class="hint">Making your own tests needs the latest Code.gs.</p>'; $('#mtBank').disabled=true; return; } $('#mtBank').disabled=false;
+  const L=M.tests.slice().sort((a,b)=>((a.status==='waiting')?0:1)-((b.status==='waiting')?0:1)||(b.created||0)-(a.created||0));
+  if(!L.length){ box.innerHTML='<p class="hint" style="margin-top:8px">'+(admin?'No teacher tests yet.':'You have not made a test yet.')+'</p>'; return; }
+  box.innerHTML=`<div style="overflow-x:auto;margin-top:8px"><table class="t"><tr><th>Test</th>${admin?'<th>Teacher</th>':''}<th>Questions</th><th>Made</th><th>Status</th><th></th></tr>${L.map(t=>`<tr data-tt="${esc(t.id)}">
+    <td><b>${esc(t.title)}</b><div class="rs">${esc(t.id)}</div></td>${admin?`<td>${esc(t.name||t.by)}</td>`:''}<td>${t.n||''}</td><td class="rs">${esc(fmtDay(t.created))}</td>
+    <td><span class="op${t.status==='live'?'':' cl'}">${t.status==='live'?'Ready':'Waiting for approval'}</span></td>
+    <td><div class="acts"><button class="btn" data-tv="1">Preview</button>${admin?`<button class="btn" data-ta="${t.status==='live'?'waiting':'live'}">${t.status==='live'?'Unapprove':'Approve'}</button>`:''}<button class="btn del" data-td="1">Delete</button></div></td></tr>`).join('')}</table></div>`; }
+$('#mtList').addEventListener('click',async e=>{ const b=e.target.closest('button'); if(!b) return; const id=b.closest('tr').dataset.tt, t=MP.my.tests.find(x=>x.id===id);
+  if(b.dataset.tv) return previewRepo(id);
+  if(b.dataset.td&&!await ask('Delete '+(t?t.title:id)+'?','<p>The test comes off GitHub and out of your lists. Sessions already given with it keep their results, but students can no longer open it.</p>','Delete')) return;
+  b.disabled=true;
+  try{ MP.my=Object.assign(await call('stcTeacherTestSet',b.dataset.td?{id,remove:true}:{id,status:b.dataset.ta},90000),{}); MP.tests=null; renderMt(); openMySessions();
+    say($('#mtMsg'),b.dataset.td?'Deleted.':(b.dataset.ta==='live'?'Approved. The teacher can use it now.':'Sent back to waiting.'),'ok'); }
+  catch(x){ b.disabled=false; say($('#mtMsg'),errText(x),'err'); } });
+$('#mtRev').onchange=async()=>{ const v=$('#mtRev').checked;
+  try{ MP.my=await call('stcTeacherTestSet',{review:v}); renderMt(); say($('#mtMsg'),v?'Teachers\' new tests now wait for your approval.':'Teachers\' new tests are ready to use right away.','ok'); }
+  catch(x){ $('#mtRev').checked=!v; say($('#mtMsg'),errText(x),'err'); } };
+$('#mtBank').onclick=async()=>{ const b=$('#mtBank'); b.disabled=true;
+  try{ if(!TP.index.length) TP.index=await campusTests(); QB.mine=true; bkOpenPage(); }catch(x){ say($('#mtMsg'),errText(x),'err'); } b.disabled=false; };
+
 /* ---------- Archive: closed sessions move to a yearly archive Sheet (stcArchive copies, checks every cell, then removes them here) ---------- */
 function setArc(v){ arc=v; $('#arcSel').value=v; }
 function renderArc(){ const L=(DATA&&DATA.archives)||[]; $('#arcGrp').hidden=!L.length&&!arc;
@@ -1574,10 +1608,10 @@ const usedIn=e=>QB.usage[bidOf(e)]||[];
 const isSaved=e=>e.from!=='gen'?false:QB.saved.some(x=>x.bid===bidOf(e));
 
 /* ---------- loading ---------- */
-function bkOpenPage(){ $('#bkpage').hidden=false; $('#tpage').hidden=true; cartLoad(); renderCart(); if(!$('#bkTitle').value.trim()) $('#bkTitle').value='Algebra I Practice: '+new Date().toLocaleDateString([], {month:'short',day:'numeric'}); bkIdAuto();
+function bkOpenPage(){ $('#bkpage').hidden=false; $('#tpage').hidden=true; $('#mpage').hidden=true; $('#bkBack').textContent=QB.mine?'Back to My sessions':'Back to Tests'; cartLoad(); renderCart(); if(!$('#bkTitle').value.trim()) $('#bkTitle').value='Algebra I Practice: '+new Date().toLocaleDateString([], {month:'short',day:'numeric'}); bkIdAuto();
   if(!QB.loading) QB.loading=qbLoad(); else if(QB.ready) Promise.all([loadUsage(),loadSaved()]).then(()=>{ fillFilters(); if(!QB.cartView) refreshView(); renderCart(); }); }
-function bkClosePage(){ $('#bkpage').hidden=true; $('#bkpage').classList.remove('cartopen'); $('#tpage').hidden=false; bkNote(); }
-$('#bkOpen').onclick=bkOpenPage; $('#bkBack').onclick=bkClosePage;
+function bkClosePage(){ $('#bkpage').hidden=true; $('#bkpage').classList.remove('cartopen'); if(QB.mine){ QB.mine=false; $('#mpage').hidden=false; } else $('#tpage').hidden=false; bkNote(); }
+$('#bkOpen').onclick=()=>{ QB.mine=false; bkOpenPage(); }; $('#bkBack').onclick=bkClosePage;
 $('#bkCartBtn').onclick=()=>$('#bkpage').classList.toggle('cartopen'); $('#bkCartClose').onclick=()=>$('#bkpage').classList.remove('cartopen');
 function bkNote(){ const c=store('qbCart'), n=c&&c.cart?c.cart.length:0; $('#bkCartNote').textContent=n?'Your test so far: '+plural(n,'question')+'.':''; }
 async function qbLoad(){ over('Loading the question bank and your released tests…');
@@ -1721,7 +1755,7 @@ $('#bkShuffle').onclick=()=>{ QB.cart=shuffle(QB.cart); cartSave(); renderCart()
 $('#bkCartClear').onclick=()=>{ if(!confirm('Remove all '+QB.cart.length+' questions from your test?')) return; QB.cart=[]; cartSave(); renderCart(); if(QB.cartView) showCart(); };
 function slug(s){ return String(s).toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'').slice(0,40)||'practice'; }
 function bkIdAuto(){ const el=$('#bkId'); if(el.dataset.touched) return; let base=slug($('#bkTitle').value), id=base, n=2;
-  const taken=new Set(TP.index.map(t=>t.id).concat(testFolders())); while(taken.has(id)) id=base+'-'+(n++); el.value=id; }
+  const taken=new Set(TP.index.map(t=>t.id).concat(testFolders(),((MP.my||{}).tests||[]).map(t=>t.id))); while(taken.has(id)) id=base+'-'+(n++); el.value=id; }
 $('#bkTitle').oninput=()=>{ bkIdAuto(); cartSave(); }; $('#bkId').oninput=e=>{ e.target.dataset.touched=1; cartSave(); };
 
 /* ---------- make the test (then the normal checks, preview and publish) ---------- */
@@ -1743,6 +1777,13 @@ $('#bkMake').onclick=async()=>{ const title=$('#bkTitle').value.trim(), id=$('#b
       for(const m of s.matchAll(/@@([a-z0-9-]+)\/img\/([A-Za-z0-9._\-\/]+)@@/g)){ const rel='img/'+m[1]+'-'+m[2]; if(!assets[rel]) assets[rel]=await fileBytes('tests/'+m[1]+'/img/'+m[2]); }
       if(e.rat){ const n=i+1, got=[]; for(const lab of e.rat){ try{ assets['rat/r'+pad2(n)+lab+'.png']=await fileBytes('tests/'+e.test+'/rat/r'+pad2(e.q)+lab+'.png'); got.push(lab); }catch(x){} } if(got.length) rationale[n]=got; } }
     const testJs=testJsFor(id,title,items,Object.keys(rationale).length?rationale:null); say(msg,'');
+    if(QB.mine){ say(msg,'Publishing your test…');
+      const files=[{path:'test.js',b64:b64(ENC.encode(testJs))}].concat(Object.keys(assets).map(k=>({path:k,b64:b64(assets[k])})));
+      const r=await call('stcTeacherPublish',{id,title,n:items.length,files},240000);
+      QB.cart=[]; $('#bkTitle').value=''; $('#bkId').value=''; delete $('#bkId').dataset.touched; cartSave(); renderCart(); say(msg,'');
+      bkClosePage(); MP.tests=null; await myTests(true); renderMt(); openMySessions();
+      say($('#mtMsg'),r.status==='live'?`<b>${esc(title)}</b> is ready. Pick it under New session. Give it a minute or two before students open it.`:`<b>${esc(title)}</b> was sent to Mr. Spitzlberger. You can use it once he approves it.`,'ok');
+      $('#mtCard').scrollIntoView({behavior:'smooth',block:'start'}); btn.disabled=false; return; }
     bkClosePage();
     await checkPackage({from:'the question bank ('+plural(QB.cart.length,'question')+')', folder:id, testJs, testBytes:ENC.encode(testJs), assets, refs:{}, ignored:[], badNames:[], bankSave, fromBank:true});
     $('#pkg').scrollIntoView({behavior:'smooth',block:'start'}); }
