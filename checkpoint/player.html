@@ -2667,7 +2667,7 @@ $('#startForm').addEventListener('submit',async e=>{ e.preventDefault();
   CTX={key:'stc:file:'+id+':'+nm.toUpperCase()+':'+pd, test:id, name:nm.toUpperCase(), period:pd};
   const local=LS.get(CTX.key);
   window.__spitzPending={name:CTX.name,period:pd,state:local&&local.state,events:local&&local.events};
-  if(/[?&]readaloud=1\b/.test(location.search)) await soundCheck();
+  if(window.SPITZ_RA||/[?&]readaloud=1\b/.test(location.search)) await soundCheck();
   load(id,booted);
 });
 
