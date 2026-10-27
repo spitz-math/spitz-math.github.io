@@ -562,7 +562,7 @@ const teaList=()=>(DATA&&DATA.teachers||[]).filter(t=>(t.periods&&t.periods.leng
 const seeAll=()=>!!(DATA&&DATA.me&&(DATA.me.admin||DATA.me.view));   // Admin or View access: every teacher's sessions and students
 const canAct=sid=>{ if(!DATA||!DATA.me||DATA.me.admin) return true; const s=DATA.sessions.find(x=>x.id===sid); return !s||s.teacher===DATA.me.email; };   // View access changes only their own
 function renderMe(){ const me0=DATA.me||{admin:true,owner:true,periods:['2','8','9']}, me=Object.assign({},me0,{admin:seeAll()});   // here admin = sees every teacher (Admin or View access)
-  $('#whoLbl').textContent=me.name?me.name:''; $('#testsBtn').hidden=!me0.admin;   // Admins see the campus tests; only the owner can publish
+  $('#whoLbl').textContent=me.name?me.name:''; $('#testsBtn').hidden=!me0.admin;   // the owner and Admins
   const TL=teaList(); $('#teaGrp').hidden=!me.admin||TL.length<2;
   if(me.admin&&DATA.teachers){ if(teaF&&!TL.some(t=>t.email===teaF)) teaF='';
     const h='<option value="">All teachers</option>'+TL.map(t=>`<option value="${esc(t.email)}">${esc(t.name)}</option>`).join('');
@@ -1233,7 +1233,7 @@ async function publish(list,message,msgEl){   // list: [{path, bytes}] or [{path
   res.changed=changes.length; return res; }
 function errText(e){ const m=String(e&&e.message||e);
   if(/NOTOKEN/.test(m)) return 'No GitHub token yet. In the Sheet: Spitz Checkpoint > Set GitHub token…';
-  if(/NOTOWNER/.test(m)) return 'Only the teacher who deployed the script can publish.';
+  if(/NOTOWNER/.test(m)) return 'Only Admins can publish. If you were just made an Admin, ask Mr. Spitzlberger to paste the newest Code.gs.';
   if(m==='no answer from Google') return 'Google did not answer. Click Reload to see whether it was published, then try again if needed.';
   return esc(m.replace(/^(GHTOKEN|MOVED|Error): ?/,'')); }
 
@@ -1242,8 +1242,7 @@ function openTests(){ $('#tpage').hidden=false; stop(); tpLoad(); }
 function closeTests(){ if(TP.working&&!confirm('Publishing is still running. Leave this page anyway?')) return; $('#tpage').hidden=true; startAuto(); load(); }
 $('#testsBtn').onclick=openTests; $('#tpBack').onclick=closeTests; $('#tpReload').onclick=()=>{ if(!TP.working) tpLoad(); };
 async function tpLoad(){ const g=$('#ghs'); g.className='ghs'; g.textContent='Checking GitHub…'; TP.player=null;
-  if(DATA&&DATA.me&&DATA.me.owner===false){ TP.gh=null; TP.files=null; g.innerHTML='You can preview the campus tests and make sessions here. Only Mr. Spitzlberger can add, change or delete them.'; }
-  else try{ const st=await call('stcGhState',null,60000); TP.gh=st;
+  try{ const st=await call('stcGhState',null,60000); TP.gh=st;
     if(!st.token){ TP.files=null; g.className='ghs bad'; g.innerHTML='<b>No GitHub token yet</b>, so you can check and preview a test but not publish it. In the Sheet: <b>Spitz Checkpoint &gt; Set GitHub token…</b> then click Reload.'; }
     else { TP.files={}; st.files.forEach(f=>TP.files[f.path]=f);
       g.innerHTML='Publishing to <b>'+esc(st.repo)+'</b> · folder <b>'+esc(st.dir)+'/</b> · branch '+esc(st.branch)+' · <a href="https://github.com/'+esc(st.repo)+'/tree/'+esc(st.branch)+'/'+esc(st.dir)+'" target="_blank" rel="noopener">open on GitHub</a>'; }
