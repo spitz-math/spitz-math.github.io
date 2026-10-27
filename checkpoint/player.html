@@ -82,6 +82,41 @@ body:not([class*="th-maroon"]):not([class*="th-black"]):not([class*="th-blue"]) 
 /* ---------- page ---------- */
 .page{flex:1;min-height:0;overflow:auto;position:relative}
 .itemwrap{max-width:960px;margin:0 auto;padding:22px 16px 60px;position:relative}
+/* reading: the passage on the left, its questions on the right with a tab per question (like the state test) */
+body.rla #bRef,body.rla #bCalc,body.rla #bGD{display:none}
+#psgPane{display:none}
+.page.split{display:flex;overflow:hidden}
+.page.split #psgPane{display:flex;flex-direction:column;flex:0 0 var(--psgw,42%);min-width:0;border-right:3px solid #c9d3dc}
+.page.split .itemwrap{flex:1;min-width:0;max-width:none;margin:0;overflow:auto;padding-top:10px}
+.psgtop{display:flex;justify-content:flex-end;gap:4px;padding:6px 10px 2px}
+.psgtop button{width:34px;height:30px;border:1px solid #9aa7b4;background:var(--pg);color:var(--fg);border-radius:4px;font-size:18px;line-height:1;padding:0}
+.psgtop button:disabled{opacity:.35}
+#psgBody{flex:1;overflow:auto;padding:4px 18px 40px 12px;font-size:17px;line-height:1.45}
+#psgBody .dir{font-weight:700;margin:0 0 1.1em}
+#psgBody h3{text-align:center;font-size:21px;margin:1.2em 0 .7em;line-height:1.3}
+#psgBody h3+.by{text-align:center;margin:-.4em 0 1em}
+#psgBody .pp{position:relative;padding-left:26px;margin:0 0 1.05em;text-indent:2.6em}
+#psgBody .pp>.pn{position:absolute;left:0;top:0;text-indent:0}
+#psgBody img{display:block;max-width:100%;margin:.6em auto}
+#qtabs{display:flex;justify-content:flex-end;flex-wrap:wrap;gap:4px;margin:0 0 10px;border-bottom:1px solid var(--teal);padding-bottom:0}
+#qtabs[hidden]{display:none}
+#qtabs button{min-width:40px;height:38px;border:1px solid #c9d3dc;border-bottom:0;background:#eef2f5;color:var(--fg);font-weight:700;font-size:16px;border-radius:3px 3px 0 0}
+#qtabs button.on{background:var(--teal);color:#fff;border-color:var(--teal)}
+.stem .quote{border:2px solid #000;padding:10px 16px;margin:.4em auto 1em;max-width:90%;font-style:italic}
+/* written answers: Cambium's box with a formatting toolbar and a character count */
+.txbox{border:1px solid #9aa7b4;margin-top:8px;background:#fff;color:#000}
+.txtools{display:flex;flex-wrap:wrap;align-items:center;gap:2px;padding:5px 8px;border-bottom:1px solid #c9d3dc}
+.txtools button{min-width:32px;height:30px;border:0;background:none;font:600 16px Georgia,serif;border-radius:3px;cursor:pointer;padding:0 5px}
+.txtools button:hover{background:#e6eef4}
+.txtools .sep{width:1px;height:22px;background:#c9d3dc;margin:0 5px}
+.txed{min-height:96px;padding:8px 10px;outline:0;font-size:16px;line-height:1.4;overflow-wrap:anywhere}
+.txbox.long .txed{min-height:280px}
+.txed:focus{box-shadow:inset 0 0 0 2px #7fb2d9}
+.txcnt{border-top:1px solid #c9d3dc;text-align:right;font-size:12px;padding:3px 6px}
+.txsp{display:flex;flex-wrap:wrap;gap:3px;padding:6px 8px;border-top:1px solid #c9d3dc}
+.txsp[hidden]{display:none}
+.txsp button{min-width:30px;height:30px;border:1px solid #c9d3dc;background:#fff;border-radius:3px;font-size:16px}
+.rattxt{margin:.2em 0 .9em} .rubric{font-size:14px} .rubric li{margin:.3em 0}
 .ihead{display:flex;align-items:flex-end;border-bottom:1px solid var(--teal);gap:12px}
 .inum{position:relative;min-width:32px;height:42px;padding:0 6px;background:var(--teal);color:#fff;font-weight:700;font-size:20px;display:grid;place-items:center}
 .inum.marked{clip-path:polygon(0 0,calc(100% - 10px) 0,100% 10px,100% 100%,0 100%)}
@@ -759,7 +794,9 @@ tr.ra-now{background:none!important;outline:0}
   <div class="dotsep" aria-hidden="true"></div>
 
   <main class="page" id="page">
+    <aside id="psgPane" aria-label="Passage"><div class="psgtop"><button id="psgL" aria-label="Make the passage narrower">&#8592;</button><button id="psgR" aria-label="Make the passage wider">&#8594;</button></div><div id="psgBody"></div></aside>
     <div class="itemwrap" id="itemwrap">
+      <div id="qtabs" role="tablist" aria-label="Questions for this passage" hidden></div>
       <div class="ihead">
         <div class="inum" id="inum">1</div>
         <div class="istat" id="istat"></div>
@@ -988,6 +1025,7 @@ window.SpitzTest=function(TD){
 "use strict";
 if(window.__spitzBooted) return; window.__spitzBooted=true;
 const ITEMS=TD.items;
+if(TD.subject==='rla') document.body.classList.add('rla');
 ITEMS.forEach((it,i)=>{ it.n=i+1; it.letters=ODD; it.max=it.max||1; });
 /* ---------------- state ---------------- */
 const S={i:0,answers:{},flags:{},notes:{},name:'',modes:{hl:false,elim:false},zoomIx:1,submitted:false};
@@ -1014,6 +1052,41 @@ function coordSVG(R,{live=false,lines=[],label=true}={}){
 }
 
 /* ---------------- item builders ---------------- */
+/* ---------- reading: the passage beside its questions ---------- */
+const PSG=TD.passages||{}, PSGW=[28,35,42,50,58,66]; let psgCur=null, psgW=2;
+function psgShow(it){ const k=it.passage&&PSG[it.passage]?it.passage:null, tabs=$('#qtabs'); page.classList.toggle('split',!!k);
+  if(!k){ psgCur=null; tabs.hidden=true; return; }
+  if(psgCur!==k){ $('#psgBody').innerHTML=PSG[k]; $('#psgBody').scrollTop=0; psgCur=k; }
+  page.style.setProperty('--psgw',PSGW[psgW]+'%'); $('#psgL').disabled=psgW===0; $('#psgR').disabled=psgW===PSGW.length-1;
+  tabs.hidden=false; tabs.innerHTML=ITEMS.filter(x=>x.passage===k).map(x=>`<button role="tab" data-go="${x.n-1}" aria-selected="${x===it}" class="${x===it?'on':''}">${x.n}</button>`).join('');
+  wrap.scrollTop=0; }
+$('#qtabs').addEventListener('click',e=>{ const b=e.target.closest('[data-go]'); if(b) go(+b.dataset.go); });
+$('#psgL').onclick=()=>{ psgW=Math.max(0,psgW-1); psgShow(ITEMS[S.i]); };
+$('#psgR').onclick=()=>{ psgW=Math.min(PSGW.length-1,psgW+1); psgShow(ITEMS[S.i]); };
+/* written answer (short or extended constructed response): kept as the student's formatted text; the teacher scores it */
+const TXB=[['bold','<b>B</b>','Bold'],['italic','<i>I</i>','Italic'],['underline','<u>U</u>','Underline'],['removeFormat','T<sub>x</sub>','Clear formatting'],0,
+  ['insertOrderedList','1.','Numbered list'],['insertUnorderedList','&bull;','Bulleted list'],['outdent','&#8676;','Decrease indent'],['indent','&#8677;','Increase indent'],0,
+  ['cut','&#9986;','Cut'],['copy','&#10697;','Copy'],['paste','&#128203;','Paste'],['undo','&#8630;','Undo'],['redo','&#8631;','Redo'],0,['chars','&Omega;','Special characters']];
+const esc0=t=>String(t).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const txPlain=h=>{ const d=document.createElement('div'); d.innerHTML=h||''; return d.textContent; };
+function buildText(it,root){ const id=it.n, lim=it.limit||475, w=document.createElement('div'); w.className='txbox'+(lim>1000?' long':'');
+  w.innerHTML=`<div class="txtools" role="toolbar" aria-label="Formatting">${TXB.map(b=>b?`<button type="button" data-c="${b[0]}" title="${b[2]}" aria-label="${b[2]}">${b[1]}</button>`:'<span class="sep"></span>').join('')}</div>
+    <div class="txsp" hidden>${'á é í ó ú ñ ü Á É Í Ó Ú Ñ Ü ¿ ¡ — – “ ” ‘ ’ …'.split(' ').map(c=>`<button type="button" data-ch="${c}">${c}</button>`).join('')}</div>
+    <div class="txed" contenteditable="true" role="textbox" aria-multiline="true" aria-label="Your answer"></div><div class="txcnt"># Chars <span>0</span>/${lim}</div>`;
+  root.appendChild(w); const ed=w.querySelector('.txed'), cnt=w.querySelector('.txcnt span'), len=()=>ed.textContent.length;
+  const put=t=>{ t=String(t||'').slice(0,Math.max(0,lim-len())); if(t){ ed.focus(); document.execCommand('insertText',false,t); } };
+  const save=()=>{ cnt.textContent=len(); if(ed.textContent.trim()) S.answers[id]=ed.innerHTML; else delete S.answers[id]; refresh(); };
+  ed.addEventListener('beforeinput',e=>{ if((e.inputType==='insertText'||e.inputType==='insertReplacementText')&&e.data&&len()+e.data.length>lim) e.preventDefault(); });
+  ed.addEventListener('paste',e=>{ e.preventDefault(); put(e.clipboardData&&e.clipboardData.getData('text/plain')); });
+  ed.addEventListener('drop',e=>e.preventDefault());
+  ed.addEventListener('input',save);
+  w.querySelector('.txtools').addEventListener('mousedown',e=>e.preventDefault());
+  w.querySelector('.txsp').addEventListener('mousedown',e=>e.preventDefault());
+  w.addEventListener('click',e=>{ const b=e.target.closest('button'); if(!b) return;
+    if(b.dataset.ch){ put(b.dataset.ch); return; } const c=b.dataset.c; if(!c) return;
+    if(c==='chars'){ w.querySelector('.txsp').hidden=!w.querySelector('.txsp').hidden; return; }
+    ed.focus(); if(c==='paste'){ if(navigator.clipboard&&navigator.clipboard.readText) navigator.clipboard.readText().then(put).catch(()=>toast('Press Ctrl+V to paste.')); return; }
+    document.execCommand(c,false,null); save(); }); }
 function build(it){
   const root=document.createElement('div'); root.className='item';
   let stem=it.stem;
@@ -1083,6 +1156,7 @@ function build(it){
       w.querySelectorAll(`.gcell[data-r="${r}"]`).forEach(o=>o.setAttribute('aria-checked',a[r]===+o.dataset.c)); refresh(); }));
     root.appendChild(w);
   }
+  else if(it.type==='text'){ buildText(it,root); }
   else if(it.type==='dnd'){ buildDnD(it,root); }
   else if(it.type==='graph'){ buildGraph(it,root); }
   else if(it.type==='graphline'){ buildGraphLine(it,root); }
@@ -1098,6 +1172,7 @@ function build(it){
 }
 /* show a saved answer in a freshly built item (after a refresh or signing in again) */
 function hydrate(it,root){ const a=S.answers[it.n]; if(a==null) return;
+  if(it.type==='text'){ const e=root.querySelector('.txed'); if(e){ e.innerHTML=a; root.querySelector('.txcnt span').textContent=e.textContent.length; } return; }
   if(it.type==='mc'||it.type==='ms') root.querySelectorAll('.choice').forEach(el=>{ const k=+el.dataset.k; el.setAttribute('aria-checked',it.type==='mc'?a===k:(a||[]).includes(k)); });
   else if(it.type==='num'){ const i=root.querySelector('input.mathin'); if(i) i.value=a; }
   else if(it.type==='inline') root.querySelectorAll('select.inl').forEach(sel=>{ const v=a[+sel.dataset.k]; sel.value=v==null?'':String(v); sel.classList.toggle('filled',v!=null); });
@@ -1712,7 +1787,7 @@ function buildEqFull(it,root){
 }
 
 function answered(it){ const a=S.answers[it.n]; if(a==null) return false;
-  switch(it.type){ case 'mc': return true; case 'ms': return a.length>0; case 'num': return String(a).trim()!=='';
+  switch(it.type){ case 'text': return txPlain(a).trim()!==''; case 'mc': return true; case 'ms': return a.length>0; case 'num': return String(a).trim()!=='';
     case 'inline': case 'table': return a.every(v=>v!==null); case 'dnd': return Object.keys(a).length===it.tiles.length; case 'graph': return true; case 'graphline': return a.lines.length>0;
     case 'boxes': return a.every(q=>q!=null); case 'hotspot': case 'graphexp': return true; case 'graphineq': return a.pts.length===2&&!!a.shade; case 'cline': return a.pts.length===2; case 'graphsys': return a.g.every(L=>L.pts.length===2)&&!!a.region; case 'graphfunc': return true; case 'eq': return String(a).replace(/\//g,'').trim()!==''; } }
 function parseNum(s){ s=String(s).replace(/−/g,'-').trim(); const m=s.match(/^(-?\d+(?:\.\d+)?)\/(-?\d+(?:\.\d+)?)$/); if(m) return +m[1]/+m[2]; return s===''||isNaN(+s)?NaN:+s; }
@@ -1736,6 +1811,7 @@ function score(it){ const a=S.answers[it.n]; if(a==null) return null;
     case 'eq': return it.full?EQX.same(a,it.answer):Math.abs(parseNum(a)-it.answer)<1e-9;
     case 'graphexp': return Math.abs(a.a-it.a)<1e-6&&Math.abs(a.b-it.b)<1e-6; } }
 function show(it,a){ if(a==null) return '—';
+  if(it.type==='text') return `<div class="rvtext">${esc0(txPlain(a))}</div>`;
   switch(it.type){
     case 'mc': return `${it.letters[a]}`;
     case 'ms': return a.map(k=>it.letters[k]).join(', ')||'—';
@@ -1755,6 +1831,7 @@ function show(it,a){ if(a==null) return '—';
     case 'graphexp': return `Curve y = ${a.a.toFixed(3)}(${a.b.toFixed(3)})^x`;
     case 'graphline': return [...a.lines.map(L=>`Line through (${fmtN(L[0][0])}, ${fmtN(L[0][1])}) and (${fmtN(L[1][0])}, ${fmtN(L[1][1])})`),...a.pts.map(P=>`Point (${fmtN(P[0])}, ${fmtN(P[1])})`)].join('<br>')||'—'; } }
 function key(it){ switch(it.type){
+    case 'text': return 'Your teacher scores this answer.';
     case 'mc': return `${it.letters[it.answer]}`;
     case 'ms': return it.answer.map(k=>it.letters[k]).join(', ');
     case 'num': return String(it.answer);
@@ -1776,6 +1853,7 @@ function key(it){ switch(it.type){
    each question is answered with its own key, then left blank, and the points are reported */
 const lattice=(R,f)=>{ const P=[]; for(let x=-R;x<=R&&P.length<2;x++){ const y=f(x); if(y!=null&&Number.isInteger(y)&&Math.abs(y)<=R) P.push([x,y]); } return P; };
   const keyAns=it=>{ const R=it.R||(it.graph&&it.graph.R)||10; switch(it.type){
+    case 'text': return 'Sample answer.';
     case 'mc': return it.answer;
     case 'hotspot': return Array.isArray(it.answer)?it.answer.slice():it.answer;
     case 'ms': case 'inline': case 'table': case 'boxes': case 'graph': return it.answer.slice();
@@ -1834,7 +1912,7 @@ body>*:not(#printDoc){display:none!important}
   // ready once every picture has loaded (or failed), so nothing prints blank
   return Promise.all([...doc.querySelectorAll('img')].map(i=>i.complete?0:new Promise(r=>{ i.onload=i.onerror=r; setTimeout(r,15000); })));
 };
-function earn(it){ const a=S.answers[it.n]; if(a==null) return null; const full=score(it)===true; if(it.max===1||full) return full?it.max:0;
+function earn(it){ const a=S.answers[it.n]; if(a==null||it.type==='text') return null;   // written answers: the teacher scores them const full=score(it)===true; if(it.max===1||full) return full?it.max:0;
   let hit=0, parts=2;
   if(it.type==='boxes'){ if(it.unordered){ const left=[...it.answer]; a.forEach(q=>{ const i=left.indexOf(q); if(q!=null&&i>=0){ hit++; left.splice(i,1); } }); } else hit=it.answer.filter((q,i)=>a[i]===q).length; parts=it.answer.length; }
   else if(it.type==='ms'||(it.type==='hotspot'&&Array.isArray(it.answer))){ hit=Math.max(0,a.filter(q=>it.answer.includes(q)).length-Math.max(0,a.length-it.answer.length)); parts=it.answer.length; }
@@ -1906,12 +1984,13 @@ function stamp(){ const d=new Date(); let h=d.getHours(), m=d.getMinutes(); cons
 
 /* ---------- highlighting ---------- */
 let savedRange=null;
+const hlZone=n=>host.contains(n)||$('#psgBody').contains(n);   // the question, or a reading passage
 document.addEventListener('selectionchange',()=>{ const s=getSelection();
-  if(s.rangeCount&&!s.isCollapsed&&host.contains(s.getRangeAt(0).commonAncestorContainer)) savedRange=s.getRangeAt(0).cloneRange();
+  if(s.rangeCount&&!s.isCollapsed&&hlZone(s.getRangeAt(0).commonAncestorContainer)) savedRange=s.getRangeAt(0).cloneRange();
   else if(s.isCollapsed&&!menuOpen()) savedRange=null; });
 function applyHL(color){
   actTool('highlight');
-  const r=savedRange; if(!r||r.collapsed||!host.contains(r.commonAncestorContainer)) return false;
+  const r=savedRange; if(!r||r.collapsed||!hlZone(r.commonAncestorContainer)) return false;
   const sc=r.startContainer, so=r.startOffset, ec=r.endContainer, eo=r.endOffset;
   const rootNode=r.commonAncestorContainer.nodeType===3?r.commonAncestorContainer.parentNode:r.commonAncestorContainer;
   const tw=document.createTreeWalker(rootNode,NodeFilter.SHOW_TEXT,{acceptNode:n=>r.intersectsNode(n)&&n.nodeValue.trim()?NodeFilter.FILTER_ACCEPT:NodeFilter.FILTER_REJECT});
@@ -1949,7 +2028,7 @@ function go(i){
   const it=ITEMS[S.i]; if(S.started) actEnter(it.n);
   if(!cache[it.n]) cache[it.n]=build(it);
   host.replaceChildren(cache[it.n]);
-  page.scrollTop=0;
+  page.scrollTop=0; psgShow(it);
   drawGD(); refresh(); lrLine=0; setTimeout(placeBand,0);
 }
 $('#bBack').onclick=()=>go(S.i-1);
@@ -2422,10 +2501,10 @@ new MutationObserver(()=>{ if(!document.getElementById('resultsScreen').hidden) 
 /* --- review screen --- */
 const L='ABCDEFGH';
 let cur=0;
-function status(it){ const e=earn(it); if(e===null) return ['blank','No answer']; if(e===it.max) return ['ok','Correct']; if(e>0) return ['part','Partly correct']; return ['no','Incorrect']; }
+function status(it){ if(it.type==='text') return answered(it)?['part','Your teacher scores this']:['blank','No answer']; const e=earn(it); if(e===null) return ['blank','No answer']; if(e===it.max) return ['ok','Correct']; if(e>0) return ['part','Partly correct']; return ['no','Incorrect']; }
 function buildNav(){ const nav=document.getElementById('rvNav'); nav.innerHTML='';
   ITEMS.forEach((it,i)=>{ const [c]=status(it); const b=document.createElement('button'); b.className='rvq '+c+(i===cur?' cur':''); b.textContent=it.n; b.setAttribute('aria-label',`Question ${it.n}: ${status(it)[1]}`); b.onclick=()=>{ cur=i; render(); }; nav.appendChild(b); }); }
-function rimg(n,lab){ const R=TD.rationale&&TD.rationale[n]; const s=R&&R.includes(lab)?ASSET('rat/r'+String(n).padStart(2,'0')+lab+'.png'):null; return s?`<img class="ratimg" src="${s}" alt="TEA rationale for question ${n}${lab!=='all'?', option '+lab:''}">`:''; }
+function rimg(n,lab){ const it0=ITEMS[n-1]; if(it0&&it0.rat) return it0.rat[lab]?`<p class="rattxt">${it0.rat[lab]}</p>`:''; const R=TD.rationale&&TD.rationale[n]; const s=R&&R.includes(lab)?ASSET('rat/r'+String(n).padStart(2,'0')+lab+'.png'):null; return s?`<img class="ratimg" src="${s}" alt="TEA rationale for question ${n}${lab!=='all'?', option '+lab:''}">`:''; }
 function render(){
   buildNav(); const it=ITEMS[cur], [c,t]=status(it), a=S.answers[it.n], e=earn(it);
   const m=document.getElementById('rvMain');
@@ -2439,9 +2518,10 @@ function render(){
     why+=wrong.map(k=>`<h4 class="no">Why ${L[k]} is incorrect</h4>${rimg(it.n,L[k])}`).join('');
     const others=[...L.slice(0,it.choices.length)].map((x,k)=>k).filter(k=>!correct.includes(k)&&!wrong.includes(k));
     if(others.length) why+=`<details><summary>Why the other answer choices are incorrect</summary>${others.map(k=>`<h4 class="no">Why ${L[k]} is incorrect</h4>${rimg(it.n,L[k])}`).join('')}</details>`;
-  } else why=`<h4 class="ok">How to solve it</h4>${rimg(it.n,'all')}`;
+  } else if(it.rubric) why=`<h4 class="ok">How it is scored</h4><div class="rubric">${it.rubric}</div>`;
+  else why=`<h4 class="ok">How to solve it</h4>${rimg(it.n,'all')}`;
   /* student-friendly explanation (it.explain): used instead of TEA's pictures, which stay one click away below it */
-  const X=it.explain, hasTEA=!!(TD.rationale&&TD.rationale[it.n]); let xh='';
+  const X=it.explain, hasTEA=!!(TD.rationale&&TD.rationale[it.n])||!!it.rat; let xh='';
   if(X){ const xw=X.why||{}, chosenWrong=chosen.filter(k=>!correct.includes(k));
     if(e===null) xh+=`<div class="xwhy"><h4 class="no">You left this one blank</h4><p>Here is how to get it.</p></div>`;
     else if(e<it.max){ const parts=correct.length?chosenWrong.map(k=>xw[k]?`<p><b>${L[k]}:</b> ${xw[k]}</p>`:'').join(''):(X.miss?`<p>${X.miss}</p>`:'');
