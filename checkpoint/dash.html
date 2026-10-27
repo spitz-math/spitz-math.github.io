@@ -210,7 +210,7 @@ details.tcard[open]>summary{margin-bottom:10px}
 #bkMakeRow #bkId{width:180px;font-family:Consolas,"Courier New",monospace}
 /* tests page */
 .tpage{position:fixed;inset:0;background:var(--bg);z-index:45;display:flex;flex-direction:column}
-#teaGrp[hidden]{display:none}
+#teaGrp[hidden],#arcGrp[hidden]{display:none}
 .fl{display:flex;flex-direction:column;gap:3px;font-size:12px;font-weight:600;color:var(--mut)}
 .fl select,.fl input{font-size:14px;padding:5px 8px;border:1px solid #9fb0c8;border-radius:6px;background:#fff;color:var(--ink);min-width:0}
 .row.fr{align-items:flex-end}
@@ -322,6 +322,7 @@ details summary{cursor:pointer;color:var(--blue2);font-size:13px;margin-top:8px}
     <div class="sespanel" id="sesPanel" hidden role="dialog" aria-label="Pick sessions"><div class="sf"><input type="search" id="sesFind" placeholder="Find a Session ID, test or note" aria-label="Find a session"></div>
       <div class="seslist" id="sesList"></div>
       <div class="sesfoot"><label><input type="checkbox" id="sesClosed"> Show closed sessions</label><button class="btn" id="sesClear">Clear</button><button class="btn pri" id="sesDone">Show</button></div></div></div></div>
+  <div class="grp" id="arcGrp" hidden><span class="lab">Results from</span><select id="arcSel" aria-label="Results from"></select></div>
   <div class="grp" id="teaGrp" hidden><span class="lab">Teacher</span><select id="teaSel" aria-label="Teacher"></select></div>
   <div class="grp"><span class="lab">Period</span><div class="seg" id="perSeg"><button data-v="">All</button></div></div>
   <div class="grp"><span class="lab">Sort</span><select id="sort"><option value="name">Name</option><option value="period">Period</option><option value="status">Status</option><option value="progress">Progress</option><option value="score">Score</option><option value="input">Last activity</option></select></div>
@@ -375,6 +376,10 @@ details summary{cursor:pointer;color:var(--blue2);font-size:13px;margin-top:8px}
     <section class="tcard"><h2>Your sessions</h2>
       <p class="hint">Close a session when the class is done. “After they submit” is what students see once they turn the test in: just their score, their score and every question with the answers, or nothing.</p>
       <div id="msList"><p class="hint">Loading…</p></div><div class="msg2" id="msMsg"></div></section>
+    <section class="tcard" id="arcCard" hidden><h2>Archive old sessions</h2>
+      <p class="hint">Moves every closed session made before this day, for every teacher, into that school year's archive Sheet. The live Sheet stays small and fast. Archived results stay on the dashboard under “Results from”.</p>
+      <div class="row fr"><label class="fl">Made before<input type="date" id="arcBefore"></label><button class="btn" id="arcGo">Archive them</button></div>
+      <div class="msg2" id="arcMsg"></div></section>
   </div></div>
 </section>
 <section class="tpage" id="rpage" hidden aria-label="My roster">
@@ -491,21 +496,23 @@ function loadMeta(id){ if(META[id]) return META[id].p;
   return META[id].p; }
 
 /* ---------- state ---------- */
-let DATA=null, view=store('view')||'live', per=store('per')||'', sortBy=store('sort')||'name', qtxt='', selSes=null, sel=new Set(), openKey=null, timer=null, busy=false, cellMode='score';
+let DATA=null, view=store('view')||'live', per=store('per')||'', sortBy=store('sort')||'name', qtxt='', selSes=null, sel=new Set(), openKey=null, timer=null, busy=false, cellMode='score', arc='';
 $('#sort').value=sortBy;
 function setSeg(id,v){ document.querySelectorAll(id+' button').forEach(b=>b.setAttribute('aria-pressed',b.dataset.v===v)); }
 setSeg('#perSeg',per); setSeg('#viewSeg',view);
 
 /* ---------- load ---------- */
 async function load(){ if(busy) return; busy=true;
-  try{ const wantAns=view==='ques', r=await call('stcDash',{sessions:selSes?[...selSes]:[],answers:wantAns});
+  try{ const wantAns=view==='ques', r=await call('stcDash',{sessions:selSes?[...selSes]:[],answers:wantAns,archive:arc});
     DATA=r; DATA.skew=Date.now()-r.now; DATA.ansReq=wantAns;
-    if(!selSes){ const saved=store('ses'); const ids=new Set(r.sessions.map(s=>s.id));
+    if((r.archive||'')!==arc) return;   // the Results from choice changed while this was loading
+    if(!selSes){ const saved=arc?[]:store('ses'); const ids=new Set(r.sessions.map(s=>s.id));
       selSes=new Set((saved||[]).filter(x=>ids.has(x)));
-      if(!selSes.size){ const open=r.sessions.filter(s=>s.open&&(!teaF||s.teacher===teaF)).sort((a,b)=>(b.created||0)-(a.created||0)); if(open.length) open.filter(s=>s.test===open[0].test).forEach(s=>selSes.add(s.id)); } }
-    renderMe();
+      if(!selSes.size){ const open=r.sessions.filter(s=>(s.open||arc)&&(!teaF||s.teacher===teaF)).sort((a,b)=>(b.created||0)-(a.created||0)); if(open.length) open.filter(s=>s.test===open[0].test).forEach(s=>selSes.add(s.id)); }
+      if(arc&&selSes.size) setTimeout(loadSoon,0); }   // an archive has no open sessions, so ask again for the ones just picked
+    renderMe(); renderArc();
     await Promise.all([...new Set(r.students.map(s=>s.test).concat(r.sessions.filter(s=>selSes.has(s.id)).map(s=>s.test)))].filter(Boolean).map(loadMeta));
-    $('#upd').textContent='Updated '+new Date().toLocaleTimeString([], {hour:'numeric',minute:'2-digit',second:'2-digit'}); $('#upd').classList.remove('err');
+    $('#upd').textContent=(arc?'Archive '+arc+' (read only) · ':'')+'Updated '+new Date().toLocaleTimeString([], {hour:'numeric',minute:'2-digit',second:'2-digit'}); $('#upd').classList.remove('err');
     render();
   }catch(e){ const m=String(e&&e.message||e);
     if(/NOTOWNER/.test(m)){ $('#card').innerHTML='<div class="empty">This page is only for teachers on the Spitz Checkpoint list. Ask the Checkpoint admin to add your school email.</div>'; stop(); }
@@ -547,7 +554,7 @@ function closePage(id){ $(id).hidden=true; startAuto(); load(); }
 async function publishedTests(){ if(MP.tests) return MP.tests;
   const r=await siteGet('tests/index.js'); if(!r.ok) throw new Error('Could not read the list of tests.');
   MP.tests=testOrder(await evalIndex(await r.text())); return MP.tests; }
-async function openMySessions(){ openPage('#mpage'); renderMs();
+async function openMySessions(){ openPage('#mpage'); if(arc){ setArc(''); selSes=null; DATA=null; await loadSoon(); } renderMs(); $('#arcCard').hidden=!(DATA&&DATA.me&&DATA.me.admin);
   try{ const L=await publishedTests(), o='<option value="" hidden>Choose a test</option>'+L.map(t=>`<option value="${esc(t.id)}">${esc(t.title||t.id)}</option>`).join('');
     const keepPr=$('#prTest').value; $('#nsTest').innerHTML=o; $('#prTest').innerHTML=o; if(keepPr) $('#prTest').value=keepPr; }
   catch(e){ $('#nsTest').innerHTML=$('#prTest').innerHTML='<option value="">Could not load the tests</option>'; say($('#nsMsg'),errText(e),'err'); } }
@@ -559,9 +566,12 @@ function renderMs(){ const box=$('#msList'); if(!DATA){ box.innerHTML='<p class=
     <td><b>${esc(short(s.id))}</b></td><td>${esc(testTitle(s.test))}</td>${admin?`<td>${esc(teaName(s.teacher))}</td>`:''}<td class="rs">${esc(fmtDay(s.created))}</td><td class="rs">${esc(s.notes)}</td>
     <td><span class="op${s.open?'':' cl'}">${s.open?'Open':'Closed'}</span> <button class="btn" data-ms="${s.open?'Closed':'Open'}">${s.open?'Close':'Reopen'}</button></td>
     <td><select class="rv" aria-label="After they submit">${RV.map(v=>`<option${v===s.review?' selected':''}>${v}</option>`).join('')}</select></td>
-    <td><div class="acts"><button class="btn" data-mr="1" title="Add everyone who signed in to this session to your roster">Add to roster</button><button class="btn" data-rms="1" title="Take this session off the dashboard. Students' results stay in the Sheet.">Remove</button></div></td></tr>`).join('')}</table></div>`;
+    <td><div class="acts"><button class="btn" data-mr="1" title="Add everyone who signed in to this session to your roster">Add to roster</button>${s.open?'':'<button class="btn" data-arc="1" title="Move this session and its results to the archive Sheet. You can still see them under Results from.">Archive</button>'}<button class="btn" data-rms="1" title="Take this session off the dashboard. Students' results stay in the Sheet.">Remove</button></div></td></tr>`).join('')}</table></div>`;
   [...new Set(L.map(s=>s.test))].filter(t=>!META[t]).forEach(t=>loadMeta(t).then(()=>{ if(!$('#mpage').hidden) renderMs(); })); }
 $('#msList').addEventListener('click',async e=>{ const b=e.target.closest('button'); if(!b) return; const id=b.closest('tr').dataset.sid;
+  if(b.dataset.arc){ const s=DATA.sessions.find(x=>x.id===id);
+    if(!await ask('Archive session '+short(id)+'?',`<p>${esc(s?testTitle(s.test):'')}</p><p>Its results move to this school year's archive Sheet. You can still see them on the dashboard: Results from › the year.</p>`,'Archive')) return;
+    b.disabled=true; await runArchive({ids:[id]},$('#msMsg')); b.disabled=false; return; }
   if(b.dataset.rms){ const s=DATA.sessions.find(x=>x.id===id);
     if(!await ask('Remove session '+short(id)+'?',`<p>${esc(s?testTitle(s.test):'')}</p><p>It comes off the dashboard and students can no longer sign in with it. Results students already have stay in the Sheet (Attempts tab). This can't be undone here.</p>`,'Remove')) return;
     b.disabled=true;
@@ -582,6 +592,29 @@ $('#nsGo').onclick=async()=>{ const test=$('#nsTest').value; if(!test) return sa
     dlg('New session',`<p>${esc(testTitle(test))}</p><div class="sid">${esc(short(r.id))}</div><p class="hint">Students type this Session ID to sign in. It is open now; close it in My sessions when the class is done.</p>`); }
   catch(e){ say($('#nsMsg'),'Not made: '+errText(e),'err'); }
   finally{ b.disabled=false; b.textContent='Make the session'; } };
+/* ---------- Archive: closed sessions move to a yearly archive Sheet (stcArchive copies, checks every cell, then removes them here) ---------- */
+function setArc(v){ arc=v; $('#arcSel').value=v; }
+function renderArc(){ const L=(DATA&&DATA.archives)||[]; $('#arcGrp').hidden=!L.length&&!arc;
+  const h='<option value="">This year</option>'+L.map(l=>`<option value="${esc(l)}">Archive ${esc(l)}</option>`).join('');
+  if($('#arcSel').dataset.h!==h){ $('#arcSel').innerHTML=h; $('#arcSel').dataset.h=h; } $('#arcSel').value=arc; }
+$('#arcSel').onchange=()=>{ arc=$('#arcSel').value; selSes=null; $('#upd').textContent='Loading…'; loadSoon(); };
+async function loadSoon(){ while(busy) await new Promise(r=>setTimeout(r,100)); return load(); }
+async function runArchive(req,box){ let moved=0, done=[], busy=[], r;
+  say(box,'Archiving… copying results and checking every cell before anything leaves the live Sheet.','');
+  try{ do{ r=await call('stcArchive',req,300000); moved+=r.moved; done.push(...r.sessions); busy=r.busy||[];
+      if(r.more) say(box,`Archiving… ${done.length} session${done.length===1?'':'s'} (${moved} results) so far.`,''); } while(r.more);
+    if(DATA){ DATA.sessions=DATA.sessions.filter(x=>!done.includes(x.id)); if(r.archives) DATA.archives=r.archives; }
+    if(selSes) done.forEach(id=>selSes.delete(id)); keep('ses',[...(selSes||[])]); renderMs(); renderArc();
+    const parts=[]; if(done.length) parts.push(`Archived ${done.length===1?short(done[0]):done.length+' sessions'} (${moved} result${moved===1?'':'s'}). See them under Results from.`);
+    if(busy.length) parts.push(`${busy.map(short).join(', ')}: a student saved in the last 10 minutes, so ${busy.length===1?'it was':'they were'} left alone. Try again later.`);
+    if(!parts.length) parts.push(r.msg||'Nothing to archive.');
+    say(box,parts.join(' '),done.length?'ok':'err'); }
+  catch(e){ const m=errText(e); say(box,(done.length?`Archived ${done.length} session${done.length===1?'':'s'}, then stopped: `:'Not archived: ')+(/permission|authoriz|spreadsheets/i.test(m)?'the Apps Script needs the new spreadsheets permission (see the setup note) and the latest Code.gs. ':'')+m,'err');
+    if(done.length&&DATA){ DATA.sessions=DATA.sessions.filter(x=>!done.includes(x.id)); renderMs(); } } }
+$('#arcGo').onclick=async()=>{ const d=$('#arcBefore').value; if(!d) return say($('#arcMsg'),'Choose a day first.','err');
+  const n=DATA.sessions.filter(s=>!s.open&&s.created&&s.created<new Date(d+'T00:00').getTime()).length;
+  if(!await ask('Archive closed sessions?',`<p>Every closed session made before ${esc(new Date(d+'T00:00').toLocaleDateString())} (${n} on the dashboard now, every teacher's) moves to the archive Sheet. Open sessions stay.</p>`,'Archive')) return;
+  const b=$('#arcGo'); b.disabled=true; await runArchive({before:d+'T00:00:00'},$('#arcMsg')); b.disabled=false; };
 $('#mySesBtn').onclick=openMySessions; $('#mpBack').onclick=()=>closePage('#mpage');
 
 /* ---------- My roster: paste email, name, period (the server turns each email into the Student Code and never keeps it) ---------- */
@@ -674,7 +707,7 @@ function renderSesLabel(){ const L=DATA.sessions.filter(s=>selSes.has(s.id)), te
   else if(tests.length===1) h=`${L.length} sessions <small>· ${esc(testTitle(tests[0]))}</small>`;
   else h=`${L.length} sessions <small>· ${tests.length} tests</small>`;
   $('#sesLabel').innerHTML=h; $('#sesBtn').title=L.map(s=>s.id+' · '+testTitle(s.test)).join('\n'); }
-function renderSesList(){ const box=$('#sesList'), keepTop=box.scrollTop; const q=$('#sesFind').value.trim().toLowerCase(), showClosed=$('#sesClosed').checked||!!q;
+function renderSesList(){ const box=$('#sesList'), keepTop=box.scrollTop; const q=$('#sesFind').value.trim().toLowerCase(), showClosed=$('#sesClosed').checked||!!q||!!arc;
   const match=s=>!q||[s.id,s.test,testTitle(s.test),s.notes,teaName(s.teacher)].join(' ').toLowerCase().includes(q);
   const vis=DATA.sessions.filter(s=>(s.open||showClosed||sesDraft.has(s.id))&&match(s)&&(!teaF||s.teacher===teaF));
   const groups={}; vis.forEach(s=>(groups[s.test]=groups[s.test]||[]).push(s));
@@ -689,7 +722,7 @@ function renderSesList(){ const box=$('#sesList'), keepTop=box.scrollTop; const 
 function openSes(){ if(!DATA) return; sesDraft=new Set(selSes); $('#sesFind').value=''; $('#sesPanel').hidden=false; $('#sesBtn').setAttribute('aria-expanded','true');
   renderSesList(); const others=[...new Set(DATA.sessions.map(s=>s.test))].filter(t=>!META[t]); if(others.length) Promise.all(others.map(loadMeta)).then(()=>{ if(sesDraft) renderSesList(); renderSesLabel(); }); }
 function closeSes(apply){ if(!sesDraft) return; const d=sesDraft; sesDraft=null; $('#sesPanel').hidden=true; $('#sesBtn').setAttribute('aria-expanded','false');
-  if(apply&&(d.size!==selSes.size||[...d].some(x=>!selSes.has(x)))){ selSes=d; keep('ses',[...selSes]); render(); load(); } }
+  if(apply&&(d.size!==selSes.size||[...d].some(x=>!selSes.has(x)))){ selSes=d; if(!arc) keep('ses',[...selSes]); render(); load(); } }
 $('#sesBtn').onclick=()=>sesDraft?closeSes(true):openSes();
 $('#sesDone').onclick=()=>closeSes(true);
 $('#sesClear').onclick=()=>{ sesDraft.clear(); renderSesList(); };
