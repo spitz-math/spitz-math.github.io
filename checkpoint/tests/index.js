@@ -9,5 +9,5 @@ window.SPITZ_TESTS=[
   {id:"alg1-redesign", title:"Algebra 1 Redesign Practice Test", v:"e96c711076"},
   {id:"exit-ticket-10-26", title:"Exit Ticket 10/26", v:"80c6fc2e2d"},
   {id:"exit-ticket-10-27", title:"Exit Ticket 10/27", v:"fb57d8f5e8"},
-  {id:"rla8-2024", title:"Grade 8 Reading 2024 Released Test (items 9–27)", hidden:true}
+  {id:"rla8-2024", title:"Grade 8 Reading 2024 Released Test (items 1–27)", hidden:true}
 ];
