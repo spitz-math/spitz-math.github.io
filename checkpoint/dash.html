@@ -1245,7 +1245,7 @@ async function tpLoad(){ const g=$('#ghs'); g.className='ghs'; g.textContent='Ch
   try{ const st=await call('stcGhState',null,60000); TP.gh=st;
     if(!st.token){ TP.files=null; g.className='ghs bad'; g.innerHTML='<b>No GitHub token yet</b>, so you can check and preview a test but not publish it. In the Sheet: <b>Spitz Checkpoint &gt; Set GitHub token…</b> then click Reload.'; }
     else { TP.files={}; st.files.forEach(f=>TP.files[f.path]=f);
-      g.innerHTML='Publishing to <b>'+esc(st.repo)+'</b> · folder <b>'+esc(st.dir)+'/</b> · branch '+esc(st.branch)+' · <a href="https://github.com/'+esc(st.repo)+'/tree/'+esc(st.branch)+'/'+esc(st.dir)+'" target="_blank" rel="noopener">open on GitHub</a>'; }
+      g.innerHTML='Publishing to <b>'+esc(st.repo)+'</b> · folder <b>'+esc(st.dir)+'/</b> · branch '+esc(st.branch)+' · <a href="https://github.com/'+esc(st.repo)+'/tree/'+esc(st.branch)+'/'+esc(st.dir)+'" target="_blank" rel="noopener">open on GitHub</a>';+(st.dict!=null?' · Dictionary: '+st.dict+' new word'+(st.dict===1?'':'s')+' today (Merriam-Webster allows 1,000)':''); }
   }catch(e){ TP.gh=null; TP.files=null; g.className='ghs bad'; g.innerHTML='Could not reach GitHub: '+errText(e); }
   try{ let js=null;
     if(TP.files){ if(TP.files['tests/index.js']) js=await repoText('tests/index.js'); }

@@ -507,6 +507,15 @@ body.dragging{user-select:none}
 
 /* notes (Notepad + Sticky Notes) */
 .notewin .ph{cursor:move}
+body:not(.rla) #bDict{display:none}
+.dictwin .ph{cursor:move} .dictwin .pbody{display:flex;flex-direction:column;padding:10px 12px;overflow:auto;font-size:15px}
+.dform{display:flex;gap:6px} .dform input{flex:1;min-width:0;font-size:16px;padding:4px 6px;border:1px solid #888}
+.dform button{border:1px solid #1d4f9a;background:#1d4f9a;color:#fff;border-radius:3px;padding:3px 10px;font-size:13px}
+.dout{flex:1;overflow:auto;margin-top:8px} .dout .dcount{font-size:11px;color:#666;text-transform:uppercase;margin:0 0 6px}
+.dent{border:1px solid #ddd;background:#fafafa;padding:8px 10px;margin:0 0 8px} .dent .dhw{font:700 22px Georgia,serif}
+.dent .dpr{color:#555;margin-left:6px} .dent .dfl{font-style:italic;color:#444;margin-left:6px} .dent ol{margin:6px 0 0;padding-left:22px}
+.dsug button{display:block;border:0;background:none;color:#1d4f9a;text-decoration:underline;padding:2px 0;font-size:15px;cursor:pointer}
+.dsrc{font-size:11px;color:#666;margin:6px 0 0}
 .notewin .pbody{display:flex;flex-direction:column;padding:10px 12px 12px;gap:0}
 .notewin .imp{font-size:19px;line-height:1.15;margin:0 0 10px}
 .ntools{display:flex;gap:10px;border:1px solid #bbb;border-bottom:0;padding:6px 10px}
@@ -783,6 +792,7 @@ tr.ra-now{background:none!important;outline:0}
     <div class="tgroup" id="rightTools">
       <button class="tbtn" id="bRef" aria-pressed="false"><span class="ring"><svg viewBox="0 0 24 24"><text class="f" x="1" y="18" font-family="Arial" font-size="15" font-weight="700">XY</text><text class="f" x="17" y="9" font-family="Arial" font-size="9" font-weight="700">2</text></svg></span>References</button>
       <button class="tbtn" id="bCalc" aria-pressed="false"><span class="ring"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><rect class="s" x="5" y="2.5" width="14" height="19" rx="1.5"/><rect class="s" x="7.5" y="5" width="9" height="4"/><path class="s" d="M8 12h2M11 12h2M14 12h2M8 15h2M11 15h2M14 15h2M8 18h2M11 18h2M14 18h2" stroke-width="1.8"/></svg></span>Calculator</button>
+      <button class="tbtn" id="bDict" aria-pressed="false"><span class="ring"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linejoin="round"><path class="s" d="M12 6.5C10 5 7 4.5 3.5 5v13c3.5-.5 6.5 0 8.5 1.5 2-1.5 5-2 8.5-1.5V5C17 4.5 14 5 12 6.5zM12 6.5v13"/></svg></span>Dictionary</button>
       <button class="tbtn" id="bNote" aria-pressed="false"><span class="ring"><svg viewBox="0 0 24 24" fill="none" stroke-width="2.2" stroke-linejoin="round"><path class="s" d="M13 4H4v16h16v-9"/><path class="s" d="M18 2.5l3.5 3.5L12 15.5l-4.5 1 1-4.5z"/></svg></span>Notepad</button>
       <button class="tbtn" id="bGD" aria-pressed="false"><span class="ring"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.6"><rect class="s" x="4" y="3" width="16" height="18" rx="1"/><path class="s" d="M4 7.5h16M4 12h16M4 16.5h16M8 3v18M12 3v18M16 3v18"/></svg></span>Graph/Draw</button>
       <button class="tbtn" id="bLine" aria-pressed="false"><span class="ring"><svg viewBox="0 0 24 24" fill="none" stroke-width="2.6"><rect class="s" x="2" y="9" width="20" height="6" rx="3"/></svg></span>Line Reader</button>
@@ -838,6 +848,12 @@ tr.ra-now{background:none!important;outline:0}
 </div>
 
 <!-- Notepad / Sticky Notes (one window, two modes) -->
+<div class="panel dictwin" id="dictPanel" hidden role="dialog" aria-label="Dictionary">
+  <div class="ph"><span class="ttl">Dictionary</span><button class="pbtn" data-expand aria-label="Expand"><svg><use href="#i-expand"/></svg></button><button class="pbtn" data-close aria-label="Close"><svg><use href="#i-x"/></svg></button></div>
+  <div class="pbody"><form id="dictForm" class="dform"><input id="dictQ" type="search" autocomplete="off" spellcheck="false" aria-label="Word to look up"><button type="submit">Dictionary</button></form>
+    <div id="dictOut" class="dout" aria-live="polite"></div><p class="dsrc">Data provided by Merriam-Webster, Inc.</p></div>
+  <div class="rh" aria-label="Drag to resize"><svg><use href="#i-move"/></svg></div>
+</div>
 <div class="panel notewin" id="notePanel" hidden>
   <div class="ph"><span class="ttl" id="noteTtl">Notepad</span><button class="pbtn" id="noteX" aria-label="Close"><svg><use href="#i-x"/></svg></button></div>
   <div class="pbody">
@@ -2130,28 +2146,39 @@ const TUT={
 
 /* ---------- panels ---------- */
 let zTop=130;
-const panels={ref:$('#refPanel'),calc:$('#calcPanel'),gd:$('#gdPanel'),note:$('#notePanel')};
-const pbtn={ref:$('#bRef'),calc:$('#bCalc'),gd:$('#bGD'),note:$('#bNote')};
+const panels={ref:$('#refPanel'),calc:$('#calcPanel'),gd:$('#gdPanel'),note:$('#notePanel'),dict:$('#dictPanel')};
+const pbtn={ref:$('#bRef'),calc:$('#bCalc'),gd:$('#bGD'),note:$('#bNote'),dict:$('#bDict')};
 const placed={};
 let desmosOn=false;
 function defaultPlace(k){
   const p=panels[k], top=Math.round(innerHeight*0.30);
   if(k==='gd'){ const r=host.getBoundingClientRect(); const w=Math.min(innerWidth-40,Math.max(420,r.width*0.62)); Object.assign(p.style,{left:Math.max(10,r.left+40)+'px',top:Math.round(innerHeight*0.38)+'px',width:w+'px',height:Math.round(innerHeight*0.5)+'px'}); return; }
+  if(k==='dict'){ Object.assign(p.style,{left:'12px',top:Math.round(innerHeight*0.2)+'px',width:Math.min(innerWidth-24,380)+'px',height:Math.min(innerHeight-40,Math.round(innerHeight*0.6))+'px'}); return; }
   if(k==='note'){ const r=host.getBoundingClientRect(); const w=Math.min(innerWidth-30,520); Object.assign(p.style,{left:Math.max(10,Math.min(innerWidth-w-30,r.left+r.width*0.35))+'px',top:Math.round(innerHeight*0.28)+'px',width:w+'px',height:'auto'}); return; }
   const w=Math.min(innerWidth-40,Math.max(340,Math.round(innerWidth*0.4)));
   Object.assign(p.style,{left:'14px',top:top+'px',width:w+'px',height:(innerHeight-top-18)+'px'});
   if(k==='calc'&&!desmosOn) p.style.height='300px';
 }
+/* Dictionary (reading): the Sheet looks the word up in Merriam-Webster's Intermediate Dictionary, like the state test's */
+async function dictLook(w){ w=String(w||'').trim(); const out=$('#dictOut'); if(!w){ out.innerHTML=''; return; } $('#dictQ').value=w; out.innerHTML='<p class="dcount">Looking up…</p>';
+  let r; try{ r=await window.__spitzDict(w); }catch(x){ out.innerHTML='<p>'+(/offline/.test(String(x&&x.message))?'The dictionary works when you sign in with a Session ID.':'The dictionary is not answering right now. Try again.')+'</p>'; return; }
+  if(!r||!r.ok){ out.innerHTML='<p>'+esc0(r&&r.msg||'Try again.')+'</p>'; return; }
+  if(!r.entries.length){ out.innerHTML='<p class="dcount">Entries found: 0</p>'+(r.suggestions.length?'<p>The word you typed is not in the dictionary. Choose a spelling below.</p><div class="dsug">'+r.suggestions.map(x=>`<button type="button" data-w="${esc0(x)}">${esc0(x)}</button>`).join('')+'</div>':'<p>The word you typed is not in the dictionary.</p>'); return; }
+  out.innerHTML=`<p class="dcount">Entries found: ${r.entries.length}</p>`+r.entries.map(e=>`<div class="dent"><span class="dhw">${esc0(e.hw||e.id)}</span>${e.pr?`<span class="dpr">\\ ${esc0(e.pr)} \\</span>`:''}${e.fl?`<span class="dfl">${esc0(e.fl)}</span>`:''}<ol>${e.defs.map(d=>`<li>${esc0(d)}</li>`).join('')}</ol></div>`).join(''); }
+$('#dictForm').onsubmit=e=>{ e.preventDefault(); dictLook($('#dictQ').value); };
+$('#dictOut').addEventListener('click',e=>{ const b=e.target.closest('[data-w]'); if(b) dictLook(b.dataset.w); });
+$('#bDict').addEventListener('mousedown',()=>{ const t=String(getSelection()).trim(); if(/^[A-Za-z'-]{2,40}$/.test(t)) $('#bDict').dataset.pre=t; });
 function openPanel(k,show){
   const p=panels[k]; show=show??p.hidden;
   p.hidden=!show; if(pbtn[k]&&k!=='note') pbtn[k].setAttribute('aria-pressed',show);
-  if(show){ if(!placed[k]){ defaultPlace(k); placed[k]=true; } p.style.zIndex=++zTop; if(S.started) actTool(k==='calc'?'calculator':k==='ref'?'references':k==='gd'?'graphDraw':'notes'); }
+  if(show){ if(!placed[k]){ defaultPlace(k); placed[k]=true; } p.style.zIndex=++zTop; if(S.started) actTool(k==='calc'?'calculator':k==='ref'?'references':k==='gd'?'graphDraw':k==='dict'?'dictionary':'notes'); }
 }
 Object.keys(panels).forEach(k=>{
   const p=panels[k], h=p.querySelector('.ph'), rh=p.querySelector('.rh');
   if(k!=='note'){ pbtn[k].onclick=()=>{ if(k==='calc'&&panels.calc.hidden) showChooser(); openPanel(k); };
     p.querySelector('[data-close]').onclick=()=>openPanel(k,false);
     p.querySelectorAll('[data-expand]').forEach(b=>b.onclick=()=>p.classList.toggle('max')); }
+  if(k==='dict') pbtn.dict.addEventListener('click',()=>{ if(panels.dict.hidden) return; const w=pbtn.dict.dataset.pre; delete pbtn.dict.dataset.pre; if(w) dictLook(w); else $('#dictQ').focus(); });
   p.addEventListener('pointerdown',()=>p.style.zIndex=++zTop);
   h.addEventListener('pointerdown',e=>{ if(e.target.closest('button,select,input')||p.classList.contains('max')) return;
     const r=p.getBoundingClientRect(), ox=e.clientX-r.left, oy=e.clientY-r.top; h.setPointerCapture(e.pointerId); document.body.classList.add('dragging');
@@ -2663,10 +2690,10 @@ const booted=()=>{ if(!window.__spitzBooted) err('That test file has a problem a
 /* ---------- talking to the Sheet (app mode only) ---------- */
 /* the Apps Script loader shows this page in a frame of its own origin, so google.script.run lives on the parent page.
    Google's code only accepts objects made in its own frame, so arguments are rebuilt there and results rebuilt here. */
-function gsHost(){ const w=[window]; try{ if(parent!==window) w.push(parent); }catch(e){}
+function gsHost(){ const w=[window]; try{ if(parent!==window) w.push(parent); if(parent.parent!==parent) w.push(parent.parent); }catch(e){}   // the grandparent: the dashboard's test preview
   for(const x of w){ try{ if(x.google&&x.google.script&&x.google.script.run) return x; }catch(e){} } return null; }
 /* a call Google never answers must not freeze saving: give up after 25 s (a late answer is ignored; a repeated save is harmless) */
-function call(fn,arg){ return new Promise((res,rej)=>{ const h=APP&&gsHost(); if(!h) return rej(new Error('offline'));
+function call(fn,arg,any){ return new Promise((res,rej)=>{ const h=(APP||any)&&gsHost(); if(!h) return rej(new Error('offline'));
   let done=false; const fin=(f,v)=>{ if(done) return; done=true; clearTimeout(tm); f(v); };
   const tm=setTimeout(()=>{ console.warn('Spitz '+fn+' got no answer in 25 s'); fin(rej,new Error('timeout')); },25000);
   try{ const a=arg===undefined?null:h.JSON.parse(JSON.stringify(arg));
@@ -2675,6 +2702,7 @@ function call(fn,arg){ return new Promise((res,rej)=>{ const h=APP&&gsHost(); if
       .withFailureHandler(e=>{ const m=String(e&&e.message||e); console.warn('Spitz '+fn+' failed: '+m); fin(rej,new Error(m)); })[fn](a);
   }catch(e){ console.warn('Spitz '+fn+' could not be sent: '+(e&&e.message||e)); fin(rej,e); } }); }
 const sleep=ms=>new Promise(r=>setTimeout(r,ms));
+window.__spitzDict=w=>call('stcDict',{word:w},true);
 async function callRetry(fn,arg,tries){ let e; for(let i=0;i<tries;i++){ try{ return await call(fn,arg); }catch(x){ e=x; if(/NOSIGNIN/.test(String(x&&x.message||x))) break; if(i<tries-1) await sleep(1200*(i+1)); } } throw e; }
 
 /* ---------- copy kept on this Chromebook ---------- */
