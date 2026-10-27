@@ -211,6 +211,7 @@ details.tcard[open]>summary{margin-bottom:10px}
 /* tests page */
 .tpage{position:fixed;inset:0;background:var(--bg);z-index:45;display:flex;flex-direction:column}
 #teaGrp[hidden],#arcGrp[hidden]{display:none}
+.rac{display:inline-flex;padding:6px 10px;cursor:pointer}.rac input{width:18px;height:18px}
 .fl{display:flex;flex-direction:column;gap:3px;font-size:12px;font-weight:600;color:var(--mut)}
 .fl select,.fl input{font-size:14px;padding:5px 8px;border:1px solid #9fb0c8;border-radius:6px;background:#fff;color:var(--ink);min-width:0}
 .row.fr{align-items:flex-end}
@@ -687,10 +688,15 @@ function renderRoster(){ const L=RS.list||[], q=$('#rlFind').value.trim().toLowe
   const S=L.filter(s=>(!RS.per||s.period===RS.per)&&(!q||s.name.toLowerCase().includes(q))).sort((a,b)=>(+a.period||99)-(+b.period||99)||a.name.localeCompare(b.name));
   if(!L.length){ $('#rlList').innerHTML='<p class="hint">No students yet. Paste your class list above.</p>'; return; }
   const popts=v=>RS.periods.concat(RS.periods.includes(v)?[]:[v]).map(p=>`<option${p===v?' selected':''}>${esc(p)}</option>`).join('');
-  $('#rlList').innerHTML=`<div style="overflow-x:auto"><table class="t"><tr><th>Name</th><th>Period</th><th></th></tr>${S.map(s=>RS.edit===s.code
-    ?`<tr data-c="${esc(s.code)}"><td><input class="rn" maxlength="20" value="${esc(s.name)}" aria-label="Name"></td><td><select class="rp" aria-label="Period">${popts(s.period)}</select></td><td><div class="acts" style="gap:6px"><button class="btn pri" data-re="save">Save</button><button class="btn" data-re="cancel">Cancel</button></div></td></tr>`
-    :`<tr data-c="${esc(s.code)}"><td>${esc(s.name)}</td><td>${esc(s.period)}</td><td><div class="acts" style="gap:6px"><button class="btn" data-re="edit">Edit</button><button class="btn del" data-re="rm">Remove</button></div></td></tr>`).join('')}</table></div>`+(S.length?'':'<p class="hint">No one matches.</p>'); }
+  $('#rlList').innerHTML=`<div style="overflow-x:auto"><table class="t"><tr><th>Name</th><th>Period</th><th title="The test reads questions and answer choices out loud to this student">Read aloud</th><th></th></tr>${S.map(s=>RS.edit===s.code
+    ?`<tr data-c="${esc(s.code)}"><td><input class="rn" maxlength="20" value="${esc(s.name)}" aria-label="Name"></td><td><select class="rp" aria-label="Period">${popts(s.period)}</select></td><td>${s.ra?'Yes':''}</td><td><div class="acts" style="gap:6px"><button class="btn pri" data-re="save">Save</button><button class="btn" data-re="cancel">Cancel</button></div></td></tr>`
+    :`<tr data-c="${esc(s.code)}"><td>${esc(s.name)}</td><td>${esc(s.period)}</td><td><label class="rac"><input type="checkbox" class="ra" ${s.ra?'checked':''} aria-label="Read aloud for ${esc(s.name)}"></label></td><td><div class="acts" style="gap:6px"><button class="btn" data-re="edit">Edit</button><button class="btn del" data-re="rm">Remove</button></div></td></tr>`).join('')}</table></div>`+(S.length?'':'<p class="hint">No one matches.</p>'); }
 $('#rlFind').oninput=renderRoster;
+$('#rlList').addEventListener('change',async e=>{ const x=e.target; if(!x.classList.contains('ra')) return; const code=x.closest('tr').dataset.c, v=x.checked; x.disabled=true;
+  try{ const r=await call('stcRosterEdit',{...rsT(),code,readAloud:v}); const st=(r.roster||[]).find(t=>t.code===code);
+    if(!st||!!st.ra!==v) throw new Error('Read aloud needs the latest Code.gs (paste it, then Deploy › New version).');
+    RS.list=r.roster; renderRoster(); say($('#rlMsg'),esc(st.name)+(v?' will hear the test read aloud.':' no longer has read aloud.'),'ok'); }
+  catch(y){ x.checked=!v; x.disabled=false; say($('#rlMsg'),errText(y),'err'); } });
 $('#rlPer').addEventListener('click',e=>{ const b=e.target.closest('button'); if(!b) return; RS.per=b.dataset.v; renderRoster(); });
 $('#rlList').addEventListener('click',async e=>{ const b=e.target.closest('button[data-re]'); if(!b) return; const tr=b.closest('tr'), code=tr.dataset.c, a=b.dataset.re;
   if(a==='edit'){ RS.edit=code; renderRoster(); const i=$('#rlList input.rn'); if(i) i.focus(); return; }

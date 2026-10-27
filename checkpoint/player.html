@@ -666,6 +666,15 @@ body.browse>*:not(#browse):not(svg){display:none!important}
 .bend{max-width:1000px;margin:0 auto;padding:6px 12px 40px}
 .bnone{font:14px "Segoe UI",Roboto,Arial,sans-serif;color:#5d6b7a;text-align:center;margin:18px 0}
 @media (max-width:620px){.bcard{grid-template-columns:1fr}.bmeta{flex-direction:row;flex-wrap:wrap;align-items:center;border-right:0;border-bottom:1px solid #e3e8ef}.byr{font-size:17px}.badd{margin:0 0 0 auto}}
+/* read aloud (a roster accommodation): toolbar button + a small bar to play / stop / pick the speed */
+.tbtn#bRead[aria-pressed="true"] .ring{background:#1f5fd1!important;border-color:#1f5fd1}
+.tbtn#bRead[aria-pressed="true"] svg .s{stroke:#fff} .tbtn#bRead[aria-pressed="true"] svg .f{fill:#fff}
+.rabar{position:fixed;left:50%;bottom:18px;transform:translateX(-50%);z-index:40;display:flex;gap:8px;align-items:center;background:#fff;border:2px solid #1f5fd1;border-radius:10px;padding:8px 10px;box-shadow:0 6px 22px rgba(0,0,0,.25);font-size:14px;max-width:calc(100vw - 24px);flex-wrap:wrap}
+.rabar[hidden]{display:none}
+.rabar button{border:1px solid #1f5fd1;background:#1f5fd1;color:#fff;border-radius:6px;padding:7px 12px;font:600 14px Arial,sans-serif;cursor:pointer}
+.rabar button.alt{background:#fff;color:#1f5fd1}
+.rabar select{font-size:14px;padding:5px;border-radius:6px}
+.ra-now{background:#fff3a8!important;outline:2px solid #e6c200;border-radius:3px}
 </style>
 <style id="cursorStyle"></style>
 </head>
@@ -708,6 +717,7 @@ body.browse>*:not(#browse):not(svg){display:none!important}
       <button class="tbtn" id="bSave"><span class="ring"><svg viewBox="0 0 24 24"><path class="f" d="M3 3h15l3 3v15H3z"/><rect x="7" y="3" width="9" height="6" fill="#fff"/><rect class="f" x="12.5" y="4" width="2" height="4"/><rect x="6" y="13" width="12" height="7" fill="#fff"/></svg></span>Save</button>
     </div>
     <div class="tgroup" id="rightTools">
+      <button class="tbtn" id="bRead" aria-pressed="false" hidden><span class="ring"><svg viewBox="0 0 24 24" fill="none" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path class="f" d="M3 9h4l5-4v14l-5-4H3z" fill="#000"/><path class="s" d="M15.5 8.5a5 5 0 0 1 0 7M18.5 5.5a9 9 0 0 1 0 13"/></svg></span>Read Aloud</button>
       <button class="tbtn" id="bRef" aria-pressed="false"><span class="ring"><svg viewBox="0 0 24 24"><text class="f" x="1" y="18" font-family="Arial" font-size="15" font-weight="700">XY</text><text class="f" x="17" y="9" font-family="Arial" font-size="9" font-weight="700">2</text></svg></span>References</button>
       <button class="tbtn" id="bCalc" aria-pressed="false"><span class="ring"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><rect class="s" x="5" y="2.5" width="14" height="19" rx="1.5"/><rect class="s" x="7.5" y="5" width="9" height="4"/><path class="s" d="M8 12h2M11 12h2M14 12h2M8 15h2M11 15h2M14 15h2M8 18h2M11 18h2M14 18h2" stroke-width="1.8"/></svg></span>Calculator</button>
       <button class="tbtn" id="bNote" aria-pressed="false"><span class="ring"><svg viewBox="0 0 24 24" fill="none" stroke-width="2.2" stroke-linejoin="round"><path class="s" d="M13 4H4v16h16v-9"/><path class="s" d="M18 2.5l3.5 3.5L12 15.5l-4.5 1 1-4.5z"/></svg></span>Notepad</button>
@@ -735,6 +745,8 @@ body.browse>*:not(#browse):not(svg){display:none!important}
 </div>
 
 <div class="ctxmenu" id="ctxMenu" role="menu" hidden></div>
+<div class="rabar" id="raBar" role="toolbar" aria-label="Read aloud" hidden><button id="raPlay">&#9654; Read this question</button><button class="alt" id="raStop">&#9632; Stop</button>
+  <label>Speed <select id="raRate"><option value="0.8">Slower</option><option value="1" selected>Normal</option><option value="1.2">Faster</option></select></label></div>
 
 <!-- References -->
 <div class="panel" id="refPanel" hidden>
@@ -1884,7 +1896,7 @@ function refresh(){
   if(!$('#itemsPanel').hidden) buildPills();
 }
 function go(i){
-  closeMenu(); closeItems(); setStrike(false);
+  closeMenu(); closeItems(); setStrike(false); if(typeof raStop==='function') raStop();
   if(!$('#notePanel').hidden) closeNote(false);
   S.i=Math.max(0,Math.min(ITEMS.length-1,i));
   const it=ITEMS[S.i]; if(S.started) actEnter(it.n);
@@ -2156,6 +2168,36 @@ function moveBand(d){ const L=textLines(); lrLine=Math.max(0,Math.min(L.length-1
   if(l&&(l.bot>pr.bottom-20||l.top<pr.top+20)) page.scrollTop+=(l.top-(pr.top+pr.height/2)); placeBand(); }
 $('#bLine').onclick=()=>{ lrOn=!lrOn; if(lrOn) actTool('lineReader'); $('#bLine').setAttribute('aria-pressed',lrOn); placeBand(); };
 page.addEventListener('scroll',placeBand); addEventListener('resize',placeBand);
+/* ---------- read aloud: the browser's own voice reads the question, then each answer choice, highlighting what it reads ---------- */
+const RA={on:false, q:[], i:0, now:null};
+const raSynth=()=>window.speechSynthesis||null;
+function raVoice(){ const v=raSynth()?raSynth().getVoices():[]; return v.find(x=>/^en-US/i.test(x.lang)&&/Google/i.test(x.name))||v.find(x=>/^en-US/i.test(x.lang))||v.find(x=>/^en/i.test(x.lang))||null; }
+function raSay(el){ const c=el.cloneNode(true);
+  c.querySelectorAll('.bubble,script,style').forEach(x=>x.remove());
+  c.querySelectorAll('.frac').forEach(f=>{ const p=f.children; f.replaceWith(' '+(p[0]?p[0].textContent:'')+' over '+(p[1]?p[1].textContent:'')+' '); });
+  c.querySelectorAll('sup').forEach(x=>{ const t=x.textContent.trim(); x.replaceWith(t==='2'?' squared ':t==='3'?' cubed ':' to the power of '+t+' '); });
+  c.querySelectorAll('svg,img').forEach(x=>x.replaceWith(' '+(x.getAttribute('aria-label')||x.getAttribute('alt')||'')+' '));
+  c.querySelectorAll('select,input,textarea').forEach(x=>x.replaceWith(' blank '));
+  return c.textContent.replace(/_{2,}/g,' blank ').replace(/−/g,' minus ').replace(/√/g,' square root of ').replace(/≤/g,' less than or equal to ').replace(/≥/g,' greater than or equal to ')
+    .replace(/≠/g,' not equal to ').replace(/[×·]/g,' times ').replace(/÷/g,' divided by ').replace(/</g,' less than ').replace(/>/g,' greater than ').replace(/=/g,' equals ').replace(/°/g,' degrees ').replace(/\s+/g,' ').trim(); }
+function raBlocks(){ const root=host.querySelector('.item'), out=[]; if(!root) return out;
+  const isBlock=el=>{ const d=getComputedStyle(el).display; return d!=='inline'&&d!=='inline-block'&&d!=='inline-flex'&&d!=='contents'&&d!=='none'; };
+  const walk=el=>{ for(const c of el.children){ const cs=getComputedStyle(c); if(cs.display==='none'||cs.visibility==='hidden') continue;
+      if(c.classList.contains('choice')){ const bl=c.querySelector('.bl'), tx=c.querySelector('.ctext'); const t=raSay(tx||c); if(t) out.push([c,(bl?bl.textContent.trim()+'. ':'')+t]); continue; }
+      if(c.matches('svg,img')){ const t=c.getAttribute('aria-label')||c.getAttribute('alt'); if(t&&!/^graph$/i.test(t)) out.push([c,t]); continue; }
+      if(c.matches('table')){ c.querySelectorAll('tr').forEach(tr=>{ const t=[...tr.children].map(raSay).filter(Boolean).join(', '); if(t) out.push([tr,t]); }); continue; }
+      if([...c.children].some(k=>isBlock(k))) walk(c); else { const t=raSay(c); if(t) out.push([c,t]); } } };
+  walk(root); return out; }
+function raMark(el){ if(RA.now) RA.now.classList.remove('ra-now'); RA.now=el; if(el){ el.classList.add('ra-now'); const r=el.getBoundingClientRect(), pr=page.getBoundingClientRect(); if(r.top<pr.top||r.bottom>pr.bottom) page.scrollTop+=r.top-pr.top-40; } }
+function raStop(){ RA.q=[]; RA.i=0; const sy=raSynth(); if(sy) sy.cancel(); raMark(null); }
+function raNext(){ const sy=raSynth(); if(!sy||RA.i>=RA.q.length){ raMark(null); return; }
+  const [el,text]=RA.q[RA.i++], u=new SpeechSynthesisUtterance(text); u.rate=+$('#raRate').value||1; u.lang='en-US'; const v=raVoice(); if(v) u.voice=v;
+  const mine=RA.q; u.onend=u.onerror=()=>{ if(RA.q===mine) raNext(); }; raMark(el); sy.speak(u); }
+function raPlay(){ raStop(); RA.q=raBlocks(); RA.i=0; actTool('readAloud'); raNext(); }
+$('#raPlay').onclick=raPlay; $('#raStop').onclick=raStop;
+$('#bRead').onclick=()=>{ const on=$('#bRead').getAttribute('aria-pressed')!=='true'; $('#bRead').setAttribute('aria-pressed',on); $('#raBar').hidden=!on; if(!on) raStop(); };
+window.SpitzReadAloud=on=>{ RA.on=!!on; $('#bRead').hidden=!RA.on; if(!RA.on){ $('#raBar').hidden=true; $('#bRead').setAttribute('aria-pressed',false); raStop(); } };
+if(window.SPITZ_RA||/[?&]readaloud=1\b/.test(location.search)) window.SpitzReadAloud(true);
 host.addEventListener('click',e=>{ if(!lrOn) return; const L=textLines(); const k=L.findIndex(l=>e.clientY>=l.top-3&&e.clientY<=l.bot+3); if(k>=0){ lrLine=k; placeBand(); } });
 document.addEventListener('keydown',e=>{ if(!lrOn||e.target.closest('input,textarea,select')||!$('#veil').hidden) return;
   if(e.key==='ArrowDown'){ e.preventDefault(); moveBand(1); } if(e.key==='ArrowUp'){ e.preventDefault(); moveBand(-1); } });
@@ -2213,7 +2255,7 @@ $('#resumeBtn').onclick=()=>{ $('#pauseScreen').hidden=true; actPause(false); };
 let hold='';
 const PS_TXT={bar:$('#pauseScreen .sbar').textContent, p:$('#pauseScreen .scard p').textContent};
 function teacherHold(k){ k=k==='paused'||k==='locked'?k:''; if(k===hold||(S.submitted&&k)) return; hold=k; const ps=$('#pauseScreen');
-  if(k){ closeMenu(); closeItems(); $('#veil').hidden=true; $('#sysPanel').hidden=true;
+  if(k){ closeMenu(); closeItems(); $('#veil').hidden=true; $('#sysPanel').hidden=true; raStop();
     if(lrOn){ lrOn=false; $('#bLine').setAttribute('aria-pressed',false); placeBand(); }
     ps.querySelector('.sbar').textContent=k==='locked'?'Your test has been stopped':'Your test has been paused';
     ps.querySelector('.scard p').textContent=k==='locked'?'Your teacher has stopped your test. Your answers have been saved. Ask your teacher for help.':'Your teacher has paused your test. Your answers have been saved. Stay on this page; your test will continue when your teacher resumes it.';
@@ -2223,7 +2265,7 @@ function teacherHold(k){ k=k==='paused'||k==='locked'?k:''; if(k===hold||(S.subm
 
 /* ---------- end of test, submit, results ---------- */
 function openEnd(){
-  actLeaveAll(); logEv('endScreen');
+  actLeaveAll(); logEv('endScreen'); raStop();
   closeMenu(); closeItems(); Object.keys(panels).forEach(k=>{ if(!panels[k].hidden) openPanel(k,false); }); $('#sysPanel').hidden=true;
   if(lrOn){ lrOn=false; $('#bLine').setAttribute('aria-pressed',false); placeBand(); }
   const g=$('#endPills'); g.innerHTML='';
@@ -2492,6 +2534,7 @@ $('#startForm').addEventListener('submit',async e=>{ e.preventDefault();
     setWho(r);
     const name=String(r.name||nm).toUpperCase(), period=String(r.period||pd);
     CTX={key:'stc:'+r.sessionId+':'+r.student, sessionId:r.sessionId, student:r.student, test:r.test, name, period, control:r.control||''};
+    window.SPITZ_RA=!!r.readAloud; if(window.SpitzReadAloud) window.SpitzReadAloud(window.SPITZ_RA);   // the test engine may start after this; it reads SPITZ_RA then
     applyReview(r.review);
     const server=r.attempt?{state:r.attempt.state,events:r.attempt.events}:null, local=LS.get(CTX.key);
     const use=(server&&server.state&&server.state.submitted)?server:(newer(local,server)?local:server);
