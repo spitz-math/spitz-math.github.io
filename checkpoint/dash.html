@@ -386,6 +386,8 @@ details summary{cursor:pointer;color:var(--blue2);font-size:13px;margin-top:8px}
   <header class="topbar"><div class="wm">SPITZ <span>CHECKPOINT</span><small>My roster</small></div><div class="sp"></div>
     <button class="btn pri" id="rpBack">Back to dashboard</button></header>
   <div class="tbody"><div class="tcol">
+    <section class="tcard" id="rsForCard" hidden><div class="row fr" style="margin-top:0"><label class="fl">Roster for<select id="rsFor"></select></label></div>
+      <p class="hint">You can load and fix any teacher's roster. Teachers see only their own.</p></section>
     <section class="tcard"><h2>Add students</h2>
       <p class="hint">Students on your roster only type the Session ID; their name and period come from here. Paste one student per line: <b>school email, first name or initials, class period</b>. You can copy the three columns straight from a spreadsheet. Each email is turned into the student’s private code right away and is never saved.</p>
       <textarea id="rsPaste" spellcheck="false" placeholder="jsmith123@misdtx.net, Jaylen S, 3&#10;mlopez456@misdtx.net, Maria L, 3"></textarea>
@@ -617,10 +619,19 @@ $('#arcGo').onclick=async()=>{ const d=$('#arcBefore').value; if(!d) return say(
   const b=$('#arcGo'); b.disabled=true; await runArchive({before:d+'T00:00:00'},$('#arcMsg')); b.disabled=false; };
 $('#mySesBtn').onclick=openMySessions; $('#mpBack').onclick=()=>closePage('#mpage');
 
+$('#rsFor').onchange=()=>{ RS.for=$('#rsFor').value; RS.edit=null; RS.per=''; $('#rlMsg').textContent=''; $('#rsMsg').textContent=''; openRoster(); };
 /* ---------- My roster: paste email, name, period (the server turns each email into the Student Code and never keeps it) ---------- */
-let RS={list:null, periods:[], per:'', edit:null};
+let RS={list:null, periods:[], per:'', edit:null, for:''};
+const rsT=()=>RS.for?{teacher:RS.for}:{};
 async function openRoster(){ openPage('#rpage'); $('#rlList').innerHTML='<p class="hint">Loading…</p>';
-  try{ const r=await call('stcRoster',{}); RS.list=r.roster; RS.periods=r.periods; $('#rsPer').textContent='Your class periods: '+r.periods.join(', '); renderRoster(); }
+  const T=DATA&&DATA.me&&DATA.me.admin?(DATA.teachers||[]):[]; $('#rsForCard').hidden=!T.length;
+  if(T.length){ const h='<option value="">Me</option>'+T.filter(t=>t.email!==DATA.me.email).map(t=>`<option value="${esc(t.email)}">${esc(t.name||t.email)}</option>`).join('');
+    if($('#rsFor').dataset.h!==h){ $('#rsFor').innerHTML=h; $('#rsFor').dataset.h=h; } if(![...$('#rsFor').options].some(o=>o.value===RS.for)) RS.for=''; $('#rsFor').value=RS.for; }
+  else RS.for='';
+  const nm=RS.for?teaName(RS.for):''; $('#rsAdd').textContent=nm?'Add to '+nm+'’s roster':'Add to my roster';
+  $('#rsAdd').disabled=false;
+  try{ const r=await call('stcRoster',rsT());
+    if(RS.for&&r.teacher!==RS.for){ $('#rsAdd').disabled=true; $('#rlList').innerHTML=''; return say($('#rlMsg'),'Loading other teachers’ rosters needs the latest Code.gs (paste it, then Deploy › New version).','err'); } RS.list=r.roster; RS.periods=r.periods; $('#rsPer').textContent=(nm?nm+'’s':'Your')+' class periods: '+r.periods.join(', '); renderRoster(); }
   catch(e){ $('#rlList').innerHTML=''; say($('#rlMsg'),errText(e),'err'); } }
 function parsePaste(t){ const out=[], skip=[];
   String(t).split(/\r?\n/).forEach((ln,i)=>{ if(!ln.trim()) return; const parts=ln.split(/\t|,|;/).map(x=>x.trim()).filter(Boolean);
@@ -630,7 +641,7 @@ function parsePaste(t){ const out=[], skip=[];
   return {out,skip}; }
 $('#rsAdd').onclick=async()=>{ const {out,skip}=parsePaste($('#rsPaste').value); if(!out.length) return say($('#rsMsg'),'Paste at least one line: school email, first name or initials, class period.','err');
   const b=$('#rsAdd'); b.disabled=true;
-  try{ const r=await call('stcRosterAdd',{lines:out.map(({email,name,period})=>({email,name,period}))},120000);
+  try{ const r=await call('stcRosterAdd',{...rsT(),lines:out.map(({email,name,period})=>({email,name,period}))},120000);
     RS.list=r.roster; renderRoster(); const bad=r.bad.map(i=>out[i-1].line).concat(skip).sort((a,b)=>a-b);
     $('#rsPaste').value=bad.length?$('#rsPaste').value.split(/\r?\n/).filter((l,i)=>bad.includes(i+1)).join('\n'):'';
     say($('#rsMsg'),`Added ${r.added}${r.changed?', updated '+r.changed:''}.`+(bad.length?` ${bad.length} line${bad.length===1?'':'s'} left in the box could not be read: each needs a school email, a name and a class period (not Guest).`:''),bad.length?'err':'ok'); }
@@ -638,7 +649,7 @@ $('#rsAdd').onclick=async()=>{ const {out,skip}=parsePaste($('#rsPaste').value);
 function renderRoster(){ const L=RS.list||[], q=$('#rlFind').value.trim().toLowerCase();
   const pers=[...new Set(L.map(s=>s.period))].sort((a,b)=>(+a||99)-(+b||99)); if(RS.per&&!pers.includes(RS.per)) RS.per='';
   $('#rlPer').innerHTML='<button data-v="">All</button>'+pers.map(p=>`<button data-v="${esc(p)}">${esc(p)}</button>`).join(''); setSeg('#rlPer',RS.per);
-  $('#rlTitle').textContent='Your roster ('+L.length+' student'+(L.length===1?'':'s')+')';
+  $('#rlTitle').textContent=(RS.for?teaName(RS.for)+'’s roster':'Your roster')+' ('+L.length+' student'+(L.length===1?'':'s')+')';
   const S=L.filter(s=>(!RS.per||s.period===RS.per)&&(!q||s.name.toLowerCase().includes(q))).sort((a,b)=>(+a.period||99)-(+b.period||99)||a.name.localeCompare(b.name));
   if(!L.length){ $('#rlList').innerHTML='<p class="hint">No students yet. Paste your class list above.</p>'; return; }
   const popts=v=>RS.periods.concat(RS.periods.includes(v)?[]:[v]).map(p=>`<option${p===v?' selected':''}>${esc(p)}</option>`).join('');
@@ -653,7 +664,7 @@ $('#rlList').addEventListener('click',async e=>{ const b=e.target.closest('butto
   const st=RS.list.find(s=>s.code===code);
   if(a==='rm'&&!await ask('Remove '+(st?st.name:'this student')+'?','<p>They come off your roster only. Their results stay, and they can still sign in by typing their name.</p>','Remove')) return;
   b.disabled=true;
-  try{ const r=await call('stcRosterEdit',a==='rm'?{code,remove:true}:{code,name:tr.querySelector('input.rn').value,period:tr.querySelector('select.rp').value}); RS.list=r.roster; RS.edit=null; renderRoster(); $('#rlMsg').textContent=''; }
+  try{ const r=await call('stcRosterEdit',a==='rm'?{...rsT(),code,remove:true}:{...rsT(),code,name:tr.querySelector('input.rn').value,period:tr.querySelector('select.rp').value}); RS.list=r.roster; RS.edit=null; renderRoster(); $('#rlMsg').textContent=''; }
   catch(x){ b.disabled=false; say($('#rlMsg'),errText(x),'err'); } });
 $('#rlList').addEventListener('keydown',e=>{ if(e.key==='Enter'&&e.target.classList.contains('rn')){ const s=$('#rlList [data-re="save"]'); if(s) s.click(); } if(e.key==='Escape'&&RS.edit){ RS.edit=null; renderRoster(); } });
 $('#rosBtn').onclick=openRoster; $('#rpBack').onclick=()=>closePage('#rpage');
