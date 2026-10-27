@@ -149,6 +149,16 @@ table.t{width:100%;border-collapse:collapse;font-size:13px}
 .rs{font-size:11px;color:var(--mut)}
 /* questions view */
 .qv{padding:14px 16px}
+.cell.wr{background:#efe9fb;border-color:#c3b2ea;color:#5b3fa3;font-size:10px}
+.wr .wrq{border:1px solid var(--line);border-radius:8px;margin-bottom:12px;background:#fff}.wr .wrq>summary{cursor:pointer;padding:8px 12px;font-weight:600}
+.wr .wrq .wrb{padding:0 14px 10px;font-size:14px;line-height:1.45;max-height:340px;overflow:auto}.wr .wrq .wrb h4{margin:10px 0 4px}
+.wr .wrcols{display:grid;grid-template-columns:minmax(0,1fr) minmax(300px,44%);gap:14px;align-items:start}.wr .wrside{position:sticky;top:0}
+.wr .wrside .wrb{max-height:calc(100vh - 300px)}@media(max-width:900px){.wr .wrcols{grid-template-columns:1fr}.wr .wrside{position:static;order:-1}}
+.wr .wrs{border:1px solid var(--line);border-radius:8px;padding:10px 12px;margin-bottom:10px;background:#fff}
+.wr .wrs.done{border-color:#9fd8b1;background:#fbfefc}.wr .wrh{display:flex;gap:10px;align-items:baseline;flex-wrap:wrap;margin-bottom:6px}
+.wr .wra{border:1px solid #d6dde4;border-radius:6px;padding:8px 10px;background:#fafbfc;font-size:15px;line-height:1.5;overflow-wrap:anywhere}
+.wr .wra p{margin:0 0 6px}.wr .wrp{display:flex;gap:6px;align-items:center;margin-top:8px;flex-wrap:wrap}
+.wr .wrp button[aria-pressed=true]{background:#1b6e3a;border-color:#1b6e3a;color:#fff}
 .qv .qtop{display:flex;gap:14px;align-items:center;flex-wrap:wrap;margin-bottom:10px}
 .qv .seg button{font-size:12px}
 .qv table.t td{vertical-align:top}
@@ -336,7 +346,7 @@ details summary{cursor:pointer;color:var(--blue2);font-size:13px;margin-top:8px}
   <div class="grp"><span class="lab">Period</span><div class="seg" id="perSeg"><button data-v="">All</button></div></div>
   <div class="grp"><span class="lab">Sort</span><select id="sort"><option value="name">First name</option><option value="last">Last name</option><option value="period">Period</option><option value="status">Status</option><option value="progress">Progress</option><option value="score">Score</option><option value="input">Last activity</option></select></div>
   <div class="grp"><input id="q" type="search" placeholder="Find a name" aria-label="Find a name"></div>
-  <div class="grp"><span class="lab">View</span><div class="seg" id="viewSeg"><button data-v="live">Live</button><button data-v="std">Standards</button><button data-v="ques">Questions</button></div></div>
+  <div class="grp"><span class="lab">View</span><div class="seg" id="viewSeg"><button data-v="live">Live</button><button data-v="std">Standards</button><button data-v="ques">Questions</button><button data-v="wr" id="wrViewBtn" hidden>Written</button></div></div>
 </div>
 <div class="tiles" id="tiles"></div>
 <div class="main">
@@ -532,7 +542,7 @@ setSeg('#perSeg',per); setSeg('#viewSeg',view);
 
 /* ---------- load ---------- */
 async function load(){ if(busy) return; busy=true;
-  try{ const wantAns=view==='ques', r=await call('stcDash',{sessions:selSes?[...selSes]:[],answers:wantAns,archive:arc});
+  try{ const wantAns=view==='ques'||view==='wr', r=await call('stcDash',{sessions:selSes?[...selSes]:[],answers:wantAns,archive:arc});
     DATA=r; DATA.skew=Date.now()-r.now; DATA.ansReq=wantAns;
     if((r.archive||'')!==arc) return;   // the Results from choice changed while this was loading
     if(!selSes){ const saved=arc?[]:store('ses'); const ids=new Set(r.sessions.map(s=>s.id));
@@ -599,7 +609,7 @@ async function openMySessions(){ openPage('#mpage'); MP.tests=null; myTests(true
     const keepPr=$('#prTest').value; $('#nsTest').innerHTML=o; $('#prTest').innerHTML=o; if(keepPr) $('#prTest').value=keepPr; }
   catch(e){ $('#nsTest').innerHTML=$('#prTest').innerHTML='<option value="">Could not load the tests</option>'; say($('#nsMsg'),errText(e),'err'); } }
 function renderMs(){ const box=$('#msList'); if(!DATA){ box.innerHTML='<p class="hint">Loading…</p>'; return; }
-  const admin=!!(DATA.me&&DATA.me.admin), L=DATA.sessions.filter(s=>(!teaF||s.teacher===teaF)&&canAct(s.id))   // View access: only their own sessions here.sort((a,b)=>(b.open-a.open)||((b.created||0)-(a.created||0)));
+  const admin=!!(DATA.me&&DATA.me.admin), L=DATA.sessions.filter(s=>(!teaF||s.teacher===teaF)&&canAct(s.id)).sort((a,b)=>(b.open-a.open)||((b.created||0)-(a.created||0)));   // View access: only their own sessions here
   if(!L.length){ box.innerHTML='<p class="hint">No sessions yet. Make one above.</p>'; return; }
   const RV=['Score only','Score + review','Nothing'];
   box.innerHTML=`<div style="overflow-x:auto"><table class="t"><tr><th>Session ID</th><th>Test</th>${admin?'<th>Teacher</th>':''}<th>Made</th><th>Note</th><th>Status</th><th>After they submit</th><th></th></tr>${L.map(s=>`<tr data-sid="${esc(s.id)}">
@@ -841,7 +851,9 @@ function draw(){ renderChips(); const L=shown(); renderTiles(L);
   if(!selSes.size){ $('#card').innerHTML='<div class="empty">Pick a session in the Session menu above.</div>'; return; }
   if(!L.length){ $('#card').innerHTML='<div class="empty">No students '+(per||qtxt?'match these filters':'have signed in to '+(selSes.size>1?'these sessions':'this session'))+' yet.</div>'; return; }
   const tests=[...new Set(L.map(s=>s.test))];
-  if(view==='live') renderLive(L,tests); else if(view==='ques') renderQues(L,tests); else renderStd(L,tests);
+  const wrOn=tests.some(t=>{ const m=meta(t); return m&&m.items.some(it=>it.type==='text'); }); $('#wrViewBtn').hidden=!wrOn;
+  if(view==='wr'&&!wrOn){ view='live'; setSeg('#viewSeg',view); }
+  if(view==='live') renderLive(L,tests); else if(view==='ques') renderQues(L,tests); else if(view==='wr') renderWr(L,tests); else renderStd(L,tests);
   if(openKey) openDrawer(openKey,true); }
 /* ---------- session picker (dropdown): grouped by test, several sessions can be shown together ---------- */
 let sesDraft=null;
@@ -891,8 +903,8 @@ const ICON={pause:'<svg viewBox="0 0 14 14"><rect x="3" y="2" width="3" height="
 function cellHtml(s,i,mode){ const q=s.q[i]; const cur=!s.submitted&&+s.item===i+1;
   if(!q) return `<div class="cell un${cur?' cur':''}"></div>`;
   const [pts,mx,ms,visits,,fl]=q; let cls, txt='';
-  if(pts==null) cls=visits?'bl':'un'; else if(pts>=mx) cls='ok'; else if(pts>0) cls='part'; else cls='no';
-  if(mode==='time'&&ms) txt=ms<60000?Math.round(ms/1000)+'s':Math.round(ms/60000)+'m'; else if(cls==='part') txt=pts;
+  if(q[9]) cls='wr'; else if(pts==null) cls=visits?'bl':'un'; else if(pts>=mx) cls='ok'; else if(pts>0) cls='part'; else cls='no';
+  if(mode==='time'&&ms) txt=ms<60000?Math.round(ms/1000)+'s':Math.round(ms/60000)+'m'; else if(cls==='part') txt=pts; else if(cls==='wr') txt='✎';
   return `<div class="cell ${cls}${cur?' cur':''}${fl?' fl':''}" data-k="${esc(s.key)}" data-i="${i}">${txt}</div>`; }
 function renderLive(L,tests){
   const nq=Math.max(...L.map(s=>Math.max(s.q.length,(meta(s.test)||{items:[]}).items.length)),0);
@@ -912,7 +924,7 @@ function renderLive(L,tests){
       const a=L.filter(s=>s.q[i]&&s.q[i][0]!=null); if(!a.length) return '<td class="q"></td>';
       const p=Math.round(100*a.reduce((t,s)=>t+s.q[i][0],0)/a.reduce((t,s)=>t+s.q[i][1],0)); return `<td class="q qfoot" style="color:${p>=70?'var(--ok)':p>=40?'#9a6b00':'var(--no)'}" title="${a.length} answered">${p}</td>`; }).join('')}</tr>`;
   $('#card').innerHTML=`<div style="display:flex;justify-content:space-between;align-items:center;gap:10px;padding:8px 10px;border-bottom:1px solid var(--line);position:sticky;left:0;flex-wrap:wrap">
-      <div class="legend"><span><span class="cell ok"></span>Correct</span><span><span class="cell part"></span>Partly</span><span><span class="cell no"></span>Incorrect</span><span><span class="cell bl"></span>Seen, blank</span><span><span class="cell un"></span>Not seen</span><span><span class="cell un cur"></span>On it now</span><span><span class="cell un fl"></span>Flagged</span></div>
+      <div class="legend"><span><span class="cell ok"></span>Correct</span><span><span class="cell part"></span>Partly</span><span><span class="cell no"></span>Incorrect</span><span><span class="cell bl"></span>Seen, blank</span>${L.some(s=>s.q.some(q=>q&&q[9]))?'<span><span class="cell wr">✎</span>Needs scoring</span>':''}<span><span class="cell un"></span>Not seen</span><span><span class="cell un cur"></span>On it now</span><span><span class="cell un fl"></span>Flagged</span></div>
       <div class="grp"><span class="lab">Cells show</span><div class="seg" id="cellSeg"><button data-v="score" aria-pressed="${cellMode==='score'}">Correctness</button><button data-v="time" aria-pressed="${cellMode==='time'}">Time</button></div></div></div>
     <table class="grid${cellMode==='time'?' tmode':''}"><thead>${head}</thead><tbody>${rows}</tbody><tfoot>${foot}</tfoot></table>`;
   const all=$('#allBox'); all.checked=L.length>0&&L.every(s=>sel.has(s.key)); all.indeterminate=!all.checked&&L.some(s=>sel.has(s.key));
@@ -992,6 +1004,42 @@ function qvStats(L1,i,subOnly){   // one question: points, blanks and the studen
     const G=g[k]||(g[k]={k,a:k?(()=>{ try{ return JSON.parse(k); }catch(x){ return null; } })():null,pts:q[0]||0,max:q[1],names:[]}); G.pts=Math.max(G.pts,q[0]||0); G.names.push(nm); });
   const groups=Object.values(g).sort((a,b)=>b.names.length-a.names.length||b.pts-a.pts);
   return {i,e,mx,cnt,blank,groups,have}; }
+/* ---------- Written: the teacher reads each written answer beside the scoring guide and gives it points ---------- */
+const WR={td:{},n:null,todo:true};
+const WR_OK=new Set(['B','STRONG','I','EM','U','P','DIV','BR','UL','OL','LI','SPAN','SUB','SUP','BLOCKQUOTE']);
+function safeHtml(h){ const d=new DOMParser().parseFromString('<div>'+String(h||'')+'</div>','text/html'), out=document.createElement('div');   // a student's answer: their formatting only
+  const walk=(src,dst)=>src.childNodes.forEach(c=>{ if(c.nodeType===3) dst.appendChild(document.createTextNode(c.textContent));
+    else if(c.nodeType===1){ if(WR_OK.has(c.tagName)){ const e=document.createElement(c.tagName); dst.appendChild(e); walk(c,e); } else if(!/^(SCRIPT|STYLE|IFRAME|OBJECT|EMBED|IMG|SVG|MATH|TEMPLATE)$/.test(c.tagName)) walk(c,dst); } });
+  walk(d.body.firstChild||d.body,out); return out.innerHTML; }
+function wrTd(test){ if(!(test in WR.td)){ WR.td[test]=null; metaOf(test).then(td=>{ WR.td[test]=td&&td.items?{items:td.items.map(it=>{ try{ return Object.assign(JSON.parse(it.body),JSON.parse(it.key),{type:it.type,teks:it.teks,max:it.max||1}); }catch(e){ return it; } })}:false; if(view==='wr') render(); }).catch(()=>{ WR.td[test]=false; if(view==='wr') render(); }); } return WR.td[test]; }
+function renderWr(L,tests){ const test=tests[0], td=wrTd(test), card=$('#card');
+  if(td===null){ card.innerHTML='<div class="empty">Loading the questions…</div>'; return; }
+  if(!td){ card.innerHTML='<div class="empty">Could not read this test\'s questions. Try Reload.</div>'; return; }
+  const its=td.items.map((it,i)=>({it,i})).filter(x=>x.it.type==='text'); if(!its.length){ card.innerHTML='<div class="empty">This test has no written answers.</div>'; return; }
+  if(!its.some(x=>x.i===WR.n)) WR.n=its[0].i; const i=WR.n, it=td.items[i], mx=it.max||1;
+  const S=L.filter(s=>s.test===test), withA=S.filter(s=>s.q[i]&&s.q[i][8]), todo=withA.filter(s=>s.q[i][0]==null), blank=S.length-withA.length;
+  const show=WR.todo?todo:withA, ready=DATA.ansReq;
+  let h=`<div class="qv wr"><div class="qtop">${its.length>1?`<div class="seg" id="wrQ">${its.map(x=>`<button data-n="${x.i}" aria-pressed="${x.i===i}">Question ${x.i+1}</button>`).join('')}</div>`:`<b>Question ${i+1}</b>`}
+    <div class="seg" id="wrTodo"><button data-v="1" aria-pressed="${WR.todo}">Needs scoring (${todo.length})</button><button data-v="" aria-pressed="${!WR.todo}">All answers (${withA.length})</button></div>
+    <span class="rs">${withA.length-todo.length} of ${withA.length} scored · ${mx} point${mx===1?'':'s'}${blank?' · '+blank+' student'+(blank===1?'':'s')+' with no answer yet':''}${tests.length>1?' · only the first test is shown here':''}</span></div>
+<div class="wrcols"><div class="wrmain">`;
+  const side=`<div class="wrside"><details class="wrq"><summary>Question ${i+1}${it.teks?' · '+esc(it.teks):''}</summary><div class="wrb">${it.stem||''}</div></details>
+    ${it.rubric?`<details class="wrq" open><summary>Scoring guide</summary><div class="wrb">${it.rubric}</div></details>`:''}</div>`;
+  if(!ready) h+='<div class="empty">Loading answers…</div>';
+  else if(!show.length) h+=`<div class="empty">${withA.length?'Every answer is scored. Click All answers to see them.':'No written answers yet.'}</div>`;
+  else h+=show.map(s=>{ const q=s.q[i]; let a=''; try{ a=JSON.parse(q[8]); }catch(e){}
+    const sc=q[0], plain=(new DOMParser().parseFromString(String(a),'text/html').body.textContent||''), can=canAct(s.session)&&!arc;
+    return `<div class="wrs${sc!=null?' done':''}" data-k="${esc(s.key)}"><div class="wrh"><button class="nm" data-open="${esc(s.key)}">${esc(s.name)}</button><span class="rs">Period ${esc(s.period)} · ${s.submitted?'submitted':'still testing'} · ${plain.length}${it.limit?'/'+it.limit:''} characters</span></div>
+      <div class="wra">${safeHtml(a)}</div>
+      <div class="wrp">${can?`<span class="rs">Points</span>${Array.from({length:mx+1},(_,p)=>`<button class="btn" data-pts="${p}" aria-pressed="${sc===p}">${p}</button>`).join('')}${sc!=null?'<button class="btn" data-pts="">Clear</button>':''}`:`<span class="rs">${sc==null?'Not scored yet':'Scored '+sc+' of '+mx}</span>`}<span class="rs wrmsg"></span></div></div>`; }).join('');
+  card.innerHTML=h+'</div>'+side+'</div></div>';
+  card.querySelectorAll('#wrQ button').forEach(b=>b.onclick=()=>{ WR.n=+b.dataset.n; render(); });
+  card.querySelectorAll('#wrTodo button').forEach(b=>b.onclick=()=>{ WR.todo=!!b.dataset.v; render(); });
+  card.querySelectorAll('[data-pts]').forEach(b=>b.onclick=async()=>{ const box=b.closest('.wrs'), s=DATA.students.find(x=>x.key===box.dataset.k), pts=b.dataset.pts===''?null:+b.dataset.pts;
+    box.querySelectorAll('[data-pts]').forEach(x=>x.disabled=true); box.querySelector('.wrmsg').textContent='Saving…';
+    try{ const r=await call('stcGrade',{key:s.key,n:i+1,points:pts}); const q=s.q[i]; q[0]=pts; q[9]=pts==null?1:0; Object.assign(s,{score:r.score,max:r.max,pct:r.pct,level:r.level}); render(); }
+    catch(e){ box.querySelectorAll('[data-pts]').forEach(x=>x.disabled=false); box.querySelector('.wrmsg').textContent=/stcGrade|Unknown|not found/i.test(String(e&&e.message))?'Scoring needs the latest Code.gs (paste it, then Deploy › New version).':errText(e); } });
+}
 function renderQues(L,tests){
   const test=tests[0], m=meta(test), subOnly=store('subOnly')!==false, its=qvItems(test);
   const S=(subOnly?L.filter(s=>s.submitted):L).filter(s=>s.test===test);
@@ -1083,7 +1131,7 @@ $('#bulkClear').onclick=()=>{ sel.clear(); render(); };
 
 /* ---------- filters ---------- */
 $('#perSeg').addEventListener('click',e=>{ const b=e.target.closest('button'); if(!b) return; per=b.dataset.v; keep('per',per); setSeg('#perSeg',per); render(); });
-document.querySelectorAll('#viewSeg button').forEach(b=>b.onclick=()=>{ const was=view; view=b.dataset.v; keep('view',view); setSeg('#viewSeg',view); render(); if(view==='ques'&&was!=='ques') load(); });   // the Questions view needs the students' answers
+document.querySelectorAll('#viewSeg button').forEach(b=>b.onclick=()=>{ const was=view; view=b.dataset.v; keep('view',view); setSeg('#viewSeg',view); render(); if((view==='ques'||view==='wr')&&!DATA.ansReq) load(); });   // the Questions view needs the students' answers
 $('#sort').onchange=()=>{ sortBy=$('#sort').value; keep('sort',sortBy); render(); };
 $('#q').oninput=()=>{ qtxt=$('#q').value.trim().toLowerCase(); render(); };
 

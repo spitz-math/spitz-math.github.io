@@ -1969,7 +1969,7 @@ function sessionExport(){ clockStop(); const out={
   startedAt:new Date(ACT.t0).toISOString(), submittedAt:S.submittedAt||null, elapsedMs:now(),
   awayCount:ACT.away, awayMs:ACT.awayMs, rclicks:ACT.rc,
   score:ITEMS.reduce((s,it)=>s+(earn(it)||0),0), maxScore:ITEMS.reduce((s,it)=>s+(it.max||1),0),
-  items:ITEMS.map(it=>({n:it.n, type:it.type, teks:it.teks||'', cat:it.cat||null, answer:S.answers[it.n]??null, points:earn(it), max:it.max||1,
+  items:ITEMS.map(it=>({n:it.n, type:it.type, teks:it.teks||'', cat:it.cat||null, answer:S.answers[it.n]??null, points:earn(it), max:it.max||1, wr:it.type==='text'&&answered(it)?1:0,
     flagged:!!S.flags[it.n], ms:ACT.items[it.n].ms, visits:ACT.items[it.n].visits, changes:ACT.items[it.n].changes, tools:ACT.items[it.n].tools})),
   events:ACT.events };
   clockStart(); return out; }
