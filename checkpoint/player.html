@@ -1889,6 +1889,10 @@ if(window.SPITZ_SELFCHECK) window.__spitzSelfCheck=function(){
   const keep=S.answers, out=ITEMS.map(it=>{ const r={n:it.n,type:it.type,max:it.max};
     try{ S.answers={}; r.blank=earn(it); S.answers={[it.n]:keyAns(it)}; r.key=earn(it); }catch(e){ r.err=String(e&&e.message||e); } return r; });
   S.answers=keep; return out; };
+/* re-score saved answers (dashboard › My sessions › Re-score; only with SPITZ_SELFCHECK): points per question, total, max */
+if(window.SPITZ_SELFCHECK) window.__spitzRescore=function(list){ const keep=S.answers, max=ITEMS.reduce((s,it)=>s+(it.max||1),0);
+  const out=list.map(a=>{ S.answers=a||{}; const pts=ITEMS.map(it=>{ try{ return earn(it); }catch(e){ return null; } }); return {pts,score:pts.reduce((s,p)=>s+(p||0),0),max}; });
+  S.answers=keep; return out; };
 /* paper copy for the dashboard's Print buttons (only when the page sets SPITZ_PRINT; students never do): every question
    on one long page, a name line on top; withKey marks the right choices, adds "Answer:" under each question and a key table */
 if(window.SPITZ_PRINT) window.__spitzPrint=function(withKey){
