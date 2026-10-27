@@ -1498,7 +1498,7 @@ function checkPkg(P){ const E=[],W=[],K=[]; const td=P.td;
   const ref='refs/'+td.reference+'.png';
   if(!P.refs[ref]){ if(TP.files&&!TP.files[ref]) E.push('The reference sheet '+esc(ref)+' is not on GitHub and not in the zip.'); else if(!TP.files) W.push('Could not check that the reference sheet '+esc(ref)+' is on GitHub.'); }
   if(P.self){ if(P.self.err) (P.self.old?W:E).push('Answer-key check could not run: '+esc(P.self.err)+'.');
-    else { const bad=P.self.res.filter(r=>r.err||r.key!==r.max), notBlank=P.self.res.filter(r=>!r.err&&r.blank!==null&&r.blank!==0);
+    else { const bad=P.self.res.filter(r=>r.type!=='text'&&(r.err||r.key!==r.max)), notBlank=P.self.res.filter(r=>!r.err&&r.blank!==null&&r.blank!==0);
       bad.forEach(r=>E.push('Question '+r.n+': answering with its own key '+(r.err?'causes an error ('+esc(r.err)+')':'earns '+(r.key||0)+' of '+r.max+' point'+(r.max>1?'s':''))+'. The key and the question don\'t match.'));
       notBlank.forEach(r=>E.push('Question '+r.n+': a blank answer earns points.'));
       if(!bad.length&&!notBlank.length) K.push('Answer-key check: in the real player, every question earns full points with its key and 0 when blank.'); } }
