@@ -666,15 +666,44 @@ body.browse>*:not(#browse):not(svg){display:none!important}
 .bend{max-width:1000px;margin:0 auto;padding:6px 12px 40px}
 .bnone{font:14px "Segoe UI",Roboto,Arial,sans-serif;color:#5d6b7a;text-align:center;margin:18px 0}
 @media (max-width:620px){.bcard{grid-template-columns:1fr}.bmeta{flex-direction:row;flex-wrap:wrap;align-items:center;border-right:0;border-bottom:1px solid #e3e8ef}.byr{font-size:17px}.badd{margin:0 0 0 auto}}
-/* read aloud (a roster accommodation): toolbar button + a small bar to play / stop / pick the speed */
-.tbtn#bRead[aria-pressed="true"] .ring{background:#1f5fd1!important;border-color:#1f5fd1}
-.tbtn#bRead[aria-pressed="true"] svg .s{stroke:#fff} .tbtn#bRead[aria-pressed="true"] svg .f{fill:#fff}
-.rabar{position:fixed;left:50%;bottom:18px;transform:translateX(-50%);z-index:40;display:flex;gap:8px;align-items:center;background:#fff;border:2px solid #1f5fd1;border-radius:10px;padding:8px 10px;box-shadow:0 6px 22px rgba(0,0,0,.25);font-size:14px;max-width:calc(100vw - 24px);flex-wrap:wrap}
-.rabar[hidden]{display:none}
-.rabar button{border:1px solid #1f5fd1;background:#1f5fd1;color:#fff;border-radius:6px;padding:7px 12px;font:600 14px Arial,sans-serif;cursor:pointer}
-.rabar button.alt{background:#fff;color:#1f5fd1}
-.rabar select{font-size:14px;padding:5px;border-radius:6px}
-.ra-now{background:#fff3a8!important;outline:2px solid #e6c200;border-radius:3px}
+/* read aloud (a roster accommodation), laid out like the state test: a speaker button on each question opens Speak Question /
+   Speak Option; the part being read gets a light purple box and the word being said turns pink; a sound check comes first */
+.raspk svg{width:24px;height:24px}
+.raspk[aria-expanded="true"]{background:var(--teal);color:var(--pg)}
+.raspk.on{box-shadow:0 0 0 3px #c9b6e4}
+.ra-now{background:#f6f1fc!important;outline:1px solid #c9b6e4;outline-offset:1px;border-radius:2px}
+tr.ra-now{background:none!important;outline:0}
+::highlight(ra-word){background-color:#eba4c3;color:#000}
+.ttsck{position:fixed;inset:0;z-index:400;background:#fff;overflow:auto;font:14px/1.4 Roboto,"Segoe UI",Arial,sans-serif;color:#222;padding:24px 16px}
+.ttsck[hidden]{display:none}
+.tcbox{max-width:780px;margin:0 auto;border:1px solid #cfe3ec;box-shadow:0 2px 10px rgba(0,0,0,.08);background:#fff}
+.tcbox h2{margin:0;padding:16px 20px 10px;font:400 30px Roboto,Arial,sans-serif;color:#1d5b86;background:#f0f9fc;border-bottom:1px solid #9fcde0}
+.tcintro{margin:12px 20px}
+.tccard{margin:0 20px 20px;border:1px solid #a9d6e8;border-radius:4px}
+.tchd{padding:10px 16px;font-size:17px;color:#1d6fa5;background:#f0f9fc;border-bottom:1px dashed #a9d6e8}
+.tcgrid{display:grid;grid-template-columns:1fr 1fr}
+.tcl{border-right:1px solid #a9d6e8}
+.tcspk{display:flex;gap:14px;align-items:center;padding:14px 16px;border-bottom:1px solid #a9d6e8}
+.tcspk p{margin:0}
+#tcSpeak{flex:none;width:58px;height:58px;border-radius:50%;border:2px dashed #1d4f73;background:#86cdf2;display:grid;place-items:center;cursor:pointer;padding:0}
+#tcSpeak svg{width:30px;height:30px}
+#tcSpeak.play{background:#1d6fa5}#tcSpeak.play svg *{stroke:#fff}#tcSpeak.play svg .f{fill:#fff}
+.tcset{padding:10px 16px 16px}
+.tcset p{margin:8px 0 6px}
+.tts-panel .tv b{display:block}
+.tts-panel select{font-size:14px;max-width:100%;padding:2px}
+.tts-panel .tsl{display:grid;grid-template-columns:1fr 34px;align-items:center;gap:8px;margin-top:4px}
+.tts-panel .tsl span{grid-column:1/-1;font-size:15px;padding-left:8px}
+.tts-panel input[type=range]{width:100%;accent-color:#1d6fa5}
+.tts-panel output{font-size:12px;text-align:center;background:#e6eef2;border-radius:3px;padding:2px 0}
+.tcr{padding:14px 16px;background:#fafafa}
+.tcr>b{display:block;font-size:15px;padding-bottom:6px;border-bottom:1px dashed #a9d6e8}
+.tcr button{display:block;width:100%;margin:14px 0 0;min-height:42px;border:1px solid #1d6fa5;border-radius:22px;background:#fff;color:#1d2733;font:14px Roboto,Arial,sans-serif;cursor:pointer}
+.tcr button:hover:not(:disabled){background:#e9f4fa}
+#tcYes:not(:disabled){background:#1d6fa5;color:#fff}
+.tcr button:disabled{border-color:#ccc;color:#aaa;cursor:default}
+#tcMsg{margin:14px 0 0;padding:10px;border-radius:4px;background:#fff4d6;border:1px solid #e3c063}
+@media (max-width:620px){.tcgrid{grid-template-columns:1fr}.tcl{border-right:0;border-bottom:1px solid #a9d6e8}}
 </style>
 <style id="cursorStyle"></style>
 </head>
@@ -717,7 +746,6 @@ body.browse>*:not(#browse):not(svg){display:none!important}
       <button class="tbtn" id="bSave"><span class="ring"><svg viewBox="0 0 24 24"><path class="f" d="M3 3h15l3 3v15H3z"/><rect x="7" y="3" width="9" height="6" fill="#fff"/><rect class="f" x="12.5" y="4" width="2" height="4"/><rect x="6" y="13" width="12" height="7" fill="#fff"/></svg></span>Save</button>
     </div>
     <div class="tgroup" id="rightTools">
-      <button class="tbtn" id="bRead" aria-pressed="false" hidden><span class="ring"><svg viewBox="0 0 24 24" fill="none" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path class="f" d="M3 9h4l5-4v14l-5-4H3z" fill="#000"/><path class="s" d="M15.5 8.5a5 5 0 0 1 0 7M18.5 5.5a9 9 0 0 1 0 13"/></svg></span>Read Aloud</button>
       <button class="tbtn" id="bRef" aria-pressed="false"><span class="ring"><svg viewBox="0 0 24 24"><text class="f" x="1" y="18" font-family="Arial" font-size="15" font-weight="700">XY</text><text class="f" x="17" y="9" font-family="Arial" font-size="9" font-weight="700">2</text></svg></span>References</button>
       <button class="tbtn" id="bCalc" aria-pressed="false"><span class="ring"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><rect class="s" x="5" y="2.5" width="14" height="19" rx="1.5"/><rect class="s" x="7.5" y="5" width="9" height="4"/><path class="s" d="M8 12h2M11 12h2M14 12h2M8 15h2M11 15h2M14 15h2M8 18h2M11 18h2M14 18h2" stroke-width="1.8"/></svg></span>Calculator</button>
       <button class="tbtn" id="bNote" aria-pressed="false"><span class="ring"><svg viewBox="0 0 24 24" fill="none" stroke-width="2.2" stroke-linejoin="round"><path class="s" d="M13 4H4v16h16v-9"/><path class="s" d="M18 2.5l3.5 3.5L12 15.5l-4.5 1 1-4.5z"/></svg></span>Notepad</button>
@@ -736,6 +764,7 @@ body.browse>*:not(#browse):not(svg){display:none!important}
         <div class="inum" id="inum">1</div>
         <div class="istat" id="istat"></div>
         <div class="sp"></div>
+        <button class="ctxbtn raspk" id="raBtn" aria-label="Text-to-speech" aria-haspopup="menu" aria-expanded="false" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M13 3H5v18h11v-5"/><path d="M8 8h3M8 12h3M8 16h5" stroke-width="1.5"/><path class="f" d="M12 9.5h2.5l3-2.5v9l-3-2.5H12z" fill="currentColor"/><path d="M19.5 9a4 4 0 0 1 0 6"/></svg></button>
         <button class="ctxbtn" id="ctxBtn" aria-label="Item options" aria-haspopup="menu" aria-expanded="false"><svg viewBox="0 0 26 20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M3 5h14M3 10h14M3 15h14"/><path d="M19.5 9l2.5 2.5L24.5 9" stroke-width="1.6"/></svg></button>
       </div>
       <div class="isub"><span id="isubName">GUEST, GUEST</span><span id="lastSaved" hidden></span></div>
@@ -745,8 +774,6 @@ body.browse>*:not(#browse):not(svg){display:none!important}
 </div>
 
 <div class="ctxmenu" id="ctxMenu" role="menu" hidden></div>
-<div class="rabar" id="raBar" role="toolbar" aria-label="Read aloud" hidden><button id="raPlay">&#9654; Read this question</button><button class="alt" id="raStop">&#9632; Stop</button>
-  <label>Speed <select id="raRate"><option value="0.8">Slower</option><option value="1" selected>Normal</option><option value="1.2">Faster</option></select></label></div>
 
 <!-- References -->
 <div class="panel" id="refPanel" hidden>
@@ -813,6 +840,7 @@ body.browse>*:not(#browse):not(svg){display:none!important}
   <div class="sh"><h2>System Settings</h2><button class="sx" id="sX" aria-label="Close System Settings"><svg viewBox="0 0 34 34"><circle cx="17" cy="17" r="14" fill="none" stroke="currentColor" stroke-width="3"/><path d="M11.5 11.5l11 11M22.5 11.5l-11 11" stroke="currentColor" stroke-width="3.4" stroke-linecap="round"/></svg></button></div>
   <div class="sb">
     <section><h3>Zoom</h3><div class="zrow"><input type="range" id="sZoom" min="1" max="2.5" step="0.25" value="1" aria-label="Zoom"><span class="ztag" id="sZoomTag">1X</span></div></section>
+    <section id="sTTS" hidden><h3>Text-to-Speech</h3><div class="tts-panel" id="sTTSPanel"></div></section>
     <section><h3>Color Setting</h3>
       <h4>Background Only Colors</h4><div class="swatches" id="swBg"></div>
       <h4 style="margin-top:16px">Text and Background Colors</h4><div class="swatches" id="swTb"></div></section>
@@ -829,6 +857,25 @@ body.browse>*:not(#browse):not(svg){display:none!important}
     <div class="side"><svg viewBox="0 0 64 52" fill="none" stroke-width="3" stroke-linecap="round"><path class="f" d="M32 6c-8 0-13 6-13 14v10l-4 6h34l-4-6V20c0-8-5-14-13-14z"/><circle class="f" cx="32" cy="40" r="4"/><path d="M10 14c-3 4-3 12 0 16M5 10c-5 7-5 17 0 24M54 14c3 4 3 12 0 16M59 10c5 7 5 17 0 24"/></svg></div>
     <div class="main"><h3 id="dlgTitle">Warning</h3><div class="msg" id="dlgMsg"></div><div class="btns" id="dlgBtns"></div></div>
   </div>
+</div>
+
+<!-- Sound check (read aloud students, after they sign in) -->
+<div class="ttsck" id="ttsCheck" role="dialog" aria-modal="true" aria-labelledby="tcH" hidden>
+  <div class="tcbox"><h2 id="tcH">Audio Check</h2>
+    <p class="tcintro">Please check to make sure the sound on the device is working. Put on your headphones.</p>
+    <div class="tccard"><div class="tchd">Sound Check</div>
+      <div class="tcgrid">
+        <div class="tcl">
+          <div class="tcspk"><button id="tcSpeak" aria-label="Play the sound check sentence"><svg viewBox="0 0 24 24" fill="none" stroke="#1d2733" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M13 3H5v18h11v-5"/><path d="M8 8h3M8 12h3M8 16h5" stroke-width="1.5"/><path class="f" d="M12 9.5h2.5l3-2.5v9l-3-2.5H12z" fill="#1d2733"/><path d="M19.5 9a4 4 0 0 1 0 6"/></svg></button>
+            <p>Click the speaker button. You should hear a voice say this sentence: "This text is being read aloud."</p></div>
+          <div class="tcset tts-panel" id="tcPanel"></div>
+        </div>
+        <div class="tcr"><b>Next Step:</b>
+          <p>If you heard the voice clearly, click the <b>I heard the voice</b> button. If you did not hear anything, please raise your hand.</p>
+          <button id="tcYes" disabled>I heard the voice</button><button id="tcNo">I did not hear the voice</button><button id="tcSkip">Skip TTS Check</button>
+          <p id="tcMsg" role="status" hidden>Raise your hand so your teacher can help. Check that your headphones are plugged in and the volume is turned up, then click the speaker button to try again.</p>
+        </div>
+      </div></div></div>
 </div>
 
 <!-- Sign in -->
@@ -1965,13 +2012,14 @@ function openMenu(x,yy){
   menu.style.left=Math.max(4,Math.min(innerWidth-r.width-4,x))+'px'; menu.style.top=Math.max(4,Math.min(innerHeight-r.height-4,yy))+'px';
   menu.querySelector('button').focus({preventScroll:true});
 }
-function closeMenu(){ menu.hidden=true; $('#ctxBtn').setAttribute('aria-expanded',false); }
+function closeMenu(){ menu.hidden=true; delete menu.dataset.ra; $('#ctxBtn').setAttribute('aria-expanded',false); const rb=$('#raBtn'); if(rb) rb.setAttribute('aria-expanded',false); }
 $('#ctxBtn').addEventListener('mousedown',e=>e.preventDefault());
-$('#ctxBtn').onclick=e=>{ if(menuOpen()){ closeMenu(); return; } const r=e.currentTarget.getBoundingClientRect(); openMenu(r.left,r.bottom+2); };
+$('#ctxBtn').onclick=e=>{ if(menuOpen()&&!menu.dataset.ra){ closeMenu(); return; } closeMenu(); const r=e.currentTarget.getBoundingClientRect(); openMenu(r.left,r.bottom+2); };
 menu.addEventListener('mousedown',e=>e.preventDefault());
 menu.addEventListener('click',e=>{
   const sw=e.target.closest('[data-hl]'); if(sw){ applyHL(sw.dataset.hl); closeMenu(); return; }
   const b=e.target.closest('button[data-act]'); if(!b) return; const a=b.dataset.act, it=ITEMS[S.i], n=it.n; closeMenu();
+  if(a==='raQ'||a==='raO'){ raPlay(a==='raQ'?'q':'o'); return; } if(a==='raPause'){ raPause(); return; } if(a==='raStop'){ raStop(); return; }
   if(a==='mark'){ S.flags[n]=!S.flags[n]; logEv(S.flags[n]?'flag':'unflag'); refresh(); }
   if(a==='sticky') openNote('sticky');
   if(a==='strike') setStrike(!S.modes.elim);
@@ -2168,35 +2216,74 @@ function moveBand(d){ const L=textLines(); lrLine=Math.max(0,Math.min(L.length-1
   if(l&&(l.bot>pr.bottom-20||l.top<pr.top+20)) page.scrollTop+=(l.top-(pr.top+pr.height/2)); placeBand(); }
 $('#bLine').onclick=()=>{ lrOn=!lrOn; if(lrOn) actTool('lineReader'); $('#bLine').setAttribute('aria-pressed',lrOn); placeBand(); };
 page.addEventListener('scroll',placeBand); addEventListener('resize',placeBand);
-/* ---------- read aloud: the browser's own voice reads the question, then each answer choice, highlighting what it reads ---------- */
-const RA={on:false, q:[], i:0, now:null};
+/* ---------- read aloud, like the state test: the speaker button on the question offers Speak Question (everything but the
+   answer choices) and Speak Option (the answer choices). The part being read gets a light box and the word being said turns
+   pink. Voices on the computer report each word; network voices don't, so then the highlight steps along at speaking speed. ---------- */
+const RA={on:false, q:[], i:0, now:null, busy:false, paused:false, tm:null};
 const raSynth=()=>window.speechSynthesis||null;
-function raVoice(){ const v=raSynth()?raSynth().getVoices():[]; return v.find(x=>/^en-US/i.test(x.lang)&&/Google/i.test(x.name))||v.find(x=>/^en-US/i.test(x.lang))||v.find(x=>/^en/i.test(x.lang))||null; }
-function raSay(el){ const c=el.cloneNode(true);
-  c.querySelectorAll('.bubble,script,style').forEach(x=>x.remove());
-  c.querySelectorAll('.frac').forEach(f=>{ const p=f.children; f.replaceWith(' '+(p[0]?p[0].textContent:'')+' over '+(p[1]?p[1].textContent:'')+' '); });
-  c.querySelectorAll('sup').forEach(x=>{ const t=x.textContent.trim(); x.replaceWith(t==='2'?' squared ':t==='3'?' cubed ':' to the power of '+t+' '); });
-  c.querySelectorAll('svg,img').forEach(x=>x.replaceWith(' '+(x.getAttribute('aria-label')||x.getAttribute('alt')||'')+' '));
-  c.querySelectorAll('select,input,textarea').forEach(x=>x.replaceWith(' blank '));
-  return c.textContent.replace(/_{2,}/g,' blank ').replace(/−/g,' minus ').replace(/√/g,' square root of ').replace(/≤/g,' less than or equal to ').replace(/≥/g,' greater than or equal to ')
-    .replace(/≠/g,' not equal to ').replace(/[×·]/g,' times ').replace(/÷/g,' divided by ').replace(/</g,' less than ').replace(/>/g,' greater than ').replace(/=/g,' equals ').replace(/°/g,' degrees ').replace(/\s+/g,' ').trim(); }
-function raBlocks(){ const root=host.querySelector('.item'), out=[]; if(!root) return out;
+const raHL=!!(window.CSS&&CSS.highlights&&window.Highlight);
+const raWord=w=>w.replace(/_{2,}/g,' blank ').replace(/−/g,' minus ').replace(/√/g,' square root of ').replace(/≤/g,' less than or equal to ').replace(/≥/g,' greater than or equal to ')
+  .replace(/≠/g,' not equal to ').replace(/[×·]/g,' times ').replace(/÷/g,' divided by ').replace(/</g,' less than ').replace(/>/g,' greater than ').replace(/=/g,' equals ').replace(/°/g,' degrees ');
+/* the words of one block, each with where it sits on the page, so the word being said can be marked */
+function raTokens(el,pre){ const toks=[]; let text=pre||'';
+  const add=(say,range)=>{ say=say.replace(/\s+/g,' ').trim(); if(!say) return; if(text) text+=' '; toks.push({s:text.length,e:text.length+say.length,range}); text+=say; };
+  const whole=n=>{ const r=document.createRange(); r.selectNode(n); return r; };
+  const walk=n=>{
+    if(n.nodeType===3){ for(const m of n.nodeValue.matchAll(/\S+/g)){ const r=document.createRange(); r.setStart(n,m.index); r.setEnd(n,m.index+m[0].length); add(raWord(m[0]),r); } return; }
+    if(n.nodeType!==1||n.matches('.bubble,script,style,.bl')) return;
+    if(n.isConnected&&getComputedStyle(n).display==='none') return;
+    if(n.matches('.frac')){ const p=n.children; add((p[0]?raWord(p[0].textContent):'')+' over '+(p[1]?raWord(p[1].textContent):''),whole(n)); return; }
+    if(n.matches('sup')){ const t=n.textContent.trim(); add(t==='2'?'squared':t==='3'?'cubed':'to the power of '+raWord(t),whole(n)); return; }
+    if(n.matches('svg,img')){ const t=n.getAttribute('aria-label')||n.getAttribute('alt')||''; if(!/^graph$/i.test(t.trim())) add(t,whole(n)); return; }
+    if(n.matches('select,input,textarea')){ add('blank',whole(n)); return; }
+    for(const c of n.childNodes) walk(c); };
+  walk(el); return {text,toks}; }
+const raSay=el=>raTokens(el).text;
+window.__raSayTest=raSay;
+/* blocks in reading order: [element, what to say first]; tables row by row; kind 'q' = question, 'o' = answer choices */
+function raBlocks(kind){ const root=host.querySelector('.item'), out=[]; if(!root) return out;
   const isBlock=el=>{ const d=getComputedStyle(el).display; return d!=='inline'&&d!=='inline-block'&&d!=='inline-flex'&&d!=='contents'&&d!=='none'; };
   const walk=el=>{ for(const c of el.children){ const cs=getComputedStyle(c); if(cs.display==='none'||cs.visibility==='hidden') continue;
-      if(c.classList.contains('choice')){ const bl=c.querySelector('.bl'), tx=c.querySelector('.ctext'); const t=raSay(tx||c); if(t) out.push([c,(bl?bl.textContent.trim()+'. ':'')+t]); continue; }
-      if(c.matches('svg,img')){ const t=c.getAttribute('aria-label')||c.getAttribute('alt'); if(t&&!/^graph$/i.test(t)) out.push([c,t]); continue; }
-      if(c.matches('table')){ c.querySelectorAll('tr').forEach(tr=>{ const t=[...tr.children].map(raSay).filter(Boolean).join(', '); if(t) out.push([tr,t]); }); continue; }
-      if([...c.children].some(k=>isBlock(k))) walk(c); else { const t=raSay(c); if(t) out.push([c,t]); } } };
+      if(c.classList.contains('choice')){ if(kind==='o'){ const bl=c.querySelector('.bl'), tx=c.querySelector('.ctext'); out.push([tx||c,bl?bl.textContent.trim()+'.':'']); } continue; }
+      if(kind==='o') { if([...c.children].length) walk(c); continue; }
+      if(c.matches('svg,img')){ out.push([c,'']); continue; }
+      if(c.matches('table')){ const cap=c.querySelector('caption'); if(cap) out.push([cap,'']); c.querySelectorAll('tr').forEach(tr=>out.push([tr,''])); continue; }
+      if([...c.children].some(k=>isBlock(k))) walk(c); else out.push([c,'']); } };
   walk(root); return out; }
+const raHasOptions=()=>!!host.querySelector('.item .choice');
+function raWordMark(r){ if(!raHL) return; if(r) CSS.highlights.set('ra-word',new Highlight(r)); else CSS.highlights.delete('ra-word'); }
 function raMark(el){ if(RA.now) RA.now.classList.remove('ra-now'); RA.now=el; if(el){ el.classList.add('ra-now'); const r=el.getBoundingClientRect(), pr=page.getBoundingClientRect(); if(r.top<pr.top||r.bottom>pr.bottom) page.scrollTop+=r.top-pr.top-40; } }
-function raStop(){ RA.q=[]; RA.i=0; const sy=raSynth(); if(sy) sy.cancel(); raMark(null); }
-function raNext(){ const sy=raSynth(); if(!sy||RA.i>=RA.q.length){ raMark(null); return; }
-  const [el,text]=RA.q[RA.i++], u=new SpeechSynthesisUtterance(text); u.rate=+$('#raRate').value||1; u.lang='en-US'; const v=raVoice(); if(v) u.voice=v;
-  const mine=RA.q; u.onend=u.onerror=()=>{ if(RA.q===mine) raNext(); }; raMark(el); sy.speak(u); }
-function raPlay(){ raStop(); RA.q=raBlocks(); RA.i=0; actTool('readAloud'); raNext(); }
-$('#raPlay').onclick=raPlay; $('#raStop').onclick=raStop;
-$('#bRead').onclick=()=>{ const on=$('#bRead').getAttribute('aria-pressed')!=='true'; $('#bRead').setAttribute('aria-pressed',on); $('#raBar').hidden=!on; if(!on) raStop(); };
-window.SpitzReadAloud=on=>{ RA.on=!!on; $('#bRead').hidden=!RA.on; if(!RA.on){ $('#raBar').hidden=true; $('#bRead').setAttribute('aria-pressed',false); raStop(); } };
+function raIdle(){ clearInterval(RA.tm); RA.tm=null; raWordMark(null); raMark(null); RA.busy=false; RA.paused=false; $('#raBtn').classList.remove('on'); }
+function raStop(){ RA.q=[]; RA.i=0; const sy=raSynth(); if(sy&&RA.busy) sy.cancel(); raIdle(); }
+function raNext(){ const sy=raSynth(); clearInterval(RA.tm); raWordMark(null); if(!sy||RA.i>=RA.q.length){ RA.q=[]; raIdle(); return; }
+  const [el,pre]=RA.q[RA.i++], {text,toks}=raTokens(el,pre); if(!text){ raNext(); return; }
+  const u=window.SpitzTTS.utter(text), mine=RA.q; let heard=false, ms=0;
+  const show=ci=>{ const t=toks.find(t=>ci>=t.s&&ci<t.e)||toks.find(t=>t.s>=ci); raWordMark(t&&t.range); };
+  u.onboundary=e=>{ if(RA.q!==mine||(e.name&&e.name!=='word')) return; heard=true; show(e.charIndex); };
+  u.onstart=()=>{ if(RA.q!==mine) return; const cps=14*u.rate; clearInterval(RA.tm);
+    RA.tm=setInterval(()=>{ if(heard){ clearInterval(RA.tm); return; } if(!RA.paused){ ms+=120; show(ms/1000*cps); } },120); };
+  u.onend=u.onerror=()=>{ if(RA.q===mine) raNext(); };
+  raMark(el); sy.speak(u); }
+function raPlay(kind){ raStop(); RA.q=raBlocks(kind); RA.i=0; if(!RA.q.length) return; RA.busy=true; $('#raBtn').classList.add('on'); actTool('readAloud'); raNext(); }
+function raPause(){ const sy=raSynth(); if(!sy||!RA.busy) return; if(RA.paused){ sy.resume(); RA.paused=false; } else { sy.pause(); RA.paused=true; } }
+const RAI={q:'<svg viewBox="0 0 28 28"><path d="M4 10h5l6-5v18l-6-5H4z" fill="#000"/><path d="M19 9.5a6 6 0 0 1 0 9M22.5 6a11 11 0 0 1 0 16" stroke="#000" stroke-width="2.2" fill="none" stroke-linecap="round"/></svg>',
+  p:'<svg viewBox="0 0 28 28"><rect x="7" y="5" width="5" height="18" fill="#000"/><rect x="16" y="5" width="5" height="18" fill="#000"/></svg>',
+  r:'<svg viewBox="0 0 28 28"><path d="M8 5l15 9-15 9z" fill="#000"/></svg>',
+  s:'<svg viewBox="0 0 28 28"><rect x="6" y="6" width="16" height="16" fill="#000"/></svg>'};
+function openRaMenu(x,yy){ closeMenu(); let h='';
+  if(RA.busy) h=`<button class="mi" data-act="raPause"><span class="ico">${RA.paused?RAI.r:RAI.p}</span><span class="lbl">${RA.paused?'Resume Speaking':'Pause Speaking'}</span></button>`
+    +`<button class="mi" data-act="raStop"><span class="ico">${RAI.s}</span><span class="lbl">Stop Speaking</span></button>`;
+  else { h=`<button class="mi" data-act="raQ"><span class="ico">${RAI.q}</span><span class="lbl">Speak Question</span></button>`;
+    h+=raHasOptions()?`<button class="mi" data-act="raO"><span class="ico">${RAI.q}</span><span class="lbl">Speak Option</span></button>`:`<div class="mi dis" aria-disabled="true"><span class="ico">${RAI.q}</span><span class="lbl">Speak Option</span></div>`; }
+  menu.innerHTML=h; menu.hidden=false; menu.dataset.ra='1'; $('#raBtn').setAttribute('aria-expanded',true);
+  const r=menu.getBoundingClientRect(); menu.style.left=Math.max(4,Math.min(innerWidth-r.width-4,x))+'px'; menu.style.top=Math.max(4,Math.min(innerHeight-r.height-4,yy))+'px';
+  menu.querySelector('button').focus({preventScroll:true}); }
+$('#raBtn').addEventListener('mousedown',e=>e.preventDefault());
+$('#raBtn').onclick=e=>{ if(menuOpen()&&menu.dataset.ra){ closeMenu(); return; } const r=e.currentTarget.getBoundingClientRect(); openRaMenu(r.right-250,r.bottom+2); };
+let raPanelMade=false;
+window.SpitzReadAloud=on=>{ RA.on=!!on; $('#raBtn').hidden=!RA.on; $('#sTTS').hidden=!RA.on;
+  if(RA.on&&!raPanelMade&&window.SpitzTTS){ window.SpitzTTS.panel($('#sTTSPanel')); raPanelMade=true; }
+  if(!RA.on) raStop(); };
 if(window.SPITZ_RA||/[?&]readaloud=1\b/.test(location.search)) window.SpitzReadAloud(true);
 host.addEventListener('click',e=>{ if(!lrOn) return; const L=textLines(); const k=L.findIndex(l=>e.clientY>=l.top-3&&e.clientY<=l.bot+3); if(k>=0){ lrLine=k; placeBand(); } });
 document.addEventListener('keydown',e=>{ if(!lrOn||e.target.closest('input,textarea,select')||!$('#veil').hidden) return;
@@ -2443,7 +2530,7 @@ function browseStart(){
 document.title=TD.title; document.querySelectorAll('.testTitle').forEach(e=>e.textContent=TD.title);
 { const ref=document.querySelector('#refPanel .pbody img'); if(ref) ref.src=(window.SPITZ_ASSETS&&window.SPITZ_ASSETS['refs/'+(TD.reference||'alg1')+'.png'])||(window.SPITZ_ROOT+'refs/'+(TD.reference||'alg1')+'.png'); }
 window.__spitzStart=(name,period,opt={})=>{ S.name=name; S.period=period; S.started=true; ACT.t0=Date.now();
-  if(opt.state){ sessionRestore(opt.state,opt.events); if(opt.state.submitted){ S.submitted=true; S.submittedAt=opt.state.submittedAt; } logEv('signInAgain'); } else logEv('start');
+  if(opt.state){ sessionRestore(opt.state,opt.events); if(opt.state.submitted){ S.submitted=true; S.submittedAt=opt.state.submittedAt; } logEv('signInAgain'); } else logEv('start'); if(window.SPITZ_TTSCHECK) logEv('ttsCheck',window.SPITZ_TTSCHECK);
   $('#sname').textContent=`${name} (${period==='G'?'GUEST':'PERIOD '+period})`; $('#isubName').textContent=name;
   $('#startScreen').hidden=true;
   if(S.submitted){ ACT.cur=null; showResults(true); } else go(S.i); };
@@ -2517,6 +2604,38 @@ const LS={ get(k){ try{ return JSON.parse(localStorage.getItem(k)); }catch(e){ r
 let CTX=null;   // {key, sessionId, student, test, name, period}
 const newer=(a,b)=>!!(a&&a.state&&(!b||!b.state||(a.state.rev||0)>(b.state.rev||0)));
 
+/* ---------- text-to-speech settings (voice, volume, pitch, rate) and the sound check read aloud students see after
+   signing in, set up like the state test's. Settings stay on this computer. ---------- */
+const TTS=window.SpitzTTS={vol:10,pitch:10,rate:10,voice:''};
+try{ Object.assign(TTS,JSON.parse(localStorage.getItem('spitzTTS')||'{}')); }catch(e){}
+TTS.save=()=>{ try{ localStorage.setItem('spitzTTS',JSON.stringify({vol:TTS.vol,pitch:TTS.pitch,rate:TTS.rate,voice:TTS.voice})); }catch(e){} };
+/* English voices, the ones on this computer first: only they report each word as it is said, which the word highlight follows */
+TTS.voices=()=>{ const sy=window.speechSynthesis, v=sy&&sy.getVoices?sy.getVoices():[];
+  return v.filter(x=>/^en/i.test(x.lang)).sort((a,b)=>(b.localService-a.localService)||(/en-US/i.test(b.lang)-/en-US/i.test(a.lang))); };
+TTS.pick=()=>{ const v=TTS.voices(); return v.find(x=>x.name===TTS.voice)||v[0]||null; };
+TTS.utter=text=>{ const u=new SpeechSynthesisUtterance(text); u.lang='en-US'; const v=TTS.pick(); if(v) u.voice=v;
+  u.volume=TTS.vol/10; u.pitch=TTS.pitch/10; u.rate=TTS.rate<=10?0.5+TTS.rate*0.05:1+(TTS.rate-10)*0.1; return u; };
+const TTS_PANELS=[];
+TTS.panel=(el,note)=>{ const q=s=>String(s).replace(/[&<>"]/g,c=>'&#'+c.charCodeAt(0)+';');
+  el.innerHTML=`<label class="tv"><b>Current Voice Pack:</b><select></select></label>${note?`<p>${note}</p>`:''}`
+    +[['vol','Volume',10],['pitch','Pitch',20],['rate','Rate',20]].map(([k,l,m])=>`<div class="tsl"><span>${l}</span><input type="range" min="0" max="${m}" step="1" data-k="${k}" aria-label="${l}"><output></output></div>`).join('');
+  const sel=el.querySelector('select');
+  el.sync=()=>{ const v=TTS.voices(), cur=TTS.pick(); sel.innerHTML=v.length?v.map(x=>`<option>${q(x.name)}</option>`).join(''):'<option>Default voice</option>'; if(cur) sel.value=cur.name;
+    el.querySelectorAll('input').forEach(i=>{ i.value=TTS[i.dataset.k]; i.nextElementSibling.textContent=i.value; }); };
+  sel.onchange=()=>{ TTS.voice=sel.value; TTS.save(); TTS_PANELS.forEach(p=>p!==el&&p.sync()); };
+  el.querySelectorAll('input').forEach(i=>i.oninput=()=>{ TTS[i.dataset.k]=+i.value; i.nextElementSibling.textContent=i.value; TTS.save(); TTS_PANELS.forEach(p=>p!==el&&p.sync()); });
+  TTS_PANELS.push(el); el.sync(); };
+{ const sy=window.speechSynthesis; if(sy&&sy.addEventListener) sy.addEventListener('voiceschanged',()=>TTS_PANELS.forEach(p=>p.sync())); }
+TTS.panel($('#tcPanel'),'You can move the sliders and click the speaker button again to choose the settings that works best for you.');
+/* resolves 'heard' or 'skipped'; the student can always go on, as on the state test */
+function soundCheck(){ const box=$('#ttsCheck'); box.hidden=false; $('#tcYes').disabled=true; $('#tcMsg').hidden=true; $('#tcPanel').sync();
+  $('#tcSpeak').onclick=()=>{ const sy=window.speechSynthesis; if(!sy){ $('#tcMsg').hidden=false; return; } sy.cancel();
+    const u=TTS.utter('This text is being read aloud.'); $('#tcSpeak').classList.add('play'); u.onend=u.onerror=()=>$('#tcSpeak').classList.remove('play');
+    sy.speak(u); $('#tcYes').disabled=false; };
+  $('#tcNo').onclick=()=>{ $('#tcMsg').hidden=false; };
+  return new Promise(res=>{ const done=v=>{ const sy=window.speechSynthesis; if(sy) sy.cancel(); box.hidden=true; window.SPITZ_TTSCHECK=v; res(v); };
+    $('#tcYes').onclick=()=>done('heard'); $('#tcSkip').onclick=()=>done('skipped'); }); }
+
 /* ---------- sign in ---------- */
 $('#startForm').addEventListener('submit',async e=>{ e.preventDefault();
   const nm=$('#stuName').value.trim(), pd=$('#stuPeriod').value;
@@ -2539,6 +2658,7 @@ $('#startForm').addEventListener('submit',async e=>{ e.preventDefault();
     const server=r.attempt?{state:r.attempt.state,events:r.attempt.events}:null, local=LS.get(CTX.key);
     const use=(server&&server.state&&server.state.submitted)?server:(newer(local,server)?local:server);
     window.__spitzPending={name:CTX.name,period,state:use&&use.state,events:use&&use.events};
+    if(window.SPITZ_RA&&!(use&&use.state&&use.state.submitted)) await soundCheck();
     load(r.test,booted); return;
   }
   const id=fixed||pick.value;
@@ -2547,6 +2667,7 @@ $('#startForm').addEventListener('submit',async e=>{ e.preventDefault();
   CTX={key:'stc:file:'+id+':'+nm.toUpperCase()+':'+pd, test:id, name:nm.toUpperCase(), period:pd};
   const local=LS.get(CTX.key);
   window.__spitzPending={name:CTX.name,period:pd,state:local&&local.state,events:local&&local.events};
+  if(/[?&]readaloud=1\b/.test(location.search)) await soundCheck();
   load(id,booted);
 });
 
