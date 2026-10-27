@@ -1,5 +1,5 @@
 {
- "updated": "2026-10-22T21:39:07.054Z",
+ "updated": "2026-10-27T13:00:25.260Z",
  "games": {
   "splat_range": {
    "name": "Splat Range",
@@ -12,10 +12,17 @@
      "date": "2026-10-16"
     },
     {
-     "name": "Tanix.B",
-     "score": "43,406",
-     "acc": 97,
+     "name": "Tanix.b",
+     "score": "49,999",
+     "acc": 93,
      "set": "Multiplication facts",
+     "date": "2026-10-24"
+    },
+    {
+     "name": "Marcus.Trevino",
+     "score": "35,847",
+     "acc": 100,
+     "set": "Evaluating functions",
      "date": "2026-10-16"
     },
     {
@@ -33,6 +40,13 @@
      "date": "2026-10-16"
     },
     {
+     "name": "Mrs. De Leon",
+     "score": "8,641",
+     "acc": 96,
+     "set": "Functions",
+     "date": "2026-10-23"
+    },
+    {
      "name": "Grace W",
      "score": "5,081",
      "acc": 91,
@@ -44,6 +58,14 @@
   "star_swarm": {
    "name": "Star Swarm",
    "top": [
+    {
+     "name": "Saulo G",
+     "score": "879,475",
+     "acc": 100,
+     "set": "Slide and Slice · Slide",
+     "date": "2026-10-26",
+     "bonus": 1
+    },
     {
      "name": "Spitz",
      "score": "631,125",
@@ -106,13 +128,6 @@
      "acc": 97,
      "set": "Multiplication facts · Facts 0–3",
      "date": "2026-10-16"
-    },
-    {
-     "name": "arian V",
-     "score": "79,075",
-     "acc": 90,
-     "set": "Multiplication facts · Facts 0–3, Facts 10–12",
-     "date": "2026-10-16"
     }
    ]
   },
@@ -120,16 +135,16 @@
    "name": "Shift Racer",
    "top": [
     {
+     "name": "Tanix.b",
+     "score": "35,392",
+     "acc": 97,
+     "set": "Multiplication facts",
+     "date": "2026-10-24"
+    },
+    {
      "name": "Juan M",
      "score": "22,970",
      "acc": 78,
-     "set": "Multiplication facts",
-     "date": "2026-10-16"
-    },
-    {
-     "name": "tanix B",
-     "score": "22,905",
-     "acc": 93,
      "set": "Multiplication facts",
      "date": "2026-10-16"
     },
@@ -166,6 +181,21 @@
   "jump_man_multiplication": {
    "name": "Jump Man",
    "top": [
+    {
+     "name": "Jose Cruz Banda",
+     "score": "2,693",
+     "acc": 96,
+     "set": "Multiplication facts",
+     "date": "2026-10-23"
+    },
+    {
+     "name": "Elijah b",
+     "score": "1,510",
+     "acc": 24,
+     "set": "Slide and Slice",
+     "date": "2026-10-24",
+     "bonus": 1
+    },
     {
      "name": "Noah C",
      "score": "1,119",
@@ -207,13 +237,6 @@
      "date": "2026-10-19"
     },
     {
-     "name": "Marcus.Trevino",
-     "score": "35 – 7",
-     "acc": 100,
-     "set": "Multiplication facts",
-     "date": "2026-10-16"
-    },
-    {
      "name": "damian S",
      "score": "28 – 14",
      "acc": 100,
@@ -221,11 +244,11 @@
      "date": "2026-10-16"
     },
     {
-     "name": "SERGIO.C",
-     "score": "21 – 7",
+     "name": "Sergio.C",
+     "score": "28 – 14",
      "acc": 94,
-     "set": "Standard form",
-     "date": "2026-10-20"
+     "set": "Multiplication facts · Facts 0–3",
+     "date": "2026-10-23"
     },
     {
      "name": "Noah Cuadra",
@@ -295,10 +318,18 @@
    "top": [
     {
      "name": "Alexander Limon",
-     "score": "14,430",
-     "acc": 100,
-     "set": "Multiplication facts · Facts 4–6, Facts 7–9, Facts 10–12",
-     "date": "2026-10-16"
+     "score": "21,563",
+     "acc": 95,
+     "set": "Slide and Slice · Slide",
+     "date": "2026-10-26",
+     "bonus": 1
+    },
+    {
+     "name": "Sergio.C",
+     "score": "14,700",
+     "acc": 95,
+     "set": "Multiplication facts · Facts 0–3",
+     "date": "2026-10-26"
     },
     {
      "name": "EMily R",
@@ -315,6 +346,14 @@
      "date": "2026-10-16"
     },
     {
+     "name": "ismael z",
+     "score": "8,350",
+     "acc": 100,
+     "set": "Slide and Slice",
+     "date": "2026-10-23",
+     "bonus": 1
+    },
+    {
      "name": "Leonardo A",
      "score": "5,610",
      "acc": 88,
@@ -329,6 +368,13 @@
      "date": "2026-10-16"
     },
     {
+     "name": "David.V",
+     "score": "4,740",
+     "acc": 79,
+     "set": "Slope-intercept form",
+     "date": "2026-10-23"
+    },
+    {
      "name": "Kaelyn M",
      "score": "4,160",
      "acc": 100,
@@ -339,27 +385,6 @@
      "name": "Janet F",
      "score": "3,950",
      "acc": 98,
-     "set": "Multiplication facts",
-     "date": "2026-10-16"
-    },
-    {
-     "name": "AMY N",
-     "score": "3,330",
-     "acc": 97,
-     "set": "Multiplication facts · Facts 0–3",
-     "date": "2026-10-16"
-    },
-    {
-     "name": "Erick D",
-     "score": "3,290",
-     "acc": 78,
-     "set": "Multiplication facts",
-     "date": "2026-10-16"
-    },
-    {
-     "name": "Sylvestre Cantu",
-     "score": "2,220",
-     "acc": 75,
      "set": "Multiplication facts",
      "date": "2026-10-16"
     }
@@ -374,6 +399,26 @@
      "acc": 82,
      "set": "Multiplication facts · Facts 0–3, Facts 4–6, Facts 7–9",
      "date": "2026-10-16"
+    }
+   ]
+  },
+  "mini_golf": {
+   "name": "Mini Golf",
+   "top": [
+    {
+     "name": "Saul G",
+     "score": "10,588",
+     "acc": 95,
+     "set": "Slide and Slice · Slide",
+     "date": "2026-10-26",
+     "bonus": 1
+    },
+    {
+     "name": "David.V",
+     "score": "950",
+     "acc": 100,
+     "set": "Slope-intercept form · Write the equation",
+     "date": "2026-10-23"
     }
    ]
   },
@@ -456,6 +501,13 @@
    "name": "Brick Breaker",
    "top": [
     {
+     "name": "Saulo G",
+     "score": "75,548",
+     "acc": 100,
+     "set": "Multiplication facts · Facts 0–3",
+     "date": "2026-10-23"
+    },
+    {
      "name": "Sebastian E.",
      "score": "51,997",
      "acc": 93,
@@ -532,15 +584,53 @@
     }
    ]
   },
+  "burger_blaster": {
+   "name": "Burger Blaster",
+   "top": [
+    {
+     "name": "David.V",
+     "score": "78,124",
+     "acc": 93,
+     "set": "Slope-intercept form · Find slope or y-intercept",
+     "date": "2026-10-26"
+    }
+   ]
+  },
   "snake_arena": {
    "name": "Snake Arena",
    "top": [
     {
-     "name": "SERGIO.C",
-     "score": "7,832",
-     "acc": 100,
-     "set": "Slide and Slice",
-     "date": "2026-10-20"
+     "name": "Jose Cruz Banda",
+     "score": "34,635",
+     "acc": 86,
+     "set": "Multiplication facts",
+     "date": "2026-10-23"
+    },
+    {
+     "name": "Sergio.C",
+     "score": "32,742",
+     "acc": 96,
+     "set": "Multiplication facts · Facts 0–3",
+     "date": "2026-10-23"
+    },
+    {
+     "name": "RAMON CASTILLO",
+     "score": "24,254",
+     "acc": 93,
+     "set": "Multiplication facts",
+     "date": "2026-10-23"
+    }
+   ]
+  },
+  "pinball": {
+   "name": "Pinball",
+   "top": [
+    {
+     "name": "JOHN S",
+     "score": "252,070",
+     "acc": 97,
+     "set": "Multiplication facts",
+     "date": "2026-10-26"
     }
    ]
   }
