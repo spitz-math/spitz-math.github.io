@@ -556,8 +556,10 @@ document.addEventListener('visibilitychange',()=>{ if(!document.hidden&&$('#auto
 let teaF=store('tea')||'';
 const teaName=e=>{ const t=DATA&&DATA.teachers&&DATA.teachers.find(x=>x.email===e); return t?t.name:(DATA&&DATA.me&&DATA.me.email===e?DATA.me.name:String(e||'').split('@')[0]); };
 const perName=p=>p==='G'?'Guest':p;
-function renderMe(){ const me=DATA.me||{admin:true,periods:['2','8','9']};
-  $('#whoLbl').textContent=me.name?me.name:''; $('#testsBtn').hidden=!me.admin;
+const seeAll=()=>!!(DATA&&DATA.me&&(DATA.me.admin||DATA.me.view));   // Admin or View access: every teacher's sessions and students
+const canAct=sid=>{ if(!DATA||!DATA.me||DATA.me.admin) return true; const s=DATA.sessions.find(x=>x.id===sid); return !s||s.teacher===DATA.me.email; };   // View access changes only their own
+function renderMe(){ const me0=DATA.me||{admin:true,owner:true,periods:['2','8','9']}, me=Object.assign({},me0,{admin:seeAll()});   // here admin = sees every teacher (Admin or View access)
+  $('#whoLbl').textContent=me.name?me.name:''; $('#testsBtn').hidden=!(me0.owner===undefined?me0.admin:me0.owner);
   $('#teaGrp').hidden=!me.admin||!(DATA.teachers&&DATA.teachers.length>1);
   if(me.admin&&DATA.teachers){ if(teaF&&!DATA.teachers.some(t=>t.email===teaF)) teaF='';
     const h='<option value="">All teachers</option>'+DATA.teachers.map(t=>`<option value="${esc(t.email)}">${esc(t.name)}</option>`).join('');
@@ -594,7 +596,7 @@ async function openMySessions(){ openPage('#mpage'); MP.tests=null; myTests(true
     const keepPr=$('#prTest').value; $('#nsTest').innerHTML=o; $('#prTest').innerHTML=o; if(keepPr) $('#prTest').value=keepPr; }
   catch(e){ $('#nsTest').innerHTML=$('#prTest').innerHTML='<option value="">Could not load the tests</option>'; say($('#nsMsg'),errText(e),'err'); } }
 function renderMs(){ const box=$('#msList'); if(!DATA){ box.innerHTML='<p class="hint">Loading…</p>'; return; }
-  const admin=DATA.me&&DATA.me.admin, L=DATA.sessions.filter(s=>!teaF||s.teacher===teaF).sort((a,b)=>(b.open-a.open)||((b.created||0)-(a.created||0)));
+  const admin=!!(DATA.me&&DATA.me.admin), L=DATA.sessions.filter(s=>(!teaF||s.teacher===teaF)&&canAct(s.id))   // View access: only their own sessions here.sort((a,b)=>(b.open-a.open)||((b.created||0)-(a.created||0)));
   if(!L.length){ box.innerHTML='<p class="hint">No sessions yet. Make one above.</p>'; return; }
   const RV=['Score only','Score + review','Nothing'];
   box.innerHTML=`<div style="overflow-x:auto"><table class="t"><tr><th>Session ID</th><th>Test</th>${admin?'<th>Teacher</th>':''}<th>Made</th><th>Note</th><th>Status</th><th>After they submit</th><th></th></tr>${L.map(s=>`<tr data-sid="${esc(s.id)}">
@@ -630,7 +632,7 @@ $('#nsGo').onclick=async()=>{ const test=$('#nsTest').value; if(!test) return sa
 /* ---------- Reports: one test across every session it was given in (the admin: all teachers), grouped by teacher or class period.
    Built from stcDash (the same rows the dashboard reads), so it needs nothing new on the server. ---------- */
 const RP={rows:null, test:'', csv:null};
-function rpOpen(){ openPage('#rppage'); const me=DATA&&DATA.me||{}, admin=!!me.admin;
+function rpOpen(){ openPage('#rppage'); const admin=seeAll();
   const tests=[...new Set((DATA?DATA.sessions:[]).map(s=>s.test))];
   Promise.all(tests.map(t=>loadMeta(t).catch(()=>{}))).then(()=>{
     const cnt=t=>DATA.sessions.filter(s=>s.test===t).length;
@@ -850,7 +852,7 @@ function renderSesList(){ const box=$('#sesList'), keepTop=box.scrollTop; const 
   const hid=DATA.sessions.filter(s=>!s.open&&!showClosed&&!sesDraft.has(s.id)).length;
   $('#sesList').innerHTML=order.length?order.map(t=>{ const G=groups[t].sort((a,b)=>(b.open-a.open)||((b.created||0)-(a.created||0))), on=G.filter(s=>sesDraft.has(s.id)).length;
       return `<div class="sesgrp"><label class="sesgh"><input type="checkbox" data-grp="${esc(t)}" ${on===G.length?'checked':''} ${on&&on<G.length?'data-mixed="1"':''}><span class="gt">${esc(testTitle(t))}</span><span class="gn">${G.length} session${G.length===1?'':'s'}</span></label>
-        ${G.map(s=>`<label class="sesrow"><input type="checkbox" data-sid="${esc(s.id)}" ${sesDraft.has(s.id)?'checked':''}><span class="sid2">${esc(short(s.id))}</span><span class="op${s.open?'':' cl'}">${s.open?'Open':'Closed'}</span><span class="sm">${esc([fmtDay(s.created),DATA.me&&DATA.me.admin&&!teaF?teaName(s.teacher):'',s.notes].filter(Boolean).join(' · '))}</span></label>`).join('')}</div>`; }).join('')
+        ${G.map(s=>`<label class="sesrow"><input type="checkbox" data-sid="${esc(s.id)}" ${sesDraft.has(s.id)?'checked':''}><span class="sid2">${esc(short(s.id))}</span><span class="op${s.open?'':' cl'}">${s.open?'Open':'Closed'}</span><span class="sm">${esc([fmtDay(s.created),seeAll()&&!teaF?teaName(s.teacher):'',s.notes].filter(Boolean).join(' · '))}</span></label>`).join('')}</div>`; }).join('')
     :`<div class="sesnone">${q?'No sessions match “'+esc(q)+'”.':DATA.sessions.length?'No open sessions. Tick “Show closed sessions” below.':'No sessions yet. Make one in My sessions.'}</div>`;
   if(hid&&!q) $('#sesList').insertAdjacentHTML('beforeend',`<div class="sesnone" style="padding-top:4px">${hid} closed session${hid===1?'':'s'} hidden.</div>`);
   box.querySelectorAll('input[data-mixed]').forEach(x=>x.indeterminate=true); box.scrollTop=keepTop; }
@@ -894,7 +896,7 @@ function renderLive(L,tests){
       <td class="fx c4"><div class="prog"><i><b style="width:${Math.round(100*ans/n)}%"></b></i><em>${ans}/${n}</em></div></td>
       <td class="fx c5" title="${esc(l[1])}"><span class="lv" style="background:${l[2]}"></span>${s.score||0}/${s.max||0} <span class="rs">${s.pct||0}%</span></td>
       <td class="fx c6">${s.minutes!==''&&s.minutes!=null?Math.round(s.minutes)+'m':''}</td>
-      <td class="fx c7"><div class="acts">${s.submitted?'':`<button class="ib" data-act="${s.control==='paused'?'resume':'pause'}" data-k="${esc(s.key)}" aria-pressed="${s.control==='paused'}" title="${s.control==='paused'?'Resume':'Pause'}">${ICON.pause}</button><button class="ib lk" data-act="${s.control==='locked'?'unlock':'lock'}" data-k="${esc(s.key)}" aria-pressed="${s.control==='locked'}" title="${s.control==='locked'?'Unlock':'Stop test'}">${ICON.lock}</button>`}</div></td>
+      <td class="fx c7"><div class="acts">${s.submitted||!canAct(s.session)?'':`<button class="ib" data-act="${s.control==='paused'?'resume':'pause'}" data-k="${esc(s.key)}" aria-pressed="${s.control==='paused'}" title="${s.control==='paused'?'Resume':'Pause'}">${ICON.pause}</button><button class="ib lk" data-act="${s.control==='locked'?'unlock':'lock'}" data-k="${esc(s.key)}" aria-pressed="${s.control==='locked'}" title="${s.control==='locked'?'Unlock':'Stop test'}">${ICON.lock}</button>`}</div></td>
       ${Array.from({length:nq},(_,i)=>`<td class="q">${cellHtml(s,i,cellMode)}</td>`).join('')}</tr>`; }).join('');
   const foot=`<tr><td class="fx c0"></td><td class="fx c1" style="font-weight:700">% correct</td><td class="fx c2"></td><td class="fx c3"></td><td class="fx c4"></td><td class="fx c5"></td><td class="fx c6"></td><td class="fx c7"></td>${Array.from({length:nq},(_,i)=>{
       const a=L.filter(s=>s.q[i]&&s.q[i][0]!=null); if(!a.length) return '<td class="q"></td>';
@@ -1037,7 +1039,7 @@ addEventListener('keydown',e=>{ if(e.key==='Escape'&&!$('#qvVeil').hidden) qvClo
 function openDrawer(key,quiet){ const s=DATA&&DATA.students.find(x=>x.key===key); if(!s){ closeDrawer(); return; } openKey=key;
   const [k,label]=stat(s), m=meta(s.test), l=lvl(s.pct||0), d=v=>v?new Date(v).toLocaleString([], {month:'short',day:'numeric',hour:'numeric',minute:'2-digit'}):'–';
   $('#dName').textContent=s.name+' · '+(s.period==='G'?'Guest':'Period '+s.period);
-  $('#dBody').innerHTML=`<div class="dact">${s.submitted?'':`<button class="btn" data-act="${s.control==='paused'?'resume':'pause'}" data-k="${esc(s.key)}">${s.control==='paused'?'Resume':'Pause'}</button><button class="btn warn" data-act="${s.control==='locked'?'unlock':'lock'}" data-k="${esc(s.key)}">${s.control==='locked'?'Unlock':'Stop test'}</button>`}</div>
+  $('#dBody').innerHTML=`<div class="dact">${s.submitted||!canAct(s.session)?'':`<button class="btn" data-act="${s.control==='paused'?'resume':'pause'}" data-k="${esc(s.key)}">${s.control==='paused'?'Resume':'Pause'}</button><button class="btn warn" data-act="${s.control==='locked'?'unlock':'lock'}" data-k="${esc(s.key)}">${s.control==='locked'?'Unlock':'Stop test'}</button>`}</div>
     <div class="kv"><b>Status</b><span><span class="pill p-${k}">${esc(label)}</span></span><b>Test</b><span>${esc(m?m.title:s.test)} · ${esc(s.session)}</span>
     <b>Score</b><span><span class="lv" style="background:${l[2]}"></span>${s.score||0} of ${s.max||0} points (${s.pct||0}%) · ${esc(l[1])}${s.submitted?'':' so far'}</span>
     <b>Answered</b><span>${s.answered||0} · on question ${esc(s.item||'–')}</span><b>Started</b><span>${d(s.started)}</span><b>Submitted</b><span>${d(s.submitted)}</span>
