@@ -1928,7 +1928,7 @@ body>*:not(#printDoc){display:none!important}
   // ready once every picture has loaded (or failed), so nothing prints blank
   return Promise.all([...doc.querySelectorAll('img')].map(i=>i.complete?0:new Promise(r=>{ i.onload=i.onerror=r; setTimeout(r,15000); })));
 };
-function earn(it){ const a=S.answers[it.n]; if(a==null||it.type==='text') return null;   // written answers: the teacher scores them const full=score(it)===true; if(it.max===1||full) return full?it.max:0;
+function earn(it){ const a=S.answers[it.n]; if(a==null||it.type==='text') return null; /* written answers: the teacher scores them */ const full=score(it)===true; if(it.max===1||full) return full?it.max:0;
   let hit=0, parts=2;
   if(it.type==='boxes'){ if(it.unordered){ const left=[...it.answer]; a.forEach(q=>{ const i=left.indexOf(q); if(q!=null&&i>=0){ hit++; left.splice(i,1); } }); } else hit=it.answer.filter((q,i)=>a[i]===q).length; parts=it.answer.length; }
   else if(it.type==='ms'||(it.type==='hotspot'&&Array.isArray(it.answer))){ hit=Math.max(0,a.filter(q=>it.answer.includes(q)).length-Math.max(0,a.length-it.answer.length)); parts=it.answer.length; }
