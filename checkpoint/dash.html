@@ -211,6 +211,12 @@ details.tcard[open]>summary{margin-bottom:10px}
 /* tests page */
 .tpage{position:fixed;inset:0;background:var(--bg);z-index:45;display:flex;flex-direction:column}
 #teaGrp[hidden],#arcGrp[hidden]{display:none}
+.rpcol{max-width:1280px}
+.rpt{border-collapse:collapse;width:100%;font-size:13px}.rpt th,.rpt td{border:1px solid var(--line,#d6dde8);padding:5px 7px;text-align:left}.rpt th{background:#f3f6fa;font-size:12px}
+.rpt td.c{text-align:center;font-weight:600;white-space:nowrap}.rpt tr.all td{font-weight:700;background:#fafbfd}.rpt .sm{font-size:11px;color:var(--mut);font-weight:400}
+.rpwrap{overflow-x:auto} #rpByWrap[hidden],#rpTeaWrap[hidden]{display:none}
+@media print{ body.rpprint>*:not(#rppage){display:none!important} body.rpprint #rppage{position:static;overflow:visible} body.rpprint #rppage .topbar,body.rpprint .rpctl .row,body.rpprint .rpctl .hint,body.rpprint #rpMsg{display:none!important}
+  body.rpprint .tbody{overflow:visible!important;height:auto!important} body.rpprint .tcard{break-inside:avoid;box-shadow:none} body.rpprint .rpt{font-size:10px} body.rpprint .rpt td.c{-webkit-print-color-adjust:exact;print-color-adjust:exact} }
 .rac{display:inline-flex;padding:6px 10px;cursor:pointer}.rac input{width:18px;height:18px}
 .fl{display:flex;flex-direction:column;gap:3px;font-size:12px;font-weight:600;color:var(--mut)}
 .fl select,.fl input{font-size:14px;padding:5px 8px;border:1px solid #9fb0c8;border-radius:6px;background:#fff;color:var(--ink);min-width:0}
@@ -316,6 +322,7 @@ details summary{cursor:pointer;color:var(--blue2);font-size:13px;margin-top:8px}
   <span class="upd" id="whoLbl"></span>
   <button class="btn" id="mySesBtn">My sessions</button>
   <button class="btn" id="rosBtn">My roster</button>
+  <button class="btn" id="rptBtn">Reports</button>
   <button class="btn" id="testsBtn">Tests</button>
 </header>
 <div class="controls">
@@ -385,6 +392,20 @@ details summary{cursor:pointer;color:var(--blue2);font-size:13px;margin-top:8px}
       <p class="hint">Moves every closed session made before this day, for every teacher, into that school year's archive Sheet. The live Sheet stays small and fast. Archived results stay on the dashboard under “Results from”.</p>
       <div class="row fr"><label class="fl">Made before<input type="date" id="arcBefore"></label><button class="btn" id="arcGo">Archive them</button></div>
       <div class="msg2" id="arcMsg"></div></section>
+  </div></div>
+</section>
+<section class="tpage" id="rppage" hidden aria-label="Reports">
+  <header class="topbar"><div class="wm">SPITZ <span>CHECKPOINT</span><small>Reports</small></div><div class="sp"></div>
+    <button class="btn" id="rpCsv" disabled>Download (CSV)</button><button class="btn" id="rpPrint" disabled>Print</button><button class="btn pri" id="rptBack">Back to dashboard</button></header>
+  <div class="tbody"><div class="tcol rpcol">
+    <section class="tcard rpctl"><h2>Results by standard</h2>
+      <p class="hint">One test across classes, for PLCs: how each group did overall, on each TEKS and on each question. Uses every session given with that test.</p>
+      <div class="row fr"><label class="fl">Test<select id="rpTest"><option value="">Loading…</option></select></label>
+        <label class="fl" id="rpByWrap">Compare<select id="rpBy"><option value="tea">Teachers</option><option value="per">Class periods</option></select></label>
+        <label class="fl" id="rpTeaWrap">Teacher<select id="rpTea"></select></label>
+        <label class="hint" style="align-self:end;padding-bottom:6px"><input type="checkbox" id="rpSub" checked> Submitted tests only</label></div>
+      <div class="msg2" id="rpMsg"></div></section>
+    <div id="rpOut"></div>
   </div></div>
 </section>
 <section class="tpage" id="rpage" hidden aria-label="My roster">
@@ -606,6 +627,69 @@ $('#nsGo').onclick=async()=>{ const test=$('#nsTest').value; if(!test) return sa
     dlg('New session',`<p>${esc(testTitle(test))}</p><div class="sid">${esc(short(r.id))}</div><p class="hint">Students type this Session ID to sign in. It is open now; close it in My sessions when the class is done.</p>`); }
   catch(e){ say($('#nsMsg'),'Not made: '+errText(e),'err'); }
   finally{ b.disabled=false; b.textContent='Make the session'; } };
+/* ---------- Reports: one test across every session it was given in (the admin: all teachers), grouped by teacher or class period.
+   Built from stcDash (the same rows the dashboard reads), so it needs nothing new on the server. ---------- */
+const RP={rows:null, test:'', csv:null};
+function rpOpen(){ openPage('#rppage'); const me=DATA&&DATA.me||{}, admin=!!me.admin;
+  const tests=[...new Set((DATA?DATA.sessions:[]).map(s=>s.test))];
+  Promise.all(tests.map(t=>loadMeta(t).catch(()=>{}))).then(()=>{
+    const cnt=t=>DATA.sessions.filter(s=>s.test===t).length;
+    const L=tests.sort((a,b)=>Math.max(...DATA.sessions.filter(s=>s.test===b).map(s=>s.created||0))-Math.max(...DATA.sessions.filter(s=>s.test===a).map(s=>s.created||0)));
+    $('#rpTest').innerHTML=L.length?'<option value="" hidden>Choose a test</option>'+L.map(t=>`<option value="${esc(t)}">${esc(testTitle(t))} (${cnt(t)} session${cnt(t)===1?'':'s'})</option>`).join(''):'<option value="">No sessions yet</option>';
+    if(RP.test&&L.includes(RP.test)) $('#rpTest').value=RP.test; });
+  const T=admin?(DATA.teachers||[]):[]; $('#rpByWrap').hidden=!admin||T.length<2; if(!admin) $('#rpBy').value='per';
+  $('#rpTeaWrap').hidden=!admin||T.length<2; $('#rpTea').innerHTML='<option value="">All teachers</option>'+T.map(t=>`<option value="${esc(t.email)}">${esc(t.name)}</option>`).join('');
+  $('#rpTea').value=teaF||''; rpTeaVis(); if(RP.rows) rpRender(); }
+function rpTeaVis(){ $('#rpTeaWrap').style.visibility=$('#rpBy').value==='per'?'':'hidden'; }
+async function rpLoad(){ const test=$('#rpTest').value; if(!test) return; RP.test=test; RP.rows=null; $('#rpOut').innerHTML=''; ['#rpCsv','#rpPrint'].forEach(b=>$(b).disabled=true);
+  const ids=DATA.sessions.filter(s=>s.test===test).map(s=>s.id); say($('#rpMsg'),'Reading '+plural(ids.length,'session')+'…','');
+  try{ await loadMeta(test); const r=await call('stcDash',{sessions:ids,answers:false,archive:arc},180000); if(RP.test!==test) return;
+    const tOf={}; r.sessions.forEach(s=>tOf[s.id]=s.teacher); RP.rows=r.students.filter(x=>x.test===test).map(x=>Object.assign(x,{teacher:tOf[x.session]}));
+    $('#rpMsg').textContent=''; rpRender(); }
+  catch(e){ say($('#rpMsg'),errText(e),'err'); } }
+function rpRender(){ const out=$('#rpOut'), test=RP.test, m=meta(test), sub=$('#rpSub').checked, by=$('#rpBy').value, tf=$('#rpTea').value;
+  let L=(RP.rows||[]).filter(x=>!sub||x.submitted); if(by==='per'&&tf) L=L.filter(x=>x.teacher===tf);
+  if(!L.length){ out.innerHTML=`<section class="tcard"><p class="hint">${sub?'No submitted tests yet for this test. Uncheck “Submitted tests only” to include tests in progress.':'No answers yet.'}</p></section>`; return; }
+  const multiT=new Set(L.map(x=>x.teacher)).size>1;
+  const gName=x=>by==='tea'?teaName(x.teacher):(multiT?teaName(x.teacher)+' · ':'')+(x.period==='G'?'Guest':'Period '+x.period);
+  const groups={}; L.forEach(x=>{ const k=gName(x); (groups[k]=groups[k]||[]).push(x); });
+  const G=Object.keys(groups).sort((a,b)=>a.localeCompare(b,undefined,{numeric:true})), cols=[['All',L]].concat(G.map(k=>[k,groups[k]]));
+  const n=Math.max(...L.map(x=>x.q.length),m?m.items.length:0), pts=(S,f)=>{ let e=0,mx=0; S.forEach(x=>x.q.forEach((q,i)=>{ if(q&&f(i)&&(sub||q[0]!=null)){ e+=q[0]||0; mx+=q[1]; } })); return [e,mx]; };
+  const pc=([e,mx])=>mx?Math.round(100*e/mx):null, cell=p=>p==null?'<td class="c">–</td>':`<td class="c" style="background:color-mix(in srgb, ${lvl(p)[2]} 22%, white)">${p}%</td>`;
+  const qi=Array.from({length:n},(_,i)=>{ const x=L.find(y=>y.q[i])||L[0]; return qinfo(x,i); });
+  const csv=[[testTitle(test)+' · '+(sub?'submitted tests':'all tests')+' · '+new Date().toLocaleDateString()],[]];
+  // 1. overall
+  const lv=S=>{ const c={'Did Not Meet':0,Approaches:0,Meets:0,Masters:0}; S.forEach(x=>{ const [e,mx]=pts([x],()=>true); if(mx) c[lvl(Math.round(100*e/mx))[1]]++; }); return c; };
+  const pp=(a,b)=>b?Math.round(100*a/b)+'%':'–';
+  let h=`<section class="tcard"><h2>${esc(testTitle(test))}: overall</h2><div class="rpwrap"><table class="rpt"><tr><th>${by==='tea'?'Teacher':'Class'}</th><th>Students</th><th>Average score</th><th>Approaches or above</th><th>Meets or above</th><th>Masters</th></tr>`;
+  csv.push(['Overall'],[by==='tea'?'Teacher':'Class','Students','Average score %','Approaches or above %','Meets or above %','Masters %']);
+  cols.forEach(([k,S])=>{ const c=lv(S), N=S.length, a=pc(pts(S,()=>true)), ap=c.Approaches+c.Meets+c.Masters, me=c.Meets+c.Masters;
+    h+=`<tr${k==='All'?' class="all"':''}><td>${k==='All'?(by==='tea'?'All teachers':'All classes'):esc(k)}</td><td class="c">${N}</td>${cell(a)}<td class="c">${pp(ap,N)}</td><td class="c">${pp(me,N)}</td><td class="c">${pp(c.Masters,N)}</td></tr>`;
+    csv.push([k==='All'?'All':k,N,a==null?'':a,N?Math.round(100*ap/N):'',N?Math.round(100*me/N):'',N?Math.round(100*c.Masters/N):'']); });
+  h+='</table></div></section>';
+  // 2. by TEKS (weakest first)
+  const tk={}; qi.forEach((q,i)=>{ if(!q.teks) return; (tk[q.teks]=tk[q.teks]||{teks:q.teks,rs:q.rs,qs:[]}).qs.push(i); });
+  const T=Object.values(tk).map(t=>Object.assign(t,{all:pc(pts(L,i=>t.qs.includes(i)))})).sort((a,b)=>(a.all==null?101:a.all)-(b.all==null?101:b.all));
+  const head=`${cols.map(([k])=>`<th>${k==='All'?'All':esc(k)}</th>`).join('')}`;
+  h+=`<section class="tcard"><h2>By standard (weakest first)</h2><p class="hint">Percent of points earned on each TEKS.</p><div class="rpwrap"><table class="rpt"><tr><th>TEKS</th><th>Questions</th>${head}</tr>`;
+  csv.push([],['By standard (percent of points)'],['TEKS','Type','Questions'].concat(cols.map(c=>c[0])));
+  T.forEach(t=>{ const v=cols.map(([,S])=>pc(pts(S,i=>t.qs.includes(i))));
+    h+=`<tr><td><b>${esc(t.teks)}</b> <span class="sm">${esc(t.rs||'')}</span></td><td class="sm">${t.qs.map(i=>i+1).join(', ')}</td>${v.map(cell).join('')}</tr>`;
+    csv.push([t.teks,t.rs||'',t.qs.map(i=>i+1).join(' ')].concat(v.map(x=>x==null?'':x))); });
+  h+='</table></div></section>';
+  // 3. by question
+  h+=`<section class="tcard"><h2>By question</h2><div class="rpwrap"><table class="rpt"><tr><th>#</th><th>TEKS</th>${head}</tr>`;
+  csv.push([],['By question (percent of points)'],['Question','TEKS'].concat(cols.map(c=>c[0])));
+  qi.forEach((q,i)=>{ const v=cols.map(([,S])=>pc(pts(S,j=>j===i))); h+=`<tr><td><b>${i+1}</b></td><td>${esc(q.teks)} <span class="sm">${esc(q.rs||'')}</span></td>${v.map(cell).join('')}</tr>`; csv.push([i+1,q.teks].concat(v.map(x=>x==null?'':x))); });
+  h+='</table></div></section>';
+  out.innerHTML=h; RP.csv=csv; ['#rpCsv','#rpPrint'].forEach(b=>$(b).disabled=false); }
+$('#rptBtn').onclick=rpOpen; $('#rptBack').onclick=()=>closePage('#rppage');
+$('#rpTest').onchange=rpLoad; $('#rpSub').onchange=rpRender; $('#rpBy').onchange=()=>{ rpTeaVis(); rpRender(); }; $('#rpTea').onchange=rpRender;
+$('#rpCsv').onclick=()=>{ if(!RP.csv) return; const q=v=>{ v=String(v); return /[",\n]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v; };
+  const blob=new Blob(['\ufeff'+RP.csv.map(r=>r.map(q).join(',')).join('\r\n')],{type:'text/csv'}), a=document.createElement('a');
+  a.href=URL.createObjectURL(blob); a.download=(RP.test||'report')+'-report.csv'; document.body.appendChild(a); a.click(); a.remove(); setTimeout(()=>URL.revokeObjectURL(a.href),60000); };
+$('#rpPrint').onclick=()=>{ document.body.classList.add('rpprint'); setTimeout(()=>{ window.print(); setTimeout(()=>document.body.classList.remove('rpprint'),500); },50); };
+
 /* ---------- My tests: a teacher's own tests from the question bank (stcTeacherPublish); the admin approves them when review is on ---------- */
 function renderMt(){ const M=MP.my, box=$('#mtList'); if(!M) return; const admin=M.admin;
   $('#mtRevWrap').hidden=!admin; $('#mtRev').checked=!!M.review;
