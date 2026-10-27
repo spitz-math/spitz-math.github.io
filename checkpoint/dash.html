@@ -454,7 +454,12 @@ const RAWROOT=/^https:\/\/spitz-math\.github\.io\//.test(ROOT)?'https://raw.gith
 async function siteGet(path){ let err=null;
   for(const u of [RAWROOT&&RAWROOT+path, ROOT+path+(path.includes('?')?'&':'?')+'t='+Date.now()].filter(Boolean)){
     try{ const r=await fetch(u,{cache:'no-store'}); if(r.ok) return r; err=err||r; }catch(e){ err=err||e; } }
+  try{ const r=await viaServer('checkpoint/'+path); if(r.ok) return r; err=err||r; }catch(e){ err=err||e; }
   if(err instanceof Error) throw err; return err; }
+/* last resort for any site file: Apps Script downloads it (Google's servers are never blocked) and hands it over */
+async function viaServer(path,ref){ const r=await call('stcFile',{path:path.replace(/[?#].*$/,''),ref:ref||''},90000);
+  if(!r||r.status!==200) return new Response('',{status:r&&r.status||500});
+  const bin=atob(r.b64), b=new Uint8Array(bin.length); for(let i=0;i<bin.length;i++) b[i]=bin.charCodeAt(i); return new Response(b,{status:200}); }
 const LEVELS=[[69,'Masters','var(--mast)'],[52,'Meets','var(--meets)'],[32,'Approaches','var(--app)'],[0,'Did Not Meet','var(--dnm)']];
 const lvl=p=>LEVELS.find(l=>p>=l[0]);
 const IDLE_MS=3*60*1000, NOSIG_MS=100*1000, POLL_MS=15000;
@@ -999,8 +1004,8 @@ async function evalIndex(js){ const r=await sandbox('<!DOCTYPE html><html><body>
 async function repoBytes(path){ const f=TP.files&&TP.files[path]; if(!f) throw new Error(path+' is not on GitHub.');
   const ck=path+'@'+f.sha; if(TP.cache[ck]) return TP.cache[ck];
   let last=null;
-  for(const u of [TP.gh.raw+encPath(path), TP.gh.pages+encPath(path)+'?v='+f.sha.slice(0,10)]){
-    try{ const r=await fetch(u,{cache:'no-store'}); if(!r.ok) throw new Error('HTTP '+r.status); const b=new Uint8Array(await r.arrayBuffer());
+  for(const u of [TP.gh.raw+encPath(path), TP.gh.pages+encPath(path)+'?v='+f.sha.slice(0,10), 'server']){
+    try{ const r=u==='server'?await viaServer(TP.gh.dir+'/'+path,TP.gh.head):await fetch(u,{cache:'no-store'}); if(!r.ok) throw new Error('HTTP '+r.status); const b=new Uint8Array(await r.arrayBuffer());
       if(await gitSha(b)!==f.sha) throw new Error('GitHub Pages still has an older copy'); return TP.cache[ck]=b; }catch(e){ last=e; } }
   throw new Error('Could not download '+path+' ('+last.message+'). If you just published, wait a minute and click Reload.'); }
 const repoText=async p=>DEC.decode(await repoBytes(p));
@@ -1332,7 +1337,7 @@ async function pubPkg(P){ if(TP.working) return; const msg=$('#pkMsg'), id=P.td.
   catch(e){ TP.working=false; say(msg,'Not published. '+errText(e),'err'); ['#pkPub','#pkCancel','#pkPrev'].forEach(s=>{ if($(s)) $(s).disabled=false; }); if($('#pkShow')) $('#pkShow').disabled=false; } }
 function watchLive(path,sha){ clearTimeout(TP.watch); const t0=Date.now();
   const tick=async()=>{ const el=$('#liveMsg'); if(!el) return;
-    try{ const r=await fetch((TP.gh&&TP.gh.pages||ROOT)+encPath(path)+'?t='+Date.now(),{cache:'no-store'}); if(r.ok&&await gitSha(new Uint8Array(await r.arrayBuffer()))===sha){ say(el,'✓ Live on the site. Students can use it now.','ok'); return; } }catch(e){}
+    try{ let r; try{ r=await fetch((TP.gh&&TP.gh.pages||ROOT)+encPath(path)+'?t='+Date.now(),{cache:'no-store'}); }catch(e){ r=await viaServer('checkpoint/'+encPath(path)); } if(r.ok&&await gitSha(new Uint8Array(await r.arrayBuffer()))===sha){ say(el,'✓ Live on the site. Students can use it now.','ok'); return; } }catch(e){}
     if(Date.now()-t0>10*60000){ say(el,'GitHub Pages hasn\'t updated after 10 minutes. Check the Actions tab of the repository on GitHub.','err'); return; }
     TP.watch=setTimeout(tick,10000); };
   TP.watch=setTimeout(tick,5000); }
@@ -1540,6 +1545,7 @@ async function qbLoad(){ over('Loading the question bank and your released tests
 async function bankOpen(){ if(BK.ready) return; bankSay('Loading the question bank from GitHub…');
   try{ let txt=null, err=null;   // raw.githubusercontent.com first: no redirect to spitzmath.com (a browser can block that hop), then the site itself
     for(const u of [BANKRAW(), BANKURL()+'?t='+Date.now()]){ try{ const r=await fetch(u,{cache:'no-store'}); if(r.ok){ txt=await r.text(); break; } err=err||new Error(r.status===404?'notfound':'HTTP '+r.status); }catch(e){ err=e; } }
+    if(txt===null){ try{ const r=await viaServer('warmup/index.html'); if(r.ok) txt=await r.text(); }catch(e){} }
     if(txt===null) throw err;
     await bankLoad(txt,'GitHub (warmup/index.html)'); bankReady(); }
   catch(e){ bankSay(e.message==='notfound'?'The question bank file is not on GitHub yet. Upload it to a <b>warmup</b> folder in spitz-math.github.io, named <b>index.html</b>, or choose the file:':'Could not load the question bank: '+errText(e)+' You can also choose the file:', e.message==='notfound'?'':'err');
@@ -1676,7 +1682,7 @@ $('#bkTitle').oninput=()=>{ bkIdAuto(); cartSave(); }; $('#bkId').oninput=e=>{ e
 
 /* ---------- make the test (then the normal checks, preview and publish) ---------- */
 async function fileBytes(path){ if(TP.files&&TP.files[path]) return repoBytes(path);
-  const r=await fetch(ROOT+encPath(path),{cache:'no-store'}); if(!r.ok) throw new Error('Could not download '+path+'.'); return new Uint8Array(await r.arrayBuffer()); }
+  const r=await siteGet(encPath(path)); if(!r.ok) throw new Error('Could not download '+path+'.'); return new Uint8Array(await r.arrayBuffer()); }
 function testJsFor(id,title,items,rationale){ const js=v=>itemsCode(v,true);
   return '/* '+title.replace(/\*\//g,'')+': built '+new Date().toLocaleDateString()+' on the Spitz Checkpoint Question bank page.\n'
     +'   Each question keeps its source in "src". Released questions from a published full test keep its pictures (img/) and TEA explanations (rat/);\n'
