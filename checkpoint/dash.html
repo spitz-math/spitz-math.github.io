@@ -333,7 +333,7 @@ details summary{cursor:pointer;color:var(--blue2);font-size:13px;margin-top:8px}
   <div class="grp" id="arcGrp" hidden><span class="lab">Results from</span><select id="arcSel" aria-label="Results from"></select></div>
   <div class="grp" id="teaGrp" hidden><span class="lab">Teacher</span><select id="teaSel" aria-label="Teacher"></select></div>
   <div class="grp"><span class="lab">Period</span><div class="seg" id="perSeg"><button data-v="">All</button></div></div>
-  <div class="grp"><span class="lab">Sort</span><select id="sort"><option value="name">Name</option><option value="period">Period</option><option value="status">Status</option><option value="progress">Progress</option><option value="score">Score</option><option value="input">Last activity</option></select></div>
+  <div class="grp"><span class="lab">Sort</span><select id="sort"><option value="name">First name</option><option value="last">Last name</option><option value="period">Period</option><option value="status">Status</option><option value="progress">Progress</option><option value="score">Score</option><option value="input">Last activity</option></select></div>
   <div class="grp"><input id="q" type="search" placeholder="Find a name" aria-label="Find a name"></div>
   <div class="grp"><span class="lab">View</span><div class="seg" id="viewSeg"><button data-v="live">Live</button><button data-v="std">Standards</button><button data-v="ques">Questions</button></div></div>
 </div>
@@ -817,7 +817,11 @@ function qinfo(s,i){ const m=meta(s.test), it=m&&m.items[i], q=s.q[i]||[];
   return {teks:(it&&it.teks)||q[6]||'', rs:(it&&it.rs)||'', cat:(it&&it.cat)||q[7]||null, max:(it&&it.max)||q[1]||1}; }
 function shown(){ if(!DATA) return [];
   let L=DATA.students.filter(s=>selSes.has(s.session)&&(!per||s.period===per)&&(!qtxt||String(s.name).toLowerCase().includes(qtxt)));
-  const by={ name:(a,b)=>String(a.name).localeCompare(String(b.name))||String(a.period).localeCompare(String(b.period)),
+  // "Last, First" (Skyward) or "First Last"
+  const first=n=>{ n=String(n).trim(); return /,/.test(n)?n.split(',').slice(1).join(',').trim()+' '+n.split(',')[0]:n; };
+  const last=n=>{ n=String(n).trim(); if(/,/.test(n)) return n; const w=n.split(/\s+/); return w.length>1?w[w.length-1]+', '+w.slice(0,-1).join(' '):n; };
+  const by={ name:(a,b)=>first(a.name).localeCompare(first(b.name),undefined,{sensitivity:'base'})||String(a.period).localeCompare(String(b.period)),
+    last:(a,b)=>last(a.name).localeCompare(last(b.name),undefined,{sensitivity:'base'})||String(a.period).localeCompare(String(b.period)),
     period:(a,b)=>String(a.period).localeCompare(String(b.period))||by.name(a,b), status:(a,b)=>stat(b)[2]-stat(a)[2]||by.name(a,b),
     progress:(a,b)=>(b.answered||0)-(a.answered||0)||by.name(a,b), score:(a,b)=>(b.pct||0)-(a.pct||0)||by.name(a,b), input:(a,b)=>(a.input||0)-(b.input||0)||by.name(a,b) };
   return L.sort(by[sortBy]||by.name); }
