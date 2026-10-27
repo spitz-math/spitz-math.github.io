@@ -557,17 +557,19 @@ document.addEventListener('visibilitychange',()=>{ if(!document.hidden&&$('#auto
 let teaF=store('tea')||'';
 const teaName=e=>{ const t=DATA&&DATA.teachers&&DATA.teachers.find(x=>x.email===e); return t?t.name:(DATA&&DATA.me&&DATA.me.email===e?DATA.me.name:String(e||'').split('@')[0]); };
 const perName=p=>p==='G'?'Guest':p;
+/* teachers with classes: Admin or View people with no periods and no sessions are left out of the teacher lists */
+const teaList=()=>(DATA&&DATA.teachers||[]).filter(t=>(t.periods&&t.periods.length)||DATA.sessions.some(s=>s.teacher===t.email));
 const seeAll=()=>!!(DATA&&DATA.me&&(DATA.me.admin||DATA.me.view));   // Admin or View access: every teacher's sessions and students
 const canAct=sid=>{ if(!DATA||!DATA.me||DATA.me.admin) return true; const s=DATA.sessions.find(x=>x.id===sid); return !s||s.teacher===DATA.me.email; };   // View access changes only their own
 function renderMe(){ const me0=DATA.me||{admin:true,owner:true,periods:['2','8','9']}, me=Object.assign({},me0,{admin:seeAll()});   // here admin = sees every teacher (Admin or View access)
-  $('#whoLbl').textContent=me.name?me.name:''; $('#testsBtn').hidden=!(me0.owner===undefined?me0.admin:me0.owner);
-  $('#teaGrp').hidden=!me.admin||!(DATA.teachers&&DATA.teachers.length>1);
-  if(me.admin&&DATA.teachers){ if(teaF&&!DATA.teachers.some(t=>t.email===teaF)) teaF='';
-    const h='<option value="">All teachers</option>'+DATA.teachers.map(t=>`<option value="${esc(t.email)}">${esc(t.name)}</option>`).join('');
+  $('#whoLbl').textContent=me.name?me.name:''; $('#testsBtn').hidden=!me0.admin;   // Admins see the campus tests; only the owner can publish
+  const TL=teaList(); $('#teaGrp').hidden=!me.admin||TL.length<2;
+  if(me.admin&&DATA.teachers){ if(teaF&&!TL.some(t=>t.email===teaF)) teaF='';
+    const h='<option value="">All teachers</option>'+TL.map(t=>`<option value="${esc(t.email)}">${esc(t.name)}</option>`).join('');
     if($('#teaSel').dataset.h!==h){ $('#teaSel').innerHTML=h; $('#teaSel').dataset.h=h; } $('#teaSel').value=teaF; }
   // period buttons: the teacher's own periods (the admin: the chosen teacher's, or every period seen), plus any period a student signed in with, plus Guest
   let L=me.admin?(teaF?((DATA.teachers||[]).find(t=>t.email===teaF)||{periods:[]}).periods:[]):me.periods.slice();
-  if(me.admin&&!teaF) (DATA.teachers||[]).forEach(t=>t.periods.forEach(p=>{ if(!L.includes(p)) L.push(p); }));
+  if(me.admin&&!teaF) TL.forEach(t=>t.periods.forEach(p=>{ if(!L.includes(p)) L.push(p); }));
   DATA.students.forEach(s=>{ if(s.period&&s.period!=='G'&&!L.includes(s.period)) L.push(s.period); });
   L=L.sort((a,b)=>(+a||99)-(+b||99)||String(a).localeCompare(String(b))).concat(['G']);
   if(per&&!L.includes(per)){ per=''; keep('per',per); }
@@ -640,7 +642,7 @@ function rpOpen(){ openPage('#rppage'); const admin=seeAll();
     const L=tests.sort((a,b)=>Math.max(...DATA.sessions.filter(s=>s.test===b).map(s=>s.created||0))-Math.max(...DATA.sessions.filter(s=>s.test===a).map(s=>s.created||0)));
     $('#rpTest').innerHTML=L.length?'<option value="" hidden>Choose a test</option>'+L.map(t=>`<option value="${esc(t)}">${esc(testTitle(t))} (${cnt(t)} session${cnt(t)===1?'':'s'})</option>`).join(''):'<option value="">No sessions yet</option>';
     if(RP.test&&L.includes(RP.test)) $('#rpTest').value=RP.test; });
-  const T=admin?(DATA.teachers||[]):[]; $('#rpByWrap').hidden=!admin||T.length<2; if(!admin) $('#rpBy').value='per';
+  const T=admin?teaList():[]; $('#rpByWrap').hidden=!admin||T.length<2; if(!admin) $('#rpBy').value='per';
   $('#rpTeaWrap').hidden=!admin||T.length<2; $('#rpTea').innerHTML='<option value="">All teachers</option>'+T.map(t=>`<option value="${esc(t.email)}">${esc(t.name)}</option>`).join('');
   $('#rpTea').value=teaF||''; rpTeaVis(); if(RP.rows) rpRender(); }
 function rpTeaVis(){ $('#rpTeaWrap').style.visibility=$('#rpBy').value==='per'?'':'hidden'; }
@@ -746,7 +748,7 @@ $('#rsFor').onchange=()=>{ RS.for=$('#rsFor').value; RS.edit=null; RS.per=''; $(
 let RS={list:null, periods:[], per:'', edit:null, for:''};
 const rsT=()=>RS.for?{teacher:RS.for}:{};
 async function openRoster(){ openPage('#rpage'); $('#rlList').innerHTML='<p class="hint">Loading…</p>';
-  const T=DATA&&DATA.me&&DATA.me.admin?(DATA.teachers||[]):[]; $('#rsForCard').hidden=!T.length;
+  const T=DATA&&DATA.me&&DATA.me.admin?teaList():[]; $('#rsForCard').hidden=!T.length;
   if(T.length){ const h='<option value="">Me</option>'+T.filter(t=>t.email!==DATA.me.email).map(t=>`<option value="${esc(t.email)}">${esc(t.name||t.email)}</option>`).join('');
     if($('#rsFor').dataset.h!==h){ $('#rsFor').innerHTML=h; $('#rsFor').dataset.h=h; } if(![...$('#rsFor').options].some(o=>o.value===RS.for)) RS.for=''; $('#rsFor').value=RS.for; }
   else RS.for='';
@@ -1240,7 +1242,8 @@ function openTests(){ $('#tpage').hidden=false; stop(); tpLoad(); }
 function closeTests(){ if(TP.working&&!confirm('Publishing is still running. Leave this page anyway?')) return; $('#tpage').hidden=true; startAuto(); load(); }
 $('#testsBtn').onclick=openTests; $('#tpBack').onclick=closeTests; $('#tpReload').onclick=()=>{ if(!TP.working) tpLoad(); };
 async function tpLoad(){ const g=$('#ghs'); g.className='ghs'; g.textContent='Checking GitHub…'; TP.player=null;
-  try{ const st=await call('stcGhState',null,60000); TP.gh=st;
+  if(DATA&&DATA.me&&DATA.me.owner===false){ TP.gh=null; TP.files=null; g.innerHTML='You can preview the campus tests and make sessions here. Only Mr. Spitzlberger can add, change or delete them.'; }
+  else try{ const st=await call('stcGhState',null,60000); TP.gh=st;
     if(!st.token){ TP.files=null; g.className='ghs bad'; g.innerHTML='<b>No GitHub token yet</b>, so you can check and preview a test but not publish it. In the Sheet: <b>Spitz Checkpoint &gt; Set GitHub token…</b> then click Reload.'; }
     else { TP.files={}; st.files.forEach(f=>TP.files[f.path]=f);
       g.innerHTML='Publishing to <b>'+esc(st.repo)+'</b> · folder <b>'+esc(st.dir)+'/</b> · branch '+esc(st.branch)+' · <a href="https://github.com/'+esc(st.repo)+'/tree/'+esc(st.branch)+'/'+esc(st.dir)+'" target="_blank" rel="noopener">open on GitHub</a>'; }
