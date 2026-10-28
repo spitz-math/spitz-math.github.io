@@ -103,6 +103,8 @@ table.grid{border-collapse:separate;border-spacing:0;font-size:13px}
 .grid .c4{min-width:92px;padding:0 6px}
 .grid .c5{min-width:100px;padding:0 6px}
 .grid .c6{min-width:48px;padding:0 6px;text-align:right}
+.grid .cL{min-width:96px;padding:0 6px}
+.lvp{display:inline-block;border-radius:10px;padding:1px 8px;font-size:12px;font-weight:700;line-height:18px;color:#fff;white-space:nowrap}.lvp i{font-weight:500;opacity:.85}.lvp.lvs{opacity:.6}.lvp.lvw{background:#eef1f4;color:#5b6773}
 .grid .c7{min-width:70px;padding:0 6px;border-right:2px solid var(--line)}
 .grid tbody tr:hover td.fx{background:#f4f8ff}
 .nm{border:0;background:none;padding:0;color:var(--blue);font-weight:600;max-width:140px;overflow:hidden;text-overflow:ellipsis;text-align:left}
@@ -506,6 +508,24 @@ async function viaServer(path,ref){ const r=await call('stcFile',{path:path.repl
   const bin=atob(r.b64), b=new Uint8Array(bin.length); for(let i=0;i<bin.length;i++) b[i]=bin.charCodeAt(i); return new Response(b,{status:200}); }
 const LEVELS=[[69,'Masters','var(--mast)'],[52,'Meets','var(--meets)'],[32,'Approaches','var(--app)'],[0,'Did Not Meet','var(--dnm)']];
 const lvl=p=>LEVELS.find(l=>p>=l[0]);
+/* Campus performance standards (2026-2027): minimum percent of points for High Did Not Meet, Low Approaches, High Approaches, Meets, Masters */
+const STANDARDS={'6th RLA':[30,39,46,55,73],'7th RLA':[32,43,52,63,77],'8th RLA':[29,36,46,57,73],
+  '6th Math':[28,37,47,58,79],'7th Math':[30,41,48,54,80],'8th Math':[27,38,46,54,77],'Algebra I':[25,32,42,53,69],'8th Science':[29,40,49,57,74],'8th History':[31,45,53,63,73]};
+const BANDS6=[['Masters','Masters','var(--mast)'],['Meets','Meets','var(--meets)'],['High Approaches','Approaches','#6b46c1'],['Low Approaches','Approaches','#9b4dff'],['High Did Not Meet','Did Not Meet','#cf6a55'],['Did Not Meet','Did Not Meet','var(--dnm)']];
+/* which row of the table a test uses, from its course name (Algebra I, Grade 8 Reading, ...); a test with no course is Algebra I like the player */
+function stdRow(course,subject){ const c=String(course||'').toLowerCase(), g=(c.match(/\b([678])(?:th)?\b/)||[])[1];
+  if(/algebra/.test(c)||(!c&&!subject)) return 'Algebra I';
+  const k=subject==='rla'||/reading|rla|english/.test(c)?'RLA':/science/.test(c)?'Science':/history|social/.test(c)?'History':/math/.test(c)?'Math':'';
+  return g&&k&&STANDARDS[g+'th '+k]?g+'th '+k:null; }
+/* Returns [min, level name, color, estimate, main level]; a test outside the table falls back to the percent bands above, marked as an estimate. */
+function staarLvl(test,e,mx){ const m=meta(test), row=m&&stdRow(m.course,m.subject), p=mx?Math.round(100*e/mx):0;
+  if(row){ const c=STANDARDS[row], b=BANDS6[p>=c[4]?0:p>=c[3]?1:p>=c[2]?2:p>=c[1]?3:p>=c[0]?4:5]; return [p,b[0],b[2],false,b[1]]; }
+  const l=lvl(p); return [l[0],l[1],l[2],true,l[1]]; }
+const toScore=s=>s.q.filter(q=>q&&q[9]).length;   // written answers still waiting for the teacher
+const sLvl=s=>staarLvl(s.test,s.score||0,s.max||0);
+function lvPill(s){ const l=sLvl(s), w=toScore(s);
+  if(w) return `<span class="lvp lvw" title="${w} written answer${w>1?'s':''} to score first. Level so far: ${esc(l[1])}">✎ Score ${w} first</span>`;
+  return `<span class="lvp${s.submitted?'':' lvs'}" style="background:${l[2]}" title="${esc(l[1])}${s.submitted?'':' so far'}${l[3]?' (estimate: this test has no row in the campus standards)':''}">${esc(l[1])}${l[3]?' <i>est.</i>':''}</span>`; }
 const IDLE_MS=3*60*1000, NOSIG_MS=100*1000, POLL_MS=15000;
 const store=k=>{ try{ return JSON.parse(localStorage.getItem('spitzDash:'+k)); }catch(e){ return null; } };
 const keep=(k,v)=>{ try{ localStorage.setItem('spitzDash:'+k,JSON.stringify(v)); }catch(e){} };
@@ -524,7 +544,7 @@ function call(fn,arg,ms){ return new Promise((res,rej)=>{ const h=APP&&gsHost();
 const META={}, LOADED=Date.now();
 const STUBS=`window.SPITZ_BASE='';const ASSET=p=>'';const $=s=>null;const F=(a,b)=>'';const V=s=>'';const x='',y='';const ODD=['A','B','C','D','E','F','G','H'],EVEN=['F','G','H','J','K'];
 const j='',k='',m='',p='',c='',t='',v='',z='',a='',n='',f='',g='',h='',P='',A='';const IMG=()=>'';const T=()=>'';const SYS=()=>'';let SGID=0;function SG(){return '';}const SEL1='';
-window.SpitzTest=function(TD){ parent.postMessage({spitzMeta:{id:TD.id,title:TD.title,categories:TD.categories||null,items:(TD.items||[]).map((it,i)=>({n:i+1,teks:it.teks||'',rs:it.rs||'',cat:it.cat||null,max:it.max||1,type:it.label||it.type}))}},'*'); };`;
+window.SpitzTest=function(TD){ parent.postMessage({spitzMeta:{id:TD.id,title:TD.title,categories:TD.categories||null,course:TD.course||'',subject:TD.subject||'',items:(TD.items||[]).map((it,i)=>({n:i+1,teks:it.teks||'',rs:it.rs||'',cat:it.cat||null,max:it.max||1,type:it.label||it.type}))}},'*'); };`;
 function loadMeta(id){ if(META[id]) return META[id].p;
   META[id]={p:new Promise(res=>{ const f=document.createElement('iframe'); f.style.display='none'; f.setAttribute('aria-hidden','true');
     const done=d=>{ META[id].d=d; removeEventListener('message',on); f.remove(); res(d); };
@@ -677,14 +697,15 @@ function rpRender(){ const out=$('#rpOut'), test=RP.test, m=meta(test), sub=$('#
   const qi=Array.from({length:n},(_,i)=>{ const x=L.find(y=>y.q[i])||L[0]; return qinfo(x,i); });
   const csv=[[testTitle(test)+' · '+(sub?'submitted tests':'all tests')+' · '+new Date().toLocaleDateString()],[]];
   // 1. overall
-  const lv=S=>{ const c={'Did Not Meet':0,Approaches:0,Meets:0,Masters:0}; S.forEach(x=>{ const [e,mx]=pts([x],()=>true); if(mx) c[lvl(Math.round(100*e/mx))[1]]++; }); return c; };
+  const lv=S=>{ const c={'Did Not Meet':0,Approaches:0,Meets:0,Masters:0,n:0}; S.forEach(x=>{ if(toScore(x)) return; const [e,mx]=pts([x],()=>true); if(mx){ c[staarLvl(test,e,mx)[4]]++; c.n++; } }); return c; };
+  const wait=L.filter(toScore).length, est=!stdRow(m&&m.course,m&&m.subject);
   const pp=(a,b)=>b?Math.round(100*a/b)+'%':'–';
   let h=`<section class="tcard"><h2>${esc(testTitle(test))}: overall</h2><div class="rpwrap"><table class="rpt"><tr><th>${by==='tea'?'Teacher':'Class'}</th><th>Students</th><th>Average score</th><th>Approaches or above</th><th>Meets or above</th><th>Masters</th></tr>`;
   csv.push(['Overall'],[by==='tea'?'Teacher':'Class','Students','Average score %','Approaches or above %','Meets or above %','Masters %']);
-  cols.forEach(([k,S])=>{ const c=lv(S), N=S.length, a=pc(pts(S,()=>true)), ap=c.Approaches+c.Meets+c.Masters, me=c.Meets+c.Masters;
-    h+=`<tr${k==='All'?' class="all"':''}><td>${k==='All'?(by==='tea'?'All teachers':'All classes'):esc(k)}</td><td class="c">${N}</td>${cell(a)}<td class="c">${pp(ap,N)}</td><td class="c">${pp(me,N)}</td><td class="c">${pp(c.Masters,N)}</td></tr>`;
-    csv.push([k==='All'?'All':k,N,a==null?'':a,N?Math.round(100*ap/N):'',N?Math.round(100*me/N):'',N?Math.round(100*c.Masters/N):'']); });
-  h+='</table></div></section>';
+  cols.forEach(([k,S])=>{ const c=lv(S), N=S.length, a=pc(pts(S,()=>true)), ap=c.Approaches+c.Meets+c.Masters, me=c.Meets+c.Masters, D=c.n;
+    h+=`<tr${k==='All'?' class="all"':''}><td>${k==='All'?(by==='tea'?'All teachers':'All classes'):esc(k)}</td><td class="c">${N}</td>${cell(a)}<td class="c">${pp(ap,D)}</td><td class="c">${pp(me,D)}</td><td class="c">${pp(c.Masters,D)}</td></tr>`;
+    csv.push([k==='All'?'All':k,N,a==null?'':a,D?Math.round(100*ap/D):'',D?Math.round(100*me/D):'',D?Math.round(100*c.Masters/D):'']); });
+  h+=`</table></div>${est||wait?`<p class="hint">${est?'Levels are estimates: this test has no row in the campus standards. ':''}${wait?`${wait} student${wait>1?'s have':' has'} written answers to score and ${wait>1?'are':'is'} left out of the level columns until then.`:''}</p>`:''}</section>`;
   // 2. by TEKS (weakest first)
   const tk={}; qi.forEach((q,i)=>{ if(!q.teks) return; (tk[q.teks]=tk[q.teks]||{teks:q.teks,rs:q.rs,qs:[]}).qs.push(i); });
   const T=Object.values(tk).map(t=>Object.assign(t,{all:pc(pts(L,i=>t.qs.includes(i)))})).sort((a,b)=>(a.all==null?101:a.all)-(b.all==null?101:b.all));
@@ -893,10 +914,11 @@ $('#sesList').addEventListener('change',e=>{ const x=e.target; if(!sesDraft) ret
 document.addEventListener('pointerdown',e=>{ if(sesDraft&&!e.target.closest('#sesDD')) closeSes(true); });
 document.addEventListener('keydown',e=>{ if(e.key==='Escape'&&sesDraft){ closeSes(false); $('#sesBtn').focus(); } });
 function renderTiles(L){ const c={work:0,idle:0,away:0,nosig:0,paused:0,locked:0,sub:0,end:0,ns:0}; L.forEach(s=>c[stat(s)[0]]++);
-  const subs=L.filter(s=>s.submitted), avg=subs.length?Math.round(subs.reduce((a,s)=>a+(s.pct||0),0)/subs.length):null, meets=subs.filter(s=>(s.pct||0)>=52).length;
+  const subs=L.filter(s=>s.submitted), avg=subs.length?Math.round(subs.reduce((a,s)=>a+(s.pct||0),0)/subs.length):null, lc=LEVELS.map(l=>subs.filter(s=>!toScore(s)&&sLvl(s)[4]===l[1]).length), leveled=lc.reduce((a,b)=>a+b,0), meets=lc[0]+lc[1];
   const T=(v,l)=>`<div class="tile"><b>${v}</b><span>${l}</span></div>`;
   $('#tiles').innerHTML=(c.ns?T((L.length-c.ns)+' / '+L.length,'Signed in'):T(L.length,'Students'))+T(c.work+c.end,'Working')+T(c.idle,'Idle 3m+')+T(c.away+c.nosig,'Away / no signal')+T(c.paused+c.locked,'Paused / stopped')+T(c.sub,'Submitted')
-    +T(avg==null?'–':avg+'%','Avg score (submitted)')+T(subs.length?Math.round(100*meets/subs.length)+'%':'–','Meets or above'); }
+    +T(avg==null?'–':avg+'%','Avg score (submitted)')+T(leveled?Math.round(100*meets/leveled)+'%':'–','Meets or above')
+    +`<div class="tile" title="Submitted tests by STAAR level${subs.length>leveled?'. '+(subs.length-leveled)+' still have written answers to score':''}"><b>${lc.map((n,i)=>`<i style="font-style:normal;color:${LEVELS[i][2]}">${n}</i>`).join(' · ')}</b><span>Masters · Meets · Approaches · Did Not Meet</span></div>`; }
 function renderBulk(){ $('#bulk').hidden=!sel.size; $('#bulkN').textContent=sel.size+' selected'; }
 const ICON={pause:'<svg viewBox="0 0 14 14"><rect x="3" y="2" width="3" height="10" rx="1" fill="currentColor"/><rect x="8" y="2" width="3" height="10" rx="1" fill="currentColor"/></svg>',
   lock:'<svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="2.5" y="6" width="9" height="6.5" rx="1.3" fill="currentColor" stroke="none"/><path d="M4.5 6V4.3a2.5 2.5 0 015 0V6"/></svg>'};
@@ -909,18 +931,19 @@ function cellHtml(s,i,mode){ const q=s.q[i]; const cur=!s.submitted&&+s.item===i
 function renderLive(L,tests){
   const nq=Math.max(...L.map(s=>Math.max(s.q.length,(meta(s.test)||{items:[]}).items.length)),0);
   const mixed=tests.length>1;
-  const head=`<tr><th class="fx c0"><input type="checkbox" id="allBox" aria-label="Select all shown"></th><th class="fx c1" style="text-align:left">Name</th><th class="fx c2">Per.</th><th class="fx c3" style="text-align:left">Status</th><th class="fx c4" style="text-align:left">Answered</th><th class="fx c5" style="text-align:left">Score</th><th class="fx c6">Time</th><th class="fx c7">Pause / Stop</th>${Array.from({length:nq},(_,i)=>`<th class="qh">${i+1}</th>`).join('')}</tr>`;
-  const rows=L.map(s=>{ const [k,label]=stat(s), n=Math.max(s.q.length,(meta(s.test)||{items:[]}).items.length)||1, ans=s.answered||0, l=lvl(s.pct||0);
+  const head=`<tr><th class="fx c0"><input type="checkbox" id="allBox" aria-label="Select all shown"></th><th class="fx c1" style="text-align:left">Name</th><th class="fx c2">Per.</th><th class="fx c3" style="text-align:left">Status</th><th class="fx c4" style="text-align:left">Answered</th><th class="fx c5" style="text-align:left">Score</th><th class="fx cL" style="text-align:left">STAAR level</th><th class="fx c6">Time</th><th class="fx c7">Pause / Stop</th>${Array.from({length:nq},(_,i)=>`<th class="qh">${i+1}</th>`).join('')}</tr>`;
+  const rows=L.map(s=>{ const [k,label]=stat(s), n=Math.max(s.q.length,(meta(s.test)||{items:[]}).items.length)||1, ans=s.answered||0, l=sLvl(s);
     return `<tr data-k="${esc(s.key)}"><td class="fx c0"><input type="checkbox" class="rowBox" data-k="${esc(s.key)}" ${sel.has(s.key)?'checked':''} aria-label="Select ${esc(s.name)}"></td>
       <td class="fx c1"><button class="nm" data-open="${esc(s.key)}" title="${esc(s.name)}">${esc(s.name)}</button>${s.rclicks?`<span class="rcb" title="Tried to right-click ${s.rclicks}× (Chrome's menu, where Google Lens is). The test blocked it.">Right-click ${s.rclicks}×</span>`:''}${mixed?`<div class="rs">${esc(s.session)}</div>`:''}</td>
       <td class="fx c2">${esc(s.period==='G'?'G':s.period)}</td>
       <td class="fx c3"><span class="pill p-${k}" title="${esc(label+(s.away?' · left the tab '+s.away+'×':''))}">${esc(label)}</span></td>
       <td class="fx c4"><div class="prog"><i><b style="width:${Math.round(100*ans/n)}%"></b></i><em>${ans}/${n}</em></div></td>
       <td class="fx c5" title="${esc(l[1])}"><span class="lv" style="background:${l[2]}"></span>${s.score||0}/${s.max||0} <span class="rs">${s.pct||0}%</span></td>
+      <td class="fx cL">${lvPill(s)}</td>
       <td class="fx c6">${s.minutes!==''&&s.minutes!=null?Math.round(s.minutes)+'m':''}</td>
       <td class="fx c7"><div class="acts">${s.submitted||!canAct(s.session)?'':`<button class="ib" data-act="${s.control==='paused'?'resume':'pause'}" data-k="${esc(s.key)}" aria-pressed="${s.control==='paused'}" title="${s.control==='paused'?'Resume':'Pause'}">${ICON.pause}</button><button class="ib lk" data-act="${s.control==='locked'?'unlock':'lock'}" data-k="${esc(s.key)}" aria-pressed="${s.control==='locked'}" title="${s.control==='locked'?'Unlock':'Stop test'}">${ICON.lock}</button>`}</div></td>
       ${Array.from({length:nq},(_,i)=>`<td class="q">${cellHtml(s,i,cellMode)}</td>`).join('')}</tr>`; }).join('');
-  const foot=`<tr><td class="fx c0"></td><td class="fx c1" style="font-weight:700">% correct</td><td class="fx c2"></td><td class="fx c3"></td><td class="fx c4"></td><td class="fx c5"></td><td class="fx c6"></td><td class="fx c7"></td>${Array.from({length:nq},(_,i)=>{
+  const foot=`<tr><td class="fx c0"></td><td class="fx c1" style="font-weight:700">% correct</td><td class="fx c2"></td><td class="fx c3"></td><td class="fx c4"></td><td class="fx c5"></td><td class="fx cL"></td><td class="fx c6"></td><td class="fx c7"></td>${Array.from({length:nq},(_,i)=>{
       const a=L.filter(s=>s.q[i]&&s.q[i][0]!=null); if(!a.length) return '<td class="q"></td>';
       const p=Math.round(100*a.reduce((t,s)=>t+s.q[i][0],0)/a.reduce((t,s)=>t+s.q[i][1],0)); return `<td class="q qfoot" style="color:${p>=70?'var(--ok)':p>=40?'#9a6b00':'var(--no)'}" title="${a.length} answered">${p}</td>`; }).join('')}</tr>`;
   $('#card').innerHTML=`<div style="display:flex;justify-content:space-between;align-items:center;gap:10px;padding:8px 10px;border-bottom:1px solid var(--line);position:sticky;left:0;flex-wrap:wrap">
@@ -1095,11 +1118,11 @@ addEventListener('keydown',e=>{ if(e.key==='Escape'&&!$('#qvVeil').hidden) qvClo
 
 /* ---------- student drawer ---------- */
 function openDrawer(key,quiet){ const s=DATA&&DATA.students.find(x=>x.key===key); if(!s){ closeDrawer(); return; } openKey=key;
-  const [k,label]=stat(s), m=meta(s.test), l=lvl(s.pct||0), d=v=>v?new Date(v).toLocaleString([], {month:'short',day:'numeric',hour:'numeric',minute:'2-digit'}):'–';
+  const [k,label]=stat(s), m=meta(s.test), l=sLvl(s), w=toScore(s), d=v=>v?new Date(v).toLocaleString([], {month:'short',day:'numeric',hour:'numeric',minute:'2-digit'}):'–';
   $('#dName').textContent=s.name+' · '+(s.period==='G'?'Guest':'Period '+s.period);
   $('#dBody').innerHTML=`<div class="dact">${s.submitted||!canAct(s.session)?'':`<button class="btn" data-act="${s.control==='paused'?'resume':'pause'}" data-k="${esc(s.key)}">${s.control==='paused'?'Resume':'Pause'}</button><button class="btn warn" data-act="${s.control==='locked'?'unlock':'lock'}" data-k="${esc(s.key)}">${s.control==='locked'?'Unlock':'Stop test'}</button>`}</div>
     <div class="kv"><b>Status</b><span><span class="pill p-${k}">${esc(label)}</span></span><b>Test</b><span>${esc(m?m.title:s.test)} · ${esc(s.session)}</span>
-    <b>Score</b><span><span class="lv" style="background:${l[2]}"></span>${s.score||0} of ${s.max||0} points (${s.pct||0}%) · ${esc(l[1])}${s.submitted?'':' so far'}</span>
+    <b>Score</b><span><span class="lv" style="background:${l[2]}"></span>${s.score||0} of ${s.max||0} points (${s.pct||0}%) · ${esc(l[1])}${l[3]?' (estimate)':''}${w||!s.submitted?' so far':''}${w?` · ${w} written answer${w>1?'s':''} to score`:''}</span>
     <b>Answered</b><span>${s.answered||0} · on question ${esc(s.item||'–')}</span><b>Started</b><span>${d(s.started)}</span><b>Submitted</b><span>${d(s.submitted)}</span>
     <b>Time</b><span>${s.minutes||0} min · left the tab ${s.away||0}× (${s.awayMin||0} min)${s.rclicks?` · tried to right-click ${s.rclicks}× (blocked)`:''}</span><b>Last input</b><span>${d(s.input)}</span><b>Last save</b><span>${d(s.saved)}</span><b>Student code</b><span>${esc(s.code)}</span></div>
     <table class="t"><tr><th>#</th><th>Result</th><th>TEKS</th><th>Time</th><th>Visits</th><th>Changes</th></tr>${s.q.map((q,i)=>{ const qi=qinfo(s,i), [pts,mx,ms,vis,ch,fl]=q;
