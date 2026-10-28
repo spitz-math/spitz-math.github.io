@@ -1055,10 +1055,11 @@ window.SpitzTest=function(TD){
 if(TD.keyless&&!window.SPITZ_APP){ window.__spitzKeylessFile=true; return; }
 if(window.__spitzBooted) return; window.__spitzBooted=true;
 const ITEMS=TD.items, KEYLESS=!!TD.keyless; let OWNPTS=null;
-const NOKEY=it=>KEYLESS&&it.type!=='text'&&(it.type==='graphline'?it.eq:it.type==='graphineq'?it.op:it.answer)===undefined;   /* a line question's key is its equation (eq); an inequality's is m, b and op */
+const KEYF={graphline:'eq',graphineq:'op',graphsys:'ineqs',graphfunc:'ftype',graphexp:'a'};   /* where each graph type keeps its key (a line: its equation; an inequality: m, b, op; …) */
+const NOKEY=it=>KEYLESS&&it.type!=='text'&&it[KEYF[it.type]||'answer']===undefined;
 if(TD.subject==='rla') document.body.classList.add('rla');
 if(TD.reference==='none') document.body.classList.add('noref'); if(TD.calc===false) document.body.classList.add('nocalc');
-ITEMS.forEach((it,i)=>{ it.n=i+1; it.letters=ODD; it.max=it.max||1; });
+ITEMS.forEach((it,i)=>{ it.n=i+1; it.letters=ODD; it.max=it.max||1; ownFn(it); });
 /* ---------------- state ---------------- */
 const S={i:0,answers:{},flags:{},notes:{},name:'',modes:{hl:false,elim:false},zoomIx:1,submitted:false};
 const ZOOMS=[0.9,1,1.15,1.3,1.5];
@@ -1674,6 +1675,8 @@ function buildGraphSys(it,root){
 }
 
 /* ---------- graph a function by type (Linear / Quadratic / Exponential) ---------- */
+/* a teacher-written function graph sends its key as type, asymptote and two points (kp): the curve through them */
+function ownFn(it){ if(it.type==='graphfunc'&&it.kp&&!it.fn) it.fn=curveOf({type:it.ftype,pts:it.kp,asym:it.asym}); }
 function curveOf(a){ const [p,q]=a.pts;
   if(a.type==='linear'){ if(p[0]===q[0]) return null; const m=(q[1]-p[1])/(q[0]-p[0]); return x=>p[1]+m*(x-p[0]); }
   if(a.type==='quadratic'){ if(p[0]===q[0]) return null; const k=(q[1]-p[1])/Math.pow(q[0]-p[0],2); return x=>k*Math.pow(x-p[0],2)+p[1]; }
@@ -2525,7 +2528,7 @@ document.documentElement.addEventListener('scroll',()=>{ if(PRINTING()) return; 
 document.body.addEventListener('scroll',()=>{ if(PRINTING()) return; document.body.scrollTop=0; document.body.scrollLeft=0; });
 window.__test={ITEMS,S,score,parseNum,earn};
 window.__spitzOwn=o=>{ if(!KEYLESS||!o) return; if(o.pts) OWNPTS=o.pts;
-  if(Array.isArray(o.key)) ITEMS.forEach((it,i)=>{ if(it.type!=='text'&&o.key[i]!=null){ if(it.type==='graphline') it.eq=o.key[i]; else if(it.type==='graphineq') Object.assign(it,o.key[i]); else it.answer=o.key[i]; } });
+  if(Array.isArray(o.key)) ITEMS.forEach((it,i)=>{ if(it.type!=='text'&&o.key[i]!=null){ if(it.type==='graphline') it.eq=o.key[i]; else if(KEYF[it.type]) Object.assign(it,o.key[i]); else it.answer=o.key[i]; ownFn(it); } });
   if(S.submitted){ showResults(true); if(window.__spitzFill) window.__spitzFill(); } };
 if(window.__spitzOwnPending){ const o=window.__spitzOwnPending; window.__spitzOwnPending=null; window.__spitzOwn(o); }
 

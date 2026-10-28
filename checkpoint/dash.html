@@ -326,6 +326,7 @@ details summary{cursor:pointer;color:var(--blue2);font-size:13px;margin-top:8px}
 .oech select.tz{font-size:13px;padding:4px 6px;border:1px solid #9fb0c8;border-radius:6px;max-width:170px;margin-top:4px} .oech input.zn{font-size:14px;padding:5px 8px;border:1px solid #9fb0c8;border-radius:6px;flex:1;min-width:0}
 .oehimg{position:relative;max-width:420px;line-height:0;cursor:crosshair} .oehimg img{width:100%;height:auto;border:1px solid var(--line);border-radius:4px}
 .oehimg .hsd{position:absolute;width:26px;height:26px;margin:-13px 0 0 -13px;border-radius:50%;border:2px solid #fff;background:#8a94a6;color:#fff;font-size:11px;font-weight:700;padding:0;box-shadow:0 0 0 1px #555;cursor:pointer;line-height:1} .oehimg .hsd.ok{background:#1a7f37}
+.oesys{border:1px solid var(--line);border-radius:8px;padding:6px 8px;margin-bottom:6px} .oesys.on{border-color:#1f6feb;background:#f3f7ff} .oesys select{margin:0 6px} .oesysh{cursor:pointer}
 .oegw select{font-size:13px;padding:4px 6px;border:1px solid #9fb0c8;border-radius:6px} .oegread{margin:8px 0}
 @media (max-width:700px){ .oeqh .num{min-width:0;width:100%} #oeId{width:100%} }
 /* question bank page */
@@ -511,7 +512,8 @@ details summary{cursor:pointer;color:var(--blue2);font-size:13px;margin-top:8px}
       <button class="btn" data-oeadd="num">Number answer</button><button class="btn" data-oeadd="text">Written answer</button></div>
       <div class="row"><b>Interactive:</b><button class="btn" data-oeadd="eq">Equation editor</button><button class="btn" data-oeadd="inline">Drop-down</button><button class="btn" data-oeadd="table">Table match</button>
       <button class="btn" data-oeadd="boxes">Drag into boxes</button><button class="btn" data-oeadd="graph">Plot a point</button><button class="btn" data-oeadd="graphline">Draw a line</button>
-      <button class="btn" data-oeadd="dnd">Drag into groups</button><button class="btn" data-oeadd="hotspot">Hot spot</button><button class="btn" data-oeadd="graphineq">Graph an inequality</button></div></section>
+      <button class="btn" data-oeadd="dnd">Drag into groups</button><button class="btn" data-oeadd="hotspot">Hot spot</button><button class="btn" data-oeadd="graphineq">Graph an inequality</button>
+      <button class="btn" data-oeadd="graphsys">Graph a system</button><button class="btn" data-oeadd="graphfunc">Graph a function</button><button class="btn" data-oeadd="graphexp">Graph an exponential curve</button></div></section>
   </div></div>
   <footer class="oebar"><span id="oeCount" class="hint"></span><span class="msg2" id="oeMsg"></span><div class="sp"></div>
     <button class="btn" id="oePreview">Preview</button><button class="btn" id="oeDraft">Save draft</button><button class="btn pri" id="oePublish">Publish</button></footer>
@@ -848,8 +850,8 @@ $('#mtBank').onclick=async()=>{ const b=$('#mtBank'); b.disabled=true;
 
 /* ---------- write a test: a teacher's own questions (stcOwnGet / stcOwnSave). The answers stay in the Sheet; GitHub gets the test without them. ---------- */
 const OE_COURSES=['6th Math','7th Math','8th Math','Algebra I','6th RLA','7th RLA','8th RLA','8th Science','8th History','Other'];
-const OE_TYPES={mc:'Multiple choice',ms:'Check all that apply',num:'Number answer',eq:'Equation editor',inline:'Drop-down',table:'Table match',boxes:'Drag into boxes',graph:'Plot a point',graphline:'Draw a line',dnd:'Drag into groups',hotspot:'Hot spot',graphineq:'Graph an inequality',text:'Written answer'};
-const OE_PTS={mc:1,ms:2,num:1,eq:1,inline:1,table:2,boxes:2,graph:1,graphline:1,dnd:1,hotspot:1,graphineq:1,text:2}, OE_L='ABCDEFGH';
+const OE_TYPES={mc:'Multiple choice',ms:'Check all that apply',num:'Number answer',eq:'Equation editor',inline:'Drop-down',table:'Table match',boxes:'Drag into boxes',graph:'Plot a point',graphline:'Draw a line',dnd:'Drag into groups',hotspot:'Hot spot',graphineq:'Graph an inequality',graphsys:'Graph a system of inequalities',graphfunc:'Graph a function',graphexp:'Graph an exponential curve',text:'Written answer'};
+const OE_PTS={mc:1,ms:2,num:1,eq:1,inline:1,table:2,boxes:2,graph:1,graphline:1,dnd:1,hotspot:1,graphineq:1,graphsys:2,graphfunc:1,graphexp:1,text:2}, OE_L='ABCDEFGH';
 const OE_SYM='≤ ≥ ≠ ± × ÷ − · π √ ∛ ° ² ³ ½ ⅓ ¼ ¾ ∠ △ ⊥ ∥ ≈ ∞ → ↔ ¢ á é í ó ú ñ ¿ ¡ “ ” —'.split(' ');
 let OE=null;
 function oeCourseFor(subject){ const s=String(subject||'').toLowerCase(), g=(s.match(/\b([678])(?:th)?\b/)||[])[1];
@@ -881,7 +883,8 @@ function oeBlank(type){ const it={type,text:'',points:OE_PTS[type],std:'',passag
   if(type==='eq'){ it.lead=''; it.answer=''; } if(type==='inline'){ it.sent=''; it.drops=[]; it.answer=[]; }
   if(type==='table'){ it.head=''; it.cols=['','']; it.rows=['','']; it.answer=[null,null]; } if(type==='boxes'){ it.tpl=''; it.tiles=['','','','']; it.answer=[]; it.reuse=false; it.unordered=false; }
   if(type==='graph'){ it.R=10; it.answer=null; } if(type==='graphline'){ it.R=10; it.answer=[]; }
-  if(type==='dnd'){ it.zones=['','']; it.tiles=['','','','']; it.answer=[null,null,null,null]; } if(type==='hotspot'){ it.mode='grid'; it.R=10; it.spots=[]; it.answer=[]; } if(type==='graphineq'){ it.R=10; it.answer=[]; it.op='>='; } return it; }
+  if(type==='dnd'){ it.zones=['','']; it.tiles=['','','','']; it.answer=[null,null,null,null]; } if(type==='hotspot'){ it.mode='grid'; it.R=10; it.spots=[]; it.answer=[]; } if(type==='graphineq'){ it.R=10; it.answer=[]; it.op='>='; }
+  if(type==='graphsys'){ it.R=10; it.ineqs=[{pts:[],op:'>='},{pts:[],op:'<'}]; it.act=0; } if(type==='graphfunc'){ it.f='quadratic'; it.pts=[]; it.asym=0; } if(type==='graphexp'){ it.R=10; it.pts=[]; } return it; }
 /* the interactive types. While editing, a sentence or answer line marks its drop-downs and boxes [1], [2] …; the server gets {0}, {1} … in the order they appear */
 const oeDe=h=>{ const t=document.createElement('textarea'); t.innerHTML=h||''; return t.value; };
 const oeToMarks=s=>String(s||'').replace(/\{(\d)\}/g,(m,k)=>'['+(+k+1)+']');
@@ -896,20 +899,36 @@ function oeLineText(P,Q){ if(P[0]===Q[0]) return 'x = '+P[0]; const dy=Q[1]-P[1]
   const mx=m==='0'?'':m==='1'?'x':m==='-1'?'−x':m.replace('-','−')+'x'; if(!mx) return 'y = '+b.replace('-','−');
   return 'y = '+mx+(bn===0?'':(bn*dx>0?' + ':' − ')+b.replace('-','')); }
 /* a coordinate grid the teacher clicks: pts are drawn, two points also draw their line */
-function oeGrid(R,pts,line,onPick,o={}){ oeGrid.n=(oeGrid.n||0)+1; const s=R===5?30:16, pad=16, W=2*R*s+2*pad, X=x=>pad+(x+R)*s, Y=y=>pad+(R-y)*s; let g='';
-  for(let k=-R;k<=R;k++){ const ax=k===0; g+=`<line x1="${X(k)}" y1="${Y(R)}" x2="${X(k)}" y2="${Y(-R)}" stroke="${ax?'#333':'#cfd8e3'}" stroke-width="${ax?1.6:1}"/><line x1="${X(-R)}" y1="${Y(k)}" x2="${X(R)}" y2="${Y(k)}" stroke="${ax?'#333':'#cfd8e3'}" stroke-width="${ax?1.6:1}"/>`;
-    if(k&&(R===5||k%5===0)) g+=`<text x="${X(k)}" y="${Y(0)+12}" font-size="10" text-anchor="middle" fill="#555">${k}</text><text x="${X(0)-4}" y="${Y(k)+3}" font-size="10" text-anchor="end" fill="#555">${k}</text>`; }
-  if(line&&pts.length===2){ const [P,Q]=pts, dx=Q[0]-P[0], dy=Q[1]-P[1], t=4*R;
-    if(o.shade&&dx){ const f=C=>((C[1]-P[1])*dx-dy*(C[0]-P[0]))*Math.sign(dx)*(o.shade==='>'?1:-1), sq=[[-R,-R],[R,-R],[R,R],[-R,R]], poly=[];
-      sq.forEach((A,k)=>{ const B=sq[(k+1)%4], fa=f(A), fb=f(B); if(fa>=0) poly.push(A); if((fa>=0)!==(fb>=0)){ const u=fa/(fa-fb); poly.push([A[0]+u*(B[0]-A[0]),A[1]+u*(B[1]-A[1])]); } });
-      g+=`<polygon points="${poly.map(C=>X(C[0])+','+Y(C[1])).join(' ')}" fill="#1f6feb" fill-opacity=".14"/>`; }
-    g+=`<line x1="${X(P[0]-dx*t)}" y1="${Y(P[1]-dy*t)}" x2="${X(P[0]+dx*t)}" y2="${Y(P[1]+dy*t)}" stroke="#1f6feb" stroke-width="2.5"${o.dash?' stroke-dasharray="9 7"':''} clip-path="url(#oeclip${oeGrid.n})"/>`; }
+/* half of a polygon (grid coordinates) on one side of the line PQ: sgn '>' above, '<' below */
+function oeHalf(poly,P,Q,sgn){ const dx=Q[0]-P[0], dy=Q[1]-P[1], f=C=>((C[1]-P[1])*dx-dy*(C[0]-P[0]))*Math.sign(dx)*(sgn==='>'?1:-1), out=[];
+  poly.forEach((A,k)=>{ const B=poly[(k+1)%poly.length], fa=f(A), fb=f(B); if(fa>=0) out.push(A); if((fa>=0)!==(fb>=0)){ const u=fa/(fa-fb); out.push([A[0]+u*(B[0]-A[0]),A[1]+u*(B[1]-A[1])]); } }); return out; }
+/* a coordinate grid the teacher clicks. pts are drawn ([x, y, colour, label]); line: a line through the two pts.
+   o: yr (taller than wide), dash, shade ('>' or '<' of that line), lines [{P, Q, dash, color}], poly (shaded, grid coordinates), curve (a function), hline (an asymptote) */
+function oeGrid(R,pts,line,onPick,o={}){ oeGrid.n=(oeGrid.n||0)+1; const xr=R, yr=o.yr||R, s=Math.max(xr,yr)===5?30:16, pad=16, W=2*xr*s+2*pad, H=2*yr*s+2*pad, X=x=>pad+(x+xr)*s, Y=y=>pad+(yr-y)*s, cl=`clip-path="url(#oeclip${oeGrid.n})"`; let g='';
+  const gl=(x1,y1,x2,y2,ax)=>`<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="${ax?'#333':'#cfd8e3'}" stroke-width="${ax?1.6:1}"/>`;
+  for(let k=-xr;k<=xr;k++){ g+=gl(X(k),Y(yr),X(k),Y(-yr),k===0); if(k&&(xr===5||k%5===0)) g+=`<text x="${X(k)}" y="${Y(0)+12}" font-size="10" text-anchor="middle" fill="#555">${k}</text>`; }
+  for(let k=-yr;k<=yr;k++){ g+=gl(X(-xr),Y(k),X(xr),Y(k),k===0); if(k&&(yr===5||k%(yr===10&&xr===5?2:5)===0)) g+=`<text x="${X(0)-4}" y="${Y(k)+3}" font-size="10" text-anchor="end" fill="#555">${k}</text>`; }
+  const sq=[[-xr,-yr],[xr,-yr],[xr,yr],[-xr,yr]], shp=P=>`<polygon points="${P.map(C=>X(C[0])+','+Y(C[1])).join(' ')}" fill="#1f6feb" fill-opacity=".16"/>`;
+  const ln=(P,Q,dash,col)=>{ const dx=Q[0]-P[0], dy=Q[1]-P[1], t=4*Math.max(xr,yr); return `<line x1="${X(P[0]-dx*t)}" y1="${Y(P[1]-dy*t)}" x2="${X(P[0]+dx*t)}" y2="${Y(P[1]+dy*t)}" stroke="${col||'#1f6feb'}" stroke-width="2.5"${dash?' stroke-dasharray="9 7"':''} ${cl}/>`; };
+  if(o.poly&&o.poly.length>2) g+=shp(o.poly);
+  if(line&&pts.length===2&&o.shade&&pts[0][0]!==pts[1][0]) g+=shp(oeHalf(sq,pts[0],pts[1],o.shade));
+  if(o.hline!=null) g+=`<line x1="${X(-xr)}" y1="${Y(o.hline)}" x2="${X(xr)}" y2="${Y(o.hline)}" stroke="#d9480f" stroke-width="1.8" stroke-dasharray="6 5"/>`;
+  if(o.curve){ let d='', pen=false; for(let x=-xr;x<=xr+1e-9;x+=0.02){ const y=o.curve(x); if(!isFinite(y)||Math.abs(y)>yr*4){ pen=false; continue; } d+=(pen?'L':'M')+X(x).toFixed(1)+' '+Y(y).toFixed(1); pen=true; } g+=`<path d="${d}" fill="none" stroke="#1f6feb" stroke-width="2.5" ${cl}/>`; }
+  (o.lines||[]).forEach(L=>{ g+=ln(L.P,L.Q,L.dash,L.color); });
+  if(line&&pts.length===2) g+=ln(pts[0],pts[1],o.dash);
   pts.forEach(P=>{ g+=`<circle cx="${X(P[0])}" cy="${Y(P[1])}" r="${P[3]?8:6}" fill="${P[2]||'#1f6feb'}" stroke="#fff" stroke-width="1.5"/>`+(P[3]?`<text x="${X(P[0])}" y="${Y(P[1])+3.5}" font-size="10" font-weight="700" text-anchor="middle" fill="#fff" pointer-events="none">${P[3]}</text>`:''); });
   const w=document.createElement('div'); w.className='oegrid';
-  w.innerHTML=`<svg viewBox="0 0 ${W} ${W}" width="${W}" height="${W}" role="img" aria-label="Grid from −${R} to ${R}. Click to mark the answer."><defs><clipPath id="oeclip${oeGrid.n}"><rect x="${X(-R)}" y="${Y(R)}" width="${2*R*s}" height="${2*R*s}"/></clipPath></defs><rect width="${W}" height="${W}" fill="#fff"/>${g}</svg>`;
+  w.innerHTML=`<svg viewBox="0 0 ${W} ${H}" width="${W}" height="${H}" role="img" aria-label="Grid, x from −${xr} to ${xr}, y from −${yr} to ${yr}. Click to mark the answer."><defs><clipPath id="oeclip${oeGrid.n}"><rect x="${X(-xr)}" y="${Y(yr)}" width="${2*xr*s}" height="${2*yr*s}"/></clipPath></defs><rect width="${W}" height="${H}" fill="#fff"/>${g}</svg>`;
   const svg=w.querySelector('svg'); svg.addEventListener('click',e=>{ const p=svg.createSVGPoint(); p.x=e.clientX; p.y=e.clientY; const q=p.matrixTransform(svg.getScreenCTM().inverse());
-    const x=Math.round((q.x-pad)/s-R), y=Math.round(R-(q.y-pad)/s); if(Math.abs(x)<=R&&Math.abs(y)<=R) onPick([x,y]); });
+    const x=Math.round((q.x-pad)/s-xr), y=Math.round(yr-(q.y-pad)/s); if(Math.abs(x)<=xr&&Math.abs(y)<=yr) onPick([x,y]); });
   return w; }
+/* the player's curveOf: linear through two points, quadratic with its vertex first, exponential with asymptote y = c */
+function oeCurve(f,pts,c){ if(!pts||pts.length<2) return null; const [p,q]=pts; if(p[0]===q[0]) return null;
+  if(f==='linear'){ const m=(q[1]-p[1])/(q[0]-p[0]); return x=>p[1]+m*(x-p[0]); }
+  if(f==='quadratic'){ const k=(q[1]-p[1])/Math.pow(q[0]-p[0],2); return k?x=>k*Math.pow(x-p[0],2)+p[1]:null; }
+  const d1=p[1]-c, d2=q[1]-c; if(d1===0||d2===0||Math.sign(d1)!==Math.sign(d2)||d1===d2) return null;
+  const b=Math.pow(d2/d1,1/(q[0]-p[0])), A0=d1/Math.pow(b,p[0]); return x=>A0*Math.pow(b,x)+c; }
+const oeNum=v=>{ const r=Math.round(v*1000)/1000; return String(r).replace('-','−'); };
 const oePt=P=>'('+String(P[0]).replace('-','−')+', '+String(P[1]).replace('-','−')+')';
 /* the answer part of a card for the interactive types */
 function oeAnsMore(it,i,ans,redo){ const t=it.type, inp=(cls,v,ph,lbl)=>`<input class="${cls}" value="${esc(v||'')}" placeholder="${esc(ph)}" aria-label="${esc(lbl)}">`;
@@ -1030,6 +1049,35 @@ function oeAnsMore(it,i,ans,redo){ const t=it.type, inp=(cls,v,ph,lbl)=>`<input 
     ans.querySelector('.op').onchange=e=>{ it.op=e.target.value; oeDirty(); redo(); };
     ans.querySelector('.gr').onchange=e=>{ it.R=+e.target.value; it.answer=it.answer.filter(P=>Math.abs(P[0])<=it.R&&Math.abs(P[1])<=it.R); oeDirty(); redo(); };
     ans.querySelector('[data-gc]').onclick=()=>{ it.answer=[]; oeDirty(); redo(); };
+  } else if(t==='graphsys'){
+    const OPS=[['>','y >'],['>=','y ≥'],['<','y <'],['<=','y ≤']], C=['#1f6feb','#c2255c'], k=it.act||0, Q=it.ineqs, ok=q=>q.pts.length===2&&q.pts[0][0]!==q.pts[1][0];
+    let poly=[[-it.R,-it.R],[it.R,-it.R],[it.R,it.R],[-it.R,it.R]]; if(Q.every(ok)) Q.forEach(q=>{ poly=oeHalf(poly,q.pts[0],q.pts[1],q.op[0]); });
+    ans.innerHTML=`<div class="oesub">Correct graph · two inequalities, each through two points</div>
+      <div class="oegw"><div class="oeg"></div><div>${Q.map((q,j)=>`<div class="oesys${j===k?' on':''}" data-j="${j}"><label class="oesysh"><input type="radio" name="oe${i}act" ${j===k?'checked':''} data-act="${j}"> <b style="color:${C[j]}">Inequality ${j+1}</b></label>
+        <select class="op" data-j="${j}" aria-label="Inequality ${j+1} sign">${OPS.map(([v,l])=>`<option value="${v}"${q.op===v?' selected':''}>${l}</option>`).join('')}</select>
+        <span class="oegread">${ok(q)?'<b>y '+q.op.replace('>=','≥').replace('<=','≤')+' '+oeLineText(q.pts[0],q.pts[1]).slice(4)+'</b>':q.pts.length===2?'<span style="color:var(--no)">Can\'t go straight up and down.</span>':q.pts.length?'Click a second point.':'Click two points.'}</span></div>`).join('')}
+      <label class="hint">Grid <select class="gr"><option value="10"${it.R!==5?' selected':''}>−10 to 10</option><option value="5"${it.R===5?' selected':''}>−5 to 5</option></select></label> <button type="button" class="btn" data-gc="1">Clear</button>
+      <p class="hint">Pick Inequality 1 or 2, then click two points on its boundary. The shaded part is the solution. Students draw both lines (solid or dashed) and pick the region. At 2 points, the lines and the region earn 1 point each.</p></div></div>`;
+    ans.querySelector('.oeg').appendChild(oeGrid(it.R,Q[k].pts.map(P=>[P[0],P[1],C[k]]),false,P=>{ const q=Q[k], j=q.pts.findIndex(R2=>R2[0]===P[0]&&R2[1]===P[1]); if(j>=0) q.pts.splice(j,1); else if(q.pts.length>=2) q.pts=[P]; else q.pts.push(P);
+      if(q.pts.length===2&&k===0&&!Q[1].pts.length) it.act=1; oeDirty(); redo(); },{lines:Q.map((q,j)=>ok(q)?{P:q.pts[0],Q:q.pts[1],dash:q.op.length===1,color:C[j]}:null).filter(Boolean),poly:Q.every(ok)?poly:null}));
+    ans.querySelectorAll('[data-act]').forEach(x=>x.onchange=()=>{ it.act=+x.dataset.act; redo(); });
+    ans.querySelectorAll('select.op').forEach(x=>x.onchange=()=>{ Q[+x.dataset.j].op=x.value; oeDirty(); redo(); });
+    ans.querySelector('.gr').onchange=e=>{ it.R=+e.target.value; Q.forEach(q=>{ q.pts=q.pts.filter(P=>Math.abs(P[0])<=it.R&&Math.abs(P[1])<=it.R); }); oeDirty(); redo(); };
+    ans.querySelector('[data-gc]').onclick=()=>{ Q.forEach(q=>{ q.pts=[]; }); it.act=0; oeDirty(); redo(); };
+  } else if(t==='graphfunc'||t==='graphexp'){
+    const fx=t==='graphfunc', f=fx?it.f:'exponential', R=fx?5:it.R, c=fx&&f==='exponential'?+it.asym||0:0, fn=oeCurve(f,it.pts,c), P=it.pts;
+    const read=!P.length?'No points yet.':P.length<2?(f==='quadratic'?'Vertex '+oePt(P[0])+'. Click a second point.':'Point '+oePt(P[0])+'. Click a second point.'):!fn?'<span style="color:var(--no)">'+(f==='exponential'?'An exponential curve can\'t go through those points. Pick two on the same side of the asymptote, with different x and y.':'Pick two points with different x-values.')+'</span>'
+      :f==='exponential'?(()=>{ const b=Math.pow((P[1][1]-c)/(P[0][1]-c),1/(P[1][0]-P[0][0])), a=(P[0][1]-c)/Math.pow(b,P[0][0]); return '<b>y = '+oeNum(a)+'('+oeNum(b)+')<sup>x</sup>'+(c?(c>0?' + ':' − ')+Math.abs(c):'')+'</b>'; })()
+      :f==='linear'?'<b>'+oeLineText(P[0],P[1])+'</b>':'<b>Vertex '+oePt(P[0])+', through '+oePt(P[1])+'</b>';
+    ans.innerHTML=`<div class="oesub">Correct graph · ${f==='quadratic'?'click the vertex, then another point':'click two points on it'}</div>
+      <div class="oegw"><div class="oeg"></div><div>${fx?`<label class="hint">Type <select class="ft"><option value="linear"${f==='linear'?' selected':''}>Linear</option><option value="quadratic"${f==='quadratic'?' selected':''}>Quadratic</option><option value="exponential"${f==='exponential'?' selected':''}>Exponential</option></select></label>`+(f==='exponential'?` <label class="hint">Asymptote y = <input class="as" type="number" min="-10" max="10" step="1" value="${c}" style="width:60px"></label>`:''):`<label class="hint">Grid <select class="gr"><option value="10"${it.R!==5?' selected':''}>−10 to 10</option><option value="5"${it.R===5?' selected':''}>−5 to 5</option></select></label>`}
+      <p class="oegread">${read}</p><button type="button" class="btn" data-gc="1">Clear</button>
+      <p class="hint">${fx?'Students pick Linear, Quadratic or Exponential, then drag two points'+(f==='exponential'?' and the asymptote':'')+' onto the graph. It is right when the type matches and their points are on your curve.':'Students click two points and a curve is drawn through them. It is right when their curve is the same as yours.'}</p></div></div>`;
+    ans.querySelector('.oeg').appendChild(oeGrid(R,P,false,Q2=>{ const j=P.findIndex(R2=>R2[0]===Q2[0]&&R2[1]===Q2[1]); if(j>=0) P.splice(j,1); else if(P.length>=2) it.pts=[Q2]; else P.push(Q2); oeDirty(); redo(); },{yr:fx?10:R,curve:fn,hline:f==='exponential'?c:null}));
+    const ft=ans.querySelector('.ft'); if(ft) ft.onchange=e=>{ it.f=e.target.value; oeDirty(); redo(); };
+    const as=ans.querySelector('.as'); if(as) as.onchange=e=>{ it.asym=Math.max(-10,Math.min(10,Math.round(+e.target.value||0))); oeDirty(); redo(); };
+    const gr=ans.querySelector('.gr'); if(gr) gr.onchange=e=>{ it.R=+e.target.value; it.pts=it.pts.filter(Q2=>Math.abs(Q2[0])<=it.R&&Math.abs(Q2[1])<=it.R); oeDirty(); redo(); };
+    ans.querySelector('[data-gc]').onclick=()=>{ it.pts=[]; oeDirty(); redo(); };
   } }
 /* server shape -> editor shape (plain text where the editor uses plain boxes; marks as [1], [2] …) */
 function oeEditable(it){ const o=Object.assign({},it,{points:it.max});
@@ -1041,6 +1089,9 @@ function oeEditable(it){ const o=Object.assign({},it,{points:it.max});
   if(it.type==='dnd'){ o.zones=(it.zones||[]).map(oeDe); o.tiles=(it.tiles||[]).slice(); o.answer=(it.answer||[]).slice(); }
   if(it.type==='hotspot'){ o.spots=(it.spots||[]).map(P=>P.slice()); o.answer=(it.answer||[]).slice(); o.R=it.R||10; }
   if(it.type==='graphineq'){ o.answer=(it.answer||[]).slice(0,2).map(P=>P.slice()); o.op=(it.answer||[])[2]||'>='; }
+  if(it.type==='graphsys'){ o.ineqs=(it.answer||[]).map(g=>({pts:[g[0].slice(),g[1].slice()],op:g[2]})); o.act=0; }
+  if(it.type==='graphfunc'){ const a=it.answer||{}; o.f=a.f||'quadratic'; o.pts=(a.p||[]).map(P=>P.slice()); o.asym=a.asym||0; }
+  if(it.type==='graphexp') o.pts=(it.answer||[]).map(P=>P.slice());
   return o; }
 /* editor shape -> what stcOwnSave takes */
 function oeOut(it){ const o={type:it.type,text:it.text,points:+it.points,std:it.std,passage:it.passage,pic:it.pic};
@@ -1057,6 +1108,9 @@ function oeOut(it){ const o={type:it.type,text:it.text,points:+it.points,std:it.
   else if(t==='dnd'){ o.zones=it.zones.map(esc); o.tiles=it.tiles; o.answer=it.answer; }
   else if(t==='hotspot'){ o.mode=it.mode; o.R=it.R; o.spots=it.spots; o.answer=it.answer; }
   else if(t==='graphineq'){ o.R=it.R; o.answer=it.answer; o.op=it.op; }
+  else if(t==='graphsys'){ o.R=it.R; o.answer=it.ineqs.map(q=>[q.pts[0],q.pts[1],q.op]); }
+  else if(t==='graphfunc') o.answer={f:it.f,p:it.pts,asym:it.f==='exponential'?+it.asym||0:0};
+  else if(t==='graphexp'){ o.R=it.R; o.answer=it.pts; }
   return o; }
 /* problems with one interactive question (the editor's own shape), as the server would say them */
 function oeCheckMore(it,q,P,i){ const t=it.type, once=(s,n,w)=>{ const L=oeLabels(s); for(let k=1;k<=n;k++){ const c=L.filter(x=>x===k).length; if(c!==1) P.push([i,q+w+' '+k+(c?' is in the '+(w==='box'?'line':'sentence')+' more than once.':' is not in the '+(w==='box'?'line':'sentence')+'. Click where it goes and add it again, or remove it.')]); }
@@ -1075,6 +1129,9 @@ function oeCheckMore(it,q,P,i){ const t=it.type, once=(s,n,w)=>{ const L=oeLabel
   if(t==='dnd'){ it.zones.forEach((z,k)=>{ if(!String(z).trim()) P.push([i,q+'group '+(k+1)+' needs a name.']); }); it.tiles.forEach((c,j)=>{ if(!oePlain(c)) P.push([i,q+'tile '+OE_L[j]+' is blank.']); if(it.answer[j]==null) P.push([i,q+'pick the correct group for tile '+OE_L[j]+'.']); }); }
   if(t==='hotspot'){ if(it.mode==='pic'&&!it.pic) P.push([i,q+'add a picture for the spots to go on.']); else if(it.spots.length<2) P.push([i,q+'click to place at least 2 spots.']);
     else if(!it.answer.length) P.push([i,q+'mark the correct spot (click it so it turns green).']); else if(it.answer.length===it.spots.length) P.push([i,q+'at least one spot has to be wrong.']); }
+  if(t==='graphsys') it.ineqs.forEach((g,k)=>{ if(g.pts.length<2) P.push([i,q+'inequality '+(k+1)+': click two points on its boundary line.']); else if(g.pts[0][0]===g.pts[1][0]) P.push([i,q+'inequality '+(k+1)+': the boundary line can\'t go straight up and down.']); });
+  if(t==='graphsys'&&it.ineqs.every(g=>g.pts.length===2)){ const [a,b]=it.ineqs.map(g=>g.pts); if((b[1][1]-b[0][1])*(a[1][0]-a[0][0])===(a[1][1]-a[0][1])*(b[1][0]-b[0][0])) P.push([i,q+'the two boundary lines can\'t be parallel.']); }
+  if(t==='graphfunc'||t==='graphexp'){ const f=t==='graphexp'?'exponential':it.f; if(it.pts.length<2) P.push([i,q+'click two points on the grid.']); else if(!oeCurve(f,it.pts,t==='graphfunc'&&f==='exponential'?+it.asym||0:0)) P.push([i,q+(f==='exponential'?'an exponential curve can\'t go through those points.':'the two points need different x-values.')]); }
   if(t==='graphineq'){ if(it.answer.length<2) P.push([i,q+'click two points on the boundary line.']); else if(it.answer[0][0]===it.answer[1][0]) P.push([i,q+'the boundary line can\'t go straight up and down. Use y = mx + b lines.']); } }
 /* preview: the extra test.js fields for one question (server shape), with its key, as Code.gs writes them for the teacher */
 function oeJsMore(it,J){ const t=it.type, o=[];
@@ -1085,6 +1142,9 @@ function oeJsMore(it,J){ const t=it.type, o=[];
   if(t==='graph') o.push('R:'+it.R,'answer:'+J(it.answer||[99,99]));
   if(t==='dnd') o.push('zones:'+J(it.zones),'tiles:'+J(it.tiles.map(c=>c||'&nbsp;')),'answer:'+J(it.answer),'hint:'+J('Drag each tile into its group, or click a tile and then click a group. Drag it back up to remove it.'));
   if(t==='hotspot'){ o.push('spots:'+J(it.spots),'answer:'+J(it.answer.length===1?it.answer[0]:it.answer)); if(it.answer.length>1) o.push('pick:'+it.answer.length); if(it.mode==='pic'&&it.pic) o.push('img:ASSET('+J('img/'+it.pic.file)+')','imgw:'+it.pic.w); else o.push('R:'+it.R); }
+  if(t==='graphsys'){ o.push('R:'+it.R); const ok=it.answer.every(g=>g[0]&&g[1]&&g[0][0]!==g[1][0]); o.push('ineqs:'+J(ok?it.answer.map(g=>{ const m=(g[1][1]-g[0][1])/(g[1][0]-g[0][0]); return {m,b:g[0][1]-m*g[0][0],op:g[2]}; }):[{m:0,b:99,op:'>'},{m:1,b:99,op:'>'}])); }
+  if(t==='graphfunc'){ const a=it.answer, good=oeCurve(a.f,a.p,a.asym); o.push(good?'ftype:'+J(a.f)+',asym:'+a.asym+',kp:'+J(a.p):'ftype:"linear",asym:0,kp:[[0,99],[1,99]]'); }
+  if(t==='graphexp'){ o.push('R:'+it.R); const a=it.answer; if(oeCurve('exponential',a,0)){ const b=Math.pow(a[1][1]/a[0][1],1/(a[1][0]-a[0][0])); o.push('a:'+(a[0][1]/Math.pow(b,a[0][0])),'b:'+b); } else o.push('a:99,b:99'); }
   if(t==='graphineq'){ const a=it.answer; o.push('R:'+it.R); if(a.length===2&&a[0][0]!==a[1][0]){ const m=(a[1][1]-a[0][1])/(a[1][0]-a[0][0]); o.push('m:'+m,'b:'+(a[0][1]-m*a[0][0]),'op:'+J(it.op)); } else o.push('m:0,b:99,op:'+J(it.op)); }
   if(t==='graphline'){ const a=it.answer; o.push('R:'+it.R);
     if(a.length===2){ const A=a[1][1]-a[0][1], B=a[0][0]-a[1][0]; o.push('eq:'+J([A,B,A*a[0][0]+B*a[0][1]]),'keyText:'+J('Line through '+oePt(a[0])+' and '+oePt(a[1]))); } else o.push('eq:[0,0,1]'); }
@@ -1195,7 +1255,7 @@ function oeCard(it,i){ const c=document.createElement('section'); c.className='t
   } else if(it.type==='text'){
     ans.innerHTML=`<div class="oesub">Writing box</div><div class="oenum"><select class="lm" aria-label="Writing box size"><option value="475"${+it.limit!==2300?' selected':''}>Short answer (475 characters)</option><option value="2300"${+it.limit===2300?' selected':''}>Long answer (2,300 characters)</option></select><span class="hint">You score written answers on the dashboard: View › Written.</span></div>`;
     ans.querySelector('.lm').onchange=e=>{ it.limit=+e.target.value; oeDirty(); };
-  } else oeAnsMore(it,i,ans,()=>{ const nc=oeCard(it,i); c.replaceWith(nc); });
+  } else oeAnsMore(it,i,ans,()=>{ if(c.dataset.gone||!c.isConnected) return; c.dataset.gone=1; const nc=oeCard(it,i); c.replaceWith(nc); });
   c.appendChild(ans);
   /* header controls */
   c.querySelector('.ty').onchange=e=>{ const t=e.target.value, keep={text:it.text,std:it.std,passage:it.passage,pic:it.pic}, prevCh=it.choices;
