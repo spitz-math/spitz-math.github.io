@@ -2508,6 +2508,9 @@ window.__test={ITEMS,S,score,parseNum,earn};
 const CAT=TD.categories||null;
 const BANDS=[[69,'Masters Grade Level','#1b6e3a'],[52,'Meets Grade Level','#2b7fb8'],[32,'Approaches Grade Level','#b7791f'],[0,'Did Not Meet Grade Level','#b03a2e']];
 const band=p=>BANDS.find(b=>p>=b[0]);
+/* the test's own TEA cut scores when it has them: TD.staar={total, cuts:[Approaches, Meets, Masters]} as minimum raw scores */
+const ST=TD.staar&&TD.staar.cuts&&TD.staar.total?TD.staar:null;
+const level=(e,m)=>{ if(!ST) return band(m?Math.round(100*e/m):0); const r=m===ST.total?e:e*ST.total/m, c=ST.cuts; return BANDS[r>=c[2]?0:r>=c[1]?1:r>=c[0]?2:3]; };
 
 /* --- inject results breakdown + review button --- */
 const rb=document.querySelector('#resultsScreen .rb');
@@ -2525,8 +2528,8 @@ document.body.appendChild(rvs);
 const bar=(e,m)=>{ const p=m?Math.round(100*e/m):0; return `<div class="rxbar"><div style="width:${p}%"></div></div><span class="rxn">${e}/${m} (${p}%)</span>`; };
 function fillBreakdown(){
   const rows=ITEMS.map(it=>({it,e:earn(it)||0,m:it.max||1}));
-  const tot=rows.reduce((s,r)=>s+r.e,0), mx=rows.reduce((s,r)=>s+r.m,0), pct=Math.round(100*tot/mx), b=band(pct);
-  document.getElementById('rxLevel').innerHTML=`<span class="lvl" style="background:${b[2]}">${b[1]}</span><span>${pct}% of points earned. Estimated level using the STAAR Algebra 1 bands (Approaches 32%, Meets 52%, Masters 69%).</span>`;
+  const tot=rows.reduce((s,r)=>s+r.e,0), mx=rows.reduce((s,r)=>s+r.m,0), pct=Math.round(100*tot/mx), b=level(tot,mx), wr=ITEMS.filter(it=>it.type==='text'&&answered(it)).length;
+  document.getElementById('rxLevel').innerHTML=`<span class="lvl" style="background:${b[2]}">${b[1]}</span><span>${tot} of ${mx} points (${pct}%). ${ST?`Level using TEA's cut scores${ST.label?' for '+ST.label:''}.`:'Estimated level (Approaches 32%, Meets 52%, Masters 69% of points).'}${wr?` Your teacher still has to score your written answer${wr>1?'s':''}, so this level can go up.`:''}</span>`;
   document.getElementById('rxTime').innerHTML=`Time spent: <b>${fmtMs(ITEMS.reduce((s,it)=>s+ACT.items[it.n].ms,0))}</b>${ACT.away?` · Left the test window <b>${ACT.away}</b> time${ACT.away===1?'':'s'}`:''}`;
   if(!CAT){ document.querySelectorAll('.rxcat').forEach(e=>e.hidden=true); return; }
   document.getElementById('rxCats').innerHTML=Object.keys(CAT).map(Number).map(c=>{ const r=rows.filter(x=>x.it.cat===c); return `<div class="rxrow"><span class="rxl">${c}. ${CAT[c]}</span>${bar(r.reduce((s,x)=>s+x.e,0),r.reduce((s,x)=>s+x.m,0))}</div>`; }).join('');
