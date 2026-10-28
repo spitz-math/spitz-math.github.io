@@ -174,6 +174,9 @@ table.t{width:100%;border-collapse:collapse;font-size:13px}
 .qv .ag .an{color:#33414f;line-height:1.5}
 .qv .qbtns{display:flex;gap:8px;flex-wrap:wrap}
 .qvbox{background:#fff;border-radius:10px;width:min(980px,96vw);height:min(760px,92vh);display:flex;flex-direction:column;box-shadow:0 10px 30px rgba(0,0,0,.25);overflow:hidden}
+.psbox{background:#fff;border-radius:10px;width:min(760px,96vw);max-height:92vh;display:flex;flex-direction:column;box-shadow:0 10px 30px rgba(0,0,0,.25);overflow:hidden}.psb{padding:12px 14px;overflow:auto}
+.pst{border-collapse:collapse;width:100%;font-size:14px;text-align:center}.pst th,.pst td{border:1px solid #c9d2de;padding:6px 8px}.pst th{color:#fff;font-size:12px;line-height:1.25}.pst td:first-child{font-weight:700;text-align:left;white-space:nowrap}.pst tr.on td{outline:2px solid #1f2937;outline-offset:-2px;font-weight:800}.pst .gap td{background:#1f2937;padding:2px}
+.ib0{border:0;background:none;color:var(--mut);cursor:pointer;font-size:13px;padding:0 2px;vertical-align:0}.ib0:hover{color:#1e5a85}
 .qvh{display:flex;align-items:center;gap:10px;padding:10px 14px;border-bottom:1px solid var(--line)} .qvh h3{margin:0;font-size:16px;flex:1;min-width:0}
 .qvbox iframe{flex:1;border:0;width:100%;min-height:0;background:#f4f6f9}
 .qvmsg{padding:20px;font-size:14px;color:var(--mut)} .qvmsg[hidden]{display:none}
@@ -409,7 +412,7 @@ details summary{cursor:pointer;color:var(--blue2);font-size:13px;margin-top:8px}
 </section>
 <section class="tpage" id="rppage" hidden aria-label="Reports">
   <header class="topbar"><div class="wm">SPITZ <span>CHECKPOINT</span><small>Reports</small></div><div class="sp"></div>
-    <button class="btn" id="rpCsv" disabled>Download (CSV)</button><button class="btn" id="rpPrint" disabled>Print</button><button class="btn pri" id="rptBack">Back to dashboard</button></header>
+    <button class="btn" data-ps="">Performance standards</button><button class="btn" id="rpCsv" disabled>Download (CSV)</button><button class="btn" id="rpPrint" disabled>Print</button><button class="btn pri" id="rptBack">Back to dashboard</button></header>
   <div class="tbody"><div class="tcol rpcol">
     <section class="tcard rpctl"><h2>Results by standard</h2>
       <p class="hint">One test across classes, for PLCs: how each group did overall, on each TEKS and on each question. Uses every session given with that test.</p>
@@ -484,6 +487,7 @@ details summary{cursor:pointer;color:var(--blue2);font-size:13px;margin-top:8px}
 </section>
 <div class="pv" id="pv" hidden><div class="pvbar"><b id="pvTitle"></b><span id="pvNote">Preview only: nothing is saved to your Sheet.</span><span class="sp"></span><label class="pvra" id="pvRA" title="See the test the way a read aloud student does: sound check first, then the speaker button on each question"><input type="checkbox" id="pvRAOn"> Read aloud</label><button class="btn pri" id="pvPrint" hidden>Print</button><button class="btn" id="pvClose">Close preview</button></div><iframe id="pvf" title="Test preview"></iframe></div>
 <div id="tip" hidden></div>
+<div class="veil" id="psVeil" hidden><div class="psbox" role="dialog" aria-modal="true" aria-labelledby="psTitle"><div class="qvh"><h3 id="psTitle">Performance standards</h3><button class="btn" id="psClose">Close</button></div><div class="psb" id="psBody"></div></div></div>
 <div class="veil" id="veil" hidden><div class="dlg" role="alertdialog" aria-modal="true" aria-labelledby="vTitle"><h3 id="vTitle"></h3><div id="vMsg"></div><div class="btns" id="vBtns"></div></div></div>
 
 <script>window.SPITZ_ROOT="";</script>
@@ -521,6 +525,18 @@ function stdRow(course,subject){ const c=String(course||'').toLowerCase(), g=(c.
 function staarLvl(test,e,mx){ const m=meta(test), row=m&&stdRow(m.course,m.subject), p=mx?Math.round(100*e/mx):0;
   if(row){ const c=STANDARDS[row], b=BANDS6[p>=c[4]?0:p>=c[3]?1:p>=c[2]?2:p>=c[1]?3:p>=c[0]?4:5]; return [p,b[0],b[2],false,b[1]]; }
   const l=lvl(p); return [l[0],l[1],l[2],true,l[1]]; }
+const STD_YEAR='2026-2027', STD_GROUPS=[['6th RLA','7th RLA','8th RLA'],['6th Math','7th Math','8th Math','Algebra I'],['8th Science'],['8th History']];
+/* the campus table for teachers, with the row the test uses outlined */
+function psShow(test){ if(test==null||test==='') test=($('#rppage')&&!$('#rppage').hidden&&$('#rpTest')?$('#rpTest').value:'');
+  const m=test?meta(test):null, row=m?stdRow(m.course,m.subject):null, tint=c=>`color-mix(in srgb, ${c} 22%, white)`, cols=BANDS6.slice(0,5).reverse();
+  $('#psTitle').textContent=STD_YEAR+' Performance Standards';
+  $('#psBody').innerHTML=`<p class="hint" style="margin:0 0 10px">Percent of points a student needs to reach each level. Below the first column is Did Not Meet.${row?` <b>${esc(m.title||test)}</b> uses the <b>${esc(row)}</b> row (outlined).`:m?` <b>${esc(m.title||test)}</b> has no row here, so its levels are estimates.`:''}</p>
+    <table class="pst"><tr><th style="background:#fff"></th>${cols.map(b=>`<th style="background:${b[2]}">${esc(b[0])}</th>`).join('')}</tr>
+    ${STD_GROUPS.map((g,k)=>(k?'<tr class="gap"><td colspan="6"></td></tr>':'')+g.map(r=>`<tr${r===row?' class="on"':''}><td>${esc(r)}</td>${STANDARDS[r].map((v,i)=>`<td style="background:${tint(cols[i][2])}">${v}%</td>`).join('')}</tr>`).join('')).join('')}</table>`;
+  $('#psVeil').hidden=false; $('#psClose').focus(); if(test&&!m) loadMeta(test).then(d=>{ if(d&&!$('#psVeil').hidden) psShow(test); }); }
+document.addEventListener('click',e=>{ const b=e.target.closest('[data-ps]'); if(b) psShow(b.dataset.ps); });
+$('#psClose').onclick=()=>{ $('#psVeil').hidden=true; }; $('#psVeil').addEventListener('click',e=>{ if(e.target.id==='psVeil') $('#psVeil').hidden=true; });
+addEventListener('keydown',e=>{ if(e.key==='Escape'&&!$('#psVeil').hidden) $('#psVeil').hidden=true; });
 const toScore=s=>s.q.filter(q=>q&&q[9]).length;   // written answers still waiting for the teacher
 const sLvl=s=>staarLvl(s.test,s.score||0,s.max||0);
 function lvPill(s){ const l=sLvl(s), w=toScore(s);
@@ -931,7 +947,7 @@ function cellHtml(s,i,mode){ const q=s.q[i]; const cur=!s.submitted&&+s.item===i
 function renderLive(L,tests){
   const nq=Math.max(...L.map(s=>Math.max(s.q.length,(meta(s.test)||{items:[]}).items.length)),0);
   const mixed=tests.length>1;
-  const head=`<tr><th class="fx c0"><input type="checkbox" id="allBox" aria-label="Select all shown"></th><th class="fx c1" style="text-align:left">Name</th><th class="fx c2">Per.</th><th class="fx c3" style="text-align:left">Status</th><th class="fx c4" style="text-align:left">Answered</th><th class="fx c5" style="text-align:left">Score</th><th class="fx cL" style="text-align:left">STAAR level</th><th class="fx c6">Time</th><th class="fx c7">Pause / Stop</th>${Array.from({length:nq},(_,i)=>`<th class="qh">${i+1}</th>`).join('')}</tr>`;
+  const head=`<tr><th class="fx c0"><input type="checkbox" id="allBox" aria-label="Select all shown"></th><th class="fx c1" style="text-align:left">Name</th><th class="fx c2">Per.</th><th class="fx c3" style="text-align:left">Status</th><th class="fx c4" style="text-align:left">Answered</th><th class="fx c5" style="text-align:left">Score</th><th class="fx cL" style="text-align:left">STAAR level <button class="ib0" data-ps="${esc(tests[0]||'')}" title="Performance standards" aria-label="Show the performance standards">ⓘ</button></th><th class="fx c6">Time</th><th class="fx c7">Pause / Stop</th>${Array.from({length:nq},(_,i)=>`<th class="qh">${i+1}</th>`).join('')}</tr>`;
   const rows=L.map(s=>{ const [k,label]=stat(s), n=Math.max(s.q.length,(meta(s.test)||{items:[]}).items.length)||1, ans=s.answered||0, l=sLvl(s);
     return `<tr data-k="${esc(s.key)}"><td class="fx c0"><input type="checkbox" class="rowBox" data-k="${esc(s.key)}" ${sel.has(s.key)?'checked':''} aria-label="Select ${esc(s.name)}"></td>
       <td class="fx c1"><button class="nm" data-open="${esc(s.key)}" title="${esc(s.name)}">${esc(s.name)}</button>${s.rclicks?`<span class="rcb" title="Tried to right-click ${s.rclicks}× (Chrome's menu, where Google Lens is). The test blocked it.">Right-click ${s.rclicks}×</span>`:''}${mixed?`<div class="rs">${esc(s.session)}</div>`:''}</td>
