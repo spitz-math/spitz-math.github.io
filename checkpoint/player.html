@@ -223,6 +223,15 @@ svg.coord .prev{stroke:var(--accent);stroke-width:2;stroke-dasharray:6 5;opacity
 svg.coord.delmode .uln:hover,svg.coord.delmode .upt:hover{stroke:var(--bad)}
 svg.coord .hit{stroke:transparent;stroke-width:14;fill:none}
 .gread{font-variant-numeric:tabular-nums;font-weight:700}
+/* number line, fill-in table, data display, shade a model (teachers' own tests) */
+.nlsvg{width:min(600px,100%);min-width:420px;height:auto;display:block;color:var(--ink);overflow:visible}
+.nlsvg .nlt text,.nlsvg text.nlt{fill:var(--ink);font-size:13px;font-family:var(--font)}.nlsvg text.nlf{font-size:11px}
+.nlhit,.ddhit{fill:transparent;cursor:pointer;outline:none}.nlhit:hover,.nlhit:focus-visible{fill:var(--accent-soft)}
+.ddhit:hover,.ddhit:focus-visible{fill:var(--accent-soft);fill-opacity:.5}
+.ftab td{padding:.35em .7em}table.grid.ftab td:first-child{font-weight:400;text-align:center}.ftin{width:6em;font-size:1em;padding:.25em .4em;text-align:center}
+.ddsvg{height:auto;display:block;color:var(--ink);background:var(--surface)}.ddsvg .ddt{fill:var(--ink);font-size:12px;font-family:var(--font)}.ddsvg .ddl{fill:var(--ink);font-size:13px;font-weight:700;font-family:var(--font)}
+.shmodels{display:flex;flex-wrap:wrap;gap:18px;align-items:center}.shmodels svg{height:auto;display:block;overflow:visible}
+.shp{fill:#fff;stroke:#333;stroke-width:1.5;cursor:pointer;outline:none}.shp:hover{fill:var(--accent-soft)}.shp:focus-visible{stroke:var(--accent);stroke-width:3}.shp[aria-checked="true"]{fill:#1f4fd8;fill-opacity:.75}
 .btnline{border:1px solid var(--line);background:var(--surface-2);border-radius:6px;padding:.3em .8em;font-size:.85em;font-weight:700}
 
 /* released-test additions */
@@ -1200,6 +1209,10 @@ function build(it){
   else if(it.type==='graphsys'){ buildGraphSys(it,root); }
   else if(it.type==='graphexp'){ buildGraphExp(it,root); }
   else if(it.type==='graphfunc'){ buildGraphFunc(it,root); }
+  else if(it.type==='numline'){ buildNumLine(it,root); }
+  else if(it.type==='filltable'){ buildFillTable(it,root); }
+  else if(it.type==='datadisp'){ buildDataDisp(it,root); }
+  else if(it.type==='shade'){ buildShade(it,root); }
   else if(it.type==='eq'){ if(it.full) buildEqFull(it,root); else buildEqEntry(it,root); }
   hydrate(it,root); return root;
 }
@@ -1369,7 +1382,11 @@ const GI={
   dash:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-dasharray="4 3"><path d="M3 21L21 3"/></svg>',
   shade:'<svg viewBox="0 0 24 24"><path d="M3 21L21 3V21z" fill="currentColor" opacity=".45"/><path d="M3 21L21 3" stroke="currentColor" stroke-width="2"/></svg>',
   curve:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M3 4c3 12 7 15 18 16"/></svg>',
-  del:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13"/></svg>'};
+  del:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13"/></svg>',
+  closed:'<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="6" fill="currentColor"/></svg>',
+  open:'<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="6" fill="none" stroke="currentColor" stroke-width="2.4"/></svg>',
+  left:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M21 12H4M9 7l-5 5 5 5"/></svg>',
+  right:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M3 12h17M15 7l5 5-5 5"/></svg>'};
 
 /* ---------- drag answers into boxes ---------- */
 function buildBoxes(it,root){
@@ -1832,10 +1849,128 @@ function buildEqFull(it,root){
   root.appendChild(w); render();
 }
 
+/* ---------- number line: place points, or graph an inequality (teachers' own tests) ----------
+   from, to, step (tick spacing), den (labels as fractions with this denominator, 0 = decimals), lab (label every lab-th tick);
+   mode 'points': answer = sorted tick indices; mode 'ineq': answer = {k: tick, closed, dir: -1 left / 1 right} */
+const nlTicks=it=>Math.round((it.to-it.from)/it.step);
+const nlVal=(it,k)=>it.from+k*it.step;
+function nlText(it,k){ const v=nlVal(it,k); if(!it.den) return fmtV(v);
+  const g=(a,b)=>b?g(b,a%b):a, n=Math.round(v*it.den), s=n<0?'−':'', N=Math.abs(n), w=Math.floor(N/it.den), r=N%it.den, d=g(r,it.den)||1;
+  return s+(r?(w?w+' ':'')+(r/d)+'/'+(it.den/d):String(w)); }
+function nlLabel(it,k,x,y){ const t=nlText(it,k), m=t.match(/^(−?)(?:(\d+) )?(\d+)\/(\d+)$/);
+  if(!m) return `<text x="${x}" y="${y+12}" text-anchor="middle" class="nlt">${t}</text>`;
+  const lead=(m[1]||'')+(m[2]||''), fx=lead?x+5:x;
+  return `<g class="nlt">${lead?`<text x="${x-1}" y="${y+16}" text-anchor="end">${lead}</text>`:''}<text x="${fx}" y="${y+8}" text-anchor="middle" class="nlf">${m[3]}</text><line x1="${fx-6}" x2="${fx+6}" y1="${y+11}" y2="${y+11}" stroke="currentColor" stroke-width="1"/><text x="${fx}" y="${y+22}" text-anchor="middle" class="nlf">${m[4]}</text></g>`; }
+const nlIneqText=(it,a)=>`x ${a.dir>0?(a.closed?'≥':'>'):(a.closed?'≤':'<')} ${nlText(it,a.k)}`;
+function buildNumLine(it,root){
+  const id=it.n, n=nlTicks(it), W=600, pad=34, Y0=46, X=k=>pad+k*(W-2*pad)/n, ineq=it.mode==='ineq', lab=it.lab||1;
+  let s=`<svg class="nlsvg" viewBox="0 0 ${W} ${Y0+40}" role="group" aria-label="Number line from ${nlText(it,0)} to ${nlText(it,n)}">
+    <defs><marker id="nla${id}" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="currentColor"/></marker>
+    <marker id="nlb${id}" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="2.6" markerHeight="2.6" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="#1f4fd8"/></marker></defs>
+    <line x1="${pad-24}" x2="${W-pad+24}" y1="${Y0}" y2="${Y0}" stroke="currentColor" stroke-width="2" marker-start="url(#nla${id})" marker-end="url(#nla${id})"/>`;
+  for(let k=0;k<=n;k++){ const big=k%lab===0; s+=`<line x1="${X(k)}" x2="${X(k)}" y1="${Y0-(big?9:6)}" y2="${Y0+(big?9:6)}" stroke="currentColor" stroke-width="${big?1.8:1.2}"/>`; if(big) s+=nlLabel(it,k,X(k),Y0+12); }
+  s+=`<g class="nlmarks"></g>`;
+  for(let k=0;k<=n;k++) s+=`<rect class="nlhit" data-k="${k}" x="${X(k)-Math.min(14,(W-2*pad)/n/2)}" y="${Y0-26}" width="${Math.min(28,(W-2*pad)/n)}" height="40" tabindex="0" role="${ineq?'button':'checkbox'}" aria-label="${nlText(it,k)}"/>`;
+  s+='</svg>';
+  const w=document.createElement('div'); w.className='nlwrap';
+  w.innerHTML=(ineq?toolbar([['closed','Closed Circle',GI.closed],['open','Open Circle',GI.open],['left','Shade Left',GI.left],['right','Shade Right',GI.right],['del','Clear',GI.del]]):'')
+    +`<div class="scroll-x">${s}</div><p class="hint nlhint" style="margin:.3em 0 .4em"></p><p style="margin:0">Your ${ineq?'graph':'points'}: <span class="gread">none</span>${ineq?'':' <button type="button" class="btnline nlclr" style="margin-left:.6em">Clear</button>'}</p>`;
+  const svg=w.querySelector('svg.nlsvg'), marks=svg.querySelector('.nlmarks'), read=w.querySelector('.gread'), hint=w.querySelector('.nlhint');
+  let dot='closed';
+  const draw=()=>{ marks.innerHTML=''; const a=S.answers[id];
+    if(!ineq){ (a||[]).forEach(k=>marks.appendChild(mk('circle',{cx:X(k),cy:Y0,r:7,fill:'#1f4fd8'})));
+      svg.querySelectorAll('.nlhit').forEach(r=>r.setAttribute('aria-checked',!!a&&a.includes(+r.dataset.k)));
+      read.textContent=a&&a.length?a.map(k=>nlText(it,k)).join(', '):'none'; }
+    else { if(a&&a.k!=null){ const x=X(a.k);
+        if(a.dir) marks.appendChild(mk('line',{x1:x,y1:Y0,x2:a.dir>0?W-pad+14:pad-14,y2:Y0,stroke:'#1f4fd8','stroke-width':6,'marker-end':`url(#nlb${id})`}));
+        marks.appendChild(mk('circle',{cx:x,cy:Y0,r:8,fill:a.closed?'#1f4fd8':'#fff',stroke:'#1f4fd8','stroke-width':3})); }
+      read.textContent=a&&a.k!=null?(a.dir?nlIneqText(it,a):`${a.closed?'closed':'open'} circle at ${nlText(it,a.k)}, not shaded yet`):'none'; }
+    refresh(); };
+  const pick=k=>{ if(!ineq){ const a=(S.answers[id]||[]).slice(), i=a.indexOf(k); if(i>=0) a.splice(i,1); else a.push(k); a.sort((p,q)=>p-q); if(a.length) S.answers[id]=a; else delete S.answers[id]; }
+    else { const a=S.answers[id]||{k:null,closed:true,dir:0}; a.k=k; a.closed=dot==='closed'; S.answers[id]=a; hint.textContent='Now pick Shade Left or Shade Right.'; }
+    draw(); };
+  svg.addEventListener('click',e=>{ const r=e.target.closest('.nlhit'); if(r) pick(+r.dataset.k); });
+  svg.addEventListener('keydown',e=>{ const r=e.target.closest('.nlhit'); if(r&&(e.key===' '||e.key==='Enter')){ e.preventDefault(); pick(+r.dataset.k); } });
+  if(ineq){ const HINT='Pick Closed Circle or Open Circle, click a tick mark, then pick Shade Left or Shade Right.';
+    const setDot=m=>{ dot=m; w.querySelectorAll('.gtool[data-m="closed"],.gtool[data-m="open"]').forEach(b=>b.setAttribute('aria-pressed',b.dataset.m===m)); };
+    w.querySelectorAll('.gtool').forEach(b=>b.addEventListener('click',()=>{ const m=b.dataset.m, a=S.answers[id];
+      if(m==='closed'||m==='open'){ setDot(m); if(a&&a.k!=null){ a.closed=m==='closed'; draw(); } return; }
+      if(m==='del'){ delete S.answers[id]; hint.textContent=HINT; draw(); return; }
+      if(!a||a.k==null){ hint.textContent='Click a tick mark for the circle first.'; return; }
+      a.dir=m==='left'?-1:1; hint.textContent=HINT; draw(); }));
+    hint.textContent=HINT; const a=S.answers[id]; setDot(a&&a.k!=null&&!a.closed?'open':'closed'); }
+  else { hint.textContent='Click a tick mark to place a point. Click it again to remove it.'; w.querySelector('.nlclr').addEventListener('click',()=>{ delete S.answers[id]; draw(); }); }
+  root.appendChild(w); draw();
+}
+
+/* ---------- fill in a table: some cells are boxes for numbers (cells: rows of text, null = a box; answer = numbers in reading order) ---------- */
+function buildFillTable(it,root){
+  const id=it.n, w=document.createElement('div'); w.className='scroll-x'; let q=0;
+  w.innerHTML=`<table class="grid ftab">${it.head&&it.head.some(h=>h)?`<tr>${it.head.map(h=>`<th scope="col">${h}</th>`).join('')}</tr>`:''}${it.cells.map((r,ri)=>`<tr>${r.map((c,ci)=>c==null?`<td><input class="mathin ftin" data-q="${q++}" inputmode="decimal" autocomplete="off" spellcheck="false" aria-label="Row ${ri+1}${it.head&&it.head[ci]?', '+String(it.head[ci]).replace(/<[^>]+>|"/g,''):', column '+(ci+1)}"></td>`:`<td>${c}</td>`).join('')}</tr>`).join('')}</table>`;
+  const ins=[...w.querySelectorAll('.ftin')], a0=S.answers[id];
+  if(a0) ins.forEach((i,k)=>{ i.value=a0[k]||''; });
+  ins.forEach(i=>i.addEventListener('input',()=>{ i.value=i.value.replace(/[^0-9.\-\/−]/g,''); const a=ins.map(x=>x.value.trim()||null);
+    if(a.some(v=>v!=null)) S.answers[id]=a; else delete S.answers[id]; refresh(); }));
+  root.appendChild(w);
+}
+
+/* ---------- data display: build a bar graph, dot plot or histogram (kind; labels; ymax, ystep; xlab, ylab; answer = height per label) ---------- */
+function buildDataDisp(it,root){
+  const id=it.n, L=it.labels, nL=L.length, dot=it.kind==='dot', hist=it.kind==='hist', ys=dot?1:it.ystep, lv=Math.round(it.ymax/ys);
+  const left=dot?20:56, top=14, ph=dot?Math.min(28*lv,300):Math.min(Math.max(24*lv,200),340), cw=Math.max(44,Math.min(90,480/nL)), W=left+cw*nL+20, base=top+ph, H=base+(dot?36:58);
+  const Yv=v=>base-v/it.ymax*ph, X=k=>left+k*cw;
+  let s=`<svg class="ddsvg" viewBox="0 0 ${W} ${H}" style="width:min(${W}px,100%)" role="group" aria-label="${dot?'Dot plot':hist?'Histogram':'Bar graph'}">`;
+  if(!dot){ for(let q=0;q<=lv;q++){ const y=Yv(q*ys); s+=`<line x1="${left}" x2="${left+cw*nL}" y1="${y}" y2="${y}" stroke="var(--line)" stroke-width="1"/><text x="${left-6}" y="${y+4}" text-anchor="end" class="ddt">${fmtV(q*ys)}</text>`; }
+    s+=`<line x1="${left}" x2="${left}" y1="${top}" y2="${base}" stroke="currentColor" stroke-width="1.6"/>`;
+    if(it.ylab) s+=`<text transform="translate(14 ${top+ph/2}) rotate(-90)" text-anchor="middle" class="ddl">${it.ylab}</text>`; }
+  s+=`<line x1="${left}" x2="${left+cw*nL}" y1="${base}" y2="${base}" stroke="currentColor" stroke-width="1.6"/>`;
+  L.forEach((l,k)=>{ s+=`<text x="${X(k)+cw/2}" y="${base+16}" text-anchor="middle" class="ddt">${l}</text>`; if(dot) s+=`<line x1="${X(k)+cw/2}" x2="${X(k)+cw/2}" y1="${base-4}" y2="${base+4}" stroke="currentColor"/>`; });
+  if(it.xlab) s+=`<text x="${left+cw*nL/2}" y="${H-6}" text-anchor="middle" class="ddl">${it.xlab}</text>`;
+  L.forEach((l,k)=>{ s+=`<rect class="ddhit" data-k="${k}" x="${X(k)}" y="${top-6}" width="${cw}" height="${ph+12}" tabindex="0" role="slider" aria-valuemin="0" aria-valuemax="${it.ymax}" aria-label="${String(l).replace(/<[^>]+>|"/g,'')}"/>`; });
+  s+='<g class="ddbars" pointer-events="none"></g></svg>';
+  const w=document.createElement('div'); w.className='ddwrap';
+  w.innerHTML=`<div class="scroll-x">${s}</div><p class="hint" style="margin:.3em 0 .4em">${dot?'Click above a number to stack dots up to that height. Click the top dot again to remove it.':'Click inside a column to set the height of its bar. Click the top of a bar again to remove it.'} Arrow keys work too.</p><p style="margin:0">Your ${dot?'dot plot':'graph'}: <span class="gread">none</span> <button type="button" class="btnline ddclr" style="margin-left:.6em">Clear</button></p>`;
+  const svg=w.querySelector('svg'), bars=svg.querySelector('.ddbars'), read=w.querySelector('.gread');
+  const draw=()=>{ bars.innerHTML=''; const a=S.answers[id];
+    if(a) a.forEach((v,k)=>{ if(!v) return;
+      if(dot){ for(let q=1;q<=Math.round(v);q++) bars.appendChild(mk('circle',{cx:X(k)+cw/2,cy:base-ph/lv*(q-.5),r:Math.min(9,ph/lv/2-1.5),fill:'#1f4fd8'})); }
+      else bars.appendChild(mk('rect',{x:X(k)+(hist?0:cw*.18),y:Yv(v),width:hist?cw:cw*.64,height:base-Yv(v),fill:'#1f4fd8','fill-opacity':.75,stroke:'#16399e','stroke-width':1.2})); });
+    svg.querySelectorAll('.ddhit').forEach(r=>r.setAttribute('aria-valuenow',a?a[+r.dataset.k]:0));
+    read.textContent=a?L.map((l,k)=>String(l).replace(/<[^>]+>/g,'')+': '+fmtV(a[k])).join(', '):'none'; refresh(); };
+  const set=(k,v)=>{ const a=S.answers[id]||L.map(()=>0); v=Math.max(0,Math.min(it.ymax,Math.round(v/ys)*ys)); a[k]=Math.round(v*1e6)/1e6; S.answers[id]=a; if(a.every(x=>!x)) delete S.answers[id]; draw(); };
+  svg.addEventListener('click',e=>{ const r=e.target.closest('.ddhit'); if(!r) return; const pt=svg.createSVGPoint(); pt.x=e.clientX; pt.y=e.clientY; const p=pt.matrixTransform(svg.getScreenCTM().inverse());
+    const k=+r.dataset.k, cur=(S.answers[id]||[])[k]||0; let v=dot?Math.ceil((base-p.y)/(ph/lv)):Math.round((base-p.y)/ph*it.ymax/ys)*ys; v=Math.max(0,Math.min(it.ymax,v));
+    set(k,Math.abs(v-cur)<1e-9?(dot?cur-1:0):v); });
+  svg.addEventListener('keydown',e=>{ const r=e.target.closest('.ddhit'); if(!r) return; const k=+r.dataset.k, cur=(S.answers[id]||[])[k]||0;
+    if(e.key==='ArrowUp'||e.key==='ArrowRight'){ e.preventDefault(); set(k,cur+ys); } else if(e.key==='ArrowDown'||e.key==='ArrowLeft'){ e.preventDefault(); set(k,cur-ys); } });
+  w.querySelector('.ddclr').addEventListener('click',()=>{ delete S.answers[id]; draw(); });
+  root.appendChild(w); draw();
+}
+
+/* ---------- shade a model: fraction bars, circles or a grid (kind; parts or rows x cols; wholes; answer = how many parts are shaded) ---------- */
+function buildShade(it,root){
+  const id=it.n, grid=it.kind==='grid', per=grid?it.rows*it.cols:it.parts, nw=it.wholes||1;
+  const w=document.createElement('div'); w.className='shwrap'; let h='';
+  for(let m=0;m<nw;m++){ let s='';
+    if(it.kind==='bar'){ const pw=Math.min(60,360/per); s=`<svg viewBox="-2 -2 ${pw*per+4} 54" style="width:min(${pw*per+4}px,100%)">`; for(let k=0;k<per;k++) s+=`<rect class="shp" data-p="${m*per+k}" x="${k*pw}" y="0" width="${pw}" height="50" tabindex="0" role="checkbox" aria-label="Part ${k+1}${nw>1?' of model '+(m+1):''}"/>`; }
+    else if(grid){ const c=Math.min(30,300/Math.max(it.rows,it.cols)); s=`<svg viewBox="-2 -2 ${c*it.cols+4} ${c*it.rows+4}" style="width:min(${c*it.cols+4}px,100%)">`; for(let k=0;k<per;k++) s+=`<rect class="shp" data-p="${m*per+k}" x="${(k%it.cols)*c}" y="${Math.floor(k/it.cols)*c}" width="${c}" height="${c}" tabindex="0" role="checkbox" aria-label="Square ${k+1}${nw>1?' of model '+(m+1):''}"/>`; }
+    else { const R=80; s=`<svg viewBox="-84 -84 168 168" style="width:min(168px,100%)">`; for(let k=0;k<per;k++){ const a0=-Math.PI/2+k*2*Math.PI/per, a1=a0+2*Math.PI/per, P=a=>`${(R*Math.cos(a)).toFixed(2)} ${(R*Math.sin(a)).toFixed(2)}`;
+      s+=per===1?`<circle class="shp" data-p="${m*per}" r="${R}" tabindex="0" role="checkbox" aria-label="Whole circle"/>`:`<path class="shp" data-p="${m*per+k}" d="M0 0L${P(a0)}A${R} ${R} 0 0 1 ${P(a1)}Z" tabindex="0" role="checkbox" aria-label="Part ${k+1}${nw>1?' of model '+(m+1):''}"/>`; } }
+    h+=s+'</svg>'; }
+  w.innerHTML=`<div class="shmodels">${h}</div><p class="hint" style="margin:.3em 0 .4em">Click a part to shade it. Click it again to unshade it.</p><p style="margin:0">Shaded: <span class="gread">0 parts</span> <button type="button" class="btnline shclr" style="margin-left:.6em">Clear</button></p>`;
+  const read=w.querySelector('.gread');
+  const draw=()=>{ const a=S.answers[id]||[]; w.querySelectorAll('.shp').forEach(p=>p.setAttribute('aria-checked',a.includes(+p.dataset.p))); read.textContent=a.length+' part'+(a.length===1?'':'s')+(nw>1?'':' of '+per); refresh(); };
+  const tog=k=>{ const a=(S.answers[id]||[]).slice(), i=a.indexOf(k); if(i>=0) a.splice(i,1); else a.push(k); a.sort((p,q)=>p-q); if(a.length) S.answers[id]=a; else delete S.answers[id]; draw(); };
+  w.addEventListener('click',e=>{ const p=e.target.closest('.shp'); if(p) tog(+p.dataset.p); });
+  w.addEventListener('keydown',e=>{ const p=e.target.closest('.shp'); if(p&&(e.key===' '||e.key==='Enter')){ e.preventDefault(); tog(+p.dataset.p); } });
+  w.querySelector('.shclr').addEventListener('click',()=>{ delete S.answers[id]; draw(); });
+  root.appendChild(w); draw();
+}
+
 function answered(it){ const a=S.answers[it.n]; if(a==null) return false;
   switch(it.type){ case 'text': return txPlain(a).trim()!==''; case 'mc': return true; case 'ms': return a.length>0; case 'num': return String(a).trim()!=='';
     case 'inline': case 'table': return a.every(v=>v!==null); case 'dnd': return Object.keys(a).length===it.tiles.length; case 'graph': return true; case 'graphline': return a.lines.length>0;
-    case 'boxes': return a.every(q=>q!=null); case 'hotspot': case 'graphexp': return true; case 'graphineq': return a.pts.length===2&&!!a.shade; case 'cline': return a.pts.length===2; case 'graphsys': return a.g.every(L=>L.pts.length===2)&&!!a.region; case 'graphfunc': return true; case 'eq': return String(a).replace(/\//g,'').trim()!==''; } }
+    case 'boxes': return a.every(q=>q!=null); case 'hotspot': case 'graphexp': return true; case 'graphineq': return a.pts.length===2&&!!a.shade; case 'cline': return a.pts.length===2; case 'graphsys': return a.g.every(L=>L.pts.length===2)&&!!a.region; case 'graphfunc': return true; case 'numline': return it.mode==='ineq'?a.k!=null&&!!a.dir:a.length>0; case 'filltable': return a.every(v=>v!=null); case 'datadisp': return true; case 'shade': return a.length>0; case 'eq': return String(a).replace(/\//g,'').trim()!==''; } }
 function parseNum(s){ s=String(s).replace(/−/g,'-').trim(); const m=s.match(/^(-?\d+(?:\.\d+)?)\/(-?\d+(?:\.\d+)?)$/); if(m) return +m[1]/+m[2]; return s===''||isNaN(+s)?NaN:+s; }
 function score(it){ const a=S.answers[it.n]; if(a==null||NOKEY(it)) return null;
   switch(it.type){
@@ -1855,7 +1990,11 @@ function score(it){ const a=S.answers[it.n]; if(a==null||NOKEY(it)) return null;
       return on(a.pts[0])&&on(a.pts[1])&&a.dash===strict&&sideOK; }
     case 'graphfunc': return a.type===it.ftype&&(a.asym??0)===it.asym&&a.pts.every(P=>Math.abs(it.fn(P[0])-P[1])<1e-9);
     case 'eq': return it.full?EQX.same(a,it.answer):Math.abs(parseNum(a)-it.answer)<1e-9;
-    case 'graphexp': return Math.abs(a.a-it.a)<1e-6&&Math.abs(a.b-it.b)<1e-6; } }
+    case 'graphexp': return Math.abs(a.a-it.a)<1e-6&&Math.abs(a.b-it.b)<1e-6;
+    case 'numline': return it.mode==='ineq'?a.k===it.answer.k&&!!a.closed===!!it.answer.closed&&a.dir===it.answer.dir:a.length===it.answer.length&&it.answer.every(k=>a.includes(k));
+    case 'filltable': return it.answer.every((v,k)=>Math.abs(parseNum(a[k]??'')-v)<1e-9);
+    case 'datadisp': return it.answer.every((v,k)=>Math.abs((a[k]||0)-v)<1e-9);
+    case 'shade': return a.length===it.answer; } }
 function show(it,a){ if(a==null) return '—';
   if(it.type==='text') return `<div class="rvtext">${esc0(txPlain(a))}</div>`;
   switch(it.type){
@@ -1875,6 +2014,10 @@ function show(it,a){ if(a==null) return '—';
     case 'graphineq': return a.pts.length===2?`${a.dash?'Dashed':'Solid'} line through (${fmtN(a.pts[0][0])}, ${fmtN(a.pts[0][1])}) and (${fmtN(a.pts[1][0])}, ${fmtN(a.pts[1][1])})${a.shade?', shaded':''}`:'—';
     case 'graphineqOLD': return a.line?`${a.line.dash?'Dashed':'Solid'} line through (${fmtN(a.line.a[0])}, ${fmtN(a.line.a[1])}) and (${fmtN(a.line.b[0])}, ${fmtN(a.line.b[1])})${a.shade?', shaded':''}`:'—';
     case 'graphexp': return `Curve y = ${a.a.toFixed(3)}(${a.b.toFixed(3)})^x`;
+    case 'numline': return it.mode==='ineq'?(a.k==null?'—':a.dir?nlIneqText(it,a):`${a.closed?'Closed':'Open'} circle at ${nlText(it,a.k)}, not shaded`):a.map(k=>nlText(it,k)).join(', ');
+    case 'filltable': return a.map(v=>v==null?'—':String(v).replace(/-/g,'−')).join(', ');
+    case 'datadisp': return it.labels.map((l,k)=>`${l}: ${fmtV(a[k]||0)}`).join(', ');
+    case 'shade': return `${a.length} part${a.length===1?'':'s'} shaded`;
     case 'graphline': return [...a.lines.map(L=>`Line through (${fmtN(L[0][0])}, ${fmtN(L[0][1])}) and (${fmtN(L[1][0])}, ${fmtN(L[1][1])})`),...a.pts.map(P=>`Point (${fmtN(P[0])}, ${fmtN(P[1])})`)].join('<br>')||'—'; } }
 function key(it){ if(NOKEY(it)) return 'Your teacher has not released the answers.'; switch(it.type){
     case 'text': return 'Your teacher scores this answer.';
@@ -1893,7 +2036,11 @@ function key(it){ if(NOKEY(it)) return 'Your teacher has not released the answer
     case 'graphineq': return it.keyText||`${it.op.length===1?'Dashed':'Solid'} line y = ${fmtN(it.m)}x ${it.b<0?'− '+fmtN(-it.b):'+ '+fmtN(it.b)}, shaded ${it.op[0]==='>'?'above':'below'}`;
     case 'graphfunc': { const f=String(it.ftype||'function'); return f[0].toUpperCase()+f.slice(1)+(it.asym!=null?', asymptote y = '+fmtN(it.asym):'')+', points (0, '+fmtN(it.fn(0))+') and (1, '+fmtN(it.fn(1))+')'; }
     case 'eq': return it.full?EQX.show(it.answer):String(it.answer).replace(/-/g,'−');
-    case 'graphexp': return `Curve through (0, ${it.a}) with base ${fmtV(it.b)}`; } }
+    case 'graphexp': return `Curve through (0, ${it.a}) with base ${fmtV(it.b)}`;
+    case 'numline': return it.mode==='ineq'?`${nlIneqText(it,it.answer)} (${it.answer.closed?'closed':'open'} circle, shaded ${it.answer.dir>0?'right':'left'})`:'Points at '+it.answer.map(k=>nlText(it,k)).join(', ');
+    case 'filltable': return it.answer.map(fmtV).join(', ');
+    case 'datadisp': return it.labels.map((l,k)=>`${l}: ${fmtV(it.answer[k])}`).join(', ');
+    case 'shade': return `${it.answer} part${it.answer===1?'':'s'} shaded`; } }
 /* points earned, with partial credit on 2-point items (null = no response) */
 /* answer-key self-check for the dashboard's Tests page (only when the page sets SPITZ_SELFCHECK; students never do):
    each question is answered with its own key, then left blank, and the points are reported */
@@ -1914,7 +2061,11 @@ const lattice=(R,f)=>{ const P=[]; for(let x=-R;x<=R&&P.length<2;x++){ const y=f
       let region=null; for(let X=-it.R+0.5;X<it.R&&!region;X+=1) for(let Y=-it.R+0.5;Y<it.R&&!region;Y+=1) if(it.ineqs.every(q=>q.op[0]==='>'?Y>q.m*X+q.b:Y<q.m*X+q.b)) region=[X,Y];
       if(!region) throw new Error('the two inequalities have no region in common on the grid'); return {g,region}; }
     case 'cline': { const P=lattice(R,x=>it.eq[1]?(it.eq[2]-it.eq[0]*x)/it.eq[1]:null); if(P.length<2) throw new Error('the correct line does not go through two grid points'); return {pts:P}; }
-    case 'graphexp': return {a:it.a,b:it.b}; } };
+    case 'graphexp': return {a:it.a,b:it.b};
+    case 'numline': return it.mode==='ineq'?Object.assign({},it.answer):it.answer.slice();
+    case 'filltable': return it.answer.map(String);
+    case 'datadisp': return it.answer.slice();
+    case 'shade': return Array.from({length:it.answer},(x,k)=>k); } };
 if(window.SPITZ_SELFCHECK) window.__spitzSelfCheck=function(){
   const keep=S.answers, out=ITEMS.map(it=>{ const r={n:it.n,type:it.type,max:it.max};
     try{ S.answers={}; r.blank=earn(it); S.answers={[it.n]:keyAns(it)}; r.key=earn(it); }catch(e){ r.err=String(e&&e.message||e); } return r; });
@@ -1969,6 +2120,9 @@ function earn(it){ const a=S.answers[it.n]; if(a==null||it.type==='text') return
   else if(it.type==='inline'){ hit=it.answer.filter((q,i)=>a[i]===q).length; parts=it.answer.length; }
   else if(it.type==='graphsys'){ const r=sysParts(it,a); hit=(r.lines?1:0)+(r.region?1:0); }
   else if(it.type==='table'){ const c=it.answer.filter((v,k)=>a[k]===v).length; return Math.floor(c*it.max/it.answer.length); }
+  else if(it.type==='filltable'||it.type==='datadisp'){ const c=it.answer.filter((v,k)=>it.type==='filltable'?Math.abs(parseNum(a[k]??'')-v)<1e-9:Math.abs((a[k]||0)-v)<1e-9).length; return Math.floor(c*it.max/it.answer.length); }
+  else if(it.type==='numline'&&it.mode==='ineq') hit=(a.k===it.answer.k&&!!a.closed===!!it.answer.closed?1:0)+(a.dir===it.answer.dir?1:0);
+  else if(it.type==='numline'){ hit=Math.max(0,a.filter(q=>it.answer.includes(q)).length-Math.max(0,a.length-it.answer.length)); parts=it.answer.length; }
   else if(it.type==='graphineq'){ const on=P=>P[1]===it.m*P[0]+it.b; const lineOK=a.pts.length===2&&on(a.pts[0])&&on(a.pts[1])&&a.dash===(it.op.length===1);
     const sideOK=!!a.shade&&((it.op[0]==='>')?a.shade[1]>it.m*a.shade[0]+it.b:a.shade[1]<it.m*a.shade[0]+it.b); hit=(lineOK?1:0)+(sideOK&&a.pts.length===2?1:0); }
   return parts===3? (hit>=2?1:0) : Math.min(1,hit); }
@@ -2176,7 +2330,11 @@ const TUT={
   graph:'<p><b>Graphing</b></p><p>Click a point on the grid to plot it. Click the point again to remove it.</p>',
   cline:'<p><b>Graphing a Line</b></p><p>Click two points on the grid. A line connects the points. Drag a point to move it.</p>',
   graphsys:'<p><b>Graphing a System of Inequalities</b></p><p>Select <b>Graph 1</b>, choose the line type, and select two points. Do the same with <b>Graph 2</b>. Then select <b>Solution Set</b> and select the region that is the solution.</p>',
-  graphline:'<p><b>Graphing a Line</b></p><p>Choose <b>Add Line</b>, then click two points on the grid. A line is drawn through both points. Use <b>Delete</b> to remove a point or line.</p>'};
+  graphline:'<p><b>Graphing a Line</b></p><p>Choose <b>Add Line</b>, then click two points on the grid. A line is drawn through both points. Use <b>Delete</b> to remove a point or line.</p>',
+  numline:'<p><b>Number Line</b></p><p>Click a tick mark to place a point, and click it again to remove it. To graph an inequality, choose <b>Closed Circle</b> or <b>Open Circle</b>, click a tick mark, then choose <b>Shade Left</b> or <b>Shade Right</b>.</p>',
+  filltable:'<p><b>Fill in a Table</b></p><p>Type a number in each empty box of the table. You can enter whole numbers, decimals, negatives, and fractions such as 3/4.</p>',
+  datadisp:'<p><b>Data Display</b></p><p>Click inside a column to set how tall its bar is, or how many dots it has. Click the top again to remove it. You can also use the arrow keys.</p>',
+  shade:'<p><b>Shade a Model</b></p><p>Click a part of the model to shade it. Click it again to unshade it.</p>'};
 
 /* ---------- panels ---------- */
 let zTop=130;
@@ -2629,7 +2787,7 @@ document.getElementById('rvClose').onclick=()=>{ document.getElementById('review
    Shows many questions stacked, each built by the same engine students use, with its answer key. The dashboard sends the
    questions (as code, so graph functions survive) and the details shown beside each one; Add / Remove go back to it. */
 function browseStart(){
-  const BTYPES={mc:'Multiple choice',ms:'Multiselect',num:'Number entry',eq:'Equation editor',inline:'Drop-down',table:'Match table',dnd:'Drag and drop',graph:'Plot a point',graphline:'Graph a line',cline:'Graph a line',graphsys:'Graph a system of inequalities',boxes:'Drag into boxes',hotspot:'Hot spot',graphineq:'Graph an inequality',graphexp:'Graph a function',graphfunc:'Graph a function'};
+  const BTYPES={mc:'Multiple choice',ms:'Multiselect',num:'Number entry',eq:'Equation editor',inline:'Drop-down',table:'Match table',dnd:'Drag and drop',graph:'Plot a point',graphline:'Graph a line',cline:'Graph a line',graphsys:'Graph a system of inequalities',boxes:'Drag into boxes',hotspot:'Hot spot',graphineq:'Graph an inequality',graphexp:'Graph a function',graphfunc:'Graph a function',numline:'Number line',filltable:'Fill in a table',datadisp:'Data display',shade:'Shade a model'};
   const TOK=String(window.SPITZ_BROWSE), post=m=>parent.postMessage(Object.assign({bview:TOK},m),'*');
   const esc=t=>String(t==null?'':t).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
   document.body.classList.add('browse');

@@ -328,6 +328,9 @@ details summary{cursor:pointer;color:var(--blue2);font-size:13px;margin-top:8px}
 .oehimg .hsd{position:absolute;width:26px;height:26px;margin:-13px 0 0 -13px;border-radius:50%;border:2px solid #fff;background:#8a94a6;color:#fff;font-size:11px;font-weight:700;padding:0;box-shadow:0 0 0 1px #555;cursor:pointer;line-height:1} .oehimg .hsd.ok{background:#1a7f37}
 .oesys{border:1px solid var(--line);border-radius:8px;padding:6px 8px;margin-bottom:6px} .oesys.on{border-color:#1f6feb;background:#f3f7ff} .oesys select{margin:0 6px} .oesysh{cursor:pointer}
 .oegw select{font-size:13px;padding:4px 6px;border:1px solid #9fb0c8;border-radius:6px} .oegread{margin:8px 0}
+.oenl{display:flex;flex-wrap:wrap;gap:6px 14px;align-items:center;margin:6px 0} .oenl input:not([type]){font-size:14px;padding:4px 6px;border:1px solid #9fb0c8;border-radius:6px;width:84px} .oenl select{font-size:13px;padding:4px 6px;border:1px solid #9fb0c8;border-radius:6px;width:auto;max-width:none}
+.oenl .btn.on{background:#1f6feb;border-color:#1f6feb;color:#fff} .oenlw .oegrid svg{cursor:pointer} .oeshp{display:flex;gap:12px;flex-wrap:wrap;align-items:center;margin-top:8px}
+.oeft td.fb{background:#fff6cc} .oeft .fbt{border:0;background:none;font-size:17px;padding:0 4px;cursor:pointer;vertical-align:middle} .oetab.oeft th input,.oetab.oeft td input:not([type]){width:96px}
 @media (max-width:700px){ .oeqh .num{min-width:0;width:100%} #oeId{width:100%} }
 /* question bank page */
 .bkpage{position:fixed;inset:0;background:var(--bg);z-index:46;display:flex;flex-direction:column}
@@ -513,7 +516,8 @@ details summary{cursor:pointer;color:var(--blue2);font-size:13px;margin-top:8px}
       <div class="row"><b>Interactive:</b><button class="btn" data-oeadd="eq">Equation editor</button><button class="btn" data-oeadd="inline">Drop-down</button><button class="btn" data-oeadd="table">Table match</button>
       <button class="btn" data-oeadd="boxes">Drag into boxes</button><button class="btn" data-oeadd="graph">Plot a point</button><button class="btn" data-oeadd="graphline">Draw a line</button>
       <button class="btn" data-oeadd="dnd">Drag into groups</button><button class="btn" data-oeadd="hotspot">Hot spot</button><button class="btn" data-oeadd="graphineq">Graph an inequality</button>
-      <button class="btn" data-oeadd="graphsys">Graph a system</button><button class="btn" data-oeadd="graphfunc">Graph a function</button><button class="btn" data-oeadd="graphexp">Graph an exponential curve</button></div></section>
+      <button class="btn" data-oeadd="graphsys">Graph a system</button><button class="btn" data-oeadd="graphfunc">Graph a function</button><button class="btn" data-oeadd="graphexp">Graph an exponential curve</button>
+      <button class="btn" data-oeadd="numline">Number line</button><button class="btn" data-oeadd="filltable">Fill in a table</button><button class="btn" data-oeadd="datadisp">Data display</button><button class="btn" data-oeadd="shade">Shade a model</button></div></section>
   </div></div>
   <footer class="oebar"><span id="oeCount" class="hint"></span><span class="msg2" id="oeMsg"></span><div class="sp"></div>
     <button class="btn" id="oePreview">Preview</button><button class="btn" id="oeDraft">Save draft</button><button class="btn pri" id="oePublish">Publish</button></footer>
@@ -850,8 +854,8 @@ $('#mtBank').onclick=async()=>{ const b=$('#mtBank'); b.disabled=true;
 
 /* ---------- write a test: a teacher's own questions (stcOwnGet / stcOwnSave). The answers stay in the Sheet; GitHub gets the test without them. ---------- */
 const OE_COURSES=['6th Math','7th Math','8th Math','Algebra I','6th RLA','7th RLA','8th RLA','8th Science','8th History','Other'];
-const OE_TYPES={mc:'Multiple choice',ms:'Check all that apply',num:'Number answer',eq:'Equation editor',inline:'Drop-down',table:'Table match',boxes:'Drag into boxes',graph:'Plot a point',graphline:'Draw a line',dnd:'Drag into groups',hotspot:'Hot spot',graphineq:'Graph an inequality',graphsys:'Graph a system of inequalities',graphfunc:'Graph a function',graphexp:'Graph an exponential curve',text:'Written answer'};
-const OE_PTS={mc:1,ms:2,num:1,eq:1,inline:1,table:2,boxes:2,graph:1,graphline:1,dnd:1,hotspot:1,graphineq:1,graphsys:2,graphfunc:1,graphexp:1,text:2}, OE_L='ABCDEFGH';
+const OE_TYPES={mc:'Multiple choice',ms:'Check all that apply',num:'Number answer',eq:'Equation editor',inline:'Drop-down',table:'Table match',boxes:'Drag into boxes',graph:'Plot a point',graphline:'Draw a line',dnd:'Drag into groups',hotspot:'Hot spot',graphineq:'Graph an inequality',graphsys:'Graph a system of inequalities',graphfunc:'Graph a function',graphexp:'Graph an exponential curve',numline:'Number line',filltable:'Fill in a table',datadisp:'Data display',shade:'Shade a model',text:'Written answer'};
+const OE_PTS={mc:1,ms:2,num:1,eq:1,inline:1,table:2,boxes:2,graph:1,graphline:1,dnd:1,hotspot:1,graphineq:1,graphsys:2,graphfunc:1,graphexp:1,numline:1,filltable:1,datadisp:1,shade:1,text:2}, OE_L='ABCDEFGH';
 const OE_SYM='≤ ≥ ≠ ± × ÷ − · π √ ∛ ° ² ³ ½ ⅓ ¼ ¾ ∠ △ ⊥ ∥ ≈ ∞ → ↔ ¢ á é í ó ú ñ ¿ ¡ “ ” —'.split(' ');
 let OE=null;
 function oeCourseFor(subject){ const s=String(subject||'').toLowerCase(), g=(s.match(/\b([678])(?:th)?\b/)||[])[1];
@@ -884,7 +888,11 @@ function oeBlank(type){ const it={type,text:'',points:OE_PTS[type],std:'',passag
   if(type==='table'){ it.head=''; it.cols=['','']; it.rows=['','']; it.answer=[null,null]; } if(type==='boxes'){ it.tpl=''; it.tiles=['','','','']; it.answer=[]; it.reuse=false; it.unordered=false; }
   if(type==='graph'){ it.R=10; it.answer=null; } if(type==='graphline'){ it.R=10; it.answer=[]; }
   if(type==='dnd'){ it.zones=['','']; it.tiles=['','','','']; it.answer=[null,null,null,null]; } if(type==='hotspot'){ it.mode='grid'; it.R=10; it.spots=[]; it.answer=[]; } if(type==='graphineq'){ it.R=10; it.answer=[]; it.op='>='; }
-  if(type==='graphsys'){ it.R=10; it.ineqs=[{pts:[],op:'>='},{pts:[],op:'<'}]; it.act=0; } if(type==='graphfunc'){ it.f='quadratic'; it.pts=[]; it.asym=0; } if(type==='graphexp'){ it.R=10; it.pts=[]; } return it; }
+  if(type==='graphsys'){ it.R=10; it.ineqs=[{pts:[],op:'>='},{pts:[],op:'<'}]; it.act=0; } if(type==='graphfunc'){ it.f='quadratic'; it.pts=[]; it.asym=0; } if(type==='graphexp'){ it.R=10; it.pts=[]; }
+  if(type==='numline'){ it.mode='points'; it.from='-5'; it.to='5'; it.step='1'; it.lab=1; it.answer=[]; it.ineq={k:null,closed:true,dir:0}; }
+  if(type==='filltable'){ it.head=['','']; it.cells=[['',''],['',''],['','']]; it.blank=[[false,false],[false,false],[false,false]]; }
+  if(type==='datadisp'){ it.kind='bar'; it.labels=['','','']; it.answer=['','','']; it.ymax='10'; it.ystep='1'; it.xlab=''; it.ylab=''; }
+  if(type==='shade'){ it.kind='bar'; it.parts=4; it.rows=10; it.cols=10; it.wholes=1; it.answer=''; } return it; }
 /* the interactive types. While editing, a sentence or answer line marks its drop-downs and boxes [1], [2] …; the server gets {0}, {1} … in the order they appear */
 const oeDe=h=>{ const t=document.createElement('textarea'); t.innerHTML=h||''; return t.value; };
 const oeToMarks=s=>String(s||'').replace(/\{(\d)\}/g,(m,k)=>'['+(+k+1)+']');
@@ -928,6 +936,28 @@ function oeCurve(f,pts,c){ if(!pts||pts.length<2) return null; const [p,q]=pts; 
   if(f==='quadratic'){ const k=(q[1]-p[1])/Math.pow(q[0]-p[0],2); return k?x=>k*Math.pow(x-p[0],2)+p[1]:null; }
   const d1=p[1]-c, d2=q[1]-c; if(d1===0||d2===0||Math.sign(d1)!==Math.sign(d2)||d1===d2) return null;
   const b=Math.pow(d2/d1,1/(q[0]-p[0])), A0=d1/Math.pow(b,p[0]); return x=>A0*Math.pow(b,x)+c; }
+/* number line helpers (the player's nlText): a number, fraction or mixed number; ticks; labels as fractions when the spacing is a fraction */
+const oeNv=s=>{ s=String(s==null?'':s).replace(/−/g,'-').trim(); const m=s.match(/^(-?)(\d+)\s+(\d+)\/(\d+)$/); if(m) return +m[4]?(m[1]?-1:1)*(+m[2]+ +m[3]/+m[4]):NaN; const f=s.match(/^(-?\d+(?:\.\d+)?)\/(-?\d+(?:\.\d+)?)$/); if(f) return +f[2]?+f[1]/+f[2]:NaN; return s===''||isNaN(+s)?NaN:+s; };
+function oeNl(it){ const lo=oeNv(it.from), st=oeNv(it.step), n=(oeNv(it.to)-lo)/st, dm=String(it.step).match(/\/\s*(\d+)/); return {lo,st,n:st>0&&Math.abs(n-Math.round(n))<1e-6?Math.round(n):NaN,den:dm?+dm[1]:0}; }
+function oeNlText(it,k){ const L=oeNl(it), v=L.lo+k*L.st; if(!L.den) return oeNum(v);
+  const g=(a,b)=>b?g(b,a%b):a, n=Math.round(v*L.den), N=Math.abs(n), w=Math.floor(N/L.den), r=N%L.den, d=g(r,L.den)||1;
+  return (n<0?'−':'')+(r?(w?w+' ':'')+(r/d)+'/'+(L.den/d):String(w)); }
+function oeNlSvg(it,onPick){ const L=oeNl(it), n=L.n, W=560, pad=26, Y0=34, X=k=>pad+k*(W-2*pad)/n, lab=+it.lab||1, Q=it.ineq, iq=it.mode==='ineq'; let s='';
+  s+=`<line x1="6" x2="${W-6}" y1="${Y0}" y2="${Y0}" stroke="#333" stroke-width="2"/>`;
+  for(let k=0;k<=n;k++){ const big=k%lab===0; s+=`<line x1="${X(k)}" x2="${X(k)}" y1="${Y0-(big?8:5)}" y2="${Y0+(big?8:5)}" stroke="#333"/>`+(big?`<text x="${X(k)}" y="${Y0+24}" font-size="11" text-anchor="middle" fill="#333">${oeNlText(it,k)}</text>`:''); }
+  if(iq&&Q.k!=null){ if(Q.dir) s+=`<line x1="${X(Q.k)}" x2="${Q.dir>0?W-8:8}" y1="${Y0}" y2="${Y0}" stroke="#1f6feb" stroke-width="5"/><path d="${Q.dir>0?`M${W-2} ${Y0}l-10 -7v14z`:`M2 ${Y0}l10 -7v14z`}" fill="#1f6feb"/>`;
+    s+=`<circle cx="${X(Q.k)}" cy="${Y0}" r="7" fill="${Q.closed?'#1f6feb':'#fff'}" stroke="#1f6feb" stroke-width="3"/>`; }
+  if(!iq) it.answer.forEach(k=>{ s+=`<circle cx="${X(k)}" cy="${Y0}" r="7" fill="#1f6feb"/>`; });
+  for(let k=0;k<=n;k++) s+=`<rect data-k="${k}" x="${X(k)-Math.min(12,(W-2*pad)/n/2)}" y="${Y0-18}" width="${Math.min(24,(W-2*pad)/n)}" height="34" fill="transparent" style="cursor:pointer"><title>${oeNlText(it,k)}</title></rect>`;
+  const w=document.createElement('div'); w.className='oegrid'; w.innerHTML=`<svg viewBox="0 0 ${W} 66" width="${W}" height="66" role="img" aria-label="Number line. Click a tick mark.">${s}</svg>`;
+  w.querySelector('svg').addEventListener('click',e=>{ const r=e.target.closest('rect[data-k]'); if(r) onPick(+r.dataset.k); }); return w; }
+/* a shade-a-model picture for the editor, the first a parts shaded */
+function oeShadeSvg(it,a){ const g=it.kind==='grid', per=g?it.rows*it.cols:it.parts; let out='';
+  for(let m=0;m<it.wholes;m++){ let s=''; const on=k=>m*per+k<a?'#1f6feb':'#fff';
+    if(it.kind==='bar'){ const pw=Math.min(40,240/per); for(let k=0;k<per;k++) s+=`<rect x="${k*pw}" y="0" width="${pw}" height="34" fill="${on(k)}" fill-opacity=".8" stroke="#333"/>`; out+=`<svg viewBox="-1 -1 ${pw*per+2} 36" width="${pw*per+2}" height="36">${s}</svg>`; }
+    else if(g){ const c=Math.min(18,180/Math.max(it.rows,it.cols)); for(let k=0;k<per;k++) s+=`<rect x="${(k%it.cols)*c}" y="${Math.floor(k/it.cols)*c}" width="${c}" height="${c}" fill="${on(k)}" fill-opacity=".8" stroke="#333"/>`; out+=`<svg viewBox="-1 -1 ${c*it.cols+2} ${c*it.rows+2}" width="${c*it.cols+2}" height="${c*it.rows+2}">${s}</svg>`; }
+    else { const R=40, P=t=>`${(R*Math.cos(t)).toFixed(2)} ${(R*Math.sin(t)).toFixed(2)}`; for(let k=0;k<per;k++){ const a0=-Math.PI/2+k*2*Math.PI/per, a1=a0+2*Math.PI/per; s+=per===1?`<circle r="${R}" fill="${on(0)}" fill-opacity=".8" stroke="#333"/>`:`<path d="M0 0L${P(a0)}A${R} ${R} 0 0 1 ${P(a1)}Z" fill="${on(k)}" fill-opacity=".8" stroke="#333"/>`; } out+=`<svg viewBox="-42 -42 84 84" width="84" height="84">${s}</svg>`; } }
+  return out; }
 const oeNum=v=>{ const r=Math.round(v*1000)/1000; return String(r).replace('-','−'); };
 const oePt=P=>'('+String(P[0]).replace('-','−')+', '+String(P[1]).replace('-','−')+')';
 /* the answer part of a card for the interactive types */
@@ -1078,6 +1108,73 @@ function oeAnsMore(it,i,ans,redo){ const t=it.type, inp=(cls,v,ph,lbl)=>`<input 
     const as=ans.querySelector('.as'); if(as) as.onchange=e=>{ it.asym=Math.max(-10,Math.min(10,Math.round(+e.target.value||0))); oeDirty(); redo(); };
     const gr=ans.querySelector('.gr'); if(gr) gr.onchange=e=>{ it.R=+e.target.value; it.pts=it.pts.filter(Q2=>Math.abs(Q2[0])<=it.R&&Math.abs(Q2[1])<=it.R); oeDirty(); redo(); };
     ans.querySelector('[data-gc]').onclick=()=>{ it.pts=[]; oeDirty(); redo(); };
+  } else if(t==='numline'){
+    const L=oeNl(it), ok=L.n>=2&&L.n<=40, iq=it.mode==='ineq', Q=it.ineq;
+    const read=!ok?'<span style="color:var(--no)">The number line needs 2 to 40 equal steps from start to end. Check the start, end and spacing.</span>'
+      :iq?(Q.k==null?'No circle yet. Click a tick mark.':`<b>x ${Q.dir>0?(Q.closed?'≥':'>'):Q.dir<0?(Q.closed?'≤':'<'):'?'} ${oeNlText(it,Q.k)}</b>`+(Q.dir?'':' · pick Shade Left or Shade Right'))
+      :(it.answer.length?'Points at <b>'+it.answer.map(k=>oeNlText(it,k)).join(', ')+'</b>':'No points yet. Click the tick marks.');
+    ans.innerHTML=`<div class="oesub">Number line · ${iq?'click the tick mark for the circle':'click the correct tick marks'}</div>
+      <div class="oenl"><label class="hint">Students <select class="nm"><option value="points"${iq?'':' selected'}>place points</option><option value="ineq"${iq?' selected':''}>graph an inequality</option></select></label>
+      <label class="hint">From <input class="nf" value="${esc(it.from)}" aria-label="Number line start"></label><label class="hint">To <input class="nt" value="${esc(it.to)}" aria-label="Number line end"></label>
+      <label class="hint">Tick spacing <input class="ns" value="${esc(it.step)}" aria-label="Tick spacing" placeholder="1, 0.5 or 1/4"></label>
+      <label class="hint">Label every <select class="nb">${[1,2,3,4,5,10].map(v=>`<option value="${v}"${+it.lab===v?' selected':''}>${v===1?'tick':v+' ticks'}</option>`).join('')}</select></label></div>
+      ${iq?`<div class="oenl"><label class="hint"><input type="radio" name="oe${i}nc" value="1"${Q.closed?' checked':''}> Closed circle (≤ or ≥)</label><label class="hint"><input type="radio" name="oe${i}nc" value="0"${Q.closed?'':' checked'}> Open circle (&lt; or &gt;)</label>
+        <button type="button" class="btn${Q.dir<0?' on':''}" data-nd="-1">← Shade left</button><button type="button" class="btn${Q.dir>0?' on':''}" data-nd="1">Shade right →</button></div>`:''}
+      <div class="oenlw"></div><p class="oegread">${read}</p><button type="button" class="btn" data-gc="1">Clear</button>
+      <p class="hint">${iq?'Students pick a closed or open circle, click a tick mark, then shade left or right. At 2 points, the circle and the side earn 1 point each.':'Students click tick marks to place points. Worth 2 or more: 1 point for partly right, like STAAR. Type fractions like 1/4 for the spacing to label the line with fractions.'}</p>`;
+    if(ok) ans.querySelector('.oenlw').appendChild(oeNlSvg(it,k=>{ if(iq){ Q.k=k; } else { const j=it.answer.indexOf(k); if(j>=0) it.answer.splice(j,1); else it.answer.push(k); it.answer.sort((a,b)=>a-b); } oeDirty(); redo(); }));
+    const fix=()=>{ const n=oeNl(it).n; it.answer=it.answer.filter(k=>k<=n); if(Q.k!=null&&Q.k>n) Q.k=null; };
+    ans.querySelector('.nm').onchange=e=>{ it.mode=e.target.value; oeDirty(); redo(); };
+    [['nf','from'],['nt','to'],['ns','step']].forEach(([c,f])=>{ ans.querySelector('.'+c).onchange=e=>{ it[f]=e.target.value.replace(/−/g,'-').trim(); it.answer=[]; Q.k=null; oeDirty(); redo(); }; });
+    ans.querySelector('.nb').onchange=e=>{ it.lab=+e.target.value; oeDirty(); redo(); };
+    ans.querySelectorAll(`input[name="oe${i}nc"]`).forEach(x=>x.onchange=()=>{ Q.closed=x.value==='1'; oeDirty(); redo(); });
+    ans.querySelectorAll('[data-nd]').forEach(x=>x.onclick=()=>{ Q.dir=+x.dataset.nd; oeDirty(); redo(); });
+    ans.querySelector('[data-gc]').onclick=()=>{ it.answer=[]; Q.k=null; Q.dir=0; oeDirty(); redo(); }; fix();
+  } else if(t==='filltable'){
+    const nc=it.head.length;
+    ans.innerHTML=`<div class="oesub">Table · type every cell, then click ☐ on the cells students fill in</div><div class="oetabw"><table class="oetab oeft"><tr>${it.head.map((h,k)=>`<th>${inp('fh',h,'Heading '+(k+1),'Column '+(k+1)+' heading')}<button type="button" class="rm" data-rc="${k}"${nc<=2?' disabled':''} title="Remove column ${k+1}">✕</button></th>`).join('')}<th>${nc<6?'<button type="button" class="btn" data-ac="1">+ Column</button>':''}</th></tr>
+      ${it.cells.map((r,ri)=>`<tr>${r.map((c,ci)=>{ const b=it.blank[ri][ci]; return `<td class="${b?'fb':''}"><button type="button" class="fbt" data-fb="${ri},${ci}" aria-pressed="${b}" title="${b?'Students fill in this cell. Click to make it a plain cell.':'Click to make students fill in this cell'}">${b?'☑':'☐'}</button>${inp('fc',c,b?'Correct number':'',`Row ${ri+1}, column ${ci+1}${b?' (correct answer)':''}`).replace('<input','<input data-c="'+ri+','+ci+'"')}</td>`; }).join('')}<td><button type="button" class="rm" data-rr="${ri}"${it.cells.length<=1?' disabled':''} title="Remove row ${ri+1}">✕</button></td></tr>`).join('')}</table></div>
+      ${it.cells.length<10?'<button type="button" class="btn" data-ar="1" style="margin-top:6px">+ Add a row</button>':''}<p class="hint">Yellow cells (☑) are boxes students type a number in, and what you type there is the correct answer. Points are split across the boxes (2 points, 4 boxes: 1 point for every 2 boxes right).</p>`;
+    ans.querySelectorAll('input.fh').forEach((x,k)=>x.oninput=()=>{ it.head[k]=x.value; oeDirty(); });
+    ans.querySelectorAll('input.fc').forEach(x=>x.oninput=()=>{ const [r,c]=x.dataset.c.split(',').map(Number); it.cells[r][c]=x.value; oeDirty(); });
+    ans.addEventListener('click',e=>{ const x=e.target.closest('button'); if(!x) return;
+      if(x.dataset.fb){ const [r,c]=x.dataset.fb.split(',').map(Number); it.blank[r][c]=!it.blank[r][c]; }
+      else if(x.dataset.rc){ const k=+x.dataset.rc; it.head.splice(k,1); it.cells.forEach(r=>r.splice(k,1)); it.blank.forEach(r=>r.splice(k,1)); }
+      else if(x.dataset.ac){ it.head.push(''); it.cells.forEach(r=>r.push('')); it.blank.forEach(r=>r.push(false)); }
+      else if(x.dataset.rr){ it.cells.splice(+x.dataset.rr,1); it.blank.splice(+x.dataset.rr,1); }
+      else if(x.dataset.ar){ it.cells.push(it.head.map(()=>'')); it.blank.push(it.head.map(()=>false)); }
+      else return; oeDirty(); redo(); });
+  } else if(t==='datadisp'){
+    const dot=it.kind==='dot';
+    ans.innerHTML=`<div class="oesub">Data display · name the ${it.kind==='hist'?'intervals':'categories'} and give the correct heights</div>
+      <div class="oenl"><label class="hint">Students build a <select class="dk"><option value="bar"${it.kind==='bar'?' selected':''}>bar graph</option><option value="dot"${dot?' selected':''}>dot plot</option><option value="hist"${it.kind==='hist'?' selected':''}>histogram</option></select></label>
+      ${dot?`<label class="hint">Most dots in a column <select class="dm">${[3,4,5,6,8,10,12,15,20].map(v=>`<option${+it.ymax===v?' selected':''}>${v}</option>`).join('')}</select></label>`
+        :`<label class="hint">Scale from 0 to <input class="dy" value="${esc(it.ymax)}" aria-label="Top of the scale"></label><label class="hint">counting by <input class="ds" value="${esc(it.ystep)}" aria-label="Scale step"></label>`}</div>
+      <div class="oenl"><label class="hint">Label under the graph <input class="dxl" value="${esc(it.xlab)}" placeholder="optional, like Color"></label>${dot?'':`<label class="hint">Label beside the graph <input class="dyl" value="${esc(it.ylab)}" placeholder="optional, like Votes"></label>`}</div>
+      <div class="oetabw"><table class="oetab"><tr><th>${it.kind==='hist'?'Interval':dot?'Number':'Category'}</th><th>Correct ${dot?'number of dots':'height'}</th><th></th></tr>
+      ${it.labels.map((l,k)=>`<tr><td>${inp('dl',l,it.kind==='hist'?'like 0–9':dot?'like 3':'like Red','Label '+(k+1))}</td><td>${inp('dh',it.answer[k],'0','Correct height for label '+(k+1)).replace('<input','<input inputmode="decimal" style="width:90px"')}</td><td><button type="button" class="rm" data-rl="${k}"${it.labels.length<=2?' disabled':''} title="Remove label ${k+1}">✕</button></td></tr>`).join('')}</table></div>
+      ${it.labels.length<10?'<button type="button" class="btn" data-al="1" style="margin-top:6px">+ Add a '+(it.kind==='hist'?'interval':dot?'number':'category')+'</button>':''}
+      <p class="hint">Students click in each column to set its height${dot?' (the number of dots)':' on your scale'}. Heights have to land on the scale's steps. Points are split across the columns, like a table.</p>`;
+    ans.querySelector('.dk').onchange=e=>{ it.kind=e.target.value; if(it.kind==='dot'){ it.ystep='1'; if(![3,4,5,6,8,10,12,15,20].includes(+it.ymax)) it.ymax='8'; } oeDirty(); redo(); };
+    const on=(c,f)=>{ const x=ans.querySelector(c); if(x) x.oninput=x.onchange=e=>{ it[f]=e.target.value; oeDirty(); }; };
+    on('.dy','ymax'); on('.ds','ystep'); on('.dxl','xlab'); on('.dyl','ylab'); on('.dm','ymax');
+    ans.querySelectorAll('input.dl').forEach((x,k)=>x.oninput=()=>{ it.labels[k]=x.value; oeDirty(); });
+    ans.querySelectorAll('input.dh').forEach((x,k)=>x.oninput=()=>{ it.answer[k]=x.value.trim(); oeDirty(); });
+    ans.addEventListener('click',e=>{ const x=e.target.closest('button'); if(!x) return;
+      if(x.dataset.rl){ it.labels.splice(+x.dataset.rl,1); it.answer.splice(+x.dataset.rl,1); } else if(x.dataset.al){ it.labels.push(''); it.answer.push(''); } else return; oeDirty(); redo(); });
+  } else if(t==='shade'){
+    const g=it.kind==='grid', per=g?it.rows*it.cols:it.parts, tot=per*it.wholes, a=Math.round(+it.answer)||0, n=k=>`<select class="${k}">`;
+    ans.innerHTML=`<div class="oesub">Model · how many parts are shaded in the correct answer</div>
+      <div class="oenl"><label class="hint">Model ${n('sk')}<option value="bar"${it.kind==='bar'?' selected':''}>Fraction bar</option><option value="circle"${it.kind==='circle'?' selected':''}>Circle</option><option value="grid"${g?' selected':''}>Grid</option></select></label>
+      ${g?`<label class="hint">Rows ${n('sr')}${[1,2,3,4,5,6,7,8,9,10].map(v=>`<option${it.rows===v?' selected':''}>${v}</option>`).join('')}</select></label><label class="hint">Columns ${n('sc')}${[1,2,3,4,5,6,7,8,9,10].map(v=>`<option${it.cols===v?' selected':''}>${v}</option>`).join('')}</select></label>`
+        :`<label class="hint">Equal parts ${n('sp')}${[1,2,3,4,5,6,7,8,9,10,11,12].map(v=>`<option${it.parts===v?' selected':''}>${v}</option>`).join('')}</select></label>`}
+      <label class="hint">How many models ${n('sw')}${[1,2,3,4].map(v=>`<option${it.wholes===v?' selected':''}>${v}</option>`).join('')}</select></label>
+      <label class="hint">Parts shaded <input class="sa" inputmode="numeric" value="${esc(it.answer)}" style="width:70px" aria-label="Number of parts shaded in the correct answer"></label></div>
+      <div class="oeshp">${oeShadeSvg(it,a)}</div><p class="oegread">${a>=1&&a<=tot?`<b>${a} of ${per} part${per===1?'':'s'}${it.wholes>1?' in each model ('+it.wholes+' models, '+tot+' parts in all)':''}</b>`:'<span style="color:var(--no)">Type how many parts are shaded, 1 to '+tot+'.</span>'}</p>
+      <p class="hint">Students click parts to shade them. Any parts count, so 3 shaded squares anywhere are right for 3/10. Use more than one model for fractions greater than 1.</p>`;
+    const sel=(c,f)=>{ const x=ans.querySelector('.'+c); if(x) x.onchange=e=>{ it[f]=c==='sk'?e.target.value:+e.target.value; oeDirty(); redo(); }; };
+    sel('sk','kind'); sel('sr','rows'); sel('sc','cols'); sel('sp','parts'); sel('sw','wholes');
+    ans.querySelector('.sa').onchange=e=>{ it.answer=e.target.value.trim(); oeDirty(); redo(); };
   } }
 /* server shape -> editor shape (plain text where the editor uses plain boxes; marks as [1], [2] …) */
 function oeEditable(it){ const o=Object.assign({},it,{points:it.max});
@@ -1092,6 +1189,11 @@ function oeEditable(it){ const o=Object.assign({},it,{points:it.max});
   if(it.type==='graphsys'){ o.ineqs=(it.answer||[]).map(g=>({pts:[g[0].slice(),g[1].slice()],op:g[2]})); o.act=0; }
   if(it.type==='graphfunc'){ const a=it.answer||{}; o.f=a.f||'quadratic'; o.pts=(a.p||[]).map(P=>P.slice()); o.asym=a.asym||0; }
   if(it.type==='graphexp') o.pts=(it.answer||[]).map(P=>P.slice());
+  if(it.type==='numline'){ const a=it.answer; o.mode=it.mode==='ineq'?'ineq':'points'; o.from=String(it.from); o.to=String(it.to); o.step=String(it.step); o.lab=+it.lab||1;
+    if(o.mode==='ineq'){ o.ineq={k:a&&a.k!=null?a.k:null,closed:!!(a&&a.closed),dir:a&&a.dir||0}; o.answer=[]; } else { o.answer=Array.isArray(a)?a.filter(k=>k!=null).slice():[]; o.ineq={k:null,closed:true,dir:0}; } }
+  if(it.type==='filltable'){ const A=(it.answer||[]).slice(); let j=0; o.head=(it.head||[]).map(oeDe); o.cells=(it.cells||[]).map(r=>r.map(c=>c==null?String(A[j++]??''):oeDe(c))); o.blank=(it.cells||[]).map(r=>r.map(c=>c==null)); }
+  if(it.type==='datadisp'){ o.labels=(it.labels||[]).map(oeDe); o.answer=(it.answer||[]).map(v=>String(v??'')); o.ymax=String(it.ymax??''); o.ystep=String(it.ystep??''); o.xlab=oeDe(it.xlab||''); o.ylab=oeDe(it.ylab||''); o.kind=it.kind||'bar'; }
+  if(it.type==='shade'){ o.kind=it.kind||'bar'; o.parts=+it.parts||4; o.rows=+it.rows||10; o.cols=+it.cols||10; o.wholes=+it.wholes||1; o.answer=String(it.answer??''); }
   return o; }
 /* editor shape -> what stcOwnSave takes */
 function oeOut(it){ const o={type:it.type,text:it.text,points:+it.points,std:it.std,passage:it.passage,pic:it.pic};
@@ -1111,6 +1213,10 @@ function oeOut(it){ const o={type:it.type,text:it.text,points:+it.points,std:it.
   else if(t==='graphsys'){ o.R=it.R; o.answer=it.ineqs.map(q=>[q.pts[0],q.pts[1],q.op]); }
   else if(t==='graphfunc') o.answer={f:it.f,p:it.pts,asym:it.f==='exponential'?+it.asym||0:0};
   else if(t==='graphexp'){ o.R=it.R; o.answer=it.pts; }
+  else if(t==='numline'){ o.mode=it.mode; o.from=it.from; o.to=it.to; o.step=it.step; o.lab=it.lab; o.answer=it.mode==='ineq'?Object.assign({},it.ineq):it.answer.slice(); }
+  else if(t==='filltable'){ o.head=it.head.map(esc); o.cells=it.cells.map((r,ri)=>r.map((c,ci)=>it.blank[ri][ci]?null:esc(c))); o.answer=[]; it.cells.forEach((r,ri)=>r.forEach((c,ci)=>{ if(it.blank[ri][ci]) o.answer.push(String(c).trim()); })); }
+  else if(t==='datadisp'){ o.kind=it.kind; o.labels=it.labels.map(esc); o.ymax=it.ymax; o.ystep=it.kind==='dot'?'1':it.ystep; o.xlab=esc(it.xlab||''); o.ylab=esc(it.ylab||''); o.answer=it.answer.map(v=>String(v).trim()===''?0:oeNv(v)); }
+  else if(t==='shade'){ o.kind=it.kind; o.parts=it.parts; o.rows=it.rows; o.cols=it.cols; o.wholes=it.wholes; o.answer=Math.round(+it.answer)||0; }
   return o; }
 /* problems with one interactive question (the editor's own shape), as the server would say them */
 function oeCheckMore(it,q,P,i){ const t=it.type, once=(s,n,w)=>{ const L=oeLabels(s); for(let k=1;k<=n;k++){ const c=L.filter(x=>x===k).length; if(c!==1) P.push([i,q+w+' '+k+(c?' is in the '+(w==='box'?'line':'sentence')+' more than once.':' is not in the '+(w==='box'?'line':'sentence')+'. Click where it goes and add it again, or remove it.')]); }
@@ -1132,6 +1238,17 @@ function oeCheckMore(it,q,P,i){ const t=it.type, once=(s,n,w)=>{ const L=oeLabel
   if(t==='graphsys') it.ineqs.forEach((g,k)=>{ if(g.pts.length<2) P.push([i,q+'inequality '+(k+1)+': click two points on its boundary line.']); else if(g.pts[0][0]===g.pts[1][0]) P.push([i,q+'inequality '+(k+1)+': the boundary line can\'t go straight up and down.']); });
   if(t==='graphsys'&&it.ineqs.every(g=>g.pts.length===2)){ const [a,b]=it.ineqs.map(g=>g.pts); if((b[1][1]-b[0][1])*(a[1][0]-a[0][0])===(a[1][1]-a[0][1])*(b[1][0]-b[0][0])) P.push([i,q+'the two boundary lines can\'t be parallel.']); }
   if(t==='graphfunc'||t==='graphexp'){ const f=t==='graphexp'?'exponential':it.f; if(it.pts.length<2) P.push([i,q+'click two points on the grid.']); else if(!oeCurve(f,it.pts,t==='graphfunc'&&f==='exponential'?+it.asym||0:0)) P.push([i,q+(f==='exponential'?'an exponential curve can\'t go through those points.':'the two points need different x-values.')]); }
+  if(t==='numline'){ const L=oeNl(it);
+    if(!isFinite(L.lo)||!isFinite(oeNv(it.to))) P.push([i,q+'the number line needs a start and an end, like -5 and 5.']); else if(!(L.st>0)) P.push([i,q+'the tick marks need a spacing more than 0, like 1, 0.5 or 1/4.']); else if(!(L.n>=2&&L.n<=40)) P.push([i,q+'the number line needs 2 to 40 equal steps from start to end. Check the start, end and spacing.']);
+    else if(it.mode==='ineq'){ if(it.ineq.k==null) P.push([i,q+'click the tick mark where the circle goes.']); else if(!it.ineq.dir) P.push([i,q+'pick Shade Left or Shade Right.']); }
+    else if(!it.answer.length||it.answer.length>10) P.push([i,q+'click 1 to 10 tick marks for the correct points.']); }
+  if(t==='filltable'){ let nb=0; it.cells.forEach((r,ri)=>r.forEach((c,ci)=>{ if(!it.blank[ri][ci]) return; nb++; if(!isFinite(oeNv(String(c).replace(/,/g,'')))||/\s/.test(String(c).trim())) P.push([i,q+'row '+(ri+1)+', column '+(ci+1)+': type the correct number, like 12, -3.5 or 3/4.']); }));
+    if(!nb) P.push([i,q+'make at least one cell a box for students to fill in (click its ☐).']); else if(nb>30) P.push([i,q+'use at most 30 boxes.']); }
+  if(t==='datadisp'){ it.labels.forEach((l,k)=>{ if(!String(l).trim()) P.push([i,q+'label '+(k+1)+' is blank.']); });
+    const ys=it.kind==='dot'?1:oeNv(it.ystep), ym=oeNv(it.ymax), lv=ym/ys;
+    if(!(ys>0)||!(ym>0)||!(lv>=1&&lv<=20&&Math.abs(lv-Math.round(lv))<1e-6)) P.push([i,q+(it.kind==='dot'?'use 1 to 20 dots at most in a column.':'the scale needs 1 to 20 steps from 0 to the top. Check the top number and the step.')]);
+    else { const h=it.answer.map(v=>String(v).trim()===''?0:oeNv(v)); h.forEach((v,k)=>{ if(!(v>=0&&v<=ym+1e-9&&Math.abs(v/ys-Math.round(v/ys))<1e-6)) P.push([i,q+'the height for label '+(k+1)+' has to be on the scale (0 to '+oeNum(ym)+', counting by '+oeNum(ys)+').']); }); if(h.every(v=>!v)) P.push([i,q+'give the correct heights for the columns.']); } }
+  if(t==='shade'){ const tot=(it.kind==='grid'?it.rows*it.cols:it.parts)*it.wholes, a=+it.answer; if(!(Number.isInteger(a)&&a>=1&&a<=tot)) P.push([i,q+'type how many parts are shaded, 1 to '+tot+'.']); }
   if(t==='graphineq'){ if(it.answer.length<2) P.push([i,q+'click two points on the boundary line.']); else if(it.answer[0][0]===it.answer[1][0]) P.push([i,q+'the boundary line can\'t go straight up and down. Use y = mx + b lines.']); } }
 /* preview: the extra test.js fields for one question (server shape), with its key, as Code.gs writes them for the teacher */
 function oeJsMore(it,J){ const t=it.type, o=[];
@@ -1146,6 +1263,10 @@ function oeJsMore(it,J){ const t=it.type, o=[];
   if(t==='graphfunc'){ const a=it.answer, good=oeCurve(a.f,a.p,a.asym); o.push(good?'ftype:'+J(a.f)+',asym:'+a.asym+',kp:'+J(a.p):'ftype:"linear",asym:0,kp:[[0,99],[1,99]]'); }
   if(t==='graphexp'){ o.push('R:'+it.R); const a=it.answer; if(oeCurve('exponential',a,0)){ const b=Math.pow(a[1][1]/a[0][1],1/(a[1][0]-a[0][0])); o.push('a:'+(a[0][1]/Math.pow(b,a[0][0])),'b:'+b); } else o.push('a:99,b:99'); }
   if(t==='graphineq'){ const a=it.answer; o.push('R:'+it.R); if(a.length===2&&a[0][0]!==a[1][0]){ const m=(a[1][1]-a[0][1])/(a[1][0]-a[0][0]); o.push('m:'+m,'b:'+(a[0][1]-m*a[0][0]),'op:'+J(it.op)); } else o.push('m:0,b:99,op:'+J(it.op)); }
+  if(t==='numline'){ const L=oeNl(it), good=L.n>=2&&L.n<=40; o.push('mode:'+J(it.mode),'from:'+(good?L.lo:0),'to:'+(good?oeNv(it.to):10),'step:'+(good?L.st:1),'den:'+(good?L.den:0),'lab:'+(+it.lab||1),'answer:'+J(it.answer)); }
+  if(t==='filltable') o.push('head:'+J(it.head),'cells:'+J(it.cells),'answer:'+J(it.answer.map(v=>{ const x=oeNv(String(v).replace(/,/g,'')); return isFinite(x)?x:null; })));
+  if(t==='datadisp'){ let ys=it.kind==='dot'?1:oeNv(it.ystep), ym=oeNv(it.ymax); if(!(ys>0&&ym>0&&ym/ys<=20)){ ys=1; ym=10; } o.push('kind:'+J(it.kind),'labels:'+J(it.labels.map(l=>l||'&nbsp;')),'ymax:'+ym,'ystep:'+ys,'xlab:'+J(it.xlab||''),'ylab:'+J(it.ylab||''),'answer:'+J(it.answer.map(v=>isFinite(v)?v:0))); }
+  if(t==='shade'){ o.push('kind:'+J(it.kind),'wholes:'+(it.wholes||1),'answer:'+(it.answer||0)); if(it.kind==='grid') o.push('rows:'+it.rows,'cols:'+it.cols); else o.push('parts:'+it.parts); }
   if(t==='graphline'){ const a=it.answer; o.push('R:'+it.R);
     if(a.length===2){ const A=a[1][1]-a[0][1], B=a[0][0]-a[1][0]; o.push('eq:'+J([A,B,A*a[0][0]+B*a[0][1]]),'keyText:'+J('Line through '+oePt(a[0])+' and '+oePt(a[1]))); } else o.push('eq:[0,0,1]'); }
   return o; }
@@ -1618,10 +1739,14 @@ function qvAns(it,a){   // a student's answer in words (matches the player's "Yo
     case 'graphsys': return (a.g||[]).map((L,k)=>`Graph ${k+1}: `+(L.pts&&L.pts.length===2?`${L.dash?'dashed':'solid'} through ${qvPt(L.pts[0])}, ${qvPt(L.pts[1])}`:'no line')).join('; ')+(a.region?'; region chosen':'; no region');
     case 'graphfunc': return `${a.type||''} through ${(a.pts||[]).map(qvPt).join(' ')}`+(a.type==='exponential'&&a.asym!=null?', asymptote y = '+qvN(a.asym):'');
     case 'graphexp': return `y = ${qvN(a.a)}(${qvN(a.b)})^x`;
+    case 'numline': { const v=k=>qvN(it.from+k*it.step); return Array.isArray(a)?(a.map(v).join(', ')||'No answer'):a.k==null?'No answer':`x ${a.dir>0?(a.closed?'≥':'>'):a.dir<0?(a.closed?'≤':'<'):'?'} ${v(a.k)}`; }
+    case 'filltable': return a.map(v=>v==null?'—':String(v).replace(/-/g,'−')).join(', ');
+    case 'datadisp': return (it.labels||[]).map((l,k)=>qvCut(qvTxt(l),16)+': '+qvN(a[k]||0)).join('; ');
+    case 'shade': return a.length+' part'+(a.length===1?'':'s')+' shaded';
     case 'graphline': return [...(a.lines||[]).map(L=>`line through ${qvPt(L[0])} and ${qvPt(L[1])}`),...(a.pts||[]).map(P=>'point '+qvPt(P))].join('; ')||'No answer';
     default: return qvCut(JSON.stringify(a),80); } }catch(e){ return qvCut(JSON.stringify(a),80); } }
 const QV_GRAPH=/^(graph|cline|hotspot)/;
-const QV_TYPES={mc:'Multiple choice',ms:'Multiselect',num:'Number entry',eq:'Equation',inline:'Drop-down',table:'Match table',dnd:'Drag and drop',graph:'Plot a point',graphline:'Graph a line',cline:'Graph a line',graphsys:'Graph a system',boxes:'Drag into boxes',hotspot:'Hot spot',graphineq:'Graph an inequality',graphexp:'Graph a function',graphfunc:'Graph a function'};
+const QV_TYPES={mc:'Multiple choice',ms:'Multiselect',num:'Number entry',eq:'Equation',inline:'Drop-down',table:'Match table',dnd:'Drag and drop',graph:'Plot a point',graphline:'Graph a line',cline:'Graph a line',graphsys:'Graph a system',boxes:'Drag into boxes',hotspot:'Hot spot',graphineq:'Graph an inequality',graphexp:'Graph a function',graphfunc:'Graph a function',numline:'Number line',filltable:'Fill in a table',datadisp:'Data display',shade:'Shade a model'};
 function qvStats(L1,i,subOnly){   // one question: points, blanks and the students behind every answer
   const g={}; let e=0,mx=0,cnt=0,blank=[],have=false;
   L1.forEach(s=>{ const q=s.q[i]; if(!q) return; const nm={name:s.name,period:s.period,key:s.key};
