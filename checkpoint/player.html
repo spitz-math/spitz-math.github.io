@@ -258,6 +258,9 @@ svg.hs .spot:hover{fill:rgba(130,120,220,.15)}
 svg.hs .spot[aria-checked="true"]{fill:rgba(90,80,210,.35);stroke:#4b3fc4;stroke-width:2.6}
 .shadepoly{fill:rgba(31,79,216,.22);stroke:none}
 .hswrap{margin:.2em 0}
+.hsimg{position:relative;margin:.4em 0;line-height:0} .hsimg img{width:100%;height:auto;display:block}
+.hsdot{position:absolute;width:28px;height:28px;margin:-14px 0 0 -14px;border-radius:50%;border:2px solid #4b3fc4;background:rgba(255,255,255,.55);cursor:pointer;padding:0}
+.hsdot:hover{background:rgba(130,120,220,.25)} .hsdot[aria-checked="true"]{background:rgba(90,80,210,.5);box-shadow:inset 0 0 0 4px #fff}
 /* Cambium graphing tools */
 .eq.ctr{text-align:center;margin-left:0}
 ul.steps{margin:0 0 1.2em;padding-left:1.3em} ul.steps li{margin:.15em 0 .5em}
@@ -1052,7 +1055,7 @@ window.SpitzTest=function(TD){
 if(TD.keyless&&!window.SPITZ_APP){ window.__spitzKeylessFile=true; return; }
 if(window.__spitzBooted) return; window.__spitzBooted=true;
 const ITEMS=TD.items, KEYLESS=!!TD.keyless; let OWNPTS=null;
-const NOKEY=it=>KEYLESS&&it.type!=='text'&&(it.type==='graphline'?it.eq:it.answer)===undefined;   /* a line question's key is its equation (eq) */
+const NOKEY=it=>KEYLESS&&it.type!=='text'&&(it.type==='graphline'?it.eq:it.type==='graphineq'?it.op:it.answer)===undefined;   /* a line question's key is its equation (eq); an inequality's is m, b and op */
 if(TD.subject==='rla') document.body.classList.add('rla');
 if(TD.reference==='none') document.body.classList.add('noref'); if(TD.calc===false) document.body.classList.add('nocalc');
 ITEMS.forEach((it,i)=>{ it.n=i+1; it.letters=ODD; it.max=it.max||1; });
@@ -1214,7 +1217,7 @@ function buildDnD(it,root){
   const bank=document.createElement('div'); bank.className='bank'; bank.dataset.zone='bank';
   const zones=document.createElement('div'); zones.className='zones';
   it.zones.forEach((z,k)=>{ const d=document.createElement('div'); d.className='dz'; d.dataset.zone=k; d.innerHTML=`<h4>${z}</h4><div class="slot"></div>`; zones.appendChild(d); });
-  const hint=document.createElement('p'); hint.className='hint'; hint.textContent='Drag an equation into a box, or tap an equation and then tap a box. Drag it back up to remove it.';
+  const hint=document.createElement('p'); hint.className='hint'; hint.textContent=it.hint||'Drag an equation into a box, or tap an equation and then tap a box. Drag it back up to remove it.';
   let picked=null;
   const place=(tile,zone)=>{
     const a=S.answers[id]||{};
@@ -1417,6 +1420,7 @@ function buildHotspot(it,root){
      pick (how many points the student picks; 1 = one answer index, more = array of indices, Cambium "Select TWO/THREE correct answers");
      open: true draws the pick circles hollow with no black dot (the paper/online practice-test look) */
   const id=it.n, R=it.R||6, cell=20, pad=26, X=v=>pad+(v+R)*cell, Y=v=>pad+(R-v)*cell, pick=it.pick||1, multi=pick>1;
+  if(it.img) return buildHotImg(it,root,multi);
   const w=document.createElement('div'); w.className='hswrap'; w.innerHTML=SG({R,w:R>=6?330:290,lines:it.lines||[]});
   const svg=w.querySelector('svg'); svg.classList.add('hs');
   if(it.curve){
@@ -1441,7 +1445,17 @@ function buildHotspot(it,root){
   pts.addEventListener('keydown',e=>{ if(e.key===' '||e.key==='Enter'){ e.preventDefault(); e.target.dispatchEvent(new MouseEvent('click',{bubbles:true})); } });
   root.appendChild(w); sync();
 }
-const hsPts=(it,a)=>[].concat(a).map(q=>`(${fmtN(it.spots[q][0])}, ${fmtN(it.spots[q][1])})`).join(', ');
+const hsPts=(it,a)=>[].concat(a).map(q=>it.img?'Spot '+'ABCDEFGHIJKL'[q]:`(${fmtN(it.spots[q][0])}, ${fmtN(it.spots[q][1])})`).join(', ');
+/* hot spot on a picture (teachers' own tests): spots are [left %, top %] on the picture */
+function buildHotImg(it,root,multi){ const id=it.n, w=document.createElement('div'); w.className='hsimg'; w.style.maxWidth=(it.imgw||400)+'px';
+  w.innerHTML=`<img src="${it.img}" alt="Picture with spots to choose">`+it.spots.map(([x,y],q)=>`<button type="button" class="hsdot" style="left:${x}%;top:${y}%" role="${multi?'checkbox':'radio'}" aria-checked="false" aria-label="Spot ${'ABCDEFGHIJKL'[q]}" data-k="${q}"></button>`).join('');
+  const has=q=>multi?(S.answers[id]||[]).includes(q):S.answers[id]===q;
+  const sync=()=>{ w.querySelectorAll('.hsdot').forEach(c=>c.setAttribute('aria-checked',has(+c.dataset.k))); refresh(); };
+  w.addEventListener('click',e=>{ const c=e.target.closest('.hsdot'); if(!c) return; const q=+c.dataset.k;
+    if(multi){ const a=(S.answers[id]||[]).slice(); const i=a.indexOf(q); if(i>=0) a.splice(i,1); else a.push(q); a.sort((p,r)=>p-r); if(a.length) S.answers[id]=a; else delete S.answers[id]; }
+    else { if(S.answers[id]===q) delete S.answers[id]; else S.answers[id]=q; }
+    sync(); });
+  root.appendChild(w); sync(); }
 
 /* ---------- graph a linear inequality ---------- */
 function halfPlane(R,a,b,side){ // polygon of the grid square on the side of line ab containing point side
@@ -1849,7 +1863,7 @@ function show(it,a){ if(a==null) return '—';
     case 'table': return a.map((v,k)=>v==null?'—':(it.cols[v]||'')).join(', ');
     case 'graphsys': return a.g.map((L,k)=>`Graph ${k+1}: `+(L.pts.length===2?`${L.dash?'dashed':'solid'} line through (${fmtN(L.pts[0][0])}, ${fmtN(L.pts[0][1])}) and (${fmtN(L.pts[1][0])}, ${fmtN(L.pts[1][1])})`:'no line')).join('<br>')+(a.region?'<br>Region selected':'<br>No region selected');
     case 'cline': return a.pts.length?a.pts.map(P=>`(${fmtN(P[0])}, ${fmtN(P[1])})`).join(' and ')+(a.pts.length===2?' (line through both points)':''):'—';
-    case 'dnd': { const c=it.answer.filter((z,t)=>a[t]===z).length; return `${c} of ${it.tiles.length} placed correctly`; }
+    case 'dnd': { if(NOKEY(it)) return it.zones.map((z,k)=>`${z}: ${it.tiles.filter((t,ti)=>a[ti]===k).join(', ')||'—'}`).join('<br>'); const c=it.answer.filter((z,t)=>a[t]===z).length; return `${c} of ${it.tiles.length} placed correctly`; }
     case 'graph': return `(${fmtN(a[0])}, ${fmtN(a[1])})`;
     case 'boxes': return a.map(q=>q==null?'—':it.tiles[q]).join(' , ');
     case 'hotspot': return hsPts(it,a)||'—';
@@ -2511,7 +2525,7 @@ document.documentElement.addEventListener('scroll',()=>{ if(PRINTING()) return; 
 document.body.addEventListener('scroll',()=>{ if(PRINTING()) return; document.body.scrollTop=0; document.body.scrollLeft=0; });
 window.__test={ITEMS,S,score,parseNum,earn};
 window.__spitzOwn=o=>{ if(!KEYLESS||!o) return; if(o.pts) OWNPTS=o.pts;
-  if(Array.isArray(o.key)) ITEMS.forEach((it,i)=>{ if(it.type!=='text'&&o.key[i]!=null){ if(it.type==='graphline') it.eq=o.key[i]; else it.answer=o.key[i]; } });
+  if(Array.isArray(o.key)) ITEMS.forEach((it,i)=>{ if(it.type!=='text'&&o.key[i]!=null){ if(it.type==='graphline') it.eq=o.key[i]; else if(it.type==='graphineq') Object.assign(it,o.key[i]); else it.answer=o.key[i]; } });
   if(S.submitted){ showResults(true); if(window.__spitzFill) window.__spitzFill(); } };
 if(window.__spitzOwnPending){ const o=window.__spitzOwnPending; window.__spitzOwnPending=null; window.__spitzOwn(o); }
 
