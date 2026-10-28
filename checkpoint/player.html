@@ -670,6 +670,8 @@ body.th-maroon .clonebadge,body.th-black .clonebadge,body.th-blue .clonebadge{ba
 .sif input:focus,.sif select:focus{outline:2px solid #0b7cc1;outline-offset:0;border-color:#0b7cc1}
 .sierr{margin:0;color:#b03a2e;font-size:13px}
 .sibtn{margin:4px 0 0;align-self:flex-start;padding:10px 40px;font-size:15px}
+.sipr{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-top:14px;padding-top:14px;border-top:1px solid #d6dde4}.sipr[hidden]{display:none}
+.sipr a{padding:8px 22px;border:2px solid #1f6f8b;border-radius:6px;color:#1f6f8b;font-weight:700;text-decoration:none;font-size:15px;white-space:nowrap}.sipr a:hover{background:#eef6f9}.sipr span{font-size:13px;color:#555;flex:1;min-width:200px}
 .sifoot{padding:10px 20px;border-top:1px solid rgba(0,0,0,.12);font-size:11.5px;color:#555;line-height:1.4}
 /* review release (set by the teacher per session): none = submitted message only, score = score without per-question review */
 #resultsScreen[data-review="none"] .kv>div:nth-child(4),#resultsScreen[data-review="none"] .rx,#resultsScreen[data-review="none"] #rTable{display:none}
@@ -947,6 +949,7 @@ tr.ra-now{background:none!important;outline:0}
         <label class="sif" id="siPerRow"><span>Class period</span><select id="stuPeriod"></select></label>
         <p class="sierr" id="siErr" hidden>Enter your name and choose your class period.</p>
         <button class="logout sibtn" id="siBtn" type="submit">Sign In</button>
+        <div class="sipr" id="siPractice" hidden><a href="https://spitzmath.com/checkpoint/player.html" target="_blank" rel="noopener">Practice tests</a><span>No Session ID? Practice any test on your own. Practice work is not sent to your teacher.</span></div>
       </div>
       <div class="sifoot">Practice copy of the state testing site, made by Mr. Spitz. This is not the official STAAR test, and scores here do not count.</div>
     </form>
@@ -2677,7 +2680,7 @@ setPeriods(['1','2','3','4','5','6','7','8','9']);
 const askName=on=>{ $('#siNameRow').hidden=!on; $('#siPerRow').hidden=!on; };
 const SCHOOL='Chacon Middle School', whoDefault=$('#siWho').textContent;
 const setWho=r=>{ $('#siWho').textContent=r&&r.by?[r.by,r.subject,SCHOOL].filter(Boolean).join(' · '):whoDefault; };
-if(APP){ pick.closest('.sif').hidden=true; $('#siSesRow').hidden=false; askName(false);
+if(APP){ pick.closest('.sif').hidden=true; $('#siSesRow').hidden=false; $('#siPractice').hidden=false; askName(false);
   $('#stuSession').addEventListener('input',()=>{ if(!$('#siNameRow').hidden){ askName(false); $('#siErr').hidden=true; setWho(null); } }); }
 else if(fixed){ const t=allTests.find(t=>t.id===fixed); shown.textContent=t?t.title:fixed; shown.hidden=false; pick.hidden=true; }
 else { pick.innerHTML='<option value="" hidden></option>'+tests.map(t=>`<option value="${t.id}">${t.title}</option>`).join(''); pick.hidden=false; shown.hidden=true; }
