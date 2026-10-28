@@ -314,6 +314,16 @@ details summary{cursor:pointer;color:var(--blue2);font-size:13px;margin-top:8px}
 .oenum{display:flex;align-items:center;gap:8px;flex-wrap:wrap} .oenum input{font-size:15px;padding:5px 8px;border:1px solid #9fb0c8;border-radius:6px;width:160px}
 .oepsg{border-top:1px solid var(--line);padding-top:10px;margin-top:10px} .oepsg:first-child{border-top:0;margin-top:0;padding-top:0}
 .oepsg .oeqh .num{min-width:0}
+.oeeq{display:flex;align-items:center;gap:8px;flex-wrap:wrap} .oeeq .oelead{width:200px} .oeeq .ea{font-size:15px;padding:6px 8px;border:1px solid #9fb0c8;border-radius:6px;width:220px;font-family:Consolas,"Courier New",monospace}
+.oedd{border:1px solid var(--line);border-radius:8px;padding:8px 10px;margin-top:8px;background:#fafcff} .oedd .oeqh{margin-bottom:0}
+.oech input.dc,.oetab input:not([type]){font-size:14px;padding:5px 8px;border:1px solid #9fb0c8;border-radius:6px;flex:1;min-width:0}
+#oeItems,#oePsgs{min-width:0} .oetabw{overflow-x:auto;max-width:100%} .oetab{border-collapse:collapse;margin-top:4px} .oetab th,.oetab td{border:1px solid var(--line);padding:4px 6px;text-align:center;white-space:nowrap}
+.oetab th input,.oetab td input:not([type]){width:130px} .oetab th:first-child input,.oetab td:first-child input{width:190px}
+.oetab td input[type=radio]{width:18px;height:18px} .oetab td.right{background:#e6f6ec} .oetab .rm{border:0;background:none;color:var(--no);padding:2px 4px}
+.oeboxkey{display:flex;flex-wrap:wrap;gap:4px 6px;align-items:center} .oeboxkey select{font-size:13px;padding:4px 6px;border:1px solid #9fb0c8;border-radius:6px;max-width:220px}
+.oeboxkey .rm{border:0;background:none;color:var(--no)} .oechk{display:block;margin-top:6px}
+.oegw{display:flex;gap:14px;flex-wrap:wrap;align-items:flex-start} .oegw>div:last-child{flex:1;min-width:200px} .oegrid svg{max-width:100%;height:auto;border:1px solid var(--line);border-radius:4px;cursor:crosshair}
+.oegw select{font-size:13px;padding:4px 6px;border:1px solid #9fb0c8;border-radius:6px} .oegread{margin:8px 0}
 @media (max-width:700px){ .oeqh .num{min-width:0;width:100%} #oeId{width:100%} }
 /* question bank page */
 .bkpage{position:fixed;inset:0;background:var(--bg);z-index:46;display:flex;flex-direction:column}
@@ -495,7 +505,9 @@ details summary{cursor:pointer;color:var(--blue2);font-size:13px;margin-top:8px}
     <div id="oeItems"></div>
     <section class="tcard oeadd"><div class="row" style="margin-top:0"><b>Add a question:</b>
       <button class="btn" data-oeadd="mc">Multiple choice</button><button class="btn" data-oeadd="ms">Check all that apply</button>
-      <button class="btn" data-oeadd="num">Number answer</button><button class="btn" data-oeadd="text">Written answer</button></div></section>
+      <button class="btn" data-oeadd="num">Number answer</button><button class="btn" data-oeadd="text">Written answer</button></div>
+      <div class="row"><b>Interactive:</b><button class="btn" data-oeadd="eq">Equation editor</button><button class="btn" data-oeadd="inline">Drop-down</button><button class="btn" data-oeadd="table">Table match</button>
+      <button class="btn" data-oeadd="boxes">Drag into boxes</button><button class="btn" data-oeadd="graph">Plot a point</button><button class="btn" data-oeadd="graphline">Draw a line</button></div></section>
   </div></div>
   <footer class="oebar"><span id="oeCount" class="hint"></span><span class="msg2" id="oeMsg"></span><div class="sp"></div>
     <button class="btn" id="oePreview">Preview</button><button class="btn" id="oeDraft">Save draft</button><button class="btn pri" id="oePublish">Publish</button></footer>
@@ -832,8 +844,8 @@ $('#mtBank').onclick=async()=>{ const b=$('#mtBank'); b.disabled=true;
 
 /* ---------- write a test: a teacher's own questions (stcOwnGet / stcOwnSave). The answers stay in the Sheet; GitHub gets the test without them. ---------- */
 const OE_COURSES=['6th Math','7th Math','8th Math','Algebra I','6th RLA','7th RLA','8th RLA','8th Science','8th History','Other'];
-const OE_TYPES={mc:'Multiple choice',ms:'Check all that apply',num:'Number answer',text:'Written answer'};
-const OE_PTS={mc:1,ms:2,num:1,text:2}, OE_L='ABCDEFGH';
+const OE_TYPES={mc:'Multiple choice',ms:'Check all that apply',num:'Number answer',eq:'Equation editor',inline:'Drop-down',table:'Table match',boxes:'Drag into boxes',graph:'Plot a point',graphline:'Draw a line',text:'Written answer'};
+const OE_PTS={mc:1,ms:2,num:1,eq:1,inline:1,table:2,boxes:2,graph:1,graphline:1,text:2}, OE_L='ABCDEFGH';
 const OE_SYM='≤ ≥ ≠ ± × ÷ − · π √ ∛ ° ² ³ ½ ⅓ ¼ ¾ ∠ △ ⊥ ∥ ≈ ∞ → ↔ ¢ á é í ó ú ñ ¿ ¡ “ ” —'.split(' ');
 let OE=null;
 function oeCourseFor(subject){ const s=String(subject||'').toLowerCase(), g=(s.match(/\b([678])(?:th)?\b/)||[])[1];
@@ -861,7 +873,193 @@ function oeRich(html,ph,cls,onIn){ const w=document.createElement('div'); w.clas
 const oePlain=h=>{ const d=document.createElement('div'); d.innerHTML=h||''; return d.textContent.replace(/\s+/g,' ').trim(); };
 function oeBlank(type){ const it={type,text:'',points:OE_PTS[type],std:'',passage:''};
   if(type==='mc'||type==='ms'){ it.choices=['','','','']; it.answer=type==='mc'?null:[]; }
-  if(type==='num') it.answer=''; if(type==='text') it.limit=475; return it; }
+  if(type==='num') it.answer=''; if(type==='text') it.limit=475;
+  if(type==='eq'){ it.lead=''; it.answer=''; } if(type==='inline'){ it.sent=''; it.drops=[]; it.answer=[]; }
+  if(type==='table'){ it.head=''; it.cols=['','']; it.rows=['','']; it.answer=[null,null]; } if(type==='boxes'){ it.tpl=''; it.tiles=['','','','']; it.answer=[]; it.reuse=false; it.unordered=false; }
+  if(type==='graph'){ it.R=10; it.answer=null; } if(type==='graphline'){ it.R=10; it.answer=[]; } return it; }
+/* the interactive types. While editing, a sentence or answer line marks its drop-downs and boxes [1], [2] …; the server gets {0}, {1} … in the order they appear */
+const oeDe=h=>{ const t=document.createElement('textarea'); t.innerHTML=h||''; return t.value; };
+const oeToMarks=s=>String(s||'').replace(/\{(\d)\}/g,(m,k)=>'['+(+k+1)+']');
+const oeLabels=s=>[...String(s||'').matchAll(/\[(\d)\]/g)].map(m=>+m[1]);
+function oeFromMarks(s,list){ const L=oeLabels(s); let j=0; return {text:String(s||'').replace(/\[(\d)\]/g,()=>'{'+(j++)+'}'), list:L.map(l=>list[l-1]===undefined?null:list[l-1])}; }
+function oeUnmark(s,k){ return String(s||'').replace(/\[(\d)\]/g,(m,n)=>+n===k?'':+n>k?'['+(n-1)+']':m); }
+function oeMarkIn(rich,mark){ const ed=rich.querySelector('.oeed'), sel=getSelection();
+  if(!(sel.rangeCount&&ed.contains(sel.anchorNode))){ ed.focus(); const r=document.createRange(); r.selectNodeContents(ed); r.collapse(false); sel.removeAllRanges(); sel.addRange(r); }
+  document.execCommand('insertText',false,mark); }
+const oeFr=(n,d)=>{ if(d<0){ n=-n; d=-d; } const g=(a,b)=>b?g(b,a%b):Math.abs(a), k=g(n,d)||1; n/=k; d/=k; return d===1?String(n):n+'/'+d; };
+function oeLineText(P,Q){ if(P[0]===Q[0]) return 'x = '+P[0]; const dy=Q[1]-P[1], dx=Q[0]-P[0], m=oeFr(dy,dx), bn=P[1]*dx-dy*P[0], b=oeFr(bn,dx);
+  const mx=m==='0'?'':m==='1'?'x':m==='-1'?'−x':m.replace('-','−')+'x'; if(!mx) return 'y = '+b.replace('-','−');
+  return 'y = '+mx+(bn===0?'':(bn*dx>0?' + ':' − ')+b.replace('-','')); }
+/* a coordinate grid the teacher clicks: pts are drawn, two points also draw their line */
+function oeGrid(R,pts,line,onPick){ oeGrid.n=(oeGrid.n||0)+1; const s=R===5?30:16, pad=16, W=2*R*s+2*pad, X=x=>pad+(x+R)*s, Y=y=>pad+(R-y)*s; let g='';
+  for(let k=-R;k<=R;k++){ const ax=k===0; g+=`<line x1="${X(k)}" y1="${Y(R)}" x2="${X(k)}" y2="${Y(-R)}" stroke="${ax?'#333':'#cfd8e3'}" stroke-width="${ax?1.6:1}"/><line x1="${X(-R)}" y1="${Y(k)}" x2="${X(R)}" y2="${Y(k)}" stroke="${ax?'#333':'#cfd8e3'}" stroke-width="${ax?1.6:1}"/>`;
+    if(k&&(R===5||k%5===0)) g+=`<text x="${X(k)}" y="${Y(0)+12}" font-size="10" text-anchor="middle" fill="#555">${k}</text><text x="${X(0)-4}" y="${Y(k)+3}" font-size="10" text-anchor="end" fill="#555">${k}</text>`; }
+  if(line&&pts.length===2){ const [P,Q]=pts, dx=Q[0]-P[0], dy=Q[1]-P[1], t=4*R; g+=`<line x1="${X(P[0]-dx*t)}" y1="${Y(P[1]-dy*t)}" x2="${X(P[0]+dx*t)}" y2="${Y(P[1]+dy*t)}" stroke="#1f6feb" stroke-width="2.5" clip-path="url(#oeclip${oeGrid.n})"/>`; }
+  pts.forEach(P=>{ g+=`<circle cx="${X(P[0])}" cy="${Y(P[1])}" r="6" fill="#1f6feb" stroke="#fff" stroke-width="1.5"/>`; });
+  const w=document.createElement('div'); w.className='oegrid';
+  w.innerHTML=`<svg viewBox="0 0 ${W} ${W}" width="${W}" height="${W}" role="img" aria-label="Grid from −${R} to ${R}. Click to mark the answer."><defs><clipPath id="oeclip${oeGrid.n}"><rect x="${X(-R)}" y="${Y(R)}" width="${2*R*s}" height="${2*R*s}"/></clipPath></defs><rect width="${W}" height="${W}" fill="#fff"/>${g}</svg>`;
+  const svg=w.querySelector('svg'); svg.addEventListener('click',e=>{ const p=svg.createSVGPoint(); p.x=e.clientX; p.y=e.clientY; const q=p.matrixTransform(svg.getScreenCTM().inverse());
+    const x=Math.round((q.x-pad)/s-R), y=Math.round(R-(q.y-pad)/s); if(Math.abs(x)<=R&&Math.abs(y)<=R) onPick([x,y]); });
+  return w; }
+const oePt=P=>'('+String(P[0]).replace('-','−')+', '+String(P[1]).replace('-','−')+')';
+/* the answer part of a card for the interactive types */
+function oeAnsMore(it,i,ans,redo){ const t=it.type, inp=(cls,v,ph,lbl)=>`<input class="${cls}" value="${esc(v||'')}" placeholder="${esc(ph)}" aria-label="${esc(lbl)}">`;
+  if(t==='eq'){
+    ans.innerHTML=`<div class="oesub">Correct answer</div><div class="oeeq"><div class="oelead"></div><input class="ea" value="${esc(it.answer||'')}" placeholder="for example 2x + 5" aria-label="Correct answer for question ${i+1}" spellcheck="false"><span class="eok hint"></span></div>
+      <p class="hint">Students build their answer on a math keyboard. Any answer equal to yours counts, so 5 + 2x is right for 2x + 5. Type x for the variable, ^ for an exponent (x^2), / for a fraction ((x + 1)/2) and sqrt( ) for a square root.</p>`;
+    const lead=oeRich(it.lead,'Words before the box, like P = (optional)','mini',()=>{ it.lead=lead.html(); oeDirty(); }); ans.querySelector('.oelead').appendChild(lead);
+    const ok=()=>{ const v=String(it.answer||'').trim(), e=ans.querySelector('.eok'); e.textContent=!v?'':oeEqFn(oeEqSer(v))?'✓ This answer can be checked.':'This can\'t be read yet. Check the parentheses and use x as the variable.'; e.style.color=v&&!oeEqFn(oeEqSer(v))?'var(--no)':''; };
+    ans.querySelector('.ea').oninput=e=>{ it.answer=e.target.value; oeDirty(); ok(); }; ok();
+  } else if(t==='inline'||t==='boxes'){
+    const dd=t==='inline', key=dd?'sent':'tpl', n=dd?it.drops.length:it.answer.length, word=dd?'drop-down':'box';
+    ans.innerHTML=`<div class="oesub">${dd?'Sentence with drop-downs':'Answer line with boxes'}</div><div class="oesent"></div>
+      <div class="row" style="margin-top:6px"><button type="button" class="btn" data-addm="1"${n>=(dd?4:6)?' disabled':''}>+ Add a ${word}</button><span class="hint">Click in the ${dd?'sentence':'line'} where the ${word} goes, then click the button. [1] marks ${word} 1.</span></div><div class="oeparts"></div>`;
+    const sent=oeRich(it[key],dd?'Type the sentence students complete, like: The slope is [1] and the line [2].':'Type what students complete, like: (x + [1])(x − [2])','mini',()=>{ it[key]=sent.html(); oeDirty(); });
+    ans.querySelector('.oesent').appendChild(sent);
+    const add=ans.querySelector('[data-addm]'); add.addEventListener('mousedown',e=>e.preventDefault());
+    add.onclick=()=>{ const k=(dd?it.drops.length:it.answer.length)+1; if(dd){ it.drops.push(['','']); } it.answer.push(null); oeMarkIn(sent,dd?' ['+k+'] ':'['+k+']'); it[key]=sent.html(); oeDirty(); redo(); };
+    const parts=ans.querySelector('.oeparts');
+    if(dd) it.drops.forEach((d,k)=>{ const b=document.createElement('div'); b.className='oedd';
+      b.innerHTML=`<div class="oeqh"><b>Drop-down ${k+1}</b><span class="hint">click the circle by the correct choice</span><span class="sp"></span><button type="button" class="btn del" data-rmd="1">Remove</button></div>`+
+        d.map((c,j)=>`<div class="oech${it.answer[k]===j?' right':''}"><label class="mark"><input type="radio" name="oe${i}d${k}" ${it.answer[k]===j?'checked':''} data-j="${j}" aria-label="Choice ${OE_L[j]} is correct">${OE_L[j]}</label>${inp('dc',c,'Choice '+OE_L[j],'Drop-down '+(k+1)+' choice '+OE_L[j])}<button type="button" class="rm" data-rj="${j}"${d.length<=2?' disabled':''} title="Remove this choice">✕</button></div>`).join('')+
+        (d.length<6?`<button type="button" class="btn" data-adj="1" style="margin-top:6px">+ Add a choice</button>`:'');
+      b.querySelectorAll('input.dc').forEach((x,j)=>x.oninput=()=>{ d[j]=x.value; oeDirty(); });
+      b.querySelectorAll('input[type=radio]').forEach(x=>x.onchange=()=>{ it.answer[k]=+x.dataset.j; oeDirty(); b.querySelectorAll('.oech').forEach((r,j)=>r.classList.toggle('right',j===it.answer[k])); });
+      b.addEventListener('click',e=>{ const x=e.target.closest('button'); if(!x) return;
+        if(x.dataset.rj){ const j=+x.dataset.rj; d.splice(j,1); it.answer[k]=it.answer[k]===j?null:it.answer[k]>j?it.answer[k]-1:it.answer[k]; }
+        else if(x.dataset.adj) d.push('');
+        else if(x.dataset.rmd){ it.drops.splice(k,1); it.answer.splice(k,1); it.sent=oeUnmark(it.sent,k+1); }
+        else return; oeDirty(); redo(); });
+      parts.appendChild(b); });
+    else {
+      const tb=document.createElement('div'); tb.innerHTML=`<div class="oesub">Answer tiles students drag</div>`;
+      it.tiles.forEach((c,j)=>{ const row=document.createElement('div'); row.className='oech'; row.innerHTML=`<span class="mark">${OE_L[j]}</span>`;
+        const r=oeRich(c,'Tile '+OE_L[j],'mini',()=>{ it.tiles[j]=r.html(); oeDirty(); }); row.appendChild(r);
+        const rm=document.createElement('button'); rm.type='button'; rm.className='rm'; rm.textContent='✕'; rm.title='Remove tile '+OE_L[j]; rm.disabled=it.tiles.length<=2;
+        rm.onclick=()=>{ it.tiles.splice(j,1); it.answer=it.answer.map(a=>a===j?null:a>j?a-1:a); oeDirty(); redo(); }; row.appendChild(rm); tb.appendChild(row); });
+      if(it.tiles.length<8){ const a=document.createElement('button'); a.type='button'; a.className='btn'; a.style.marginTop='6px'; a.textContent='+ Add a tile'; a.onclick=()=>{ it.tiles.push(''); oeDirty(); redo(); }; tb.appendChild(a); }
+      const opts=sel=>it.tiles.map((c,j)=>`<option value="${j}"${sel===j?' selected':''}>${OE_L[j]}: ${esc(oePlain(c).slice(0,30)||'(blank)')}</option>`).join('');
+      tb.insertAdjacentHTML('beforeend',`<div class="oesub">Correct tile for each box</div><div class="oeboxkey">${it.answer.map((a,k)=>`<label class="hint">Box ${k+1} <select data-bk="${k}"><option value="">Pick…</option>${opts(a)}</select></label><button type="button" class="rm" data-rmb="${k}" title="Remove box ${k+1}">✕</button>`).join('')||'<span class="hint">Add a box first.</span>'}</div>
+        <label class="hint oechk"><input type="checkbox" data-o="reuse"${it.reuse?' checked':''}> Tiles can be used more than once</label><label class="hint oechk"><input type="checkbox" data-o="unordered"${it.unordered?' checked':''}> Any order is right (like factors)</label>
+        <p class="hint">Worth 1 point: all boxes right or nothing. Worth 2 or more: 1 point for partly right, like STAAR.</p>`);
+      tb.querySelectorAll('[data-bk]').forEach(x=>x.onchange=()=>{ it.answer[+x.dataset.bk]=x.value===''?null:+x.value; oeDirty(); });
+      tb.querySelectorAll('[data-rmb]').forEach(x=>x.onclick=()=>{ const k=+x.dataset.rmb; it.answer.splice(k,1); it.tpl=oeUnmark(it.tpl,k+1); oeDirty(); redo(); });
+      tb.querySelectorAll('[data-o]').forEach(x=>x.onchange=()=>{ it[x.dataset.o]=x.checked; oeDirty(); });
+      parts.appendChild(tb); }
+    if(dd&&it.drops.length) parts.insertAdjacentHTML('beforeend','<p class="hint">Worth 1 point: every drop-down right or nothing. Worth 2 or more: 1 point for partly right, like STAAR.</p>');
+  } else if(t==='table'){
+    const nc=it.cols.length;
+    ans.innerHTML=`<div class="oesub">Table · click the correct column in each row</div><div class="oetabw"><table class="oetab"><tr><th>${inp('th0',it.head,'First column heading (optional)','First column heading')}</th>${it.cols.map((c,k)=>`<th>${inp('tc',c,'Column '+(k+1),'Column '+(k+1)+' heading')}<button type="button" class="rm" data-rc="${k}"${nc<=2?' disabled':''} title="Remove column ${k+1}">✕</button></th>`).join('')}<th>${nc<5?'<button type="button" class="btn" data-ac="1">+ Column</button>':''}</th></tr>
+      ${it.rows.map((r,ri)=>`<tr><td>${inp('tr',r,'Row '+(ri+1),'Row '+(ri+1))}<button type="button" class="rm" data-rr="${ri}"${it.rows.length<=1?' disabled':''} title="Remove row ${ri+1}">✕</button></td>${it.cols.map((c,k)=>`<td class="${it.answer[ri]===k?'right':''}"><input type="radio" name="oe${i}r${ri}" data-r="${ri}" data-c="${k}" ${it.answer[ri]===k?'checked':''} aria-label="Row ${ri+1}: column ${k+1} is correct"></td>`).join('')}<td></td></tr>`).join('')}</table></div>
+      ${it.rows.length<8?'<button type="button" class="btn" data-ar="1" style="margin-top:6px">+ Add a row</button>':''}<p class="hint">Students click one circle in each row. Points are split across the rows, like STAAR (2 points, 4 rows: 1 point for every 2 rows right).</p>`;
+    ans.querySelector('.th0').oninput=e=>{ it.head=e.target.value; oeDirty(); };
+    ans.querySelectorAll('input.tc').forEach((x,k)=>x.oninput=()=>{ it.cols[k]=x.value; oeDirty(); });
+    ans.querySelectorAll('input.tr').forEach((x,k)=>x.oninput=()=>{ it.rows[k]=x.value; oeDirty(); });
+    ans.querySelectorAll('input[type=radio]').forEach(x=>x.onchange=()=>{ const r=+x.dataset.r; it.answer[r]=+x.dataset.c; oeDirty(); ans.querySelectorAll(`input[data-r="${r}"]`).forEach(y=>y.parentNode.classList.toggle('right',y.checked)); });
+    ans.addEventListener('click',e=>{ const x=e.target.closest('button'); if(!x) return;
+      if(x.dataset.rc){ const k=+x.dataset.rc; it.cols.splice(k,1); it.answer=it.answer.map(a=>a===k?null:a>k?a-1:a); }
+      else if(x.dataset.ac) it.cols.push('');
+      else if(x.dataset.rr){ it.rows.splice(+x.dataset.rr,1); it.answer.splice(+x.dataset.rr,1); }
+      else if(x.dataset.ar){ it.rows.push(''); it.answer.push(null); }
+      else return; oeDirty(); redo(); });
+  } else if(t==='graph'||t==='graphline'){
+    const line=t==='graphline', pts=line?it.answer:(it.answer?[it.answer]:[]);
+    ans.innerHTML=`<div class="oesub">${line?'Correct line · click two points on it':'Correct point · click it on the grid'}</div>
+      <div class="oegw"><div class="oeg"></div><div><label class="hint">Grid <select class="gr"><option value="10"${it.R!==5?' selected':''}>−10 to 10</option><option value="5"${it.R===5?' selected':''}>−5 to 5</option></select></label>
+      <p class="oegread">${line?(pts.length===2?'Line through '+oePt(pts[0])+' and '+oePt(pts[1])+'<br><b>'+oeLineText(pts[0],pts[1])+'</b>':pts.length?'Point '+oePt(pts[0])+'. Click a second point.':'No line yet.'):(pts.length?'Point <b>'+oePt(pts[0])+'</b>':'No point yet.')}</p>
+      <button type="button" class="btn" data-gc="1">Clear</button>
+      <p class="hint">${line?'Students use Add Line and click any two points. Any line through your two points is right; extra points or lines make it wrong.':'Students click one point on the grid. Click your point again to remove it.'}</p></div></div>`;
+    ans.querySelector('.oeg').appendChild(oeGrid(it.R,pts,line,P=>{ const same=Q=>Q[0]===P[0]&&Q[1]===P[1];
+      if(!line) it.answer=it.answer&&same(it.answer)?null:P;
+      else { const k=it.answer.findIndex(same); if(k>=0) it.answer.splice(k,1); else if(it.answer.length>=2) it.answer=[P]; else it.answer.push(P); }
+      oeDirty(); redo(); }));
+    ans.querySelector('.gr').onchange=e=>{ it.R=+e.target.value; const on=P=>Math.abs(P[0])<=it.R&&Math.abs(P[1])<=it.R; if(line) it.answer=it.answer.filter(on); else if(it.answer&&!on(it.answer)) it.answer=null; oeDirty(); redo(); };
+    ans.querySelector('[data-gc]').onclick=()=>{ it.answer=line?[]:null; oeDirty(); redo(); };
+  } }
+/* server shape -> editor shape (plain text where the editor uses plain boxes; marks as [1], [2] …) */
+function oeEditable(it){ const o=Object.assign({},it,{points:it.max});
+  if(it.type==='inline'){ o.sent=oeToMarks(it.sent); o.drops=(it.drops||[]).map(d=>d.map(oeDe)); o.answer=(it.answer||[]).slice(); }
+  if(it.type==='boxes'){ o.tpl=oeToMarks(it.tpl); o.tiles=(it.tiles||[]).slice(); o.answer=(it.answer||[]).slice(); o.reuse=!!it.reuse; o.unordered=!!it.unordered; }
+  if(it.type==='table'){ o.head=oeDe(it.head); o.cols=(it.cols||[]).map(oeDe); o.rows=(it.rows||[]).map(oeDe); o.answer=(it.answer||[]).slice(); }
+  if(it.type==='graphline') o.answer=(it.answer||[]).map(P=>P.slice());
+  if(it.type==='eq') o.lead=it.lead||'';
+  return o; }
+/* editor shape -> what stcOwnSave takes */
+function oeOut(it){ const o={type:it.type,text:it.text,points:+it.points,std:it.std,passage:it.passage,pic:it.pic};
+  const t=it.type;
+  if(t==='mc'||t==='ms'){ o.choices=it.choices; o.answer=it.answer; }
+  else if(t==='num') o.answer=it.answer;
+  else if(t==='text') o.limit=it.limit;
+  else if(t==='eq'){ o.lead=it.lead; o.answer=it.answer; }
+  else if(t==='inline'){ const m=oeFromMarks(it.sent,it.drops.map((d,k)=>({d,a:it.answer[k]}))); o.sent=m.text; o.drops=m.list.map(x=>x?x.d.map(esc):[]); o.answer=m.list.map(x=>x?x.a:null); }
+  else if(t==='boxes'){ const m=oeFromMarks(it.tpl,it.answer); o.tpl=m.text; o.answer=m.list; o.tiles=it.tiles; o.reuse=!!it.reuse; o.unordered=!!it.unordered; }
+  else if(t==='table'){ o.head=esc(it.head||''); o.cols=it.cols.map(esc); o.rows=it.rows.map(esc); o.answer=it.answer; }
+  else if(t==='graph'){ o.R=it.R; o.answer=it.answer; }
+  else if(t==='graphline'){ o.R=it.R; o.answer=it.answer; }
+  return o; }
+/* problems with one interactive question (the editor's own shape), as the server would say them */
+function oeCheckMore(it,q,P,i){ const t=it.type, once=(s,n,w)=>{ const L=oeLabels(s); for(let k=1;k<=n;k++){ const c=L.filter(x=>x===k).length; if(c!==1) P.push([i,q+w+' '+k+(c?' is in the '+(w==='box'?'line':'sentence')+' more than once.':' is not in the '+(w==='box'?'line':'sentence')+'. Click where it goes and add it again, or remove it.')]); }
+    if(L.some(x=>x<1||x>n)) P.push([i,q+'the '+(w==='box'?'line':'sentence')+' has a ['+L.find(x=>x<1||x>n)+'] with nothing to match. Delete it.']); };
+  if(t==='eq'&&!oeEqFn(oeEqSer(it.answer))) P.push([i,q+'the answer has to be a number or an expression in x, like 2x + 5, x^2 - 3 or (x + 1)/2.']);
+  if(t==='inline'){ if(!oePlain(it.sent)) P.push([i,q+'type the sentence.']);
+    if(!it.drops.length) P.push([i,q+'add a drop-down.']); once(it.sent,it.drops.length,'drop-down');
+    it.drops.forEach((d,k)=>{ d.forEach((c,j)=>{ if(!String(c).trim()) P.push([i,q+'drop-down '+(k+1)+' choice '+OE_L[j]+' is blank.']); }); if(it.answer[k]==null) P.push([i,q+'mark the correct choice in drop-down '+(k+1)+'.']); }); }
+  if(t==='table'){ it.cols.forEach((c,k)=>{ if(!String(c).trim()) P.push([i,q+'column '+(k+1)+' needs a heading.']); }); it.rows.forEach((r,k)=>{ if(!String(r).trim()) P.push([i,q+'row '+(k+1)+' is blank.']); if(it.answer[k]==null) P.push([i,q+'mark the correct column in row '+(k+1)+'.']); }); }
+  if(t==='boxes'){ if(!it.answer.length) P.push([i,q+'the answer line needs boxes, put in with Add a box.']); once(it.tpl,it.answer.length,'box');
+    it.tiles.forEach((c,j)=>{ if(!oePlain(c)) P.push([i,q+'tile '+OE_L[j]+' is blank.']); });
+    it.answer.forEach((a,k)=>{ if(a==null) P.push([i,q+'pick the correct tile for box '+(k+1)+'.']); });
+    if(!it.reuse&&it.answer.some((a,k)=>a!=null&&it.answer.indexOf(a)!==k)) P.push([i,q+'a tile is used twice. Tick "Tiles can be used more than once" or pick another tile.']); }
+  if(t==='graph'&&!it.answer) P.push([i,q+'click the correct point on the grid.']);
+  if(t==='graphline'&&it.answer.length<2) P.push([i,q+'click two points on the correct line.']); }
+/* preview: the extra test.js fields for one question (server shape), with its key, as Code.gs writes them for the teacher */
+function oeJsMore(it,J){ const t=it.type, o=[];
+  if(t==='eq'){ o.push('full:true'); if(it.lead) o.push('lead:'+J(it.lead)); o.push('answer:'+J(oeEqSer(it.answer)||'0')); }
+  if(t==='inline') o.push('text:'+J(it.sent||''),'drops:'+J(it.drops),'answer:'+J(it.answer));
+  if(t==='table'){ o.push('cols:'+J(it.cols),'rows:'+J(it.rows),'answer:'+J(it.answer)); if(it.head) o.push('head:'+J(it.head)); }
+  if(t==='boxes'){ o.push('tpl:'+J(it.tpl),'tiles:'+J(it.tiles.map(c=>c||'&nbsp;')),'flow:true','answer:'+J(it.answer)); if(it.reuse) o.push('reuse:true'); if(it.unordered) o.push('unordered:true'); }
+  if(t==='graph') o.push('R:'+it.R,'answer:'+J(it.answer||[99,99]));
+  if(t==='graphline'){ const a=it.answer; o.push('R:'+it.R);
+    if(a.length===2){ const A=a[1][1]-a[0][1], B=a[0][0]-a[1][0]; o.push('eq:'+J([A,B,A*a[0][0]+B*a[0][1]]),'keyText:'+J('Line through '+oePt(a[0])+' and '+oePt(a[1]))); } else o.push('eq:[0,0,1]'); }
+  return o; }
+function oeEqSer(t) {
+  const s = String(t == null ? '' : t).replace(/\s+/g, '').replace(/[×·*]/g, '•').replace(/[−–]/g, '-').replace(/pi/gi, 'π').replace(/÷/g, '/');
+  const grp = (str, i) => { let d = 0, j = i; do { if (str[j] === '(') d++; else if (str[j] === ')') d--; j++; } while (j < str.length && d > 0); if (d) throw new Error('('); return [str.slice(i + 1, j - 1), j]; };
+  const conv = str => { let out = '', i = 0;
+    while (i < str.length) { const c = str[i];
+      if (str.substr(i, 5) === 'sqrt(') { const g = grp(str, i + 4); out += '\\r{' + conv(g[0]) + '}'; i = g[1]; continue; }
+      if (c === '(') { const g = grp(str, i); out += '(' + conv(g[0]) + ')'; i = g[1]; continue; }
+      if (c === '^') { i++; if (str[i] === '(') { const g = grp(str, i); out += '^{' + conv(g[0]) + '}'; i = g[1]; continue; }
+        const m = str.slice(i).match(/^-?(\d+(\.\d+)?|x|π)/); if (!m) throw new Error('^'); out += '^{' + m[0] + '}'; i += m[0].length; continue; }
+      if (/[0-9.xπ+\-•\/]/.test(c)) { out += c; i++; continue; }
+      throw new Error(c); }
+    return out; };
+  let r; try { r = conv(s); } catch (e) { return ''; }
+  return r.replace(/(^|[^0-9.}^{a-z])(\d+(?:\.\d+)?)\/(\d+(?:\.\d+)?)(?![0-9.^])/g, '$1\\f{$2}{$3}');
+}
+function oeEqParse(s) { let i = 0; const blk = () => { const B = []; while (i < s.length) { const ch = s[i];
+      if (ch === '}' || ch === ')') return B;
+      if (ch === '(') { i++; const c = blk(); if (s[i] === ')') i++; B.push({ t: 'p', c: c }); continue; }
+      if ((ch === '^' || ch === '_') && s[i + 1] === '{') { i += 2; const c = blk(); i++; B.push({ t: ch === '^' ? 'sup' : 'sub', c: c }); continue; }
+      if (ch === '\\' && s[i + 1] === 'r' && s[i + 2] === '{') { i += 3; const c = blk(); i++; B.push({ t: 'sqrt', c: c }); continue; }
+      if (ch === '\\' && s[i + 1] === 'f' && s[i + 2] === '{') { i += 3; const n = blk(); i += 2; const d = blk(); i++; B.push({ t: 'frac', n: n, d: d }); continue; }
+      B.push(ch); i++; } return B; }; return blk(); }
+function oeEqJs(B) { const out = []; let num = ''; const opd = () => out.length && out[out.length - 1].o; const push = (s, o) => { if (o && opd()) out.push({ s: '*', o: false }); out.push({ s: s, o: o }); };
+  const flush = () => { if (num) { if (!/^\d*\.?\d+$|^\d+\.$/.test(num)) throw 0; push('(' + num + ')', true); num = ''; } };
+  B.forEach(n => {
+    if (typeof n === 'string' && /[0-9.]/.test(n)) { if (num === '' && opd()) flush(); num += n; return; }
+    flush();
+    if (typeof n === 'string') {
+      if (n === 'x') push('X', true); else if (n === 'π') push('Math.PI', true);
+      else if (n === '+') out.push({ s: '+', o: false }); else if (n === '•' || n === '*') out.push({ s: '*', o: false }); else if (n === '÷' || n === '/') out.push({ s: '/', o: false });
+      else if (n === '-' || n === '−') { if (!out.length || !opd()) out.push({ s: '(-1)*', o: false }); else out.push({ s: '-', o: false }); }
+      else throw 0; }
+    else if (n.t === 'p') push('(' + oeEqJs(n.c) + ')', true);
+    else if (n.t === 'sqrt') push('Math.sqrt(' + oeEqJs(n.c) + ')', true);
+    else if (n.t === 'frac') push('((' + oeEqJs(n.n) + ')/(' + oeEqJs(n.d) + '))', true);
+    else if (n.t === 'sup') { if (!opd()) throw 0; out.push({ s: '**(' + oeEqJs(n.c) + ')', o: true }); }
+    else throw 0; });
+  flush(); if (!out.length || !opd()) throw 0; return out.map(t => t.s).join(''); }
+function oeEqFn(s) { try { return new Function('X', 'return ' + oeEqJs(oeEqParse(String(s)))); } catch (e) { return null; } }
 function oeSlug(s){ return String(s).toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'').slice(0,40); }
 async function oeTaken(){ const L=await campusTests().catch(()=>[]); return new Set(L.map(t=>t.id).concat(((MP.my||{}).tests||[]).map(t=>t.id))); }
 async function oeIdAuto(){ if(!OE||!OE.isNew||$('#oeId').dataset.touched) return; const taken=await oeTaken();
@@ -872,7 +1070,7 @@ function oeCount(){ if(!OE) return; const n=OE.items.length, p=OE.items.reduce((
 async function oeOpen(id){
   let d=null; if(id){ d=await call('stcOwnGet',{id},60000); }
   OE={isNew:!d, id:d?d.id:'', status:d?d.status:null, mine:d?d.mine:true, pics:{}, sent:new Set(), dirty:false,
-    passages:d?d.passages.slice():[], items:d?d.items.map(it=>Object.assign({},it,{points:it.max})):[oeBlank('mc')]};
+    passages:d?d.passages.slice():[], items:d?d.items.map(oeEditable):[oeBlank('mc')]};
   $('#oeTitle').value=d?d.title:''; $('#oeId').value=d?d.id:''; $('#oeId').disabled=!!d; delete $('#oeId').dataset.touched;
   $('#oeCourse').innerHTML=OE_COURSES.map(c=>`<option>${c}</option>`).join(''); $('#oeCourse').value=d?d.course:oeCourseFor((MP.my||{}).subject||'');
   $('#oeCalc').checked=d?d.calc!==false:true; oeCourseSync();
@@ -901,7 +1099,7 @@ function oeCard(it,i){ const c=document.createElement('section'); c.className='t
     <label class="hint">Points <select class="pt">${[1,2,3,4,5,6,7,8,9,10].map(p=>`<option${p===+it.points?' selected':''}>${p}</option>`).join('')}</select></label>
     <label class="hint">TEKS <input class="std" maxlength="20" placeholder="optional" value="${esc(it.std||'')}"></label>${psg}
     <span class="sp"></span><span class="mv"><button type="button" data-mv="-1" aria-label="Move question ${i+1} up" ${i?'':'disabled'}>▲</button><button type="button" data-mv="1" aria-label="Move question ${i+1} down" ${i<n-1?'':'disabled'}>▼</button><button type="button" data-cp="1" title="Copy this question">Copy</button><button type="button" data-rm="1" aria-label="Delete question ${i+1}" style="color:var(--no)">✕</button></span></div>`;
-  const rq=oeRich(it.text,'Type the question.','',()=>{ it.text=rq.html(); oeDirty(); }); c.appendChild(rq);
+  const rq=oeRich(it.text,it.type==='inline'?'Directions or a question (optional), like: Choose the words that complete the sentence.':'Type the question.','',()=>{ it.text=rq.html(); oeDirty(); }); c.appendChild(rq);
   /* picture */
   const pic=document.createElement('div'); pic.className='oepic';
   if(it.pic){ const src=OE.pics[it.pic.file]||(ROOT+'tests/'+encodeURIComponent(OE.id)+'/img/'+it.pic.file);
@@ -926,10 +1124,10 @@ function oeCard(it,i){ const c=document.createElement('section'); c.className='t
   } else if(it.type==='num'){
     ans.innerHTML=`<div class="oesub">Correct answer</div><div class="oenum"><input class="na" inputmode="decimal" placeholder="for example 12, -3.5 or 3/4" value="${esc(it.answer||'')}" aria-label="Correct answer for question ${i+1}"><span class="hint">Students type a number on a keypad. 3/4 and 0.75 both count as right.</span></div>`;
     ans.querySelector('.na').oninput=e=>{ it.answer=e.target.value.trim(); oeDirty(); };
-  } else {
+  } else if(it.type==='text'){
     ans.innerHTML=`<div class="oesub">Writing box</div><div class="oenum"><select class="lm" aria-label="Writing box size"><option value="475"${+it.limit!==2300?' selected':''}>Short answer (475 characters)</option><option value="2300"${+it.limit===2300?' selected':''}>Long answer (2,300 characters)</option></select><span class="hint">You score written answers on the dashboard: View › Written.</span></div>`;
     ans.querySelector('.lm').onchange=e=>{ it.limit=+e.target.value; oeDirty(); };
-  }
+  } else oeAnsMore(it,i,ans,()=>{ const nc=oeCard(it,i); c.replaceWith(nc); });
   c.appendChild(ans);
   /* header controls */
   c.querySelector('.ty').onchange=e=>{ const t=e.target.value, keep={text:it.text,std:it.std,passage:it.passage,pic:it.pic}, prevCh=it.choices;
@@ -961,14 +1159,15 @@ $('#oeFile').onchange=async e=>{ const f=e.target.files[0], i=OE&&OE.picFor; if(
   catch(x){ say($('#oeMsg'),errText(x),'err'); } };
 /* what goes to the server; problems are listed here first so the teacher sees them on the question */
 function oeGather(){ return { id:$('#oeId').value.trim(), title:$('#oeTitle').value.trim(), course:$('#oeCourse').value, calc:/RLA/.test($('#oeCourse').value)?false:$('#oeCalc').checked,
-  passages:OE.passages.slice(), items:OE.items.map(it=>({type:it.type,text:it.text,points:+it.points,std:it.std,passage:it.passage,choices:it.choices,answer:it.answer,limit:it.limit,pic:it.pic})) }; }
+  passages:OE.passages.slice(), items:OE.items.map(oeOut) }; }
 function oeCheck(b,publish){ const P=[];
   if(!b.title) P.push([null,'Give the test a title.']);
   if(!/^[a-z0-9][a-z0-9-]{1,58}[a-z0-9]$/.test(b.id)) P.push([null,'The test ID can only use lowercase letters, numbers and dashes (3 to 60 of them).']);
   b.passages.forEach((p,k)=>{ if(!oePlain(p)) P.push([null,'Passage '+(k+1)+' is blank. Type it or remove it.']); });
   if(!b.items.length) P.push([null,'Add at least one question.']);
   if(publish) b.items.forEach((it,i)=>{ const q='Question '+(i+1)+': ';
-    if(!oePlain(it.text)&&!it.pic) P.push([i,q+'type the question.']);
+    if(!oePlain(it.text)&&!it.pic&&it.type!=='inline') P.push([i,q+'type the question.']);
+    if(!/^(mc|ms|num|text)$/.test(it.type)) oeCheckMore(OE.items[i],q,P,i);
     if(it.type==='mc'||it.type==='ms'){ it.choices.forEach((c,k)=>{ if(!oePlain(c)) P.push([i,q+'answer choice '+OE_L[k]+' is blank.']); });
       if(it.type==='mc'&&it.answer==null) P.push([i,q+'mark the correct answer.']);
       if(it.type==='ms'&&!(it.answer||[]).length) P.push([i,q+'check every correct answer.']);
@@ -1000,6 +1199,7 @@ function oeTestJs(b){ const J=v=>JSON.stringify(v).replace(/</g,'\\u003c'), num=
     const o=['type:'+J(it.type),'stem:'+stem,'max:'+(+it.points||1)];
     if(it.choices) o.push('choices:'+J(it.choices.map(c=>c||'&nbsp;'))); if(it.std) o.push('teks:'+J(it.std)); if(it.passage) o.push('passage:'+J(it.passage));
     if(it.type==='text') o.push('limit:'+(it.limit||475));
+    o.push(...oeJsMore(it,J));
     if(it.type==='mc'&&it.answer!=null) o.push('answer:'+it.answer); if(it.type==='ms') o.push('answer:'+J(it.answer||[])); if(it.type==='num') o.push('answer:'+J(num(it.answer)));
     return '{'+o.join(',')+'}'; });
   return 'SpitzTest('+J(head).slice(0,-1)+(b.passages.length?',passages:'+J(P):'')+',items:['+items.join(',\n')+']});'; }

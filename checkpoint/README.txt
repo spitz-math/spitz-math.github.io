@@ -59,11 +59,14 @@ Building a test from the warm-up bank (dashboard > Tests > Build a test from the
   the Tests page updates on every publish.
 
 Teachers' own questions (dashboard > My sessions > My tests > Write my own test)
-  Any teacher on the Teachers tab can write a test: multiple choice, check all that apply, number answer and written answer
+  Any teacher on the Teachers tab can write a test: multiple choice, check all that apply, number answer, written answer,
+  and the interactive types (equation editor, drop-down, table match, drag into boxes, plot a point, draw a line)
   questions, optional reading passages (shown beside their questions) and one picture per question. Save draft keeps it in
   the Sheet only; Publish puts the questions on GitHub (tests/<id>/test.js and img/) WITHOUT the answers.
   The answers live only in the Sheet's Teacher Questions tab (one row per question; Answer is a letter like B, letters like
-  A, C, or a number like 3/4). Every save from a student is scored there, so a student's computer never has the key.
+  A, C, or a number like 3/4; an expression like 2x + 5; one letter per drop-down, table row or box like B, A; a point
+  like (2, -3); a line as two of its points like (0, 1), (1, 3)). Drop-downs, table rows and tiles are in the Choices
+  column. Every save from a student is scored there, so a student's computer never has the key.
   After Submit the student sees their points; the answers come only when the session is set to Score + review.
   A hand fix in the Answer column counts after Re-score. Editing a used test: Save changes, then Re-score its sessions.
   With "Check teachers' new tests" on, a new test waits for an Admin to approve it, like question bank tests.

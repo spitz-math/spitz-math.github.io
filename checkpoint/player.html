@@ -1052,6 +1052,7 @@ window.SpitzTest=function(TD){
 if(TD.keyless&&!window.SPITZ_APP){ window.__spitzKeylessFile=true; return; }
 if(window.__spitzBooted) return; window.__spitzBooted=true;
 const ITEMS=TD.items, KEYLESS=!!TD.keyless; let OWNPTS=null;
+const NOKEY=it=>KEYLESS&&it.type!=='text'&&(it.type==='graphline'?it.eq:it.answer)===undefined;   /* a line question's key is its equation (eq) */
 if(TD.subject==='rla') document.body.classList.add('rla');
 if(TD.reference==='none') document.body.classList.add('noref'); if(TD.calc===false) document.body.classList.add('nocalc');
 ITEMS.forEach((it,i)=>{ it.n=i+1; it.letters=ODD; it.max=it.max||1; });
@@ -1819,7 +1820,7 @@ function answered(it){ const a=S.answers[it.n]; if(a==null) return false;
     case 'inline': case 'table': return a.every(v=>v!==null); case 'dnd': return Object.keys(a).length===it.tiles.length; case 'graph': return true; case 'graphline': return a.lines.length>0;
     case 'boxes': return a.every(q=>q!=null); case 'hotspot': case 'graphexp': return true; case 'graphineq': return a.pts.length===2&&!!a.shade; case 'cline': return a.pts.length===2; case 'graphsys': return a.g.every(L=>L.pts.length===2)&&!!a.region; case 'graphfunc': return true; case 'eq': return String(a).replace(/\//g,'').trim()!==''; } }
 function parseNum(s){ s=String(s).replace(/−/g,'-').trim(); const m=s.match(/^(-?\d+(?:\.\d+)?)\/(-?\d+(?:\.\d+)?)$/); if(m) return +m[1]/+m[2]; return s===''||isNaN(+s)?NaN:+s; }
-function score(it){ const a=S.answers[it.n]; if(a==null||(KEYLESS&&it.answer===undefined)) return null;
+function score(it){ const a=S.answers[it.n]; if(a==null||NOKEY(it)) return null;
   switch(it.type){
     case 'mc': return a===it.answer;
     case 'ms': return a.length===it.answer.length&&it.answer.every(v=>a.includes(v));
@@ -1858,7 +1859,7 @@ function show(it,a){ if(a==null) return '—';
     case 'graphineqOLD': return a.line?`${a.line.dash?'Dashed':'Solid'} line through (${fmtN(a.line.a[0])}, ${fmtN(a.line.a[1])}) and (${fmtN(a.line.b[0])}, ${fmtN(a.line.b[1])})${a.shade?', shaded':''}`:'—';
     case 'graphexp': return `Curve y = ${a.a.toFixed(3)}(${a.b.toFixed(3)})^x`;
     case 'graphline': return [...a.lines.map(L=>`Line through (${fmtN(L[0][0])}, ${fmtN(L[0][1])}) and (${fmtN(L[1][0])}, ${fmtN(L[1][1])})`),...a.pts.map(P=>`Point (${fmtN(P[0])}, ${fmtN(P[1])})`)].join('<br>')||'—'; } }
-function key(it){ if(KEYLESS&&it.answer===undefined&&it.type!=='text') return 'Your teacher has not released the answers.'; switch(it.type){
+function key(it){ if(NOKEY(it)) return 'Your teacher has not released the answers.'; switch(it.type){
     case 'text': return 'Your teacher scores this answer.';
     case 'mc': return `${it.letters[it.answer]}`;
     case 'ms': return it.answer.map(k=>it.letters[k]).join(', ');
@@ -1944,7 +1945,7 @@ body>*:not(#printDoc){display:none!important}
   // ready once every picture has loaded (or failed), so nothing prints blank
   return Promise.all([...doc.querySelectorAll('img')].map(i=>i.complete?0:new Promise(r=>{ i.onload=i.onerror=r; setTimeout(r,15000); })));
 };
-function earn(it){ const a=S.answers[it.n]; if(a==null||it.type==='text') return null; /* written answers: the teacher scores them */ if(KEYLESS&&it.answer===undefined){ const p=OWNPTS&&OWNPTS[it.n]; return p==null?null:+p; } const full=score(it)===true; if(it.max===1||full) return full?it.max:0;
+function earn(it){ const a=S.answers[it.n]; if(a==null||it.type==='text') return null; /* written answers: the teacher scores them */ if(NOKEY(it)){ const p=OWNPTS&&OWNPTS[it.n]; return p==null?null:+p; } const full=score(it)===true; if(it.max===1||full) return full?it.max:0;
   let hit=0, parts=2;
   if(it.type==='boxes'){ if(it.unordered){ const left=[...it.answer]; a.forEach(q=>{ const i=left.indexOf(q); if(q!=null&&i>=0){ hit++; left.splice(i,1); } }); } else hit=it.answer.filter((q,i)=>a[i]===q).length; parts=it.answer.length; }
   else if(it.type==='ms'||(it.type==='hotspot'&&Array.isArray(it.answer))){ hit=Math.max(0,a.filter(q=>it.answer.includes(q)).length-Math.max(0,a.length-it.answer.length)); parts=it.answer.length; }
@@ -2491,7 +2492,7 @@ function showResults(restored){
   const E=typeof earn==='function'?earn:(it=>{const r=score(it); return r===null?null:(r?1:0);});
   const rows=ITEMS.map(it=>({it,r:score(it),e:E(it),mx:it.max||1})), pts=rows.reduce((s,r)=>s+(r.e||0),0), tot=rows.reduce((s,r)=>s+r.mx,0), wait=KEYLESS&&!OWNPTS;
   $('#rName').textContent=$('#sname').textContent; $('#resWho').textContent=$('#sname').textContent+'  |  PRACTICE SESSION  |  '+TD.title;
-  $('#rDate').textContent=new Date(S.submittedAt||Date.now()).toLocaleDateString('en-US'); $('#rScore').textContent=wait?'Scoring your test…':`${pts} out of ${tot} points`; document.getElementById('resultsScreen').classList.toggle('scoring',wait); document.getElementById('resultsScreen').classList.toggle('nokey',KEYLESS&&ITEMS.some(it=>it.type!=='text'&&it.answer===undefined));
+  $('#rDate').textContent=new Date(S.submittedAt||Date.now()).toLocaleDateString('en-US'); $('#rScore').textContent=wait?'Scoring your test…':`${pts} out of ${tot} points`; document.getElementById('resultsScreen').classList.toggle('scoring',wait); document.getElementById('resultsScreen').classList.toggle('nokey',ITEMS.some(NOKEY));
   $('#rTable').innerHTML='<tr><th>#</th><th>Your<br>Score</th><th>Max<br>Score</th></tr>'+rows.map(({it,e,mx})=>`<tr><td><b>${it.n}</b></td><td>${e===null?'-':e}</td><td>${e===null?'-':mx}</td></tr>`).join('');
   window.__results=rows.map(({it,r,e,mx})=>({n:it.n,teks:it.teks,type:it.label||it.type,answer:show(it,S.answers[it.n]),key:key(it),correct:r,points:e,max:mx}));
   $('#endScreen').hidden=true; $('#pauseScreen').hidden=true; $('#resultsScreen').hidden=false;
@@ -2510,7 +2511,7 @@ document.documentElement.addEventListener('scroll',()=>{ if(PRINTING()) return; 
 document.body.addEventListener('scroll',()=>{ if(PRINTING()) return; document.body.scrollTop=0; document.body.scrollLeft=0; });
 window.__test={ITEMS,S,score,parseNum,earn};
 window.__spitzOwn=o=>{ if(!KEYLESS||!o) return; if(o.pts) OWNPTS=o.pts;
-  if(Array.isArray(o.key)) ITEMS.forEach((it,i)=>{ if(it.type!=='text'&&o.key[i]!=null) it.answer=o.key[i]; });
+  if(Array.isArray(o.key)) ITEMS.forEach((it,i)=>{ if(it.type!=='text'&&o.key[i]!=null){ if(it.type==='graphline') it.eq=o.key[i]; else it.answer=o.key[i]; } });
   if(S.submitted){ showResults(true); if(window.__spitzFill) window.__spitzFill(); } };
 if(window.__spitzOwnPending){ const o=window.__spitzOwnPending; window.__spitzOwnPending=null; window.__spitzOwn(o); }
 
