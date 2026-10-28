@@ -84,6 +84,8 @@ body:not([class*="th-maroon"]):not([class*="th-black"]):not([class*="th-blue"]) 
 .itemwrap{max-width:960px;margin:0 auto;padding:22px 16px 60px;position:relative}
 /* reading: the passage on the left, its questions on the right with a tab per question (like the state test) */
 body.rla #bRef,body.rla #bCalc,body.rla #bGD{display:none}
+body.noref #bRef,body.nocalc #bCalc,body.nocalc #bGD{display:none}
+.tqpic{margin:.6em 0}
 #psgPane{display:none}
 .page.split{display:flex;overflow:hidden}
 .page.split #psgPane{display:flex;flex-direction:column;flex:0 0 var(--psgw,42%);min-width:0;border-right:3px solid #c9d3dc}
@@ -678,6 +680,7 @@ body.th-maroon .clonebadge,body.th-black .clonebadge,body.th-blue .clonebadge{ba
 #resultsScreen[data-review="score"] #rvOpen,#resultsScreen[data-review="score"] #rTable{display:none}
 .rvlock{display:none;color:#444;font-style:italic}
 #resultsScreen[data-review="none"] .rvlock,#resultsScreen[data-review="score"] .rvlock{display:block}
+#resultsScreen.scoring .rx,#resultsScreen.scoring #rTable,#resultsScreen.nokey #rvOpen{display:none}#resultsScreen.nokey .rvlock{display:block}
 .savenote{font-size:13px;color:#8a5a00;text-align:center;margin-top:6px}
 /* question bank browse mode (teacher only) */
 body.browse>*:not(#browse):not(svg){display:none!important}
@@ -1044,9 +1047,13 @@ const SEL1='<p>Choose the correct answer from each drop-down menu to complete th
 /* ================= Spitz Checkpoint engine ================= */
 window.SpitzTest=function(TD){
 "use strict";
+/* a teacher's own test (keyless): its answers are not in the file. The Sheet scores every save, and after Submit the page gets
+   each question's points (and the answers, when the teacher allows review) through window.__spitzOwn. In class only. */
+if(TD.keyless&&!window.SPITZ_APP){ window.__spitzKeylessFile=true; return; }
 if(window.__spitzBooted) return; window.__spitzBooted=true;
-const ITEMS=TD.items;
+const ITEMS=TD.items, KEYLESS=!!TD.keyless; let OWNPTS=null;
 if(TD.subject==='rla') document.body.classList.add('rla');
+if(TD.reference==='none') document.body.classList.add('noref'); if(TD.calc===false) document.body.classList.add('nocalc');
 ITEMS.forEach((it,i)=>{ it.n=i+1; it.letters=ODD; it.max=it.max||1; });
 /* ---------------- state ---------------- */
 const S={i:0,answers:{},flags:{},notes:{},name:'',modes:{hl:false,elim:false},zoomIx:1,submitted:false};
@@ -1812,7 +1819,7 @@ function answered(it){ const a=S.answers[it.n]; if(a==null) return false;
     case 'inline': case 'table': return a.every(v=>v!==null); case 'dnd': return Object.keys(a).length===it.tiles.length; case 'graph': return true; case 'graphline': return a.lines.length>0;
     case 'boxes': return a.every(q=>q!=null); case 'hotspot': case 'graphexp': return true; case 'graphineq': return a.pts.length===2&&!!a.shade; case 'cline': return a.pts.length===2; case 'graphsys': return a.g.every(L=>L.pts.length===2)&&!!a.region; case 'graphfunc': return true; case 'eq': return String(a).replace(/\//g,'').trim()!==''; } }
 function parseNum(s){ s=String(s).replace(/−/g,'-').trim(); const m=s.match(/^(-?\d+(?:\.\d+)?)\/(-?\d+(?:\.\d+)?)$/); if(m) return +m[1]/+m[2]; return s===''||isNaN(+s)?NaN:+s; }
-function score(it){ const a=S.answers[it.n]; if(a==null) return null;
+function score(it){ const a=S.answers[it.n]; if(a==null||(KEYLESS&&it.answer===undefined)) return null;
   switch(it.type){
     case 'mc': return a===it.answer;
     case 'ms': return a.length===it.answer.length&&it.answer.every(v=>a.includes(v));
@@ -1851,7 +1858,7 @@ function show(it,a){ if(a==null) return '—';
     case 'graphineqOLD': return a.line?`${a.line.dash?'Dashed':'Solid'} line through (${fmtN(a.line.a[0])}, ${fmtN(a.line.a[1])}) and (${fmtN(a.line.b[0])}, ${fmtN(a.line.b[1])})${a.shade?', shaded':''}`:'—';
     case 'graphexp': return `Curve y = ${a.a.toFixed(3)}(${a.b.toFixed(3)})^x`;
     case 'graphline': return [...a.lines.map(L=>`Line through (${fmtN(L[0][0])}, ${fmtN(L[0][1])}) and (${fmtN(L[1][0])}, ${fmtN(L[1][1])})`),...a.pts.map(P=>`Point (${fmtN(P[0])}, ${fmtN(P[1])})`)].join('<br>')||'—'; } }
-function key(it){ switch(it.type){
+function key(it){ if(KEYLESS&&it.answer===undefined&&it.type!=='text') return 'Your teacher has not released the answers.'; switch(it.type){
     case 'text': return 'Your teacher scores this answer.';
     case 'mc': return `${it.letters[it.answer]}`;
     case 'ms': return it.answer.map(k=>it.letters[k]).join(', ');
@@ -1937,7 +1944,7 @@ body>*:not(#printDoc){display:none!important}
   // ready once every picture has loaded (or failed), so nothing prints blank
   return Promise.all([...doc.querySelectorAll('img')].map(i=>i.complete?0:new Promise(r=>{ i.onload=i.onerror=r; setTimeout(r,15000); })));
 };
-function earn(it){ const a=S.answers[it.n]; if(a==null||it.type==='text') return null; /* written answers: the teacher scores them */ const full=score(it)===true; if(it.max===1||full) return full?it.max:0;
+function earn(it){ const a=S.answers[it.n]; if(a==null||it.type==='text') return null; /* written answers: the teacher scores them */ if(KEYLESS&&it.answer===undefined){ const p=OWNPTS&&OWNPTS[it.n]; return p==null?null:+p; } const full=score(it)===true; if(it.max===1||full) return full?it.max:0;
   let hit=0, parts=2;
   if(it.type==='boxes'){ if(it.unordered){ const left=[...it.answer]; a.forEach(q=>{ const i=left.indexOf(q); if(q!=null&&i>=0){ hit++; left.splice(i,1); } }); } else hit=it.answer.filter((q,i)=>a[i]===q).length; parts=it.answer.length; }
   else if(it.type==='ms'||(it.type==='hotspot'&&Array.isArray(it.answer))){ hit=Math.max(0,a.filter(q=>it.answer.includes(q)).length-Math.max(0,a.length-it.answer.length)); parts=it.answer.length; }
@@ -2482,9 +2489,9 @@ $('#submitBtn').onclick=()=>dialog({title:'Attention',msg:'Are you sure you want
 function showResults(restored){
   if(restored!==true){ actLeaveAll(); S.submitted=true; S.submittedAt=new Date().toISOString(); logEv('submit'); }
   const E=typeof earn==='function'?earn:(it=>{const r=score(it); return r===null?null:(r?1:0);});
-  const rows=ITEMS.map(it=>({it,r:score(it),e:E(it),mx:it.max||1})), pts=rows.reduce((s,r)=>s+(r.e||0),0), tot=rows.reduce((s,r)=>s+r.mx,0);
+  const rows=ITEMS.map(it=>({it,r:score(it),e:E(it),mx:it.max||1})), pts=rows.reduce((s,r)=>s+(r.e||0),0), tot=rows.reduce((s,r)=>s+r.mx,0), wait=KEYLESS&&!OWNPTS;
   $('#rName').textContent=$('#sname').textContent; $('#resWho').textContent=$('#sname').textContent+'  |  PRACTICE SESSION  |  '+TD.title;
-  $('#rDate').textContent=new Date(S.submittedAt||Date.now()).toLocaleDateString('en-US'); $('#rScore').textContent=`${pts} out of ${tot} points`;
+  $('#rDate').textContent=new Date(S.submittedAt||Date.now()).toLocaleDateString('en-US'); $('#rScore').textContent=wait?'Scoring your test…':`${pts} out of ${tot} points`; document.getElementById('resultsScreen').classList.toggle('scoring',wait); document.getElementById('resultsScreen').classList.toggle('nokey',KEYLESS&&ITEMS.some(it=>it.type!=='text'&&it.answer===undefined));
   $('#rTable').innerHTML='<tr><th>#</th><th>Your<br>Score</th><th>Max<br>Score</th></tr>'+rows.map(({it,e,mx})=>`<tr><td><b>${it.n}</b></td><td>${e===null?'-':e}</td><td>${e===null?'-':mx}</td></tr>`).join('');
   window.__results=rows.map(({it,r,e,mx})=>({n:it.n,teks:it.teks,type:it.label||it.type,answer:show(it,S.answers[it.n]),key:key(it),correct:r,points:e,max:mx}));
   $('#endScreen').hidden=true; $('#pauseScreen').hidden=true; $('#resultsScreen').hidden=false;
@@ -2502,6 +2509,10 @@ addEventListener('scroll',()=>{ if(!PRINTING()&&(scrollX||scrollY)) scrollTo(0,0
 document.documentElement.addEventListener('scroll',()=>{ if(PRINTING()) return; document.documentElement.scrollTop=0; document.documentElement.scrollLeft=0; });
 document.body.addEventListener('scroll',()=>{ if(PRINTING()) return; document.body.scrollTop=0; document.body.scrollLeft=0; });
 window.__test={ITEMS,S,score,parseNum,earn};
+window.__spitzOwn=o=>{ if(!KEYLESS||!o) return; if(o.pts) OWNPTS=o.pts;
+  if(Array.isArray(o.key)) ITEMS.forEach((it,i)=>{ if(it.type!=='text'&&o.key[i]!=null) it.answer=o.key[i]; });
+  if(S.submitted){ showResults(true); if(window.__spitzFill) window.__spitzFill(); } };
+if(window.__spitzOwnPending){ const o=window.__spitzOwnPending; window.__spitzOwnPending=null; window.__spitzOwn(o); }
 
 /* ================= results breakdown + answer review with TEA rationales ================= */
 (function(){
@@ -2541,6 +2552,7 @@ function fillBreakdown(){
   document.getElementById('rxCats').innerHTML=Object.keys(CAT).map(Number).map(c=>{ const r=rows.filter(x=>x.it.cat===c); return `<div class="rxrow"><span class="rxl">${c}. ${CAT[c]}</span>${bar(r.reduce((s,x)=>s+x.e,0),r.reduce((s,x)=>s+x.m,0))}</div>`; }).join('');
   document.getElementById('rxRS').innerHTML=['Readiness','Supporting'].map(k=>{ const r=rows.filter(x=>x.it.rs===k); return `<div class="rxrow"><span class="rxl">${k}</span>${bar(r.reduce((s,x)=>s+x.e,0),r.reduce((s,x)=>s+x.m,0))}</div>`; }).join('');
 }
+window.__spitzFill=fillBreakdown;
 new MutationObserver(()=>{ if(!document.getElementById('resultsScreen').hidden) fillBreakdown(); }).observe(document.getElementById('resultsScreen'),{attributes:true,attributeFilter:['hidden']});
 
 /* --- review screen --- */
@@ -2698,12 +2710,12 @@ function load(id,done){
   window.SPITZ_TESTID=id; window.SPITZ_BASE=window.SPITZ_ROOT+'tests/'+id+'/';
   if(window.SPITZ_BUNDLE&&window.SPITZ_BUNDLE[id]){ window.SPITZ_BUNDLE[id](); done(); return; }
   /* v (set by the dashboard's Tests page) changes whenever the test's files change, so a browser never keeps an old copy */
-  const ent=allTests.find(t=>t.id===id); window.SPITZ_VER=ent&&ent.v?String(ent.v).replace(/[^0-9a-z]/gi,''):'';
+  const ent=allTests.find(t=>t.id===id); window.SPITZ_VER=String(ent&&ent.v||CTX&&CTX.ver||'').replace(/[^0-9a-z]/gi,'');   // a teacher's own test: its version comes with sign-in
   const s=document.createElement('script'); s.src=window.SPITZ_BASE+'test.js'+(window.SPITZ_VER?'?v='+window.SPITZ_VER:'');
   s.onload=done; s.onerror=()=>err(APP?'The test could not be loaded. Check your internet connection and try again.':'That test could not be loaded. Check that its folder is next to this page.');
   document.head.appendChild(s);
 }
-const booted=()=>{ if(!window.__spitzBooted) err('That test file has a problem and could not start.'); else startSaving(); };
+const booted=()=>{ if(window.__spitzKeylessFile) err('This test only works in class: open the class link and type the Session ID from your teacher.'); else if(!window.__spitzBooted) err('That test file has a problem and could not start.'); else startSaving(); };
 
 /* ---------- talking to the Sheet (app mode only) ---------- */
 /* the Apps Script loader shows this page in a frame of its own origin, so google.script.run lives on the parent page.
@@ -2778,7 +2790,8 @@ $('#startForm').addEventListener('submit',async e=>{ e.preventDefault();
     if(!r||!r.ok) return err((r&&r.msg)||'Sign in did not work. Try again.',$('#stuSession'));
     setWho(r);
     const name=String(r.name||nm).toUpperCase(), period=String(r.period||pd);
-    CTX={key:'stc:'+r.sessionId+':'+r.student, sessionId:r.sessionId, student:r.student, test:r.test, name, period, control:r.control||''};
+    CTX={key:'stc:'+r.sessionId+':'+r.student, sessionId:r.sessionId, student:r.student, test:r.test, name, period, control:r.control||'', ver:r.ver||''};
+    if(r.own) window.__spitzOwnPending=r.own;
     window.SPITZ_RA=!!r.readAloud; if(window.SpitzReadAloud) window.SpitzReadAloud(window.SPITZ_RA);   // the test engine may start after this; it reads SPITZ_RA then
     applyReview(r.review);
     const server=r.attempt?{state:r.attempt.state,events:r.attempt.events}:null, local=LS.get(CTX.key);
@@ -2817,7 +2830,7 @@ function saveServer(){ clearTimeout(serverT); serverT=null; if(leaving||!CTX||!C
   const final=window.SpitzSession.submitted, body=payload(final); sentAt=Date.now(); sentStatus=body.status; if(body.sum.rclicks!==rcSent) body.rcNew=true;
   call('stcSave',body).then(r=>{ if(!r||!r.ok){ fails++; again=true; return; } fails=0; if(body.rcNew) rcSent=body.sum.rclicks;
       if(r.review) applyReview(r.review); if(typeof r.control==='string'&&!final) window.SpitzSession.teacherHold(r.control);
-      if(final){ finalOK=true; saveNote(false);
+      if(final){ finalOK=true; saveNote(false); if(r.own&&window.__spitzOwn) window.__spitzOwn(r.own);
         // one quiet repeat 20 s later puts "submitted" back if a late, older save from before Submit lands after it
         if(!confirmed){ confirmed=true; setTimeout(()=>{ if(!leaving) call('stcSave',payload(true)).catch(()=>{}); },20000); } } })
     .catch(()=>{ fails++; again=true; })
@@ -2838,7 +2851,7 @@ function startSaving(){
   if(CTX.sessionId){ if(window.SpitzSession.submitted) saveNote(true); else if(CTX.control) window.SpitzSession.teacherHold(CTX.control); saveServer();
     // heartbeat for the dashboard (who is idle or away); skipped when a save just went out and nothing changed
     beat=setInterval(()=>{ if(!finalOK&&!fails&&(Date.now()-sentAt>25000||screen()!==sentStatus)) saveServer(); },30000);
-    reviewPoll=setInterval(()=>{ if(!$('#resultsScreen').hidden) call('stcReview',{sessionId:CTX.sessionId}).then(r=>r&&applyReview(r.review)).catch(()=>{}); },30000);
+    reviewPoll=setInterval(()=>{ if(!$('#resultsScreen').hidden) call('stcReview',{sessionId:CTX.sessionId,own:CTX.ver?1:0}).then(r=>{ if(!r) return; applyReview(r.review); if(r.own&&window.__spitzOwn) window.__spitzOwn(r.own); }).catch(()=>{}); },30000);
     // while the teacher has paused or stopped this test, check every 10 s (reads one cell, writes nothing) so Resume shows up quickly
     holdPoll=setInterval(()=>{ const ss=window.SpitzSession; if(!ss.hold||ss.submitted||holdBusy) return; holdBusy=true;
       call('stcHold',{sessionId:CTX.sessionId}).then(r=>{ if(r&&typeof r.control==='string'&&r.control!==ss.hold){ ss.teacherHold(r.control); saveServer(); } }).catch(()=>{}).finally(()=>{ holdBusy=false; }); },10000); }

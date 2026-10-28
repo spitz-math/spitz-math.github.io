@@ -58,6 +58,16 @@ Building a test from the warm-up bank (dashboard > Tests > Build a test from the
   Browsers never use an old copy of a test: tests/index.js carries a version code (v) for each test, which
   the Tests page updates on every publish.
 
+Teachers' own questions (dashboard > My sessions > My tests > Write my own test)
+  Any teacher on the Teachers tab can write a test: multiple choice, check all that apply, number answer and written answer
+  questions, optional reading passages (shown beside their questions) and one picture per question. Save draft keeps it in
+  the Sheet only; Publish puts the questions on GitHub (tests/<id>/test.js and img/) WITHOUT the answers.
+  The answers live only in the Sheet's Teacher Questions tab (one row per question; Answer is a letter like B, letters like
+  A, C, or a number like 3/4). Every save from a student is scored there, so a student's computer never has the key.
+  After Submit the student sees their points; the answers come only when the session is set to Score + review.
+  A hand fix in the Answer column counts after Re-score. Editing a used test: Save changes, then Re-score its sessions.
+  With "Check teachers' new tests" on, a new test waits for an Admin to approve it, like question bank tests.
+
 SETUP (one time)
   A. GitHub: put everything in this folder except apps-script/ into a folder named "checkpoint" in the
      spitz-math.github.io repository, so this works:  https://spitzmath.com/checkpoint/player.html

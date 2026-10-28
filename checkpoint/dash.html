@@ -278,6 +278,43 @@ details summary{cursor:pointer;color:var(--blue2);font-size:13px;margin-top:8px}
 .hint{font-size:12px;color:var(--mut)}
 .sw{display:inline-flex;align-items:center;gap:6px;font-size:13px}
 @media (max-width:900px){ .std{grid-template-columns:1fr} .wm small{display:none} }
+/* write-a-test page (teachers' own questions) */
+.oecol{max-width:900px}
+.oegrow{flex:1;min-width:220px} #oeId{width:190px;font-family:Consolas,"Courier New",monospace}
+.oewarn{color:#8a5a00;background:#fff6dc;border:1px solid #f0d58a;border-radius:6px;padding:6px 10px}
+.oebar{flex:0 0 auto;display:flex;align-items:center;gap:10px;background:#fff;border-top:1px solid var(--line);padding:8px 16px;flex-wrap:wrap}
+.oebar .sp{flex:1} .oebar .msg2{margin-top:0}
+.oeq{position:relative} .oeq.bad{border-color:var(--no);box-shadow:0 0 0 2px var(--nobg)}
+.oeqh{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:8px}
+.oeqh .num{font-weight:800;font-size:15px;min-width:90px}
+.oeqh select,.oeqh input{font-size:13px;padding:4px 6px;border:1px solid #9fb0c8;border-radius:6px;background:#fff}
+.oeqh .std{width:110px} .oeqh .sp{flex:1}
+.oeqh .mv button{border:1px solid #9fb0c8;background:#fff;border-radius:5px;padding:2px 8px;margin-left:2px}
+.oerich{border:1px solid #9fb0c8;border-radius:6px;background:#fff}
+.oerich:focus-within{border-color:var(--blue2);box-shadow:0 0 0 2px #dbe7ff}
+.oetools{display:flex;flex-wrap:wrap;gap:2px;padding:3px;border-bottom:1px solid #e3e9f1;background:#f7f9fc;border-radius:6px 6px 0 0}
+.oetools button{border:1px solid transparent;background:none;border-radius:4px;min-width:28px;height:26px;padding:0 6px;font-size:13px}
+.oetools button:hover{background:#e8eef8;border-color:#c9d5e6}
+.oesym{display:flex;flex-wrap:wrap;gap:2px;padding:4px;border-bottom:1px solid #e3e9f1}
+.oesym[hidden]{display:none} .oesym button{border:1px solid #d5dde6;background:#fff;border-radius:4px;min-width:28px;height:26px}
+.oeed{min-height:60px;padding:8px 10px;outline:none;font-size:15px;line-height:1.45;overflow-wrap:anywhere}
+.oeed:empty::before{content:attr(data-ph);color:#98a4b3}
+.oeed p{margin:0 0 .5em}
+.oerich.mini .oeed{min-height:34px;padding:5px 8px}
+.oerich.psg .oeed{min-height:160px;max-height:420px;overflow:auto}
+.oech{display:flex;align-items:flex-start;gap:8px;margin-top:6px}
+.oech .mark{display:flex;align-items:center;gap:4px;padding-top:8px;font-weight:700;min-width:44px;cursor:pointer}
+.oech .mark input{width:18px;height:18px;margin:0}
+.oech .oerich{flex:1;min-width:0}
+.oech .rm{border:0;background:none;color:var(--no);font-size:16px;padding:6px 4px}
+.oech.right .oerich{border-color:var(--ok);box-shadow:0 0 0 1px var(--ok)}
+.oesub{font-size:12px;font-weight:700;color:var(--mut);margin:12px 0 2px;text-transform:uppercase;letter-spacing:.04em}
+.oepic{display:flex;align-items:flex-start;gap:10px;margin-top:8px;flex-wrap:wrap}
+.oepic img{max-width:260px;max-height:180px;border:1px solid var(--line);border-radius:4px;background:#fff}
+.oenum{display:flex;align-items:center;gap:8px;flex-wrap:wrap} .oenum input{font-size:15px;padding:5px 8px;border:1px solid #9fb0c8;border-radius:6px;width:160px}
+.oepsg{border-top:1px solid var(--line);padding-top:10px;margin-top:10px} .oepsg:first-child{border-top:0;margin-top:0;padding-top:0}
+.oepsg .oeqh .num{min-width:0}
+@media (max-width:700px){ .oeqh .num{min-width:0;width:100%} #oeId{width:100%} }
 /* question bank page */
 .bkpage{position:fixed;inset:0;background:var(--bg);z-index:46;display:flex;flex-direction:column}
 .bkpage[hidden]{display:none}
@@ -393,8 +430,8 @@ details summary{cursor:pointer;color:var(--blue2);font-size:13px;margin-top:8px}
         <button class="btn pri" id="nsGo">Make the session</button></div>
       <div class="msg2" id="nsMsg"></div></section>
     <section class="tcard" id="mtCard"><h2>My tests</h2>
-      <p class="hint">Build your own test from released STAAR questions in the question bank. Your tests show up only in your own lists, not on the students' practice list.</p>
-      <div class="row"><button class="btn pri" id="mtBank">Make a test from the question bank</button><label class="hint" id="mtRevWrap" hidden><input type="checkbox" id="mtRev"> Check teachers' new tests before they can be used</label></div>
+      <p class="hint">Write your own questions (any subject), or build a test from released STAAR questions in the question bank. Your tests show up only in your own lists, not on the students' practice list.</p>
+      <div class="row"><button class="btn pri" id="mtOwn">Write my own test</button><button class="btn" id="mtBank">Make a test from the question bank</button><label class="hint" id="mtRevWrap" hidden><input type="checkbox" id="mtRev"> Check teachers' new tests before they can be used</label></div>
       <div id="mtList"></div><div class="msg2" id="mtMsg"></div></section>
     <section class="tcard"><h2>Print a test</h2>
       <p class="hint">A paper copy of any test: one for students (name line on top), or one with the answers marked and a key table.</p>
@@ -440,6 +477,29 @@ details summary{cursor:pointer;color:var(--blue2);font-size:13px;margin-top:8px}
       <div class="row" style="margin-top:0"><input type="search" id="rlFind" placeholder="Find a name" aria-label="Find a name" style="padding:5px 8px;border:1px solid #9fb0c8;border-radius:6px"><div class="seg" id="rlPer"></div></div>
       <div id="rlList" style="margin-top:10px"><p class="hint">Loading…</p></div><div class="msg2" id="rlMsg"></div></section>
   </div></div>
+</section>
+<section class="tpage" id="oepage" hidden aria-label="Write a test">
+  <header class="topbar"><div class="wm">SPITZ <span>CHECKPOINT</span><small id="oeHead">Write a test</small></div><div class="sp"></div>
+    <button class="btn pri" id="oeBack">Back to My sessions</button></header>
+  <div class="tbody"><div class="tcol oecol">
+    <section class="tcard"><h2>Your test</h2>
+      <div class="row fr" style="margin-top:0"><label class="fl oegrow">Title<input id="oeTitle" maxlength="80" placeholder="for example Unit 3 Quiz"></label>
+        <label class="fl">Test ID<input id="oeId" maxlength="60" spellcheck="false" autocomplete="off"></label>
+        <label class="fl">Course<select id="oeCourse"></select></label></div>
+      <div class="row"><label class="sw" id="oeCalcWrap"><input type="checkbox" id="oeCalc" checked> Students can use the calculator and graph tool</label></div>
+      <p class="hint" id="oeAbout">Students see your questions in the same testing screen as STAAR practice. The answers you mark stay in Mr. Spitzlberger's Google Sheet and never go to the students' computers, so a student can't look them up. Your tests show up only in your own lists.</p>
+      <p class="hint oewarn" id="oeUsed" hidden></p></section>
+    <section class="tcard"><h2>Reading passages <span class="hint" style="font-weight:400">(optional)</span></h2>
+      <p class="hint">A passage shows on the left with its questions beside it, like the reading test. Pick the passage on each question that goes with it.</p>
+      <div id="oePsgs"></div><div class="row"><button class="btn" id="oeAddPsg">+ Add a passage</button></div></section>
+    <div id="oeItems"></div>
+    <section class="tcard oeadd"><div class="row" style="margin-top:0"><b>Add a question:</b>
+      <button class="btn" data-oeadd="mc">Multiple choice</button><button class="btn" data-oeadd="ms">Check all that apply</button>
+      <button class="btn" data-oeadd="num">Number answer</button><button class="btn" data-oeadd="text">Written answer</button></div></section>
+  </div></div>
+  <footer class="oebar"><span id="oeCount" class="hint"></span><span class="msg2" id="oeMsg"></span><div class="sp"></div>
+    <button class="btn" id="oePreview">Preview</button><button class="btn" id="oeDraft">Save draft</button><button class="btn pri" id="oePublish">Publish</button></footer>
+  <input type="file" id="oeFile" accept="image/png,image/jpeg,image/gif,image/webp" hidden>
 </section>
 <section class="bkpage" id="bkpage" hidden aria-label="Question bank">
   <header class="topbar tb-purple"><div class="wm">SPITZ <span>CHECKPOINT</span><small>Question bank</small></div><div class="sp"></div>
@@ -637,7 +697,7 @@ function myTests(force){ if(MP.myP&&!force) return MP.myP;   // one request at a
   MP.myP=call('stcMyTests',{}).catch(()=>({tests:[],review:false,admin:false,old:true})).then(r=>MP.my=r); return MP.myP; }
 async function publishedTests(){ if(MP.tests) return MP.tests;
   const [L,M]=await Promise.all([campusTests(),myTests()]), admin=DATA&&DATA.me&&DATA.me.admin;
-  const mine=M.tests.filter(t=>t.status==='live'||admin).sort((a,b)=>(b.created||0)-(a.created||0))
+  const mine=M.tests.filter(t=>t.status==='live'||(admin&&t.status!=='draft')).sort((a,b)=>(b.created||0)-(a.created||0))
     .map(t=>({id:t.id,title:t.title+(admin&&t.by!==(DATA.me||{}).email?' · '+(t.name||t.by):'')+(t.status==='waiting'?' (waiting)':''),own:true}));
   MP.tests=mine.concat(L); return MP.tests; }
 async function openMySessions(){ openPage('#mpage'); MP.tests=null; myTests(true).then(renderMt); if(arc){ setArc(''); selSes=null; DATA=null; await loadSoon(); } renderMs(); $('#arcCard').hidden=!(DATA&&DATA.me&&DATA.me.admin);
@@ -748,16 +808,18 @@ $('#rpPrint').onclick=()=>{ document.body.classList.add('rpprint'); setTimeout((
 /* ---------- My tests: a teacher's own tests from the question bank (stcTeacherPublish); the admin approves them when review is on ---------- */
 function renderMt(){ const M=MP.my, box=$('#mtList'); if(!M) return; const admin=M.admin;
   $('#mtRevWrap').hidden=!admin; $('#mtRev').checked=!!M.review;
-  if(M.old){ box.innerHTML='<p class="hint">Making your own tests needs the latest Code.gs.</p>'; $('#mtBank').disabled=true; return; } $('#mtBank').disabled=false;
+  if(M.old){ box.innerHTML='<p class="hint">Making your own tests needs the latest Code.gs.</p>'; $('#mtBank').disabled=$('#mtOwn').disabled=true; return; } $('#mtBank').disabled=false; $('#mtOwn').disabled=!M.own;
   const L=M.tests.slice().sort((a,b)=>((a.status==='waiting')?0:1)-((b.status==='waiting')?0:1)||(b.created||0)-(a.created||0));
   if(!L.length){ box.innerHTML='<p class="hint" style="margin-top:8px">'+(admin?'No teacher tests yet.':'You have not made a test yet.')+'</p>'; return; }
+  const ST={live:'Ready',waiting:'Waiting for approval',draft:'Draft (not published)'};
   box.innerHTML=`<div style="overflow-x:auto;margin-top:8px"><table class="t"><tr><th>Test</th>${admin?'<th>Teacher</th>':''}<th>Questions</th><th>Made</th><th>Status</th><th></th></tr>${L.map(t=>`<tr data-tt="${esc(t.id)}">
-    <td><b>${esc(t.title)}</b><div class="rs">${esc(t.id)}</div></td>${admin?`<td>${esc(t.name||t.by)}</td>`:''}<td>${t.n||''}</td><td class="rs">${esc(fmtDay(t.created))}</td>
-    <td><span class="op${t.status==='live'?'':' cl'}">${t.status==='live'?'Ready':'Waiting for approval'}</span></td>
-    <td><div class="acts"><button class="btn" data-tv="1">Preview</button>${admin?`<button class="btn" data-ta="${t.status==='live'?'waiting':'live'}">${t.status==='live'?'Unapprove':'Approve'}</button>`:''}<button class="btn del" data-td="1">Delete</button></div></td></tr>`).join('')}</table></div>`; }
+    <td><b>${esc(t.title)}</b><div class="rs">${esc(t.id)} · ${t.kind==='own'?'own questions':'question bank'}</div></td>${admin?`<td>${esc(t.name||t.by)}</td>`:''}<td>${t.n||''}</td><td class="rs">${esc(fmtDay(t.created))}</td>
+    <td><span class="op${t.status==='live'?'':' cl'}">${ST[t.status]||esc(t.status)}</span></td>
+    <td><div class="acts">${t.kind==='own'?'<button class="btn" data-te="1">Edit</button>':''}<button class="btn" data-tv="1">Preview</button>${admin&&t.status!=='draft'?`<button class="btn" data-ta="${t.status==='live'?'waiting':'live'}">${t.status==='live'?'Unapprove':'Approve'}</button>`:''}<button class="btn del" data-td="1">Delete</button></div></td></tr>`).join('')}</table></div>`; }
 $('#mtList').addEventListener('click',async e=>{ const b=e.target.closest('button'); if(!b) return; const id=b.closest('tr').dataset.tt, t=MP.my.tests.find(x=>x.id===id);
-  if(b.dataset.tv) return previewRepo(id);
-  if(b.dataset.td&&!await ask('Delete '+(t?t.title:id)+'?','<p>The test comes off GitHub and out of your lists. Sessions already given with it keep their results, but students can no longer open it.</p>','Delete')) return;
+  if(b.dataset.te){ b.disabled=true; try{ await oeOpen(id); }catch(x){ say($('#mtMsg'),errText(x),'err'); } b.disabled=false; return; }
+  if(b.dataset.tv) return t&&t.kind==='own'?previewOwn(id):previewRepo(id);
+  if(b.dataset.td&&!await ask('Delete '+(t?t.title:id)+'?','<p>The test comes off GitHub and out of your lists'+(t&&t.kind==='own'?', and its questions and answers leave the Sheet':'')+'. Sessions already given with it keep their results, but students can no longer open it.</p>','Delete')) return;
   b.disabled=true;
   try{ MP.my=Object.assign(await call('stcTeacherTestSet',b.dataset.td?{id,remove:true}:{id,status:b.dataset.ta},90000),{}); MP.tests=null; renderMt(); openMySessions();
     say($('#mtMsg'),b.dataset.td?'Deleted.':(b.dataset.ta==='live'?'Approved. The teacher can use it now.':'Sent back to waiting.'),'ok'); }
@@ -767,6 +829,203 @@ $('#mtRev').onchange=async()=>{ const v=$('#mtRev').checked;
   catch(x){ $('#mtRev').checked=!v; say($('#mtMsg'),errText(x),'err'); } };
 $('#mtBank').onclick=async()=>{ const b=$('#mtBank'); b.disabled=true;
   try{ if(!TP.index.length) TP.index=await campusTests(); QB.mine=true; bkOpenPage(); }catch(x){ say($('#mtMsg'),errText(x),'err'); } b.disabled=false; };
+
+/* ---------- write a test: a teacher's own questions (stcOwnGet / stcOwnSave). The answers stay in the Sheet; GitHub gets the test without them. ---------- */
+const OE_COURSES=['6th Math','7th Math','8th Math','Algebra I','6th RLA','7th RLA','8th RLA','8th Science','8th History','Other'];
+const OE_TYPES={mc:'Multiple choice',ms:'Check all that apply',num:'Number answer',text:'Written answer'};
+const OE_PTS={mc:1,ms:2,num:1,text:2}, OE_L='ABCDEFGH';
+const OE_SYM='≤ ≥ ≠ ± × ÷ − · π √ ∛ ° ² ³ ½ ⅓ ¼ ¾ ∠ △ ⊥ ∥ ≈ ∞ → ↔ ¢ á é í ó ú ñ ¿ ¡ “ ” —'.split(' ');
+let OE=null;
+function oeCourseFor(subject){ const s=String(subject||'').toLowerCase(), g=(s.match(/\b([678])(?:th)?\b/)||[])[1];
+  if(/alg/.test(s)) return 'Algebra I';
+  const k=/read|rla|ela|english/.test(s)?'RLA':/sci/.test(s)?'Science':/hist|social/.test(s)?'History':/math/.test(s)?'Math':'';
+  return g&&k&&OE_COURSES.includes(g+'th '+k)?g+'th '+k:k==='Science'?'8th Science':k==='History'?'8th History':'Other'; }
+/* a small rich-text box: bold, italic, underline, exponents, lists and symbols; pasting keeps only the words */
+function oeRich(html,ph,cls,onIn){ const w=document.createElement('div'); w.className='oerich'+(cls?' '+cls:'');
+  const mini=/mini/.test(cls||''), B=[['bold','<b>B</b>','Bold'],['italic','<i>I</i>','Italic'],['underline','<u>U</u>','Underline'],['superscript','x<sup>2</sup>','Exponent (superscript)'],['subscript','x<sub>2</sub>','Subscript']]
+    .concat(mini?[]:[['insertUnorderedList','&bull; List','Bulleted list'],['insertOrderedList','1. List','Numbered list']]).concat([['sym','&Omega;','Symbols']]);
+  w.innerHTML=`<div class="oetools">${B.map(b=>`<button type="button" data-c="${b[0]}" title="${b[2]}" aria-label="${b[2]}">${b[1]}</button>`).join('')}</div>
+    <div class="oesym" hidden>${OE_SYM.map(c=>`<button type="button" data-ch="${c}">${c}</button>`).join('')}</div><div class="oeed" contenteditable="true" role="textbox" aria-multiline="${!mini}" data-ph="${esc(ph||'')}"></div>`;
+  const ed=w.querySelector('.oeed'); ed.innerHTML=html||'';
+  w.querySelector('.oetools').addEventListener('mousedown',e=>e.preventDefault());
+  w.querySelector('.oesym').addEventListener('mousedown',e=>e.preventDefault());
+  w.querySelector('.oetools').addEventListener('click',e=>{ const b=e.target.closest('button'); if(!b) return;
+    if(b.dataset.c==='sym'){ const s=w.querySelector('.oesym'); s.hidden=!s.hidden; return; }
+    ed.focus(); document.execCommand(b.dataset.c,false,null); onIn(); });
+  w.querySelector('.oesym').addEventListener('click',e=>{ const b=e.target.closest('button'); if(!b) return; ed.focus(); document.execCommand('insertText',false,b.dataset.ch); onIn(); });
+  ed.addEventListener('paste',e=>{ e.preventDefault(); const t=(e.clipboardData||window.clipboardData).getData('text/plain'); document.execCommand('insertText',false,t); });
+  ed.addEventListener('drop',e=>e.preventDefault());
+  ed.addEventListener('input',onIn);
+  w.html=()=>{ const h=ed.innerHTML.trim(); return ed.textContent.trim()?h:''; };
+  return w; }
+const oePlain=h=>{ const d=document.createElement('div'); d.innerHTML=h||''; return d.textContent.replace(/\s+/g,' ').trim(); };
+function oeBlank(type){ const it={type,text:'',points:OE_PTS[type],std:'',passage:''};
+  if(type==='mc'||type==='ms'){ it.choices=['','','','']; it.answer=type==='mc'?null:[]; }
+  if(type==='num') it.answer=''; if(type==='text') it.limit=475; return it; }
+function oeSlug(s){ return String(s).toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'').slice(0,40); }
+async function oeTaken(){ const L=await campusTests().catch(()=>[]); return new Set(L.map(t=>t.id).concat(((MP.my||{}).tests||[]).map(t=>t.id))); }
+async function oeIdAuto(){ if(!OE||!OE.isNew||$('#oeId').dataset.touched) return; const taken=await oeTaken();
+  let base=oeSlug($('#oeTitle').value)||'my-test'; if(base.length<3) base+='-test'; let id=base, n=2; while(taken.has(id)) id=base+'-'+(n++); $('#oeId').value=id; }
+function oeDirty(){ if(OE) OE.dirty=true; oeCount(); }
+function oeCount(){ if(!OE) return; const n=OE.items.length, p=OE.items.reduce((a,it)=>a+(+it.points||0),0); $('#oeCount').textContent=plural(n,'question')+(n?' · '+plural(p,'point'):''); }
+/* open the editor: a new test, or one of the teacher's own (id) */
+async function oeOpen(id){
+  let d=null; if(id){ d=await call('stcOwnGet',{id},60000); }
+  OE={isNew:!d, id:d?d.id:'', status:d?d.status:null, mine:d?d.mine:true, pics:{}, sent:new Set(), dirty:false,
+    passages:d?d.passages.slice():[], items:d?d.items.map(it=>Object.assign({},it,{points:it.max})):[oeBlank('mc')]};
+  $('#oeTitle').value=d?d.title:''; $('#oeId').value=d?d.id:''; $('#oeId').disabled=!!d; delete $('#oeId').dataset.touched;
+  $('#oeCourse').innerHTML=OE_COURSES.map(c=>`<option>${c}</option>`).join(''); $('#oeCourse').value=d?d.course:oeCourseFor((MP.my||{}).subject||'');
+  $('#oeCalc').checked=d?d.calc!==false:true; oeCourseSync();
+  const S=(DATA?DATA.sessions:[]).filter(s=>d&&s.test===d.id);
+  $('#oeUsed').hidden=!S.length; $('#oeUsed').textContent=S.length?`Students have taken this test in ${plural(S.length,'session')}. If you change an answer, click Re-score on those sessions in Your sessions so their scores use the new answer.`:'';
+  $('#oeHead').textContent=d?(OE.mine?'Edit your test':'Look at a test'):'Write a test';
+  say($('#oeMsg'),''); oeButtons(); oeRender(); openPage('#oepage'); $('#oepage .tbody').scrollTop=0;
+  if(!d) await oeIdAuto(); }
+function oeButtons(){ const out=OE.status&&OE.status!=='draft';
+  $('#oeDraft').hidden=out||!OE.mine; $('#oePublish').hidden=!OE.mine; $('#oePublish').textContent=out?'Save changes':'Publish'; }
+function oeCourseSync(){ const rla=/RLA/.test($('#oeCourse').value); $('#oeCalcWrap').hidden=rla; }
+function oeRender(){ oeRenderPsgs(); oeRenderItems(); oeCount(); }
+function oeRenderPsgs(){ const box=$('#oePsgs'); box.innerHTML='';
+  OE.passages.forEach((h,i)=>{ const d=document.createElement('div'); d.className='oepsg';
+    d.innerHTML=`<div class="oeqh"><span class="num">Passage ${i+1}</span><span class="sp"></span><button class="btn del" data-rp="${i}">Remove</button></div>`;
+    const r=oeRich(h,'Type or paste the passage. Bold the title if it has one.','psg',()=>{ OE.passages[i]=r.html(); oeDirty(); }); d.appendChild(r); box.appendChild(d); });
+  box.querySelectorAll('[data-rp]').forEach(b=>b.onclick=()=>{ const i=+b.dataset.rp;
+    if(OE.passages[i]&&!confirm('Remove passage '+(i+1)+'? Questions that use it stay, without a passage.')) return;
+    OE.passages.splice(i,1); OE.items.forEach(it=>{ const k=+String(it.passage||'').slice(1); if(k===i+1) it.passage=''; else if(k>i+1) it.passage='P'+(k-1); }); oeDirty(); oeRender(); }); }
+function oeRenderItems(){ const box=$('#oeItems'); box.innerHTML='';
+  OE.items.forEach((it,i)=>box.appendChild(oeCard(it,i))); }
+function oeCard(it,i){ const c=document.createElement('section'); c.className='tcard oeq'; c.dataset.i=i; const n=OE.items.length;
+  const psg=OE.passages.length?`<label class="hint">Passage <select class="pg"><option value="">None</option>${OE.passages.map((p,k)=>`<option value="P${k+1}"${it.passage==='P'+(k+1)?' selected':''}>Passage ${k+1}</option>`).join('')}</select></label>`:'';
+  c.innerHTML=`<div class="oeqh"><span class="num">Question ${i+1}</span>
+    <select class="ty" aria-label="Question type">${Object.keys(OE_TYPES).map(k=>`<option value="${k}"${k===it.type?' selected':''}>${OE_TYPES[k]}</option>`).join('')}</select>
+    <label class="hint">Points <select class="pt">${[1,2,3,4,5,6,7,8,9,10].map(p=>`<option${p===+it.points?' selected':''}>${p}</option>`).join('')}</select></label>
+    <label class="hint">TEKS <input class="std" maxlength="20" placeholder="optional" value="${esc(it.std||'')}"></label>${psg}
+    <span class="sp"></span><span class="mv"><button type="button" data-mv="-1" aria-label="Move question ${i+1} up" ${i?'':'disabled'}>▲</button><button type="button" data-mv="1" aria-label="Move question ${i+1} down" ${i<n-1?'':'disabled'}>▼</button><button type="button" data-cp="1" title="Copy this question">Copy</button><button type="button" data-rm="1" aria-label="Delete question ${i+1}" style="color:var(--no)">✕</button></span></div>`;
+  const rq=oeRich(it.text,'Type the question.','',()=>{ it.text=rq.html(); oeDirty(); }); c.appendChild(rq);
+  /* picture */
+  const pic=document.createElement('div'); pic.className='oepic';
+  if(it.pic){ const src=OE.pics[it.pic.file]||(ROOT+'tests/'+encodeURIComponent(OE.id)+'/img/'+it.pic.file);
+    pic.innerHTML=`<img src="${esc(src)}" alt="Picture for question ${i+1}"><div><label class="hint">Size <select class="pw">${[[250,'Small'],[400,'Medium'],[600,'Large']].map(([w,l])=>`<option value="${w}"${w===+it.pic.w?' selected':''}>${l}</option>`).join('')}</select></label><br><button type="button" class="btn del" data-pr="1" style="margin-top:6px">Remove picture</button></div>`; }
+  else pic.innerHTML='<button type="button" class="btn" data-pa="1">Add a picture</button><span class="hint">A graph, diagram or table picture (PNG or JPG). It shows under the question.</span>';
+  c.appendChild(pic);
+  /* answers */
+  const ans=document.createElement('div');
+  if(it.type==='mc'||it.type==='ms'){
+    ans.innerHTML=`<div class="oesub">Answer choices · ${it.type==='mc'?'click the circle by the correct answer':'check every correct answer'}</div>`;
+    it.choices.forEach((ch,k)=>{ const row=document.createElement('div'); const on=it.type==='mc'?it.answer===k:(it.answer||[]).includes(k);
+      row.className='oech'+(on?' right':'');
+      row.innerHTML=`<label class="mark" title="Correct answer"><input type="${it.type==='mc'?'radio':'checkbox'}" name="oe${i}" ${on?'checked':''} aria-label="Choice ${OE_L[k]} is correct">${OE_L[k]}</label>`;
+      const r=oeRich(ch,'Choice '+OE_L[k],'mini',()=>{ it.choices[k]=r.html(); oeDirty(); }); row.appendChild(r);
+      const rm=document.createElement('button'); rm.type='button'; rm.className='rm'; rm.textContent='✕'; rm.title='Remove choice '+OE_L[k]; rm.disabled=it.choices.length<=2; row.appendChild(rm);
+      row.querySelector('input').onchange=e=>{ if(it.type==='mc') it.answer=k; else { const s=new Set(it.answer||[]); e.target.checked?s.add(k):s.delete(k); it.answer=[...s].sort((a,b)=>a-b); }
+        oeDirty(); c.querySelectorAll('.oech').forEach((x,j)=>x.classList.toggle('right',it.type==='mc'?it.answer===j:it.answer.includes(j))); };
+      rm.onclick=()=>{ it.choices.splice(k,1); if(it.type==='mc') it.answer=it.answer===k?null:it.answer>k?it.answer-1:it.answer; else it.answer=(it.answer||[]).filter(x=>x!==k).map(x=>x>k?x-1:x); oeDirty(); oeRenderItems(); };
+      ans.appendChild(row); });
+    if(it.choices.length<8){ const add=document.createElement('button'); add.type='button'; add.className='btn'; add.style.marginTop='8px'; add.textContent='+ Add a choice'; add.onclick=()=>{ it.choices.push(''); oeDirty(); oeRenderItems(); }; ans.appendChild(add); }
+    if(it.type==='ms') ans.insertAdjacentHTML('beforeend',`<p class="hint">Worth 1 point: all correct or nothing. Worth 2 or more: 1 point for partly right, like STAAR.</p>`);
+  } else if(it.type==='num'){
+    ans.innerHTML=`<div class="oesub">Correct answer</div><div class="oenum"><input class="na" inputmode="decimal" placeholder="for example 12, -3.5 or 3/4" value="${esc(it.answer||'')}" aria-label="Correct answer for question ${i+1}"><span class="hint">Students type a number on a keypad. 3/4 and 0.75 both count as right.</span></div>`;
+    ans.querySelector('.na').oninput=e=>{ it.answer=e.target.value.trim(); oeDirty(); };
+  } else {
+    ans.innerHTML=`<div class="oesub">Writing box</div><div class="oenum"><select class="lm" aria-label="Writing box size"><option value="475"${+it.limit!==2300?' selected':''}>Short answer (475 characters)</option><option value="2300"${+it.limit===2300?' selected':''}>Long answer (2,300 characters)</option></select><span class="hint">You score written answers on the dashboard: View › Written.</span></div>`;
+    ans.querySelector('.lm').onchange=e=>{ it.limit=+e.target.value; oeDirty(); };
+  }
+  c.appendChild(ans);
+  /* header controls */
+  c.querySelector('.ty').onchange=e=>{ const t=e.target.value, keep={text:it.text,std:it.std,passage:it.passage,pic:it.pic}, prevCh=it.choices;
+    const nw=Object.assign(oeBlank(t),keep); if((t==='mc'||t==='ms')&&prevCh) nw.choices=prevCh; if(t==='mc'&&it.type==='ms'&&it.answer&&it.answer.length===1) nw.answer=it.answer[0]; if(t==='ms'&&it.type==='mc'&&it.answer!=null) nw.answer=[it.answer];
+    OE.items[i]=nw; oeDirty(); oeRenderItems(); };
+  c.querySelector('.pt').onchange=e=>{ it.points=+e.target.value; oeDirty(); };
+  c.querySelector('.std').oninput=e=>{ it.std=e.target.value; oeDirty(); };
+  const pg=c.querySelector('.pg'); if(pg) pg.onchange=e=>{ it.passage=e.target.value; oeDirty(); };
+  const pw=c.querySelector('.pw'); if(pw) pw.onchange=e=>{ it.pic.w=+e.target.value; oeDirty(); };
+  c.querySelector('.mv').addEventListener('click',e=>{ const b=e.target.closest('button'); if(!b) return;
+    if(b.dataset.mv){ const j=i+ +b.dataset.mv; [OE.items[i],OE.items[j]]=[OE.items[j],OE.items[i]]; }
+    else if(b.dataset.cp){ OE.items.splice(i+1,0,JSON.parse(JSON.stringify(it))); }
+    else if(b.dataset.rm){ if((oePlain(it.text)||(it.choices||[]).some(x=>oePlain(x)))&&!confirm('Delete question '+(i+1)+'?')) return; OE.items.splice(i,1); }
+    oeDirty(); oeRenderItems(); });
+  pic.addEventListener('click',e=>{ const b=e.target.closest('button'); if(!b) return;
+    if(b.dataset.pr){ it.pic=null; oeDirty(); oeRenderItems(); return; }
+    if(b.dataset.pa){ OE.picFor=i; $('#oeFile').value=''; $('#oeFile').click(); } });
+  return c; }
+/* a picture: made at most 1000 px wide; PNG stays PNG when it is small (sharp lines), anything else becomes JPG */
+function oeImage(file){ return new Promise((res,rej)=>{ if(file.size>15e6) return rej(new Error('That picture is over 15 MB.'));
+  const url=URL.createObjectURL(file), img=new Image();
+  img.onload=()=>{ const s=Math.min(1,1000/img.naturalWidth), w=Math.max(1,Math.round(img.naturalWidth*s)), h=Math.max(1,Math.round(img.naturalHeight*s));
+    const cv=document.createElement('canvas'); cv.width=w; cv.height=h; const g=cv.getContext('2d'); g.fillStyle='#fff'; g.fillRect(0,0,w,h); g.drawImage(img,0,0,w,h); URL.revokeObjectURL(url);
+    let d=cv.toDataURL('image/png'), ext='png'; if(d.length>400000||!/png|gif/.test(file.type)){ d=cv.toDataURL('image/jpeg',0.86); ext='jpg'; }
+    res({data:d,ext}); };
+  img.onerror=()=>{ URL.revokeObjectURL(url); rej(new Error('That file is not a picture this page can read. Use PNG or JPG.')); }; img.src=url; }); }
+$('#oeFile').onchange=async e=>{ const f=e.target.files[0], i=OE&&OE.picFor; if(!f||i==null||!OE.items[i]) return;
+  try{ const r=await oeImage(f), name='q-'+Math.random().toString(36).slice(2,8)+'.'+r.ext; OE.pics[name]=r.data; OE.items[i].pic={file:name,w:400}; oeDirty(); oeRenderItems(); }
+  catch(x){ say($('#oeMsg'),errText(x),'err'); } };
+/* what goes to the server; problems are listed here first so the teacher sees them on the question */
+function oeGather(){ return { id:$('#oeId').value.trim(), title:$('#oeTitle').value.trim(), course:$('#oeCourse').value, calc:/RLA/.test($('#oeCourse').value)?false:$('#oeCalc').checked,
+  passages:OE.passages.slice(), items:OE.items.map(it=>({type:it.type,text:it.text,points:+it.points,std:it.std,passage:it.passage,choices:it.choices,answer:it.answer,limit:it.limit,pic:it.pic})) }; }
+function oeCheck(b,publish){ const P=[];
+  if(!b.title) P.push([null,'Give the test a title.']);
+  if(!/^[a-z0-9][a-z0-9-]{1,58}[a-z0-9]$/.test(b.id)) P.push([null,'The test ID can only use lowercase letters, numbers and dashes (3 to 60 of them).']);
+  b.passages.forEach((p,k)=>{ if(!oePlain(p)) P.push([null,'Passage '+(k+1)+' is blank. Type it or remove it.']); });
+  if(!b.items.length) P.push([null,'Add at least one question.']);
+  if(publish) b.items.forEach((it,i)=>{ const q='Question '+(i+1)+': ';
+    if(!oePlain(it.text)&&!it.pic) P.push([i,q+'type the question.']);
+    if(it.type==='mc'||it.type==='ms'){ it.choices.forEach((c,k)=>{ if(!oePlain(c)) P.push([i,q+'answer choice '+OE_L[k]+' is blank.']); });
+      if(it.type==='mc'&&it.answer==null) P.push([i,q+'mark the correct answer.']);
+      if(it.type==='ms'&&!(it.answer||[]).length) P.push([i,q+'check every correct answer.']);
+      if(it.type==='ms'&&(it.answer||[]).length===it.choices.length) P.push([i,q+'at least one choice has to be wrong.']); }
+    if(it.type==='num'&&!/^-?\d+(\.\d+)?(\/-?\d+(\.\d+)?)?$/.test(String(it.answer||'').replace(/[−]/g,'-').replace(/,/g,''))) P.push([i,q+'the answer has to be a number, like 12, -3.5 or 3/4.']); });
+  return P; }
+async function oeSave(publish){ if(!OE||OE.busy) return; const b=oeGather(), P=oeCheck(b,publish), msg=$('#oeMsg');
+  document.querySelectorAll('.oeq.bad').forEach(x=>x.classList.remove('bad'));
+  if(P.length){ P.forEach(([i])=>{ if(i!=null){ const c=document.querySelector(`.oeq[data-i="${i}"]`); if(c) c.classList.add('bad'); } });
+    say(msg,esc(P[0][1])+(P.length>1?` (and ${plural(P.length-1,'more thing')} to fix)`:''),'err');
+    const c=P[0][0]!=null&&document.querySelector(`.oeq[data-i="${P[0][0]}"]`); if(c) c.scrollIntoView({behavior:'smooth',block:'center'}); return; }
+  const used=new Set(b.items.filter(it=>it.pic).map(it=>it.pic.file));
+  b.pictures=Object.keys(OE.pics).filter(f=>used.has(f)&&!OE.sent.has(f)).map(f=>({file:f,b64:OE.pics[f].split(',')[1]}));   /* pictures already on GitHub are not sent again */
+  b.publish=!!publish; OE.busy=true; ['#oeDraft','#oePublish','#oePreview'].forEach(s=>$(s).disabled=true);
+  say(msg,publish?'Publishing…':'Saving…');
+  try{ const r=await call('stcOwnSave',b,240000);
+    OE.isNew=false; OE.id=r.id; OE.status=r.status; OE.dirty=false; $('#oeId').disabled=true;
+    b.pictures.forEach(p=>OE.sent.add(p.file));
+    MP.tests=null; await myTests(true); renderMt(); oeButtons();
+    say(msg,r.status==='draft'?'Draft saved. Students can\'t see it until you publish it.':r.status==='waiting'?'Published. Mr. Spitzlberger has to approve it before you can use it.':'Published. Pick it under New session. Give it a minute or two before students open it.','ok'); }
+  catch(x){ say(msg,errText(x),'err'); }
+  finally{ OE.busy=false; ['#oeDraft','#oePublish','#oePreview'].forEach(s=>$(s).disabled=false); } }
+/* the test.js for a preview (with answers), made here from what is on screen, so unsaved changes show too. Same shape as Code.gs makes. */
+function oeTestJs(b){ const J=v=>JSON.stringify(v).replace(/</g,'\\u003c'), num=s=>{ s=String(s).replace(/−/g,'-').replace(/,/g,''); const m=s.match(/^(-?\d+(?:\.\d+)?)\/(-?\d+(?:\.\d+)?)$/); return m?+m[1]/+m[2]:+s; };
+  const course=b.course==='Other'?'Other':b.course, head={id:b.id||'preview',title:b.title||'Untitled test',course};
+  if(/RLA/.test(course)) head.subject='rla'; head.reference=course==='Algebra I'?'alg1':'none'; if(b.calc===false) head.calc=false;
+  const P={}; b.passages.forEach((h,i)=>{ P['P'+(i+1)]=h; });
+  const items=b.items.map(it=>{ let stem=J(it.text||''); if(it.pic) stem+='+'+J('<div class="tqpic"><img class="fig" src="')+'+ASSET('+J('img/'+it.pic.file)+')+'+J('" style="width:'+it.pic.w+'px;max-width:100%" alt="Picture for this question"></div>');
+    const o=['type:'+J(it.type),'stem:'+stem,'max:'+(+it.points||1)];
+    if(it.choices) o.push('choices:'+J(it.choices.map(c=>c||'&nbsp;'))); if(it.std) o.push('teks:'+J(it.std)); if(it.passage) o.push('passage:'+J(it.passage));
+    if(it.type==='text') o.push('limit:'+(it.limit||475));
+    if(it.type==='mc'&&it.answer!=null) o.push('answer:'+it.answer); if(it.type==='ms') o.push('answer:'+J(it.answer||[])); if(it.type==='num') o.push('answer:'+J(num(it.answer)));
+    return '{'+o.join(',')+'}'; });
+  return 'SpitzTest('+J(head).slice(0,-1)+(b.passages.length?',passages:'+J(P):'')+',items:['+items.join(',\n')+']});'; }
+$('#oePreview').onclick=async()=>{ if(!OE) return; const b=oeGather(); if(!b.items.length) return say($('#oeMsg'),'Add a question first.','err');
+  try{ const id=b.id||'preview', assets={}; b.items.forEach(it=>{ if(it.pic&&OE.pics[it.pic.file]) assets[id+'/img/'+it.pic.file]=OE.pics[it.pic.file]; });
+    const p=await ensurePlayer(), pages=TP.gh&&TP.gh.pages||ROOT;
+    const html=buildSingle(p,id,b.title||'Untitled test',oeTestJs(b),assets).replace('window.SPITZ_ROOT="";window.SPITZ_TESTS=',()=>'window.SPITZ_ROOT='+JSON.stringify(pages)+';window.SPITZ_TESTS=');
+    showPreview((b.title||'Untitled test')+' (preview)',html); }
+  catch(x){ dlg('Could not preview',errText(x)); } };
+$('#oeDraft').onclick=()=>oeSave(false); $('#oePublish').onclick=()=>oeSave(true);
+$('#oeAddPsg').onclick=()=>{ if(OE.passages.length>=20) return; OE.passages.push(''); oeDirty(); oeRender(); };
+document.querySelector('.oeadd').addEventListener('click',e=>{ const b=e.target.closest('[data-oeadd]'); if(!b||!OE) return; if(OE.items.length>=100) return say($('#oeMsg'),'A test can have up to 100 questions.','err');
+  OE.items.push(oeBlank(b.dataset.oeadd)); oeDirty(); oeRenderItems(); const last=$('#oeItems').lastElementChild; last.scrollIntoView({behavior:'smooth',block:'center'}); const ed=last.querySelector('.oeed'); if(ed) ed.focus(); });
+$('#oeTitle').oninput=()=>{ oeDirty(); oeIdAuto(); }; $('#oeId').oninput=e=>{ e.target.dataset.touched=1; oeDirty(); };
+$('#oeCourse').onchange=()=>{ oeCourseSync(); oeDirty(); }; $('#oeCalc').onchange=oeDirty;
+$('#oeBack').onclick=async()=>{ if(OE&&OE.dirty&&OE.mine&&!await ask('Leave without saving?','<p>Your changes since the last save will be lost.</p>','Leave')) return;
+  $('#oepage').hidden=true; OE=null; openMySessions(); };
+$('#mtOwn').onclick=async()=>{ const b=$('#mtOwn'); b.disabled=true; try{ await myTests(); await oeOpen(null); }catch(x){ say($('#mtMsg'),errText(x),'err'); } b.disabled=false; };
+/* a teacher's own test, seen whole (with its answers) by the people allowed to: its test.js on the site has no answers */
+async function ownJs(id,text){ if(text!=null&&!/"keyless":true/.test(text)) return text;
+  try{ const r=await call('stcOwnGet',{id,js:1},60000); return r&&r.js||text; }catch(e){ return text; } }
+async function previewOwn(id){ try{ const t=((MP.my||{}).tests||[]).find(x=>x.id===id)||{title:id}, js=await ownJs(id,null); if(!js) throw new Error('Could not open the test.');
+    const p=await ensurePlayer(), pages=TP.gh&&TP.gh.pages||ROOT;
+    const html=buildSingle(p,id,t.title,js,{}).replace('window.SPITZ_ROOT="";window.SPITZ_TESTS=',()=>'window.SPITZ_ROOT='+JSON.stringify(pages)+';window.SPITZ_TESTS=');
+    showPreview(t.title,html); }
+  catch(e){ dlg('Could not preview',errText(e)); } }
 
 /* ---------- Archive: closed sessions move to a yearly archive Sheet (stcArchive copies, checks every cell, then removes them here) ---------- */
 function setArc(v){ arc=v; $('#arcSel').value=v; }
@@ -1347,7 +1606,7 @@ async function tpLoad(){ const g=$('#ghs'); g.className='ghs'; g.textContent='Ch
 function testFolders(){ if(!TP.files) return []; return [...new Set(Object.keys(TP.files).map(p=>(p.match(/^tests\/([^\/]+)\/test\.js$/)||[])[1]).filter(Boolean))]; }
 async function metaOf(id){ let k, get;
   if(TP.files){ const f=TP.files['tests/'+id+'/test.js']; if(!f) return null; k=id+'@'+f.sha; get=()=>repoText('tests/'+id+'/test.js'); }
-  else { k=id+'@pages'; get=()=>siteGet('tests/'+encodeURIComponent(id)+'/test.js').then(r=>{ if(!r.ok) throw 0; return r.text(); }); }
+  else { k=id+'@pages'; get=()=>siteGet('tests/'+encodeURIComponent(id)+'/test.js').then(r=>{ if(!r.ok) throw 0; return r.text(); }).then(t=>ownJs(id,t)); }
   if(!TP.metas[k]) TP.metas[k]=get().then(evalTest).then(r=>r.td).catch(()=>null); return TP.metas[k]; }
 function renderList(){ const box=$('#tlist'); const folders=testFolders(), ids=TP.index.map(t=>t.id);
   const rows=TP.index.map(t=>({id:t.id,title:t.title,hidden:!!t.hidden,listed:true,folder:!TP.files||folders.includes(t.id)}))
@@ -1432,7 +1691,7 @@ function showPreview(title,html){ $('#pvTitle').textContent=title; $('#pvNote').
 async function printTest(id,withKey){ const L=await publishedTests(), t=L.find(x=>x.id===id); if(!t) throw new Error('Choose a test.');
   const r=await siteGet('tests/'+encodeURIComponent(id)+'/test.js'); if(!r.ok) throw new Error('Could not download the test.');
   const pages=TP.gh&&TP.gh.pages||ROOT, title=t.title||id;
-  let html=buildSingle(await ensurePlayer(),id,title,await r.text(),{});
+  let html=buildSingle(await ensurePlayer(),id,title,await ownJs(id,await r.text()),{});
   html=html.replace('window.SPITZ_ROOT="";window.SPITZ_TESTS=',()=>'window.SPITZ_ROOT='+JSON.stringify(pages)+';window.SPITZ_PRINT=1;window.SPITZ_TESTS=')
     .replace(/<\/body>\s*<\/html>\s*$/,'')+'<scr'+'ipt>addEventListener("load",function(){ window.SPITZ_TESTID='+JSON.stringify(id)+'; window.SPITZ_BASE=window.SPITZ_ROOT+"tests/"+'+JSON.stringify(id)+'+"/"; window.SPITZ_BUNDLE['+JSON.stringify(id)+'](); window.__spitzPrintReady=window.__spitzPrint('+(withKey?'true':'false')+'); });<\/scr'+'ipt></body></html>';
   $('#pvTitle').textContent=title+(withKey?' · Answer Key':''); $('#pvNote').textContent='Check it, then press Print. In the print box, choose your printer or Save as PDF.';
@@ -1455,7 +1714,7 @@ async function previewRepo(id){ try{ const m=await metaOf(id), p=await ensurePla
   catch(e){ dlg('Could not preview',errText(e)); } }
 
 /* ---------- re-score a session: the server sends each student's saved answers, the real player scores them, the server writes the scores ---------- */
-async function rescore(id){ const r=await call('stcRescore',{id},120000);
+async function rescore(id){ const r=await call('stcRescore',{id},120000); if(r&&r.done) return r.changed||0;   /* a teacher's own test: the server scored it with the key in the Sheet */
   if(!r||!Array.isArray(r.rows)) throw new Error('Re-score needs the latest Code.gs (paste it, then Deploy › New version).'); if(!r.rows.length) return 0;
   const L=await publishedTests(), t=L.find(x=>x.id===r.test)||{id:r.test};
   const g=await siteGet('tests/'+encodeURIComponent(r.test)+'/test.js'); if(!g.ok) throw new Error('Could not download the test.');
