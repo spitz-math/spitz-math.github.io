@@ -90,6 +90,7 @@ body.noref #bRef,body.nocalc #bCalc,body.nocalc #bGD{display:none}
 .page.split{display:flex;overflow:hidden}
 .page.split #psgPane{display:flex;flex-direction:column;flex:0 0 var(--psgw,42%);min-width:0;border-right:3px solid #c9d3dc}
 .page.split .itemwrap{flex:1;min-width:0;max-width:none;margin:0;overflow:auto;padding-top:10px}
+@media (max-width:620px){ .page.split{flex-direction:column!important} .page.split #psgPane{flex:none!important;height:45vh;border-right:0!important;border-bottom:3px solid #c9d3dc} #psgPane .psgtop{display:none!important} }   /* phones: passage above the question, not a sliver beside it */
 .psgtop{display:flex;justify-content:flex-end;gap:4px;padding:6px 10px 2px}
 .psgtop button{width:34px;height:30px;border:1px solid #9aa7b4;background:var(--pg);color:var(--fg);border-radius:4px;font-size:18px;line-height:1;padding:0}
 .psgtop button:disabled{opacity:.35}
