@@ -442,7 +442,7 @@ details summary{cursor:pointer;color:var(--blue2);font-size:13px;margin-top:8px}
   <div class="tbody"><div class="tcol">
     <section class="tcard"><h2>New session</h2>
       <p class="hint">Students type the Session ID it gives you. Everyone on your roster is ready to go the moment it is made.</p>
-      <div class="row fr"><label class="fl">Test<select id="nsTest"><option value="">Loading…</option></select></label>
+      <div class="row fr"><label class="fl">Test<select id="nsTest"><option value="">Loading…</option></select></label><button class="btn" id="nsPrev" title="Take the test the way students see it. Nothing is saved.">Preview</button>
         <label class="fl">After they submit<select id="nsReview"><option>Score only</option><option>Score + review</option><option>Nothing</option></select></label>
         <label class="fl">Note (optional)<input id="nsNote" maxlength="60" placeholder="for example 3rd period"></label>
         <button class="btn pri" id="nsGo">Make the session</button></div>
@@ -764,6 +764,8 @@ $('#msList').addEventListener('click',async e=>{ const b=e.target.closest('butto
 $('#msList').addEventListener('change',async e=>{ const x=e.target; if(!x.classList.contains('rv')) return; const id=x.closest('tr').dataset.sid;
   try{ await call('stcSessionSet',{id,review:x.value}); const s=DATA.sessions.find(t=>t.id===id); if(s) s.review=x.value; say($('#msMsg'),'Saved: students in '+id+' see “'+x.value+'” after they submit.','ok'); }
   catch(y){ say($('#msMsg'),errText(y),'err'); } });
+$('#nsPrev').onclick=()=>{ const id=$('#nsTest').value; if(!id) return say($('#nsMsg'),'Choose a test first.','err'); say($('#nsMsg'),'','');   /* the test as students see it, before giving it */
+  const t=(MP.tests||[]).find(x=>x.id===id); return t&&t.own?previewOwn(id):previewRepo(id); };
 $('#nsGo').onclick=async()=>{ const test=$('#nsTest').value; if(!test) return say($('#nsMsg'),'Choose a test first.','err');
   const b=$('#nsGo'); b.disabled=true; b.textContent='Setting up your class…'; say($('#nsMsg'),'Making the session and getting your roster ready. This can take up to a minute.','');
   try{ const r=await call('stcNewSession',{test,review:$('#nsReview').value,notes:$('#nsNote').value.trim()},150000);
