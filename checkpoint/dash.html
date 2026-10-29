@@ -448,7 +448,7 @@ details summary{cursor:pointer;color:var(--blue2);font-size:13px;margin-top:8px}
         <button class="btn pri" id="nsGo">Make the session</button></div>
       <div class="msg2" id="nsMsg"></div></section>
     <section class="tcard" id="mtCard"><h2>My tests</h2>
-      <p class="hint">Write your own questions (any subject), or build a test from released STAAR questions in the question bank. Your tests show up only in your own lists, not on the students' practice list.</p>
+      <p class="hint">Write your own questions (any subject), or build a test from released STAAR questions in the question bank. Each test is for one course: other teachers of that course can use it and make their own copy, but only you can change it. Tests stay off the students' practice list.</p>
       <div class="row"><button class="btn pri" id="mtOwn">Write my own test</button><button class="btn" id="mtBank">Make a test from the question bank</button><label class="hint" id="mtRevWrap" hidden><input type="checkbox" id="mtRev"> Check teachers' new tests before they can be used</label></div>
       <div id="mtList"></div><div class="msg2" id="mtMsg"></div></section>
     <section class="tcard"><h2>Print a test</h2>
@@ -503,7 +503,7 @@ details summary{cursor:pointer;color:var(--blue2);font-size:13px;margin-top:8px}
     <section class="tcard"><h2>Your test</h2>
       <div class="row fr" style="margin-top:0"><label class="fl oegrow">Title<input id="oeTitle" maxlength="80" placeholder="for example Unit 3 Quiz"></label>
         <label class="fl">Test ID<input id="oeId" maxlength="60" spellcheck="false" autocomplete="off"></label>
-        <label class="fl">Course<select id="oeCourse"></select></label></div>
+        <label class="fl" title="Teachers of this course can use this test and copy it. Only you can change it.">Course (who can use it)<select id="oeCourse"></select></label></div>
       <div class="row"><label class="sw" id="oeCalcWrap"><input type="checkbox" id="oeCalc" checked> Students can use the calculator and graph tool</label></div>
       <p class="hint" id="oeAbout">Students see your questions in the same testing screen as STAAR practice. The answers you mark stay in Mr. Spitzlberger's Google Sheet and never go to the students' computers, so a student can't look them up. Your tests show up only in your own lists.</p>
       <p class="hint oewarn" id="oeUsed" hidden></p></section>
@@ -721,9 +721,12 @@ function myTests(force){ if(MP.myP&&!force) return MP.myP;   // one request at a
   MP.myP=call('stcMyTests',{}).catch(()=>({tests:[],review:false,admin:false,old:true})).then(r=>MP.my=r); return MP.myP; }
 async function publishedTests(){ if(MP.tests) return MP.tests;
   const [L,M]=await Promise.all([campusTests(),myTests()]), admin=DATA&&DATA.me&&DATA.me.admin;
-  const mine=M.tests.filter(t=>t.status==='live'||(admin&&t.status!=='draft')).sort((a,b)=>(b.created||0)-(a.created||0))
-    .map(t=>({id:t.id,title:t.title+(admin&&t.by!==(DATA.me||{}).email?' · '+(t.name||t.by):'')+(t.status==='waiting'?' (waiting)':''),own:true}));
-  MP.tests=mine.concat(L); return MP.tests; }
+  const mine=M.tests.filter(t=>t.status==='live'||(admin&&t.status!=='draft')).sort((a,b)=>(a.shared?1:0)-(b.shared?1:0)||(b.created||0)-(a.created||0))
+    .map(t=>({id:t.id,title:t.title+(t.shared?' · '+(t.name||t.by):'')+(t.status==='waiting'?' (waiting)':''),own:true}));
+  const C=M.courses||[]; let camp=L;   /* a teacher sees the campus tests of their own courses (the Subject column on Teachers); blank sees them all */
+  if(!admin&&C.length){ await Promise.all(L.map(t=>loadMeta(t.id).catch(()=>{}))); camp=L.filter(t=>{ const c=campusCourse(t.id); return !c||C.includes(c); }); }
+  MP.tests=mine.concat(camp); return MP.tests; }
+function campusCourse(id){ const m=meta(id); let c=m&&m.course?oeCourseFor(m.course):''; if(c==='Other') c=''; return c||(/^alg1/.test(id)?'Algebra I':''); }
 async function openMySessions(){ openPage('#mpage'); MP.tests=null; myTests(true).then(renderMt); if(arc){ setArc(''); selSes=null; DATA=null; await loadSoon(); } renderMs(); $('#arcCard').hidden=!(DATA&&DATA.me&&DATA.me.admin);
   try{ const L=await publishedTests(), o='<option value="" hidden>Choose a test</option>'+L.map(t=>`<option value="${esc(t.id)}">${esc(t.title||t.id)}</option>`).join('');
     const keepPr=$('#prTest').value; $('#nsTest').innerHTML=o; $('#prTest').innerHTML=o; if(keepPr) $('#prTest').value=keepPr; }
@@ -834,15 +837,15 @@ $('#rpPrint').onclick=()=>{ document.body.classList.add('rpprint'); setTimeout((
 function renderMt(){ const M=MP.my, box=$('#mtList'); if(!M) return; const admin=M.admin;
   $('#mtRevWrap').hidden=!admin; $('#mtRev').checked=!!M.review;
   if(M.old){ box.innerHTML='<p class="hint">Making your own tests needs the latest Code.gs.</p>'; $('#mtBank').disabled=$('#mtOwn').disabled=true; return; } $('#mtBank').disabled=false; $('#mtOwn').disabled=!M.own;
-  const L=M.tests.slice().sort((a,b)=>((a.status==='waiting')?0:1)-((b.status==='waiting')?0:1)||(b.created||0)-(a.created||0));
+  const L=M.tests.slice().sort((a,b)=>(a.shared&&!admin?1:0)-(b.shared&&!admin?1:0)||((a.status==='waiting')?0:1)-((b.status==='waiting')?0:1)||(b.created||0)-(a.created||0));
   if(!L.length){ box.innerHTML='<p class="hint" style="margin-top:8px">'+(admin?'No teacher tests yet.':'You have not made a test yet.')+'</p>'; return; }
   const ST={live:'Ready',waiting:'Waiting for approval',draft:'Draft (not published)'};
   box.innerHTML=`<div style="overflow-x:auto;margin-top:8px"><table class="t"><tr><th>Test</th>${admin?'<th>Teacher</th>':''}<th>Questions</th><th>Made</th><th>Status</th><th></th></tr>${L.map(t=>`<tr data-tt="${esc(t.id)}">
-    <td><b>${esc(t.title)}</b><div class="rs">${esc(t.id)} · ${t.kind==='own'?'own questions':'question bank'}</div></td>${admin?`<td>${esc(t.name||t.by)}</td>`:''}<td>${t.n||''}</td><td class="rs">${esc(fmtDay(t.created))}</td>
-    <td><span class="op${t.status==='live'?'':' cl'}">${ST[t.status]||esc(t.status)}</span></td>
-    <td><div class="acts">${t.kind==='own'?'<button class="btn" data-te="1">Edit</button>':''}<button class="btn" data-tv="1">Preview</button>${admin&&t.status!=='draft'?`<button class="btn" data-ta="${t.status==='live'?'waiting':'live'}">${t.status==='live'?'Unapprove':'Approve'}</button>`:''}<button class="btn del" data-td="1">Delete</button></div></td></tr>`).join('')}</table></div>`; }
+    <td><b>${esc(t.title)}</b><div class="rs">${esc(t.id)} · ${t.kind==='own'?'own questions':'question bank'}${t.course?' · '+esc(t.course):''}</div></td>${admin?`<td>${esc(t.name||t.by)}</td>`:''}<td>${t.n||''}</td><td class="rs">${esc(fmtDay(t.created))}</td>
+    <td>${t.shared&&!admin?`<span class="op">Shared by ${esc(t.name||t.by)}</span>`:`<span class="op${t.status==='live'?'':' cl'}">${ST[t.status]||esc(t.status)}</span>`}</td>
+    <td><div class="acts">${t.shared&&!admin?(t.kind==='own'?'<button class="btn" data-tc="1">Make a copy</button>':'')+'<button class="btn" data-tv="1">Preview</button></div></td></tr>':''}${t.kind==='own'?'<button class="btn" data-te="1">Edit</button>':''}<button class="btn" data-tv="1">Preview</button>${admin&&t.status!=='draft'?`<button class="btn" data-ta="${t.status==='live'?'waiting':'live'}">${t.status==='live'?'Unapprove':'Approve'}</button>`:''}<button class="btn del" data-td="1">Delete</button></div></td></tr>`).join('')}</table></div>`; }
 $('#mtList').addEventListener('click',async e=>{ const b=e.target.closest('button'); if(!b) return; const id=b.closest('tr').dataset.tt, t=MP.my.tests.find(x=>x.id===id);
-  if(b.dataset.te){ b.disabled=true; try{ await oeOpen(id); }catch(x){ say($('#mtMsg'),errText(x),'err'); } b.disabled=false; return; }
+  if(b.dataset.te||b.dataset.tc){ b.disabled=true; try{ await oeOpen(id,!!b.dataset.tc); }catch(x){ say($('#mtMsg'),errText(x),'err'); } b.disabled=false; return; }
   if(b.dataset.tv) return t&&t.kind==='own'?previewOwn(id):previewRepo(id);
   if(b.dataset.td&&!await ask('Delete '+(t?t.title:id)+'?','<p>The test comes off GitHub and out of your lists'+(t&&t.kind==='own'?', and its questions and answers leave the Sheet':'')+'. Sessions already given with it keep their results, but students can no longer open it.</p>','Delete')) return;
   b.disabled=true;
@@ -1441,18 +1444,22 @@ function oeCount(){ if(!OE) return; const n=OE.items.length, p=OE.items.reduce((
 function oeFromSheet(it){ const ty=OE_TYPES[it.type]?it.type:'mc';
   if(it.bad){ const bl=oeBlank(ty), kind=v=>Array.isArray(v)?'a':v===null?'n':typeof v; it=Object.assign({},it,{type:ty}); Object.keys(it).forEach(k=>{ if(k in bl&&it[k]!=null&&kind(it[k])!==kind(bl[k])) delete it[k]; }); }
   try{ return oeEditable(it); }catch(e){ return Object.assign(oeBlank(ty),{text:typeof it.text==='string'?it.text:'',points:it.max||1,std:it.std||'',passage:it.passage||''}); } }
-async function oeOpen(id){
+async function oeOpen(id,copy){   /* copy: another teacher's test (or your own) becomes a new test of yours */
   let d=null; if(id){ d=await call('stcOwnGet',{id},60000); }
-  OE={isNew:!d, id:d?d.id:'', status:d?d.status:null, mine:d?d.mine:true, pics:{}, sent:new Set(), dirty:false,
-    passages:d?d.passages.slice():[], items:d?d.items.map(oeFromSheet):[oeBlank('mc')], sig0:d?d.items.map(it=>it.type).join():''};
-  $('#oeTitle').value=d?d.title:''; $('#oeId').value=d?d.id:''; $('#oeId').disabled=!!d; delete $('#oeId').dataset.touched;
+  const pics={}; if(d&&copy) await Promise.all([...new Set(d.items.filter(it=>it.pic&&it.pic.file).map(it=>it.pic.file))].map(async f=>{   /* its pictures come along */
+    const r=await siteGet('tests/'+d.id+'/img/'+f); if(!r.ok) throw new Error('Could not copy the picture '+f+'. Try again.');
+    const b=await r.blob(); pics[f]=await new Promise((ok,no)=>{ const fr=new FileReader(); fr.onload=()=>ok(fr.result); fr.onerror=no; fr.readAsDataURL(b); }); }));
+  const old=d; if(copy) d=Object.assign({},d,{id:'',status:null,mine:true,title:('Copy of '+d.title).slice(0,80)});
+  OE={isNew:!d||!!copy, id:d?d.id:'', status:d?d.status:null, mine:d?d.mine:true, pics, sent:new Set(), dirty:!!copy,
+    passages:d?d.passages.slice():[], items:d?d.items.map(oeFromSheet):[oeBlank('mc')], sig0:d&&!copy?d.items.map(it=>it.type).join():''};
+  $('#oeTitle').value=d?d.title:''; $('#oeId').value=d?d.id:''; $('#oeId').disabled=!!d&&!copy; delete $('#oeId').dataset.touched;
   $('#oeCourse').innerHTML=OE_COURSES.map(c=>`<option>${c}</option>`).join(''); $('#oeCourse').value=d?d.course:oeCourseFor((MP.my||{}).subject||'');
   $('#oeCalc').checked=d?d.calc!==false:true; oeCourseSync();
   const S=(DATA?DATA.sessions:[]).filter(s=>d&&s.test===d.id);
   $('#oeUsed').hidden=!S.length; $('#oeUsed').textContent=S.length?`Students have taken this test in ${plural(S.length,'session')}. If you change an answer, click Re-score on those sessions in Your sessions so their scores use the new answer.`:'';
-  $('#oeHead').textContent=d?(OE.mine?'Edit your test':'Look at a test'):'Write a test';
+  $('#oeHead').textContent=copy?'Your copy of '+old.title:d?(OE.mine?'Edit your test':'Look at a test'):'Write a test';
   const bad=d?d.items.filter(it=>it.bad):[]; say($('#oeMsg'),bad.length?bad.map(it=>`Question ${it.n} was changed in the Sheet: ${it.bad}`).join(' ')+' Fix '+(bad.length>1?'them':'it')+' here and save.':'',bad.length?'err':''); oeButtons(); oeRender(); openPage('#oepage'); $('#oepage .tbody').scrollTop=0;
-  if(!d) await oeIdAuto(); }
+  if(!d||copy) await oeIdAuto(); }
 function oeButtons(){ const out=OE.status&&OE.status!=='draft';
   $('#oeDraft').hidden=out||!OE.mine; $('#oePublish').hidden=!OE.mine; $('#oePublish').textContent=out?'Save changes':'Publish'; }
 function oeCourseSync(){ const rla=/RLA/.test($('#oeCourse').value); $('#oeCalcWrap').hidden=rla; }
