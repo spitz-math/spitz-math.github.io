@@ -516,7 +516,7 @@ details summary{cursor:pointer;color:var(--blue2);font-size:13px;margin-top:8px}
       <button class="btn" data-oeadd="num">Number answer</button><button class="btn" data-oeadd="text">Written answer</button></div>
       <div class="row"><b>Interactive:</b><button class="btn" data-oeadd="eq">Equation editor</button><button class="btn" data-oeadd="inline">Drop-down</button><button class="btn" data-oeadd="table">Table match</button>
       <button class="btn" data-oeadd="boxes">Drag into boxes</button><button class="btn" data-oeadd="graph">Plot a point</button><button class="btn" data-oeadd="graphline">Draw a line</button>
-      <button class="btn" data-oeadd="dnd">Drag into groups</button><button class="btn" data-oeadd="hotspot">Hot spot</button><button class="btn" data-oeadd="graphineq">Graph an inequality</button>
+      <button class="btn" data-oeadd="dnd">Drag into groups</button><button class="btn" data-oeadd="venn">Venn diagram</button><button class="btn" data-oeadd="hotspot">Hot spot</button><button class="btn" data-oeadd="graphineq">Graph an inequality</button>
       <button class="btn" data-oeadd="graphsys">Graph a system</button><button class="btn" data-oeadd="graphfunc">Graph a function</button><button class="btn" data-oeadd="graphexp">Graph an exponential curve</button>
       <button class="btn" data-oeadd="numline">Number line</button><button class="btn" data-oeadd="filltable">Fill in a table</button><button class="btn" data-oeadd="datadisp">Data display</button><button class="btn" data-oeadd="shade">Shade a model</button>
       <button class="btn" data-oeadd="figure">Draw a figure</button><button class="btn" data-oeadd="blanks">Fill in the blanks</button><button class="btn" data-oeadd="label">Label a picture</button><button class="btn" data-oeadd="order">Put in order</button><button class="btn" data-oeadd="hottext">Hot text</button><button class="btn" data-oeadd="twopart">Two-part</button></div></section>
@@ -865,8 +865,8 @@ $('#mtBank').onclick=async()=>{ const b=$('#mtBank'); b.disabled=true;
 
 /* ---------- write a test: a teacher's own questions (stcOwnGet / stcOwnSave). The answers stay in the Sheet; GitHub gets the test without them. ---------- */
 const OE_COURSES=['6th Math','7th Math','8th Math','Algebra I','6th RLA','7th RLA','8th RLA','8th Science','8th History','Other'];
-const OE_TYPES={mc:'Multiple choice',ms:'Check all that apply',num:'Number answer',eq:'Equation editor',inline:'Drop-down',table:'Table match',boxes:'Drag into boxes',graph:'Plot a point',graphline:'Draw a line',dnd:'Drag into groups',hotspot:'Hot spot',graphineq:'Graph an inequality',graphsys:'Graph a system of inequalities',graphfunc:'Graph a function',graphexp:'Graph an exponential curve',numline:'Number line',filltable:'Fill in a table',datadisp:'Data display',shade:'Shade a model',figure:'Draw a figure',blanks:'Fill in the blanks',label:'Label a picture',order:'Put in order',hottext:'Hot text',twopart:'Two-part',text:'Written answer'};
-const OE_PTS={mc:1,ms:2,num:1,eq:1,inline:1,table:2,boxes:2,graph:1,graphline:1,dnd:1,hotspot:1,graphineq:1,graphsys:2,graphfunc:1,graphexp:1,numline:1,filltable:1,datadisp:1,shade:1,figure:1,blanks:1,label:1,order:1,hottext:1,twopart:2,text:2}, OE_L='ABCDEFGHIJKL';
+const OE_TYPES={mc:'Multiple choice',ms:'Check all that apply',num:'Number answer',eq:'Equation editor',inline:'Drop-down',table:'Table match',boxes:'Drag into boxes',graph:'Plot a point',graphline:'Draw a line',dnd:'Drag into groups',venn:'Venn diagram',hotspot:'Hot spot',graphineq:'Graph an inequality',graphsys:'Graph a system of inequalities',graphfunc:'Graph a function',graphexp:'Graph an exponential curve',numline:'Number line',filltable:'Fill in a table',datadisp:'Data display',shade:'Shade a model',figure:'Draw a figure',blanks:'Fill in the blanks',label:'Label a picture',order:'Put in order',hottext:'Hot text',twopart:'Two-part',text:'Written answer'};
+const OE_PTS={mc:1,ms:2,num:1,eq:1,inline:1,table:2,boxes:2,graph:1,graphline:1,dnd:1,venn:1,hotspot:1,graphineq:1,graphsys:2,graphfunc:1,graphexp:1,numline:1,filltable:1,datadisp:1,shade:1,figure:1,blanks:1,label:1,order:1,hottext:1,twopart:2,text:2}, OE_L='ABCDEFGHIJKL';
 const OE_SYM='≤ ≥ ≠ ± × ÷ − · π √ ∛ ° ² ³ ½ ⅓ ¼ ¾ ∠ △ ⊥ ∥ ≈ ∞ → ↔ ¢ á é í ó ú ñ ¿ ¡ “ ” —'.split(' ');
 let OE=null;
 function oeCourseFor(subject){ const s=String(subject||'').toLowerCase(), g=(s.match(/\b([678])(?:th)?\b/)||[])[1];
@@ -898,7 +898,7 @@ function oeBlank(type){ const it={type,text:'',points:OE_PTS[type],std:'',passag
   if(type==='eq'){ it.lead=''; it.answer=''; } if(type==='inline'){ it.sent=''; it.drops=[]; it.answer=[]; }
   if(type==='table'){ it.head=''; it.cols=['','']; it.rows=['','']; it.answer=[null,null]; } if(type==='boxes'){ it.tpl=''; it.tiles=['','','','']; it.answer=[]; it.reuse=false; it.unordered=false; }
   if(type==='graph'){ it.R=10; it.answer=null; } if(type==='graphline'){ it.R=10; it.answer=[]; }
-  if(type==='dnd'){ it.zones=['','']; it.tiles=['','','','']; it.answer=[null,null,null,null]; } if(type==='hotspot'){ it.mode='grid'; it.R=10; it.spots=[]; it.answer=[]; } if(type==='graphineq'){ it.R=10; it.answer=[]; it.op='>='; }
+  if(type==='dnd'){ it.zones=['','']; it.tiles=['','','','']; it.answer=[null,null,null,null]; } if(type==='venn'){ it.kind='nested'; it.sets=['','','']; it.out=''; it.tiles=['','','','']; it.answer=[null,null,null,null]; } if(type==='hotspot'){ it.mode='grid'; it.R=10; it.spots=[]; it.answer=[]; } if(type==='graphineq'){ it.R=10; it.answer=[]; it.op='>='; }
   if(type==='graphsys'){ it.R=10; it.ineqs=[{pts:[],op:'>='},{pts:[],op:'<'}]; it.act=0; } if(type==='graphfunc'){ it.f='quadratic'; it.pts=[]; it.asym=0; } if(type==='graphexp'){ it.R=10; it.pts=[]; }
   if(type==='numline'){ it.mode='points'; it.from='-5'; it.to='5'; it.step='1'; it.lab=1; it.answer=[]; it.ineq={k:null,closed:true,dir:0}; }
   if(type==='filltable'){ it.head=['','']; it.cells=[['',''],['',''],['','']]; it.blank=[[false,false],[false,false],[false,false]]; }
@@ -1065,6 +1065,30 @@ function oeAnsMore(it,i,ans,redo){ const t=it.type, inp=(cls,v,ph,lbl)=>`<input 
     ans.addEventListener('click',e=>{ const x=e.target.closest('button'); if(!x||x.closest('.oerich')) return;
       if(x.dataset.rz){ const k=+x.dataset.rz; it.zones.splice(k,1); it.answer=it.answer.map(a=>a===k?null:a>k?a-1:a); }
       else if(x.dataset.az) it.zones.push('');
+      else if(x.dataset.rt){ const j=+x.dataset.rt; it.tiles.splice(j,1); it.answer.splice(j,1); }
+      else if(x.dataset.at){ it.tiles.push(''); it.answer.push(null); }
+      else return; oeDirty(); redo(); });
+  } else if(t==='venn'){
+    const nest=it.kind==='nested'||it.kind==='squares', Z=oeVennZones(it), zl=k=>(k+1)+': '+(Z[k]||'Region '+(k+1));
+    ans.innerHTML=`<div class="oesub">Diagram</div><select class="vk" aria-label="Kind of Venn diagram">${[['nested','Ovals inside each other (like Rational › Integers › Whole)'],['squares','Rectangles inside each other (like a Real Number System chart)'],['two','Two overlapping circles'],['three','Three overlapping circles']].map(([k,l])=>`<option value="${k}"${k===it.kind?' selected':''}>${l}</option>`).join('')}</select>
+      <div class="oesub">${nest?'Sets, biggest (outside oval) first':'Circle names'}</div><div class="oezones">${it.sets.map((z,k)=>`<div class="oech"><span class="mark">${nest?k+1:OE_L[k]}</span><input class="vs" value="${esc(z)}" placeholder="${nest?['Like Rational Numbers','Like Integers','Like Whole Numbers','Like Natural Numbers'][k]:'Like Multiples of '+(k+2)}" aria-label="Set ${k+1} name">${nest?`<button type="button" class="rm" data-rs="${k}"${it.sets.length<=2?' disabled':''} title="Remove set ${k+1}">✕</button>`:''}</div>`).join('')}</div>
+      ${nest&&it.sets.length<4?'<button type="button" class="btn" data-as="1" style="margin-top:6px">+ Add a set inside</button>':''}
+      <div class="oesub">${it.kind==='squares'?'Box beside the rectangles (optional)':'Outside region (optional)'}</div><div class="oech"><input class="vo" value="${esc(it.out)}" placeholder="${nest?'Like Irrational Numbers':'Like Neither'}. Leave blank for none." aria-label="Outside region name"></div>
+      <div class="oesub">Tiles · pick each tile's correct region</div><div class="oetiles"></div>
+      ${it.tiles.length<12?'<button type="button" class="btn" data-at="1" style="margin-top:6px">+ Add a tile</button>':''}<p class="hint">${nest?'Each tile goes in the smallest set it belongs to. ':''}Students drag every tile into the diagram. The question is right when every tile is in its correct region.</p>`;
+    const relabel=()=>{ const Z2=oeVennZones(it); ans.querySelectorAll('select.tz').forEach(sel=>{ const v=sel.value; sel.innerHTML='<option value="">Region…</option>'+Z2.map((z,k)=>`<option value="${k}">${esc((k+1)+': '+(z||'Region '+(k+1)))}</option>`).join(''); if(+v<Z2.length) sel.value=v; }); };
+    ans.querySelectorAll('input.vs').forEach((x,k)=>x.oninput=()=>{ it.sets[k]=x.value; oeDirty(); relabel(); });
+    const vo=ans.querySelector('input.vo'); vo.oninput=()=>{ const had=!!it.out.trim(); it.out=vo.value; if(had&&!it.out.trim()){ const n=oeVennZones(it).length; it.answer=it.answer.map(a=>a>=n?null:a); } oeDirty(); if(had!==!!it.out.trim()) relabel(); };
+    ans.querySelector('select.vk').onchange=e=>{ const was=it.kind==='nested'||it.kind==='squares'; it.kind=e.target.value; const now=it.kind==='nested'||it.kind==='squares';
+      it.sets=it.kind==='two'?it.sets.slice(0,2):it.kind==='three'?it.sets.slice(0,3):it.sets.slice(0,4); while(it.sets.length<(it.kind==='two'?2:3)) it.sets.push(''); if(!(was&&now)) it.answer=it.answer.map(()=>null);   /* ovals <-> rectangles keep the answers */ oeDirty(); redo(); };
+    const tl=ans.querySelector('.oetiles');
+    it.tiles.forEach((c,j)=>{ const row=document.createElement('div'); row.className='oech'; row.innerHTML=`<span class="mark">${OE_L[j]}</span>`;
+      const r=oeRich(c,'Tile '+OE_L[j]+', like -12 or 3/4','mini',()=>{ it.tiles[j]=r.html(); oeDirty(); }); row.appendChild(r);
+      row.insertAdjacentHTML('beforeend',`<select class="tz" aria-label="Tile ${OE_L[j]} region"><option value="">Region…</option>${Z.map((z,k)=>`<option value="${k}"${it.answer[j]===k?' selected':''}>${esc(zl(k))}</option>`).join('')}</select><button type="button" class="rm" data-rt="${j}"${it.tiles.length<=2?' disabled':''} title="Remove tile ${OE_L[j]}">✕</button>`);
+      row.querySelector('select').onchange=e=>{ it.answer[j]=e.target.value===''?null:+e.target.value; oeDirty(); }; tl.appendChild(row); });
+    ans.addEventListener('click',e=>{ const x=e.target.closest('button'); if(!x||x.closest('.oerich')) return;
+      if(x.dataset.rs){ const k=+x.dataset.rs; it.sets.splice(k,1); const n=it.sets.length; it.answer=it.answer.map(a=>a==null?null:a===k?null:a>k?a-1:a); }
+      else if(x.dataset.as){ const n=it.sets.length; it.sets.push(''); it.answer=it.answer.map(a=>a!=null&&a>=n?a+1:a); }   /* the outside region moves down one */
       else if(x.dataset.rt){ const j=+x.dataset.rt; it.tiles.splice(j,1); it.answer.splice(j,1); }
       else if(x.dataset.at){ it.tiles.push(''); it.answer.push(null); }
       else return; oeDirty(); redo(); });
@@ -1277,6 +1301,11 @@ function oeAnsMore(it,i,ans,redo){ const t=it.type, inp=(cls,v,ph,lbl)=>`<input 
       if(it[ch].length<8){ const b=document.createElement('button'); b.type='button'; b.className='btn'; b.style.marginTop='6px'; b.textContent='+ Add a choice'; b.onclick=()=>{ it[ch].push(''); oeDirty(); redo(); }; host.appendChild(b); } };
     part('a',ans.querySelector('.tpa')); part('b',ans.querySelector('.tpb'));
   } }
+/* a Venn diagram's regions (the groups students drag into), as Code.gs names them: nested, the smallest set (outermost first);
+   two, A only, B only, A and B; three, each one only, each pair only, all three; then the outside region when it has a name */
+function oeVennZones(v){ const S=v.sets, Z=v.kind==='two'?[S[0]+' only',S[1]+' only',S[0]+' and '+S[1]]
+    :v.kind==='three'?[S[0]+' only',S[1]+' only',S[2]+' only',S[0]+' and '+S[1]+' only',S[0]+' and '+S[2]+' only',S[1]+' and '+S[2]+' only',S[0]+', '+S[1]+' and '+S[2]]:S.slice();
+  if(String(v.out||'').trim()) Z.push(v.out); return Z; }
 /* server shape -> editor shape (plain text where the editor uses plain boxes; marks as [1], [2] …) */
 function oeEditable(it){ const o=Object.assign({},it,{points:it.max});
   if(it.type==='inline'){ o.sent=oeToMarks(it.sent); o.drops=(it.drops||[]).map(d=>d.map(oeDe)); o.answer=(it.answer||[]).slice(); }
@@ -1284,7 +1313,8 @@ function oeEditable(it){ const o=Object.assign({},it,{points:it.max});
   if(it.type==='table'){ o.head=oeDe(it.head); o.cols=(it.cols||[]).map(oeDe); o.rows=(it.rows||[]).map(oeDe); o.answer=(it.answer||[]).slice(); }
   if(it.type==='graphline') o.answer=(it.answer||[]).map(P=>P.slice());
   if(it.type==='eq') o.lead=it.lead||'';
-  if(it.type==='dnd'){ o.zones=(it.zones||[]).map(oeDe); o.tiles=(it.tiles||[]).slice(); o.answer=(it.answer||[]).slice(); }
+  if(it.type==='dnd'&&it.venn){ const v=it.venn; o.type='venn'; o.kind=v.kind||'nested'; o.sets=(v.sets||[]).map(oeDe); o.out=oeDe(v.out||''); delete o.venn; delete o.zones; o.tiles=(it.tiles||[]).slice(); o.answer=(it.answer||[]).slice(); }
+  else if(it.type==='dnd'){ o.zones=(it.zones||[]).map(oeDe); o.tiles=(it.tiles||[]).slice(); o.answer=(it.answer||[]).slice(); }
   if(it.type==='hotspot'){ o.spots=(it.spots||[]).map(P=>P.slice()); o.answer=(it.answer||[]).slice(); o.R=it.R||10; }
   if(it.type==='graphineq'){ o.answer=(it.answer||[]).slice(0,2).map(P=>P.slice()); o.op=(it.answer||[])[2]||'>='; }
   if(it.type==='graphsys'){ o.ineqs=(it.answer||[]).map(g=>({pts:[g[0].slice(),g[1].slice()],op:g[2]})); o.act=0; }
@@ -1315,6 +1345,7 @@ function oeOut(it){ const o={type:it.type,text:it.text,points:+it.points,std:it.
   else if(t==='graph'){ o.R=it.R; o.answer=it.answer; }
   else if(t==='graphline'){ o.R=it.R; o.answer=it.answer; }
   else if(t==='dnd'){ o.zones=it.zones.map(esc); o.tiles=it.tiles; o.answer=it.answer; }
+  else if(t==='venn'){ o.type='dnd'; o.venn={kind:it.kind,sets:it.sets.map(esc),out:esc(it.out.trim())}; o.zones=oeVennZones(o.venn); o.tiles=it.tiles; o.answer=it.answer; }
   else if(t==='hotspot'){ o.mode=it.mode; o.R=it.R; o.spots=it.spots; o.answer=it.answer; }
   else if(t==='graphineq'){ o.R=it.R; o.answer=it.answer; o.op=it.op; }
   else if(t==='graphsys'){ o.R=it.R; o.answer=it.ineqs.map(q=>[q.pts[0],q.pts[1],q.op]); }
@@ -1345,6 +1376,7 @@ function oeCheckMore(it,q,P,i){ const t=it.type, once=(s,n,w)=>{ const L=oeLabel
     if(!it.reuse&&it.answer.some((a,k)=>a!=null&&it.answer.indexOf(a)!==k)) P.push([i,q+'a tile is used twice. Tick "Tiles can be used more than once" or pick another tile.']); }
   if(t==='graph'&&!it.answer) P.push([i,q+'click the correct point on the grid.']);
   if(t==='graphline'&&it.answer.length<2) P.push([i,q+'click two points on the correct line.']);
+  if(t==='venn'){ it.sets.forEach((z,k)=>{ if(!String(z).trim()) P.push([i,q+'set '+(k+1)+' needs a name.']); }); it.tiles.forEach((c,j)=>{ if(!oePlain(c)) P.push([i,q+'tile '+OE_L[j]+' is blank.']); if(it.answer[j]==null) P.push([i,q+'pick the correct region for tile '+OE_L[j]+'.']); }); }
   if(t==='dnd'){ it.zones.forEach((z,k)=>{ if(!String(z).trim()) P.push([i,q+'group '+(k+1)+' needs a name.']); }); it.tiles.forEach((c,j)=>{ if(!oePlain(c)) P.push([i,q+'tile '+OE_L[j]+' is blank.']); if(it.answer[j]==null) P.push([i,q+'pick the correct group for tile '+OE_L[j]+'.']); }); }
   if(t==='hotspot'){ if(it.mode==='pic'&&!it.pic) P.push([i,q+'add a picture for the spots to go on.']); else if(it.spots.length<2) P.push([i,q+'click to place at least 2 spots.']);
     else if(!it.answer.length) P.push([i,q+'mark the correct spot (click it so it turns green).']); else if(it.answer.length===it.spots.length) P.push([i,q+'at least one spot has to be wrong.']); }
@@ -1380,7 +1412,7 @@ function oeJsMore(it,J){ const t=it.type, o=[];
   if(t==='table'){ o.push('cols:'+J(it.cols),'rows:'+J(it.rows),'answer:'+J(it.answer)); if(it.head) o.push('head:'+J(it.head)); }
   if(t==='boxes'){ o.push('tpl:'+J(it.tpl),'tiles:'+J(it.tiles.map(c=>c||'&nbsp;')),'flow:true','answer:'+J(it.answer)); if(it.reuse) o.push('reuse:true'); if(it.unordered) o.push('unordered:true'); }
   if(t==='graph') o.push('R:'+it.R,'answer:'+J(it.answer||[99,99]));
-  if(t==='dnd') o.push('zones:'+J(it.zones),'tiles:'+J(it.tiles.map(c=>c||'&nbsp;')),'answer:'+J(it.answer),'hint:'+J('Drag each tile into its group, or click a tile and then click a group. Drag it back up to remove it.'));
+  if(t==='dnd'){ o.push('zones:'+J(it.zones),'tiles:'+J(it.tiles.map(c=>c||'&nbsp;')),'answer:'+J(it.answer),'hint:'+J(it.venn?'Drag each tile into its place in the diagram, or click a tile and then click a region. Drag it back up to remove it.':'Drag each tile into its group, or click a tile and then click a group. Drag it back up to remove it.')); if(it.venn) o.push('venn:'+J(it.venn)); }
   if(t==='hotspot'){ o.push('spots:'+J(it.spots),'answer:'+J(it.answer.length===1?it.answer[0]:it.answer)); if(it.answer.length>1) o.push('pick:'+it.answer.length); if(it.mode==='pic'&&it.pic) o.push('img:ASSET('+J('img/'+it.pic.file)+')','imgw:'+it.pic.w); else o.push('R:'+it.R); }
   if(t==='graphsys'){ o.push('R:'+it.R); const ok=it.answer.every(g=>g[0]&&g[1]&&g[0][0]!==g[1][0]); o.push('ineqs:'+J(ok?it.answer.map(g=>{ const m=(g[1][1]-g[0][1])/(g[1][0]-g[0][0]); return {m,b:g[0][1]-m*g[0][0],op:g[2]}; }):[{m:0,b:99,op:'>'},{m:1,b:99,op:'>'}])); }
   if(t==='graphfunc'){ const a=it.answer, good=oeCurve(a.f,a.p,a.asym); o.push(good?'ftype:'+J(a.f)+',asym:'+a.asym+',kp:'+J(a.p):'ftype:"linear",asym:0,kp:[[0,99],[1,99]]'); }
@@ -1956,7 +1988,7 @@ function renderQues(L,tests){
     if(top){ const vary=QV_GRAPH.test(mi.type||(it&&it.type)||'')&&top.names.length===1&&wrong.length>1;
       wa=vary?`<span class="rs">Answers vary (${wrong.reduce((a,G)=>a+G.names.length,0)} students)</span>`:`<b>${esc(qvAns(it,top.a))}</b><span class="rs">${top.names.length} of ${r.cnt} student${r.cnt===1?'':'s'} (${Math.round(100*top.names.length/r.cnt)}%)${top.pts>0?' · partly correct':''}</span>`; }
     else if(!anyAns) wa='<span class="rs">–</span>';
-    h+=`<tr class="qr${open?' open':''}" data-q="${r.i}" tabindex="0" aria-expanded="${open}"><td class="qn"><span class="car">${open?'▾':'▸'}</span>${r.i+1}</td><td class="hidesm">${esc(qi.teks)} <span class="rs">${esc(qi.rs)}</span></td><td class="hidesm rs">${esc(QV_TYPES[mi.type]||mi.type||'')}</td><td>${pctBar(r.e,r.mx)}</td><td class="n">${r.blank.length||(subOnly?0:'–')}</td><td class="wa">${wa}</td></tr>`;
+    h+=`<tr class="qr${open?' open':''}" data-q="${r.i}" tabindex="0" aria-expanded="${open}"><td class="qn"><span class="car">${open?'▾':'▸'}</span>${r.i+1}</td><td class="hidesm">${esc(qi.teks)} <span class="rs">${esc(qi.rs)}</span></td><td class="hidesm rs">${esc(mi.venn?'Venn diagram':QV_TYPES[mi.type]||mi.type||'')}</td><td>${pctBar(r.e,r.mx)}</td><td class="n">${r.blank.length||(subOnly?0:'–')}</td><td class="wa">${wa}</td></tr>`;
     if(open){ const nm=L=>L.slice().sort((a,b)=>String(a.name).localeCompare(String(b.name))).map(x=>esc(x.name)+(x.period&&x.period!=='G'?' ('+esc(x.period)+')':'')).join(', ');
       const gl=r.groups.map(G=>{ const c=!G.k?'bl':G.pts>=G.max?'ok':G.pts>0?'part':'no', mark=c==='ok'?'✓ ':c==='part'?'◐ ':c==='no'?'✗ ':'';
           return `<div class="al ${c}">${mark}${esc(G.k?qvAns(it,G.a):'Answer not available')}${c==='part'?` <span class="rs">(${G.pts} of ${G.max})</span>`:''}</div><div class="ac">${G.names.length}</div><div class="an">${nm(G.names)}</div>`; }).join('')
