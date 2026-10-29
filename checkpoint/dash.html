@@ -2616,19 +2616,21 @@ const TEKS8=[['8.2A',1,0,'Sets and subsets of real numbers'],['8.2B',1,0,'Approx
 const COURSES={alg1:{name:'Algebra I',course:'Algebra I',ref:'alg1',cats:CATNAMES,re:/^alg1-20\d\d$/,src:'STAAR Algebra I',title:'Algebra I Practice'},
   math8:{name:'Grade 8 Math',course:'8th Math',ref:'math8',cats:CAT8,re:/^math8-20\d\d$/,src:'STAAR Grade 8 Math',title:'Grade 8 Math Practice'},
   rla8:{name:'Grade 8 Reading',course:'8th RLA',subject:'rla',cats:{1:'Reading',2:'Writing'},re:/^rla8-20\d\d$/,src:'STAAR Grade 8 Reading',title:'Grade 8 Reading Practice'}};
-/* Grade 8 Reading: the standards list is made from the released tests' own tags (TEKS, readiness, category), so a new test adds its standards.
-   Short labels follow the current Grade 8 ELAR TEKS (19 TAC 110.24); the test keeps TEA's codes (6.C, 8.Diii, 10.Dvii). */
-const RLA8LAB={'2.A':'Use print or digital resources','2.B':'Use context to clarify word meanings','2.C':'Greek and Latin roots','5.E':'Make connections to experiences, texts, and society',
-  '5.F':'Make inferences and use evidence','5.G':'Evaluate details to find key ideas','5.H':'Synthesize information','6.A':'Describe personal connections','6.B':'Write responses comparing ideas across sources',
-  '6.C':'Use text evidence to support a response','6.D':'Paraphrase and summarize','6.E':'Interact with sources meaningfully','7.A':'Analyze how themes develop','7.B':'Characters\u2019 motivations and behaviors',
-  '7.C':'Plot elements: foreshadowing and suspense','7.D':'How setting influences characters','8.A':'Literary genres','8.B':'Poetry: form and structure','8.C':'Drama: structure and how it advances plot',
-  '8.D':'Informational text: characteristics and structure','8.Di':'Informational text: controlling idea and evidence','8.Dii':'Informational text: features','8.Diii':'Informational text: organizational patterns',
-  '8.E':'Argumentative text','8.Ei':'Argument: identify the claim','8.Eii':'Argument: how facts support or oppose','8.Eiii':'Argument: intended audience','8.F':'Multimodal and digital texts',
-  '9.A':'Author\u2019s purpose and message','9.B':'Use of print and graphic features','9.C':'Text structure and author\u2019s purpose','9.D':'Figurative language','9.E':'Rhetorical devices and argument',
-  '9.F':'Language and mood, voice, tone','9.G':'Rhetorical devices and logical fallacies','10.B':'Develop drafts','10.Bi':'Drafts: purposeful structure (intro, transitions, conclusion)',
-  '10.Bii':'Drafts: develop ideas with facts and details','10.C':'Revise for clarity, development, organization, style','10.D':'Edit for standard English conventions',
-  '10.Di':'Edit: complete complex sentences','10.Dii':'Edit: verb tense and voice','10.Diii':'Edit: prepositions and subject-verb agreement','10.Div':'Edit: pronoun-antecedent agreement',
-  '10.Dv':'Edit: capitalization','10.Dvi':'Edit: punctuation (commas, semicolons)','10.Dvii':'Edit: spelling, commonly confused terms','12.B':'Informational essay','12.C':'Argumentative essay'};
+/* Grade 8 Reading: every STAAR-tested Grade 8 ELAR standard (TEA's TEKS Snapshot, v. 7.17.25: code, readiness, short label). The topic
+   (1 Reading, 2 Writing) comes from the released tests' own tags, else writing for 10 and 11. Codes are written like the tests (6.C, 8.Diii, 10.Dvii). */
+const RLA8STD=[['2.A',0,'Print or digital resources (meaning, origin, part of speech)'],['2.B',1,'Use context to clarify unfamiliar words'],['2.C',0,'Greek and Latin roots'],
+  ['5.C',0,'Make and correct or confirm predictions'],['5.E',1,'Make connections to experiences, texts, and society'],['5.F',1,'Make inferences and use evidence'],
+  ['5.G',1,'Evaluate details to determine key ideas'],['5.H',1,'Synthesize information'],['6.B',1,'Write responses comparing sources'],['6.C',1,'Use text evidence to support a response'],
+  ['6.D',1,'Paraphrase and summarize'],['7.A',0,'How themes develop through characters and events'],['7.B',1,'Characters\u2019 motivations and behaviors'],
+  ['7.C',1,'Non-linear plot: flashbacks, foreshadowing, subplots'],['7.D',0,'How setting influences characters'],['8.A',0,'Literary genres'],
+  ['8.B',0,'Poetry: punctuation and line length'],['8.C',0,'Drama: acts and scenes'],['8.Di',1,'Informational: controlling idea or thesis'],
+  ['8.Dii',0,'Informational: footnotes, endnotes, citations'],['8.Diii',0,'Informational: organizational patterns'],['8.Ei',1,'Argument: identify the claim'],
+  ['8.Eii',1,'Argument: the counterargument'],['8.Eiii',0,'Argument: intended audience'],['9.A',1,'Author\u2019s purpose and message'],['9.B',0,'Text structure and author\u2019s purpose'],
+  ['9.C',0,'Print and graphic features'],['9.D',0,'Figurative language'],['9.E',0,'Literary devices: point of view, irony'],['9.F',0,'Language and mood, voice, tone'],
+  ['9.G',0,'Rhetorical devices and logical fallacies'],['10.Bi',1,'Drafts: purposeful structure'],['10.Bii',1,'Drafts: develop ideas with facts and details'],
+  ['10.C',1,'Revise for clarity, organization, style, word choice'],['10.D',0,'Edit for standard English conventions'],['10.Di',1,'Edit: complete complex sentences'],
+  ['10.Dii',1,'Edit: verb tenses and voice'],['10.Diii',0,'Edit: prepositional phrases, subject-verb agreement'],['10.Div',0,'Edit: pronoun-antecedent agreement'],
+  ['10.Dv',0,'Edit: capitalization'],['10.Dvi',0,'Edit: punctuation'],['10.Dvii',1,'Edit: spelling, commonly confused words'],['11.B',1,'Informational essay'],['11.C',1,'Argumentative essay']];
 let RLA8=[];
 const teksNum=k=>{ const m=String(k).match(/^(\d+)\.([A-Z])(viii|vii|vi|iv|v|iii|ii|i)?$/i); if(!m) return [999,k]; const R={'':0,i:1,ii:2,iii:3,iv:4,v:5,vi:6,vii:7,viii:8}; return [+m[1]*1000+m[2].charCodeAt(0)*10+(R[(m[3]||'').toLowerCase()]||0),k]; };
 const BANKURL=()=>(TP.gh&&TP.gh.pages||ROOT).replace(/checkpoint\/?$/,'')+'warmup/index.html';
@@ -2752,7 +2754,8 @@ async function loadTests(){ const ids=[...new Set(TP.index.map(t=>t.id).concat(t
       else if(course!=='alg1') item.bid=(course==='rla8'?'rr8:':'r8:')+year+'#'+q;   // Grade 8 Math r8:<year>#<Q>, Grade 8 Reading rr8:<year>#<Q>
       const labs=td.rationale&&td.rationale[q];
       return {uid:'t:'+id+'#'+q, from:'test', test:id, course, year, q, pr:P?1:0, ylabel:P?P.label:'', bid:item.bid, std:teksKey(it.teks), item, psg, psgKey:psg?item.passage:null, rat:labs&&labs.length?labs.slice():null}; }).filter(Boolean); }));
-  const R={}; Object.values(QB.tests).flat().filter(e=>e.course==='rla8').forEach(e=>{ const r=R[e.std]||(R[e.std]={k:e.std,cat:+e.item.cat||1,r:e.item.rs==='Readiness',label:RLA8LAB[e.std]||'',bank:[],gens:0}); if(e.item.rs==='Readiness') r.r=true; });
+  const R={}; RLA8STD.forEach(([k,r,label])=>R[k]={k,cat:/^1[01]\./.test(k)?2:1,r:!!r,label,bank:[],gens:0});
+  Object.values(QB.tests).flat().filter(e=>e.course==='rla8').forEach(e=>{ const r=R[e.std]||(R[e.std]={k:e.std,r:e.item.rs==='Readiness',label:'',bank:[],gens:0}); if(+e.item.cat) r.cat=+e.item.cat; });
   RLA8=Object.values(R).sort((a,b)=>(a.cat-b.cat)||(teksNum(a.k)[0]-teksNum(b.k)[0]));
   if(BK.ready) bankReady(); }
 /* one standard's released questions from the question bank file, converted to the player's format (cached) */
