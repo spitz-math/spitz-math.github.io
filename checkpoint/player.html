@@ -211,7 +211,7 @@ td:has(>.gcell){cursor:pointer}
 
 /* drag and drop */
 .bank{display:flex;flex-wrap:wrap;gap:10px;min-height:3.4em;padding:12px;border:2px dashed var(--line);border-radius:8px;margin:6px 0 14px;background:var(--surface-2)}
-.bank:empty::before{content:"All equations placed";color:var(--muted);font-size:.85em;align-self:center}
+.bank:empty::before{content:"All tiles placed";color:var(--muted);font-size:.85em;align-self:center}
 .zones{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px}
 .dz{border:2px solid var(--muted);border-radius:8px;min-height:9em;display:flex;flex-direction:column}
 .dz h4{margin:0;padding:.4em .7em;background:var(--surface-2);border-bottom:1px solid var(--line);font-size:.9em;border-radius:6px 6px 0 0}
@@ -1319,7 +1319,7 @@ function buildDnD(it,root){
     if(V&&zones.contains(tgt)){ const b=zones.querySelector('svg').getBoundingClientRect(), k=V.zoneAt((x-b.left)/b.width*V.W,(y-b.top)/b.height*V.H); return k<0?null:zones.querySelector(`.dz[data-zone="${k}"]`); }
     return tgt.closest('.dz,.bank'); };
   const over=z=>{ document.querySelectorAll('.over').forEach(o=>o.classList.remove('over')); if(V) zones.querySelectorAll('.vr').forEach(r=>r.classList.toggle('on',!!z&&r.dataset.zone===z.dataset.zone)); if(z) z.classList.add('over'); };
-  const hint=document.createElement('p'); hint.className='hint'; hint.textContent=it.hint||'Drag an equation into a box, or tap an equation and then tap a box. Drag it back up to remove it.';
+  const hint=document.createElement('p'); hint.className='hint'; hint.textContent=it.hint||'Drag a tile into a box, or tap a tile and then tap a box. Drag it back up to remove it.';
   let picked=null;
   const place=(tile,zone)=>{
     const a=S.answers[id]||{};
