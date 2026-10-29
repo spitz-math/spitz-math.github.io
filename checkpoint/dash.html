@@ -1432,21 +1432,25 @@ function oeEqFn(s) { try { return new Function('X', 'return ' + oeEqJs(oeEqParse
 function oeSlug(s){ return String(s).toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'').slice(0,40); }
 async function oeTaken(){ const L=await campusTests().catch(()=>[]); return new Set(L.map(t=>t.id).concat(((MP.my||{}).tests||[]).map(t=>t.id))); }
 async function oeIdAuto(){ if(!OE||!OE.isNew||$('#oeId').dataset.touched) return; const taken=await oeTaken();
-  let base=oeSlug($('#oeTitle').value)||'my-test'; if(base.length<3) base+='-test'; let id=base, n=2; while(taken.has(id)) id=base+'-'+(n++); $('#oeId').value=id; }
+  let base=oeSlug($('#oeTitle').value.replace(/<[^>]*>/g,' '))||'my-test'; if(base.length<3) base+='-test'; let id=base, n=2; while(taken.has(id)) id=base+'-'+(n++); $('#oeId').value=id; }
 function oeDirty(){ if(OE) OE.dirty=true; oeCount(); }
 function oeCount(){ if(!OE) return; const n=OE.items.length, p=OE.items.reduce((a,it)=>a+(+it.points||0),0); $('#oeCount').textContent=plural(n,'question')+(n?' · '+plural(p,'point'):''); }
 /* open the editor: a new test, or one of the teacher's own (id) */
+/* a question as the server sends it -> the editor's; one changed by hand in the Sheet (it.bad) keeps only the parts shaped as the editor expects */
+function oeFromSheet(it){ const ty=OE_TYPES[it.type]?it.type:'mc';
+  if(it.bad){ const bl=oeBlank(ty), kind=v=>Array.isArray(v)?'a':v===null?'n':typeof v; it=Object.assign({},it,{type:ty}); Object.keys(it).forEach(k=>{ if(k in bl&&it[k]!=null&&kind(it[k])!==kind(bl[k])) delete it[k]; }); }
+  try{ return oeEditable(it); }catch(e){ return Object.assign(oeBlank(ty),{text:typeof it.text==='string'?it.text:'',points:it.max||1,std:it.std||'',passage:it.passage||''}); } }
 async function oeOpen(id){
   let d=null; if(id){ d=await call('stcOwnGet',{id},60000); }
   OE={isNew:!d, id:d?d.id:'', status:d?d.status:null, mine:d?d.mine:true, pics:{}, sent:new Set(), dirty:false,
-    passages:d?d.passages.slice():[], items:d?d.items.map(oeEditable):[oeBlank('mc')]};
+    passages:d?d.passages.slice():[], items:d?d.items.map(oeFromSheet):[oeBlank('mc')]};
   $('#oeTitle').value=d?d.title:''; $('#oeId').value=d?d.id:''; $('#oeId').disabled=!!d; delete $('#oeId').dataset.touched;
   $('#oeCourse').innerHTML=OE_COURSES.map(c=>`<option>${c}</option>`).join(''); $('#oeCourse').value=d?d.course:oeCourseFor((MP.my||{}).subject||'');
   $('#oeCalc').checked=d?d.calc!==false:true; oeCourseSync();
   const S=(DATA?DATA.sessions:[]).filter(s=>d&&s.test===d.id);
   $('#oeUsed').hidden=!S.length; $('#oeUsed').textContent=S.length?`Students have taken this test in ${plural(S.length,'session')}. If you change an answer, click Re-score on those sessions in Your sessions so their scores use the new answer.`:'';
   $('#oeHead').textContent=d?(OE.mine?'Edit your test':'Look at a test'):'Write a test';
-  say($('#oeMsg'),''); oeButtons(); oeRender(); openPage('#oepage'); $('#oepage .tbody').scrollTop=0;
+  const bad=d?d.items.filter(it=>it.bad):[]; say($('#oeMsg'),bad.length?bad.map(it=>`Question ${it.n} was changed in the Sheet: ${it.bad}`).join(' ')+' Fix '+(bad.length>1?'them':'it')+' here and save.':'',bad.length?'err':''); oeButtons(); oeRender(); openPage('#oepage'); $('#oepage .tbody').scrollTop=0;
   if(!d) await oeIdAuto(); }
 function oeButtons(){ const out=OE.status&&OE.status!=='draft';
   $('#oeDraft').hidden=out||!OE.mine; $('#oePublish').hidden=!OE.mine; $('#oePublish').textContent=out?'Save changes':'Publish'; }
@@ -1589,7 +1593,7 @@ $('#oeBack').onclick=async()=>{ if(OE&&OE.dirty&&OE.mine&&!await ask('Leave with
 $('#mtOwn').onclick=async()=>{ const b=$('#mtOwn'); b.disabled=true; try{ await myTests(); await oeOpen(null); }catch(x){ say($('#mtMsg'),errText(x),'err'); } b.disabled=false; };
 /* a teacher's own test, seen whole (with its answers) by the people allowed to: its test.js on the site has no answers */
 async function ownJs(id,text){ if(text!=null&&!/"keyless":true/.test(text)) return text;
-  try{ const r=await call('stcOwnGet',{id,js:1},60000); return r&&r.js||text; }catch(e){ return text; } }
+  try{ const r=await call('stcOwnGet',{id,js:1},60000); return r&&r.js||text; }catch(e){ if(text==null) throw e; return text; } }
 async function previewOwn(id){ try{ const t=((MP.my||{}).tests||[]).find(x=>x.id===id)||{title:id}, js=await ownJs(id,null); if(!js) throw new Error('Could not open the test.');
     const p=await ensurePlayer(), pages=TP.gh&&TP.gh.pages||ROOT;
     const html=buildSingle(p,id,t.title,js,{}).replace('window.SPITZ_ROOT="";window.SPITZ_TESTS=',()=>'window.SPITZ_ROOT='+JSON.stringify(pages)+';window.SPITZ_TESTS=');
@@ -1801,9 +1805,9 @@ function renderLive(L,tests){
   pinCols();
 }
 /* frozen columns: measure the header cells and give every frozen cell its left offset */
-function pinCols(){ const g=document.querySelector('table.grid'); if(!g) return; const hs=[...g.querySelectorAll('thead th.fx')]; let x=0;
-  const lefts=hs.map(th=>{ const l=x; x+=th.getBoundingClientRect().width; return l; });
-  g.querySelectorAll('tr').forEach(tr=>{ [...tr.querySelectorAll('.fx')].forEach((td,i)=>{ td.style.left=lefts[i]+'px'; }); }); }
+function pinCols(){ const g=document.querySelector('table.grid'); if(!g) return; let x=0, css='';   /* one CSS rule per column, not a style on every cell: hundreds of rows stay quick */
+  g.querySelectorAll('thead th.fx').forEach(th=>{ const c=[...th.classList].find(k=>/^c[0-9L]$/.test(k)); if(c) css+=`table.grid .fx.${c}{left:${x}px}`; x+=th.getBoundingClientRect().width; });
+  let st=document.getElementById('pinCss'); if(!st){ st=document.createElement('style'); st.id='pinCss'; document.head.appendChild(st); } if(st.textContent!==css) st.textContent=css; }
 addEventListener('resize',pinCols);
 function pctBar(e,m){ const p=m?Math.round(100*e/m):0, l=lvl(p); return `<div class="bar"><i><b style="width:${p}%;background:${l[2]}"></b></i><em>${m?p+'%':'–'}</em></div>`; }
 function renderStd(L,tests){

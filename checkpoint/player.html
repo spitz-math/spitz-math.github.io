@@ -1663,8 +1663,8 @@ function buildCLine(it,root){
    Kody's scoring for 2-point items: 1 point when both boundary lines are right (place and solid/dashed),
    1 point when the selected region is the solution region. */
 function sysParts(it,a){ const near=(u,v)=>Math.abs(u-v)<1e-9;
-  const onL=(q,P)=>near(P[1],q.m*P[0]+q.b), fits=(L,q)=>L.pts.length===2&&L.pts.every(P=>onL(q,P));
-  const [q0,q1]=it.ineqs, [L0,L1]=a.g;
+  const onL=(q,P)=>near(P[1],q.m*P[0]+q.b), fits=(L,q)=>!!L&&!!L.pts&&L.pts.length===2&&L.pts.every(P=>onL(q,P));
+  const [q0,q1]=it.ineqs, [L0,L1]=a.g&&a.g.length===2?a.g:[];
   const place=(fits(L0,q0)&&fits(L1,q1))?[q0,q1]:(fits(L0,q1)&&fits(L1,q0))?[q1,q0]:null;
   const lines=!!place&&place[0].op.length===(L0.dash?1:2)&&place[1].op.length===(L1.dash?1:2);
   const region=!!place&&!!a.region&&it.ineqs.every(q=>q.op[0]==='>'?a.region[1]>q.m*a.region[0]+q.b:a.region[1]<q.m*a.region[0]+q.b);
@@ -2098,10 +2098,10 @@ function score(it){ const a=S.answers[it.n]; if(a==null||NOKEY(it)) return null;
     case 'hotspot': return Array.isArray(it.answer)?a.length===it.answer.length&&it.answer.every(v=>a.includes(v)):a===it.answer;
     case 'cline': return a.pts.length===2&&a.pts.every(P=>onLine(it,P));
     case 'graphsys': { const r=sysParts(it,a); return r.lines&&r.region; }
-    case 'graphineq': { if(a.pts.length<2||!a.shade) return false; const on=P=>P[1]===it.m*P[0]+it.b; const strict=it.op==='>'||it.op==='<';
+    case 'graphineq': { if(a.pts.length!==2||!a.shade) return false; const on=P=>P[1]===it.m*P[0]+it.b; const strict=it.op==='>'||it.op==='<';
       const sideOK=(it.op[0]==='>')?a.shade[1]>it.m*a.shade[0]+it.b:a.shade[1]<it.m*a.shade[0]+it.b;
       return on(a.pts[0])&&on(a.pts[1])&&a.dash===strict&&sideOK; }
-    case 'graphfunc': return a.type===it.ftype&&(a.asym??0)===it.asym&&a.pts.every(P=>Math.abs(it.fn(P[0])-P[1])<1e-9);
+    case 'graphfunc': return a.type===it.ftype&&(a.asym??0)===it.asym&&a.pts.length===2&&a.pts.every(P=>Math.abs(it.fn(P[0])-P[1])<1e-9);
     case 'eq': return it.full?EQX.same(a,it.answer):Math.abs(parseNum(a)-it.answer)<1e-9;
     case 'graphexp': return Math.abs(a.a-it.a)<1e-6&&Math.abs(a.b-it.b)<1e-6;
     case 'numline': return it.mode==='ineq'?a.k===it.answer.k&&!!a.closed===!!it.answer.closed&&a.dir===it.answer.dir:a.length===it.answer.length&&it.answer.every(k=>a.includes(k));
@@ -2130,7 +2130,6 @@ function show(it,a){ if(a==null) return '—';
     case 'graphfunc': return `${a.type}, points ${a.pts.map(P=>`(${fmtN(P[0])}, ${fmtN(P[1])})`).join(' ')}${a.type==='exponential'?', asymptote y = '+a.asym:''}`;
     case 'eq': return it.full?EQX.show(a):String(a).replace(/-/g,'−');
     case 'graphineq': return a.pts.length===2?`${a.dash?'Dashed':'Solid'} line through (${fmtN(a.pts[0][0])}, ${fmtN(a.pts[0][1])}) and (${fmtN(a.pts[1][0])}, ${fmtN(a.pts[1][1])})${a.shade?', shaded':''}`:'—';
-    case 'graphineqOLD': return a.line?`${a.line.dash?'Dashed':'Solid'} line through (${fmtN(a.line.a[0])}, ${fmtN(a.line.a[1])}) and (${fmtN(a.line.b[0])}, ${fmtN(a.line.b[1])})${a.shade?', shaded':''}`:'—';
     case 'graphexp': return `Curve y = ${a.a.toFixed(3)}(${a.b.toFixed(3)})^x`;
     case 'numline': return it.mode==='ineq'?(a.k==null?'—':a.dir?nlIneqText(it,a):`${a.closed?'Closed':'Open'} circle at ${nlText(it,a.k)}, not shaded`):a.map(k=>nlText(it,k)).join(', ');
     case 'filltable': return a.map(v=>v==null?'—':String(v).replace(/-/g,'−')).join(', ');
