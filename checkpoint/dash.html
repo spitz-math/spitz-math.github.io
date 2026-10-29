@@ -1581,7 +1581,7 @@ async function oeSave(publish){ if(!OE||OE.busy) return; const b=oeGather(), P=o
 /* the test.js for a preview (with answers), made here from what is on screen, so unsaved changes show too. Same shape as Code.gs makes. */
 function oeTestJs(b){ const J=v=>JSON.stringify(v).replace(/</g,'\\u003c'), num=s=>{ s=String(s).replace(/−/g,'-').replace(/,/g,''); const m=s.match(/^(-?\d+(?:\.\d+)?)\/(-?\d+(?:\.\d+)?)$/); return m?+m[1]/+m[2]:+s; };
   const course=b.course==='Other'?'Other':b.course, head={id:b.id||'preview',title:b.title||'Untitled test',course};
-  if(/RLA/.test(course)) head.subject='rla'; head.reference=course==='Algebra I'?'alg1':course==='8th Math'?'math8':'none'; if(b.calc===false) head.calc=false;
+  if(/RLA/.test(course)) head.subject='rla'; head.reference=course==='Algebra I'?'alg1':course==='8th Math'?'math8':course==='6th Math'?'math6':'none'; if(b.calc===false) head.calc=false;
   const P={}; b.passages.forEach((h,i)=>{ P['P'+(i+1)]=h; });
   const items=b.items.map(it=>{ let stem=J(it.text||''); if(it.pic&&it.mode!=='pic'&&it.type!=='label') stem+='+'+J('<div class="tqpic"><img class="fig" src="')+'+ASSET('+J('img/'+it.pic.file)+')+'+J('" style="width:'+it.pic.w+'px;max-width:100%" alt="Picture for this question"></div>');
     const o=['type:'+J(it.type),'stem:'+stem,'max:'+(+it.points||1)];
