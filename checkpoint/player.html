@@ -224,6 +224,17 @@ svg.coord.delmode .uln:hover,svg.coord.delmode .upt:hover{stroke:var(--bad)}
 svg.coord .hit{stroke:transparent;stroke-width:14;fill:none}
 .gread{font-variant-numeric:tabular-nums;font-weight:700}
 /* number line, fill-in table, data display, shade a model (teachers' own tests) */
+.blin{width:5.5em;font-size:1em;padding:.15em .35em;text-align:center;margin:0 .2em}
+.lbbank{display:flex;flex-wrap:wrap;gap:8px;min-height:2.6em;padding:10px;border:2px dashed var(--line);border-radius:8px;margin:6px 0 12px;background:var(--surface-2);align-items:center}
+.lbt{font-size:.9em;cursor:pointer;white-space:normal}.lbbank .lbt.picked{outline:3px solid var(--flag);outline-offset:2px}
+.lbimg{position:relative;line-height:0;margin:.3em 0}.lbimg img{width:100%;height:auto;display:block;border:1px solid var(--line)}
+.lbspot{position:absolute;transform:translate(-50%,-50%);min-width:30px;min-height:30px;border-radius:15px;border:2px dashed #4b3fc4;background:rgba(255,255,255,.85);padding:0 4px;cursor:pointer;line-height:1.2;display:grid;place-items:center}
+.lbspot .lbn{font-weight:700;color:#4b3fc4;font-size:.85em}.lbspot.full{border:0;background:none;padding:0}.lbspot.full .lbt{background:var(--surface);box-shadow:0 1px 4px rgba(0,0,0,.25)}
+.odlist{list-style:none;padding:0;margin:.4em 0;display:flex;flex-direction:column;gap:8px;max-width:640px}
+.odit{display:flex;align-items:center;gap:12px;border:2px solid var(--line);border-radius:8px;padding:8px 10px;background:var(--surface);cursor:grab;touch-action:none;user-select:none}.odit.picked{border-color:var(--accent)}
+.odnum{font-weight:700;min-width:1.4em;color:var(--muted)}.odtx{flex:1;min-width:0}.odbt{display:flex;gap:4px}.odbt button{border:1px solid var(--line);background:var(--surface-2);border-radius:6px;width:2.2em;height:2em;font-size:.85em}.odbt button:disabled{opacity:.35}
+.httext{line-height:2;font-size:1.02em}.hot{border-bottom:2px dotted var(--accent);cursor:pointer;padding:1px 2px;border-radius:3px;outline:none}.hot:hover,.hot:focus-visible{background:var(--accent-soft)}.hot[aria-checked="true"]{background:#ffe066;border-bottom-color:#b58900}
+.tppart{border-top:1px solid var(--line);padding-top:10px;margin-top:12px}.tppart:first-child{border-top:0;margin-top:0;padding-top:0}.tph{margin:0 0 .3em}.tpq{margin:0 0 .4em}
 .nlsvg{width:min(600px,100%);min-width:420px;height:auto;display:block;color:var(--ink);overflow:visible}
 .nlsvg .nlt text,.nlsvg text.nlt{fill:var(--ink);font-size:13px;font-family:var(--font)}.nlsvg text.nlf{font-size:11px}
 .nlhit,.ddhit{fill:transparent;cursor:pointer;outline:none}.nlhit:hover,.nlhit:focus-visible{fill:var(--accent-soft)}
@@ -1213,6 +1224,12 @@ function build(it){
   else if(it.type==='filltable'){ buildFillTable(it,root); }
   else if(it.type==='datadisp'){ buildDataDisp(it,root); }
   else if(it.type==='shade'){ buildShade(it,root); }
+  else if(it.type==='figure'){ buildFigure(it,root); }
+  else if(it.type==='blanks'){ buildBlanks(it,root); }
+  else if(it.type==='label'){ buildLabel(it,root); }
+  else if(it.type==='order'){ buildOrder(it,root); }
+  else if(it.type==='hottext'){ buildHotText(it,root); }
+  else if(it.type==='twopart'){ buildTwoPart(it,root); }
   else if(it.type==='eq'){ if(it.full) buildEqFull(it,root); else buildEqEntry(it,root); }
   hydrate(it,root); return root;
 }
@@ -1967,10 +1984,106 @@ function buildShade(it,root){
   root.appendChild(w); draw();
 }
 
+/* ---------- draw a figure: click grid points for the vertices, in order (R; given = a starting figure drawn dashed; answer = the vertices, any order) ---------- */
+function buildFigure(it,root){
+  const id=it.n, R=it.R, g=liveGrid(R), w=document.createElement('div');
+  w.innerHTML=`<div class="gwrap gl-big"><div style="flex:1 1 320px;max-width:540px">${g.html}</div><div style="max-width:15em"><p class="hint" style="margin:0 0 .5em">Click grid points for the corners of your figure, in order around it. Click a corner again to remove it.</p><p style="margin:0 0 .6em">Your figure: <span class="gread">no corners yet</span></p><button type="button" class="btnline fgclr">Clear</button></div></div>`;
+  const svg=w.querySelector('svg.coord'), marks=svg.querySelector('.marks'), pts=svg.querySelector('.pts'), read=w.querySelector('.gread');
+  const poly=(P,at)=>mk(P.length>2?'polygon':'polyline',Object.assign({points:P.map(Q=>g.X(Q[0])+','+g.Y(Q[1])).join(' ')},at));
+  const draw=()=>{ marks.innerHTML=''; pts.innerHTML=''; const a=S.answers[id]||[];
+    if(it.given&&it.given.length) { marks.appendChild(poly(it.given,{fill:'#888','fill-opacity':.12,stroke:'#555','stroke-width':2,'stroke-dasharray':'6 5'})); it.given.forEach(P=>pts.appendChild(mk('circle',{cx:g.X(P[0]),cy:g.Y(P[1]),r:3.5,fill:'#555'}))); }
+    if(a.length>1) marks.appendChild(poly(a,{fill:'#1f4fd8','fill-opacity':.18,stroke:'#1f4fd8','stroke-width':2.6}));
+    a.forEach(P=>pts.appendChild(mk('circle',{cx:g.X(P[0]),cy:g.Y(P[1]),r:5.5,fill:'#1f4fd8'})));
+    read.textContent=a.length?a.map(P=>`(${fmtN(P[0])}, ${fmtN(P[1])})`).join(', '):'no corners yet'; refresh(); };
+  svg.addEventListener('click',e=>{ const q=gridPoint(svg,g,e); if(!q.inside) return; const P=[q.gx,q.gy]; if(Math.abs(P[0])>R||Math.abs(P[1])>R) return;
+    const a=(S.answers[id]||[]).slice(), j=a.findIndex(Q=>Q[0]===P[0]&&Q[1]===P[1]); if(j>=0) a.splice(j,1); else if(a.length<10) a.push(P);
+    if(a.length) S.answers[id]=a; else delete S.answers[id]; draw(); });
+  w.querySelector('.fgclr').addEventListener('click',()=>{ delete S.answers[id]; draw(); });
+  root.appendChild(w); draw();
+}
+const figSame=(a,K)=>Array.isArray(a)&&a.length===K.length&&K.every(P=>a.some(Q=>Q[0]===P[0]&&Q[1]===P[1]));
+const figHit=(a,K)=>Math.max(0,a.filter(Q=>K.some(P=>Q[0]===P[0]&&Q[1]===P[1])).length-Math.max(0,a.length-K.length));
+
+/* ---------- fill in the blanks: number boxes inside a sentence (text has {0}, {1} …; answer = numbers) ---------- */
+function buildBlanks(it,root){
+  const id=it.n, p=document.createElement('p'); p.className='inline-stem blsent';
+  p.innerHTML=it.text.replace(/\{(\d)\}/g,(m,k)=>`<input class="mathin blin" data-q="${k}" inputmode="decimal" autocomplete="off" spellcheck="false" aria-label="Box ${+k+1}">`);
+  const ins=[...p.querySelectorAll('.blin')].sort((x,y)=>x.dataset.q-y.dataset.q), a0=S.answers[id];
+  if(a0) ins.forEach((x,k)=>{ x.value=a0[k]||''; });
+  ins.forEach(x=>x.addEventListener('input',()=>{ x.value=x.value.replace(/[^0-9.\-\/−]/g,''); const a=ins.map(y=>y.value.trim()||null); if(a.some(v=>v!=null)) S.answers[id]=a; else delete S.answers[id]; refresh(); }));
+  root.appendChild(p);
+}
+const numHits=(it,a)=>it.answer.filter((v,k)=>Math.abs(parseNum((a||[])[k]??'')-v)<1e-9).length;
+
+/* ---------- label a picture: put each label on its spot (img, imgw; spots [left %, top %]; tiles; answer = tile per spot) ---------- */
+function buildLabel(it,root){
+  const id=it.n, w=document.createElement('div'); w.className='lbwrap';
+  w.innerHTML=`<div class="lbbank" aria-label="Labels"></div><div class="lbimg" style="max-width:${it.imgw||400}px"><img src="${it.img}" alt="Picture to label">${it.spots.map(([x,y],q)=>`<button type="button" class="lbspot" style="left:${x}%;top:${y}%" data-s="${q}" aria-label="Spot ${q+1}"><span class="lbn">${q+1}</span></button>`).join('')}</div>
+    <p class="hint">Click a label, then click the spot where it goes. Click a placed label to take it back.</p>`;
+  const bank=w.querySelector('.lbbank'); let picked=null;
+  const draw=()=>{ const a=S.answers[id]||[]; bank.innerHTML='';
+    it.tiles.forEach((t,k)=>{ if(a.includes(k)) return; const b=document.createElement('button'); b.type='button'; b.className='tile lbt'+(picked===k?' picked':''); b.dataset.t=k; b.innerHTML=t; bank.appendChild(b); });
+    if(!bank.children.length) bank.innerHTML='<span class="hint">All labels placed.</span>';
+    w.querySelectorAll('.lbspot').forEach(s=>{ const q=+s.dataset.s, t=a[q]; s.classList.toggle('full',t!=null); s.innerHTML=t!=null?`<span class="tile lbt">${it.tiles[t]}</span>`:`<span class="lbn">${q+1}</span>`; s.setAttribute('aria-label',`Spot ${q+1}`+(t!=null?': '+String(it.tiles[t]).replace(/<[^>]+>/g,''):'')); });
+    refresh(); };
+  const save=a=>{ if(a.some(v=>v!=null)) S.answers[id]=a; else delete S.answers[id]; };
+  bank.addEventListener('click',e=>{ const b=e.target.closest('.lbt'); if(!b) return; const k=+b.dataset.t; picked=picked===k?null:k; draw(); });
+  w.querySelector('.lbimg').addEventListener('click',e=>{ const s=e.target.closest('.lbspot'); if(!s) return; const q=+s.dataset.s, a=(S.answers[id]||it.spots.map(()=>null)).slice();
+    if(picked!=null){ a[q]=picked; picked=null; } else if(a[q]!=null) a[q]=null; else return; save(a); draw(); });
+  root.appendChild(w); draw();
+}
+
+/* ---------- put in order: move the items into order (tiles in the shown order; answer = shown indices, first to last) ---------- */
+function buildOrder(it,root){
+  const id=it.n, w=document.createElement('div'); w.className='odwrap';
+  const cur=()=>S.answers[id]||it.tiles.map((t,k)=>k);
+  const draw=(focus)=>{ const a=cur(); w.innerHTML=`<ol class="odlist">${a.map((k,j)=>`<li class="odit" data-j="${j}"><span class="odnum">${j+1}</span><span class="odtx">${it.tiles[k]}</span><span class="odbt"><button type="button" data-mv="-1" aria-label="Move up"${j?'':' disabled'}>▲</button><button type="button" data-mv="1" aria-label="Move down"${j<a.length-1?'':' disabled'}>▼</button></span></li>`).join('')}</ol>
+      <p class="hint">Use ▲ and ▼ to move each item, or drag it, so the list goes from first to last.</p>`;
+    if(focus) { const b=w.querySelector(`.odit[data-j="${focus[0]}"] [data-mv="${focus[1]}"]`)||w.querySelector(`.odit[data-j="${focus[0]}"] button:not([disabled])`); if(b) b.focus(); }
+    refresh(); };
+  const move=(j,d)=>{ const a=cur().slice(), t=j+d; if(t<0||t>=a.length) return; [a[j],a[t]]=[a[t],a[j]]; S.answers[id]=a; draw([t,d]); };
+  w.addEventListener('click',e=>{ const b=e.target.closest('[data-mv]'); if(b) move(+b.closest('.odit').dataset.j,+b.dataset.mv); });
+  let dragJ=null;
+  w.addEventListener('pointerdown',e=>{ const li=e.target.closest('.odit'); if(!li||e.target.closest('button')) return; dragJ=+li.dataset.j; li.classList.add('picked'); li.setPointerCapture(e.pointerId); });
+  w.addEventListener('pointerup',e=>{ if(dragJ==null) return; const tg=document.elementFromPoint(e.clientX,e.clientY), li=tg&&tg.closest('.odit'), j=dragJ; dragJ=null;
+    if(li&&+li.dataset.j!==j){ const a=cur().slice(), [k]=a.splice(j,1); a.splice(+li.dataset.j,0,k); S.answers[id]=a; } draw(); });
+  root.appendChild(w); draw();
+}
+
+/* ---------- hot text: click the right words (ht has [[clickable words]]; pick = how many are right; answer = indices) ---------- */
+function buildHotText(it,root){
+  const id=it.n, multi=(it.pick||1)>1, w=document.createElement('div'); w.className='htwrap'; let k=0;
+  w.innerHTML=`<div class="httext">${it.ht.replace(/\[\[([\s\S]+?)\]\]/g,(m,t)=>`<span class="hot" role="${multi?'checkbox':'radio'}" aria-checked="false" tabindex="0" data-k="${k++}">${t}</span>`)}</div><p class="hint">${multi?`Click ${it.pick} parts of the text.`:'Click one part of the text.'} Click it again to unselect it.</p>`;
+  const sync=()=>{ const a=S.answers[id]||[]; w.querySelectorAll('.hot').forEach(s=>s.setAttribute('aria-checked',a.includes(+s.dataset.k))); refresh(); };
+  const tog=q=>{ let a=(S.answers[id]||[]).slice(); const i=a.indexOf(q); if(i>=0) a.splice(i,1); else if(multi) a.push(q); else a=[q]; a.sort((x,y)=>x-y); if(a.length) S.answers[id]=a; else delete S.answers[id]; sync(); };
+  w.addEventListener('click',e=>{ const s=e.target.closest('.hot'); if(s) tog(+s.dataset.k); });
+  w.addEventListener('keydown',e=>{ const s=e.target.closest('.hot'); if(s&&(e.key===' '||e.key==='Enter')){ e.preventDefault(); tog(+s.dataset.k); } });
+  root.appendChild(w); sync();
+}
+const htWords=(it,a)=>{ const L=[...String(it.ht).matchAll(/\[\[([\s\S]+?)\]\]/g)].map(m=>m[1].replace(/<[^>]+>/g,'')); return [].concat(a).map(q=>'“'+(L[q]||'?')+'”').join(', '); };
+
+/* ---------- two-part: Part A, then Part B (qa/ca, qb/cb; pickb = how many Part B answers; answer = {a, b: [ ]}) ---------- */
+function buildTwoPart(it,root){
+  const id=it.n, L='ABCDEFGH', mb=(it.pickb||1)>1;
+  const part=(key,q,ch,multi,title)=>{ const sec=document.createElement('div'); sec.className='tppart';
+    sec.innerHTML=`<p class="tph"><b>${title}</b></p><div class="tpq">${q}</div><div class="choices" role="${multi?'group':'radiogroup'}">${ch.map((c,k)=>`<div class="choice${multi?' ms':''}" role="${multi?'checkbox':'radio'}" aria-checked="false" tabindex="0" data-k="${k}"><span class="bubble"><span class="bl">${L[k]}</span></span><span class="ctext">${c}</span></div>`).join('')}</div>`;
+    const act=k=>{ if(consumeHL()||S.modes.hl) return; const el=sec.querySelector(`.choice[data-k="${k}"]`);
+      if(S.modes.elim){ el.classList.toggle('struck'); return; } el.classList.remove('struck');
+      const a=S.answers[id]||{a:null,b:[]};
+      if(key==='a') a.a=a.a===k?null:k; else { const s=new Set(a.b); if(s.has(k)) s.delete(k); else { if(!multi) s.clear(); s.add(k); } a.b=[...s].sort((x,y)=>x-y); }
+      if(a.a==null&&!a.b.length) delete S.answers[id]; else S.answers[id]=a; sync(); };
+    sec.addEventListener('click',e=>{ const c=e.target.closest('.choice'); if(c) act(+c.dataset.k); });
+    sec.addEventListener('keydown',e=>{ const c=e.target.closest('.choice'); if(c&&(e.key===' '||e.key==='Enter')){ e.preventDefault(); act(+c.dataset.k); } });
+    return sec; };
+  const A=part('a',it.qa,it.ca,false,'Part A'), B=part('b',it.qb,it.cb,mb,'Part B');
+  const sync=()=>{ const a=S.answers[id]||{a:null,b:[]}; A.querySelectorAll('.choice').forEach(c=>c.setAttribute('aria-checked',a.a===+c.dataset.k)); B.querySelectorAll('.choice').forEach(c=>c.setAttribute('aria-checked',a.b.includes(+c.dataset.k))); refresh(); };
+  root.append(A,B); sync();
+}
+
 function answered(it){ const a=S.answers[it.n]; if(a==null) return false;
   switch(it.type){ case 'text': return txPlain(a).trim()!==''; case 'mc': return true; case 'ms': return a.length>0; case 'num': return String(a).trim()!=='';
     case 'inline': case 'table': return a.every(v=>v!==null); case 'dnd': return Object.keys(a).length===it.tiles.length; case 'graph': return true; case 'graphline': return a.lines.length>0;
-    case 'boxes': return a.every(q=>q!=null); case 'hotspot': case 'graphexp': return true; case 'graphineq': return a.pts.length===2&&!!a.shade; case 'cline': return a.pts.length===2; case 'graphsys': return a.g.every(L=>L.pts.length===2)&&!!a.region; case 'graphfunc': return true; case 'numline': return it.mode==='ineq'?a.k!=null&&!!a.dir:a.length>0; case 'filltable': return a.every(v=>v!=null); case 'datadisp': return true; case 'shade': return a.length>0; case 'eq': return String(a).replace(/\//g,'').trim()!==''; } }
+    case 'boxes': return a.every(q=>q!=null); case 'hotspot': case 'graphexp': return true; case 'graphineq': return a.pts.length===2&&!!a.shade; case 'cline': return a.pts.length===2; case 'graphsys': return a.g.every(L=>L.pts.length===2)&&!!a.region; case 'graphfunc': return true; case 'numline': return it.mode==='ineq'?a.k!=null&&!!a.dir:a.length>0; case 'filltable': return a.every(v=>v!=null); case 'datadisp': return true; case 'shade': return a.length>0; case 'figure': return a.length>=3; case 'blanks': return a.every(v=>v!=null); case 'label': return a.length===it.spots.length&&a.every(v=>v!=null); case 'order': return true; case 'hottext': return a.length>0; case 'twopart': return a.a!=null&&a.b.length>0; case 'eq': return String(a).replace(/\//g,'').trim()!==''; } }
 function parseNum(s){ s=String(s).replace(/−/g,'-').trim(); const m=s.match(/^(-?\d+(?:\.\d+)?)\/(-?\d+(?:\.\d+)?)$/); if(m) return +m[1]/+m[2]; return s===''||isNaN(+s)?NaN:+s; }
 function score(it){ const a=S.answers[it.n]; if(a==null||NOKEY(it)) return null;
   switch(it.type){
@@ -1994,7 +2107,12 @@ function score(it){ const a=S.answers[it.n]; if(a==null||NOKEY(it)) return null;
     case 'numline': return it.mode==='ineq'?a.k===it.answer.k&&!!a.closed===!!it.answer.closed&&a.dir===it.answer.dir:a.length===it.answer.length&&it.answer.every(k=>a.includes(k));
     case 'filltable': return it.answer.every((v,k)=>Math.abs(parseNum(a[k]??'')-v)<1e-9);
     case 'datadisp': return it.answer.every((v,k)=>Math.abs((a[k]||0)-v)<1e-9);
-    case 'shade': return a.length===it.answer; } }
+    case 'shade': return a.length===it.answer;
+    case 'figure': return figSame(a,it.answer);
+    case 'blanks': return numHits(it,a)===it.answer.length;
+    case 'label': case 'order': return it.answer.every((t,q)=>a[q]===t);
+    case 'hottext': return a.length===it.answer.length&&it.answer.every(v=>a.includes(v));
+    case 'twopart': return a.a===it.answer.a&&a.b.length===it.answer.b.length&&it.answer.b.every(v=>a.b.includes(v)); } }
 function show(it,a){ if(a==null) return '—';
   if(it.type==='text') return `<div class="rvtext">${esc0(txPlain(a))}</div>`;
   switch(it.type){
@@ -2018,6 +2136,12 @@ function show(it,a){ if(a==null) return '—';
     case 'filltable': return a.map(v=>v==null?'—':String(v).replace(/-/g,'−')).join(', ');
     case 'datadisp': return it.labels.map((l,k)=>`${l}: ${fmtV(a[k]||0)}`).join(', ');
     case 'shade': return `${a.length} part${a.length===1?'':'s'} shaded`;
+    case 'figure': return a.map(P=>`(${fmtN(P[0])}, ${fmtN(P[1])})`).join(', ')||'—';
+    case 'blanks': return a.map(v=>v==null?'—':String(v).replace(/-/g,'−')).join(', ');
+    case 'label': return it.spots.map((p,q)=>`${q+1}: ${a[q]==null?'—':it.tiles[a[q]]}`).join('<br>');
+    case 'order': return a.map(k=>it.tiles[k]).join(' → ');
+    case 'hottext': return htWords(it,a)||'—';
+    case 'twopart': return `Part A: ${a.a==null?'—':'ABCDEFGH'[a.a]} · Part B: ${a.b.map(k=>'ABCDEFGH'[k]).join(', ')||'—'}`;
     case 'graphline': return [...a.lines.map(L=>`Line through (${fmtN(L[0][0])}, ${fmtN(L[0][1])}) and (${fmtN(L[1][0])}, ${fmtN(L[1][1])})`),...a.pts.map(P=>`Point (${fmtN(P[0])}, ${fmtN(P[1])})`)].join('<br>')||'—'; } }
 function key(it){ if(NOKEY(it)) return 'Your teacher has not released the answers.'; switch(it.type){
     case 'text': return 'Your teacher scores this answer.';
@@ -2040,7 +2164,13 @@ function key(it){ if(NOKEY(it)) return 'Your teacher has not released the answer
     case 'numline': return it.mode==='ineq'?`${nlIneqText(it,it.answer)} (${it.answer.closed?'closed':'open'} circle, shaded ${it.answer.dir>0?'right':'left'})`:'Points at '+it.answer.map(k=>nlText(it,k)).join(', ');
     case 'filltable': return it.answer.map(fmtV).join(', ');
     case 'datadisp': return it.labels.map((l,k)=>`${l}: ${fmtV(it.answer[k])}`).join(', ');
-    case 'shade': return `${it.answer} part${it.answer===1?'':'s'} shaded`; } }
+    case 'shade': return `${it.answer} part${it.answer===1?'':'s'} shaded`;
+    case 'figure': return 'Corners at '+it.answer.map(P=>`(${fmtN(P[0])}, ${fmtN(P[1])})`).join(', ');
+    case 'blanks': return it.answer.map(fmtV).join(', ');
+    case 'label': return it.answer.map((t,q)=>`${q+1}: ${it.tiles[t]}`).join('<br>');
+    case 'order': return it.answer.map(k=>it.tiles[k]).join(' → ');
+    case 'hottext': return htWords(it,it.answer);
+    case 'twopart': return `Part A: ${'ABCDEFGH'[it.answer.a]} · Part B: ${it.answer.b.map(k=>'ABCDEFGH'[k]).join(', ')}`; } }
 /* points earned, with partial credit on 2-point items (null = no response) */
 /* answer-key self-check for the dashboard's Tests page (only when the page sets SPITZ_SELFCHECK; students never do):
    each question is answered with its own key, then left blank, and the points are reported */
@@ -2065,7 +2195,11 @@ const lattice=(R,f)=>{ const P=[]; for(let x=-R;x<=R&&P.length<2;x++){ const y=f
     case 'numline': return it.mode==='ineq'?Object.assign({},it.answer):it.answer.slice();
     case 'filltable': return it.answer.map(String);
     case 'datadisp': return it.answer.slice();
-    case 'shade': return Array.from({length:it.answer},(x,k)=>k); } };
+    case 'shade': return Array.from({length:it.answer},(x,k)=>k);
+    case 'figure': return it.answer.map(P=>P.slice());
+    case 'blanks': return it.answer.map(String);
+    case 'label': case 'order': case 'hottext': return it.answer.slice();
+    case 'twopart': return {a:it.answer.a,b:it.answer.b.slice()}; } };
 if(window.SPITZ_SELFCHECK) window.__spitzSelfCheck=function(){
   const keep=S.answers, out=ITEMS.map(it=>{ const r={n:it.n,type:it.type,max:it.max};
     try{ S.answers={}; r.blank=earn(it); S.answers={[it.n]:keyAns(it)}; r.key=earn(it); }catch(e){ r.err=String(e&&e.message||e); } return r; });
@@ -2121,6 +2255,11 @@ function earn(it){ const a=S.answers[it.n]; if(a==null||it.type==='text') return
   else if(it.type==='graphsys'){ const r=sysParts(it,a); hit=(r.lines?1:0)+(r.region?1:0); }
   else if(it.type==='table'){ const c=it.answer.filter((v,k)=>a[k]===v).length; return Math.floor(c*it.max/it.answer.length); }
   else if(it.type==='filltable'||it.type==='datadisp'){ const c=it.answer.filter((v,k)=>it.type==='filltable'?Math.abs(parseNum(a[k]??'')-v)<1e-9:Math.abs((a[k]||0)-v)<1e-9).length; return Math.floor(c*it.max/it.answer.length); }
+  else if(it.type==='blanks') return Math.floor(numHits(it,a)*it.max/it.answer.length);
+  else if(it.type==='label'||it.type==='order') return Math.floor(it.answer.filter((t,q)=>a[q]===t).length*it.max/it.answer.length);
+  else if(it.type==='twopart') return a.a===it.answer.a?1:0;
+  else if(it.type==='figure'){ hit=figHit(a,it.answer); parts=it.answer.length; }
+  else if(it.type==='hottext'){ hit=Math.max(0,a.filter(q=>it.answer.includes(q)).length-Math.max(0,a.length-it.answer.length)); parts=it.answer.length; }
   else if(it.type==='numline'&&it.mode==='ineq') hit=(a.k===it.answer.k&&!!a.closed===!!it.answer.closed?1:0)+(a.dir===it.answer.dir?1:0);
   else if(it.type==='numline'){ hit=Math.max(0,a.filter(q=>it.answer.includes(q)).length-Math.max(0,a.length-it.answer.length)); parts=it.answer.length; }
   else if(it.type==='graphineq'){ const on=P=>P[1]===it.m*P[0]+it.b; const lineOK=a.pts.length===2&&on(a.pts[0])&&on(a.pts[1])&&a.dash===(it.op.length===1);
@@ -2334,7 +2473,13 @@ const TUT={
   numline:'<p><b>Number Line</b></p><p>Click a tick mark to place a point, and click it again to remove it. To graph an inequality, choose <b>Closed Circle</b> or <b>Open Circle</b>, click a tick mark, then choose <b>Shade Left</b> or <b>Shade Right</b>.</p>',
   filltable:'<p><b>Fill in a Table</b></p><p>Type a number in each empty box of the table. You can enter whole numbers, decimals, negatives, and fractions such as 3/4.</p>',
   datadisp:'<p><b>Data Display</b></p><p>Click inside a column to set how tall its bar is, or how many dots it has. Click the top again to remove it. You can also use the arrow keys.</p>',
-  shade:'<p><b>Shade a Model</b></p><p>Click a part of the model to shade it. Click it again to unshade it.</p>'};
+  shade:'<p><b>Shade a Model</b></p><p>Click a part of the model to shade it. Click it again to unshade it.</p>',
+  figure:'<p><b>Draw a Figure</b></p><p>Click grid points for the corners of the figure, in order around it. Click a corner again to remove it.</p>',
+  blanks:'<p><b>Fill in the Blanks</b></p><p>Type a number in each box. You can enter whole numbers, decimals, negatives, and fractions such as 3/4.</p>',
+  label:'<p><b>Label a Picture</b></p><p>Click a label, then click the spot where it goes. Click a placed label to take it back.</p>',
+  order:'<p><b>Put in Order</b></p><p>Use the up and down arrows next to each item, or drag an item, to put the list in order from first to last.</p>',
+  hottext:'<p><b>Hot Text</b></p><p>Click the words or sentences that answer the question. Click again to unselect.</p>',
+  twopart:'<p><b>Two-Part Question</b></p><p>Answer Part A, then answer Part B. Part B asks about your answer to Part A.</p>'};
 
 /* ---------- panels ---------- */
 let zTop=130;
@@ -2787,7 +2932,7 @@ document.getElementById('rvClose').onclick=()=>{ document.getElementById('review
    Shows many questions stacked, each built by the same engine students use, with its answer key. The dashboard sends the
    questions (as code, so graph functions survive) and the details shown beside each one; Add / Remove go back to it. */
 function browseStart(){
-  const BTYPES={mc:'Multiple choice',ms:'Multiselect',num:'Number entry',eq:'Equation editor',inline:'Drop-down',table:'Match table',dnd:'Drag and drop',graph:'Plot a point',graphline:'Graph a line',cline:'Graph a line',graphsys:'Graph a system of inequalities',boxes:'Drag into boxes',hotspot:'Hot spot',graphineq:'Graph an inequality',graphexp:'Graph a function',graphfunc:'Graph a function',numline:'Number line',filltable:'Fill in a table',datadisp:'Data display',shade:'Shade a model'};
+  const BTYPES={mc:'Multiple choice',ms:'Multiselect',num:'Number entry',eq:'Equation editor',inline:'Drop-down',table:'Match table',dnd:'Drag and drop',graph:'Plot a point',graphline:'Graph a line',cline:'Graph a line',graphsys:'Graph a system of inequalities',boxes:'Drag into boxes',hotspot:'Hot spot',graphineq:'Graph an inequality',graphexp:'Graph a function',graphfunc:'Graph a function',numline:'Number line',filltable:'Fill in a table',datadisp:'Data display',shade:'Shade a model',figure:'Draw a figure',blanks:'Fill in the blanks',label:'Label a picture',order:'Put in order',hottext:'Hot text',twopart:'Two-part'};
   const TOK=String(window.SPITZ_BROWSE), post=m=>parent.postMessage(Object.assign({bview:TOK},m),'*');
   const esc=t=>String(t==null?'':t).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
   document.body.classList.add('browse');

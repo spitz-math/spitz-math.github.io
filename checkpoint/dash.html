@@ -330,6 +330,7 @@ details summary{cursor:pointer;color:var(--blue2);font-size:13px;margin-top:8px}
 .oegw select{font-size:13px;padding:4px 6px;border:1px solid #9fb0c8;border-radius:6px} .oegread{margin:8px 0}
 .oenl{display:flex;flex-wrap:wrap;gap:6px 14px;align-items:center;margin:6px 0} .oenl input:not([type]){font-size:14px;padding:4px 6px;border:1px solid #9fb0c8;border-radius:6px;width:84px} .oenl select{font-size:13px;padding:4px 6px;border:1px solid #9fb0c8;border-radius:6px;width:auto;max-width:none}
 .oenl .btn.on{background:#1f6feb;border-color:#1f6feb;color:#fff} .oenlw .oegrid svg{cursor:pointer} .oeshp{display:flex;gap:12px;flex-wrap:wrap;align-items:center;margin-top:8px}
+.oeord .mv{display:flex;gap:2px;padding-top:6px} .oeord .mv button{border:1px solid var(--line);background:#fff;border-radius:4px;padding:2px 6px} .oehtl{margin-top:2px}
 .oeft td.fb{background:#fff6cc} .oeft .fbt{border:0;background:none;font-size:17px;padding:0 4px;cursor:pointer;vertical-align:middle} .oetab.oeft th input,.oetab.oeft td input:not([type]){width:96px}
 @media (max-width:700px){ .oeqh .num{min-width:0;width:100%} #oeId{width:100%} }
 /* question bank page */
@@ -517,7 +518,8 @@ details summary{cursor:pointer;color:var(--blue2);font-size:13px;margin-top:8px}
       <button class="btn" data-oeadd="boxes">Drag into boxes</button><button class="btn" data-oeadd="graph">Plot a point</button><button class="btn" data-oeadd="graphline">Draw a line</button>
       <button class="btn" data-oeadd="dnd">Drag into groups</button><button class="btn" data-oeadd="hotspot">Hot spot</button><button class="btn" data-oeadd="graphineq">Graph an inequality</button>
       <button class="btn" data-oeadd="graphsys">Graph a system</button><button class="btn" data-oeadd="graphfunc">Graph a function</button><button class="btn" data-oeadd="graphexp">Graph an exponential curve</button>
-      <button class="btn" data-oeadd="numline">Number line</button><button class="btn" data-oeadd="filltable">Fill in a table</button><button class="btn" data-oeadd="datadisp">Data display</button><button class="btn" data-oeadd="shade">Shade a model</button></div></section>
+      <button class="btn" data-oeadd="numline">Number line</button><button class="btn" data-oeadd="filltable">Fill in a table</button><button class="btn" data-oeadd="datadisp">Data display</button><button class="btn" data-oeadd="shade">Shade a model</button>
+      <button class="btn" data-oeadd="figure">Draw a figure</button><button class="btn" data-oeadd="blanks">Fill in the blanks</button><button class="btn" data-oeadd="label">Label a picture</button><button class="btn" data-oeadd="order">Put in order</button><button class="btn" data-oeadd="hottext">Hot text</button><button class="btn" data-oeadd="twopart">Two-part</button></div></section>
   </div></div>
   <footer class="oebar"><span id="oeCount" class="hint"></span><span class="msg2" id="oeMsg"></span><div class="sp"></div>
     <button class="btn" id="oePreview">Preview</button><button class="btn" id="oeDraft">Save draft</button><button class="btn pri" id="oePublish">Publish</button></footer>
@@ -854,8 +856,8 @@ $('#mtBank').onclick=async()=>{ const b=$('#mtBank'); b.disabled=true;
 
 /* ---------- write a test: a teacher's own questions (stcOwnGet / stcOwnSave). The answers stay in the Sheet; GitHub gets the test without them. ---------- */
 const OE_COURSES=['6th Math','7th Math','8th Math','Algebra I','6th RLA','7th RLA','8th RLA','8th Science','8th History','Other'];
-const OE_TYPES={mc:'Multiple choice',ms:'Check all that apply',num:'Number answer',eq:'Equation editor',inline:'Drop-down',table:'Table match',boxes:'Drag into boxes',graph:'Plot a point',graphline:'Draw a line',dnd:'Drag into groups',hotspot:'Hot spot',graphineq:'Graph an inequality',graphsys:'Graph a system of inequalities',graphfunc:'Graph a function',graphexp:'Graph an exponential curve',numline:'Number line',filltable:'Fill in a table',datadisp:'Data display',shade:'Shade a model',text:'Written answer'};
-const OE_PTS={mc:1,ms:2,num:1,eq:1,inline:1,table:2,boxes:2,graph:1,graphline:1,dnd:1,hotspot:1,graphineq:1,graphsys:2,graphfunc:1,graphexp:1,numline:1,filltable:1,datadisp:1,shade:1,text:2}, OE_L='ABCDEFGH';
+const OE_TYPES={mc:'Multiple choice',ms:'Check all that apply',num:'Number answer',eq:'Equation editor',inline:'Drop-down',table:'Table match',boxes:'Drag into boxes',graph:'Plot a point',graphline:'Draw a line',dnd:'Drag into groups',hotspot:'Hot spot',graphineq:'Graph an inequality',graphsys:'Graph a system of inequalities',graphfunc:'Graph a function',graphexp:'Graph an exponential curve',numline:'Number line',filltable:'Fill in a table',datadisp:'Data display',shade:'Shade a model',figure:'Draw a figure',blanks:'Fill in the blanks',label:'Label a picture',order:'Put in order',hottext:'Hot text',twopart:'Two-part',text:'Written answer'};
+const OE_PTS={mc:1,ms:2,num:1,eq:1,inline:1,table:2,boxes:2,graph:1,graphline:1,dnd:1,hotspot:1,graphineq:1,graphsys:2,graphfunc:1,graphexp:1,numline:1,filltable:1,datadisp:1,shade:1,figure:1,blanks:1,label:1,order:1,hottext:1,twopart:2,text:2}, OE_L='ABCDEFGHIJKL';
 const OE_SYM='≤ ≥ ≠ ± × ÷ − · π √ ∛ ° ² ³ ½ ⅓ ¼ ¾ ∠ △ ⊥ ∥ ≈ ∞ → ↔ ¢ á é í ó ú ñ ¿ ¡ “ ” —'.split(' ');
 let OE=null;
 function oeCourseFor(subject){ const s=String(subject||'').toLowerCase(), g=(s.match(/\b([678])(?:th)?\b/)||[])[1];
@@ -892,7 +894,10 @@ function oeBlank(type){ const it={type,text:'',points:OE_PTS[type],std:'',passag
   if(type==='numline'){ it.mode='points'; it.from='-5'; it.to='5'; it.step='1'; it.lab=1; it.answer=[]; it.ineq={k:null,closed:true,dir:0}; }
   if(type==='filltable'){ it.head=['','']; it.cells=[['',''],['',''],['','']]; it.blank=[[false,false],[false,false],[false,false]]; }
   if(type==='datadisp'){ it.kind='bar'; it.labels=['','','']; it.answer=['','','']; it.ymax='10'; it.ystep='1'; it.xlab=''; it.ylab=''; }
-  if(type==='shade'){ it.kind='bar'; it.parts=4; it.rows=10; it.cols=10; it.wholes=1; it.answer=''; } return it; }
+  if(type==='shade'){ it.kind='bar'; it.parts=4; it.rows=10; it.cols=10; it.wholes=1; it.answer=''; }
+  if(type==='figure'){ it.R=10; it.answer=[]; it.given=[]; it.act='answer'; } if(type==='blanks'){ it.sent=''; it.answer=[]; }
+  if(type==='label'){ it.spots=[]; it.tiles=['','','']; it.answer=[]; } if(type==='order'){ it.tiles=['','','']; } if(type==='hottext'){ it.ht=''; it.answer=[]; }
+  if(type==='twopart'){ it.qa=''; it.ca=['','','','']; it.aa=null; it.qb=''; it.cb=['','','','']; it.ab=[]; } return it; }
 /* the interactive types. While editing, a sentence or answer line marks its drop-downs and boxes [1], [2] …; the server gets {0}, {1} … in the order they appear */
 const oeDe=h=>{ const t=document.createElement('textarea'); t.innerHTML=h||''; return t.value; };
 const oeToMarks=s=>String(s||'').replace(/\{(\d)\}/g,(m,k)=>'['+(+k+1)+']');
@@ -923,6 +928,7 @@ function oeGrid(R,pts,line,onPick,o={}){ oeGrid.n=(oeGrid.n||0)+1; const xr=R, y
   if(o.hline!=null) g+=`<line x1="${X(-xr)}" y1="${Y(o.hline)}" x2="${X(xr)}" y2="${Y(o.hline)}" stroke="#d9480f" stroke-width="1.8" stroke-dasharray="6 5"/>`;
   if(o.curve){ let d='', pen=false; for(let x=-xr;x<=xr+1e-9;x+=0.02){ const y=o.curve(x); if(!isFinite(y)||Math.abs(y)>yr*4){ pen=false; continue; } d+=(pen?'L':'M')+X(x).toFixed(1)+' '+Y(y).toFixed(1); pen=true; } g+=`<path d="${d}" fill="none" stroke="#1f6feb" stroke-width="2.5" ${cl}/>`; }
   (o.lines||[]).forEach(L=>{ g+=ln(L.P,L.Q,L.dash,L.color); });
+  (o.polys||[]).forEach(F=>{ if(F.P.length>1) g+=`<polygon points="${F.P.map(C=>X(C[0])+','+Y(C[1])).join(' ')}" fill="${F.color}" fill-opacity="${F.P.length>2?.15:0}" stroke="${F.color}" stroke-width="2.4"${F.dash?' stroke-dasharray="7 5"':''}/>`; });
   if(line&&pts.length===2) g+=ln(pts[0],pts[1],o.dash);
   pts.forEach(P=>{ g+=`<circle cx="${X(P[0])}" cy="${Y(P[1])}" r="${P[3]?8:6}" fill="${P[2]||'#1f6feb'}" stroke="#fff" stroke-width="1.5"/>`+(P[3]?`<text x="${X(P[0])}" y="${Y(P[1])+3.5}" font-size="10" font-weight="700" text-anchor="middle" fill="#fff" pointer-events="none">${P[3]}</text>`:''); });
   const w=document.createElement('div'); w.className='oegrid';
@@ -958,6 +964,10 @@ function oeShadeSvg(it,a){ const g=it.kind==='grid', per=g?it.rows*it.cols:it.pa
     else if(g){ const c=Math.min(18,180/Math.max(it.rows,it.cols)); for(let k=0;k<per;k++) s+=`<rect x="${(k%it.cols)*c}" y="${Math.floor(k/it.cols)*c}" width="${c}" height="${c}" fill="${on(k)}" fill-opacity=".8" stroke="#333"/>`; out+=`<svg viewBox="-1 -1 ${c*it.cols+2} ${c*it.rows+2}" width="${c*it.cols+2}" height="${c*it.rows+2}">${s}</svg>`; }
     else { const R=40, P=t=>`${(R*Math.cos(t)).toFixed(2)} ${(R*Math.sin(t)).toFixed(2)}`; for(let k=0;k<per;k++){ const a0=-Math.PI/2+k*2*Math.PI/per, a1=a0+2*Math.PI/per; s+=per===1?`<circle r="${R}" fill="${on(0)}" fill-opacity=".8" stroke="#333"/>`:`<path d="M0 0L${P(a0)}A${R} ${R} 0 0 1 ${P(a1)}Z" fill="${on(k)}" fill-opacity=".8" stroke="#333"/>`; } out+=`<svg viewBox="-42 -42 84 84" width="84" height="84">${s}</svg>`; } }
   return out; }
+/* put in order: the mixed-up order students see (Code.gs tqPerm_) */
+function oePerm(tiles){ const n=tiles.length; let h=2166136261; String(tiles.join('|')).split('').forEach(c=>{ h=Math.imul(h^c.charCodeAt(0),16777619)>>>0; });
+  const P=[]; for(let k=0;k<n;k++) P.push(k); for(let k=n-1;k>0;k--){ h=(Math.imul(h,1103515245)+12345)>>>0; const j=h%(k+1), t=P[k]; P[k]=P[j]; P[j]=t; }
+  if(P.every((v,k)=>v===k)) P.push(P.shift()); return P; }
 const oeNum=v=>{ const r=Math.round(v*1000)/1000; return String(r).replace('-','−'); };
 const oePt=P=>'('+String(P[0]).replace('-','−')+', '+String(P[1]).replace('-','−')+')';
 /* the answer part of a card for the interactive types */
@@ -1175,6 +1185,88 @@ function oeAnsMore(it,i,ans,redo){ const t=it.type, inp=(cls,v,ph,lbl)=>`<input 
     const sel=(c,f)=>{ const x=ans.querySelector('.'+c); if(x) x.onchange=e=>{ it[f]=c==='sk'?e.target.value:+e.target.value; oeDirty(); redo(); }; };
     sel('sk','kind'); sel('sr','rows'); sel('sc','cols'); sel('sp','parts'); sel('sw','wholes');
     ans.querySelector('.sa').onchange=e=>{ it.answer=e.target.value.trim(); oeDirty(); redo(); };
+  } else if(t==='figure'){
+    const giv=it.act==='given', A=it.answer, G=it.given;
+    ans.innerHTML=`<div class="oesub">${giv?'Starting figure · click its corners in order':'Correct figure · click its corners in order'}</div>
+      <div class="oenl"><label class="hint"><input type="radio" name="oe${i}fa" value="answer"${giv?'':' checked'}> Clicking the correct figure (blue)</label><label class="hint"><input type="radio" name="oe${i}fa" value="given"${giv?' checked':''}> Clicking a starting figure students see (gray, optional)</label></div>
+      <div class="oegw"><div class="oeg"></div><div><label class="hint">Grid <select class="gr"><option value="10"${it.R!==5?' selected':''}>−10 to 10</option><option value="5"${it.R===5?' selected':''}>−5 to 5</option></select></label>
+      <p class="oegread">${A.length?'Correct: <b>'+A.map(oePt).join(', ')+'</b>':'No correct figure yet.'}${G.length?'<br>Starting figure: '+G.map(oePt).join(', '):''}</p>
+      <button type="button" class="btn" data-gc="1">Clear ${giv?'starting':'correct'} figure</button>
+      <p class="hint">Students click the corners on the grid. It is right when their corners are the same as yours, in any order. Use a starting figure for transformations, like reflecting a triangle. At 2 points, partly right earns 1 point.</p></div></div>`;
+    ans.querySelector('.oeg').appendChild(oeGrid(it.R,[...G.map(P=>[P[0],P[1],'#8a94a6']),...A.map(P=>[P[0],P[1]])],false,P=>{ const L=giv?G:A, j=L.findIndex(Q=>Q[0]===P[0]&&Q[1]===P[1]); if(j>=0) L.splice(j,1); else if(L.length<10) L.push(P); oeDirty(); redo(); },{polys:[{P:G,dash:true,color:'#8a94a6'},{P:A,color:'#1f6feb'}]}));
+    ans.querySelectorAll(`input[name="oe${i}fa"]`).forEach(x=>x.onchange=()=>{ it.act=x.value; redo(); });
+    ans.querySelector('.gr').onchange=e=>{ it.R=+e.target.value; const f=P=>Math.abs(P[0])<=it.R&&Math.abs(P[1])<=it.R; it.answer=A.filter(f); it.given=G.filter(f); oeDirty(); redo(); };
+    ans.querySelector('[data-gc]').onclick=()=>{ if(giv) it.given=[]; else it.answer=[]; oeDirty(); redo(); };
+  } else if(t==='blanks'){
+    const n=it.answer.length;
+    ans.innerHTML=`<div class="oesub">Sentence with number boxes</div><div class="oesent"></div>
+      <div class="row" style="margin-top:6px"><button type="button" class="btn" data-addm="1"${n>=6?' disabled':''}>+ Add a box</button><span class="hint">Click in the sentence where the box goes, then click the button. [1] marks box 1.</span></div>
+      <div class="oesub">Correct number for each box</div><div class="oeboxkey">${it.answer.map((a,k)=>`<label class="hint">Box ${k+1} ${inp('ba',a,'like 12 or 3/4','Correct number for box '+(k+1)).replace('<input','<input data-bk="'+k+'" inputmode="decimal" style="width:110px;font-size:14px;padding:4px 6px;border:1px solid #9fb0c8;border-radius:6px"')}</label><button type="button" class="rm" data-rmb="${k}" title="Remove box ${k+1}">✕</button>`).join('')||'<span class="hint">Add a box first.</span>'}</div>
+      <p class="hint">Students type a number in each box. 3/4 and 0.75 both count for 3/4. Points are split across the boxes.</p>`;
+    const sent=oeRich(it.sent,'Type the sentence, like: The slope is [1] and the y-intercept is [2].','mini',()=>{ it.sent=sent.html(); oeDirty(); }); ans.querySelector('.oesent').appendChild(sent);
+    const add=ans.querySelector('[data-addm]'); add.addEventListener('mousedown',e=>e.preventDefault());
+    add.onclick=()=>{ it.answer.push(''); oeMarkIn(sent,' ['+it.answer.length+'] '); it.sent=sent.html(); oeDirty(); redo(); };
+    ans.querySelectorAll('[data-bk]').forEach(x=>x.oninput=()=>{ it.answer[+x.dataset.bk]=x.value.trim(); oeDirty(); });
+    ans.querySelectorAll('[data-rmb]').forEach(x=>x.onclick=()=>{ const k=+x.dataset.rmb; it.answer.splice(k,1); it.sent=oeUnmark(it.sent,k+1); oeDirty(); redo(); });
+  } else if(t==='label'){
+    const opts=sel=>it.tiles.map((c,j)=>`<option value="${j}"${sel===j?' selected':''}>${OE_L[j]}: ${esc(String(c).slice(0,30)||'(blank)')}</option>`).join('');
+    ans.innerHTML=`<div class="oesub">Spots on the picture · click the picture to add a spot</div><div class="oegw"><div class="oeg"></div><div>
+      <p class="oegread">${it.spots.length?plural(it.spots.length,'spot'):'No spots yet.'}</p><button type="button" class="btn" data-gc="1">Clear spots</button><p class="hint">Click a numbered spot to remove it.</p></div></div>
+      <div class="oesub">Labels students place (add extra wrong ones if you like)</div>${it.tiles.map((c,j)=>`<div class="oech"><span class="mark">${OE_L[j]}</span>${inp('dc lbtx',c,'Label '+OE_L[j],'Label '+OE_L[j])}<button type="button" class="rm" data-rt="${j}"${it.tiles.length<=2?' disabled':''} title="Remove label ${OE_L[j]}">✕</button></div>`).join('')}
+      ${it.tiles.length<12?'<button type="button" class="btn" data-at="1" style="margin-top:6px">+ Add a label</button>':''}
+      <div class="oesub">Correct label for each spot</div><div class="oeboxkey">${it.answer.map((a,k)=>`<label class="hint">Spot ${k+1} <select data-sk="${k}"><option value="">Pick…</option>${opts(a)}</select></label>`).join('')||'<span class="hint">Add a spot first.</span>'}</div>
+      <p class="hint">Students click a label, then a spot. Each label goes on one spot. Points are split across the spots.</p>`;
+    const host=ans.querySelector('.oeg');
+    if(!it.pic) host.innerHTML='<p class="oewarn">Add a picture above first (Add a picture). The spots go on it.</p>';
+    else { const src=OE.pics[it.pic.file]||(ROOT+'tests/'+encodeURIComponent(OE.id)+'/img/'+it.pic.file), box=document.createElement('div'); box.className='oehimg';
+      box.innerHTML=`<img src="${esc(src)}" alt="The picture students label">`+it.spots.map((P,k)=>`<button type="button" class="hsd" style="left:${P[0]}%;top:${P[1]}%" data-k="${k}" title="Spot ${k+1}">${k+1}</button>`).join('');
+      box.addEventListener('click',e=>{ const d=e.target.closest('.hsd'); if(d){ const k=+d.dataset.k; it.spots.splice(k,1); it.answer.splice(k,1); oeDirty(); redo(); return; }
+        if(it.spots.length>=8) return; const im=box.querySelector('img').getBoundingClientRect(); it.spots.push([Math.round((e.clientX-im.left)/im.width*1000)/10,Math.round((e.clientY-im.top)/im.height*1000)/10]); it.answer.push(null); oeDirty(); redo(); });
+      host.appendChild(box); }
+    ans.querySelectorAll('input.lbtx').forEach((x,j)=>x.oninput=()=>{ it.tiles[j]=x.value; oeDirty(); });
+    ans.querySelectorAll('[data-sk]').forEach(x=>x.onchange=()=>{ it.answer[+x.dataset.sk]=x.value===''?null:+x.value; oeDirty(); });
+    ans.addEventListener('click',e=>{ const x=e.target.closest('button'); if(!x) return;
+      if(x.dataset.rt){ const j=+x.dataset.rt; it.tiles.splice(j,1); it.answer=it.answer.map(a=>a===j?null:a>j?a-1:a); } else if(x.dataset.at) it.tiles.push(''); else if(x.dataset.gc){ it.spots=[]; it.answer=[]; } else return; oeDirty(); redo(); });
+  } else if(t==='order'){
+    ans.innerHTML=`<div class="oesub">Items · type them in the correct order, first to last</div><div class="oeord"></div>
+      ${it.tiles.length<8?'<button type="button" class="btn" data-at="1" style="margin-top:6px">+ Add an item</button>':''}
+      <p class="hint">Students see the items mixed up and move them into order. Points are split across the places (all in the right place = full points).</p>`;
+    const box=ans.querySelector('.oeord');
+    it.tiles.forEach((c,j)=>{ const row=document.createElement('div'); row.className='oech'; row.innerHTML=`<span class="mark">${j+1}</span>`;
+      const r=oeRich(c,'Item '+(j+1),'mini',()=>{ it.tiles[j]=r.html(); oeDirty(); }); row.appendChild(r);
+      row.insertAdjacentHTML('beforeend',`<span class="mv"><button type="button" data-om="${j},-1" aria-label="Move item ${j+1} up"${j?'':' disabled'}>▲</button><button type="button" data-om="${j},1" aria-label="Move item ${j+1} down"${j<it.tiles.length-1?'':' disabled'}>▼</button></span><button type="button" class="rm" data-rt="${j}"${it.tiles.length<=2?' disabled':''} title="Remove item ${j+1}">✕</button>`);
+      box.appendChild(row); });
+    ans.addEventListener('click',e=>{ const x=e.target.closest('button'); if(!x) return;
+      if(x.dataset.om){ const [j,d]=x.dataset.om.split(',').map(Number); [it.tiles[j],it.tiles[j+d]]=[it.tiles[j+d],it.tiles[j]]; } else if(x.dataset.rt) it.tiles.splice(+x.dataset.rt,1); else if(x.dataset.at) it.tiles.push(''); else return; oeDirty(); redo(); });
+  } else if(t==='hottext'){
+    ans.innerHTML=`<div class="oesub">Hot text · select words, then click Make clickable</div><div class="oesent"></div>
+      <div class="row" style="margin-top:6px"><button type="button" class="btn" data-mk="1">Make clickable</button><span class="hint">Clickable parts show as [[like this]]. Delete the [[ ]] to undo one.</span></div>
+      <div class="oesub">Check every correct part</div><div class="oehtl"></div>`;
+    const list=ans.querySelector('.oehtl');
+    const parts=()=>[...String(it.ht).matchAll(/\[\[([\s\S]+?)\]\]/g)].map(m=>oePlain(m[1]));
+    const fill=()=>{ const P=parts(); it.answer=it.answer.filter(k=>k<P.length);
+      list.innerHTML=P.map((p,k)=>`<label class="hint oechk"><input type="checkbox" data-hk="${k}"${it.answer.includes(k)?' checked':''}> ${OE_L[k]||k+1}: ${esc(p.slice(0,90))}</label>`).join('')+(P.length?'':'<span class="hint">No clickable parts yet.</span>')+'<p class="hint">Check one correct part, or more for a "Select TWO" question. With more than one correct and 2 or more points, partly right earns 1 point.</p>';
+      list.querySelectorAll('[data-hk]').forEach(x=>x.onchange=()=>{ const k=+x.dataset.hk; it.answer=x.checked?[...new Set([...it.answer,k])].sort((a,b)=>a-b):it.answer.filter(v=>v!==k); oeDirty(); }); };
+    const ed=oeRich(it.ht,'Type or paste the text students read, then make the parts they can click.','',()=>{ it.ht=ed.html(); oeDirty(); fill(); }); ans.querySelector('.oesent').appendChild(ed);
+    const mkb=ans.querySelector('[data-mk]'); mkb.addEventListener('mousedown',e=>e.preventDefault());
+    mkb.onclick=()=>{ const sel=getSelection(), area=ed.querySelector('.oeed'); if(!sel.rangeCount||sel.isCollapsed||!area.contains(sel.anchorNode)) return say($('#oeMsg'),'Select some words in the hot text first.','err');
+      const txt=sel.toString(); area.focus(); document.execCommand('insertText',false,'[['+txt.trim()+']]'+(/\s$/.test(txt)?' ':'')); it.ht=ed.html(); oeDirty(); fill(); };
+    fill();
+  } else if(t==='twopart'){
+    ans.innerHTML=`<div class="oesub">Part A · question and choices (click the circle by the correct one)</div><div class="tpa"></div><div class="oesub">Part B · question and choices (check every correct one)</div><div class="tpb"></div>
+      <p class="hint">Like STAAR: at 2 points, Part A right earns 1 point and both parts right earn 2. Part B alone earns nothing.</p>`;
+    const part=(key,host)=>{ const q=key==='a'?'qa':'qb', ch=key==='a'?'ca':'cb', an=key==='a'?'aa':'ab', multi=key==='b';
+      const rq=oeRich(it[q],key==='a'?'Part A question, like: What is the main idea of the passage?':'Part B question, like: Which detail supports the answer to Part A?','mini',()=>{ it[q]=rq.html(); oeDirty(); }); host.appendChild(rq);
+      it[ch].forEach((c,k)=>{ const on=multi?it[an].includes(k):it[an]===k, row=document.createElement('div'); row.className='oech'+(on?' right':'');
+        row.innerHTML=`<label class="mark"><input type="${multi?'checkbox':'radio'}" name="oe${i}${key}" ${on?'checked':''} aria-label="Part ${key.toUpperCase()} choice ${OE_L[k]} is correct">${OE_L[k]}</label>`;
+        const r=oeRich(c,'Choice '+OE_L[k],'mini',()=>{ it[ch][k]=r.html(); oeDirty(); }); row.appendChild(r);
+        const rm=document.createElement('button'); rm.type='button'; rm.className='rm'; rm.textContent='✕'; rm.disabled=it[ch].length<=2; rm.title='Remove choice '+OE_L[k];
+        rm.onclick=()=>{ it[ch].splice(k,1); if(multi) it[an]=it[an].filter(v=>v!==k).map(v=>v>k?v-1:v); else it[an]=it[an]===k?null:it[an]>k?it[an]-1:it[an]; oeDirty(); redo(); }; row.appendChild(rm);
+        row.querySelector('input').onchange=e=>{ if(multi){ const s=new Set(it[an]); e.target.checked?s.add(k):s.delete(k); it[an]=[...s].sort((a,b)=>a-b); } else it[an]=k;
+          host.querySelectorAll('.oech').forEach((x,j)=>x.classList.toggle('right',multi?it[an].includes(j):it[an]===j)); oeDirty(); };
+        host.appendChild(row); });
+      if(it[ch].length<8){ const b=document.createElement('button'); b.type='button'; b.className='btn'; b.style.marginTop='6px'; b.textContent='+ Add a choice'; b.onclick=()=>{ it[ch].push(''); oeDirty(); redo(); }; host.appendChild(b); } };
+    part('a',ans.querySelector('.tpa')); part('b',ans.querySelector('.tpb'));
   } }
 /* server shape -> editor shape (plain text where the editor uses plain boxes; marks as [1], [2] …) */
 function oeEditable(it){ const o=Object.assign({},it,{points:it.max});
@@ -1193,6 +1285,12 @@ function oeEditable(it){ const o=Object.assign({},it,{points:it.max});
     if(o.mode==='ineq'){ o.ineq={k:a&&a.k!=null?a.k:null,closed:!!(a&&a.closed),dir:a&&a.dir||0}; o.answer=[]; } else { o.answer=Array.isArray(a)?a.filter(k=>k!=null).slice():[]; o.ineq={k:null,closed:true,dir:0}; } }
   if(it.type==='filltable'){ const A=(it.answer||[]).slice(); let j=0; o.head=(it.head||[]).map(oeDe); o.cells=(it.cells||[]).map(r=>r.map(c=>c==null?String(A[j++]??''):oeDe(c))); o.blank=(it.cells||[]).map(r=>r.map(c=>c==null)); }
   if(it.type==='datadisp'){ o.labels=(it.labels||[]).map(oeDe); o.answer=(it.answer||[]).map(v=>String(v??'')); o.ymax=String(it.ymax??''); o.ystep=String(it.ystep??''); o.xlab=oeDe(it.xlab||''); o.ylab=oeDe(it.ylab||''); o.kind=it.kind||'bar'; }
+  if(it.type==='figure'){ o.answer=(it.answer||[]).map(P=>P.slice()); o.given=(it.given||[]).map(P=>P.slice()); o.R=it.R||10; o.act='answer'; }
+  if(it.type==='blanks'){ o.sent=oeToMarks(it.sent); o.answer=(it.answer||[]).map(String); }
+  if(it.type==='label'){ o.spots=(it.spots||[]).map(P=>P.slice()); o.tiles=(it.tiles||[]).map(oeDe); o.answer=(it.answer||[]).slice(); }
+  if(it.type==='order'){ const T=it.tiles||[], A=Array.isArray(it.answer)&&it.answer.length===T.length?it.answer:T.map((x,k)=>k); o.tiles=A.map(k=>T[k]??''); }
+  if(it.type==='hottext'){ o.ht=it.ht||''; o.answer=(it.answer||[]).slice(); }
+  if(it.type==='twopart'){ const a=it.answer||{}; o.qa=it.qa||''; o.qb=it.qb||''; o.ca=(it.ca||[]).slice(); o.cb=(it.cb||[]).slice(); o.aa=a.a??null; o.ab=(a.b||[]).slice(); }
   if(it.type==='shade'){ o.kind=it.kind||'bar'; o.parts=+it.parts||4; o.rows=+it.rows||10; o.cols=+it.cols||10; o.wholes=+it.wholes||1; o.answer=String(it.answer??''); }
   return o; }
 /* editor shape -> what stcOwnSave takes */
@@ -1216,6 +1314,12 @@ function oeOut(it){ const o={type:it.type,text:it.text,points:+it.points,std:it.
   else if(t==='numline'){ o.mode=it.mode; o.from=it.from; o.to=it.to; o.step=it.step; o.lab=it.lab; o.answer=it.mode==='ineq'?Object.assign({},it.ineq):it.answer.slice(); }
   else if(t==='filltable'){ o.head=it.head.map(esc); o.cells=it.cells.map((r,ri)=>r.map((c,ci)=>it.blank[ri][ci]?null:esc(c))); o.answer=[]; it.cells.forEach((r,ri)=>r.forEach((c,ci)=>{ if(it.blank[ri][ci]) o.answer.push(String(c).trim()); })); }
   else if(t==='datadisp'){ o.kind=it.kind; o.labels=it.labels.map(esc); o.ymax=it.ymax; o.ystep=it.kind==='dot'?'1':it.ystep; o.xlab=esc(it.xlab||''); o.ylab=esc(it.ylab||''); o.answer=it.answer.map(v=>String(v).trim()===''?0:oeNv(v)); }
+  else if(t==='figure'){ o.R=it.R; o.answer=it.answer; if(it.given.length) o.given=it.given; }
+  else if(t==='blanks'){ const m=oeFromMarks(it.sent,it.answer); o.sent=m.text; o.answer=m.list.map(v=>v==null?'':v); }
+  else if(t==='label'){ o.spots=it.spots; o.tiles=it.tiles.map(esc); o.answer=it.answer; }
+  else if(t==='order'){ o.tiles=it.tiles; o.answer=it.tiles.map((x,k)=>k); }
+  else if(t==='hottext'){ o.ht=it.ht; o.answer=it.answer; }
+  else if(t==='twopart'){ o.qa=it.qa; o.ca=it.ca; o.qb=it.qb; o.cb=it.cb; o.answer={a:it.aa,b:it.ab}; }
   else if(t==='shade'){ o.kind=it.kind; o.parts=it.parts; o.rows=it.rows; o.cols=it.cols; o.wholes=it.wholes; o.answer=Math.round(+it.answer)||0; }
   return o; }
 /* problems with one interactive question (the editor's own shape), as the server would say them */
@@ -1248,6 +1352,16 @@ function oeCheckMore(it,q,P,i){ const t=it.type, once=(s,n,w)=>{ const L=oeLabel
     const ys=it.kind==='dot'?1:oeNv(it.ystep), ym=oeNv(it.ymax), lv=ym/ys;
     if(!(ys>0)||!(ym>0)||!(lv>=1&&lv<=20&&Math.abs(lv-Math.round(lv))<1e-6)) P.push([i,q+(it.kind==='dot'?'use 1 to 20 dots at most in a column.':'the scale needs 1 to 20 steps from 0 to the top. Check the top number and the step.')]);
     else { const h=it.answer.map(v=>String(v).trim()===''?0:oeNv(v)); h.forEach((v,k)=>{ if(!(v>=0&&v<=ym+1e-9&&Math.abs(v/ys-Math.round(v/ys))<1e-6)) P.push([i,q+'the height for label '+(k+1)+' has to be on the scale (0 to '+oeNum(ym)+', counting by '+oeNum(ys)+').']); }); if(h.every(v=>!v)) P.push([i,q+'give the correct heights for the columns.']); } }
+  if(t==='figure'){ if(it.answer.length<3) P.push([i,q+'click 3 to 10 corners for the correct figure.']); if(it.given.length===1) P.push([i,q+'the starting figure needs 2 to 10 corners, or none.']); }
+  if(t==='blanks'){ if(!oePlain(it.sent)) P.push([i,q+'type the sentence.']); if(!it.answer.length) P.push([i,q+'the sentence needs boxes, put in with Add a box.']); once(it.sent,it.answer.length,'box');
+    it.answer.forEach((a,k)=>{ if(!isFinite(oeNv(String(a).replace(/,/g,'')))) P.push([i,q+'box '+(k+1)+' needs its correct number, like 12, -3.5 or 3/4.']); }); }
+  if(t==='label'){ if(!it.pic) P.push([i,q+'add a picture to label.']); else if(!it.spots.length) P.push([i,q+'click the picture to place at least 1 spot.']);
+    it.tiles.forEach((c,j)=>{ if(!String(c).trim()) P.push([i,q+'label '+OE_L[j]+' is blank.']); }); it.answer.forEach((a,k)=>{ if(a==null) P.push([i,q+'pick the correct label for spot '+(k+1)+'.']); });
+    if(it.answer.some((a,k)=>a!=null&&it.answer.indexOf(a)!==k)) P.push([i,q+'a label is used on two spots. Each label goes on one spot.']); if(it.tiles.length<it.spots.length) P.push([i,q+'add a label for every spot.']); }
+  if(t==='order') it.tiles.forEach((c,j)=>{ if(!oePlain(c)) P.push([i,q+'item '+(j+1)+' is blank.']); });
+  if(t==='hottext'){ const n=(String(it.ht).match(/\[\[[\s\S]+?\]\]/g)||[]).length; if(n<2||n>12) P.push([i,q+'the hot text needs 2 to 12 clickable parts, made with Make clickable.']); else if(!it.answer.length) P.push([i,q+'check the correct clickable part.']); else if(it.answer.length===n) P.push([i,q+'at least one clickable part has to be wrong.']); }
+  if(t==='twopart'){ ['a','b'].forEach(k=>{ const Q=k==='a'?it.qa:it.qb, C=k==='a'?it.ca:it.cb; if(!oePlain(Q)) P.push([i,q+'type the Part '+k.toUpperCase()+' question.']); C.forEach((c,j)=>{ if(!oePlain(c)) P.push([i,q+'Part '+k.toUpperCase()+' choice '+OE_L[j]+' is blank.']); }); });
+    if(it.aa==null) P.push([i,q+'mark the correct Part A answer.']); if(!it.ab.length) P.push([i,q+'mark the correct Part B answer.']); else if(it.ab.length===it.cb.length) P.push([i,q+'at least one Part B choice has to be wrong.']); }
   if(t==='shade'){ const tot=(it.kind==='grid'?it.rows*it.cols:it.parts)*it.wholes, a=+it.answer; if(!(Number.isInteger(a)&&a>=1&&a<=tot)) P.push([i,q+'type how many parts are shaded, 1 to '+tot+'.']); }
   if(t==='graphineq'){ if(it.answer.length<2) P.push([i,q+'click two points on the boundary line.']); else if(it.answer[0][0]===it.answer[1][0]) P.push([i,q+'the boundary line can\'t go straight up and down. Use y = mx + b lines.']); } }
 /* preview: the extra test.js fields for one question (server shape), with its key, as Code.gs writes them for the teacher */
@@ -1263,6 +1377,12 @@ function oeJsMore(it,J){ const t=it.type, o=[];
   if(t==='graphfunc'){ const a=it.answer, good=oeCurve(a.f,a.p,a.asym); o.push(good?'ftype:'+J(a.f)+',asym:'+a.asym+',kp:'+J(a.p):'ftype:"linear",asym:0,kp:[[0,99],[1,99]]'); }
   if(t==='graphexp'){ o.push('R:'+it.R); const a=it.answer; if(oeCurve('exponential',a,0)){ const b=Math.pow(a[1][1]/a[0][1],1/(a[1][0]-a[0][0])); o.push('a:'+(a[0][1]/Math.pow(b,a[0][0])),'b:'+b); } else o.push('a:99,b:99'); }
   if(t==='graphineq'){ const a=it.answer; o.push('R:'+it.R); if(a.length===2&&a[0][0]!==a[1][0]){ const m=(a[1][1]-a[0][1])/(a[1][0]-a[0][0]); o.push('m:'+m,'b:'+(a[0][1]-m*a[0][0]),'op:'+J(it.op)); } else o.push('m:0,b:99,op:'+J(it.op)); }
+  if(t==='figure'){ o.push('R:'+it.R,'answer:'+J(it.answer)); if(it.given) o.push('given:'+J(it.given)); }
+  if(t==='blanks') o.push('text:'+J(it.sent||''),'answer:'+J(it.answer.map(v=>{ const x=oeNv(String(v).replace(/,/g,'')); return isFinite(x)?x:null; })));
+  if(t==='label'){ o.push('spots:'+J(it.spots),'tiles:'+J(it.tiles.map(c=>c||'&nbsp;')),'answer:'+J(it.answer)); if(it.pic) o.push('img:ASSET('+J('img/'+it.pic.file)+')','imgw:'+it.pic.w); else o.push('img:""'); }
+  if(t==='order'){ const Pm=oePerm(it.tiles); o.push('tiles:'+J(Pm.map(k=>it.tiles[k]||'&nbsp;')),'answer:'+J(it.answer.map(k=>Pm.indexOf(k)))); }
+  if(t==='hottext') o.push('ht:'+J(it.ht||''),'pick:'+Math.max(1,it.answer.length),'answer:'+J(it.answer));
+  if(t==='twopart') o.push('qa:'+J(it.qa||''),'ca:'+J(it.ca.map(c=>c||'&nbsp;')),'qb:'+J(it.qb||''),'cb:'+J(it.cb.map(c=>c||'&nbsp;')),'pickb:'+Math.max(1,(it.answer.b||[]).length),'answer:'+J({a:it.answer.a,b:it.answer.b||[]}));
   if(t==='numline'){ const L=oeNl(it), good=L.n>=2&&L.n<=40; o.push('mode:'+J(it.mode),'from:'+(good?L.lo:0),'to:'+(good?oeNv(it.to):10),'step:'+(good?L.st:1),'den:'+(good?L.den:0),'lab:'+(+it.lab||1),'answer:'+J(it.answer)); }
   if(t==='filltable') o.push('head:'+J(it.head),'cells:'+J(it.cells),'answer:'+J(it.answer.map(v=>{ const x=oeNv(String(v).replace(/,/g,'')); return isFinite(x)?x:null; })));
   if(t==='datadisp'){ let ys=it.kind==='dot'?1:oeNv(it.ystep), ym=oeNv(it.ymax); if(!(ys>0&&ym>0&&ym/ys<=20)){ ys=1; ym=10; } o.push('kind:'+J(it.kind),'labels:'+J(it.labels.map(l=>l||'&nbsp;')),'ymax:'+ym,'ystep:'+ys,'xlab:'+J(it.xlab||''),'ylab:'+J(it.ylab||''),'answer:'+J(it.answer.map(v=>isFinite(v)?v:0))); }
@@ -1348,7 +1468,7 @@ function oeCard(it,i){ const c=document.createElement('section'); c.className='t
     <label class="hint">Points <select class="pt">${[1,2,3,4,5,6,7,8,9,10].map(p=>`<option${p===+it.points?' selected':''}>${p}</option>`).join('')}</select></label>
     <label class="hint">TEKS <input class="std" maxlength="20" placeholder="optional" value="${esc(it.std||'')}"></label>${psg}
     <span class="sp"></span><span class="mv"><button type="button" data-mv="-1" aria-label="Move question ${i+1} up" ${i?'':'disabled'}>▲</button><button type="button" data-mv="1" aria-label="Move question ${i+1} down" ${i<n-1?'':'disabled'}>▼</button><button type="button" data-cp="1" title="Copy this question">Copy</button><button type="button" data-rm="1" aria-label="Delete question ${i+1}" style="color:var(--no)">✕</button></span></div>`;
-  const rq=oeRich(it.text,it.type==='inline'?'Directions or a question (optional), like: Choose the words that complete the sentence.':'Type the question.','',()=>{ it.text=rq.html(); oeDirty(); }); c.appendChild(rq);
+  const rq=oeRich(it.text,['inline','blanks','twopart'].includes(it.type)?'Directions or a question (optional), like: Choose the words that complete the sentence.':'Type the question.','',()=>{ it.text=rq.html(); oeDirty(); }); c.appendChild(rq);
   /* picture */
   const pic=document.createElement('div'); pic.className='oepic';
   if(it.pic){ const src=OE.pics[it.pic.file]||(ROOT+'tests/'+encodeURIComponent(OE.id)+'/img/'+it.pic.file);
@@ -1415,7 +1535,7 @@ function oeCheck(b,publish){ const P=[];
   b.passages.forEach((p,k)=>{ if(!oePlain(p)) P.push([null,'Passage '+(k+1)+' is blank. Type it or remove it.']); });
   if(!b.items.length) P.push([null,'Add at least one question.']);
   if(publish) b.items.forEach((it,i)=>{ const q='Question '+(i+1)+': ';
-    if(!oePlain(it.text)&&!it.pic&&it.type!=='inline') P.push([i,q+'type the question.']);
+    if(!oePlain(it.text)&&!it.pic&&!['inline','blanks','twopart'].includes(it.type)) P.push([i,q+'type the question.']);
     if(!/^(mc|ms|num|text)$/.test(it.type)) oeCheckMore(OE.items[i],q,P,i);
     if(it.type==='mc'||it.type==='ms'){ it.choices.forEach((c,k)=>{ if(!oePlain(c)) P.push([i,q+'answer choice '+OE_L[k]+' is blank.']); });
       if(it.type==='mc'&&it.answer==null) P.push([i,q+'mark the correct answer.']);
@@ -1444,7 +1564,7 @@ function oeTestJs(b){ const J=v=>JSON.stringify(v).replace(/</g,'\\u003c'), num=
   const course=b.course==='Other'?'Other':b.course, head={id:b.id||'preview',title:b.title||'Untitled test',course};
   if(/RLA/.test(course)) head.subject='rla'; head.reference=course==='Algebra I'?'alg1':'none'; if(b.calc===false) head.calc=false;
   const P={}; b.passages.forEach((h,i)=>{ P['P'+(i+1)]=h; });
-  const items=b.items.map(it=>{ let stem=J(it.text||''); if(it.pic&&it.mode!=='pic') stem+='+'+J('<div class="tqpic"><img class="fig" src="')+'+ASSET('+J('img/'+it.pic.file)+')+'+J('" style="width:'+it.pic.w+'px;max-width:100%" alt="Picture for this question"></div>');
+  const items=b.items.map(it=>{ let stem=J(it.text||''); if(it.pic&&it.mode!=='pic'&&it.type!=='label') stem+='+'+J('<div class="tqpic"><img class="fig" src="')+'+ASSET('+J('img/'+it.pic.file)+')+'+J('" style="width:'+it.pic.w+'px;max-width:100%" alt="Picture for this question"></div>');
     const o=['type:'+J(it.type),'stem:'+stem,'max:'+(+it.points||1)];
     if(it.choices) o.push('choices:'+J(it.choices.map(c=>c||'&nbsp;'))); if(it.std) o.push('teks:'+J(it.std)); if(it.passage) o.push('passage:'+J(it.passage));
     if(it.type==='text') o.push('limit:'+(it.limit||475));
@@ -1743,10 +1863,16 @@ function qvAns(it,a){   // a student's answer in words (matches the player's "Yo
     case 'filltable': return a.map(v=>v==null?'—':String(v).replace(/-/g,'−')).join(', ');
     case 'datadisp': return (it.labels||[]).map((l,k)=>qvCut(qvTxt(l),16)+': '+qvN(a[k]||0)).join('; ');
     case 'shade': return a.length+' part'+(a.length===1?'':'s')+' shaded';
+    case 'figure': return a.map(qvPt).join(', ')||'No answer';
+    case 'blanks': return a.map(v=>v==null?'—':String(v).replace(/-/g,'−')).join(', ');
+    case 'label': return a.map((v,k)=>`${k+1}: ${v==null?'—':qvTxt((it.tiles||[])[v]||'')}`).join('; ');
+    case 'order': return a.map(k=>qvCut(qvTxt((it.tiles||[])[k]||''),20)).join(' → ');
+    case 'hottext': return a.map(k=>L8[k]||k+1).join(', ');
+    case 'twopart': return `A: ${a.a==null?'—':L8[a.a]}; B: ${(a.b||[]).map(k=>L8[k]).join(', ')||'—'}`;
     case 'graphline': return [...(a.lines||[]).map(L=>`line through ${qvPt(L[0])} and ${qvPt(L[1])}`),...(a.pts||[]).map(P=>'point '+qvPt(P))].join('; ')||'No answer';
     default: return qvCut(JSON.stringify(a),80); } }catch(e){ return qvCut(JSON.stringify(a),80); } }
 const QV_GRAPH=/^(graph|cline|hotspot)/;
-const QV_TYPES={mc:'Multiple choice',ms:'Multiselect',num:'Number entry',eq:'Equation',inline:'Drop-down',table:'Match table',dnd:'Drag and drop',graph:'Plot a point',graphline:'Graph a line',cline:'Graph a line',graphsys:'Graph a system',boxes:'Drag into boxes',hotspot:'Hot spot',graphineq:'Graph an inequality',graphexp:'Graph a function',graphfunc:'Graph a function',numline:'Number line',filltable:'Fill in a table',datadisp:'Data display',shade:'Shade a model'};
+const QV_TYPES={mc:'Multiple choice',ms:'Multiselect',num:'Number entry',eq:'Equation',inline:'Drop-down',table:'Match table',dnd:'Drag and drop',graph:'Plot a point',graphline:'Graph a line',cline:'Graph a line',graphsys:'Graph a system',boxes:'Drag into boxes',hotspot:'Hot spot',graphineq:'Graph an inequality',graphexp:'Graph a function',graphfunc:'Graph a function',numline:'Number line',filltable:'Fill in a table',datadisp:'Data display',shade:'Shade a model',figure:'Draw a figure',blanks:'Fill in the blanks',label:'Label a picture',order:'Put in order',hottext:'Hot text',twopart:'Two-part'};
 function qvStats(L1,i,subOnly){   // one question: points, blanks and the students behind every answer
   const g={}; let e=0,mx=0,cnt=0,blank=[],have=false;
   L1.forEach(s=>{ const q=s.q[i]; if(!q) return; const nm={name:s.name,period:s.period,key:s.key};
