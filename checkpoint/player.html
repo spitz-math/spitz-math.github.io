@@ -742,6 +742,12 @@ body.browse>*:not(#browse):not(svg){display:none!important}
 .bres{font-weight:700;font-size:13px} .bres.ok{color:#2e9d55} .bres.part{color:#b7791f} .bres.no{color:#d2453b}
 .bsrc{font:11px "Segoe UI",Roboto,Arial,sans-serif;color:#5d6b7a;margin-top:6px}
 .berr{color:#c0392b;font-weight:700}
+.bpsg{border:1px solid #d5dde6;border-radius:6px;background:#f7f9fc;margin:0 0 12px}
+.bpsg>summary{cursor:pointer;padding:7px 10px;font:600 13px "Segoe UI",Roboto,Arial,sans-serif;color:#0b3fa8}
+.bpsg .psgtext{max-height:420px;overflow:auto;padding:4px 14px 16px;background:#fff;border-top:1px solid #e3e8ef;font-size:16px;line-height:1.45}
+.bpsg .dir{font-weight:700} .bpsg h3{text-align:center;font-size:19px;margin:1em 0 .6em} .bpsg h3+.by{text-align:center;margin:-.3em 0 1em} .bpsg .cr{font-size:12px;color:#555}
+.bpsg .pp{position:relative;padding-left:26px;margin:0 0 1em;text-indent:2.6em} .bpsg .pp>.pn{position:absolute;left:0;top:0;text-indent:0}
+.bpsg .ed{margin:0 0 1em;text-indent:2em;line-height:1.9} .bpsg .ed.ni{text-indent:0} .bpsg img{display:block;max-width:100%;margin:.6em auto}
 .choice.bk-right{border-color:#2b7d47!important;background:#e9f6ed!important;box-shadow:inset 4px 0 0 #2b7d47}
 .bend{max-width:1000px;margin:0 auto;padding:6px 12px 40px}
 .bnone{font:14px "Segoe UI",Roboto,Arial,sans-serif;color:#5d6b7a;text-align:center;margin:18px 0}
@@ -2980,7 +2986,7 @@ function browseStart(){
         ${m.teks?`<div class="bteks" title="${esc(m.tlabel||'')}">${esc(m.teks)}</div>`:''}${m.rs?`<div class="brs${m.rs==='Readiness'?' r':''}">${esc(m.rs)}</div>`:''}
         <div class="btype">${esc(it.label||BTYPES[it.type]||it.type)}</div><div class="bpts">${it.max} point${it.max>1?'s':''}</div>${m.tag?`<div class="btag">${esc(m.tag)}</div>`:''}${m.used&&m.used.length?`<div class="bused" title="${esc(m.used.join(', '))}">Already on: ${esc(m.used.join(', '))}</div>`:''}
         <button type="button" class="badd" aria-pressed="false"></button></div>
-      <div class="bmain"><div class="body bitem"><div class="bwait">Loading question…</div></div>
+      <div class="bmain">${m.psg?`<details class="bpsg"><summary>${esc(m.psgTitle||'Read the passage')}</summary><div class="psgtext">${m.psg}</div></details>`:''}<div class="body bitem"><div class="bwait">Loading question…</div></div>
         <div class="bfoot"><div class="bkey"><b>Correct answer:</b> <span>${keyTxt}</span></div>
           <div class="bbtns"><button type="button" data-a="blank">Try it</button><button type="button" data-a="check">Check</button><span class="bres" aria-live="polite"></span></div></div>
         ${m.src?`<div class="bsrc">${esc(m.src)}</div>`:''}</div>`;
