@@ -781,7 +781,8 @@ function rpOpen(){ openPage('#rppage'); const admin=seeAll();
 function rpTeaVis(){ $('#rpTeaWrap').style.visibility=$('#rpBy').value==='per'?'':'hidden'; }
 async function rpLoad(){ const test=$('#rpTest').value; if(!test) return; RP.test=test; RP.rows=null; $('#rpOut').innerHTML=''; ['#rpCsv','#rpPrint'].forEach(b=>$(b).disabled=true);
   const ids=DATA.sessions.filter(s=>s.test===test).map(s=>s.id); say($('#rpMsg'),'Reading '+plural(ids.length,'session')+'…','');
-  try{ await loadMeta(test); const r=await call('stcDash',{sessions:ids,answers:false,archive:arc},180000); if(RP.test!==test) return;
+  try{ await loadMeta(test); const r=await call('stcDash',{sessions:ids,answers:false,archive:arc,report:1},180000); if(RP.test!==test) return;
+    if(r.tooMany){ say($('#rpMsg'),'This test has '+r.tooMany.toLocaleString()+' results, too many for one report. Archive old sessions in My sessions, then try again.','err'); return; }
     const tOf={}; r.sessions.forEach(s=>tOf[s.id]=s.teacher); RP.rows=r.students.filter(x=>x.test===test).map(x=>Object.assign(x,{teacher:tOf[x.session]}));
     $('#rpMsg').textContent=''; rpRender(); }
   catch(e){ say($('#rpMsg'),errText(e),'err'); } }
@@ -1652,7 +1653,7 @@ $('#rsAdd').onclick=async()=>{ const {out,skip}=parsePaste($('#rsPaste').value);
   try{ const r=await call('stcRosterAdd',{...rsT(),lines:out.map(({email,name,period})=>({email,name,period}))},120000);
     RS.list=r.roster; renderRoster(); const bad=r.bad.map(i=>out[i-1].line).concat(skip).sort((a,b)=>a-b);
     $('#rsPaste').value=bad.length?$('#rsPaste').value.split(/\r?\n/).filter((l,i)=>bad.includes(i+1)).join('\n'):'';
-    say($('#rsMsg'),`Added ${r.added}${r.changed?', updated '+r.changed:''}.`+(bad.length?` ${bad.length} line${bad.length===1?'':'s'} left in the box could not be read: each needs a school email, a name and a class period (not Guest).`:''),bad.length?'err':'ok'); }
+    say($('#rsMsg'),`Added ${r.added}${r.changed?', updated '+r.changed:''}.`+(bad.length?` ${bad.length} line${bad.length===1?'':'s'} left in the box could not be read: each needs a school email, a name and one of the class periods listed above (not Guest).`:''),bad.length?'err':'ok'); }
   catch(e){ say($('#rsMsg'),errText(e),'err'); } finally{ b.disabled=false; } };
 function renderRoster(){ const L=RS.list||[], q=$('#rlFind').value.trim().toLowerCase();
   const pers=[...new Set(L.map(s=>s.period))].sort((a,b)=>(+a||99)-(+b||99)); if(RS.per&&!pers.includes(RS.per)) RS.per='';
@@ -1720,6 +1721,7 @@ function draw(){ renderChips(); const L=shown(); renderTiles(L);
   [...sel].forEach(k=>{ if(!L.some(s=>s.key===k)) sel.delete(k); }); renderBulk();
   if(!DATA.sessions.length){ $('#card').innerHTML='<div class="empty">No sessions yet. Click <b>My sessions</b> above to make one.</div>'; return; }
   if(!selSes.size){ $('#card').innerHTML='<div class="empty">Pick a session in the Session menu above.</div>'; return; }
+  if(DATA.tooMany){ $('#card').innerHTML='<div class="empty">That is '+DATA.tooMany.toLocaleString()+' students at once, too many for one screen. Pick fewer sessions in the Session menu above, or archive old ones in My sessions.</div>'; return; }
   if(!L.length){ $('#card').innerHTML='<div class="empty">No students '+(per||qtxt?'match these filters':'have signed in to '+(selSes.size>1?'these sessions':'this session'))+' yet.</div>'; return; }
   const tests=[...new Set(L.map(s=>s.test))];
   const wrOn=tests.some(t=>{ const m=meta(t); return m&&m.items.some(it=>it.type==='text'); }); $('#wrViewBtn').hidden=!wrOn;

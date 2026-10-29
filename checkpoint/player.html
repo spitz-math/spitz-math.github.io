@@ -3011,7 +3011,7 @@ function browseStart(){
 
 /* fill in this test's name everywhere it shows */
 document.title=TD.title; document.querySelectorAll('.testTitle').forEach(e=>e.textContent=TD.title);
-{ const ref=document.querySelector('#refPanel .pbody img'); if(ref) ref.src=(window.SPITZ_ASSETS&&window.SPITZ_ASSETS['refs/'+(TD.reference||'alg1')+'.png'])||(window.SPITZ_ROOT+'refs/'+(TD.reference||'alg1')+'.png'); }
+{ const ref=document.querySelector('#refPanel .pbody img'); if(ref&&!document.body.matches('.rla,.noref')) ref.src=(window.SPITZ_ASSETS&&window.SPITZ_ASSETS['refs/'+(TD.reference||'alg1')+'.png'])||(window.SPITZ_ROOT+'refs/'+(TD.reference||'alg1')+'.png'); }
 window.__spitzStart=(name,period,opt={})=>{ S.name=name; S.period=period; S.started=true; ACT.t0=Date.now();
   if(opt.state){ sessionRestore(opt.state,opt.events); if(opt.state.submitted){ S.submitted=true; S.submittedAt=opt.state.submittedAt; } logEv('signInAgain'); } else logEv('start'); if(window.SPITZ_TTSCHECK) logEv('ttsCheck',window.SPITZ_TTSCHECK);
   $('#sname').textContent=`${name} (${period==='G'?'GUEST':'PERIOD '+period})`; $('#isubName').textContent=name;
