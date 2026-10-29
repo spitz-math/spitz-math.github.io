@@ -58,6 +58,28 @@ Building a test from the warm-up bank (dashboard > Tests > Build a test from the
   Browsers never use an old copy of a test: tests/index.js carries a version code (v) for each test, which
   the Tests page updates on every publish.
 
+Teachers' own questions (dashboard > My sessions > My tests > Write my own test)
+  Any teacher on the Teachers tab can write a test: multiple choice, check all that apply, number answer, written answer,
+  and the interactive types (equation editor, drop-down, table match, drag into boxes, plot a point, draw a line,
+  drag into groups, hot spot on a grid or on the question's picture, graph an inequality, graph a system of
+  inequalities, graph a function (linear, quadratic or exponential), graph an exponential curve, number line (points
+  or an inequality), fill in a table, data display (bar graph, dot plot, histogram), shade a model (bar, circle, grid),
+  draw a figure, fill in the blanks, label a picture, put in order, hot text, two-part)
+  questions, optional reading passages (shown beside their questions) and one picture per question. Save draft keeps it in
+  the Sheet only; Publish puts the questions on GitHub (tests/<id>/test.js and img/) WITHOUT the answers.
+  The answers live only in the Sheet's Teacher Questions tab (one row per question; Answer is a letter like B, letters like
+  A, C, or a number like 3/4; an expression like 2x + 5; one letter per drop-down, table row or box like B, A; a point
+  like (2, -3); a line as two of its points like (0, 1), (1, 3); an inequality like y ≥ 2x + 1 through (0, 1), (1, 3);
+  two inequalities joined by ; for a system; a function like quadratic with vertex (1, 2) through (2, 3) or
+  exponential through (0, 2), (1, 3), asymptote y = 1; one letter per tile for drag into groups (A = group 1); the correct spots for a hot spot; number line points like -1 1/2, 1 or an inequality like x < 3; table boxes
+  in reading order joined by ; like 6; 3; heights like Red: 4; Blue: 6; a shaded count like 3 parts shaded; a figure's corners like (-1, 1), (-3, 1), (-1, 4); blanks like 2; -3;
+  one letter per spot for labels; the correct order as letters like B, A, C; hot text parts like A, B; two-part like
+  A: B; B: A, C). Put-in-order items are kept in the correct order and shown mixed up. Drop-downs, table rows and tiles are in the Choices
+  column. Every save from a student is scored there, so a student's computer never has the key.
+  After Submit the student sees their points; the answers come only when the session is set to Score + review.
+  A hand fix in the Answer column counts after Re-score. Editing a used test: Save changes, then Re-score its sessions.
+  With "Check teachers' new tests" on, a new test waits for an Admin to approve it, like question bank tests.
+
 SETUP (one time)
   A. GitHub: put everything in this folder except apps-script/ into a folder named "checkpoint" in the
      spitz-math.github.io repository, so this works:  https://spitzmath.com/checkpoint/player.html
