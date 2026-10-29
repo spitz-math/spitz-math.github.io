@@ -572,7 +572,7 @@ details summary{cursor:pointer;color:var(--blue2);font-size:13px;margin-top:8px}
     </aside>
   </div>
 </section>
-<div class="pv" id="pv" hidden><div class="pvbar"><b id="pvTitle"></b><span id="pvNote">Preview only: nothing is saved to your Sheet.</span><span class="sp"></span><label class="pvra" id="pvRA" title="See the test the way a read aloud student does: sound check first, then the speaker button on each question"><input type="checkbox" id="pvRAOn"> Read aloud</label><button class="btn pri" id="pvPrint" hidden>Print</button><button class="btn" id="pvClose">Close preview</button></div><iframe id="pvf" title="Test preview"></iframe></div>
+<div class="pv" id="pv" hidden><div class="pvbar"><b id="pvTitle"></b><span id="pvNote">Preview only: nothing is saved to your Sheet.</span><span class="sp"></span><label class="pvra" id="pvRA" title="See the test the way a read aloud student does: sound check first, then the speaker button on each question"><input type="checkbox" id="pvRAOn"> Read aloud</label><label class="pvra" id="pvCA" title="See the test the way a student with the basic calculator support does (tests with no calculator)"><input type="checkbox" id="pvCAOn"> Calculator</label><button class="btn pri" id="pvPrint" hidden>Print</button><button class="btn" id="pvClose">Close preview</button></div><iframe id="pvf" title="Test preview"></iframe></div>
 <div id="tip" hidden></div>
 <div class="veil" id="psVeil" hidden><div class="psbox" role="dialog" aria-modal="true" aria-labelledby="psTitle"><div class="qvh"><h3 id="psTitle">Performance standards</h3><button class="btn" id="psClose">Close</button></div><div class="psb" id="psBody"></div></div></div>
 <div class="veil" id="veil" hidden><div class="dlg" role="alertdialog" aria-modal="true" aria-labelledby="vTitle"><h3 id="vTitle"></h3><div id="vMsg"></div><div class="btns" id="vBtns"></div></div></div>
@@ -1581,7 +1581,7 @@ async function oeSave(publish){ if(!OE||OE.busy) return; const b=oeGather(), P=o
 /* the test.js for a preview (with answers), made here from what is on screen, so unsaved changes show too. Same shape as Code.gs makes. */
 function oeTestJs(b){ const J=v=>JSON.stringify(v).replace(/</g,'\\u003c'), num=s=>{ s=String(s).replace(/−/g,'-').replace(/,/g,''); const m=s.match(/^(-?\d+(?:\.\d+)?)\/(-?\d+(?:\.\d+)?)$/); return m?+m[1]/+m[2]:+s; };
   const course=b.course==='Other'?'Other':b.course, head={id:b.id||'preview',title:b.title||'Untitled test',course};
-  if(/RLA/.test(course)) head.subject='rla'; head.reference=course==='Algebra I'?'alg1':course==='8th Math'?'math8':'none'; if(b.calc===false) head.calc=false;
+  if(/RLA/.test(course)) head.subject='rla'; head.reference=course==='Algebra I'?'alg1':course==='8th Math'?'math8':course==='6th Math'?'math6':'none'; if(b.calc===false) head.calc=false;
   const P={}; b.passages.forEach((h,i)=>{ P['P'+(i+1)]=h; });
   const items=b.items.map(it=>{ let stem=J(it.text||''); if(it.pic&&it.mode!=='pic'&&it.type!=='label') stem+='+'+J('<div class="tqpic"><img class="fig" src="')+'+ASSET('+J('img/'+it.pic.file)+')+'+J('" style="width:'+it.pic.w+'px;max-width:100%" alt="Picture for this question"></div>');
     const o=['type:'+J(it.type),'stem:'+stem,'max:'+(+it.points||1)];
@@ -1674,14 +1674,14 @@ function renderRoster(){ const L=RS.list||[], q=$('#rlFind').value.trim().toLowe
   const S=L.filter(s=>(!RS.per||s.period===RS.per)&&(!q||s.name.toLowerCase().includes(q))).sort((a,b)=>(+a.period||99)-(+b.period||99)||a.name.localeCompare(b.name));
   if(!L.length){ $('#rlList').innerHTML='<p class="hint">No students yet. Paste your class list above.</p>'; return; }
   const popts=v=>RS.periods.concat(RS.periods.includes(v)?[]:[v]).map(p=>`<option${p===v?' selected':''}>${esc(p)}</option>`).join('');
-  $('#rlList').innerHTML=`<div style="overflow-x:auto"><table class="t"><tr><th>Name</th><th>Period</th><th title="The test reads questions and answer choices out loud to this student">Read aloud</th><th></th></tr>${S.map(s=>RS.edit===s.code
-    ?`<tr data-c="${esc(s.code)}"><td><input class="rn" maxlength="20" value="${esc(s.name)}" aria-label="Name"></td><td><select class="rp" aria-label="Period">${popts(s.period)}</select></td><td>${s.ra?'Yes':''}</td><td><div class="acts" style="gap:6px"><button class="btn pri" data-re="save">Save</button><button class="btn" data-re="cancel">Cancel</button></div></td></tr>`
-    :`<tr data-c="${esc(s.code)}"><td>${esc(s.name)}</td><td>${esc(s.period)}</td><td><label class="rac"><input type="checkbox" class="ra" ${s.ra?'checked':''} aria-label="Read aloud for ${esc(s.name)}"></label></td><td><div class="acts" style="gap:6px"><button class="btn" data-re="edit">Edit</button><button class="btn del" data-re="rm">Remove</button></div></td></tr>`).join('')}</table></div>`+(S.length?'':'<p class="hint">No one matches.</p>'); }
+  $('#rlList').innerHTML=`<div style="overflow-x:auto"><table class="t"><tr><th>Name</th><th>Period</th><th title="The test reads questions and answer choices out loud to this student">Read aloud</th><th title="A basic calculator on tests that have no calculator (Grade 6 designated support)">Calculator</th><th></th></tr>${S.map(s=>RS.edit===s.code
+    ?`<tr data-c="${esc(s.code)}"><td><input class="rn" maxlength="20" value="${esc(s.name)}" aria-label="Name"></td><td><select class="rp" aria-label="Period">${popts(s.period)}</select></td><td>${s.ra?'Yes':''}</td><td>${s.calc?'Yes':''}</td><td><div class="acts" style="gap:6px"><button class="btn pri" data-re="save">Save</button><button class="btn" data-re="cancel">Cancel</button></div></td></tr>`
+    :`<tr data-c="${esc(s.code)}"><td>${esc(s.name)}</td><td>${esc(s.period)}</td><td><label class="rac"><input type="checkbox" class="ra" ${s.ra?'checked':''} aria-label="Read aloud for ${esc(s.name)}"></label></td><td><label class="rac"><input type="checkbox" class="ca" ${s.calc?'checked':''} aria-label="Basic calculator for ${esc(s.name)}"></label></td><td><div class="acts" style="gap:6px"><button class="btn" data-re="edit">Edit</button><button class="btn del" data-re="rm">Remove</button></div></td></tr>`).join('')}</table></div>`+(S.length?'':'<p class="hint">No one matches.</p>'); }
 $('#rlFind').oninput=renderRoster;
-$('#rlList').addEventListener('change',async e=>{ const x=e.target; if(!x.classList.contains('ra')) return; const code=x.closest('tr').dataset.c, v=x.checked; x.disabled=true;
-  try{ const r=await call('stcRosterEdit',{...rsT(),code,readAloud:v}); const st=(r.roster||[]).find(t=>t.code===code);
-    if(!st||!!st.ra!==v) throw new Error('Read aloud needs the latest Code.gs (paste it, then Deploy › New version).');
-    RS.list=r.roster; renderRoster(); say($('#rlMsg'),esc(st.name)+(v?' will hear the test read aloud.':' no longer has read aloud.'),'ok'); }
+$('#rlList').addEventListener('change',async e=>{ const x=e.target, ca=x.classList.contains('ca'); if(!ca&&!x.classList.contains('ra')) return; const code=x.closest('tr').dataset.c, v=x.checked; x.disabled=true;
+  try{ const r=await call('stcRosterEdit',{...rsT(),code,[ca?'calculator':'readAloud']:v}); const st=(r.roster||[]).find(t=>t.code===code);
+    if(!st||!!st[ca?'calc':'ra']!==v) throw new Error((ca?'The calculator support':'Read aloud')+' needs the latest Code.gs (paste it, then Deploy › New version).');
+    RS.list=r.roster; renderRoster(); say($('#rlMsg'),esc(st.name)+(ca?(v?' will have a basic calculator on tests that have no calculator.':' no longer has the basic calculator.'):(v?' will hear the test read aloud.':' no longer has read aloud.')),'ok'); }
   catch(y){ x.checked=!v; x.disabled=false; say($('#rlMsg'),errText(y),'err'); } });
 $('#rlPer').addEventListener('click',e=>{ const b=e.target.closest('button'); if(!b) return; RS.per=b.dataset.v; renderRoster(); });
 $('#rlList').addEventListener('click',async e=>{ const b=e.target.closest('button[data-re]'); if(!b) return; const tr=b.closest('tr'), code=tr.dataset.c, a=b.dataset.re;
@@ -2283,9 +2283,9 @@ function dlg(title,html){ $('#vTitle').textContent=title; $('#vMsg').innerHTML=h
 /* ---------- preview ---------- */
 /* the Read aloud box reloads the preview as a read aloud student sees it */
 let pvHtml='';
-const pvDoc=()=>$('#pvRAOn').checked?pvHtml.replace(/<head>/i,'<head><script>window.SPITZ_RA=true;<\/script>'):pvHtml;
-$('#pvRAOn').onchange=()=>{ $('#pvf').srcdoc=pvDoc(); };
-function showPreview(title,html){ $('#pvTitle').textContent=title; $('#pvNote').textContent='Preview only: nothing is saved to your Sheet.'; $('#pvPrint').hidden=true; pvHtml=html; $('#pvRA').hidden=false; $('#pvf').srcdoc=pvDoc(); $('#pv').hidden=false; $('#pvClose').focus(); }
+const pvDoc=()=>{ const v=($('#pvRAOn').checked?'window.SPITZ_RA=true;':'')+($('#pvCAOn').checked?'window.SPITZ_CALC=true;':''); return v?pvHtml.replace(/<head>/i,()=>'<head><script>'+v+'<\/script>'):pvHtml; };
+$('#pvRAOn').onchange=$('#pvCAOn').onchange=()=>{ $('#pvf').srcdoc=pvDoc(); };
+function showPreview(title,html){ $('#pvTitle').textContent=title; $('#pvNote').textContent='Preview only: nothing is saved to your Sheet.'; $('#pvPrint').hidden=true; pvHtml=html; $('#pvRA').hidden=$('#pvCA').hidden=false; $('#pvf').srcdoc=pvDoc(); $('#pv').hidden=false; $('#pvClose').focus(); }
 /* paper copy: the player draws every question on one page (window.SPITZ_PRINT), shown here with a Print button */
 async function printTest(id,withKey){ const L=await publishedTests(), t=L.find(x=>x.id===id); if(!t) throw new Error('Choose a test.');
   const r=await siteGet('tests/'+encodeURIComponent(id)+'/test.js'); if(!r.ok) throw new Error('Could not download the test.');
@@ -2294,7 +2294,7 @@ async function printTest(id,withKey){ const L=await publishedTests(), t=L.find(x
   html=html.replace('window.SPITZ_ROOT="";window.SPITZ_TESTS=',()=>'window.SPITZ_ROOT='+JSON.stringify(pages)+';window.SPITZ_PRINT=1;window.SPITZ_TESTS=')
     .replace(/<\/body>\s*<\/html>\s*$/,'')+'<scr'+'ipt>addEventListener("load",function(){ window.SPITZ_TESTID='+JSON.stringify(id)+'; window.SPITZ_BASE=window.SPITZ_ROOT+"tests/"+'+JSON.stringify(id)+'+"/"; window.SPITZ_BUNDLE['+JSON.stringify(id)+'](); window.__spitzPrintReady=window.__spitzPrint('+(withKey?'true':'false')+'); });<\/scr'+'ipt></body></html>';
   $('#pvTitle').textContent=title+(withKey?' · Answer Key':''); $('#pvNote').textContent='Check it, then press Print. In the print box, choose your printer or Save as PDF.';
-  $('#pvPrint').hidden=false; $('#pvPrint').disabled=true; $('#pvRA').hidden=true; $('#pvf').srcdoc=html; $('#pv').hidden=false;
+  $('#pvPrint').hidden=false; $('#pvPrint').disabled=true; $('#pvRA').hidden=$('#pvCA').hidden=true; $('#pvf').srcdoc=html; $('#pv').hidden=false;
   const f=$('#pvf'); for(let i=0;i<150;i++){ await new Promise(z=>setTimeout(z,200)); try{ if(f.contentWindow.__spitzPrintReady){ await f.contentWindow.__spitzPrintReady; break; } }catch(e){} }
   if(!f.contentWindow.__spitzPrintReady) throw new Error('The test could not be drawn for printing.');
   $('#pvPrint').disabled=false; $('#pvPrint').focus(); }
