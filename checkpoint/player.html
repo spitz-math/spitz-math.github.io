@@ -311,6 +311,7 @@ svg.cgrid .asym .aline{stroke:#25606a;stroke-width:2;stroke-dasharray:12 4 2 4}
 .cgbtn .cgb{display:block;width:100%;border:0;background:none;font-weight:700;font-size:15px;padding:4px 0;color:#000}
 .cgbtn svg .kbcur{fill:none;stroke:#1d2fd6;stroke-width:2.5;stroke-dasharray:3 2;pointer-events:none}
 svg[data-kb]:focus{outline:none}svg[data-kb]:focus-visible{outline:3px solid #1d2fd6;outline-offset:2px}
+#movedScreen{position:fixed;inset:0;z-index:1000;background:rgba(20,30,40,.55);display:grid;place-items:center;padding:16px}#movedScreen>div{background:#fff;max-width:440px;padding:22px 24px;border-radius:6px;box-shadow:0 10px 40px rgba(0,0,0,.3)}#movedScreen h2{margin:0 0 .5em;font-size:20px}#movedScreen button{margin-top:6px;padding:9px 16px;font-size:15px;border:0;border-radius:4px;background:#1d5fa8;color:#fff;cursor:pointer}
 .lt{display:flex;align-items:center;gap:4px;font-size:12px;border:1px solid #aaa;padding:2px 3px;color:#000}
 @media (pointer:coarse){ .lt select{min-height:30px} }
 .cgbtn select{font-size:12px;flex:1;min-width:0}
@@ -3128,14 +3129,15 @@ $('#startForm').addEventListener('submit',async e=>{ e.preventDefault();
     if(!ses) return err('Enter the Session ID.',$('#stuSession'));
     if(asked&&(!nm||!pd)) return err('Type your first name or initials and choose your class period.',!nm?$('#stuName'):$('#stuPeriod'));
     $('#siErr').hidden=true; $('#siBtn').disabled=true;
-    let r; try{ r=await callRetry('stcSignIn',asked?{sessionId:ses,name:nm,period:pd}:{sessionId:ses},3); }
+    const tab=Math.random().toString(36).slice(2,12);   /* this page; the server lets only the newest sign-in save */
+    let r; try{ r=await callRetry('stcSignIn',asked?{sessionId:ses,name:nm,period:pd,tab}:{sessionId:ses,tab},3); }
     catch(x){ return err(/NOSIGNIN/.test(String(x&&x.message||x))?'Sign in to this Chromebook with your school Google account, then reload this page.':'Could not reach the testing site. Check your internet connection and try again.'); }
     if(r&&!r.ok&&r.need==='name'){ setPeriods(r.periods||[]); setWho(r); const first=!asked; askName(true);
       return err(first?'You are not on this class list yet. Type your first name or initials and choose your class period.':r.msg,first||!nm?$('#stuName'):$('#stuPeriod')); }
     if(!r||!r.ok) return err((r&&r.msg)||'Sign in did not work. Try again.',$('#stuSession'));
     setWho(r);
     const name=String(r.name||nm).toUpperCase(), period=String(r.period||pd);
-    CTX={key:'stc:'+r.sessionId+':'+r.student, sessionId:r.sessionId, student:r.student, test:r.test, name, period, control:r.control||'', ver:r.ver||''};
+    CTX={key:'stc:'+r.sessionId+':'+r.student, sessionId:r.sessionId, student:r.student, test:r.test, name, period, control:r.control||'', ver:r.ver||'', tab};
     if(r.own) window.__spitzOwnPending=r.own;
     window.SPITZ_RA=!!r.readAloud; if(window.SpitzReadAloud) window.SpitzReadAloud(window.SPITZ_RA);   // the test engine may start after this; it reads SPITZ_RA then
     applyReview(r.review);
@@ -3164,16 +3166,16 @@ function screen(){ const ss=window.SpitzSession; if(ss.submitted) return 'submit
   if(document.hidden) return 'away'; if(!$('#endScreen').hidden) return 'end'; return 'active'; }
 function trimEvents(ev,limit){ let s=JSON.stringify(ev); while(s.length>limit&&ev.length){ ev=ev.slice(Math.ceil(ev.length/4)); s=JSON.stringify(ev); } return ev; }
 function saveLocal(){ clearTimeout(localT); localT=null; if(leaving||!CTX||!window.SpitzSession) return;
-  const ss=window.SpitzSession, ex=ss.export(); LS.set(CTX.key,{state:ss.state(),events:ex.events,savedAt:Date.now()}); }
+  const ss=window.SpitzSession, ex=ss.export(); LS.set(CTX.key,{state:ss.state(),events:ex.events,savedAt:Date.now(),tab:CTX.tab}); }
 function saveLocalSoon(){ if(!localT) localT=setTimeout(saveLocal,400); }
 function payload(final){ const ss=window.SpitzSession, ex=ss.export(), st=ss.state();
-  return {sessionId:CTX.sessionId, name:CTX.name, period:CTX.period, test:CTX.test, final:!!final, status:screen(), lastInputAt:lastInput, state:st,
+  return {sessionId:CTX.sessionId, tab:CTX.tab, name:CTX.name, period:CTX.period, test:CTX.test, final:!!final, status:screen(), lastInputAt:lastInput, state:st,
     sum:{item:ss.item, answered:ss.answeredCount(), score:ex.score, max:ex.maxScore, elapsedMs:ex.elapsedMs, awayCount:ex.awayCount, awayMs:ex.awayMs, startedAt:ex.startedAt, submittedAt:ex.submittedAt, rclicks:ex.rclicks||0},
     items:ex.items.map(({answer,...r})=>r), events:trimEvents(ex.events,40000)}; }
 function saveServer(){ clearTimeout(serverT); serverT=null; if(leaving||!CTX||!CTX.sessionId||finalOK) return;
   if(inflight){ again=true; return; } inflight=true;
   const final=window.SpitzSession.submitted, body=payload(final); sentAt=Date.now(); sentStatus=body.status; if(body.sum.rclicks!==rcSent) body.rcNew=true;
-  call('stcSave',body).then(r=>{ if(!r||!r.ok){ fails++; again=true; return; } fails=0; if(body.rcNew) rcSent=body.sum.rclicks;
+  call('stcSave',body).then(r=>{ if(!r||!r.ok){ fails++; again=true; return; } if(r.moved){ movedAway(); return; } fails=0; if(body.rcNew) rcSent=body.sum.rclicks;
       if(r.review) applyReview(r.review); if(typeof r.control==='string'&&!final) window.SpitzSession.teacherHold(r.control);
       if(final){ finalOK=true; saveNote(false); if(r.own&&window.__spitzOwn) window.__spitzOwn(r.own);
         // one quiet repeat 20 s later puts "submitted" back if a late, older save from before Submit lands after it
@@ -3182,6 +3184,13 @@ function saveServer(){ clearTimeout(serverT); serverT=null; if(leaving||!CTX||!C
     .finally(()=>{ inflight=false; if(again||(final&&!finalOK)){ again=false; serverT=setTimeout(saveServer,fails?backoff(final):1000); } }); }
 /* after a change: save in 6–10 s (each Chromebook picks its own time, so a class clicking Next together doesn't save together) */
 function saveServerSoon(ms){ if(!serverT) serverT=setTimeout(saveServer,fails?Math.max(ms,backoff(false)):ms+Math.random()*4000); }
+/* this test was opened again in another tab or on another Chromebook: this page stops saving and says so */
+function movedAway(){ if(leaving) return; leaving=true; again=false; clearTimeout(localT); clearTimeout(serverT); [beat,reviewPoll,holdPoll].forEach(t=>t&&clearInterval(t));
+  const mine=LS.get(CTX.key); if(mine&&mine.tab===CTX.tab) LS.del(CTX.key);   /* this tab's copy is out of date now; signing in again here must start from the saved answers */
+  const d=document.createElement('div'); d.id='movedScreen'; d.setAttribute('role','alertdialog'); d.setAttribute('aria-modal','true');
+  d.innerHTML='<div><h2>This test is open somewhere else</h2><p>You opened this test in another tab or on another Chromebook, so your answers are being saved there. Keep working there, and close this tab.</p><p>To use this one instead, sign in again here. Your answers come with you.</p><button type="button" class="pri">Sign in again here</button></div>';
+  d.querySelector('button').onclick=()=>{ if(APP&&APP.url){ try{ window.open(APP.url,'_top'); return; }catch(e){} } location.reload(); };
+  document.body.appendChild(d); d.querySelector('button').focus(); }
 function saveNote(on){ let n=$('#saveNote'); if(on&&!n){ n=document.createElement('p'); n.id='saveNote'; n.className='savenote'; n.textContent='Saving your test… keep this page open.'; $('#logout').after(n); } if(!on&&n) n.remove(); }
 function applyReview(mode){ if(APP&&mode) $('#resultsScreen').dataset.review=mode; }
 function startSaving(){

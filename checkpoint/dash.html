@@ -1443,7 +1443,7 @@ function oeFromSheet(it){ const ty=OE_TYPES[it.type]?it.type:'mc';
 async function oeOpen(id){
   let d=null; if(id){ d=await call('stcOwnGet',{id},60000); }
   OE={isNew:!d, id:d?d.id:'', status:d?d.status:null, mine:d?d.mine:true, pics:{}, sent:new Set(), dirty:false,
-    passages:d?d.passages.slice():[], items:d?d.items.map(oeFromSheet):[oeBlank('mc')]};
+    passages:d?d.passages.slice():[], items:d?d.items.map(oeFromSheet):[oeBlank('mc')], sig0:d?d.items.map(it=>it.type).join():''};
   $('#oeTitle').value=d?d.title:''; $('#oeId').value=d?d.id:''; $('#oeId').disabled=!!d; delete $('#oeId').dataset.touched;
   $('#oeCourse').innerHTML=OE_COURSES.map(c=>`<option>${c}</option>`).join(''); $('#oeCourse').value=d?d.course:oeCourseFor((MP.my||{}).subject||'');
   $('#oeCalc').checked=d?d.calc!==false:true; oeCourseSync();
@@ -1554,10 +1554,12 @@ async function oeSave(publish){ if(!OE||OE.busy) return; const b=oeGather(), P=o
     const c=P[0][0]!=null&&document.querySelector(`.oeq[data-i="${P[0][0]}"]`); if(c) c.scrollIntoView({behavior:'smooth',block:'center'}); return; }
   const used=new Set(b.items.filter(it=>it.pic).map(it=>it.pic.file));
   b.pictures=Object.keys(OE.pics).filter(f=>used.has(f)&&!OE.sent.has(f)).map(f=>({file:f,b64:OE.pics[f].split(',')[1]}));   /* pictures already on GitHub are not sent again */
+  const live=(DATA?DATA.sessions:[]).filter(s=>s.test===OE.id&&s.open);   /* students may be in it right now: adding or removing questions renumbers them */
+  if(!OE.isNew&&live.length&&b.items.map(it=>it.type).join()!==OE.sig0&&!await ask('Students may be taking this test now','<p>'+plural(live.length,'open session')+(live.length===1?' uses':' use')+' this test. Adding, removing or moving questions changes the question numbers, so answers students already gave can end up on the wrong question.</p><p>Safer: close the session first, or only fix wording and answers now.</p>','Save anyway')) return;
   b.publish=!!publish; OE.busy=true; ['#oeDraft','#oePublish','#oePreview'].forEach(s=>$(s).disabled=true);
   say(msg,publish?'Publishing…':'Saving…');
   try{ const r=await call('stcOwnSave',b,240000);
-    OE.isNew=false; OE.id=r.id; OE.status=r.status; OE.dirty=false; $('#oeId').disabled=true;
+    OE.isNew=false; OE.id=r.id; OE.status=r.status; OE.dirty=false; OE.sig0=b.items.map(it=>it.type).join(); $('#oeId').disabled=true;
     b.pictures.forEach(p=>OE.sent.add(p.file));
     MP.tests=null; await myTests(true); renderMt(); oeButtons();
     say(msg,r.status==='draft'?'Draft saved. Students can\'t see it until you publish it.':r.status==='waiting'?'Published. Mr. Spitzlberger has to approve it before you can use it.':'Published. Pick it under New session. Give it a minute or two before students open it.','ok'); }
@@ -2300,7 +2302,7 @@ async function previewRepo(id){ try{ const m=await metaOf(id), p=await ensurePla
 async function rescore(id){ const r=await call('stcRescore',{id},120000); if(r&&r.done) return r.changed||0;   /* a teacher's own test: the server scored it with the key in the Sheet */
   if(!r||!Array.isArray(r.rows)) throw new Error('Re-score needs the latest Code.gs (paste it, then Deploy › New version).'); if(!r.rows.length) return 0;
   const L=await publishedTests(), t=L.find(x=>x.id===r.test)||{id:r.test};
-  const g=await siteGet('tests/'+encodeURIComponent(r.test)+'/test.js'); if(!g.ok) throw new Error('Could not download the test.');
+  const g=await siteGet('tests/'+encodeURIComponent(r.test)+'/test.js'); if(!g.ok) throw new Error(g.status===404?'This test is no longer on the site (it was deleted), so it can\'t be re-scored. The saved scores stay as they are.':'Could not download the test.');
   const list=JSON.stringify(r.rows.map(x=>x.answers)).replace(/</g,'\\u003c');
   const html=buildSingle(await ensurePlayer(),r.test,t.title||r.test,await g.text(),{}).replace('<head>','<head><scr'+'ipt>window.SPITZ_SELFCHECK=1;<\/script>')
     .replace(/<\/body>\s*<\/html>\s*$/,'')+'<scr'+'ipt>addEventListener("load",function(){ try{ window.SPITZ_TESTID='+JSON.stringify(r.test)+'; window.SPITZ_BUNDLE['+JSON.stringify(r.test)+'](); parent.postMessage({sbx:"__TOK__",res:window.__spitzRescore?window.__spitzRescore('+list+'):null},"*"); }catch(e){ parent.postMessage({sbx:"__TOK__",err:String(e&&e.message||e)},"*"); } });<\/script></body></html>';
