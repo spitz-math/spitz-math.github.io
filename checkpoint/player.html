@@ -180,6 +180,7 @@ table.grid{border-collapse:collapse;margin-top:6px}
 table.grid th,table.grid td{border:1.5px solid var(--line);padding:.5em 1.2em;text-align:center}
 table.grid th{background:var(--surface-2);font-size:.9em}
 table.grid td:first-child{font-weight:700;text-align:left}
+td:has(>.gcell){cursor:pointer}
 .gcell{width:1.15em;height:1.15em;border-radius:2px;border:1.5px solid #8a8a8a;background:#fff;display:inline-grid;place-items:center;padding:0;cursor:pointer}
 .gcell[aria-checked="true"]{background:#333;border-color:#333}
 .gcell[aria-checked="true"]::after{content:"";width:.32em;height:.6em;border:solid #fff;border-width:0 .16em .16em 0;transform:translate(0,-.08em) rotate(45deg)}
@@ -307,7 +308,10 @@ svg.cgrid .asym .aline{stroke:#25606a;stroke-width:2;stroke-dasharray:12 4 2 4}
 .cgpanel{display:flex;flex-direction:column;gap:8px;width:148px;flex:none}
 .cgbtn{position:relative;border:1px solid #8a8a8a;background:#fff;padding:3px 4px 5px}
 .cgbtn .cgb{display:block;width:100%;border:0;background:none;font-weight:700;font-size:15px;padding:4px 0;color:#000}
-.cgbtn .lt{display:flex;align-items:center;gap:4px;font-size:12px;border:1px solid #aaa;padding:2px 3px;color:#000}
+.cgbtn svg .kbcur{fill:none;stroke:#1d2fd6;stroke-width:2.5;stroke-dasharray:3 2;pointer-events:none}
+svg[data-kb]:focus{outline:none}svg[data-kb]:focus-visible{outline:3px solid #1d2fd6;outline-offset:2px}
+.lt{display:flex;align-items:center;gap:4px;font-size:12px;border:1px solid #aaa;padding:2px 3px;color:#000}
+@media (pointer:coarse){ .lt select{min-height:30px} }
 .cgbtn select{font-size:12px;flex:1;min-width:0}
 .cgbtn[data-m="graph"].on{border:3px solid #25606a}
 .cgbtn[data-m="graph"].on::after{content:"";position:absolute;right:-22px;top:2px;border:11px solid transparent;border-left:20px solid #25606a;border-right:0}
@@ -1089,7 +1093,7 @@ const cache={};
 function coordSVG(R,{live=false,lines=[],label=true}={}){
   const cell=R>6?17:26, pad=24, W=2*R*cell+2*pad;
   const X=v=>pad+(v+R)*cell, Y=v=>pad+(R-v)*cell;
-  let s=`<svg class="coord${live?' live':''}" viewBox="0 0 ${W} ${W}" role="img" aria-label="Coordinate grid from ${-R} to ${R}">`;
+  let s=`<svg class="coord${live?' live':''}" viewBox="0 0 ${W} ${W}" role="img" aria-label="Coordinate grid from ${-R} to ${R}"${live?` data-kb="${pad},${cell},${cell},${R},${R}"`:''}>`;
   s+=`<rect x="0" y="0" width="${W}" height="${W}" fill="var(--surface)"/>`;
   for(let k=-R;k<=R;k++){ s+=`<line class="gl" x1="${X(k)}" y1="${Y(R)}" x2="${X(k)}" y2="${Y(-R)}"/><line class="gl" x1="${X(-R)}" y1="${Y(k)}" x2="${X(R)}" y2="${Y(k)}"/>`; }
   s+=`<line class="ax" x1="${X(-R)}" y1="${Y(0)}" x2="${X(R)}" y2="${Y(0)}"/><line class="ax" x1="${X(0)}" y1="${Y(R)}" x2="${X(0)}" y2="${Y(-R)}"/>`;
@@ -1207,6 +1211,7 @@ function build(it){
       const a=S.answers[id]||Array(it.rows.length).fill(null); const r=+b.dataset.r, c=+b.dataset.c;
       a[r]=a[r]===c?null:c; S.answers[id]=a; if(a.every(v=>v===null)) delete S.answers[id];
       w.querySelectorAll(`.gcell[data-r="${r}"]`).forEach(o=>o.setAttribute('aria-checked',a[r]===+o.dataset.c)); refresh(); }));
+    w.addEventListener('click',e=>{ if(e.target.closest('.gcell')) return; const td=e.target.closest('td'), b=td&&td.querySelector('.gcell'); if(b) b.click(); });   /* the whole cell is the target, not just the small box */
     root.appendChild(w);
   }
   else if(it.type==='text'){ buildText(it,root); }
@@ -1231,8 +1236,19 @@ function build(it){
   else if(it.type==='hottext'){ buildHotText(it,root); }
   else if(it.type==='twopart'){ buildTwoPart(it,root); }
   else if(it.type==='eq'){ if(it.full) buildEqFull(it,root); else buildEqEntry(it,root); }
-  hydrate(it,root); return root;
+  hydrate(it,root); kbGrids(root); return root;
 }
+/* keyboard on the clickable coordinate grids: Tab to the grid, arrow keys move a cursor point, Enter or Space clicks there */
+function kbGrids(root){ root.querySelectorAll('svg[data-kb]').forEach(svg=>{ const [pad,cx,cy,xr,yr]=svg.dataset.kb.split(',').map(Number); let gx=0, gy=0;
+  svg.setAttribute('tabindex','0'); svg.setAttribute('aria-label',svg.getAttribute('aria-label')+'. Arrow keys move the cursor, Enter clicks the point.');
+  const cur=document.createElementNS('http://www.w3.org/2000/svg','circle'); cur.setAttribute('class','kbcur'); cur.setAttribute('r',7); cur.style.display='none'; svg.appendChild(cur);
+  const sx=()=>pad+(gx+xr)*cx, sy=()=>pad+(yr-gy)*cy, show=()=>{ cur.setAttribute('cx',sx()); cur.setAttribute('cy',sy()); cur.style.display=''; svg.appendChild(cur); };
+  svg.addEventListener('focus',()=>{ if(svg.matches(':focus-visible')) show(); }); svg.addEventListener('blur',()=>{ cur.style.display='none'; });
+  svg.addEventListener('keydown',e=>{ if(e.target!==svg) return; const mv={ArrowLeft:[-1,0],ArrowRight:[1,0],ArrowUp:[0,1],ArrowDown:[0,-1]}[e.key];
+    if(mv){ e.preventDefault(); gx=Math.max(-xr,Math.min(xr,gx+mv[0])); gy=Math.max(-yr,Math.min(yr,gy+mv[1])); show(); return; }
+    if(e.key!=='Enter'&&e.key!==' ') return; e.preventDefault(); const p=svg.createSVGPoint(); p.x=sx(); p.y=sy(); const c=p.matrixTransform(svg.getScreenCTM());
+    cur.style.display='none'; const t=document.elementFromPoint(c.x,c.y); const tg=t&&svg.contains(t)?t:svg;
+    tg.dispatchEvent(new MouseEvent('click',{bubbles:true,cancelable:true,clientX:c.x,clientY:c.y,view:window})); show(); svg.focus(); }); }); }
 /* show a saved answer in a freshly built item (after a refresh or signing in again) */
 function hydrate(it,root){ const a=S.answers[it.n]; if(a==null) return;
   if(it.type==='text'){ const e=root.querySelector('.txed'); if(e){ e.innerHTML=a; root.querySelector('.txcnt span').textContent=e.textContent.length; } return; }
@@ -1280,6 +1296,8 @@ function buildDnD(it,root){
   });
   [bank,...zones.querySelectorAll('.dz')].forEach(z=>{
     z.addEventListener('click',e=>{ if(!picked||e.target.closest('.tile')) return; place(picked,z.dataset.zone); picked.classList.remove('picked'); picked=null; });
+    if(z!==bank){ z.tabIndex=0; z.setAttribute('role','button'); z.setAttribute('aria-label',z.querySelector('h4').textContent); }   /* keyboard: Space on a tile, then Space on a group */
+    z.addEventListener('keydown',e=>{ if(e.target!==z||(e.key!==' '&&e.key!=='Enter')||!picked) return; e.preventDefault(); const t=picked; place(t,z.dataset.zone); t.classList.remove('picked'); picked=null; t.focus(); });
   });
   root.append(bank,zones,hint);
 }
@@ -1375,7 +1393,7 @@ const fmtV=v=>{ const r=Math.round(v*1000)/1000; return r<0?'−'+(-r):String(r)
 /* live grid in the style of the testing site's graphing items: blue frame, magenta axes with arrows */
 function liveGrid(R){
   const cell=26, pad=26, W=2*R*cell+2*pad, X=v=>pad+(v+R)*cell, Y=v=>pad+(R-v)*cell;
-  let s=`<svg class="coord live tgrid" viewBox="0 0 ${W} ${W}" role="img" aria-label="Coordinate grid from ${-R} to ${R}">`;
+  let s=`<svg class="coord live tgrid" viewBox="0 0 ${W} ${W}" role="img" aria-label="Coordinate grid from ${-R} to ${R}" data-kb="${pad},${cell},${cell},${R},${R}">`;
   s+=`<defs><marker id="axarw${R}" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="#d4206b"/></marker>
       <marker id="carw" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="#1f4fd8"/></marker>
       <clipPath id="gclip${R}"><rect x="${X(-R)}" y="${Y(R)}" width="${2*R*cell}" height="${2*R*cell}"/></clipPath></defs>`;
@@ -1445,6 +1463,11 @@ function buildBoxes(it,root){
     if(get()[+bx.dataset.b]==null){ if(picked){ drop(picked,+bx.dataset.b); picked=null; render(); } return; }
     startDrag(bx,{from:'box',b:+bx.dataset.b},e); });
   bank.addEventListener('click',e=>{ if(picked&&picked.from==='box'&&!e.target.closest('.btile')){ drop(picked,null); picked=null; render(); } });
+  /* keyboard: Space on an answer, then Space on a box; Space on a filled box, then Space on any answer, takes it back out */
+  bank.addEventListener('keydown',e=>{ const tl=e.target.closest('.btile'); if(!tl||(e.key!==' '&&e.key!=='Enter')) return; e.preventDefault();
+    if(picked&&picked.from==='box'){ drop(picked,null); picked=null; render(); return; } if(!tl.classList.contains('used')) tap({from:'bank',t:+tl.dataset.t}); });
+  line.addEventListener('keydown',e=>{ const bx=e.target.closest('.dbox'); if(!bx||(e.key!==' '&&e.key!=='Enter')) return; e.preventDefault(); const b=+bx.dataset.b;
+    if(get()[b]==null){ if(picked){ drop(picked,b); picked=null; render(); } } else tap({from:'box',b}); });
   root.querySelector('.stem').classList.add('nohl');
   root.append(bank,line,hint); render();
 }
@@ -1567,7 +1590,7 @@ function cgrid({xr,yr,ys=1,lab=1,ylab=1,cell=24}){
   // xr: x range ±xr (unit = cell px); yr: ±yr with one grid row every ys units
   const cx=cell, cy=cell/ys, pad=22, W=2*xr*cx+2*pad, H=2*yr*cy+2*pad;
   const X=v=>pad+(v+xr)*cx, Y=v=>pad+(yr-v)*cy;
-  let s=`<svg class="coord live cgrid" viewBox="0 0 ${W} ${H}" role="img" aria-label="Coordinate grid">
+  let s=`<svg class="coord live cgrid" viewBox="0 0 ${W} ${H}" role="img" aria-label="Coordinate grid" data-kb="${pad},${cx},${cy},${xr},${yr}">
    <defs><marker id="cax" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="5.5" markerHeight="5.5" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="#d4206b"/></marker></defs>
    <rect x="${X(-xr)}" y="${Y(yr)}" width="${2*xr*cx}" height="${2*yr*cy}" fill="#fff"/>`;
   for(let q=-xr+1;q<xr;q++) s+=`<line class="gl" x1="${X(q)}" y1="${Y(yr)}" x2="${X(q)}" y2="${Y(-yr)}"/>`;
@@ -1970,7 +1993,7 @@ function buildShade(it,root){
   const w=document.createElement('div'); w.className='shwrap'; let h='';
   for(let m=0;m<nw;m++){ let s='';
     if(it.kind==='bar'){ const pw=Math.min(60,360/per); s=`<svg viewBox="-2 -2 ${pw*per+4} 54" style="width:min(${pw*per+4}px,100%)">`; for(let k=0;k<per;k++) s+=`<rect class="shp" data-p="${m*per+k}" x="${k*pw}" y="0" width="${pw}" height="50" tabindex="0" role="checkbox" aria-label="Part ${k+1}${nw>1?' of model '+(m+1):''}"/>`; }
-    else if(grid){ const c=Math.min(30,300/Math.max(it.rows,it.cols)); s=`<svg viewBox="-2 -2 ${c*it.cols+4} ${c*it.rows+4}" style="width:min(${c*it.cols+4}px,100%)">`; for(let k=0;k<per;k++) s+=`<rect class="shp" data-p="${m*per+k}" x="${(k%it.cols)*c}" y="${Math.floor(k/it.cols)*c}" width="${c}" height="${c}" tabindex="0" role="checkbox" aria-label="Square ${k+1}${nw>1?' of model '+(m+1):''}"/>`; }
+    else if(grid){ const c=Math.min(44,360/Math.max(it.rows,it.cols)); s=`<svg viewBox="-2 -2 ${c*it.cols+4} ${c*it.rows+4}" style="width:min(${c*it.cols+4}px,100%)">`; for(let k=0;k<per;k++) s+=`<rect class="shp" data-p="${m*per+k}" x="${(k%it.cols)*c}" y="${Math.floor(k/it.cols)*c}" width="${c}" height="${c}" tabindex="0" role="checkbox" aria-label="Square ${k+1}${nw>1?' of model '+(m+1):''}"/>`; }
     else { const R=80; s=`<svg viewBox="-84 -84 168 168" style="width:min(168px,100%)">`; for(let k=0;k<per;k++){ const a0=-Math.PI/2+k*2*Math.PI/per, a1=a0+2*Math.PI/per, P=a=>`${(R*Math.cos(a)).toFixed(2)} ${(R*Math.sin(a)).toFixed(2)}`;
       s+=per===1?`<circle class="shp" data-p="${m*per}" r="${R}" tabindex="0" role="checkbox" aria-label="Whole circle"/>`:`<path class="shp" data-p="${m*per+k}" d="M0 0L${P(a0)}A${R} ${R} 0 0 1 ${P(a1)}Z" tabindex="0" role="checkbox" aria-label="Part ${k+1}${nw>1?' of model '+(m+1):''}"/>`; } }
     h+=s+'</svg>'; }
@@ -2021,8 +2044,9 @@ function buildLabel(it,root){
   w.innerHTML=`<div class="lbbank" aria-label="Labels"></div><div class="lbimg" style="max-width:${it.imgw||400}px"><img src="${it.img}" alt="Picture to label">${it.spots.map(([x,y],q)=>`<button type="button" class="lbspot" style="left:${x}%;top:${y}%" data-s="${q}" aria-label="Spot ${q+1}"><span class="lbn">${q+1}</span></button>`).join('')}</div>
     <p class="hint">Click a label, then click the spot where it goes. Click a placed label to take it back.</p>`;
   const bank=w.querySelector('.lbbank'); let picked=null;
-  const draw=()=>{ const a=S.answers[id]||[]; bank.innerHTML='';
+  const draw=()=>{ const a=S.answers[id]||[], fk=bank.contains(document.activeElement)?document.activeElement.dataset.t:null; bank.innerHTML='';
     it.tiles.forEach((t,k)=>{ if(a.includes(k)) return; const b=document.createElement('button'); b.type='button'; b.className='tile lbt'+(picked===k?' picked':''); b.dataset.t=k; b.innerHTML=t; bank.appendChild(b); });
+    if(fk!=null){ const nb=bank.querySelector(`.lbt[data-t="${fk}"]`); if(nb) nb.focus(); }   /* keyboard users keep their place */
     if(!bank.children.length) bank.innerHTML='<span class="hint">All labels placed.</span>';
     w.querySelectorAll('.lbspot').forEach(s=>{ const q=+s.dataset.s, t=a[q]; s.classList.toggle('full',t!=null); s.innerHTML=t!=null?`<span class="tile lbt">${it.tiles[t]}</span>`:`<span class="lbn">${q+1}</span>`; s.setAttribute('aria-label',`Spot ${q+1}`+(t!=null?': '+String(it.tiles[t]).replace(/<[^>]+>/g,''):'')); });
     refresh(); };
