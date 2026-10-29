@@ -12,5 +12,6 @@ window.SPITZ_TESTS=[
   {id:"rla8-2024", title:"Grade 8 Reading 2024 Released Test", v:"a8bf54ed10"},
   {id:"math8-2025", title:"Grade 8 Math 2025 Released Test", v:"4ee70540b2"},
   {id:"math8-2026", title:"Grade 8 Math 2026 Released Test", v:"62b9455413"},
-  {id:"math8-2024", title:"Grade 8 Math 2024 Released Test", v:"acd28788f1"}
+  {id:"math8-2024", title:"Grade 8 Math 2024 Released Test", v:"acd28788f1"},
+  {id:"math6-2025", title:"Grade 6 Math 2025 Released Test", hidden:true, v:"0fa6d54522"}
 ];
