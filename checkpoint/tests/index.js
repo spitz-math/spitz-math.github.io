@@ -9,6 +9,6 @@ window.SPITZ_TESTS=[
   {id:"alg1-redesign", title:"Algebra 1 Redesign Practice Test", v:"e96c711076"},
   {id:"exit-ticket-10-26", title:"Exit Ticket 10/26", v:"80c6fc2e2d"},
   {id:"exit-ticket-10-27", title:"Exit Ticket 10/27", v:"fb57d8f5e8"},
-  {id:"rla8-2024", title:"Grade 8 Reading 2024 Released Test", v:"a8bf54ed10"},
-  {id:"math8-2025", title:"Grade 8 Math 2025 Released Test", hidden:true, v:"4ee70540b2"}
+  {id:"rla8-2024", title:"Grade 8 Reading 2024 Released Test", hidden:true, v:"a8bf54ed10"},
+  {id:"math8-2025", title:"Grade 8 Math 2025 Released Test", v:"4ee70540b2"}
 ];
