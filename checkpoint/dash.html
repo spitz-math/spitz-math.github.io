@@ -533,8 +533,11 @@ details summary{cursor:pointer;color:var(--blue2);font-size:13px;margin-top:8px}
       <div class="msg2" id="bkMsg"></div>
       <div class="row" id="bkFileRow" hidden><button class="btn" id="bkFileBtn">Choose the question bank file</button><input type="file" id="bkFile" accept=".html,text/html" hidden></div>
       <div id="bkFilters" class="bkcol" hidden>
+        <label class="lab" for="bkCourse">Grade level</label>
+        <select id="bkCourse"><option value="alg1">Algebra I</option><option value="math8">Grade 8 Math</option><option value="rla8">Grade 8 Reading</option></select>
         <span class="lab">Questions</span>
         <div class="seg" id="bkSrc"><button data-v="rel" aria-pressed="true">Released</button><button data-v="saved" aria-pressed="false">Saved</button><button data-v="gen" aria-pressed="false">Generated</button></div>
+        <label class="lab" for="bkCat">Topic (reporting category)</label><select id="bkCat"></select>
         <label class="lab" for="bkStd">Standard</label><select id="bkStd"></select>
         <div id="bkRelOpts" class="bkcol">
           <label class="lab" for="bkType">Question type</label>
@@ -1576,7 +1579,7 @@ async function oeSave(publish){ if(!OE||OE.busy) return; const b=oeGather(), P=o
 /* the test.js for a preview (with answers), made here from what is on screen, so unsaved changes show too. Same shape as Code.gs makes. */
 function oeTestJs(b){ const J=v=>JSON.stringify(v).replace(/</g,'\\u003c'), num=s=>{ s=String(s).replace(/−/g,'-').replace(/,/g,''); const m=s.match(/^(-?\d+(?:\.\d+)?)\/(-?\d+(?:\.\d+)?)$/); return m?+m[1]/+m[2]:+s; };
   const course=b.course==='Other'?'Other':b.course, head={id:b.id||'preview',title:b.title||'Untitled test',course};
-  if(/RLA/.test(course)) head.subject='rla'; head.reference=course==='Algebra I'?'alg1':'none'; if(b.calc===false) head.calc=false;
+  if(/RLA/.test(course)) head.subject='rla'; head.reference=course==='Algebra I'?'alg1':course==='8th Math'?'math8':'none'; if(b.calc===false) head.calc=false;
   const P={}; b.passages.forEach((h,i)=>{ P['P'+(i+1)]=h; });
   const items=b.items.map(it=>{ let stem=J(it.text||''); if(it.pic&&it.mode!=='pic'&&it.type!=='label') stem+='+'+J('<div class="tqpic"><img class="fig" src="')+'+ASSET('+J('img/'+it.pic.file)+')+'+J('" style="width:'+it.pic.w+'px;max-width:100%" alt="Picture for this question"></div>');
     const o=['type:'+J(it.type),'stem:'+stem,'max:'+(+it.points||1)];
@@ -2040,7 +2043,7 @@ document.addEventListener('scroll',()=>{ tip.hidden=true; },true);
    Every publish is one commit: the test folder, tests/index.js and the test's single/ file together. */
 const TP={gh:null, files:null, index:[], player:null, pkg:null, cache:{}, metas:{}, working:false, watch:null};
 const MIME={png:'image/png',jpg:'image/jpeg',jpeg:'image/jpeg',gif:'image/gif',svg:'image/svg+xml',webp:'image/webp'};
-const TYPES=['mc','ms','num','inline','table','dnd','graph','graphline','cline','graphsys','boxes','hotspot','graphineq','graphexp','graphfunc','eq'];
+const TYPES=['mc','ms','num','inline','table','dnd','graph','graphline','cline','graphsys','boxes','hotspot','graphineq','graphexp','graphfunc','eq','text','numline','filltable','datadisp','shade','figure','blanks','label','order','hottext','twopart'];   // 'text': a written answer the teacher scores
 const ENC=new TextEncoder(), DEC=new TextDecoder();
 const extOf=p=>(String(p).match(/\.([a-z0-9]+)$/i)||[])[1]?.toLowerCase()||'';
 const pad2=n=>String(n).padStart(2,'0');
@@ -2096,7 +2099,7 @@ const DESCRIBE=`(function(){ var TD=window.__TD, keys=['answer','m','b','op','a'
     case 'graphineq': return 'y '+it.op+' '+it.m+'x + '+it.b; case 'graphexp': return 'y = '+it.a+'('+it.b+')^x';
     case 'graphfunc': return it.ftype+(it.asym!=null?', asymptote '+it.asym:''); case 'graphline': return 'graph a line'; case 'graphsys': return it.keyText||'system of inequalities'; case 'cline': return it.keyText||('line '+JSON.stringify(it.eq));
     default: return a==null?'':JSON.stringify(a,fnr); } }catch(e){ return '?'; } };
-  var out=null; if(TD){ out={ id:TD.id, title:TD.title, course:TD.course||'', reference:TD.reference||'alg1', categories:TD.categories||null, rationale:TD.rationale||null,
+  var out=null; if(TD){ out={ id:TD.id, title:TD.title, course:TD.course||'', reference:TD.reference||'alg1', categories:TD.categories||null, rationale:TD.rationale||null, subject:TD.subject||'', passages:TD.passages||null,
     items:(TD.items||[]).map(function(it){ var key={}, body={}; Object.keys(it).forEach(function(k){ if(keys.indexOf(k)>=0) key[k]=it[k]; else if(['max','teks','rs','cat','label'].indexOf(k)<0) body[k]=it[k]; });
       return { type:it.type, label:it.label||'', teks:it.teks||'', rs:it.rs||'', cat:it.cat==null?null:it.cat, max:it.max||1, hasAnswer:it.answer!==undefined,
         ans:JSON.stringify(it.answer===undefined?null:it.answer,fnr), key:JSON.stringify(key,fnr), body:JSON.stringify(body,fnr), disp:disp(it), stem:txt(it.stem).slice(0,140),
@@ -2593,6 +2596,43 @@ function BANKSANDBOX(){   // runs inside the sandboxed frame; must not use anyth
 
 const BK={frame:null, tok:null, ready:false, cat:null, wait:{}, rid:0, draft:[], from:''};
 const CATNAMES={1:'Number and Algebraic Methods',2:'Describing and Graphing Linear Functions, Equations, and Inequalities',3:'Writing and Solving Linear Functions, Equations, and Inequalities',4:'Quadratic Functions and Equations',5:'Exponential Functions and Equations'};
+/* grade levels on the Question bank page (Kody 10/29). Algebra I uses the question bank file plus its full released tests;
+   Grade 8 Math uses its full released tests (tests/math8-<year>/) only. TEKS8: Grade 8 STAAR standards from TEA's TEKS Snapshot
+   (key, reporting category, readiness, short label); 8.6(B) and 8.11(C) are not tested. */
+const CAT8={1:'Numerical Representations and Relationships',2:'Computations and Algebraic Relationships',3:'Geometry and Measurement',4:'Data Analysis and Personal Financial Literacy'};
+const TEKS8=[['8.2A',1,0,'Sets and subsets of real numbers'],['8.2B',1,0,'Approximate irrational numbers'],['8.2C',1,0,'Scientific notation'],['8.2D',1,1,'Order real numbers'],
+  ['8.4A',2,0,'Slope from similar right triangles'],['8.4B',2,1,'Graph proportional relationships (unit rate as slope)'],['8.4C',2,1,'Rate of change and y-intercept from a table or graph'],
+  ['8.5A',2,0,'Represent y = kx'],['8.5B',2,0,'Represent y = mx + b'],['8.5E',2,0,'Direct variation'],['8.5F',2,0,'Proportional or non-proportional'],['8.5G',2,1,'Identify functions'],
+  ['8.5H',2,0,'Proportional and non-proportional functions'],['8.5I',2,1,'Write y = mx + b'],['8.8A',2,0,'Write equations with variables on both sides'],
+  ['8.8B',2,0,'Write a problem for an equation'],['8.8C',2,1,'Solve equations with variables on both sides'],['8.9A',2,0,'Solution of two linear equations from a graph'],
+  ['8.3A',3,0,'Similar shapes have proportional sides'],['8.3B',3,0,'Compare a shape and its dilation'],['8.3C',3,1,'Dilations on a coordinate plane (algebraic rule)'],
+  ['8.6A',3,0,'Volume of a cylinder: V = Bh'],['8.6C',3,0,'Explain the Pythagorean theorem'],['8.7A',3,1,'Volume of cylinders, cones, and spheres'],
+  ['8.7B',3,1,'Surface area of prisms and cylinders'],['8.7C',3,1,'Pythagorean theorem and its converse'],['8.7D',3,0,'Distance between two points'],
+  ['8.8D',3,0,'Angle sums, exterior angles, parallel lines, similar triangles'],['8.10A',3,0,'Properties of transformations'],['8.10B',3,0,'Transformations that keep congruence'],
+  ['8.10C',3,1,'Transformations on a coordinate plane (algebraic rule)'],['8.10D',3,0,'Dilations: effect on length and area'],
+  ['8.5C',4,0,'Linear or not: bivariate data'],['8.5D',4,1,'Trend lines and predictions'],['8.11A',4,0,'Scatterplots and association'],['8.11B',4,0,'Mean absolute deviation'],
+  ['8.12A',4,0,'Interest rate and loan length'],['8.12C',4,0,'Saving small amounts regularly'],['8.12D',4,1,'Simple and compound interest'],['8.12G',4,0,'Saving for college']
+].map(([k,cat,r,label])=>({k,cat,r:!!r,label,bank:[],gens:0}));
+const COURSES={alg1:{name:'Algebra I',course:'Algebra I',ref:'alg1',cats:CATNAMES,re:/^alg1-20\d\d$/,src:'STAAR Algebra I',title:'Algebra I Practice'},
+  math8:{name:'Grade 8 Math',course:'8th Math',ref:'math8',cats:CAT8,re:/^math8-20\d\d$/,src:'STAAR Grade 8 Math',title:'Grade 8 Math Practice'},
+  rla8:{name:'Grade 8 Reading',course:'8th RLA',subject:'rla',cats:{1:'Reading',2:'Writing'},re:/^rla8-20\d\d$/,src:'STAAR Grade 8 Reading',title:'Grade 8 Reading Practice'}};
+/* Grade 8 Reading: every STAAR-tested Grade 8 ELAR standard (TEA's TEKS Snapshot, v. 7.17.25: code, readiness, short label). The topic
+   (1 Reading, 2 Writing) comes from the released tests' own tags, else writing for 10 and 11. Codes are written like the tests (6.C, 8.Diii, 10.Dvii). */
+const RLA8STD=[['2.A',0,'Print or digital resources (meaning, origin, part of speech)'],['2.B',1,'Use context to clarify unfamiliar words'],['2.C',0,'Greek and Latin roots'],
+  ['5.C',0,'Make and correct or confirm predictions'],['5.E',1,'Make connections to experiences, texts, and society'],['5.F',1,'Make inferences and use evidence'],
+  ['5.G',1,'Evaluate details to determine key ideas'],['5.H',1,'Synthesize information'],['6.B',1,'Write responses comparing sources'],['6.C',1,'Use text evidence to support a response'],
+  ['6.D',1,'Paraphrase and summarize'],['7.A',0,'How themes develop through characters and events'],['7.B',1,'Characters\u2019 motivations and behaviors'],
+  ['7.C',1,'Non-linear plot: flashbacks, foreshadowing, subplots'],['7.D',0,'How setting influences characters'],['8.A',0,'Literary genres'],
+  ['8.B',0,'Poetry: punctuation and line length'],['8.C',0,'Drama: acts and scenes'],['8.Di',1,'Informational: controlling idea or thesis'],
+  ['8.Dii',0,'Informational: footnotes, endnotes, citations'],['8.Diii',0,'Informational: organizational patterns'],['8.Ei',1,'Argument: identify the claim'],
+  ['8.Eii',1,'Argument: the counterargument'],['8.Eiii',0,'Argument: intended audience'],['9.A',1,'Author\u2019s purpose and message'],['9.B',0,'Text structure and author\u2019s purpose'],
+  ['9.C',0,'Print and graphic features'],['9.D',0,'Figurative language'],['9.E',0,'Literary devices: point of view, irony'],['9.F',0,'Language and mood, voice, tone'],
+  ['9.G',0,'Rhetorical devices and logical fallacies'],['10.Bi',1,'Drafts: purposeful structure'],['10.Bii',1,'Drafts: develop ideas with facts and details'],
+  ['10.C',1,'Revise for clarity, organization, style, word choice'],['10.D',0,'Edit for standard English conventions'],['10.Di',1,'Edit: complete complex sentences'],
+  ['10.Dii',1,'Edit: verb tenses and voice'],['10.Diii',0,'Edit: prepositional phrases, subject-verb agreement'],['10.Div',0,'Edit: pronoun-antecedent agreement'],
+  ['10.Dv',0,'Edit: capitalization'],['10.Dvi',0,'Edit: punctuation'],['10.Dvii',1,'Edit: spelling, commonly confused words'],['11.B',1,'Informational essay'],['11.C',1,'Argumentative essay']];
+let RLA8=[];
+const teksNum=k=>{ const m=String(k).match(/^(\d+)\.([A-Z])(viii|vii|vi|iv|v|iii|ii|i)?$/i); if(!m) return [999,k]; const R={'':0,i:1,ii:2,iii:3,iv:4,v:5,vi:6,vii:7,viii:8}; return [+m[1]*1000+m[2].charCodeAt(0)*10+(R[(m[3]||'').toLowerCase()]||0),k]; };
 const BANKURL=()=>(TP.gh&&TP.gh.pages||ROOT).replace(/checkpoint\/?$/,'')+'warmup/index.html';
 const BANKRAW=()=>(TP.gh&&TP.gh.raw||'https://raw.githubusercontent.com/spitz-math/spitz-math.github.io/main/checkpoint/').replace(/checkpoint\/?$/,'')+'warmup/index.html';
 function bankSay(t,cls){ say($('#bkMsg'),t,cls); }
@@ -2626,13 +2666,18 @@ const shuffle=a=>{ a=a.slice(); for(let i=a.length-1;i>0;i--){ const j=Math.floo
    Generated questions come from the question bank file's practice makers or a released question's "new numbers" version.
    Every question is shown by player.html in browse mode (a sandboxed frame), so it looks and works exactly as students see it. */
 const QB={usage:{}, saved:[], savedSha:null, ready:false, loading:null, tests:{}, testYears:new Set(), bankCache:{}, skipped:{}, entries:{}, view:[], shown:0, mode:'rel', gmode:'gen', gen:[], genKey:'',
-  cart:[], frame:null, tok:null, frameReady:null, cartView:false, years:null, gid:0 };
+  cart:[], frame:null, tok:null, frameReady:null, cartView:false, years:null, gid:0, course:'alg1' };
 const PAGE=30;
-const teksKey=t=>{ const m=String(t||'').match(/^A1\.\d+\.(\d+)\.([A-Z])$/); return m?'A.'+m[1]+m[2]:String(t||''); };
+const teksKey=t=>{ const m=String(t||'').match(/^(A1|8)\.\d+\.(\d+)\.([A-Z])$/); return m?(m[1]==='A1'?'A.':'8.')+m[2]+m[3]:String(t||''); };
+const CRS=()=>COURSES[QB.course]||COURSES.alg1;
+const stdList=()=>QB.course==='math8'?TEKS8:QB.course==='rla8'?RLA8:(BK.cat||[]);   // the standards of the chosen grade level
+const courseOfTest=id=>Object.keys(COURSES).find(c=>COURSES[c].re.test(id))||'alg1';
+const entryCourse=e=>e.course||(/^8\.\d/.test(e.std)?'math8':'alg1');
+const defTitle=c=>COURSES[c].title+': '+new Date().toLocaleDateString([], {month:'short',day:'numeric'});
 const yearOf=s=>+((String(s||'').match(/\b(20\d\d)\b/)||[])[1]||0);
 const qOf=s=>+((String(s||'').match(/\bQ(\d+)\b/)||[])[1]||0);
 const plainText=h=>new DOMParser().parseFromString(String(h).replace(/<span class="frac"><span>([\s\S]*?)<\/span><span>([\s\S]*?)<\/span><\/span>/g,'$1/$2').replace(/<svg[\s\S]*?<\/svg>/gi,' [graph] ').replace(/<img[^>]*>/gi,' [picture] ').replace(/<sup>([\s\S]*?)<\/sup>/gi,'^$1').replace(/<\/(p|td|th|tr)>/gi,' $&'),'text/html').body.textContent.replace(/\s+/g,' ').trim();
-const stdInfo=k=>(BK.cat||[]).find(t=>t.k===k)||null;
+const stdInfo=k=>stdList().find(t=>t.k===k)||(BK.cat||[]).concat(TEKS8,RLA8).find(t=>t.k===k)||null;
 function cartSave(){ keep('qbCart',{cart:QB.cart,title:$('#bkTitle').value,id:$('#bkId').dataset.touched?$('#bkId').value:''}); }
 function cartLoad(){ const c=store('qbCart'); if(c&&Array.isArray(c.cart)){ QB.cart=c.cart.filter(e=>e&&e.uid&&e.item); if(c.title) $('#bkTitle').value=c.title; if(c.id){ $('#bkId').value=c.id; $('#bkId').dataset.touched=1; } } }
 const inCart=uid=>QB.cart.some(e=>e.uid===uid);
@@ -2642,6 +2687,7 @@ const pagesBase=()=>{ try{ return new URL(TP.gh&&TP.gh.pages||ROOT||'./',locatio
 function itemsCode(list,forTest){ let s=fnBack(JSON.stringify(list)).replace(/<\/(script)/gi,'<\\/$1');
   return s.replace(/@@([a-z0-9-]+)\/(img\/[A-Za-z0-9._\-\/]+)@@/g,(m,id,p)=>forTest?'"+ASSET('+JSON.stringify('img/'+id+'-'+p.slice(4))+')+"':pagesBase()+'tests/'+id+'/'+p); }
 
+const psgCode=html=>String(html).replace(/@@([a-z0-9-]+)\/(img\/[A-Za-z0-9._\-\/]+)@@/g,(m,id,p)=>pagesBase()+'tests/'+id+'/'+p);   // preview only; a built test's passages go through itemsCode
 /* ---------- question IDs, where each question was used, saved generated questions ----------
    bid = the question's lasting ID, written into every test built here: r:<year>#<Q> for a released question (any version),
    s:<hash> for a generated one. "Used in" comes from reading every published test (the full released tests don't count).
@@ -2650,10 +2696,10 @@ const SAVEDPATH='tests/_bank/saved.json';
 function fnv(str){ let h=0x811c9dc5; for(let i=0;i<str.length;i++){ h^=str.charCodeAt(i); h=Math.imul(h,0x01000193)>>>0; } return h.toString(16).padStart(8,'0'); }
 function bidOf(e){ if(e.bid) return e.bid; if(e.from!=='gen'&&e.year&&e.q) return 'r:'+e.year+'#'+e.q;
   const it=Object.assign({},e.item); delete it.src; delete it.notes; delete it.bid; return 's:'+fnv(JSON.stringify(it))+fnv(String(it.stem)+'|'+JSON.stringify(it.choices||it.tiles||it.drops||'')); }
-function bidOfItem(it){ if(it.bid) return it.bid; const m=String(it.src||'').match(/^STAAR Algebra I (20\d\d), Q(\d+)\b/); return m&&!/fresh numbers/i.test(it.src)?'r:'+m[1]+'#'+m[2]:null; }
+function bidOfItem(it){ if(it.bid) return it.bid; const m=String(it.src||'').match(/^STAAR (Algebra I|Grade 8 Math|Grade 8 Reading) (20\d\d), Q(\d+)\b/); return m&&!/fresh numbers/i.test(it.src)?({'Algebra I':'r:','Grade 8 Math':'r8:'}[m[1]]||'rr8:')+m[2]+'#'+m[3]:null; }
 /* full practice tests (not a released year) whose questions are added to Released next to that year's real questions (Kody 10/24) */
 const PRACTICE_FULL={'alg1-redesign':{year:2022,label:'2022 Practice'}};
-async function loadUsage(){ const ids=[...new Set(TP.index.map(t=>t.id).concat(testFolders()))].filter(id=>!/^alg1-20\d\d$/.test(id)&&!PRACTICE_FULL[id]), use={};
+async function loadUsage(){ const ids=[...new Set(TP.index.map(t=>t.id).concat(testFolders()))].filter(id=>!Object.values(COURSES).some(c=>c.re.test(id))&&!PRACTICE_FULL[id]), use={};
   await Promise.all(ids.map(async id=>{ const td=await metaOf(id); if(!td) return; const title=(TP.index.find(t=>t.id===id)||{}).title||td.title||id;
     td.items.forEach(it=>{ let b=null; try{ b=bidOfItem(JSON.parse(it.body)); }catch(e){} if(b){ (use[b]=use[b]||[]); if(!use[b].includes(title)) use[b].push(title); } }); }));
   QB.usage=use; }
@@ -2666,8 +2712,12 @@ const usedIn=e=>QB.usage[bidOf(e)]||[];
 const isSaved=e=>e.from!=='gen'?false:QB.saved.some(x=>x.bid===bidOf(e));
 
 /* ---------- loading ---------- */
-function bkOpenPage(){ $('#bkpage').hidden=false; $('#tpage').hidden=true; $('#mpage').hidden=true; $('#bkBack').textContent=QB.mine?'Back to My sessions':'Back to Tests'; cartLoad(); renderCart(); if(!$('#bkTitle').value.trim()) $('#bkTitle').value='Algebra I Practice: '+new Date().toLocaleDateString([], {month:'short',day:'numeric'}); bkIdAuto();
+function bkOpenPage(){ $('#bkpage').hidden=false; $('#tpage').hidden=true; $('#mpage').hidden=true; $('#bkBack').textContent=QB.mine?'Back to My sessions':'Back to Tests'; cartLoad(); renderCart();
+  QB.course=QB.cart.length?entryCourse(QB.cart[0]):COURSES[store('qbCourse')]?store('qbCourse'):bkCourseFor(); $('#bkCourse').value=QB.course; if(QB.course!=='alg1') QB.mode='rel';
+  if(!$('#bkTitle').value.trim()) $('#bkTitle').value=defTitle(QB.course); bkIdAuto();
   if(!QB.loading) QB.loading=qbLoad(); else if(QB.ready) Promise.all([loadUsage(),loadSaved()]).then(()=>{ fillFilters(); if(!QB.cartView) refreshView(); renderCart(); }); }
+/* a teacher starts on the grade level they teach (the Subject column on Teachers); anyone else on Algebra I */
+function bkCourseFor(){ const C=QB.mine?((MP.my||{}).courses||[]):[]; return C.includes('8th Math')&&!C.includes('Algebra I')?'math8':'alg1'; }
 function bkClosePage(){ $('#bkpage').hidden=true; $('#bkpage').classList.remove('cartopen'); if(QB.mine){ QB.mine=false; $('#mpage').hidden=false; } else $('#tpage').hidden=false; bkNote(); }
 $('#bkOpen').onclick=()=>{ QB.mine=false; bkOpenPage(); }; $('#bkBack').onclick=bkClosePage;
 $('#bkCartBtn').onclick=()=>$('#bkpage').classList.toggle('cartopen'); $('#bkCartClose').onclick=()=>$('#bkpage').classList.remove('cartopen');
@@ -2693,14 +2743,20 @@ function bankReady(){ const n=BK.cat.reduce((a,t)=>a+t.bank.length,0);
   bankSay(`Question bank loaded (${n} released questions, ${BK.cat.length} standards).`+(QB.testYears.size?` ${[...QB.testYears].sort().join(' and ')} use${QB.testYears.size===1?'s':''} your published full test${QB.testYears.size===1?'':'s'}.`:''));
   $('#bkFileRow').hidden=/GitHub/.test(BK.from); }
 /* full released tests already published (tests/alg1-<year>/): their questions replace the bank's version of that year */
-async function loadTests(){ const ids=[...new Set(TP.index.map(t=>t.id).concat(testFolders()))].filter(id=>/^alg1-20\d\d$/.test(id)||PRACTICE_FULL[id]).sort();
+async function loadTests(){ const ids=[...new Set(TP.index.map(t=>t.id).concat(testFolders()))].filter(id=>Object.values(COURSES).some(c=>c.re.test(id))||PRACTICE_FULL[id]).sort();
   await Promise.all(ids.map(async id=>{ const td=await metaOf(id); if(!td||!td.items||td.items.length<40) return;
-    const P=PRACTICE_FULL[id], year=P?P.year:+id.slice(5); if(!P) QB.testYears.add(year);
+    const P=PRACTICE_FULL[id], course=courseOfTest(id), C=COURSES[course], year=P?P.year:+id.split('-').pop(); if(!P&&course==='alg1') QB.testYears.add(year);
+    const psgOf=k=>td.passages&&td.passages[k]?String(td.passages[k]).replace(/src="(img\/[A-Za-z0-9._\-\/]+)"/g,'src="@@'+id+'/$1@@"'):null;   // a reading question's passage, pictures like the question's
     QB.tests[id]=td.items.map((it,i)=>{ let body, key; try{ body=JSON.parse(it.body.replace(/src=\\"(img\/[A-Za-z0-9._\-\/]+)\\"/g,'src=\\"@@'+id+'/$1@@\\"')); key=JSON.parse(it.key); }catch(e){ return null; }
-      const q=i+1, item=Object.assign(body,key,{type:it.type,teks:it.teks,cat:it.cat,rs:it.rs,max:it.max||1,label:it.label,src:P?(td.title||id)+' ('+year+'), Q'+q:'STAAR Algebra I '+year+', Q'+q});
+      const psg=body.passage?psgOf(body.passage):null; if(body.passage) body.passage=id+'-'+body.passage;   // passage keys made unique across tests
+      const q=i+1, item=Object.assign(body,key,{type:it.type,teks:it.teks,cat:it.cat,rs:it.rs,max:it.max||1,label:it.label,src:P?(td.title||id)+' ('+year+'), Q'+q:C.src+' '+year+', Q'+q});
       if(P) item.bid='p:'+id+'#'+q;   // its own ID: never the same as the released question r:<year>#<Q>
+      else if(course!=='alg1') item.bid=(course==='rla8'?'rr8:':'r8:')+year+'#'+q;   // Grade 8 Math r8:<year>#<Q>, Grade 8 Reading rr8:<year>#<Q>
       const labs=td.rationale&&td.rationale[q];
-      return {uid:'t:'+id+'#'+q, from:'test', test:id, year, q, pr:P?1:0, ylabel:P?P.label:'', bid:P?item.bid:undefined, std:teksKey(it.teks), item, rat:labs&&labs.length?labs.slice():null}; }).filter(Boolean); }));
+      return {uid:'t:'+id+'#'+q, from:'test', test:id, course, year, q, pr:P?1:0, ylabel:P?P.label:'', bid:item.bid, std:teksKey(it.teks), item, psg, psgKey:psg?item.passage:null, rat:labs&&labs.length?labs.slice():null}; }).filter(Boolean); }));
+  const R={}; RLA8STD.forEach(([k,r,label])=>R[k]={k,cat:/^1[01]\./.test(k)?2:1,r:!!r,label,bank:[],gens:0});
+  Object.values(QB.tests).flat().filter(e=>e.course==='rla8').forEach(e=>{ const r=R[e.std]||(R[e.std]={k:e.std,r:e.item.rs==='Readiness',label:'',bank:[],gens:0}); if(+e.item.cat) r.cat=+e.item.cat; });
+  RLA8=Object.values(R).sort((a,b)=>(a.cat-b.cat)||(teksNum(a.k)[0]-teksNum(b.k)[0]));
   if(BK.ready) bankReady(); }
 /* one standard's released questions from the question bank file, converted to the player's format (cached) */
 async function bankStd(k){ if(QB.bankCache[k]) return QB.bankCache[k];
@@ -2709,22 +2765,31 @@ async function bankStd(k){ if(QB.bankCache[k]) return QB.bankCache[k];
   QB.skipped[k]=skip; return QB.bankCache[k]=out; }
 
 /* ---------- filters ---------- */
-function fillFilters(){ const sel=$('#bkStd'), cur=sel.value; let h='', last=-1;
+function fillFilters(){ const sel=$('#bkStd'), cur=sel.value, csel=$('#bkCat'), ccur=csel.value, C=CRS(), L=stdList(); let h='', last=-1;
   const tcount=k=>Object.values(QB.tests).reduce((a,l)=>a+l.filter(e=>e.std===k).length,0);
   const count=t=>t.bank.filter(b=>!QB.testYears.has(b.year)).length+tcount(t.k);
-  if(QB.mode!=='gen') h+='<option value="*">All standards</option>';
-  BK.cat.forEach(t=>{ if(t.cat!==last){ if(last!==-1) h+='</optgroup>'; last=t.cat; h+=`<optgroup label="${t.cat}. ${esc(CATNAMES[t.cat]||'')}">`; }
-    const n=QB.mode==='rel'?count(t):QB.mode==='saved'?QB.saved.filter(x=>x.std===t.k).length:t.gens;
+  const num=t=>QB.mode==='rel'?count(t):QB.mode==='saved'?QB.saved.filter(x=>x.std===t.k).length:t.gens;
+  /* Saved and Generated questions come from the question bank file, which is Algebra I only */
+  document.querySelectorAll('#bkSrc button').forEach(b=>b.hidden=QB.course!=='alg1'&&b.dataset.v!=='rel');
+  const cats=[...new Set(L.map(t=>t.cat))];
+  csel.innerHTML='<option value="">All topics</option>'+cats.map(c=>`<option value="${c}">${c}. ${esc(C.cats[c]||'')}  [${L.filter(t=>t.cat===c).reduce((a,t)=>a+num(t),0)}]</option>`).join('');
+  csel.value=cats.includes(+ccur)?ccur:''; const topic=+csel.value||0;
+  if(QB.mode!=='gen') h+=`<option value="*">${topic?'All standards in this topic':'All standards'}</option>`;
+  L.filter(t=>!topic||t.cat===topic).forEach(t=>{ if(t.cat!==last){ if(last!==-1) h+='</optgroup>'; last=t.cat; h+=`<optgroup label="${t.cat}. ${esc(C.cats[t.cat]||'')}">`; }
+    const n=num(t);
     h+=`<option value="${esc(t.k)}" ${QB.mode==='gen'&&!t.gens&&!t.bank.some(b=>b.regen)?'disabled':''}>${esc(t.k)}  ${esc(t.label)}${t.r?' (R)':''}  [${n}]</option>`; });
   sel.innerHTML=h+'</optgroup>';
   if([...sel.options].some(o=>o.value===cur&&!o.disabled)) sel.value=cur; else if(QB.mode==='gen') sel.value=([...sel.options].find(o=>!o.disabled)||{}).value||'';
-  const years=[...new Set(BK.cat.flatMap(t=>t.bank.map(b=>b.year)).concat([...QB.testYears]).filter(Boolean))].sort((a,b)=>b-a);
+  const years=[...new Set((BK.cat||[]).flatMap(t=>t.bank.map(b=>b.year)).concat(Object.values(QB.tests).flatMap(l=>l.map(e=>e.year))).filter(Boolean))].sort((a,b)=>b-a);
   QB.years=new Set(years);   // every year is always shown (Kody: no year filter)
   $('#bkRelOpts').hidden=QB.mode==='gen'; $('#bkGenOpts').hidden=QB.mode!=='gen'; }
 const segSet=(sel,v)=>document.querySelectorAll(sel+' button').forEach(b=>b.setAttribute('aria-pressed',b.dataset.v===v));
 document.querySelectorAll('#bkSrc button').forEach(b=>b.onclick=()=>{ if(QB.mode===b.dataset.v) return; QB.mode=b.dataset.v; segSet('#bkSrc',QB.mode); fillFilters(); refreshView(); });
 document.querySelectorAll('#bkGenMode button').forEach(b=>b.onclick=()=>{ if(QB.gmode===b.dataset.v) return; QB.gmode=b.dataset.v; segSet('#bkGenMode',QB.gmode); QB.genKey=''; refreshView(); });
-$('#bkStd').onchange=()=>refreshView(); $('#bkHideUsed').onchange=e=>{ keep('qbHideUsed',e.target.checked); refreshView(); }; $('#bkType').onchange=()=>refreshView(); $('#bkSort').onchange=()=>refreshView();
+$('#bkStd').onchange=()=>refreshView(); $('#bkCat').onchange=()=>{ fillFilters(); refreshView(); };
+$('#bkCourse').onchange=e=>{ const old=QB.course; QB.course=e.target.value; keep('qbCourse',QB.course); if(QB.course!=='alg1'&&QB.mode!=='rel'){ QB.mode='rel'; segSet('#bkSrc','rel'); }
+  if($('#bkTitle').value.trim()===''||$('#bkTitle').value.startsWith(COURSES[old].title+':')){ $('#bkTitle').value=defTitle(QB.course); bkIdAuto(); cartSave(); }
+  $('#bkCat').value=''; $('#bkStd').value='*'; QB.genKey=''; fillFilters(); refreshView(); }; $('#bkHideUsed').onchange=e=>{ keep('qbHideUsed',e.target.checked); refreshView(); }; $('#bkType').onchange=()=>refreshView(); $('#bkSort').onchange=()=>refreshView();
 $('#bkMore').onclick=()=>genMore(5); $('#bkRegen').onclick=()=>{ QB.genKey=''; refreshView(); };
 
 /* ---------- the list ---------- */
@@ -2733,14 +2798,14 @@ async function refreshView(){ if(!QB.ready) return; const seq=++viewSeq; QB.cart
   const k=$('#bkStd').value;
   if(QB.mode==='gen') return genView(k,seq);
   over('Loading questions…');
-  const stds=k==='*'?BK.cat.map(t=>t.k):[k]; let list=[];
+  const topic=+$('#bkCat').value||0, stds=k==='*'?stdList().filter(t=>!topic||t.cat===topic).map(t=>t.k):[k]; let list=[];
   if(QB.mode==='saved') list=QB.saved.filter(e=>stds.includes(e.std));
-  else { for(const s of stds){ const b=await bankStd(s); if(seq!==viewSeq) return; list=list.concat(b.filter(e=>!QB.testYears.has(e.year))); }
-    Object.values(QB.tests).forEach(l=>list=list.concat(l.filter(e=>stds.includes(e.std)))); }
+  else { if(QB.course==='alg1') for(const s of stds){ const b=await bankStd(s); if(seq!==viewSeq) return; list=list.concat(b.filter(e=>!QB.testYears.has(e.year))); }
+    Object.values(QB.tests).forEach(l=>list=list.concat(l.filter(e=>e.course===QB.course&&stds.includes(e.std)))); }
   const ty=$('#bkType').value, hide=$('#bkHideUsed').checked, all=list.length;
   list=list.filter(e=>(QB.mode==='saved'||QB.years.has(e.year))&&(!ty||(ty==='mc')===(e.item.type==='mc')));
   const before=list.length; if(hide) list=list.filter(e=>!usedIn(e).length);
-  const order=BK.cat.map(t=>t.k);
+  const order=stdList().map(t=>t.k);
   const pr=(a,b)=>(a.pr||0)-(b.pr||0);
   list.sort($('#bkSort').value==='std'?(a,b)=>(order.indexOf(a.std)-order.indexOf(b.std))||(b.year-a.year)||pr(a,b)||(a.q-b.q):(a,b)=>(b.year-a.year)||pr(a,b)||(a.q-b.q)||(order.indexOf(a.std)-order.indexOf(b.std)));
   const skip=stds.reduce((a,s)=>a+(QB.skipped[s]||0),0);
@@ -2749,7 +2814,8 @@ async function refreshView(){ if(!QB.ready) return; const seq=++viewSeq; QB.cart
 function metaFor(e){ const t=stdInfo(e.std)||{};
   return {uid:e.uid, year:e.ylabel||e.year||'', teks:e.std, tlabel:t.label||'', rs:e.item.rs||(t.r?'Readiness':'Supporting'),
     where:e.from==='gen'||e.from==='saved'?(e.fresh?'New numbers':'Practice'):e.pr?'Q'+e.q:e.q?'STAAR Q'+e.q:'STAAR',
-    tag:e.from==='bank'&&e.adapted?'Adapted':e.from==='saved'||isSaved(e)?'Saved':'', used:usedIn(e), src:e.item.src||''}; }
+    tag:e.from==='bank'&&e.adapted?'Adapted':e.from==='saved'||isSaved(e)?'Saved':'', used:usedIn(e), src:e.item.src||'',
+    psg:e.psg?psgCode(e.psg):'', psgTitle:e.psg?'Read the passage: '+(plainText((e.psg.match(/<h3[^>]*>([\s\S]*?)<\/h3>/g)||[]).map(h=>h.replace(/<[^>]+>/g,'')).join(' and '))||'the passage'):''}; }
 function sendPage(append,empty){ const part=QB.view.slice(QB.shown,QB.shown+PAGE); QB.shown+=part.length;
   viewPost({op:'list', append, code:itemsCode(part.map(e=>e.item),false), meta:part.map(metaFor), more:QB.shown<QB.view.length, empty, added:QB.cart.map(e=>e.uid)});
   over(null); }
@@ -2790,6 +2856,7 @@ addEventListener('message',e=>{ const m=e.data; if(!m||!QB.tok||m.bview!==QB.tok
   if(m.op==='more'){ if(!QB.cartView&&QB.shown<QB.view.length) sendPage(true); return; }
   if(m.op==='err'){ over('The questions could not be shown: '+m.err); return; }
   if(m.op==='toggle'){ const pool=QB.cartView?QB.cart:QB.view, e2=pool.find(x=>x.uid===m.uid)||QB.cart.find(x=>x.uid===m.uid);
+    if(m.add&&e2&&QB.cart.length&&entryCourse(QB.cart[0])!==entryCourse(e2)){ bankSay('Your test has '+COURSES[entryCourse(QB.cart[0])].name+' questions. A test is one grade level, so finish or clear it before adding '+COURSES[entryCourse(e2)].name+' questions.','err'); viewPost({op:'added',added:QB.cart.map(e=>e.uid)}); return; }
     if(m.add&&e2&&usedIn(e2).length&&!confirm('This question is already on: '+usedIn(e2).join(', ')+'.\n\nAdd it to this test anyway?')){ viewPost({op:'added',added:QB.cart.map(e=>e.uid)}); return; }
     if(m.add){ if(e2&&!inCart(m.uid)) QB.cart.push(e2); } else QB.cart=QB.cart.filter(x=>x.uid!==m.uid);
     cartSave(); renderCart(); } });
@@ -2819,25 +2886,30 @@ $('#bkTitle').oninput=()=>{ bkIdAuto(); cartSave(); }; $('#bkId').oninput=e=>{ e
 /* ---------- make the test (then the normal checks, preview and publish) ---------- */
 async function fileBytes(path){ if(TP.files&&TP.files[path]) return repoBytes(path);
   const r=await siteGet(encPath(path)); if(!r.ok) throw new Error('Could not download '+path+'.'); return new Uint8Array(await r.arrayBuffer()); }
-function testJsFor(id,title,items,rationale){ const js=v=>itemsCode(v,true);
+function testJsFor(id,title,items,rationale,course,passages){ const js=v=>itemsCode(v,true), C=COURSES[course]||COURSES.alg1;
   return '/* '+title.replace(/\*\//g,'')+': built '+new Date().toLocaleDateString()+' on the Spitz Checkpoint Question bank page.\n'
     +'   Each question keeps its source in "src". Released questions from a published full test keep its pictures (img/) and TEA explanations (rat/);\n'
     +'   question bank questions keep the bank\'s worked solution in "notes" for writing explanations later. */\n'
-    +'SpitzTest({id:'+JSON.stringify(id)+',title:'+JSON.stringify(title)+',course:"Algebra I",reference:"alg1",categories:'+JSON.stringify(CATNAMES)
+    +'SpitzTest({id:'+JSON.stringify(id)+',title:'+JSON.stringify(title)+',course:'+JSON.stringify(C.course)+(C.ref?',reference:'+JSON.stringify(C.ref):'')+(C.subject?',subject:'+JSON.stringify(C.subject):'')+',categories:'+JSON.stringify(C.cats)
+    +(passages?',passages:'+js(passages):'')
     +(rationale?',rationale:'+JSON.stringify(rationale):'')+',items:'+js(items)+'});\n'; }
 $('#bkMake').onclick=async()=>{ const title=$('#bkTitle').value.trim(), id=$('#bkId').value.trim(), msg=$('#bkMakeMsg');
   if(!title) return say(msg,'Give the test a title first.','err'); if(!/^[a-z0-9-]+$/.test(id)) return say(msg,'The test ID can only use lowercase letters, numbers and dashes.','err');
-  if(!QB.cart.length||TP.working) return; const btn=$('#bkMake'); btn.disabled=true;
+  if(!QB.cart.length||TP.working) return; const cs=[...new Set(QB.cart.map(entryCourse))];
+  if(cs.length>1) return say(msg,'Your test mixes '+cs.map(c=>COURSES[c].name).join(' and ')+' questions. A test is one grade level: remove the others first.','err');
+  const btn=$('#bkMake'); btn.disabled=true;
   try{ say(msg,'Getting pictures and explanations…'); const assets={}, rationale={};
     const items=QB.cart.map(e=>{ const it=JSON.parse(JSON.stringify(e.item)); delete it.n; delete it.letters; it.bid=bidOf(e); return it; });
     const bankSave=QB.cart.filter(e=>e.from==='gen'&&!QB.saved.some(x=>x.bid===bidOf(e))).map(e=>({bid:bidOf(e), std:e.std, kind:e.fresh?'new numbers':'practice', year:e.fresh?e.year:0, q:e.fresh?e.q:0, firstTest:id, savedAt:new Date().toISOString().slice(0,10), item:e.item}));
     for(const [i,e] of QB.cart.entries()){ const s=JSON.stringify(e.item);
       for(const m of s.matchAll(/@@([a-z0-9-]+)\/img\/([A-Za-z0-9._\-\/]+)@@/g)){ const rel='img/'+m[1]+'-'+m[2]; if(!assets[rel]) assets[rel]=await fileBytes('tests/'+m[1]+'/img/'+m[2]); }
+      if(e.psg) for(const m of e.psg.matchAll(/@@([a-z0-9-]+)\/img\/([A-Za-z0-9._\-\/]+)@@/g)){ const rel='img/'+m[1]+'-'+m[2]; if(!assets[rel]) assets[rel]=await fileBytes('tests/'+m[1]+'/img/'+m[2]); }
       if(e.rat){ const n=i+1, got=[]; for(const lab of e.rat){ try{ assets['rat/r'+pad2(n)+lab+'.png']=await fileBytes('tests/'+e.test+'/rat/r'+pad2(e.q)+lab+'.png'); got.push(lab); }catch(x){} } if(got.length) rationale[n]=got; } }
-    const testJs=testJsFor(id,title,items,Object.keys(rationale).length?rationale:null); say(msg,'');
+    const passages={}; QB.cart.forEach(e=>{ if(e.psg&&e.psgKey) passages[e.psgKey]=e.psg; });   // each passage once, however many of its questions are on the test
+    const testJs=testJsFor(id,title,items,Object.keys(rationale).length?rationale:null,cs[0],Object.keys(passages).length?passages:null); say(msg,'');
     if(QB.mine){ say(msg,'Publishing your test…');
       const files=[{path:'test.js',b64:b64(ENC.encode(testJs))}].concat(Object.keys(assets).map(k=>({path:k,b64:b64(assets[k])})));
-      const r=await call('stcTeacherPublish',{id,title,n:items.length,files},240000);
+      const r=await call('stcTeacherPublish',{id,title,n:items.length,files,course:COURSES[cs[0]].course},240000);
       QB.cart=[]; $('#bkTitle').value=''; $('#bkId').value=''; delete $('#bkId').dataset.touched; cartSave(); renderCart(); say(msg,'');
       bkClosePage(); MP.tests=null; await myTests(true); renderMt(); openMySessions();
       say($('#mtMsg'),r.status==='live'?`<b>${esc(title)}</b> is ready. Pick it under New session. Give it a minute or two before students open it.`:`<b>${esc(title)}</b> was sent to Mr. Spitzlberger. You can use it once he approves it.`,'ok');
