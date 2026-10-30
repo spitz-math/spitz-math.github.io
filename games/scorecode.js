@@ -28,15 +28,17 @@ var GAMES={                     /* id: [number in the code, display name, how it
   brick_breaker:[11,'Brick Breaker','points'],
   burger_shop:[12,'Burger Shop','points'],
   burger_blaster:[13,'Burger Blaster','points'],
-  rocket_buds:[14,'Rocket Buds','versus'],
+  rocket_buds_v1:[14,'Rocket Buds (classic)','versus'],   /* codes from before 2026-11-02, when Rocket Buds scored Buds vs Rivals */
   paint_royale:[15,'Paint Royale','points'],
   snake_arena:[16,'Snake Arena','points'],
-  brawl_buds:[17,'Brawl Buds','versus'],
+  brawl_buds_v1:[17,'Brawl Buds (classic)','versus'],   /* codes from before 2026-11-02, when Brawl Buds scored Buds vs Rivals */
   pinball:[18,'Pinball','points'],
   hill_climb:[19,'Hill Climb','points'],
   fit_check:[20,'Fit Check','points'],
   football_buds:[21,'Football Buds','points'],   /* points since 2026-10-30 (id 5 was the Buds vs Rivals score) */
-  hoop_buds:[22,'Hoop Buds','points']   /* points since 2026-10-30 (id 6 was the Buds vs Rivals score) */
+  hoop_buds:[22,'Hoop Buds','points'],   /* points since 2026-10-30 (id 6 was the Buds vs Rivals score) */
+  rocket_buds:[23,'Rocket Buds','points'],   /* points since 2026-11-02 (id 14 was the Buds vs Rivals score) */
+  brawl_buds:[24,'Brawl Buds','points']   /* points since 2026-11-02 (id 17 was the Buds vs Rivals score) */
 };
 /* question sets in the order questions.js lists them; 0 means the game's own questions. Add new sets at the end.
    New codes (layout C, since Oct 21 2026) have 6 bits for the set and 5 for topics, so up to 63 sets with up to 5 topics each fit. */
