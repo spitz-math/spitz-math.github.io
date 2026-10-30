@@ -5,7 +5,7 @@
      If the site hasn't answered in 2.5 seconds (crawling Wi-Fi) the saved copy opens instead, and the new one is still saved for next time.
    - data/*.json (teacher settings) is read by questions.js with a request the cache never sees
    Bump VERSION to throw away every old copy at once. */
-var VERSION = 'spitz-v2', CACHE = VERSION;
+var VERSION = 'spitz-v3', CACHE = VERSION;
 
 self.addEventListener('install', function(e){ self.skipWaiting(); });
 self.addEventListener('activate', function(e){

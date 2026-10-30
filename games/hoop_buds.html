@@ -254,6 +254,33 @@ html.sz-alg .hb-ch .k{ width:44px; height:44px; font-size:24px; }
 html.sz-alg .hb-fb{ min-height:96px; font-size:25px; padding:12px 18px; }
 html.sz-alg .hb-q{ gap:10px; }
 html.sz-alg .hb-next{ height:68px; }
+/* points, the run's real score: right column under the Rivals card, then the streak, then this game's 3 challenges */
+#hb-ptschip{ grid-area:2/3; align-self:start; margin:350px 0 0; height:120px; min-width:0; position:relative; border-radius:22px; border-color:var(--neon); }
+#hb-ptschip .l{ color:var(--muted); align-self:flex-start; margin-left:4px; } #hb-ptschip .v{ color:var(--accent); font-size:60px; text-shadow:0 0 12px rgba(255,122,26,.6); }
+#hb-streakchip{ margin-top:486px; height:96px; flex-direction:row; justify-content:center; align-items:center; gap:18px; }
+#hb-streakchip .v{ font-size:46px; }
+.hb-add{ position:absolute; right:14px; top:10px; font:400 28px/1 var(--display); color:var(--ok); opacity:0; }
+.hb-add.go{ animation:hbAdd 1.1s ease-out both; }
+@keyframes hbAdd{ 0%{ opacity:0; transform:translateY(10px); } 15%{ opacity:1; transform:none; } 70%{ opacity:1; } 100%{ opacity:0; transform:translateY(-8px); } }
+@media (prefers-reduced-motion:reduce){ .hb-add.go{ animation:hbAddR 1.1s step-end both; } @keyframes hbAddR{ 0%{ opacity:1; } 100%{ opacity:0; } } }
+.hb-chal{ grid-area:2/3; align-self:start; margin-top:598px; min-width:0; overflow:hidden; background:var(--panel); border:3px solid var(--border); border-radius:18px; padding:14px 18px 16px; }
+.hb-chal h3{ margin:0 0 10px; font:400 26px/1 var(--display); letter-spacing:.06em; color:var(--accent); display:flex; justify-content:space-between; }
+.hb-chal h3 span{ color:var(--muted); font:800 19px/1.3 var(--body); letter-spacing:0; white-space:nowrap; }
+.hb-ci{ display:grid; grid-template-columns:34px minmax(0,1fr) auto; gap:10px; align-items:center; padding:9px 0; border-top:2px solid var(--border); font:700 22px/1.2 var(--body); color:var(--text); }
+.hb-ci .b{ width:30px; height:30px; border-radius:8px; border:3px solid var(--border); display:grid; place-items:center; font:900 20px/1 var(--body); }
+.hb-ci .t{ min-width:0; white-space:normal; } .hb-ci .p{ font:800 20px/1 var(--body); color:var(--muted); white-space:nowrap; } .hb-ci .p.x{ color:var(--no); }
+.hb-ci.done{ color:var(--ok); } .hb-ci.done .b{ background:var(--ok); border-color:var(--ok); color:#0A0712; } .hb-ci.done .p{ color:var(--ok); }
+.hb-mode{ display:inline-flex; gap:10px; }
+.hb-mode .hb-len{ height:70px; border-radius:14px; font:400 28px/1 var(--display); color:var(--muted); }
+.hb-mode .hb-len span{ font:700 20px/1 var(--body); margin-left:8px; }
+.hb-mode .hb-len[aria-pressed="true"]{ border-color:var(--accent); color:var(--accent); background:#21140C; }
+#hb-end .hb-final{ font-size:120px; }
+#hb-end .hb-stats{ margin:16px 0 12px; } #hb-end .hb-topics{ margin-bottom:18px; }
+.hb-badges{ display:flex; justify-content:center; gap:14px; margin-top:14px; flex-wrap:wrap; }
+.hb-badge{ display:flex; align-items:center; gap:10px; padding:10px 18px; border-radius:999px; background:var(--panel); border:3px solid var(--border); font:700 22px/1.2 var(--body); color:var(--muted); }
+.hb-badge b{ font:900 22px/1 var(--body); }
+.hb-badge.done{ border-color:var(--ok); color:var(--text); } .hb-badge.done b{ color:var(--ok); }
+.hb-badge.pro{ border-color:var(--accent); color:var(--accent); }
 </style>
 <script>/* a hub link with an algebra set (anything but mult and int): answers can be long, so layouts that tile short answers fall back to a list */
 if(/[?&]set=(?!(?:mult|int)\b)[a-z]/.test(location.search)) document.documentElement.classList.add('sz-alg');
@@ -269,6 +296,8 @@ var szm=/[?&]set=([a-z]+)/.exec(location.search); if(szm) document.documentEleme
     <div class="hb-chip" id="hb-budschip"><span class="l">Buds</span><span class="v" id="hb-budsv">0</span></div>
     <div class="hb-chip" id="hb-rivalschip"><span class="l">Rivals</span><span class="v" id="hb-rivalsv">0</span></div>
     <div class="hb-chip" id="hb-streakchip"><span class="l">Streak</span><span class="v" id="hb-streak">0</span></div>
+    <div class="hb-chip" id="hb-ptschip"><span class="l" id="hb-ptsl">Points</span><span class="v" id="hb-pts">0</span><span class="hb-add" id="hb-add"></span></div>
+    <div class="hb-chal" id="hb-chal"></div>
   </div>
   <div id="hb-main">
     <div class="hb-range" id="hb-range">
@@ -285,13 +314,13 @@ var szm=/[?&]set=([a-z]+)/.exec(location.search); if(szm) document.documentEleme
 
   <div class="hb-over" id="hb-start"><div class="hb-box">
     <div class="sz-eyebrow">Spitz <b>Arcade</b></div><h2 class="hb-big"><b>HOOP</b> <i>BUDS</i></h2>
-    <p class="hb-sub"><span class="sz-setname">Multiplication facts, 0 to 12.</span> Buds vs Rivals with 1:30 on the game clock. Win the huddle, then win the possession.</p>
+    <p class="hb-sub"><span class="sz-setname">Multiplication facts, 0 to 12.</span> Buds vs Rivals for 1:30. Answers and plays score points, plus 3 challenges.</p>
     <div class="hb-steps">
       <div class="hb-step"><b>Huddle</b>Answer 2 questions before every possession. Both right: a bigger green zone and a crossover that always works.</div>
       <div class="hb-step"><b>Offense</b>Hold Space, let go in the green. Press ↓ to cross over, then dunk. Missed? Grab the rebound.</div>
       <div class="hb-step"><b>Defense</b>Stay in front. Press ↓ to steal when he dribbles in. Jump to block on the ! Grab his misses.</div>
     </div>
-    <div class="hb-row"><input class="hb-input" id="hb-nameinput" maxlength="24" placeholder="First name + last initial" autocomplete="off" aria-label="Your name"><button class="sz-mus" id="sz-mus" aria-label="Music on or off, key N">♪ Music on</button></div>
+    <div class="hb-row"><input class="hb-input" id="hb-nameinput" maxlength="24" placeholder="First name + last initial" autocomplete="off" aria-label="Your name"><button class="sz-mus" id="sz-mus" aria-label="Music on or off, key N">♪ Music on</button><span class="hb-mode" role="group" aria-label="Difficulty"><button class="hb-len" id="hb-rookie" aria-pressed="true">Rookie</button><button class="hb-len" id="hb-pro" aria-pressed="false" title="Tougher Rivals, points ×1.5">★ All-Pro <span>×1.5</span></button></span></div>
     <button class="hb-go" id="hb-go" disabled>Start</button>
     <div class="hb-keys">Keys: 1–4 answer · Space shoot, block · ↓ crossover, steal · ← → move · ↑ jump · N music · M mute · Shift+R new game · F full screen</div>
   </div><span class="hb-credit sz-credit">Made by Spitz <i class="sz-burger" aria-hidden="true"></i></span></div>
@@ -301,6 +330,7 @@ var szm=/[?&]set=([a-z]+)/.exec(location.search); if(szm) document.documentEleme
     <div class="hb-name" id="hb-endname"></div>
     <div class="hb-final" id="hb-endscore">0</div>
     <div class="hb-result" id="hb-endres"></div>
+    <div class="hb-badges" id="hb-badges"></div>
     <div class="hb-stats" id="hb-endstats"></div>
     <div class="hb-topics" id="hb-endtopics"></div>
     <button class="hb-again" id="hb-again">Play again</button>
@@ -475,14 +505,48 @@ window.__verify=function(n){ var out={}, seen={}; Object.keys(GEN).forEach(funct
 /* ================= GAME STATE ================= */
 var NEED=2, GAME=90, SHOT=10;               /* 2 questions in every huddle; a 1:30 game clock that only runs while the ball is live; 10-second shot clock */
 var S, PL=null;
-function fresh(){ return { name:'', started:false, over:false, buds:0, rivals:0, poss:1, clock:GAME, ot:false, run:0, fire:false,
+function fresh(){ return { v:2, pro:proPick(), pts:0, score:0, chal:dealChallenges(), fires:0, prow:0, prowBest:0, name:'', started:false, over:false, buds:0, rivals:0, poss:1, clock:GAME, ot:false, run:0, fire:false,
   streak:0, best:0, answered:0, correct:0, huddles:0, perfect:0, makes:0, shots:0, blocks:0, threes:0, dunks:0, swishes:0, boards:0, steals:0, crosses:0, snapsO:0, snapsD:0, hud:[], ready:false,
   topics:QS?QS.topicTable():{'Facts 0–3':[0,0],'Facts 4–6':[0,0],'Facts 7–9':[0,0],'Facts 10–12':[0,0]}, q:null, qDone:false, picked:-1 }; }
 function save(){ try{ localStorage.setItem(KEY,JSON.stringify(S)); localStorage.setItem(KEY+'_mute',muted?'1':'0'); }catch(e){} }
-function load(){ try{ var v=JSON.parse(localStorage.getItem(KEY)||'null'); muted=localStorage.getItem(KEY+'_mute')==='1'; if(v&&v.topics&&v.hud&&v.clock!==undefined&&v.boards!==undefined&&v.poss) return v; }catch(e){} return null; }
+function load(){ try{ var v=JSON.parse(localStorage.getItem(KEY)||'null'); muted=localStorage.getItem(KEY+'_mute')==='1'; if(v&&v.v===2&&v.chal&&v.topics&&v.hud&&v.clock!==undefined&&v.boards!==undefined&&v.poss) return v; }catch(e){} return null; }
 function now(){ return Date.now(); }
 function sum(a){ return a.reduce(function(x,y){ return x+y; },0); }
 function huddleOpen(){ return S.started&&!S.over&&!S.ready&&!!PL&&!PL.live&&PL.dead<=0; }
+function hudN(){ var n=sum(S.hud); return S.pro&&n<NEED?0:n; }          // right answers this huddle (All-Pro: any miss counts as a weak play)
+
+/* ================= POINTS, ALL-PRO, CHALLENGES =================
+   The run's score is points, not the game score: right answers (more on a streak), perfect huddles and big plays all add up,
+   a win adds a bonus, and each finished challenge adds 1000. All-Pro (picked on the start screen) brings sharper Rivals,
+   no "normal" play after a miss, and multiplies every point by 1.5. */
+var PRO_X=1.5, CH_PTS=1000;
+function proPick(){ try{ return localStorage.getItem('hoop_buds_pro')==='1'; }catch(e){ return false; } }
+function addPts(n){ if(!S||S.over||!(n>0)) return; n=Math.round(n*(S.pro?PRO_X:1)); S.pts+=n; var a=$('hb-add'); a.textContent='+'+n.toLocaleString(); a.classList.remove('go'); void a.offsetWidth; a.classList.add('go'); }
+function accPct(){ return S.answered?Math.round(100*S.correct/S.answered):0; }
+/* math challenges come from the huddle; play challenges from the court; end:true ones are judged at the final buzzer */
+var CHAL={
+  streak12:{ math:1, txt:'Get a 12-answer streak', n:12, v:function(){ return S.best; } },
+  perf5:{ math:1, txt:'5 perfect huddles', n:5, v:function(){ return S.perfect; } },
+  prow3:{ math:1, txt:'3 perfect huddles in a row', n:3, v:function(){ return S.prowBest; } },
+  acc90:{ math:1, end:1, txt:'90% right, 20+ questions', n:90, v:function(){ return S.answered>=20?accPct():0; }, p:function(){ return S.answered<20?S.answered+'/20':accPct()+'%'; } },
+  three2:{ txt:'Hit 2 threes', n:2, v:function(){ return S.threes; } },
+  dunk2:{ txt:'Throw down 2 dunks', n:2, v:function(){ return S.dunks; } },
+  block1:{ txt:'Block a shot', n:1, v:function(){ return S.blocks; } },
+  steal1:{ txt:'Get a steal', n:1, v:function(){ return S.steals||0; } },
+  ankles:{ txt:'Break ankles with a crossover', n:1, v:function(){ return S.crosses; } },
+  fire:{ txt:'Catch fire (3 buckets in a row)', n:1, v:function(){ return S.fires; } },
+  hold10:{ end:1, txt:'Hold the Rivals to 10 or less', n:1, v:function(){ return S.rivals<=10?1:0; }, p:function(){ return S.rivals<=10?'':'missed'; } } };
+function shuffle(a){ return a.map(function(x){ return [Math.random(),x]; }).sort(function(p,q){ return p[0]-q[0]; }).map(function(p){ return p[1]; }); }
+function dealChallenges(){ var ids=Object.keys(CHAL), m=shuffle(ids.filter(function(k){ return CHAL[k].math; })), p=shuffle(ids.filter(function(k){ return !CHAL[k].math; }));
+  var pick=[m[0],p[0]], rest=shuffle(m.slice(1).concat(p.slice(1))); pick.push(rest[0]); return pick.map(function(id){ return {id:id,done:false}; }); }
+function chalProg(c){ var d=CHAL[c.id]; if(c.done) return ''; if(d.p) return d.p(); return d.n>1?Math.min(d.v(),d.n)+'/'+d.n:''; }
+function chalCheck(final){ if(!S||!S.started) return; S.chal.forEach(function(c){ var d=CHAL[c.id]; if(c.done||(d.end&&!final)||d.v()<d.n) return; c.done=true; addPts(CH_PTS);
+    if(!final){ SND.star(); toast('Challenge done! '+d.txt); } }); }
+function chalDraw(){ var h='<h3>Challenges<span>+'+(CH_PTS*(S.pro?PRO_X:1)).toLocaleString()+' each</span></h3>'+S.chal.map(function(c){ var d=CHAL[c.id], p=chalProg(c);
+    return '<div class="hb-ci'+(c.done?' done':'')+'"><span class="b">'+(c.done?'✓':'')+'</span><span class="t">'+d.txt+'</span><span class="p'+(p==='missed'?' x':'')+'">'+p+'</span></div>'; }).join('');
+  var e=$('hb-chal'); if(e.innerHTML!==h) e.innerHTML=h; }
+function modeDraw(){ $('hb-rookie').setAttribute('aria-pressed',String(!S.pro)); $('hb-pro').setAttribute('aria-pressed',String(!!S.pro)); }
+function setMode(pro){ if(S.started) return; S.pro=pro; try{ localStorage.setItem('hoop_buds_pro',pro?'1':'0'); }catch(e){} modeDraw(); hud(); save(); SND.tick&&SND.tick(); }
 
 /* ================= HUD ================= */
 function hudLive(){ var o=huddleOpen(), q=$('hb-q'); if(q.classList.contains('open')!==o||q.classList.contains('locked')===o){ q.classList.toggle('open',o); q.classList.toggle('locked',!o); } }
@@ -491,6 +555,7 @@ function clockText(){ if(S.ot) return 'OT'; var s=Math.max(0,Math.ceil(S.clock))
 function clockHud(){ var t=clockText(); if(t===clockShown) return; clockShown=t; $('hb-clockv').textContent=t; $('hb-timerchip').classList.toggle('low',!S.ot&&S.clock<=10&&S.started); }
 function hud(){ hudLive(); clockHud(); $('hb-budsv').textContent=S.buds; $('hb-rivalsv').textContent=S.rivals; $('hb-streak').textContent=S.streak;
   $('hb-streakchip').classList.toggle('fire',S.streak>=8||S.fire);
+  chalCheck(false); $('hb-pts').textContent=S.pts.toLocaleString(); $('hb-ptsl').textContent=S.pro?'All-Pro points':'Points'; chalDraw();
   var h='Huddle'; for(var i=0;i<NEED;i++) h+='<span class="hb-hp'+(i<S.hud.length?(S.hud[i]?' y':' n'):'')+'"></span>'; $('hb-reward').innerHTML=h; }
 
 /* ================= QUESTIONS UI ================= */
@@ -501,16 +566,16 @@ function showQ(){ var q=S.q; $('hb-tag').textContent=q.topic; $('hb-prompt').inn
   if(S.qDone) markAnswered(S.picked,false); hud(); }
 function newQ(){ clearTimeout(nextT); clearTimeout(lockT); S.q=nextQuestion(); S.qDone=false; S.picked=-1; save(); showQ(); }
 function startHuddle(){ S.hud=[]; S.ready=false; newQ(); }
-function readyMsg(){ var n=sum(S.hud), fb=$('hb-fb'), o=S.poss>0; fb.className='hb-fb '+(n>=1?'ok':'bad');
+function readyMsg(){ var n=hudN(), fb=$('hb-fb'), o=S.poss>0; fb.className='hb-fb '+(n>=1?'ok':'bad');
   fb.innerHTML='<span class="h">'+(S.streak>=8||S.fire?'You are ON FIRE!':n===2?'Perfect huddle! '+(o?'Big green zone, sure crossover.':'Quick hands, long arms.'):n===1?'Huddle: 1 of 2. Normal play.':'Huddle: 0 of 2. '+(o?'Tiny green zone.':'Slow feet on defense.'))+'</span> Press Space to '+(o?'check the ball.':'play defense.'); }
 function advance(){ if(S.over||!S.qDone) return; if(S.hud.length<NEED){ newQ(); return; } if(S.ready) return;
-  S.ready=true; S.huddles++; if(sum(S.hud)===NEED){ S.perfect++; SND.star(); } readyMsg(); save(); hud(); }
+  S.ready=true; S.huddles++; if(sum(S.hud)===NEED){ S.perfect++; S.prow++; S.prowBest=Math.max(S.prowBest,S.prow); addPts(200); SND.star(); } else S.prow=0; readyMsg(); save(); hud(); }
 function markAnswered(i,fresh){ var q=S.q, btns=$('hb-choices').querySelectorAll('.hb-ch'), c=q.choices[i], fb=$('hb-fb');
   btns.forEach(function(b,j){ b.disabled=true; if(q.choices[j].ok) b.classList.add('right'); }); if(!c.ok) btns[i].classList.add('wrong');
   if(c.ok){ fb.className='hb-fb ok'; fb.innerHTML='<span class="h">Correct!'+(fresh&&S.streak>1?' Streak '+S.streak+'.':'')+'</span>'+q.explain; }
   else { fb.className='hb-fb bad'; fb.innerHTML='<span class="h">Not quite.</span>'+c.why+'<br>'+q.explain; if(fresh){ clearTimeout(lockT); lockT=setTimeout(advance,1200); } } }
 function answer(i){ if(!huddleOpen()||S.qDone||!S.q) return; var c=S.q.choices[i]; if(!c) return; S.qDone=true; S.picked=i; S.answered++; S.topics[S.q.topic][1]++; S.hud.push(c.ok?1:0);
-  if(c.ok){ S.correct++; S.topics[S.q.topic][0]++; S.streak++; S.best=Math.max(S.best,S.streak); SND.correct(); markAnswered(i,true); nextT=setTimeout(advance,140); }
+  if(c.ok){ S.correct++; S.topics[S.q.topic][0]++; S.streak++; S.best=Math.max(S.best,S.streak); addPts(50+10*Math.min(S.streak,10)); SND.correct(); markAnswered(i,true); nextT=setTimeout(advance,140); }
   else { S.streak=0; SND.miss(); markAnswered(i,true); }
   save(); hud(); }
 $('hb-choices').addEventListener('click',function(e){ var b=e.target.closest('.hb-ch'); if(b) answer(+b.dataset.i); });
@@ -526,7 +591,7 @@ var BR=17, BG=1500, BFLOOR=GY-BR+4, XCD=0.9;
 var pops=[], gt=0, keys={l:false,r:false}, ptr={}, jumpQ=false, actQ=false, relQ=false, crossQ=false, nets=[0,0], clankT=0;
 var BTN={ l:{x:92,y:H-86,r:64}, r:{x:244,y:H-86,r:64}, x:{x:W-440,y:H-80,r:58}, a:{x:W-276,y:H-86,r:72}, j:{x:W-104,y:H-86,r:72} };
 /* the Rival gets better as the clock runs down and when the Buds pull ahead, and eases off when they fall behind */
-function level(){ var el=S.ot?1:(GAME-S.clock)/GAME; return Math.max(0,Math.min(5,Math.round(1+el*2+(S.buds-S.rivals)/5))); }
+function level(){ var el=S.ot?1:(GAME-S.clock)/GAME; return Math.max(0,Math.min(S.pro?7:5,Math.round(1+el*2+(S.buds-S.rivals)/5)+(S.pro?2:0))); }   /* All-Pro starts 2 steps up */
 function guy(x,team){ return {x:x,h:0,vy:0,face:team?-1:1,walk:0,team:team,st:'idle',t:0,beat:0,alert:0,jcd:0,xo:0}; }
 function rvPlan(){ var k=level(), r=Math.random(); PL.cs=RUN*(0.62+0.03*k); PL.plan=r<0.28?'three':r<0.68?'mid':'dunk';
   PL.spot=PL.plan==='three'?LH+ARC+15+Math.random()*50:PL.plan==='mid'?LH+170+Math.random()*170:LH+DUNK-10; PL.wind=0.55-0.02*k; PL.fake=k>=1&&Math.random()<Math.min(0.35,0.12*k); PL.rel=0.3;
@@ -549,8 +614,8 @@ function finish(msg,sub,col,secs,keepBall){ PL.live=false; pops=[]; PL.dead=secs
 function turnover(msg,good){ S.poss=-PL.off; PL.owner=null; finish(msg,team(S.poss)+' ball',good?'#7CE04A':'#FF7A7A'); }
 function buzzer(){ return !S.ot&&S.clock<=0; }
 function scored(t,pts,msg){ var bz=buzzer(), sub='';
-  if(t>0){ S.buds+=pts; S.makes++; S.run++; if(pts===3) S.threes++; SND.gold(); SND.crowd(); var q=stagePoint(cv,RH-30,RY); confetti(q[0],q[1],pts===3?90:60,2.6);
-    if(S.run===3&&!S.fire){ S.fire=true; sub='3 in a row. You are ON FIRE!'; SND.star(); } }
+  if(t>0){ S.buds+=pts; S.makes++; S.run++; if(pts===3) S.threes++; addPts((pts===3?350:200)+(S.fire?100:0)+(bz?300:0)); SND.gold(); SND.crowd(); var q=stagePoint(cv,RH-30,RY); confetti(q[0],q[1],pts===3?90:60,2.6);
+    if(S.run===3&&!S.fire){ S.fire=true; S.fires++; sub='3 in a row. You are ON FIRE!'; SND.star(); } }
   else { S.rivals+=pts; S.run=0; if(S.fire){ S.fire=false; sub='The Rivals put out your fire.'; } SND.miss(); }
   if(bz) msg=t>0?'BUZZER BEATER! +'+pts:'RIVALS AT THE BUZZER +'+pts; if(S.ot) msg=t>0?'GAME WINNER! +'+pts:'RIVALS WIN IT +'+pts;
   if(bz&&t>0){ var w=stagePoint(cv,W/2,300); confetti(w[0],w[1],140,3); }
@@ -559,7 +624,7 @@ function scored(t,pts,msg){ var bz=buzzer(), sub='';
 function afterPlay(){ if(!S.ot&&S.clock<=0){ if(S.buds!==S.rivals){ endRun(); return; } S.ot=true; SND.horn(); toast('Overtime! Next bucket wins.'); }
   else if(S.ot&&S.buds!==S.rivals){ endRun(); return; }
   setPlay(); startHuddle(); }
-function tip(){ var n=sum(S.hud); PL.live=true; PL.t=0; PL.fire=S.fire||S.streak>=8; SND.hike();
+function tip(){ var n=hudN(); PL.live=true; PL.t=0; PL.fire=S.fire||S.streak>=8; SND.hike();
   PL.zone=PL.fire?1.7:n===2?1.4:n===1?1:0.6; PL.spd=PL.fire?1.2:n===2?1.1:n===1?1:0.9; PL.xs=PL.fire||n===2?1:n===1?0.7:0.4; PL.reach=PL.fire?1.3:n===2?1.2:n===1?1:0.8; PL.sp=PL.fire?0.45:n===2?0.3:n===1?0.22:0.12;
   if(PL.off>0){ S.snapsO++; PL.stay=PL.fire?0.2:Math.max(0,PL.stay+(n===2?-0.1:n===0?0.15:0)); } else { S.snapsD++; PL.pm=PL.fire?-0.12:n===2?-0.08:n===0?0.08:0; }
   if(S.ot) pop('OVERTIME','Next bucket wins','#FFD23F'); else if(PL.fire) pop('ON FIRE!','','#FF8A3D'); else if(n===2) pop('BOOST!','','#7CE04A'); else if(n===0) pop('WEAK PLAY','Missed questions in the huddle','#FF7A7A');
@@ -602,7 +667,7 @@ function release(v){ var me=PL.me, z=zoneHalf(), dv=Math.abs(v-MID), d=RH-me.x, 
   S.shots++; want=perfect?'swish':dv<=z?'in':dv<=z+EDGE&&Math.random()<0.5?'in':v<MID?'short':'long';
   var b=aim(me.x+12,GY-me.h-122,1,want); b.shot.pts=pts; b.shot.by='me'; b.shot.why=v<MID?'Too early, so it fell short.':'Too late, so it went long.';
   if(covered()) PL.contest=true;
-  if(perfect){ pop('PERFECT!','','#7CE04A'); S.swishes++; }
+  if(perfect){ pop('PERFECT!','','#7CE04A'); S.swishes++; addPts(100); }
   PL.ball=b; PL.owner=null; PL.shot=null; SND.pass(); }
 function rvShoot(front){ var rv=PL.rv, me=PL.me, k=level(), d=rv.x-LH, pts=d>=ARC?3:2, hand=me.h>15&&Math.abs(me.x-rv.x)<130, p=(pts===3?0.4:d<200?0.68:0.56)+0.03*k+PL.pm-(front?0.15:0)-(hand?0.2:0), mk=Math.random()<p;
   if(hand){ pop('CONTESTED!','','#7CE04A'); S.contests=(S.contests||0)+1; }
@@ -611,10 +676,10 @@ function made(b,sg){ var t=sg>0?1:-1, pts=b.shot.team===t?b.shot.pts:2, sw=!b.sh
   scored(t,pts,t>0?(pts===3?(sw?'SPLASH! +3':'THREE! +3'):(sw?'SWISH! +2':'BUCKET! +2')):'RIVALS SCORE +'+pts); }
 function hands(o){ return {x:o.x+o.face*6, y:GY-o.h-118}; }
 function block(b,by){ var t=b.shot.team; if(by==='me'){ b.vx=(PL.me.x-b.x)*2.5; b.vy=-60; } else { b.vx=-t*(170+Math.random()*130); b.vy=-160; } b.shot=null; b.age=0; SND.crash(); PL.shake=0.3;
-  if(by==='me'){ S.blocks++; var q=stagePoint(cv,b.x,b.y); confetti(q[0],q[1],50,2.4); pop('REJECTED!','Now grab it','#7CE04A'); } else pop('BLOCKED!','Get space before you shoot','#FF7A7A'); }
+  if(by==='me'){ S.blocks++; addPts(250); var q=stagePoint(cv,b.x,b.y); confetti(q[0],q[1],50,2.4); pop('REJECTED!','Now grab it','#7CE04A'); } else pop('BLOCKED!','Get space before you shoot','#FF7A7A'); }
 function grab(who){ var t=who==='me'?1:-1, o=PL[who]; PL.ball=null; PL.owner=who; o.st='idle';
-  if(t===PL.off){ PL.clock=Math.max(PL.clock,7); SND.grab(); if(t>0){ S.boards++; pop('BOARD!','Go again','#7CE04A'); } else { pop('RIVAL BOARD','','#FF7A7A'); rvPlan(); } }
-  else { S.poss=t; if(t>0){ S.boards++; SND.star(); finish('REBOUND!','Buds ball','#7CE04A',1.1); } else { SND.grab(); finish('RIVALS REBOUND','Rivals ball','#FF7A7A',1.1); } } }
+  if(t===PL.off){ PL.clock=Math.max(PL.clock,7); SND.grab(); if(t>0){ S.boards++; addPts(100); pop('BOARD!','Go again','#7CE04A'); } else { pop('RIVAL BOARD','','#FF7A7A'); rvPlan(); } }
+  else { S.poss=t; if(t>0){ S.boards++; addPts(100); SND.star(); finish('REBOUND!','Buds ball','#7CE04A',1.1); } else { SND.grab(); finish('RIVALS REBOUND','Rivals ball','#FF7A7A',1.1); } } }
 function canGrab(o,b){ return Math.abs(b.x-o.x)<40&&b.y>GY-o.h-155&&b.y<GY-o.h+12; }
 /* ---- the ball is in the air or on the floor: everybody goes for it ---- */
 function updLoose(dt){ var me=PL.me, rv=PL.rv, b=PL.ball, k=level(), sh=b.shot;
@@ -638,7 +703,7 @@ function updOff(dt){ var me=PL.me, rv=PL.rv, sh=PL.shot, k=level();
   if(me.beat>0){ me.beat-=dt; crossQ=jumpQ=actQ=false; }
   if(!sh){ walk(me,me.beat>0?0:moveDir()*RUN*PL.spd*dt,dt); me.x=Math.min(me.x,RH-10);
     if(crossQ&&PL.xcd<=0&&me.h===0){ PL.xcd=XCD; me.xo=0.3; SND.cross();
-      if(covered()&&rv.h===0){ if(Math.random()<PL.xs*(rv.alert>0?0.5:1)){ rv.beat=1.0; rv.st='fall'; rv.alert=2.6; S.crosses++; PL.shake=0.15; pop('ANKLES!','He fell for it. Go!','#FFD23F'); SND.ankles(); }
+      if(covered()&&rv.h===0){ if(Math.random()<PL.xs*(rv.alert>0?0.5:1)){ rv.beat=1.0; rv.st='fall'; rv.alert=2.6; S.crosses++; addPts(150); PL.shake=0.15; pop('ANKLES!','He fell for it. Go!','#FFD23F'); SND.ankles(); }
         else { rv.alert=1.5; me.beat=0.45; pop('HE READ IT','','#FF7A7A'); } } }
     if(jumpQ&&me.h===0){ hop(me); if(covered()&&rv.h===0){ if(rv.alert<=0&&Math.random()>=PL.stay) rv.beat=PL.beat; else { hop(rv); rv.alert=4; } } }
     if(actQ){ if(canDunk()){ startDunk(me,1); return; } PL.shot=sh={t:0}; me.face=1; me.st='idle'; if(me.h===0) hop(me); } }
@@ -659,7 +724,7 @@ function updDef(dt){ var me=PL.me, rv=PL.rv, k=level();
   var front=me.x<rv.x&&rv.x-me.x<104;
   /* ↓ swipes at the ball: it works best when he dribbles right into you; a miss leaves you reaching while he goes by */
   if(crossQ&&me.h===0&&(PL.scd||0)<=0&&!PL.spin){ PL.scd=0.8; SND.cross(); me.st='reach'; me.t=0;
-    if(rv.h===0&&Math.abs(rv.x-me.x)<110&&PL.rst!=='jump'){ if(Math.random()<Math.max(0.2,PL.sp-0.03*k+(PL.rst==='drive'&&front?0.1:0))){ S.steals=(S.steals||0)+1; PL.owner=null; SND.star(); var q=stagePoint(cv,me.x,GY-120); confetti(q[0],q[1],40,2.4); turnover('STEAL!',true); return; }
+    if(rv.h===0&&Math.abs(rv.x-me.x)<110&&PL.rst!=='jump'){ if(Math.random()<Math.max(0.2,PL.sp-0.03*k+(PL.rst==='drive'&&front?0.1:0))){ S.steals=(S.steals||0)+1; addPts(250); PL.owner=null; SND.star(); var q=stagePoint(cv,me.x,GY-120); confetti(q[0],q[1],40,2.4); turnover('STEAL!',true); return; }
       me.beat=0.45; pop('REACH!','He got by you','#FF7A7A'); }
     else me.beat=0.25; }                                                     /* you are close and between him and the hoop */
   if(PL.spin>0){ PL.spin-=dt; rv.x=Math.max(40,rv.x-420*dt); rv.st='run'; rv.walk+=dt*2; rv.face=PL.spin*20%2<1?-1:1; return; }
@@ -681,7 +746,7 @@ function update(dt){ if(!S.started||S.over) return;
   if(!PL.live){ if(actQ){ if(S.ready) tip(); else tryMove(); } jumpQ=actQ=relQ=crossQ=false; hudLive(); return; }
   PL.t+=dt; if(!S.ot&&S.clock>0){ S.clock=Math.max(0,S.clock-dt); if(S.clock<=0) SND.horn(); }
   if(PL.dunk){ var D=PL.dunk, u; D.t+=dt; u=Math.min(1,D.t/0.38); D.o.x=D.x0+(D.x1-D.x0)*u; D.o.h=D.h0+(150-D.h0)*u+Math.sin(Math.PI*u)*30; D.o.vy=0; fall(D.o===PL.me?PL.rv:PL.me,dt);
-    if(u>=1){ SND.slam(); PL.shake=0.35; nets[D.team>0?0:1]=1; if(D.team>0) S.dunks++; scored(D.team,2,D.team>0?'SLAM DUNK! +2':'RIVALS DUNK +2'); } }
+    if(u>=1){ SND.slam(); PL.shake=0.35; nets[D.team>0?0:1]=1; if(D.team>0){ S.dunks++; addPts(100); } scored(D.team,2,D.team>0?'SLAM DUNK! +2':'RIVALS DUNK +2'); } }
   else if(PL.ball) updLoose(dt);
   else if(PL.owner==='me') updOff(dt); else updDef(dt);
   if(PL.live&&buzzer()&&!PL.dunk&&!(PL.ball&&PL.ball.shot)){ PL.owner=null; finish('TIME!',S.buds===S.rivals?'Tied up. Overtime!':'Buds '+S.buds+', Rivals '+S.rivals,S.buds>S.rivals?'#7CE04A':S.buds<S.rivals?'#FF7A7A':'#FFD23F',1.8); }
@@ -785,15 +850,17 @@ $('hb-nameinput').addEventListener('input',function(){ $('hb-go').disabled=!this
 $('hb-nameinput').addEventListener('keydown',function(e){ if(e.key==='Enter'&&this.value.trim()) $('hb-go').click(); });
 $('hb-go').addEventListener('click',function(){ var n=$('hb-nameinput').value.trim(); if(!n) return; ac(); S.name=n; S.started=true; $('hb-start').hidden=true;
   $('hb-nameinput').blur(); setPlay(); startHuddle(); save(); hud(); });
-function endRun(){ S.over=true; clearTimeout(nextT); clearTimeout(lockT); save(); hud(); showEnd(true); }
-function showEnd(celebrate){ if(window.SpitzCode) setTimeout(function(){ window.SpitzCode.show('hb','hoop_buds',S); },0); $('hb-endname').textContent=S.name; $('hb-endscore').textContent=S.buds+' – '+S.rivals;
-  $('hb-endres').textContent=(S.buds>S.rivals?'Buds win':S.buds<S.rivals?'Rivals win':'Tie game')+(S.ot?' in overtime!':S.buds>S.rivals?'!':'');
+$('hb-rookie').addEventListener('click',function(){ setMode(false); }); $('hb-pro').addEventListener('click',function(){ setMode(true); });
+function endRun(){ chalCheck(true); addPts(S.buds>S.rivals?1500:0); S.score=S.pts; S.over=true; clearTimeout(nextT); clearTimeout(lockT); save(); hud(); showEnd(true); }
+function showEnd(celebrate){ if(window.SpitzCode) setTimeout(function(){ window.SpitzCode.show('hb','hoop_buds',S); },0); $('hb-endname').textContent=S.name; $('hb-endscore').textContent=S.score.toLocaleString();
+  $('hb-endres').textContent=(S.buds>S.rivals?'Buds win ':S.buds<S.rivals?'Rivals win ':'Tie game ')+S.buds+' – '+S.rivals+(S.ot?' in OT':'');
+  $('hb-badges').innerHTML=(S.pro?'<div class="hb-badge pro"><b>★</b>All-Pro</div>':'')+S.chal.map(function(c){ return '<div class="hb-badge'+(c.done?' done':'')+'"><b>'+(c.done?'✓':'✗')+'</b>'+CHAL[c.id].txt+'</div>'; }).join('');
   var acc=S.answered?Math.round(100*S.correct/S.answered):0;
   $('hb-endstats').innerHTML=[['Correct',S.correct+' of '+S.answered],['Accuracy',acc+'%'],['Best streak',S.best],['Perfect huddles',S.perfect+' of '+S.huddles]].map(function(a){ return '<div class="hb-stat"><div class="l">'+a[0]+'</div><div class="v">'+a[1]+'</div></div>'; }).join('');
   $('hb-endtopics').innerHTML=Object.keys(S.topics).map(function(k){ var t=S.topics[k]; return '<div class="hb-stat"><div class="l">'+k+'</div><div class="v">'+t[0]+' / '+t[1]+'</div></div>'; }).join('');
   $('hb-end').hidden=false; if(celebrate){ SND.win(); [0,350,700,1100].forEach(function(ms,i){ setTimeout(function(){ confetti(200+i*500,1070,90,1.3); confetti(1720-i*500,1070,90,1.3); },ms); }); } }
 var armT=0; $('hb-again').addEventListener('click',function(){ var b=this; if(!b.classList.contains('arm')){ b.classList.add('arm'); b.textContent='Tap again to start over'; clearTimeout(armT); armT=setTimeout(function(){ b.classList.remove('arm'); b.textContent='Play again'; },3000); return; }
-  b.classList.remove('arm'); b.textContent='Play again'; var keepName=S.name; S=fresh(); S.name=keepName; setPlay();
+  b.classList.remove('arm'); b.textContent='Play again'; var keepName=S.name; S=fresh(); S.name=keepName; setPlay(); modeDraw();
   $('hb-end').hidden=true; $('hb-start').hidden=false; $('hb-nameinput').value=keepName; $('hb-go').disabled=!keepName; save(); hud();
   $('hb-choices').innerHTML=''; $('hb-prompt').innerHTML=''; $('hb-visual').innerHTML=''; });
 
@@ -822,7 +889,7 @@ $('sz-mus').addEventListener('click',function(e){ e.stopPropagation(); ac(); mus
 $('hb-go').addEventListener('click',function(){ if(S.started) jingle(); });
 
 /* ================= BOOT ================= */
-S=load()||fresh(); fit(); setPlay();
+S=load()||fresh(); fit(); setPlay(); modeDraw();
 if(S.started){ $('hb-start').hidden=true; if(S.over){ showEnd(false); } else if(S.q){ showQ(); if(S.ready) readyMsg(); else if(S.qDone) advance(); } else startHuddle(); }
 else { $('hb-nameinput').value=S.name||''; $('hb-go').disabled=!S.name; }
 hud(); setInterval(function(){ if(S.started&&!S.over) save(); },1000); requestAnimationFrame(loop);

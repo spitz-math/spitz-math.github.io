@@ -20,7 +20,7 @@ var GAMES={                     /* id: [number in the code, display name, how it
   shift_racer:[3,'Shift Racer','points'],
   jump_man_multiplication:[4,'Jump Man','points'],
   football_buds_v1:[5,'Football Buds (classic)','versus'],   /* codes from before 2026-10-30, when Football Buds scored Buds vs Rivals */
-  hoop_buds:[6,'Hoop Buds','versus'],
+  hoop_buds_v1:[6,'Hoop Buds (classic)','versus'],   /* codes from before 2026-10-30, when Hoop Buds scored Buds vs Rivals */
   dash:[7,'Dash','points'],
   skate:[8,'Skate','points'],
   mini_golf:[9,'Mini Golf','points'],
@@ -35,7 +35,8 @@ var GAMES={                     /* id: [number in the code, display name, how it
   pinball:[18,'Pinball','points'],
   hill_climb:[19,'Hill Climb','points'],
   fit_check:[20,'Fit Check','points'],
-  football_buds:[21,'Football Buds','points']   /* points since 2026-10-30 (id 5 was the Buds vs Rivals score) */
+  football_buds:[21,'Football Buds','points'],   /* points since 2026-10-30 (id 5 was the Buds vs Rivals score) */
+  hoop_buds:[22,'Hoop Buds','points']   /* points since 2026-10-30 (id 6 was the Buds vs Rivals score) */
 };
 /* question sets in the order questions.js lists them; 0 means the game's own questions. Add new sets at the end.
    New codes (layout C, since Oct 21 2026) have 6 bits for the set and 5 for topics, so up to 63 sets with up to 5 topics each fit. */
