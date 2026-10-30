@@ -1,5 +1,5 @@
 {
- "updated": "2026-10-30T12:40:57.550Z",
+ "updated": "2026-10-30T15:00:06.006Z",
  "games": {
   "splat_range": {
    "name": "Splat Range",
@@ -308,10 +308,10 @@
     },
     {
      "name": "Noah C",
-     "score": "28 – 10",
-     "acc": 98,
+     "score": "38 – 8",
+     "acc": 97,
      "set": "Multiplication facts",
-     "date": "2026-10-27"
+     "date": "2026-10-30"
     },
     {
      "name": "william E",
@@ -347,19 +347,20 @@
    "name": "Dash",
    "top": [
     {
+     "name": "SERGIO.C",
+     "score": "24,300",
+     "acc": 100,
+     "set": "HOY & VUX · Describe the line",
+     "date": "2026-10-30",
+     "bonus": 1
+    },
+    {
      "name": "Alexander Limon",
      "score": "21,563",
      "acc": 95,
      "set": "Slide and Slice · Slide",
      "date": "2026-10-26",
      "bonus": 1
-    },
-    {
-     "name": "Sergio.C",
-     "score": "14,700",
-     "acc": 95,
-     "set": "Multiplication facts · Facts 0–3",
-     "date": "2026-10-26"
     },
     {
      "name": "EMily R",
@@ -423,6 +424,22 @@
   "skate": {
    "name": "Skate",
    "top": [
+    {
+     "name": "Sylvestre Cantu",
+     "score": "121,068",
+     "acc": 44,
+     "set": "HOY & VUX",
+     "date": "2026-10-30",
+     "bonus": 1
+    },
+    {
+     "name": "Ethan A",
+     "score": "26,489",
+     "acc": 87,
+     "set": "HOY & VUX · Find the slope",
+     "date": "2026-10-30",
+     "bonus": 1
+    },
     {
      "name": "Charlotte E",
      "score": "7,666",
@@ -581,12 +598,34 @@
      "acc": 94,
      "set": "Multiplication facts",
      "date": "2026-10-19"
+    },
+    {
+     "name": "RAMON CASTILLO",
+     "score": "15,628",
+     "acc": 94,
+     "set": "HOY & VUX",
+     "date": "2026-10-30",
+     "bonus": 1
+    },
+    {
+     "name": "Irlanda C",
+     "score": "7,470",
+     "acc": 64,
+     "set": "Slope-intercept form",
+     "date": "2026-10-30"
     }
    ]
   },
   "burger_shop": {
    "name": "Burger Shop",
    "top": [
+    {
+     "name": "tanix.b",
+     "score": "9,623",
+     "acc": 100,
+     "set": "Multiplication facts",
+     "date": "2026-10-30"
+    },
     {
      "name": "melanie guerra",
      "score": "6,909",
@@ -651,10 +690,11 @@
     },
     {
      "name": "David.V",
-     "score": "272,435",
+     "score": "401,018",
      "acc": 100,
-     "set": "Slope-intercept form · Find slope or y-intercept",
-     "date": "2026-10-28"
+     "set": "HOY & VUX · Find the slope",
+     "date": "2026-10-30",
+     "bonus": 1
     },
     {
      "name": "Erick.d",
@@ -675,6 +715,13 @@
   "snake_arena": {
    "name": "Snake Arena",
    "top": [
+    {
+     "name": "tanix.b",
+     "score": "35,165",
+     "acc": 94,
+     "set": "Multiplication facts",
+     "date": "2026-10-30"
+    },
     {
      "name": "Jose Cruz Banda",
      "score": "34,635",
@@ -724,6 +771,21 @@
      "bonus": 1
     },
     {
+     "name": "John S",
+     "score": "497,644",
+     "acc": 100,
+     "set": "HOY & VUX",
+     "date": "2026-10-30",
+     "bonus": 1
+    },
+    {
+     "name": "tanix.b",
+     "score": "426,450",
+     "acc": 93,
+     "set": "Multiplication facts",
+     "date": "2026-10-30"
+    },
+    {
      "name": "Felix L",
      "score": "347,785",
      "acc": 92,
@@ -731,11 +793,20 @@
      "date": "2026-10-29"
     },
     {
-     "name": "JOHN S",
-     "score": "252,070",
-     "acc": 97,
-     "set": "Multiplication facts",
-     "date": "2026-10-26"
+     "name": "Gael R",
+     "score": "322,113",
+     "acc": 100,
+     "set": "HOY & VUX",
+     "date": "2026-10-30",
+     "bonus": 1
+    },
+    {
+     "name": "Ethan A",
+     "score": "281,950",
+     "acc": 92,
+     "set": "HOY & VUX · Find the slope",
+     "date": "2026-10-30",
+     "bonus": 1
     },
     {
      "name": "Grace",
@@ -745,11 +816,19 @@
      "date": "2026-10-27"
     },
     {
-     "name": "tanix.b",
-     "score": "114,050",
-     "acc": 96,
-     "set": "Multiplication facts",
-     "date": "2026-10-29"
+     "name": "Sylvestre Cantu:0",
+     "score": "177,475",
+     "acc": 46,
+     "set": "HOY & VUX",
+     "date": "2026-10-30"
+    },
+    {
+     "name": "Gael",
+     "score": "76,081",
+     "acc": 87,
+     "set": "HOY & VUX",
+     "date": "2026-10-30",
+     "bonus": 1
     },
     {
      "name": "Grace W",
@@ -758,13 +837,6 @@
      "set": "Slide and Slice · Slide",
      "date": "2026-10-27",
      "bonus": 1
-    },
-    {
-     "name": "Marco Lugo",
-     "score": "44,090",
-     "acc": 67,
-     "set": "Functions · Ordered pairs, Tables",
-     "date": "2026-10-27"
     }
    ]
   },
@@ -773,10 +845,19 @@
    "top": [
     {
      "name": "David.V",
-     "score": "1,610",
+     "score": "4,300",
+     "acc": 100,
+     "set": "HOY & VUX · Find the slope",
+     "date": "2026-10-30",
+     "bonus": 1
+    },
+    {
+     "name": "Sylvestre Cantu",
+     "score": "3,663",
      "acc": 92,
-     "set": "Slope-intercept form · Find slope or y-intercept",
-     "date": "2026-10-28"
+     "set": "HOY & VUX",
+     "date": "2026-10-30",
+     "bonus": 1
     },
     {
      "name": "tanix.b",
