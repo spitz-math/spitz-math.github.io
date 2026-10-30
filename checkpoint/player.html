@@ -99,7 +99,7 @@ body:not(.ruler) #bRuler{display:none}
 .ti108 button.r{background:#d8343d;color:#fff;box-shadow:0 2px 0 #8a1c22;font-size:12px}
 .ti108 button.eq{grid-row:span 2;height:auto}
 .ti108 button:active{transform:translateY(1px);box-shadow:none}
-/* ruler (Grade 6 math): centimeters on top, inches on the bottom; drag to move, drag the circle to turn it */
+/* ruler (Grade 6 and 7 math): centimeters on top, inches on the bottom; drag to move, drag the circle to turn it */
 #rulerTool{position:fixed;z-index:125;left:0;top:0;touch-action:none}
 #rulerTool[hidden]{display:none}
 #rulerTool svg{display:block;cursor:move;filter:drop-shadow(0 1px 2px rgba(0,0,0,.35))}
@@ -1130,7 +1130,7 @@ const ITEMS=TD.items, KEYLESS=!!TD.keyless; let OWNPTS=null;
 const KEYF={graphline:'eq',graphineq:'op',graphsys:'ineqs',graphfunc:'ftype',graphexp:'a'};   /* where each graph type keeps its key (a line: its equation; an inequality: m, b, op; …) */
 const NOKEY=it=>KEYLESS&&it.type!=='text'&&it[KEYF[it.type]||'answer']===undefined;
 if(TD.subject==='rla') document.body.classList.add('rla');
-if(TD.reference==='none') document.body.classList.add('noref'); if(TD.calc===false) document.body.classList.add('nocalc'); if(TD.ruler??TD.course==='6th Math') document.body.classList.add('ruler');
+if(TD.reference==='none') document.body.classList.add('noref'); if(TD.calc===false) document.body.classList.add('nocalc'); if(TD.ruler??['6th Math','7th Math'].includes(TD.course)) document.body.classList.add('ruler');
 ITEMS.forEach((it,i)=>{ it.n=i+1; it.letters=ODD; it.max=it.max||1; ownFn(it); });
 /* ---------------- state ---------------- */
 const S={i:0,answers:{},flags:{},notes:{},name:'',modes:{hl:false,elim:false},zoomIx:1,submitted:false};
@@ -3179,7 +3179,7 @@ function browseStart(){
 
 /* fill in this test's name everywhere it shows */
 document.title=TD.title; document.querySelectorAll('.testTitle').forEach(e=>e.textContent=TD.title);
-{ const ref=document.querySelector('#refPanel .pbody img'); if(ref&&!document.body.matches('.rla,.noref')) if(TD.reference==='math8') ref.alt='Grade 8 mathematics reference materials: linear equations, circumference, area, surface area, volume, Pythagorean theorem, simple and compound interest'; else if(TD.reference==='math6') ref.alt='Grade 6 mathematics reference materials: area of a triangle, rectangle or parallelogram, and trapezoid; volume of a rectangular prism; customary and metric conversions for length, volume and capacity, and weight and mass'; ref.src=(window.SPITZ_ASSETS&&window.SPITZ_ASSETS['refs/'+(TD.reference||'alg1')+'.png'])||(window.SPITZ_ROOT+'refs/'+(TD.reference||'alg1')+'.png'); }
+{ const ref=document.querySelector('#refPanel .pbody img'); if(ref&&!document.body.matches('.rla,.noref')) if(TD.reference==='math8') ref.alt='Grade 8 mathematics reference materials: linear equations, circumference, area, surface area, volume, Pythagorean theorem, simple and compound interest'; else if(TD.reference==='math6') ref.alt='Grade 6 mathematics reference materials: area of a triangle, rectangle or parallelogram, and trapezoid; volume of a rectangular prism; customary and metric conversions for length, volume and capacity, and weight and mass'; else if(TD.reference==='math7') ref.alt='Grade 7 mathematics reference materials: linear equations, constant of proportionality, circumference and area of a circle, area, volume of a prism and pyramid, pi, distance, simple and compound interest; customary and metric conversions for length, volume and capacity, and weight and mass'; else if(TD.reference==='sci8') ref.alt='Middle school science reference materials: average speed and net force formulas, and the periodic table of the elements'; ref.src=(window.SPITZ_ASSETS&&window.SPITZ_ASSETS['refs/'+(TD.reference||'alg1')+'.png'])||(window.SPITZ_ROOT+'refs/'+(TD.reference||'alg1')+'.png'); }
 window.__spitzStart=(name,period,opt={})=>{ S.name=name; S.period=period; S.started=true; ACT.t0=Date.now();
   if(opt.state){ sessionRestore(opt.state,opt.events); if(opt.state.submitted){ S.submitted=true; S.submittedAt=opt.state.submittedAt; } logEv('signInAgain'); } else logEv('start'); if(window.SPITZ_TTSCHECK) logEv('ttsCheck',window.SPITZ_TTSCHECK);
   $('#sname').textContent=`${name} (${period==='G'?'GUEST':'PERIOD '+period})`; $('#isubName').textContent=name;
