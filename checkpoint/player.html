@@ -562,8 +562,11 @@ body.th-maroon #lineBand,body.th-black #lineBand,body.th-blue #lineBand{mix-blen
 .rh svg{width:20px;height:20px}
 body.dragging iframe{pointer-events:none}
 body.dragging{user-select:none}
-#refPanel .pbody{overflow:scroll;background:#fff}
-#refPanel .pbody img{display:block;width:740px;max-width:none;height:auto;margin:4px}
+#refPanel .pbody,#ptPanel .pbody{overflow:scroll;background:#fff}
+#refPanel .pbody img,#ptPanel .pbody img{display:block;width:740px;max-width:none;height:auto;margin:4px}
+/* Grade 8 Science (Cambium's middle school science toolbar): its own Periodic Table button, and the calculator choice is Basic or Desmos Scientific */
+body:not(.sci) #bPT,body.sci #chTI,body.sci #chDesmos,body.sci #tiNote,body:not(.sci) #chBasic,body:not(.sci) #chSci{display:none}
+#sciFrame{position:absolute;left:0;width:100%;border:0}
 .chooser{background:#ececf0;height:100%;padding:26px 24px;display:flex;flex-direction:column;gap:26px}
 .chooser button{text-align:left;border:1px solid #9b9b9b;border-radius:16px;background:#fff;padding:16px 26px;font-family:Arial,Helvetica,sans-serif;font-size:19px;box-shadow:0 1px 2px rgba(0,0,0,.25)}
 .chooser button:hover,.chooser button:focus-visible{background:#0f5c94;color:#fff;border-color:#0f5c94;outline:none}
@@ -868,6 +871,7 @@ tr.ra-now{background:none!important;outline:0}
     </div>
     <div class="tgroup" id="rightTools">
       <button class="tbtn" id="bRuler" aria-pressed="false"><span class="ring"><svg viewBox="0 0 24 24"><rect class="f" x="1.5" y="8" width="21" height="8" rx="1"/><path d="M4 8v3.5M6.5 8v2M9 8v3.5M11.5 8v2M14 8v3.5M16.5 8v2M19 8v3.5" stroke="#fff" stroke-width="1.2"/></svg></span>Ruler</button>
+      <button class="tbtn" id="bPT" aria-pressed="false"><span class="ring"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.6"><path class="s" d="M2 5h4v4H2zM18 5h4v4h-4zM2 9h4v4H2zM6 9h4v4H6zM14 9h4v4h-4zM18 9h4v4h-4zM2 13h4v4H2zM6 13h4v4H6zM10 13h4v4h-4zM14 13h4v4h-4zM18 13h4v4h-4zM6 19h12"/></svg></span>Periodic Table</button>
       <button class="tbtn" id="bRef" aria-pressed="false"><span class="ring"><svg viewBox="0 0 24 24"><text class="f" x="1" y="18" font-family="Arial" font-size="15" font-weight="700">XY</text><text class="f" x="17" y="9" font-family="Arial" font-size="9" font-weight="700">2</text></svg></span>References</button>
       <button class="tbtn" id="bCalc" aria-pressed="false"><span class="ring"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><rect class="s" x="5" y="2.5" width="14" height="19" rx="1.5"/><rect class="s" x="7.5" y="5" width="9" height="4"/><path class="s" d="M8 12h2M11 12h2M14 12h2M8 15h2M11 15h2M14 15h2M8 18h2M11 18h2M14 18h2" stroke-width="1.8"/></svg></span>Calculator</button>
       <button class="tbtn" id="bDict" aria-pressed="false"><span class="ring"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linejoin="round"><path class="s" d="M12 6.5C10 5 7 4.5 3.5 5v13c3.5-.5 6.5 0 8.5 1.5 2-1.5 5-2 8.5-1.5V5C17 4.5 14 5 12 6.5zM12 6.5v13"/></svg></span>Dictionary</button>
@@ -901,6 +905,11 @@ tr.ra-now{background:none!important;outline:0}
 <div class="ctxmenu" id="ctxMenu" role="menu" hidden></div>
 
 <!-- References -->
+<div class="panel" id="ptPanel" hidden>
+  <div class="ph"><span class="ttl">Periodic Table</span><button class="pbtn" data-expand aria-label="Expand"><svg><use href="#i-expand"/></svg></button><button class="pbtn" data-close aria-label="Close"><svg><use href="#i-x"/></svg></button></div>
+  <div class="pbody"><img src="" alt="Periodic table of the elements: atomic number, symbol, atomic mass, and name of each element"></div>
+  <div class="rh" aria-label="Drag to resize"><svg><use href="#i-move"/></svg></div>
+</div>
 <div class="panel" id="refPanel" hidden>
   <div class="ph"><span class="ttl">References</span><button class="pbtn" data-expand aria-label="Expand"><svg><use href="#i-expand"/></svg></button><button class="pbtn" data-close aria-label="Close"><svg><use href="#i-x"/></svg></button></div>
   <div class="pbody"><img src="" alt="Algebra I reference materials: factoring, properties of exponents, linear equations, and quadratic equations"></div>
@@ -918,9 +927,12 @@ tr.ra-now{background:none!important;outline:0}
       <button id="chTI">TI Graphing Calculator</button>
       <p class="note" id="tiNote" hidden>The TI graphing calculator isn't set up in this practice test yet. Use Desmos for now.</p>
       <button id="chDesmos">Desmos Graphing Calculator</button>
+      <button id="chBasic">Basic Calculator</button>
+      <button id="chSci">Desmos Scientific Calculator</button>
     </div>
     <div id="desmosHost" hidden role="application" aria-label="Desmos graphing calculator"></div>
     <iframe id="desmosFrame" title="Desmos graphing calculator, Texas testing version" hidden></iframe>
+    <iframe id="sciFrame" title="Desmos scientific calculator, Texas testing version" hidden></iframe>
     <div id="bcHost" hidden role="application" aria-label="Basic calculator"></div>
   </div>
   <div class="rh" aria-label="Drag to resize"><svg><use href="#i-move"/></svg></div>
@@ -1129,7 +1141,7 @@ if(window.__spitzBooted) return; window.__spitzBooted=true;
 const ITEMS=TD.items, KEYLESS=!!TD.keyless; let OWNPTS=null;
 const KEYF={graphline:'eq',graphineq:'op',graphsys:'ineqs',graphfunc:'ftype',graphexp:'a'};   /* where each graph type keeps its key (a line: its equation; an inequality: m, b, op; …) */
 const NOKEY=it=>KEYLESS&&it.type!=='text'&&it[KEYF[it.type]||'answer']===undefined;
-if(TD.subject==='rla') document.body.classList.add('rla');
+if(TD.subject==='rla') document.body.classList.add('rla'); if(/science/i.test(TD.course||'')) document.body.classList.add('sci');
 if(TD.reference==='none') document.body.classList.add('noref'); if(TD.calc===false) document.body.classList.add('nocalc'); if(TD.ruler??['6th Math','7th Math'].includes(TD.course)) document.body.classList.add('ruler');
 ITEMS.forEach((it,i)=>{ it.n=i+1; it.letters=ODD; it.max=it.max||1; ownFn(it); });
 /* ---------------- state ---------------- */
@@ -2610,8 +2622,8 @@ const TUT={
 
 /* ---------- panels ---------- */
 let zTop=130;
-const panels={ref:$('#refPanel'),calc:$('#calcPanel'),gd:$('#gdPanel'),note:$('#notePanel'),dict:$('#dictPanel')};
-const pbtn={ref:$('#bRef'),calc:$('#bCalc'),gd:$('#bGD'),note:$('#bNote'),dict:$('#bDict')};
+const panels={pt:$('#ptPanel'),ref:$('#refPanel'),calc:$('#calcPanel'),gd:$('#gdPanel'),note:$('#notePanel'),dict:$('#dictPanel')};
+const pbtn={pt:$('#bPT'),ref:$('#bRef'),calc:$('#bCalc'),gd:$('#bGD'),note:$('#bNote'),dict:$('#bDict')};
 const placed={};
 let desmosOn=false;
 function defaultPlace(k){
@@ -2635,7 +2647,7 @@ $('#bDict').addEventListener('mousedown',()=>{ const t=String(getSelection()).tr
 function openPanel(k,show){
   const p=panels[k]; show=show??p.hidden;
   p.hidden=!show; if(pbtn[k]&&k!=='note') pbtn[k].setAttribute('aria-pressed',show);
-  if(show){ if(!placed[k]){ defaultPlace(k); placed[k]=true; } p.style.zIndex=++zTop; if(S.started) actTool(k==='calc'?'calculator':k==='ref'?'references':k==='gd'?'graphDraw':k==='dict'?'dictionary':'notes'); }
+  if(show){ if(!placed[k]){ defaultPlace(k); placed[k]=true; } p.style.zIndex=++zTop; if(S.started) actTool(k==='calc'?'calculator':k==='ref'?'references':k==='pt'?'periodicTable':k==='gd'?'graphDraw':k==='dict'?'dictionary':'notes'); }
 }
 Object.keys(panels).forEach(k=>{
   const p=panels[k], h=p.querySelector('.ph'), rh=p.querySelector('.rh');
@@ -2661,7 +2673,7 @@ const USE_DESMOS_API=false;  // true = Desmos API (needs a production key; a tri
 const DESMOS_KEY='8f04c5aafb7b4926872111685875396b';   // Mr. Spitz's Desmos API key
 let DESMOS_BANNER_PX=50;     // height of the green "Texas Version" banner to crop off (teacher fine-tune: click the calculator title bar, then Ctrl+Alt+Up/Down)
 try{ const v=localStorage.getItem('spitzDesmosCrop'); if(v!==null&&!isNaN(+v)) DESMOS_BANNER_PX=+v; }catch(e){}
-function applyCrop(){ const f=document.getElementById('desmosFrame'); if(!f) return; f.style.top=(-DESMOS_BANNER_PX)+'px'; f.style.height=`calc(100% + ${DESMOS_BANNER_PX}px)`; }
+function applyCrop(){ ['desmosFrame','sciFrame'].forEach(id=>{ const f=document.getElementById(id); if(!f) return; f.style.top=(-DESMOS_BANNER_PX)+'px'; f.style.height=`calc(100% + ${DESMOS_BANNER_PX}px)`; }); }
 const DESMOS_TX={ // Texas STAAR graphing calculator restrictions (Desmos "Texas State Test" notes)
   images:false, folders:false, notes:false,            // no images, folders, or notes
   degreeMode:true,                                     // angle mode defaults to degrees
@@ -2674,7 +2686,7 @@ const DESMOS_TX={ // Texas STAAR graphing calculator restrictions (Desmos "Texas
   border:false };
 let desmosCalc=null, desmosLoading=false, desmosFailed=false;
 function useFrameFallback(){ desmosFailed=true; $('#desmosHost').hidden=true; const f=$('#desmosFrame'); if(!f.src) f.src='https://www.desmos.com/testing/texas/graphing'; f.hidden=false; applyCrop(); }
-document.addEventListener('keydown',e=>{ if(!(e.ctrlKey&&e.altKey)||$('#calcPanel').hidden||$('#desmosFrame').hidden) return; if(e.key!=='ArrowUp'&&e.key!=='ArrowDown') return; e.preventDefault(); e.stopPropagation(); DESMOS_BANNER_PX=Math.max(0,Math.min(150,DESMOS_BANNER_PX+(e.key==='ArrowUp'?2:-2))); applyCrop(); try{ localStorage.setItem('spitzDesmosCrop',DESMOS_BANNER_PX); }catch(err){} toast('Banner crop: '+DESMOS_BANNER_PX+' px'); },true);
+document.addEventListener('keydown',e=>{ if(!(e.ctrlKey&&e.altKey)||$('#calcPanel').hidden||($('#desmosFrame').hidden&&$('#sciFrame').hidden)) return; if(e.key!=='ArrowUp'&&e.key!=='ArrowDown') return; e.preventDefault(); e.stopPropagation(); DESMOS_BANNER_PX=Math.max(0,Math.min(150,DESMOS_BANNER_PX+(e.key==='ArrowUp'?2:-2))); applyCrop(); try{ localStorage.setItem('spitzDesmosCrop',DESMOS_BANNER_PX); }catch(err){} toast('Banner crop: '+DESMOS_BANNER_PX+' px'); },true);
 function startDesmos(){
   if(!USE_DESMOS_API){ useFrameFallback(); return; }
   if(desmosCalc||desmosFailed){ return; }
@@ -2689,7 +2701,7 @@ function startDesmos(){
 }
 function desmosResize(){ if(desmosCalc&&desmosCalc.resize) try{ desmosCalc.resize(); }catch(e){} }
 if(window.ResizeObserver) new ResizeObserver(desmosResize).observe($('#desmosHost'));
-function showChooser(){ $('#chooser').hidden=false; $('#desmosFrame').hidden=true; $('#desmosHost').hidden=true; $('#calcTtl').textContent='Choose A Calculator'; $('#calcSwitch').hidden=true; $('#calcExpand').hidden=true; $('#tiNote').hidden=true; }
+function showChooser(){ $('#chooser').hidden=false; $('#desmosFrame').hidden=true; $('#sciFrame').hidden=true; $('#desmosHost').hidden=true; $('#calcTtl').textContent='Choose A Calculator'; $('#calcSwitch').hidden=true; $('#calcExpand').hidden=true; $('#tiNote').hidden=true; }
 $('#chTI').onclick=()=>{ $('#tiNote').hidden=false; };
 $('#chDesmos').onclick=()=>{
   actTool('desmos');
@@ -2732,9 +2744,15 @@ function bcBuild(){ const h=$('#bcHost'); if(h.firstChild) return;
     const m={'*':'×','x':'×','/':'÷','-':'−','+':'+','=':'=','Enter':'=','Escape':'ON/C','Delete':'ON/C','%':'%','.':'.'}, k=/^[0-9]$/.test(e.key)?e.key:m[e.key];
     if(!k) return; e.preventDefault(); bcKey(k); });
   bcShow(); }
-function showBasic(){ bcBuild(); $('#chooser').hidden=true; $('#desmosFrame').hidden=true; $('#desmosHost').hidden=true; $('#bcHost').hidden=false;
+function showBasic(){ bcBuild(); $('#chooser').hidden=true; $('#desmosFrame').hidden=true; $('#sciFrame').hidden=true; $('#desmosHost').hidden=true; $('#bcHost').hidden=false;
   $('#calcTtl').textContent='Calculator'; $('#calcSwitch').hidden=true; $('#calcExpand').hidden=true; panels.calc.classList.add('basic'); }
 { const sc=showChooser; showChooser=function(){ if(document.body.classList.contains('bcalc')&&document.body.classList.contains('nocalc')) return showBasic(); $('#bcHost').hidden=true; panels.calc.classList.remove('basic'); sc(); }; }
+/* Grade 8 Science: Basic Calculator (the TI-108 above) or the Desmos Scientific Calculator (Texas testing page, banner cropped like the graphing one) */
+$('#chBasic').onclick=()=>{ actTool('basicCalculator'); showBasic(); $('#calcSwitch').hidden=false; };
+$('#chSci').onclick=()=>{ actTool('desmosScientific'); $('#chooser').hidden=true; $('#bcHost').hidden=true; panels.calc.classList.remove('basic');
+  const f=$('#sciFrame'); if(!f.src) f.src='https://www.desmos.com/testing/texas/scientific'; f.hidden=false; applyCrop();
+  $('#calcTtl').textContent='Calculator'; $('#calcSwitch').hidden=false; $('#calcExpand').hidden=false;
+  const p=panels.calc; if(parseInt(p.style.height)<=300){ const top=Math.round(innerHeight*0.30); p.style.top=top+'px'; p.style.height=(innerHeight-top-18)+'px'; } };
 window.SpitzBasicCalc=on=>{ document.body.classList.toggle('bcalc',!!on); if(!on) openPanel('calc',false); };
 if(window.SPITZ_CALC||/[?&]basiccalc=1\b/.test(location.search)) window.SpitzBasicCalc(true);
 
@@ -3179,7 +3197,8 @@ function browseStart(){
 
 /* fill in this test's name everywhere it shows */
 document.title=TD.title; document.querySelectorAll('.testTitle').forEach(e=>e.textContent=TD.title);
-{ const ref=document.querySelector('#refPanel .pbody img'); if(ref&&!document.body.matches('.rla,.noref')) if(TD.reference==='math8') ref.alt='Grade 8 mathematics reference materials: linear equations, circumference, area, surface area, volume, Pythagorean theorem, simple and compound interest'; else if(TD.reference==='math6') ref.alt='Grade 6 mathematics reference materials: area of a triangle, rectangle or parallelogram, and trapezoid; volume of a rectangular prism; customary and metric conversions for length, volume and capacity, and weight and mass'; else if(TD.reference==='math7') ref.alt='Grade 7 mathematics reference materials: linear equations, constant of proportionality, circumference and area of a circle, area, volume of a prism and pyramid, pi, distance, simple and compound interest; customary and metric conversions for length, volume and capacity, and weight and mass'; else if(TD.reference==='sci8') ref.alt='Middle school science reference materials: average speed and net force formulas, and the periodic table of the elements'; ref.src=(window.SPITZ_ASSETS&&window.SPITZ_ASSETS['refs/'+(TD.reference||'alg1')+'.png'])||(window.SPITZ_ROOT+'refs/'+(TD.reference||'alg1')+'.png'); }
+{ const ref=document.querySelector('#refPanel .pbody img'); if(ref&&!document.body.matches('.rla,.noref')) if(TD.reference==='math8') ref.alt='Grade 8 mathematics reference materials: linear equations, circumference, area, surface area, volume, Pythagorean theorem, simple and compound interest'; else if(TD.reference==='math6') ref.alt='Grade 6 mathematics reference materials: area of a triangle, rectangle or parallelogram, and trapezoid; volume of a rectangular prism; customary and metric conversions for length, volume and capacity, and weight and mass'; else if(TD.reference==='math7') ref.alt='Grade 7 mathematics reference materials: linear equations, constant of proportionality, circumference and area of a circle, area, volume of a prism and pyramid, pi, distance, simple and compound interest; customary and metric conversions for length, volume and capacity, and weight and mass'; else if(TD.reference==='sci8') ref.alt='Middle school science reference materials: formulas for average speed and net force'; ref.src=(window.SPITZ_ASSETS&&window.SPITZ_ASSETS['refs/'+(TD.reference||'alg1')+'.png'])||(window.SPITZ_ROOT+'refs/'+(TD.reference||'alg1')+'.png'); }
+{ const pt=document.querySelector('#ptPanel .pbody img'); if(pt&&document.body.classList.contains('sci')) pt.src=(window.SPITZ_ASSETS&&window.SPITZ_ASSETS['refs/sci8-pt.png'])||(window.SPITZ_ROOT+'refs/sci8-pt.png'); }
 window.__spitzStart=(name,period,opt={})=>{ S.name=name; S.period=period; S.started=true; ACT.t0=Date.now();
   if(opt.state){ sessionRestore(opt.state,opt.events); if(opt.state.submitted){ S.submitted=true; S.submittedAt=opt.state.submittedAt; } logEv('signInAgain'); } else logEv('start'); if(window.SPITZ_TTSCHECK) logEv('ttsCheck',window.SPITZ_TTSCHECK);
   $('#sname').textContent=`${name} (${period==='G'?'GUEST':'PERIOD '+period})`; $('#isubName').textContent=name;

@@ -2460,7 +2460,7 @@ async function fileChanges(P){   // what one publish will write
   if(P.oldTitle&&singleName(P.oldTitle)!==singleName(P.td.title)&&!TP.index.some(t=>t.id!==id&&singleName(t.title)===singleName(P.oldTitle))) out.push({path:'single/'+singleName(P.oldTitle),del:true});
   return out; }
 async function singleFor(id,title,reference,testJs,assets,refs){ const A={}, ref='refs/'+(reference||'alg1')+'.png';
-  const rb=(refs&&refs[ref])||(TP.files&&TP.files[ref]?await repoBytes(ref):null); if(rb) A[ref]=dataUrl(ref,rb);
+  for(const r of reference==='sci8'?[ref,'refs/sci8-pt.png']:[ref]){ const rb=(refs&&refs[r])||(TP.files&&TP.files[r]?await repoBytes(r):null); if(rb) A[r]=dataUrl(r,rb); }   // science: its periodic table too
   Object.keys(assets).sort().forEach(rel=>{ A[id+'/'+rel]=dataUrl(rel,assets[rel]); });
   return buildSingle(await ensurePlayer(),id,title,testJs,A); }
 function diffRows(P){ const o=P.old, n=P.td; if(!o) return null; const rows=[];
