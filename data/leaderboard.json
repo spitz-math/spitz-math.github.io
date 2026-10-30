@@ -1,5 +1,5 @@
 {
- "updated": "2026-10-30T15:04:44.050Z",
+ "updated": "2026-10-30T15:08:36.295Z",
  "games": {
   "splat_range": {
    "name": "Splat Range",
@@ -242,8 +242,8 @@
     }
    ]
   },
-  "football_buds": {
-   "name": "Football Buds",
+  "football_buds_v1": {
+   "name": "Football Buds (classic)",
    "top": [
     {
      "name": "Marcus.T",
@@ -282,8 +282,8 @@
     }
    ]
   },
-  "hoop_buds": {
-   "name": "Hoop Buds",
+  "hoop_buds_v1": {
+   "name": "Hoop Buds (classic)",
    "top": [
     {
      "name": "Joaquin R",
