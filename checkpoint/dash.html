@@ -1618,7 +1618,7 @@ async function oeSave(publish){ if(!OE||OE.busy) return; const b=oeGather(), P=o
 /* the test.js for a preview (with answers), made here from what is on screen, so unsaved changes show too. Same shape as Code.gs makes. */
 function oeTestJs(b){ const J=v=>JSON.stringify(v).replace(/</g,'\\u003c'), num=s=>{ s=String(s).replace(/−/g,'-').replace(/,/g,''); const m=s.match(/^(-?\d+(?:\.\d+)?)\/(-?\d+(?:\.\d+)?)$/); return m?+m[1]/+m[2]:+s; };
   const course=b.course==='Other'?'Other':b.course, head={id:b.id||'preview',title:b.title||'Untitled test',course};
-  if(/RLA/.test(course)) head.subject='rla'; head.reference=course==='Algebra I'?'alg1':course==='8th Math'?'math8':course==='6th Math'?'math6':'none'; if(b.calc===false) head.calc=false;
+  if(/RLA/.test(course)) head.subject='rla'; head.reference=course==='Algebra I'?'alg1':course==='8th Math'?'math8':course==='6th Math'?'math6':course==='7th Math'?'math7':course==='8th Science'?'sci8':'none'; if(b.calc===false) head.calc=false;
   const P={}; b.passages.forEach((h,i)=>{ P['P'+(i+1)]=h; });
   const items=b.items.map(it=>{ let stem=J(it.text||''); if(it.pic&&it.mode!=='pic'&&it.type!=='label') stem+='+'+J('<div class="tqpic"><img class="fig" src="')+'+ASSET('+J('img/'+it.pic.file)+')+'+J('" style="width:'+it.pic.w+'px;max-width:100%" alt="Picture for this question"></div>');
     const o=['type:'+J(it.type),'stem:'+stem,'max:'+(+it.points||1)];
@@ -2798,12 +2798,12 @@ const SS8=[['8.1A',1,'Major eras in U.S. history through 1877'],['8.1B',0,'Signi
 const STD={};   // course -> its standards: base plus any tag the published released tests use (loadTests)
 /* the grades and subjects started 10/30 (Kody sent their TEKS Snapshots; no released tests yet). Each one's questions come from its full released
    tests (tests/<key>-<year>/) once they're added, like Grade 6 and 8 Math. base = its standards; tags on a test that aren't in it are added (see loadTests).
-   ref 'none' until there's a reference sheet in refs/. */
+   Reference sheets: refs/math7.png and refs/sci8.png (TEA's PDFs, Kody 10/30); Social Studies has none. */
 Object.assign(COURSES,{
-  math7:{name:'Grade 7 Math',course:'7th Math',ref:'none',calc:false,cats:CAT7,re:/^math7-20\d\d$/,src:'STAAR Grade 7 Math',title:'Grade 7 Math Practice',bid:'r7:',base:()=>TEKS7},
+  math7:{name:'Grade 7 Math',course:'7th Math',ref:'math7',calc:false,cats:CAT7,re:/^math7-20\d\d$/,src:'STAAR Grade 7 Math',title:'Grade 7 Math Practice',bid:'r7:',base:()=>TEKS7},
   rla6:{name:'Grade 6 Reading',course:'6th RLA',subject:'rla',cats:{1:'Reading',2:'Writing'},re:/^rla6-20\d\d$/,src:'STAAR Grade 6 Reading',title:'Grade 6 Reading Practice',bid:'rr6:',base:()=>rlaBase(RLA6STD)},
   rla7:{name:'Grade 7 Reading',course:'7th RLA',subject:'rla',cats:{1:'Reading',2:'Writing'},re:/^rla7-20\d\d$/,src:'STAAR Grade 7 Reading',title:'Grade 7 Reading Practice',bid:'rr7:',base:()=>rlaBase(RLA7STD)},
-  sci8:{name:'Grade 8 Science',course:'8th Science',ref:'none',cats:CATSCI8,re:/^sci8-20\d\d$/,src:'STAAR Grade 8 Science',title:'Grade 8 Science Practice',bid:'rs8:',base:()=>SCI8},
+  sci8:{name:'Grade 8 Science',course:'8th Science',ref:'sci8',cats:CATSCI8,re:/^sci8-20\d\d$/,src:'STAAR Grade 8 Science',title:'Grade 8 Science Practice',bid:'rs8:',base:()=>SCI8},
   ss8:{name:'Grade 8 Social Studies',course:'8th History',ref:'none',calc:false,cats:CATSS8,re:/^ss8-20\d\d$/,src:'STAAR Grade 8 Social Studies',title:'Grade 8 Social Studies Practice',bid:'rh8:',base:()=>SS8}});
 COURSES.rla8.bid='rr8:'; COURSES.rla8.base=()=>rlaBase(RLA8STD); COURSES.math6.bid='r6:'; COURSES.math8.bid='r8:';
 const rlaBase=L=>L.map(([k,r,label])=>({k,cat:/^1[01]\./.test(k)?2:1,r:!!r,label,bank:[],gens:0}));   // reading: 10 and 11 are writing
