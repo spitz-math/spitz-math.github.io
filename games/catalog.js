@@ -168,12 +168,16 @@ window.SpitzGames=[
     burger_blaster:'2026-10-26T12:00', pinball:'2026-10-26T12:00',
     rocket_buds:'2026-11-02T12:00', brawl_buds:'2026-11-02T12:00',
     paint_royale:'2026-11-09T12:00', hill_climb:'2026-11-09T12:00' };
+  /* Updated games (Kody, 2026-10-30): a big change to a live game shows an UPDATED badge and a line saying what changed on its hub card
+     for NEW_DAYS days, and the game sorts up with the new ones. at = when it went live (UTC). */
+  var UPDATED={ football_buds:{ at:'2026-10-30T15:00', what:'New: real points score, All-Pro mode and 3 challenges every game' } };
   var now=Date.now(), G=window.SpitzGames;
   window.SpitzLocked=Object.keys(UNLOCK).filter(function(id){ return !UNLOCK[id]||Date.parse(UNLOCK[id]+'Z')>now; });
   Object.keys(UNLOCK).forEach(function(id){ if(UNLOCK[id]) ADDED[id]=UNLOCK[id]; });
   for(var k=G.length-1;k>=0;k--) if(window.SpitzLocked.indexOf(G[k].id)>=0) G.splice(k,1);
-  G.forEach(function(g,i){ var t=ADDED[g.id]?Date.parse(ADDED[g.id]+'Z'):0; g.added=t; g.isNew=!!t&&now-t<NEW_DAYS*864e5; g.rank=BEST.indexOf(g.id)<0?BEST.length+i:BEST.indexOf(g.id); });
-  G.sort(function(a,b){ if(a.isNew!==b.isNew) return a.isNew?-1:1; if(a.isNew) return b.added-a.added; return a.rank-b.rank; });
+  G.forEach(function(g,i){ var t=ADDED[g.id]?Date.parse(ADDED[g.id]+'Z'):0; g.added=t; g.isNew=!!t&&now-t<NEW_DAYS*864e5;
+    var u=UPDATED[g.id], ut=u?Date.parse(u.at+'Z'):0; g.isUpd=!g.isNew&&!!ut&&ut<=now&&now-ut<NEW_DAYS*864e5; if(g.isUpd){ g.what=u.what; g.added=ut; } g.rank=BEST.indexOf(g.id)<0?BEST.length+i:BEST.indexOf(g.id); });
+  G.sort(function(a,b){ var an=a.isNew||a.isUpd, bn=b.isNew||b.isUpd; if(an!==bn) return an?-1:1; if(an) return b.added-a.added; return a.rank-b.rank; });
 })();
 
 /* Real screenshots on the cards (2026-10-24): a game listed in SHOTS shows a picture from the game itself (games/cards/<id>.webp, 400x220)
