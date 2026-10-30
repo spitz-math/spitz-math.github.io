@@ -99,7 +99,7 @@ body:not(.ruler) #bRuler{display:none}
 .ti108 button.r{background:#d8343d;color:#fff;box-shadow:0 2px 0 #8a1c22;font-size:12px}
 .ti108 button.eq{grid-row:span 2;height:auto}
 .ti108 button:active{transform:translateY(1px);box-shadow:none}
-/* ruler (Grade 6 math): centimeters on top, inches on the bottom; drag to move, drag the circle to turn it */
+/* ruler (Grade 6 and 7 math): centimeters on top, inches on the bottom; drag to move, drag the circle to turn it */
 #rulerTool{position:fixed;z-index:125;left:0;top:0;touch-action:none}
 #rulerTool[hidden]{display:none}
 #rulerTool svg{display:block;cursor:move;filter:drop-shadow(0 1px 2px rgba(0,0,0,.35))}
@@ -1130,7 +1130,7 @@ const ITEMS=TD.items, KEYLESS=!!TD.keyless; let OWNPTS=null;
 const KEYF={graphline:'eq',graphineq:'op',graphsys:'ineqs',graphfunc:'ftype',graphexp:'a'};   /* where each graph type keeps its key (a line: its equation; an inequality: m, b, op; …) */
 const NOKEY=it=>KEYLESS&&it.type!=='text'&&it[KEYF[it.type]||'answer']===undefined;
 if(TD.subject==='rla') document.body.classList.add('rla');
-if(TD.reference==='none') document.body.classList.add('noref'); if(TD.calc===false) document.body.classList.add('nocalc'); if(TD.ruler??TD.course==='6th Math') document.body.classList.add('ruler');
+if(TD.reference==='none') document.body.classList.add('noref'); if(TD.calc===false) document.body.classList.add('nocalc'); if(TD.ruler??['6th Math','7th Math'].includes(TD.course)) document.body.classList.add('ruler');
 ITEMS.forEach((it,i)=>{ it.n=i+1; it.letters=ODD; it.max=it.max||1; ownFn(it); });
 /* ---------------- state ---------------- */
 const S={i:0,answers:{},flags:{},notes:{},name:'',modes:{hl:false,elim:false},zoomIx:1,submitted:false};
