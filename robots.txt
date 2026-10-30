@@ -1,0 +1,8 @@
+# spitzmath.com
+# Private pages (teacher, topics, stats, board, warmup, leaderboards, Checkpoint teacher pages)
+# are NOT blocked here on purpose: they carry a "noindex" tag, and Google has to be allowed
+# to read a page to see that tag. Blocking them here could let their links show up in search.
+User-agent: *
+Allow: /
+
+Sitemap: https://spitzmath.com/sitemap.xml
