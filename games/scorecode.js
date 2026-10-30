@@ -198,9 +198,12 @@ function button(link,code){ return '<a href="'+link+'" target="_blank" rel="noop
     if(sent){ try{ set.call(ls,QK,JSON.stringify(q.slice(100))); }catch(e){} return; }
     try{ fetch(LOG,{ method:'POST', mode:'no-cors', keepalive:true, headers:{'Content-Type':'text/plain'}, body:body }).then(function(){
       var now=queue(); try{ set.call(ls,QK,JSON.stringify(now.slice(Math.min(100,q.length)))); }catch(e){} },function(){}); }catch(e){} }
-  function watch(k,v){ if(!LOG) return; var m=/"answered":(\d+)/.exec(v); if(!m) return; var n=+m[1], was=seen[k]||0; seen[k]=n; if(n<=was) return;
+  function watch(k,v){ var m=/"answered":(\d+)/.exec(v); if(!m) return; var n=+m[1], was=seen[k]||0; seen[k]=n; if(n<=was) return;
     var S=JSON.parse(v), q=S.q, ok=null, pick=null, right=null;
     if(q&&S.qDone&&q.choices&&q.choices[S.picked]){ ok=!!q.choices[S.picked].ok; pick=plain(q.choices[S.picked].html); q.choices.forEach(function(c){ if(c.ok) right=plain(c.html); }); }
+    /* a miss goes back to the question bank, which asks it again a few questions later (2026-10-30) */
+    if(ok===false) try{ if(window.SpitzQ&&window.SpitzQ.missed) window.SpitzQ.missed(q); }catch(e){}
+    if(!LOG) return;
     var p={}; (location.search||'').replace(/^\?/,'').split('&').forEach(function(kv){ var a=kv.split('='); if(a[0]) try{ p[a[0]]=decodeURIComponent(a[1]||''); }catch(e){} });
     var row={ t:Date.now(), d:dev(), n:String(S.name||'').slice(0,40), g:f, s:p.set||'', ts:String(p.topics||'').slice(0,60), r:n,
       tp:ok===null?'':String(q.topic||'').slice(0,40), ty:ok===null?'':String(q.type||'').slice(0,30), ok:ok===null?'':ok?1:0,
@@ -253,20 +256,44 @@ function bonusLine(gameId,S){ var g=GAMES[gameId], pct=g&&g[2]!=='strokes'?bonus
   var was, now; if(g[2]==='versus'){ was=(+S.buds||0)+' – '+(+S.rivals||0); now=boost(S.buds,pct,true)+' – '+(+S.rivals||0); }
   else { was=(+S.score||0).toLocaleString(); now=boost(S.score,pct).toLocaleString(); }
   return '<span class="b">⭐ Suggested skill bonus +'+pct+'%'+(was!==now?': '+was+' → '+now:'')+'</span>'; }
+/* Beat the board (Kody, 2026-10-30): the end screen says where this run would land on the student leaderboard (data/leaderboard.json, the
+   top 10s Mr. Spitz posts), or how far it is from the top 10, so a good run gets sent in and a close one gets played again. Points games only.
+   Read once when the page opens, so it is ready by the end screen; no Wi-Fi = no line. */
+var BOARD=null;
+try{ var me=document.currentScript&&document.currentScript.src;
+  fetch(new URL('../data/leaderboard.json',me||location.href).href+'?v='+Math.floor(Date.now()/3e5)).then(function(r){ return r.ok?r.json():null; })
+    .then(function(d){ BOARD=d&&d.games||null; },function(){}); }catch(e){}
+function boardLine(gameId,S){ var g=GAMES[gameId]; if(!BOARD||!g||g[2]!=='points') return '';
+  var b=BOARD[gameId], top=(b&&b.top||[]).map(function(e){ return { n:normName(e.name), v:+String(e.score).replace(/[^0-9]/g,'')||0 }; }),
+    mine=boost(S.score,bonusPct()), name=g[1], me=normName(S.name), rank=1, mineOn=null;
+  if(!(mine>0)) return '';
+  top.forEach(function(e,i){ if(e.v>=mine) rank++; if(e.n&&e.n===me&&!mineOn) mineOn={ v:e.v, r:i+1 }; });
+  if(mineOn&&mineOn.v>=mine) return '🏆 You\'re #'+mineOn.r+' on the '+name+' board with '+mineOn.v.toLocaleString()+(mineOn.r===1?'. Beat your own record!':'. Beat it to move up!');
+  if(!top.length) return '🏆 Nobody is on the '+name+' board yet. Send your score to be the first!';
+  if(rank===1) return '🏆 That beats the #1 score on the '+name+' board! Send your score!';
+  if(rank<=10) return '🏆 You\'d be #'+rank+' on the '+name+' board! Send your score to get on it.';
+  var gap=top[9].v-mine+1;
+  return gap<=top[9].v/2?'🏆 '+gap.toLocaleString()+' more points to make the '+name+' top 10. Play again?':'🏆 The '+name+' top 10 starts at '+top[9].v.toLocaleString()+'. Can you get there?'; }
+function addBoard(PFX,gameId,S,tries){ var t=boardLine(gameId,S), end=document.getElementById(PFX+'-end'), old=document.getElementById(PFX+'-endcode'),
+    box=old?old.parentNode:end&&end.querySelector('.spz-code');
+  if(!t){ if(!BOARD&&(tries||0)<8) setTimeout(function(){ addBoard(PFX,gameId,S,(tries||0)+1); },500); return; }
+  if(!box) return; var was=box.querySelector('.spz-board'); if(was) was.remove();
+  box.insertAdjacentHTML('afterbegin','<span class="b spz-board"'+(old?' style="display:block;margin-bottom:6px;font:800 22px/1.3 var(--body,Inter,sans-serif);color:var(--accent,#FFB020)"':'')+'></span>');
+  box.querySelector('.spz-board').textContent=t; }
 function show(PFX,gameId,S){ try{
   var code=make(gameId,S), link=formLink(S.name,code), old=document.getElementById(PFX+'-endcode'), bl=bonusLine(gameId,S);
   css();
   if(old){ old.textContent=code; old.classList.add('spz-v'); var box=old.parentNode;
     if(link&&!box.querySelector('.spz-send')) box.insertAdjacentHTML('beforeend',button(link,code).replace('<a ','<a class="spz-send" '));
     var ob=box.querySelector('.spz-code-b'); if(ob) ob.remove(); if(bl) box.insertAdjacentHTML('beforeend',bl.replace('class="b"','class="b spz-code-b" style="display:block;margin-top:6px;font:800 20px/1.3 var(--body,Inter,sans-serif);color:var(--accent,#FFB020)"'));
-    return code; }
+    addBoard(PFX,gameId,S); return code; }
   var end=document.getElementById(PFX+'-end'); if(!end) return code;
   var el=end.querySelector('.spz-code');
   if(!el){ el=document.createElement('div'); el.className='spz-code'; var again=document.getElementById(PFX+'-again');
     if(again&&again.parentNode) again.parentNode.insertBefore(el,again); else (end.firstElementChild||end).appendChild(el); }
   el.innerHTML=bl+'<span class="l">Score code</span><span class="v">'+code+'</span>'+(link?button(link,code):'')+
     '<span class="n">'+(!link?'Type your name and this code into the class Google Form.':prefilled()?'Tap Send my score, then Submit on the form.':'Tap the button, then paste the code into the form with your name.')+'</span>';
-  return code; }catch(e){ return ''; } }
+  addBoard(PFX,gameId,S); return code; }catch(e){ return ''; } }
 
 window.SpitzCode={ BONUS:BONUS, bonusPct:bonusPct, GAMES:GAMES, SET_NAMES:SET_NAMES, TOPIC_NAMES:TOPIC_NAMES, make:make, read:read, show:show, normName:normName, today:today, FORM:FORM };
 })();

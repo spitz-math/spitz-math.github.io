@@ -61,7 +61,10 @@ function makeMult(PFX){
   function build(type){ for(var tries=0;tries<400;tries++){ var q=GEN[type](); if(!q||q.choices.length!==4) continue;
       if(!q.check(q.choices[0].val)) continue;                                                  // the answer must pass the independent check
       if(q.choices.slice(1).some(function(c){ return q.check(c.val); })) continue;              // and no distractor may pass it
-      q.type=type; q.choices.forEach(function(c,i){ c.ok=i===0; }); q.choices.sort(function(x,y){ return x.val-y.val; });   // smallest to largest, quick to scan
+      q.type=type; q.choices.forEach(function(c,i){ c.ok=i===0; });
+      /* smallest to largest, quick to scan. An answer of 0 is always the smallest, so those get a random order (2026-10-30: "pick the smallest" was right 44 in 100 times in Facts 0–3) */
+      if(q.data.a*q.data.b===0) for(var j=3;j>0;j--){ var x=Math.floor(Math.random()*(j+1)), c=q.choices[j]; q.choices[j]=q.choices[x]; q.choices[x]=c; }
+      else q.choices.sort(function(x,y){ return x.val-y.val; });
       q.visual=''; delete q.check; return q; } throw new Error('generator failed: '+type); }
   var topicBag=[], lastFact='';
   return { build:build }; }
@@ -1408,6 +1411,7 @@ function plain(h){ return String(h).replace(/<span class="[a-z]+-fr"><span>(.*?)
 function params(){ var qs={}; try{ (location.search||'').replace(/^\?/,'').split('&').forEach(function(kv){ var p=kv.split('='); if(p[0]) qs[decodeURIComponent(p[0])]=decodeURIComponent(p[1]||''); }); }catch(e){} return qs; }
 
 /* Returns null when the link names no set, so a game opened on its own plays exactly as it always has. */
+var live=null;
 function forGame(PFX){
   var qs=params(), id=qs.set; if(!SETS[id]) return null;
   var set=SETS[id], want=(qs.topics||'').split(',').map(function(t){ return set.alias&&set.alias[t]||t; }), picked=set.topics.filter(function(t){ return want.indexOf(t[0])>=0; });
@@ -1416,7 +1420,21 @@ function forGame(PFX){
   if(!set.big){ try{ var st=document.createElement('style'); st.textContent='.'+PFX+'-prompt{ font:700 36px/1.3 var(--body) !important; height:auto !important; min-height:96px; white-space:normal !important; overflow:visible !important; text-align:left !important; }'; document.head.appendChild(st); }catch(e){} }
   var Q=set.make(PFX), bag=[]; picked.forEach(function(t){ for(var i=0;i<(t[3]||1);i++) bag.push(t); });
   var topicBag=[], lastType='', lastFact='';
-  function next(){ var q; for(var n=0;n<20;n++){ if(!topicBag.length) topicBag=bag.slice().sort(function(){ return Math.random()-0.5; });
+  /* Missed questions come back (Kody, 2026-10-30): scorecode.js sees each answer in the game's save and calls SpitzQ.missed(q) on a miss.
+     That question returns about 3 to 5 questions later (choices reshuffled unless the set sorts them), at most twice a run. */
+  var asked=[], again=[], count=0, wasAgain=false;
+  function keep(q,n){ try{ asked.push({ k:q.prompt+'|'+q.type, j:JSON.stringify(q), n:n }); if(asked.length>12) asked.shift(); }catch(e){} return q; }
+  function missed(q){ if(!q) return; var k=q.prompt+'|'+q.type, a=null;
+    for(var i=asked.length-1;i>=0;i--) if(asked[i].k===k){ a=asked[i]; break; }
+    if(!a||a.n>=2||again.some(function(r){ return r.k===k; })) return;
+    again.push({ k:k, j:a.j, n:a.n+1, at:count+4+Math.floor(Math.random()*3) }); }
+  function next(){ count++;
+    if(wasAgain){ wasAgain=false; return keep(fresh(),0); }   /* never two repeats in a row, so a rough run still gets new questions */
+    for(var i=0;i<again.length;i++) if(again[i].at<=count){ wasAgain=true; var r=again.splice(i,1)[0], q=JSON.parse(r.j);
+      if(!set.big) for(var j=q.choices.length-1;j>0;j--){ var x=Math.floor(Math.random()*(j+1)), c=q.choices[j]; q.choices[j]=q.choices[x]; q.choices[x]=c; }
+      return keep(q,r.n); }
+    return keep(fresh(),0); }
+  function fresh(){ var q; for(var n=0;n<20;n++){ if(!topicBag.length) topicBag=bag.slice().sort(function(){ return Math.random()-0.5; });
       var t=topicBag.pop(), list=t[2], type; do{ type=list[Math.floor(Math.random()*list.length)]; }while(type===lastType&&list.length>1); lastType=type;
       q=Q.build(type); q.topic=t[1];
       if(id!=='mult') return q;
@@ -1424,15 +1442,16 @@ function forGame(PFX){
     return q; }
   /* bonus waves print the answers on small targets: no pictures, short labels */
   function fits(q,max){ return !q.visual&&q.choices.every(function(c){ return plain(c.html).length<=max; }); }
-  function short(max){ var q; for(var n=0;n<60;n++){ q=next(); if(fits(q,max)) return q; }
+  function short(max){ var q; for(var n=0;n<60;n++){ q=fresh(); if(fits(q,max)) return keep(q,0); }
     /* the picked topics are all pictures (a graphs-only link): borrow a picture-free question from the same set */
     var all=[]; set.topics.forEach(function(t){ all=all.concat(t[2]); });
     for(n=0;n<60;n++){ var b=Q.build(all[Math.floor(Math.random()*all.length)]); if(fits(b,max)){ b.topic=picked[0][1]; return b; } }
     return q; }
-  return { set:id, name:set.name, custom:true, suffix:'_'+id+'_'+picked.map(function(t){ return t[0]; }).join('-'),
+  var api={ set:id, name:set.name, custom:true, suffix:'_'+id+'_'+picked.map(function(t){ return t[0]; }).join('-'),
     topicTable:function(){ var o={}; picked.forEach(function(t){ o[t[1]]=[0,0]; }); return o; },
-    next:next, short:short };
+    next:next, short:short, missed:missed };
+  live=api; return api;
 }
 
-window.SpitzQ={ sets:SETS, forGame:forGame };
+window.SpitzQ={ sets:SETS, forGame:forGame, missed:function(q){ if(live) live.missed(q); } };
 })();
