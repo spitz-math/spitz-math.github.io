@@ -1,5 +1,5 @@
 {
- "updated": "2026-10-30T15:08:36.295Z",
+ "updated": "2026-10-30T16:47:09.691Z",
  "games": {
   "splat_range": {
    "name": "Splat Range",
@@ -557,18 +557,19 @@
    "name": "Brick Breaker",
    "top": [
     {
+     "name": "Saulo G",
+     "score": "342,246",
+     "acc": 100,
+     "set": "Parallel & perpendicular · Parallel slopes",
+     "date": "2026-10-30",
+     "bonus": 1
+    },
+    {
      "name": "Izael F",
      "score": "77,640",
      "acc": 96,
      "set": "Multiplication facts · Facts 0–3",
      "date": "2026-10-28"
-    },
-    {
-     "name": "Saulo G",
-     "score": "75,548",
-     "acc": 100,
-     "set": "Multiplication facts · Facts 0–3",
-     "date": "2026-10-23"
     },
     {
      "name": "Sebastian E.",
