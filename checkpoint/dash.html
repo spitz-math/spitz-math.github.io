@@ -534,7 +534,7 @@ details summary{cursor:pointer;color:var(--blue2);font-size:13px;margin-top:8px}
       <div class="row" id="bkFileRow" hidden><button class="btn" id="bkFileBtn">Choose the question bank file</button><input type="file" id="bkFile" accept=".html,text/html" hidden></div>
       <div id="bkFilters" class="bkcol" hidden>
         <label class="lab" for="bkCourse">Grade level</label>
-        <select id="bkCourse"><option value="alg1">Algebra I</option><option value="math8">Grade 8 Math</option><option value="rla8">Grade 8 Reading</option></select>
+        <select id="bkCourse"><option value="alg1">Algebra I</option><option value="math6">Grade 6 Math</option><option value="math8">Grade 8 Math</option><option value="rla8">Grade 8 Reading</option></select>
         <span class="lab">Questions</span>
         <div class="seg" id="bkSrc"><button data-v="rel" aria-pressed="true">Released</button><button data-v="saved" aria-pressed="false">Saved</button><button data-v="gen" aria-pressed="false">Generated</button></div>
         <label class="lab" for="bkCat">Topic (reporting category)</label><select id="bkCat"></select>
@@ -2647,7 +2647,28 @@ const TEKS8=[['8.2A',1,0,'Sets and subsets of real numbers'],['8.2B',1,0,'Approx
   ['8.5C',4,0,'Linear or not: bivariate data'],['8.5D',4,1,'Trend lines and predictions'],['8.11A',4,0,'Scatterplots and association'],['8.11B',4,0,'Mean absolute deviation'],
   ['8.12A',4,0,'Interest rate and loan length'],['8.12C',4,0,'Saving small amounts regularly'],['8.12D',4,1,'Simple and compound interest'],['8.12G',4,0,'Saving for college']
 ].map(([k,cat,r,label])=>({k,cat,r:!!r,label,bank:[],gens:0}));
+/* Grade 6 Math: its full released tests (tests/math6-<year>/) only. TEKS6: Grade 6 STAAR standards from TEA's TEKS Snapshot (v. 11.1.16, Kody 10/30),
+   same shape as TEKS8; 6.1 (process) and 6.14(D) are not tested. Same four reporting categories as Grade 8. */
+const TEKS6=[['6.2D',1,1,'Order rational numbers'],['6.4G',1,1,'Equivalent fractions, decimals, and percents'],['6.7A',1,1,'Order of operations, exponents, prime factorization'],
+  ['6.7D',1,1,'Equivalent expressions: properties of operations'],['6.2A',1,0,'Classify whole numbers, integers, rational numbers (Venn diagram)'],['6.2B',1,0,'A number, its opposite, absolute value'],
+  ['6.2C',1,0,'Locate, compare, and order on a number line'],['6.2E',1,0,'a/b means a \u00f7 b'],['6.4C',1,0,'Ratios as multiplicative comparisons'],['6.4D',1,0,'Rates as quotients'],
+  ['6.4E',1,0,'Ratios and percents with models, fractions, decimals'],['6.4F',1,0,'Benchmark fractions and percents'],['6.5C',1,0,'Equal parts of the same whole'],
+  ['6.7B',1,0,'Expressions or equations'],['6.7C',1,0,'Are two expressions equivalent?'],
+  ['6.3D',2,1,'Add, subtract, multiply, divide integers'],['6.3E',2,1,'Multiply and divide positive rational numbers'],['6.4B',2,1,'Ratios and rates: predictions and comparisons'],
+  ['6.5B',2,1,'Percent: find the whole, the part, or the percent'],['6.6C',2,1,'Represent y = kx or y = x + b'],['6.10A',2,1,'Solve one-step equations and inequalities'],
+  ['6.3A',2,0,'Dividing by a number = multiplying by its reciprocal'],['6.3B',2,0,'Increase or decrease when multiplied by a fraction'],['6.3C',2,0,'Integer operations with models'],
+  ['6.4A',2,0,'Additive or multiplicative: y = ax or y = x + a'],['6.5A',2,0,'Ratios and rates: scale factors, tables, graphs, proportions'],['6.6A',2,0,'Independent and dependent quantities'],
+  ['6.6B',2,0,'Write an equation from a table'],['6.9A',2,0,'Write one-step equations and inequalities'],['6.9B',2,0,'Solutions on a number line'],
+  ['6.9C',2,0,'Write a problem for an equation or inequality'],['6.10B',2,0,'Does a value make it true?'],
+  ['6.4H',3,1,'Convert units'],['6.8D',3,1,'Area of polygons and volume of rectangular prisms'],['6.11A',3,1,'Graph points in all four quadrants'],
+  ['6.8A',3,0,'Triangles: angle sum, sides and angles, triangle inequality'],['6.8B',3,0,'Model area formulas'],['6.8C',3,0,'Write area and volume equations'],
+  ['6.12C',4,1,'Mean, median, range, IQR'],['6.12D',4,1,'Categorical data: mode, relative frequency, percent bar graph'],['6.13A',4,1,'Interpret dot plots, stem-and-leaf plots, histograms, box plots'],
+  ['6.12A',4,0,'Graph numeric data'],['6.12B',4,0,'Center, spread, and shape'],['6.13B',4,0,'Data with and without variability'],['6.14A',4,0,'Checking accounts and debit cards'],
+  ['6.14B',4,0,'Debit cards or credit cards'],['6.14C',4,0,'Balance a check register'],['6.14E',4,0,'Credit reports'],['6.14F',4,0,'Value of credit reports'],
+  ['6.14G',4,0,'Paying for college'],['6.14H',4,0,'Salaries and lifetime income']
+].map(([k,cat,r,label])=>({k,cat,r:!!r,label,bank:[],gens:0}));
 const COURSES={alg1:{name:'Algebra I',course:'Algebra I',ref:'alg1',cats:CATNAMES,re:/^alg1-20\d\d$/,src:'STAAR Algebra I',title:'Algebra I Practice'},
+  math6:{name:'Grade 6 Math',course:'6th Math',ref:'math6',calc:false,cats:CAT8,re:/^math6-20\d\d$/,src:'STAAR Grade 6 Math',title:'Grade 6 Math Practice'},
   math8:{name:'Grade 8 Math',course:'8th Math',ref:'math8',cats:CAT8,re:/^math8-20\d\d$/,src:'STAAR Grade 8 Math',title:'Grade 8 Math Practice'},
   rla8:{name:'Grade 8 Reading',course:'8th RLA',subject:'rla',cats:{1:'Reading',2:'Writing'},re:/^rla8-20\d\d$/,src:'STAAR Grade 8 Reading',title:'Grade 8 Reading Practice'}};
 /* Grade 8 Reading: every STAAR-tested Grade 8 ELAR standard (TEA's TEKS Snapshot, v. 7.17.25: code, readiness, short label). The topic
@@ -2702,16 +2723,16 @@ const shuffle=a=>{ a=a.slice(); for(let i=a.length-1;i>0;i--){ const j=Math.floo
 const QB={usage:{}, saved:[], savedSha:null, ready:false, loading:null, tests:{}, testYears:new Set(), bankCache:{}, skipped:{}, entries:{}, view:[], shown:0, mode:'rel', gmode:'gen', gen:[], genKey:'',
   cart:[], frame:null, tok:null, frameReady:null, cartView:false, years:null, gid:0, course:'alg1' };
 const PAGE=30;
-const teksKey=t=>{ const m=String(t||'').match(/^(A1|8)\.\d+\.(\d+)\.([A-Z])$/); return m?(m[1]==='A1'?'A.':'8.')+m[2]+m[3]:String(t||''); };
+const teksKey=t=>{ const m=String(t||'').match(/^(A1|[678])\.\d+\.(\d+)\.([A-Z])$/); return m?(m[1]==='A1'?'A.':m[1]+'.')+m[2]+m[3]:String(t||''); };
 const CRS=()=>COURSES[QB.course]||COURSES.alg1;
-const stdList=()=>QB.course==='math8'?TEKS8:QB.course==='rla8'?RLA8:(BK.cat||[]);   // the standards of the chosen grade level
+const stdList=()=>QB.course==='math6'?TEKS6:QB.course==='math8'?TEKS8:QB.course==='rla8'?RLA8:(BK.cat||[]);   // the standards of the chosen grade level
 const courseOfTest=id=>Object.keys(COURSES).find(c=>COURSES[c].re.test(id))||'alg1';
-const entryCourse=e=>e.course||(/^8\.\d/.test(e.std)?'math8':'alg1');
+const entryCourse=e=>e.course||(/^8\.\d/.test(e.std)?'math8':/^6\.\d/.test(e.std)?'math6':'alg1');
 const defTitle=c=>COURSES[c].title+': '+new Date().toLocaleDateString([], {month:'short',day:'numeric'});
 const yearOf=s=>+((String(s||'').match(/\b(20\d\d)\b/)||[])[1]||0);
 const qOf=s=>+((String(s||'').match(/\bQ(\d+)\b/)||[])[1]||0);
 const plainText=h=>new DOMParser().parseFromString(String(h).replace(/<span class="frac"><span>([\s\S]*?)<\/span><span>([\s\S]*?)<\/span><\/span>/g,'$1/$2').replace(/<svg[\s\S]*?<\/svg>/gi,' [graph] ').replace(/<img[^>]*>/gi,' [picture] ').replace(/<sup>([\s\S]*?)<\/sup>/gi,'^$1').replace(/<\/(p|td|th|tr)>/gi,' $&'),'text/html').body.textContent.replace(/\s+/g,' ').trim();
-const stdInfo=k=>stdList().find(t=>t.k===k)||(BK.cat||[]).concat(TEKS8,RLA8).find(t=>t.k===k)||null;
+const stdInfo=k=>stdList().find(t=>t.k===k)||(BK.cat||[]).concat(TEKS8,TEKS6,RLA8).find(t=>t.k===k)||null;
 function cartSave(){ keep('qbCart',{cart:QB.cart,title:$('#bkTitle').value,id:$('#bkId').dataset.touched?$('#bkId').value:''}); }
 function cartLoad(){ const c=store('qbCart'); if(c&&Array.isArray(c.cart)){ QB.cart=c.cart.filter(e=>e&&e.uid&&e.item); if(c.title) $('#bkTitle').value=c.title; if(c.id){ $('#bkId').value=c.id; $('#bkId').dataset.touched=1; } } }
 const inCart=uid=>QB.cart.some(e=>e.uid===uid);
@@ -2730,7 +2751,7 @@ const SAVEDPATH='tests/_bank/saved.json';
 function fnv(str){ let h=0x811c9dc5; for(let i=0;i<str.length;i++){ h^=str.charCodeAt(i); h=Math.imul(h,0x01000193)>>>0; } return h.toString(16).padStart(8,'0'); }
 function bidOf(e){ if(e.bid) return e.bid; if(e.from!=='gen'&&e.year&&e.q) return 'r:'+e.year+'#'+e.q;
   const it=Object.assign({},e.item); delete it.src; delete it.notes; delete it.bid; return 's:'+fnv(JSON.stringify(it))+fnv(String(it.stem)+'|'+JSON.stringify(it.choices||it.tiles||it.drops||'')); }
-function bidOfItem(it){ if(it.bid) return it.bid; const m=String(it.src||'').match(/^STAAR (Algebra I|Grade 8 Math|Grade 8 Reading) (20\d\d), Q(\d+)\b/); return m&&!/fresh numbers/i.test(it.src)?({'Algebra I':'r:','Grade 8 Math':'r8:'}[m[1]]||'rr8:')+m[2]+'#'+m[3]:null; }
+function bidOfItem(it){ if(it.bid) return it.bid; const m=String(it.src||'').match(/^STAAR (Algebra I|Grade 6 Math|Grade 8 Math|Grade 8 Reading) (20\d\d), Q(\d+)\b/); return m&&!/fresh numbers/i.test(it.src)?({'Algebra I':'r:','Grade 8 Math':'r8:','Grade 6 Math':'r6:'}[m[1]]||'rr8:')+m[2]+'#'+m[3]:null; }
 /* full practice tests (not a released year) whose questions are added to Released next to that year's real questions (Kody 10/24) */
 const PRACTICE_FULL={'alg1-redesign':{year:2022,label:'2022 Practice'}};
 async function loadUsage(){ const ids=[...new Set(TP.index.map(t=>t.id).concat(testFolders()))].filter(id=>!Object.values(COURSES).some(c=>c.re.test(id))&&!PRACTICE_FULL[id]), use={};
@@ -2751,7 +2772,7 @@ function bkOpenPage(){ $('#bkpage').hidden=false; $('#tpage').hidden=true; $('#m
   if(!$('#bkTitle').value.trim()) $('#bkTitle').value=defTitle(QB.course); bkIdAuto();
   if(!QB.loading) QB.loading=qbLoad(); else if(QB.ready) Promise.all([loadUsage(),loadSaved()]).then(()=>{ fillFilters(); if(!QB.cartView) refreshView(); renderCart(); }); }
 /* a teacher starts on the grade level they teach (the Subject column on Teachers); anyone else on Algebra I */
-function bkCourseFor(){ const C=QB.mine?((MP.my||{}).courses||[]):[]; return C.includes('8th Math')&&!C.includes('Algebra I')?'math8':'alg1'; }
+function bkCourseFor(){ const C=QB.mine?((MP.my||{}).courses||[]):[]; return C.includes('Algebra I')?'alg1':C.includes('8th Math')?'math8':C.includes('6th Math')?'math6':'alg1'; }
 function bkClosePage(){ $('#bkpage').hidden=true; $('#bkpage').classList.remove('cartopen'); if(QB.mine){ QB.mine=false; $('#mpage').hidden=false; } else $('#tpage').hidden=false; bkNote(); }
 $('#bkOpen').onclick=()=>{ QB.mine=false; bkOpenPage(); }; $('#bkBack').onclick=bkClosePage;
 $('#bkCartBtn').onclick=()=>$('#bkpage').classList.toggle('cartopen'); $('#bkCartClose').onclick=()=>$('#bkpage').classList.remove('cartopen');
@@ -2778,14 +2799,14 @@ function bankReady(){ const n=BK.cat.reduce((a,t)=>a+t.bank.length,0);
   $('#bkFileRow').hidden=/GitHub/.test(BK.from); }
 /* full released tests already published (tests/alg1-<year>/): their questions replace the bank's version of that year */
 async function loadTests(){ const ids=[...new Set(TP.index.map(t=>t.id).concat(testFolders()))].filter(id=>Object.values(COURSES).some(c=>c.re.test(id))||PRACTICE_FULL[id]).sort();
-  await Promise.all(ids.map(async id=>{ const td=await metaOf(id); if(!td||!td.items||td.items.length<40) return;
+  await Promise.all(ids.map(async id=>{ const td=await metaOf(id); if(!td||!td.items||td.items.length<30) return;   /* full tests only (Grade 6 has 36 questions) */
     const P=PRACTICE_FULL[id], course=courseOfTest(id), C=COURSES[course], year=P?P.year:+id.split('-').pop(); if(!P&&course==='alg1') QB.testYears.add(year);
     const psgOf=k=>td.passages&&td.passages[k]?String(td.passages[k]).replace(/src="(img\/[A-Za-z0-9._\-\/]+)"/g,'src="@@'+id+'/$1@@"'):null;   // a reading question's passage, pictures like the question's
     QB.tests[id]=td.items.map((it,i)=>{ let body, key; try{ body=JSON.parse(it.body.replace(/src=\\"(img\/[A-Za-z0-9._\-\/]+)\\"/g,'src=\\"@@'+id+'/$1@@\\"')); key=JSON.parse(it.key); }catch(e){ return null; }
       const psg=body.passage?psgOf(body.passage):null; if(body.passage) body.passage=id+'-'+body.passage;   // passage keys made unique across tests
       const q=i+1, item=Object.assign(body,key,{type:it.type,teks:it.teks,cat:it.cat,rs:it.rs,max:it.max||1,label:it.label,src:P?(td.title||id)+' ('+year+'), Q'+q:C.src+' '+year+', Q'+q});
       if(P) item.bid='p:'+id+'#'+q;   // its own ID: never the same as the released question r:<year>#<Q>
-      else if(course!=='alg1') item.bid=(course==='rla8'?'rr8:':'r8:')+year+'#'+q;   // Grade 8 Math r8:<year>#<Q>, Grade 8 Reading rr8:<year>#<Q>
+      else if(course!=='alg1') item.bid=({rla8:'rr8:',math6:'r6:'}[course]||'r8:')+year+'#'+q;   // Grade 8 Math r8:<year>#<Q>, Grade 6 Math r6:, Grade 8 Reading rr8:
       const labs=td.rationale&&td.rationale[q];
       return {uid:'t:'+id+'#'+q, from:'test', test:id, course, year, q, pr:P?1:0, ylabel:P?P.label:'', bid:item.bid, std:teksKey(it.teks), item, psg, psgKey:psg?item.passage:null, rat:labs&&labs.length?labs.slice():null}; }).filter(Boolean); }));
   const R={}; RLA8STD.forEach(([k,r,label])=>R[k]={k,cat:/^1[01]\./.test(k)?2:1,r:!!r,label,bank:[],gens:0});
@@ -2924,7 +2945,7 @@ function testJsFor(id,title,items,rationale,course,passages){ const js=v=>itemsC
   return '/* '+title.replace(/\*\//g,'')+': built '+new Date().toLocaleDateString()+' on the Spitz Checkpoint Question bank page.\n'
     +'   Each question keeps its source in "src". Released questions from a published full test keep its pictures (img/) and TEA explanations (rat/);\n'
     +'   question bank questions keep the bank\'s worked solution in "notes" for writing explanations later. */\n'
-    +'SpitzTest({id:'+JSON.stringify(id)+',title:'+JSON.stringify(title)+',course:'+JSON.stringify(C.course)+(C.ref?',reference:'+JSON.stringify(C.ref):'')+(C.subject?',subject:'+JSON.stringify(C.subject):'')+',categories:'+JSON.stringify(C.cats)
+    +'SpitzTest({id:'+JSON.stringify(id)+',title:'+JSON.stringify(title)+',course:'+JSON.stringify(C.course)+(C.ref?',reference:'+JSON.stringify(C.ref):'')+(C.calc===false?',calc:false':'')+(C.subject?',subject:'+JSON.stringify(C.subject):'')+',categories:'+JSON.stringify(C.cats)
     +(passages?',passages:'+js(passages):'')
     +(rationale?',rationale:'+JSON.stringify(rationale):'')+',items:'+js(items)+'});\n'; }
 $('#bkMake').onclick=async()=>{ const title=$('#bkTitle').value.trim(), id=$('#bkId').value.trim(), msg=$('#bkMakeMsg');
