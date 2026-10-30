@@ -5,14 +5,17 @@
  "suggest": {
   "sets": [
    {
-    "id": "slide"
+    "id": "hoy"
    },
    {
-    "id": "stdform"
+    "id": "perp"
+   },
+   {
+    "id": "evalf"
    }
   ],
   "note": ""
  },
  "bonus": 25,
- "updated": "2026-10-22T01:24:09.354Z"
+ "updated": "2026-10-30T12:39:34.207Z"
 }
