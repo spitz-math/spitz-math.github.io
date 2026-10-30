@@ -1,5 +1,5 @@
 {
- "updated": "2026-10-27T13:00:25.260Z",
+ "updated": "2026-10-30T12:40:57.550Z",
  "games": {
   "splat_range": {
    "name": "Splat Range",
@@ -26,6 +26,14 @@
      "date": "2026-10-16"
     },
     {
+     "name": "Grace W",
+     "score": "24,380",
+     "acc": 95,
+     "set": "Slide and Slice · Slide",
+     "date": "2026-10-28",
+     "bonus": 1
+    },
+    {
      "name": "Juan M",
      "score": "18,531",
      "acc": 85,
@@ -45,13 +53,6 @@
      "acc": 96,
      "set": "Functions",
      "date": "2026-10-23"
-    },
-    {
-     "name": "Grace W",
-     "score": "5,081",
-     "acc": 91,
-     "set": "Standard form",
-     "date": "2026-10-16"
     }
    ]
   },
@@ -182,11 +183,26 @@
    "name": "Jump Man",
    "top": [
     {
+     "name": "Izael F",
+     "score": "11,708",
+     "acc": 98,
+     "set": "Multiplication facts · Facts 0–3",
+     "date": "2026-10-28"
+    },
+    {
      "name": "Jose Cruz Banda",
      "score": "2,693",
      "acc": 96,
      "set": "Multiplication facts",
      "date": "2026-10-23"
+    },
+    {
+     "name": "Grace W",
+     "score": "1,533",
+     "acc": 100,
+     "set": "Slide and Slice · Slide",
+     "date": "2026-10-28",
+     "bonus": 1
     },
     {
      "name": "Elijah b",
@@ -251,6 +267,13 @@
      "date": "2026-10-23"
     },
     {
+     "name": "Hector.m",
+     "score": "28 – 14",
+     "acc": 92,
+     "set": "HOY & VUX",
+     "date": "2026-10-27"
+    },
+    {
      "name": "Noah Cuadra",
      "score": "14 – 7",
      "acc": 94,
@@ -270,6 +293,13 @@
      "date": "2026-10-22"
     },
     {
+     "name": "Felix L",
+     "score": "47 – 13",
+     "acc": 92,
+     "set": "HOY & VUX",
+     "date": "2026-10-28"
+    },
+    {
      "name": "Ozzy G",
      "score": "42 – 8",
      "acc": 98,
@@ -278,10 +308,10 @@
     },
     {
      "name": "Noah C",
-     "score": "22 – 8",
-     "acc": 95,
+     "score": "28 – 10",
+     "acc": 98,
      "set": "Multiplication facts",
-     "date": "2026-10-16"
+     "date": "2026-10-27"
     },
     {
      "name": "william E",
@@ -406,6 +436,14 @@
    "name": "Mini Golf",
    "top": [
     {
+     "name": "Saulo G",
+     "score": "11,475",
+     "acc": 100,
+     "set": "Slide and Slice · Slide",
+     "date": "2026-10-28",
+     "bonus": 1
+    },
+    {
      "name": "Saul G",
      "score": "10,588",
      "acc": 95,
@@ -425,6 +463,14 @@
   "fishing": {
    "name": "Go Fish",
    "top": [
+    {
+     "name": "Saulo G",
+     "score": "300,990",
+     "acc": 97,
+     "set": "Slide and Slice · Slide",
+     "date": "2026-10-28",
+     "bonus": 1
+    },
     {
      "name": "Leonardo A",
      "score": "190,074",
@@ -487,19 +533,19 @@
      "acc": 92,
      "set": "Standard form",
      "date": "2026-10-16"
-    },
-    {
-     "name": "Aiden",
-     "score": "2,602",
-     "acc": 78,
-     "set": "Multiplication facts",
-     "date": "2026-10-16"
     }
    ]
   },
   "brick_breaker": {
    "name": "Brick Breaker",
    "top": [
+    {
+     "name": "Izael F",
+     "score": "77,640",
+     "acc": 96,
+     "set": "Multiplication facts · Facts 0–3",
+     "date": "2026-10-28"
+    },
     {
      "name": "Saulo G",
      "score": "75,548",
@@ -520,6 +566,14 @@
      "acc": 94,
      "set": "Slide and Slice · Slide",
      "date": "2026-10-21"
+    },
+    {
+     "name": "Grace W",
+     "score": "21,900",
+     "acc": 100,
+     "set": "Slide and Slice · Slide",
+     "date": "2026-10-28",
+     "bonus": 1
     },
     {
      "name": "Sergio.C",
@@ -588,11 +642,33 @@
    "name": "Burger Blaster",
    "top": [
     {
+     "name": "Saulo G",
+     "score": "764,988",
+     "acc": 100,
+     "set": "Slide and Slice · Slide",
+     "date": "2026-10-27",
+     "bonus": 1
+    },
+    {
      "name": "David.V",
-     "score": "78,124",
-     "acc": 93,
+     "score": "272,435",
+     "acc": 100,
      "set": "Slope-intercept form · Find slope or y-intercept",
-     "date": "2026-10-26"
+     "date": "2026-10-28"
+    },
+    {
+     "name": "Erick.d",
+     "score": "187,442",
+     "acc": 97,
+     "set": "Multiplication facts",
+     "date": "2026-10-29"
+    },
+    {
+     "name": "Jose C",
+     "score": "172,517",
+     "acc": 95,
+     "set": "Multiplication facts",
+     "date": "2026-10-27"
     }
    ]
   },
@@ -614,11 +690,25 @@
      "date": "2026-10-23"
     },
     {
+     "name": "John S  😈",
+     "score": "25,650",
+     "acc": 98,
+     "set": "Multiplication facts",
+     "date": "2026-10-29"
+    },
+    {
      "name": "RAMON CASTILLO",
      "score": "24,254",
      "acc": 93,
      "set": "Multiplication facts",
      "date": "2026-10-23"
+    },
+    {
+     "name": "Jose C",
+     "score": "16,615",
+     "acc": 86,
+     "set": "Multiplication facts",
+     "date": "2026-10-27"
     }
    ]
   },
@@ -626,11 +716,74 @@
    "name": "Pinball",
    "top": [
     {
+     "name": "Saulo G",
+     "score": "914,125",
+     "acc": 100,
+     "set": "Slide and Slice · Slide",
+     "date": "2026-10-27",
+     "bonus": 1
+    },
+    {
+     "name": "Felix L",
+     "score": "347,785",
+     "acc": 92,
+     "set": "HOY & VUX",
+     "date": "2026-10-29"
+    },
+    {
      "name": "JOHN S",
      "score": "252,070",
      "acc": 97,
      "set": "Multiplication facts",
      "date": "2026-10-26"
+    },
+    {
+     "name": "Grace",
+     "score": "224,263",
+     "acc": 94,
+     "set": "Slide and Slice · Slide",
+     "date": "2026-10-27"
+    },
+    {
+     "name": "tanix.b",
+     "score": "114,050",
+     "acc": 96,
+     "set": "Multiplication facts",
+     "date": "2026-10-29"
+    },
+    {
+     "name": "Grace W",
+     "score": "48,100",
+     "acc": 94,
+     "set": "Slide and Slice · Slide",
+     "date": "2026-10-27",
+     "bonus": 1
+    },
+    {
+     "name": "Marco Lugo",
+     "score": "44,090",
+     "acc": 67,
+     "set": "Functions · Ordered pairs, Tables",
+     "date": "2026-10-27"
+    }
+   ]
+  },
+  "fit_check": {
+   "name": "Fit Check",
+   "top": [
+    {
+     "name": "David.V",
+     "score": "1,610",
+     "acc": 92,
+     "set": "Slope-intercept form · Find slope or y-intercept",
+     "date": "2026-10-28"
+    },
+    {
+     "name": "tanix.b",
+     "score": "1,320",
+     "acc": 97,
+     "set": "Multiplication facts",
+     "date": "2026-10-29"
     }
    ]
   }
