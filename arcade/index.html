@@ -117,6 +117,7 @@ h2 .hint{font:800 15px/1.3 var(--body);letter-spacing:0;text-transform:none;colo
 .set.on .tp{display:block}
 .tp p{margin:0 0 8px;font:400 9px/1.4 var(--pixel);letter-spacing:.06em;color:var(--c);text-transform:uppercase}
 .chips{display:flex;flex-wrap:wrap;gap:8px}
+.tp .whole{margin:0;font:800 14px/1.3 var(--body);color:#fff;letter-spacing:0;text-transform:none}
 .chip{position:relative}
 .chip input{position:absolute;opacity:0;pointer-events:none}
 .chip span{display:block;padding:8px 13px;border-radius:99px;border:2px solid var(--line);background:rgba(17,22,63,.6);color:var(--dim);font:800 14px/1.2 var(--body);cursor:pointer;transition:background .15s,color .15s}
@@ -226,7 +227,7 @@ h2 .hint{font:800 15px/1.3 var(--body);letter-spacing:0;text-transform:none;colo
 <script>
 var GAMES=window.SpitzGames;
 var SETS=[
-  {id:'mult',name:'Multiplication facts',unit:'Times tables 0–12',topics:[['f03','Facts 0–3'],['f46','Facts 4–6'],['f79','Facts 7–9'],['f1012','Facts 10–12']]},
+  {id:'mult',name:'Multiplication facts',unit:'Times tables 0–12',whole:'All facts 0–12, mixed together',topics:[['f03','Facts 0–3'],['f46','Facts 4–6'],['f79','Facts 7–9'],['f1012','Facts 10–12']]},
   {id:'slope',name:'Slope-intercept form',unit:'y = mx + b',topics:[['write','Write the equation'],['slope','Find slope or y-intercept'],['graph','Read a graph']]},
   {id:'point',name:'Point-slope form',unit:'y − y₁ = m(x − x₁)',topics:[['write','Write the equation'],['point','Find the point'],['slope','Find the slope']]},
   {id:'hoy',name:'HOY & VUX',unit:'Horizontal and vertical lines',topics:[['describe','Describe the line'],['graph','Match the graph'],['slope','Find the slope']]},
@@ -261,9 +262,9 @@ var TOPICS=(function(){
     bonus:typeof t.bonus==='number'&&t.bonus>=0?Math.min(100,Math.round(t.bonus)):DEF.bonus };
 })();
 var OPEN=SETS.filter(function(x){ return TOPICS.hidden.indexOf(x.id)<0; }).map(function(x){ var off=TOPICS.off[x.id]||[], tp=x.topics.filter(function(t){ return off.indexOf(t[0])<0; });
-  return {id:x.id,name:x.name,unit:x.unit,topics:tp.length?tp:x.topics}; });
+  return {id:x.id,name:x.name,unit:x.unit,whole:x.whole,topics:tp.length?tp:x.topics}; });
 function pick(k){ var s=OPEN.filter(function(x){ return x.id===k.id; })[0]; if(!s) return null;
-  var tp=k.topics.length?s.topics.filter(function(t){ return k.topics.indexOf(t[0])>=0; }):s.topics; return {id:s.id,name:s.name,unit:s.unit,topics:tp.length?tp:s.topics}; }
+  var tp=k.topics.length?s.topics.filter(function(t){ return k.topics.indexOf(t[0])>=0; }):s.topics; return {id:s.id,name:s.name,unit:s.unit,whole:s.whole,topics:tp.length?tp:s.topics}; }
 var ASSIGN=TOPICS.assign.map(pick).filter(Boolean);
 SETS=ASSIGN.length?ASSIGN:OPEN;
 /* first visit: start on the first suggested skill, so a student who only picks a game still plays what Mr. Spitz suggests */
@@ -274,14 +275,16 @@ SETS.forEach(function(x){ st.t[x.id]=x.topics.map(function(t){ return t[0]; }); 
 var ALIAS={ slope:{ yint:'slope' } };
 try{ var sv=JSON.parse(localStorage.getItem('spitz_hub2')||'null'); if(sv&&sv.t) SETS.forEach(function(x){ if(sv.t[x.id]) st.t[x.id]=sv.t[x.id].map(function(t){ return (ALIAS[x.id]||{})[t]||t; }).filter(function(t,i,a){ return a.indexOf(t)===i; }).filter(function(t){ return x.topics.some(function(y){ return y[0]===t; }); }); }), st.game=sv.game||null, st.set=sv.set||FIRST; }catch(e){}
 if(!SETS.some(function(x){ return x.id===st.set; })) st.set=SETS[0].id;
-SETS.forEach(function(x){ if(!st.t[x.id].length) st.t[x.id]=x.topics.map(function(t){ return t[0]; }); });
+/* a whole set (multiplication, Kody 2026-10-30) always plays every topic on offer: students can't pick single fact groups */
+function allOf(x){ return x.topics.map(function(t){ return t[0]; }); }
+SETS.forEach(function(x){ if(!st.t[x.id].length||x.whole) st.t[x.id]=allOf(x); });
 function $(i){ return document.getElementById(i); }
 function save(){ try{ localStorage.setItem('spitz_hub2',JSON.stringify(st)); }catch(e){} }
 function esc(v){ return String(v).replace(/[&<>"]/g,function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]; }); }
 
 $('games').innerHTML=GAMES.map(function(g){ return '<button class="game" type="button" style="--acc:'+g.acc+';--gpanel:'+g.panel+'" data-g="'+g.id+'" aria-pressed="false">'+(g.isNew?'<span class="new">NEW</span>':'')+'<svg class="art" viewBox="0 0 200 110" aria-hidden="true">'+g.art+'</svg><b>'+g.name+'</b><small>'+g.d+'</small><span class="pick" aria-hidden="true">✓ PICKED</span></button>'; }).join('');
-$('sets').innerHTML=SETS.map(function(s){ return '<div class="set" data-s="'+s.id+'"><button class="head" type="button" aria-pressed="false"><span class="dot" aria-hidden="true"></span><span><span class="name">'+s.name+'</span><span class="unit">'+s.unit+'</span></span></button><div class="tp"><p>Topics</p><div class="chips">'+
-  s.topics.map(function(t){ return '<label class="chip"><input type="checkbox" id="t-'+s.id+'-'+t[0]+'" data-s="'+s.id+'" value="'+t[0]+'"><span>'+t[1]+'</span></label>'; }).join('')+'</div></div></div>'; }).join('');
+$('sets').innerHTML=SETS.map(function(s){ return '<div class="set" data-s="'+s.id+'"><button class="head" type="button" aria-pressed="false"><span class="dot" aria-hidden="true"></span><span><span class="name">'+s.name+'</span><span class="unit">'+s.unit+'</span></span></button><div class="tp">'+(s.whole?'<p class="whole">'+s.whole+'</p></div></div>':'<p>Topics</p><div class="chips">'+
+  s.topics.map(function(t){ return '<label class="chip"><input type="checkbox" id="t-'+s.id+'-'+t[0]+'" data-s="'+s.id+'" value="'+t[0]+'"><span>'+t[1]+'</span></label>'; }).join('')+'</div></div></div>'); }).join('');
 
 /* does this pick earn the score bonus? Same rule as scorecode.js bonusPct: the set is suggested or assigned, and every topic played is one it names */
 function bonusFor(id,ts){ if(!(TOPICS.bonus>0)) return 0;
@@ -332,7 +335,7 @@ $('slot-s').addEventListener('click',function(){ $('step2').scrollIntoView({beha
     var sg=!same&&sug.some(function(x){ return x.s.id===k.s.id; }), old=el.querySelector('.tag'); if(old) old.remove();
     el.insertAdjacentHTML('afterbegin','<span class="tag'+(sg?'':' as')+'">'+(sg?'⭐ Suggested':'📌 Assigned')+'</span>'); $('sets').prepend(el); });
   $('skill').addEventListener('click',function(e){ var b=e.target.closest('[data-k]'); if(!b) return; var k=list[+b.dataset.k];
-    st.set=k.s.id; st.t[k.s.id]=k.t.length?k.t.slice():k.s.topics.map(function(t){ return t[0]; }); save(); render(); });
+    st.set=k.s.id; st.t[k.s.id]=k.t.length&&!k.s.whole?k.t.slice():allOf(k.s); save(); render(); });
 })();
 $('sets').addEventListener('click',function(e){ var h=e.target.closest('.head'); if(!h) return; st.set=h.parentNode.dataset.s; save(); render(); });
 $('sets').addEventListener('change',function(e){ var el=e.target;

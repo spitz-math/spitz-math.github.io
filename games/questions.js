@@ -1346,7 +1346,8 @@ function makeEvalF(PFX){
   return { build:build }; }
 
 var SETS={
-  mult:{ name:'Multiplication facts', make:makeMult, big:true, topics:[['f03','Facts 0–3',['Facts 0–3'],1],['f46','Facts 4–6',['Facts 4–6'],2],['f79','Facts 7–9',['Facts 7–9'],3],['f1012','Facts 10–12',['Facts 10–12'],2]] },
+  /* whole: one mixed set of facts 0–12; links can't pick single fact groups (Kody, 2026-10-30). The groups stay so the end screen shows which tables need work */
+  mult:{ name:'Multiplication facts', make:makeMult, big:true, whole:true, topics:[['f03','Facts 0–3',['Facts 0–3'],1],['f46','Facts 4–6',['Facts 4–6'],2],['f79','Facts 7–9',['Facts 7–9'],3],['f1012','Facts 10–12',['Facts 10–12'],2]] },
   /* 'yint' was its own topic until 2026-10-19, when Kody merged it into 'slope'; alias keeps old links and saves working */
   slope:{ name:'Slope-intercept form', make:makeLinear, alias:{yint:'slope'}, topics:[['write','Write the equation',['siBuild']],['slope','Find slope or y-intercept',['siSlope','siYInt']],['graph','Read a graph',['graphSlope','graphYInt','graphXInt']]] },
   point:{ name:'Point-slope form', make:makeLinear, topics:[['write','Write the equation',['psWrite']],['point','Find the point',['psPoint']],['slope','Find the slope',['psSlope']]] },
@@ -1398,7 +1399,7 @@ var FALLBACK=ASSIGN.length?ASSIGN[0].id:HIDDEN.indexOf('slope')<0?'slope':Object
   if(!on.length) on=all;
   var ok=k&&k.topics.length?on.filter(function(t){ return k.topics.indexOf(t)>=0; }):on; if(!ok.length) ok=on;
   if(id===qs.set&&!qs.topics&&ok.length===all.length) return;   /* the whole set, as before */
-  var want=(id===qs.set?(qs.topics||'').split(','):[]).map(function(t){ return set.alias&&set.alias[t]||t; }).filter(function(t,i,a){ return ok.indexOf(t)>=0&&a.indexOf(t)===i; });
+  var want=(id===qs.set&&!set.whole?(qs.topics||'').split(','):[]).map(function(t){ return set.alias&&set.alias[t]||t; }).filter(function(t,i,a){ return ok.indexOf(t)>=0&&a.indexOf(t)===i; });
   if(!want.length) want=ok;
   if(id===qs.set&&want.join(',')===(qs.topics||'')) return;
   try{ history.replaceState(history.state,'',location.pathname+'?set='+id+'&topics='+want.join(',')+location.hash); }catch(e){} })();
