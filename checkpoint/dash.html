@@ -2692,8 +2692,8 @@ const RLA8STD=[['2.A',0,'Print or digital resources (meaning, origin, part of sp
   ['10.Dii',1,'Edit: verb tenses and voice'],['10.Diii',0,'Edit: prepositional phrases, subject-verb agreement'],['10.Div',0,'Edit: pronoun-antecedent agreement'],
   ['10.Dv',0,'Edit: capitalization'],['10.Dvi',0,'Edit: punctuation'],['10.Dvii',1,'Edit: spelling, commonly confused words'],['11.B',1,'Informational essay'],['11.C',1,'Argumentative essay']];
 /* Grade 7 Math: lead4ward TEKS Snapshot (v. 6.29.23, Kody 10/30) for readiness and what is tested (7.1 process, 7.6B, 7.6F and 7.8 are not).
-   The snapshot groups by strand, so the topic is STAAR's Grade 7 reporting category (same shape as TEKS8); a released test's own tags win. */
-const CAT7={1:'Probabilistic and Numerical Representations',2:'Computations and Algebraic Relationships',3:'Geometry and Measurement',4:'Data Analysis and Personal Financial Literacy'};
+   Topic = reporting category, checked against TEA's Grade 7 TEKS Snapshot (Rptg Cat column, Kody 10/30); same shape as TEKS8. */
+const CAT7={1:'Probability and Numerical Representations',2:'Computations and Algebraic Relationships',3:'Geometry and Measurement',4:'Data Analysis and Personal Financial Literacy'};
 const TEKS7=[['7.2A',1,0,'Sets and subsets of rational numbers'],['7.6A',1,0,'Sample spaces: lists and tree diagrams'],['7.6C',1,0,'Predictions from experimental data'],
   ['7.6D',1,0,'Predictions from theoretical probability'],['7.6E',1,0,'An event and its complement'],['7.6H',1,1,'Predictions and comparisons from simple experiments'],
   ['7.6I',1,1,'Experimental and theoretical probability'],
@@ -2740,7 +2740,8 @@ const RLA7STD=[['2.A',0,'Print or digital resources (meaning, origin, part of sp
   ['10.Dviii',0,'Edit: punctuation (commas, semicolons)'],['10.Dix',1,'Edit: spelling, commonly confused words'],['11.B',1,'Informational essay'],['11.C',1,'Argumentative essay'],
   ['11.D',0,'Correspondence: business or friendly']];
 /* Grade 8 Science: lead4ward TEKS Snapshot (v. 5.22.25, Kody 10/30). Grade 6 and 7 standards on it are tested on Grade 8 STAAR. Process standards (8.1-8.5)
-   are dual-coded and the SEs it marks not assessed are left out. Topic = STAAR's four reporting categories, by strand. */
+   are dual-coded and the SEs it marks not assessed are left out. Topic = reporting category, by strand; the names match TEA's Grade 8 Science
+   Assessed Curriculum, but that copy (Fall 2010) is for the old TEKS, so the placement of the new SEs isn't checked against TEA. */
 const CATSCI8={1:'Matter and Energy',2:'Force, Motion, and Energy',3:'Earth and Space',4:'Organisms and Environments'};
 const SCI8=[['8.6E',1,1,'Conservation of mass in chemical reactions'],['7.6B',1,1,'Atoms in a chemical formula (periodic table)'],['6.6C',1,0,'Metals, nonmetals, metalloids, rare Earth elements'],
   ['6.6D',1,0,'Density relative to fluids'],['6.6E',1,0,'Evidence of a chemical change'],['7.6C',1,0,'Physical and chemical changes'],
@@ -2757,8 +2758,8 @@ const SCI8=[['8.6E',1,1,'Conservation of mass in chemical reactions'],['7.6B',1,
   ['7.12A',4,0,'Energy pyramids and trophic levels'],['7.13A',4,0,'Human body systems'],['7.13C',4,0,'Asexual and sexual reproduction'],['7.13D',4,0,'Natural and artificial selection'],
   ['8.12C',4,0,'Biodiversity and ecosystem stability'],['8.13B',4,0,'Genes, chromosomes, and inherited traits']
 ].map(([k,cat,r,label])=>({k,cat,r:!!r,label,bank:[],gens:0}));
-/* Grade 8 Social Studies: lead4ward TEKS Snapshot (v. 2.20.25, Kody 10/30), readiness from its two columns. Skills (8.29-8.31) are dual-coded and left out.
-   Topic = STAAR's four reporting categories, by strand: History 8.1-8.9, Geography and Culture 8.10-8.11 and 8.23-8.26,
+/* Grade 8 Social Studies: lead4ward TEKS Snapshot (v. 2.20.25, Kody 10/30). Skills (8.29-8.31) are dual-coded and left out. All 85 SEs, readiness and
+   reporting categories match TEA's STAAR Grade 8 Social Studies Assessed Curriculum (revised August 2024). Topic = reporting category, by strand: History 8.1-8.9, Geography and Culture 8.10-8.11 and 8.23-8.26,
    Government and Citizenship 8.15-8.22, Economics, Science, Technology, and Society 8.12-8.14 and 8.27-8.28. */
 const CATSS8={1:'History',2:'Geography and Culture',3:'Government and Citizenship',4:'Economics, Science, Technology, and Society'};
 const ssCat=k=>{ const s=+k.split('.')[1].replace(/\D.*$/,''); return s<=9?1:s<=11||(s>=23&&s<=26)?2:s>=15&&s<=22?3:4; };
