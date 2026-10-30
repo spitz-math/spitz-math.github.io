@@ -1491,7 +1491,7 @@ async function oeOpen(id,copy){   /* copy: another teacher's test (or your own) 
     passages:d?d.passages.slice():[], items:d?d.items.map(oeFromSheet):[oeBlank('mc')], sig0:d&&!copy?d.items.map(it=>it.type).join():''};
   $('#oeTitle').value=d?d.title:''; $('#oeId').value=d?d.id:''; $('#oeId').disabled=!!d&&!copy; delete $('#oeId').dataset.touched;
   $('#oeCourse').innerHTML=OE_COURSES.map(c=>`<option>${c}</option>`).join(''); $('#oeCourse').value=d?d.course:oeCourseFor((MP.my||{}).subject||'');
-  $('#oeCalc').checked=d?d.calc!==false:true; oeCourseSync();
+  $('#oeCalc').checked=d?d.calc!==false:$('#oeCourse').value!=='6th Math'; oeCourseSync();   /* Grade 6 STAAR has no calculator */
   const S=(DATA?DATA.sessions:[]).filter(s=>d&&s.test===d.id);
   $('#oeUsed').hidden=!S.length; $('#oeUsed').textContent=S.length?`Students have taken this test in ${plural(S.length,'session')}. If you change an answer, click Re-score on those sessions in Your sessions so their scores use the new answer.`:'';
   $('#oeHead').textContent=copy?'Your copy of '+old.title:d?(OE.mine?'Edit your test':'Look at a test'):'Write a test';
@@ -1634,7 +1634,7 @@ $('#oeAddPsg').onclick=()=>{ if(OE.passages.length>=20) return; OE.passages.push
 document.querySelector('.oeadd').addEventListener('click',e=>{ const b=e.target.closest('[data-oeadd]'); if(!b||!OE) return; if(OE.items.length>=100) return say($('#oeMsg'),'A test can have up to 100 questions.','err');
   OE.items.push(oeBlank(b.dataset.oeadd)); oeDirty(); oeRenderItems(); const last=$('#oeItems').lastElementChild; last.scrollIntoView({behavior:'smooth',block:'center'}); const ed=last.querySelector('.oeed'); if(ed) ed.focus(); });
 $('#oeTitle').oninput=()=>{ oeDirty(); oeIdAuto(); }; $('#oeId').oninput=e=>{ e.target.dataset.touched=1; oeDirty(); };
-$('#oeCourse').onchange=()=>{ oeCourseSync(); oeDirty(); }; $('#oeCalc').onchange=oeDirty;
+$('#oeCourse').onchange=()=>{ if($('#oeCourse').value==='6th Math') $('#oeCalc').checked=false; oeCourseSync(); oeDirty(); }; $('#oeCalc').onchange=oeDirty;
 $('#oeBack').onclick=async()=>{ if(OE&&OE.dirty&&OE.mine&&!await ask('Leave without saving?','<p>Your changes since the last save will be lost.</p>','Leave')) return;
   $('#oepage').hidden=true; OE=null; openMySessions(); };
 $('#mtOwn').onclick=async()=>{ const b=$('#mtOwn'); b.disabled=true; try{ await myTests(); await oeOpen(null); }catch(x){ say($('#mtMsg'),errText(x),'err'); } b.disabled=false; };
@@ -2472,7 +2472,7 @@ function diffRows(P){ const o=P.old, n=P.td; if(!o) return null; const rows=[];
 async function renderPkg(){ const P=TP.pkg, box=$('#pkg'); if(!P){ box.innerHTML=''; return; }
   const {E,W,K}=checkPkg(P), td=P.td, can=!E.length&&!!TP.files;
   let h=`<h3 style="margin-top:16px">${td&&td.title?esc(td.title):esc(P.from)}${td&&td.id&&!E.length?(P.exists?'<span class="badge rep">Replaces the test on GitHub</span>':'<span class="badge">New test</span>'):''}</h3>`;
-  if(td) h+=`<div class="stats"><span>ID <b>${esc(td.id||'?')}</b></span><span><b>${td.items.length}</b> questions</span><span><b>${td.items.reduce((a,i)=>a+i.max,0)}</b> points</span><span><b>${Object.keys(P.assets).length}</b> picture${Object.keys(P.assets).length===1?'':'s'}</span><span>Reference sheet <b>${esc(td.reference)}</b></span><span class="rs">from ${esc(P.from)}</span></div>`;
+  if(td) h+=`<div class="stats"><span>ID <b>${esc(td.id||'?')}</b></span><span><b>${td.items.length}</b> questions</span><span><b>${td.items.reduce((a,i)=>a+i.max,0)}</b> points</span><span><b>${Object.keys(P.assets).length}</b> picture${Object.keys(P.assets).length===1?'':'s'}</span><span>Reference sheet <b>${td.subject==='rla'?'none (reading)':esc(td.reference)}</b></span><span class="rs">from ${esc(P.from)}</span></div>`;
   h+='<ul class="chk">'+E.map(t=>'<li class="e">'+t+'</li>').join('')+W.map(t=>'<li class="w">'+t+'</li>').join('')+K.map(t=>'<li class="k">'+t+'</li>').join('')+'</ul>';
   if(!E.length&&P.exists){ const d=diffRows(P), ses=(DATA?DATA.sessions:[]).filter(s=>s.test===td.id&&s.open);
     h+='<h3>What changes</h3>'+(d===null?'<p class="hint">The old test could not be read, so changes can\'t be listed.</p>':d.length?'<table class="t">'+d.map(r=>`<tr><td style="white-space:nowrap"><b>${r[0]}</b></td><td>${r[1]}</td></tr>`).join('')+'</table>':'<p class="hint">No question changes.</p>')+'<div id="fchg" class="hint" style="margin-top:6px">Comparing files…</div>';

@@ -84,7 +84,28 @@ body:not([class*="th-maroon"]):not([class*="th-black"]):not([class*="th-blue"]) 
 .itemwrap{max-width:960px;margin:0 auto;padding:22px 16px 60px;position:relative}
 /* reading: the passage on the left, its questions on the right with a tab per question (like the state test) */
 body.rla #bRef,body.rla #bCalc,body.rla #bGD{display:none}
-body.noref #bRef,body.nocalc #bCalc,body.nocalc #bGD{display:none}
+body.noref #bRef,body.nocalc:not(.bcalc) #bCalc,body.nocalc #bGD{display:none}
+/* basic calculator (TI-108 style): a designated support on tests with no calculator (Grade 6) */
+body:not(.ruler) #bRuler{display:none}
+#calcPanel.basic{width:250px!important;height:auto!important}
+#calcPanel.basic .rh,#calcPanel.basic [data-expand]{display:none}
+#bcHost{padding:8px;display:flex;justify-content:center}
+.ti108{width:220px;background:#2c5ea8;border-radius:10px;padding:10px 10px 12px;box-shadow:inset 0 0 0 2px #1d4682;font-family:Arial,sans-serif;user-select:none}
+.ti108 .brand{display:flex;justify-content:space-between;color:#fff;font-size:9px;letter-spacing:.3px;margin:0 2px 6px}.ti108 .brand b{font-size:12px;letter-spacing:.5px}
+.ti108 .lcd{background:#cfd8c4;border:2px solid #1d4682;border-radius:3px;height:38px;display:flex;align-items:center;justify-content:flex-end;padding:0 8px;font:600 25px/1 "Courier New",monospace;color:#111;position:relative;margin-bottom:10px;overflow:hidden}
+.ti108 .lcd i{position:absolute;left:6px;top:4px;font:700 10px Arial;font-style:normal}
+.ti108 .keys{display:grid;grid-template-columns:repeat(4,1fr);gap:7px}
+.ti108 button{height:28px;border-radius:5px;border:0;font:700 14px Arial;color:#111;background:#f2f2f2;box-shadow:0 2px 0 #9aa;cursor:pointer;padding:0}
+.ti108 button.r{background:#d8343d;color:#fff;box-shadow:0 2px 0 #8a1c22;font-size:12px}
+.ti108 button.eq{grid-row:span 2;height:auto}
+.ti108 button:active{transform:translateY(1px);box-shadow:none}
+/* ruler (Grade 6 math): centimeters on top, inches on the bottom; drag to move, drag the circle to turn it */
+#rulerTool{position:fixed;z-index:125;left:0;top:0;touch-action:none}
+#rulerTool[hidden]{display:none}
+#rulerTool svg{display:block;cursor:move;filter:drop-shadow(0 1px 2px rgba(0,0,0,.35))}
+#rulerRot{position:absolute;width:22px;height:22px;border-radius:50%;border:2px solid #3aa0d8;background:rgba(255,255,255,.6);padding:0;cursor:grab;transform:translate(-50%,-50%)}
+#rulerTool .rbtns{position:absolute;right:0;display:flex;gap:4px}
+#rulerTool .rbtns button{background:#1f6f8b;color:#fff;border:0;border-radius:2px;font-size:12px;padding:3px 7px;cursor:pointer}
 .tqpic{margin:.6em 0}
 #psgPane{display:none}
 .page.split{display:flex;overflow:hidden}
@@ -190,7 +211,7 @@ td:has(>.gcell){cursor:pointer}
 
 /* drag and drop */
 .bank{display:flex;flex-wrap:wrap;gap:10px;min-height:3.4em;padding:12px;border:2px dashed var(--line);border-radius:8px;margin:6px 0 14px;background:var(--surface-2)}
-.bank:empty::before{content:"All equations placed";color:var(--muted);font-size:.85em;align-self:center}
+.bank:empty::before{content:"All tiles placed";color:var(--muted);font-size:.85em;align-self:center}
 .zones{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px}
 .dz{border:2px solid var(--muted);border-radius:8px;min-height:9em;display:flex;flex-direction:column}
 .dz h4{margin:0;padding:.4em .7em;background:var(--surface-2);border-bottom:1px solid var(--line);font-size:.9em;border-radius:6px 6px 0 0}
@@ -198,6 +219,20 @@ td:has(>.gcell){cursor:pointer}
 .dz.over,.bank.over{border-color:var(--accent);background:var(--accent-soft)}
 .tile{border:2px solid var(--accent);background:var(--surface);border-radius:6px;padding:.35em .8em;font-weight:700;cursor:grab;touch-action:none;user-select:none;white-space:nowrap}
 .tile.picked{outline:3px solid var(--flag);outline-offset:2px}
+.venn{position:relative;max-width:680px;margin:0 auto}
+.venn svg{display:block;width:100%;height:auto}
+.venn .vset{fill:var(--accent);fill-opacity:.06}
+.venn .vline{fill:none;stroke:var(--fg);stroke-width:2.5}
+.venn .vframe{fill:none;stroke:var(--fg);stroke-width:2}
+.venn .vr{fill:var(--accent);fill-opacity:0;transition:fill-opacity .12s}
+.venn .vr.on{fill-opacity:.2}
+.venn .vl{position:absolute;font-weight:700;font-size:.92em;line-height:1.15;pointer-events:none;text-align:center}
+.venn .dz{position:absolute;border:0;min-height:0;border-radius:6px;background:none}
+.venn .dz.over{background:none}
+.venn .dz .slot{flex:1;flex-direction:row;flex-wrap:wrap;justify-content:center;align-content:center;gap:5px;padding:2px}
+.venn .dz:focus-visible{outline:3px solid var(--accent);outline-offset:1px}
+.venn .tile{padding:.15em .5em;font-size:.92em}
+.venn .dz.tight .slot{gap:2px}.venn .dz.tight .tile{padding:.05em .35em;font-size:.78em}.venn .dz.tighter .tile{padding:0 .25em;font-size:.66em}
 .ghost{position:fixed;pointer-events:none;z-index:200;opacity:.9;box-shadow:0 6px 18px rgba(0,0,0,.25)}
 .hint{font-size:.8em;color:var(--muted);margin:.2em 0 0}
 
@@ -832,6 +867,7 @@ tr.ra-now{background:none!important;outline:0}
       <button class="tbtn" id="bSave"><span class="ring"><svg viewBox="0 0 24 24"><path class="f" d="M3 3h15l3 3v15H3z"/><rect x="7" y="3" width="9" height="6" fill="#fff"/><rect class="f" x="12.5" y="4" width="2" height="4"/><rect x="6" y="13" width="12" height="7" fill="#fff"/></svg></span>Save</button>
     </div>
     <div class="tgroup" id="rightTools">
+      <button class="tbtn" id="bRuler" aria-pressed="false"><span class="ring"><svg viewBox="0 0 24 24"><rect class="f" x="1.5" y="8" width="21" height="8" rx="1"/><path d="M4 8v3.5M6.5 8v2M9 8v3.5M11.5 8v2M14 8v3.5M16.5 8v2M19 8v3.5" stroke="#fff" stroke-width="1.2"/></svg></span>Ruler</button>
       <button class="tbtn" id="bRef" aria-pressed="false"><span class="ring"><svg viewBox="0 0 24 24"><text class="f" x="1" y="18" font-family="Arial" font-size="15" font-weight="700">XY</text><text class="f" x="17" y="9" font-family="Arial" font-size="9" font-weight="700">2</text></svg></span>References</button>
       <button class="tbtn" id="bCalc" aria-pressed="false"><span class="ring"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><rect class="s" x="5" y="2.5" width="14" height="19" rx="1.5"/><rect class="s" x="7.5" y="5" width="9" height="4"/><path class="s" d="M8 12h2M11 12h2M14 12h2M8 15h2M11 15h2M14 15h2M8 18h2M11 18h2M14 18h2" stroke-width="1.8"/></svg></span>Calculator</button>
       <button class="tbtn" id="bDict" aria-pressed="false"><span class="ring"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linejoin="round"><path class="s" d="M12 6.5C10 5 7 4.5 3.5 5v13c3.5-.5 6.5 0 8.5 1.5 2-1.5 5-2 8.5-1.5V5C17 4.5 14 5 12 6.5zM12 6.5v13"/></svg></span>Dictionary</button>
@@ -885,9 +921,13 @@ tr.ra-now{background:none!important;outline:0}
     </div>
     <div id="desmosHost" hidden role="application" aria-label="Desmos graphing calculator"></div>
     <iframe id="desmosFrame" title="Desmos graphing calculator, Texas testing version" hidden></iframe>
+    <div id="bcHost" hidden role="application" aria-label="Basic calculator"></div>
   </div>
   <div class="rh" aria-label="Drag to resize"><svg><use href="#i-move"/></svg></div>
 </div>
+
+<!-- Ruler -->
+<div id="rulerTool" hidden role="dialog" aria-label="Ruler. Drag to move it. Arrow keys move it, and the bracket keys turn it."><svg id="rulerSvg" tabindex="0"></svg><button id="rulerRot" type="button" aria-label="Turn the ruler"></button><div class="rbtns"><button type="button" id="rulerClose">Close</button><button type="button" id="rulerReset">Reset</button></div></div>
 
 <!-- Notepad / Sticky Notes (one window, two modes) -->
 <div class="panel dictwin" id="dictPanel" hidden role="dialog" aria-label="Dictionary">
@@ -1091,7 +1131,7 @@ const ITEMS=TD.items, KEYLESS=!!TD.keyless; let OWNPTS=null;
 const KEYF={graphline:'eq',graphineq:'op',graphsys:'ineqs',graphfunc:'ftype',graphexp:'a'};   /* where each graph type keeps its key (a line: its equation; an inequality: m, b, op; …) */
 const NOKEY=it=>KEYLESS&&it.type!=='text'&&it[KEYF[it.type]||'answer']===undefined;
 if(TD.subject==='rla') document.body.classList.add('rla');
-if(TD.reference==='none') document.body.classList.add('noref'); if(TD.calc===false) document.body.classList.add('nocalc');
+if(TD.reference==='none') document.body.classList.add('noref'); if(TD.calc===false) document.body.classList.add('nocalc'); if(TD.ruler??TD.course==='6th Math') document.body.classList.add('ruler');
 ITEMS.forEach((it,i)=>{ it.n=i+1; it.letters=ODD; it.max=it.max||1; ownFn(it); });
 /* ---------------- state ---------------- */
 const S={i:0,answers:{},flags:{},notes:{},name:'',modes:{hl:false,elim:false},zoomIx:1,submitted:false};
@@ -1271,9 +1311,21 @@ function hydrate(it,root){ const a=S.answers[it.n]; if(a==null) return;
 function buildDnD(it,root){
   const id=it.n;
   const bank=document.createElement('div'); bank.className='bank'; bank.dataset.zone='bank';
-  const zones=document.createElement('div'); zones.className='zones';
-  it.zones.forEach((z,k)=>{ const d=document.createElement('div'); d.className='dz'; d.dataset.zone=k; d.innerHTML=`<h4>${z}</h4><div class="slot"></div>`; zones.appendChild(d); });
-  const hint=document.createElement('p'); hint.className='hint'; hint.textContent=it.hint||'Drag an equation into a box, or tap an equation and then tap a box. Drag it back up to remove it.';
+  const V=it.venn?vennGeo(it.venn):null, zones=document.createElement('div'); zones.className=V?'venn':'zones';
+  if(V) zones.innerHTML=V.html;
+  it.zones.forEach((z,k)=>{ const d=document.createElement('div'); d.className='dz'; d.dataset.zone=k; d.innerHTML=`<h4${V?' class="sr"':''}>${z}</h4><div class="slot"></div>`;
+    if(V){ const r=V.slots[k]; Object.assign(d.style,{left:r[0]/V.W*100+'%',top:r[1]/V.H*100+'%',width:r[2]/V.W*100+'%',height:r[3]/V.H*100+'%'}); }
+    zones.appendChild(d); });
+  /* Venn: a small region (like two of three circles) shrinks its tiles when they spill out of it */
+  if(V){ const spill=d=>{ const r=d.getBoundingClientRect(); return r.width>0&&[...d.querySelectorAll('.tile')].some(t=>{ const q=t.getBoundingClientRect(); return q.top<r.top-1||q.bottom>r.bottom+1||q.left<r.left-1||q.right>r.right+1; }); };
+    const fit=()=>zones.querySelectorAll('.dz').forEach(d=>{ d.classList.remove('tight','tighter'); if(spill(d)){ d.classList.add('tight'); if(spill(d)) d.classList.add('tighter'); } });
+    new MutationObserver(fit).observe(zones,{childList:true,subtree:true}); if(window.ResizeObserver) new ResizeObserver(fit).observe(zones); }
+  /* where a drop lands: a box, the bank, or (Venn) the region under the pointer */
+  const dropAt=(x,y)=>{ const tgt=document.elementFromPoint(x,y); if(!tgt) return null;
+    if(V&&zones.contains(tgt)){ const b=zones.querySelector('svg').getBoundingClientRect(), k=V.zoneAt((x-b.left)/b.width*V.W,(y-b.top)/b.height*V.H); return k<0?null:zones.querySelector(`.dz[data-zone="${k}"]`); }
+    return tgt.closest('.dz,.bank'); };
+  const over=z=>{ document.querySelectorAll('.over').forEach(o=>o.classList.remove('over')); if(V) zones.querySelectorAll('.vr').forEach(r=>r.classList.toggle('on',!!z&&r.dataset.zone===z.dataset.zone)); if(z) z.classList.add('over'); };
+  const hint=document.createElement('p'); hint.className='hint'; hint.textContent=it.hint||'Drag a tile into a box, or tap a tile and then tap a box. Drag it back up to remove it.';
   let picked=null;
   const place=(tile,zone)=>{
     const a=S.answers[id]||{};
@@ -1289,17 +1341,16 @@ function buildDnD(it,root){
       if(sx==null) return;
       if(!drag && Math.hypot(e.clientX-sx,e.clientY-sy)>6){ drag=true; ghost=el.cloneNode(true); ghost.classList.add('ghost'); document.body.appendChild(ghost); el.style.opacity='.35'; }
       if(drag){ ghost.style.left=(e.clientX-ghost.offsetWidth/2)+'px'; ghost.style.top=(e.clientY-ghost.offsetHeight/2)+'px';
-        const tgt=document.elementFromPoint(e.clientX,e.clientY); document.querySelectorAll('.over').forEach(o=>o.classList.remove('over'));
-        const z=tgt&&tgt.closest('.dz,.bank'); if(z) z.classList.add('over'); }
+        over(dropAt(e.clientX,e.clientY)); }
     });
     el.addEventListener('pointerup',e=>{
       if(sx==null) return; sx=null;
-      if(drag){ ghost.remove(); el.style.opacity=''; document.querySelectorAll('.over').forEach(o=>o.classList.remove('over'));
-        const tgt=document.elementFromPoint(e.clientX,e.clientY); const z=tgt&&tgt.closest('.dz,.bank');
+      if(drag){ ghost.remove(); el.style.opacity=''; over(null);
+        const z=dropAt(e.clientX,e.clientY);
         if(z) place(el,z.dataset.zone); drag=false; }
       else { if(picked===el){ el.classList.remove('picked'); picked=null; } else { if(picked) picked.classList.remove('picked'); picked=el; el.classList.add('picked'); } }
     });
-    el.addEventListener('pointercancel',()=>{ sx=null; if(ghost) ghost.remove(); el.style.opacity=''; drag=false; });
+    el.addEventListener('pointercancel',()=>{ sx=null; if(ghost) ghost.remove(); el.style.opacity=''; drag=false; over(null); });
     el.addEventListener('keydown',e=>{ if(e.key===' '||e.key==='Enter'){ e.preventDefault(); if(picked) picked.classList.remove('picked'); picked=el; el.classList.add('picked'); } });
     bank.appendChild(el);
   });
@@ -1308,7 +1359,50 @@ function buildDnD(it,root){
     if(z!==bank){ z.tabIndex=0; z.setAttribute('role','button'); z.setAttribute('aria-label',z.querySelector('h4').textContent); }   /* keyboard: Space on a tile, then Space on a group */
     z.addEventListener('keydown',e=>{ if(e.target!==z||(e.key!==' '&&e.key!=='Enter')||!picked) return; e.preventDefault(); const t=picked; place(t,z.dataset.zone); t.classList.remove('picked'); picked=null; t.focus(); });
   });
+  if(V){ zones.addEventListener('click',e=>{ if(!picked||e.target.closest('.tile,.dz')) return; const z=dropAt(e.clientX,e.clientY); if(!z) return; place(picked,z.dataset.zone); picked.classList.remove('picked'); picked=null; });
+    zones.querySelectorAll('.dz').forEach(z=>{ z.addEventListener('focus',()=>over(z)); z.addEventListener('blur',()=>over(null)); }); }
   root.append(bank,zones,hint);
+}
+
+/* Venn diagram for drag into groups: {kind:'nested'|'squares'|'two'|'three', sets:[labels], out:label or ''}.
+   Regions (= zones, in order): nested or squares (rectangles), the smallest set each is in (outermost first); two, A only, B only, A and B;
+   three, A only, B only, C only, A and B only, A and C only, B and C only, all three; then outside (when out is set).
+   Returns the picture (html), where each region's tiles go (slots, in viewBox units) and the region at a point (zoneAt). */
+function vennGeo(v){
+  const kind=v.kind, n=(v.sets||[]).length, out=!!v.out, E=[], L=[], R=[];   // E shapes: ellipse [cx,cy,rx,ry] or rectangle [x,y,w,h,'r']; L labels [x,y,w,align,text,height]; R regions [in sets, out sets]
+  let W=640, H;
+  if(kind==='two'){ H=390; E.push([235,210,165,165],[405,210,165,165]); L.push([10,24,170,'right',v.sets[0]],[460,24,170,'left',v.sets[1]]); R.push([[0],[1]],[[1],[0]],[[0,1],[]]); }
+  else if(kind==='three'){ H=455; E.push([250,180,135,135],[390,180,135,135],[320,305,135,135]); L.push([10,24,190,'right',v.sets[0]],[440,24,190,'left',v.sets[1]],[10,426,215,'right',v.sets[2]]);
+    R.push([[0],[1,2]],[[1],[0,2]],[[2],[0,1]],[[0,1],[2]],[[0,2],[1]],[[1,2],[0]],[[0,1,2],[]]); }
+  else if(kind==='squares'){ H=400; const Wl=out?436:634, b=(Wl-6)/(n+.6);   // rectangles inside each other, each one's label top left; the outside region is a box beside them
+    for(let k=0;k<n;k++){ const x=6+k*b, y=6+k*40, w=Wl-k*10-x, h=H-6-k*14-y; E.push([x,y,w,h,'r']); L.push([x+8,y+6,w-16,'left',v.sets[k],26]); R.push([[k],k<n-1?[k+1]:[]]); }
+    if(out){ E.push([Wl,6,634-Wl,H-12,'r']); L.push([Wl+8,12,634-Wl-16,'left',v.out,26]); R.push([[n],[]]); } }
+  else { H=380; const b=624/(n+.5);
+    for(let k=0;k<n;k++){ const l=8+k*b, r=632-k*14, cx=(l+r)/2, rx=(r-l)/2, ry=H/2-8-k*30; E.push([cx,H/2,rx,ry]);
+      const lx=k<n-1?l+b/2:cx, lw=k<n-1?b-8:2*rx-30, tw=Math.min(lw,String(v.sets[k]).replace(/<[^>]*>/g,'').length*10+8)/2,   // label: as high in its band as fits under the curve
+        top=x=>H/2-ry*Math.sqrt(Math.max(0,1-Math.pow((x-cx)/rx,2))), ty=Math.max(top(lx-tw),top(lx+tw));
+      L.push([lx-lw/2,ty+6,lw,'center',v.sets[k]]); R.push([[k],k<n-1?[k+1]:[]]); } }
+  const H0=H; if(out&&kind!=='squares'){ H+=80; L.push([16,H0+6,300,'left',v.out]); R.push([[],E.map((e,k)=>k)]); }
+  const inE=(k,x,y)=>{ const e=E[k]; if(e[4]==='r') return x>=e[0]&&x<=e[0]+e[2]&&y>=e[1]&&y<=e[1]+e[3]; return Math.pow((x-e[0])/e[2],2)+Math.pow((y-e[1])/e[3],2)<=1; };
+  const zoneAt=(x,y)=>{ if(x<0||y<0||x>W||y>H) return -1; return R.findIndex(([I,O])=>I.every(k=>inE(k,x,y))&&O.every(k=>!inE(k,x,y))&&(I.length||out)); };
+  /* each region's slot: the biggest rectangle of grid cells well inside it, away from the labels */
+  const g=6, C=Math.floor(W/g), Rw=Math.floor(H/g), lab=L.map(([x,y,w,al,t,h])=>[x-4,y-4,x+w+4,y+(h||42)]);
+  const cell=(i,j)=>{ const x=(i+.5)*g, y=(j+.5)*g; if(lab.some(b=>x>b[0]&&x<b[2]&&y>b[1]&&y<b[3])) return -1;
+    const z=zoneAt(x,y); return [[-9,-9],[9,-9],[-9,9],[9,9]].every(([a,c])=>zoneAt(x+a,y+c)===z)?z:-1; };
+  const M=[]; for(let j=0;j<Rw;j++){ M.push([]); for(let i=0;i<C;i++) M[j].push(cell(i,j)); }
+  const slots=R.map((r,z)=>{ const h=new Array(C).fill(0); let best=[0,0,0,0], ba=0;
+    for(let j=0;j<Rw;j++){ for(let i=0;i<C;i++) h[i]=M[j][i]===z?h[i]+1:0;
+      const st=[]; for(let i=0;i<=C;i++){ const hi=i<C?h[i]:0; let s0=i;
+        while(st.length&&st[st.length-1][1]>=hi){ const [si,sh]=st.pop(), w=i-si, a=Math.min(w,4*sh)*Math.min(sh,4*w); if(a>ba){ ba=a; best=[si*g,(j-sh+1)*g,w*g,sh*g]; } s0=si; }
+        st.push([s0,hi]); } }
+    return best; });
+  const u='vn'+Math.random().toString(36).slice(2,8), shp=(e,a)=>e[4]==='r'?`<rect x="${e[0]}" y="${e[1]}" width="${e[2]}" height="${e[3]}" ${a}/>`:`<ellipse cx="${e[0]}" cy="${e[1]}" rx="${e[2]}" ry="${e[3]}" ${a}/>`;
+  let d=E.map((e,k)=>`<clipPath id="${u}c${k}">${shp(e,'')}</clipPath>`).join('');
+  d+=R.map(([I,O],z)=>`<mask id="${u}m${z}"><rect width="${W}" height="${H}" fill="#fff"/>${O.map(k=>shp(E[k],'fill="#000"')).join('')}</mask>`).join('');
+  const regions=R.map(([I],z)=>I.reduce((h,k)=>`<g clip-path="url(#${u}c${k})">${h}</g>`,`<rect class="vr" data-zone="${z}" width="${W}" height="${H}" mask="url(#${u}m${z})"/>`)).join('');
+  const html=`<svg viewBox="0 0 ${W} ${H}" aria-hidden="true"><defs>${d}</defs>${out&&kind!=='squares'?`<rect class="vframe" x="2" y="2" width="${W-4}" height="${H-4}" rx="10"/>`:''}${E.map(e=>shp(e,'class="vset"')).join('')}${regions}${E.map(e=>shp(e,'class="vline"')).join('')}</svg>`
+    +L.map(([x,y,w,al,t])=>`<div class="vl" style="left:${x/W*100}%;top:${y/H*100}%;width:${w/W*100}%;text-align:${al}">${t}</div>`).join('');
+  return {W,H,html,slots,zoneAt};
 }
 
 function buildGraph(it,root){
@@ -1825,7 +1919,7 @@ const EQX={
   ser(B){ return B.map(n=>typeof n==='string'?n:n.t==='p'?'('+EQX.ser(n.c)+')':n.t==='sup'?'^{'+EQX.ser(n.c)+'}':n.t==='sub'?'_{'+EQX.ser(n.c)+'}':n.t==='sqrt'?'\\r{'+EQX.ser(n.c)+'}':'\\f{'+EQX.ser(n.n)+'}{'+EQX.ser(n.d)+'}').join(''); },
   html(B,cur){ const C='<span class="caret"></span>', sym={'-':'−','*':'•','/':'÷','<=':'≤','>=':'≥'};
     const one=b=>{ let h=''; b.forEach((n,k)=>{ if(cur&&cur.b===b&&cur.i===k) h+=C;
-        if(typeof n==='string'){ if(/[xy]/.test(n)) h+=`<var>${n}</var>`; else if(/[+\-−•÷<>≤≥=]/.test(n)) h+=`<span class="xop">${sym[n]||n}</span>`; else h+=n; }
+        if(typeof n==='string'){ if(/^[a-z]$/.test(n)) h+=`<var>${n}</var>`; else if(/[+\-−•÷<>≤≥=]/.test(n)) h+=`<span class="xop">${sym[n]||n}</span>`; else h+=n; }
         else if(n.t==='p') h+=`<span class="xpar">(</span>${one(n.c)}<span class="xpar${n.g?' ghost':''}">)</span>`;
         else if(n.t==='sup') h+=`<sup class="xsup">${one(n.c)}</sup>`;
         else if(n.t==='sub') h+=`<sub class="xsup">${one(n.c)}</sub>`;
@@ -1835,25 +1929,26 @@ const EQX={
     return one(B); },
   show(s){ return EQX.html(EQX.parse(String(s||''))).replace(/<i class="slot"><\/i>/g,''); },
   /* a JavaScript expression in X, or null if it is not an expression in x alone */
-  js(B){ const out=[]; let num=''; const opd=()=>out.length&&out[out.length-1].o; const push=(s,o)=>{ if(o&&opd()) out.push({s:'*',o:false}); out.push({s,o}); };
+  js(B,v='x'){ const out=[]; let num=''; const opd=()=>out.length&&out[out.length-1].o; const push=(s,o)=>{ if(o&&opd()) out.push({s:'*',o:false}); out.push({s,o}); };
     const flush=()=>{ if(num){ if(!/^\d*\.?\d+$|^\d+\.$/.test(num)) throw 0; push('('+num+')',true); num=''; } };
     for(const n of B){
       if(typeof n==='string'&&/[0-9.]/.test(n)){ if(num===''&&opd()) { flush(); } num+=n; continue; }
       flush();
       if(typeof n==='string'){
-        if(n==='x') push('X',true); else if(n==='π') push('Math.PI',true);
+        if(n===v) push('X',true); else if(n==='π') push('Math.PI',true);
         else if(n==='+') out.push({s:'+',o:false}); else if(n==='•'||n==='*') out.push({s:'*',o:false}); else if(n==='÷'||n==='/') out.push({s:'/',o:false});
         else if(n==='-'||n==='−'){ if(!out.length||!opd()) out.push({s:'(-1)*',o:false}); else out.push({s:'-',o:false}); }
         else throw 0; }
-      else if(n.t==='p') push('('+EQX.js(n.c)+')',true);
-      else if(n.t==='sqrt') push('Math.sqrt('+EQX.js(n.c)+')',true);
-      else if(n.t==='frac') push('(('+EQX.js(n.n)+')/('+EQX.js(n.d)+'))',true);
-      else if(n.t==='sup'){ if(!opd()) throw 0; out.push({s:'**('+EQX.js(n.c)+')',o:true}); }
+      else if(n.t==='p') push('('+EQX.js(n.c,v)+')',true);
+      else if(n.t==='sqrt') push('Math.sqrt('+EQX.js(n.c,v)+')',true);
+      else if(n.t==='frac') push('(('+EQX.js(n.n,v)+')/('+EQX.js(n.d,v)+'))',true);
+      else if(n.t==='sup'){ if(!opd()) throw 0; out.push({s:'**('+EQX.js(n.c,v)+')',o:true}); }
       else throw 0; }
     flush(); if(!out.length||!opd()) throw 0; return out.map(t=>t.s).join(''); },
-  fn(s){ try{ const j=EQX.js(EQX.parse(String(s))); return new Function('X','return '+j); }catch(e){ return null; } },
-  same(a,b){ const f=EQX.fn(a), g=EQX.fn(b); if(!f||!g) return false;
-    return [0,1,2,3,5,10,-2,0.5,-1.5].every(X=>{ let u,v; try{ u=f(X); v=g(X); }catch(e){ return false; } return isFinite(u)&&isFinite(v)&&Math.abs(u-v)<=1e-9*Math.max(1,Math.abs(v)); }); }
+  fn(s,v){ try{ const j=EQX.js(EQX.parse(String(s)),v); return new Function('X','return '+j); }catch(e){ return null; } },
+  /* v: the variable the key is written in (default x); test points where the key itself is undefined (33/b at b = 0) are skipped */
+  same(a,b,v){ const f=EQX.fn(a,v), g=EQX.fn(b,v); if(!f||!g) return false; let n=0;
+    return [0,1,2,3,5,10,-2,0.5,-1.5].every(X=>{ let u,w; try{ u=f(X); w=g(X); }catch(e){ return false; } if(!isFinite(w)) return true; n++; return isFinite(u)&&Math.abs(u-w)<=1e-9*Math.max(1,Math.abs(w)); })&&n>=5; }
 };
 if(window.SPITZ_SELFCHECK) window.__EQX=EQX;   /* answer-key checks only */
 function buildEqFull(it,root){
@@ -1863,7 +1958,8 @@ function buildEqFull(it,root){
    <div class="eqtools"><button type="button" data-k="left" aria-label="Move left">${T('M15 10H5M9 6l-4 4 4 4')}</button><button type="button" data-k="right" aria-label="Move right">${T('M5 10h10M11 6l4 4-4 4')}</button><button type="button" data-k="undo" aria-label="Undo">${T('M7 7l-3 3 3 3M4 10h8a4 4 0 0 1 0 8')}</button><button type="button" data-k="redo" aria-label="Redo">${T('M13 7l3 3-3 3M16 10H8a4 4 0 0 0 0 8')}</button><button type="button" data-k="bksp" aria-label="Delete">${T('M7 5h10v10H7l-4-5zM10 8l4 4M14 8l-4 4')}</button></div>
    <div class="eqpad"><div class="eqkeys full"></div></div>`;
   const field=w.querySelector('.eqfield'), keys=w.querySelector('.eqkeys');
-  const K=[['1','1'],['2','2'],['3','3'],['x','<i>x</i>'],['y','<i>y</i>'],'','','',
+  const VK=it.vars||['x','y'];   /* the variable keys (Cambium shows the question's own letters, e.g. b) */
+  const K=[['1','1'],['2','2'],['3','3'],...[0,1].map(q=>VK[q]?[VK[q],`<i>${VK[q]}</i>`]:''),'','','',
            ['4','4'],['5','5'],['6','6'],['+','+'],['-','-'],['•','•'],['÷','÷'],'',
            ['7','7'],['8','8'],['9','9'],['<','&lt;'],['≤','≤'],['=','='],['≥','≥'],['>','&gt;'],
            '',['0','0'],'',['sup','<span class="ks"><i></i><i class="hi"></i></span>'],['sub','<span class="ks"><i></i><i class="lo"></i></span>'],['par','( )'],['sqrt','<span class="ks">√<i class="rt"></i></span>'],['π','π'],
@@ -1892,7 +1988,7 @@ function buildEqFull(it,root){
     else if(k==='neg') ins('-'); else ins(k); }
   w.addEventListener('click',e=>{ const b=e.target.closest('button[data-k]'); if(!b) return; key(b.dataset.k); field.focus({preventScroll:true}); });
   field.addEventListener('keydown',e=>{ const k=e.key;
-    if(/^[0-9.xy+=<>π]$/.test(k)) key(k); else if(k==='-') key('-'); else if(k==='*') key('•'); else if(k==='/') key('frac'); else if(k==='^') key('sup'); else if(k==='_') key('sub');
+    if(/^[0-9.+=<>π]$/.test(k)||VK.includes(k)) key(k); else if(k==='-') key('-'); else if(k==='*') key('•'); else if(k==='/') key('frac'); else if(k==='^') key('sup'); else if(k==='_') key('sub');
     else if(k==='(') ins({t:'p',c:[],g:true}); else if(k===')') close(); else if(k==='Backspace') bksp(); else if(k==='ArrowLeft'){ left(); render(); } else if(k==='ArrowRight'){ right(); render(); }
     else return; e.preventDefault(); });
   root.appendChild(w); render();
@@ -2135,7 +2231,7 @@ function score(it){ const a=S.answers[it.n]; if(a==null||NOKEY(it)) return null;
       const sideOK=(it.op[0]==='>')?a.shade[1]>it.m*a.shade[0]+it.b:a.shade[1]<it.m*a.shade[0]+it.b;
       return on(a.pts[0])&&on(a.pts[1])&&a.dash===strict&&sideOK; }
     case 'graphfunc': return a.type===it.ftype&&(a.asym??0)===it.asym&&a.pts.length===2&&a.pts.every(P=>Math.abs(it.fn(P[0])-P[1])<1e-9);
-    case 'eq': return it.full?EQX.same(a,it.answer):Math.abs(parseNum(a)-it.answer)<1e-9;
+    case 'eq': return it.full?EQX.same(a,it.answer,(it.vars||['x'])[0]):Math.abs(parseNum(a)-it.answer)<1e-9;
     case 'graphexp': return Math.abs(a.a-it.a)<1e-6&&Math.abs(a.b-it.b)<1e-6;
     case 'numline': return it.mode==='ineq'?a.k===it.answer.k&&!!a.closed===!!it.answer.closed&&a.dir===it.answer.dir:a.length===it.answer.length&&it.answer.every(k=>a.includes(k));
     case 'filltable': return it.answer.every((v,k)=>Math.abs(parseNum(a[k]??'')-v)<1e-9);
@@ -2607,6 +2703,72 @@ $('#chDesmos').onclick=()=>{
 };
 $('#calcSwitch').onclick=showChooser;
 
+/* ---------- basic calculator (TI-108 style): the Grade 6 designated support. Tests with no calculator (calc:false) show it only
+   to students marked Calculator on the roster (window.SPITZ_CALC from sign-in), or with ?basiccalc=1. ---------- */
+const BC={d:'0',acc:null,op:null,fresh:true,mem:0,last:'',err:false};
+function bcNum(){ return parseFloat(BC.d)||0; }
+function bcFmt(v){ if(!isFinite(v)||Math.abs(v)>=1e8){ BC.err=true; return 'E'; } if(v===0) return '0';
+  const ip=String(Math.trunc(Math.abs(v))).length; let t=v.toFixed(Math.max(0,8-ip)); if(t.includes('.')) t=t.replace(/0+$/,'').replace(/\.$/,''); return t==='-0'?'0':t; }
+function bcCalc(a,op,b){ return op==='+'?a+b:op==='−'?a-b:op==='×'?a*b:b===0?NaN:a/b; }
+function bcKey(k){ const was=BC.last; BC.last=k;
+  if(k==='ON/C'){ if(was==='ON/C'||BC.fresh||BC.err) Object.assign(BC,{d:'0',acc:null,op:null,fresh:true,err:false}); else { BC.d='0'; BC.fresh=true; } return bcShow(); }
+  if(BC.err) return;
+  if(/^[0-9]$/.test(k)){ if(BC.fresh){ BC.d=k; BC.fresh=false; } else if(BC.d.replace(/[-.]/g,'').length<8) BC.d=BC.d==='0'?k:BC.d+k; }
+  else if(k==='.'){ if(BC.fresh){ BC.d='0.'; BC.fresh=false; } else if(!BC.d.includes('.')) BC.d+='.'; }
+  else if(k==='+/−'){ if(BC.d!=='0') BC.d=BC.d[0]==='-'?BC.d.slice(1):'-'+BC.d; }
+  else if('+−×÷'.includes(k)){ if(BC.op&&!BC.fresh) BC.d=bcFmt(bcCalc(BC.acc,BC.op,bcNum())); BC.acc=bcNum(); BC.op=k; BC.fresh=true; }
+  else if(k==='='){ if(BC.op){ BC.d=bcFmt(bcCalc(BC.acc,BC.op,bcNum())); BC.op=null; BC.acc=null; } BC.fresh=true; }
+  else if(k==='%'){ const c=bcNum(); let v=c/100; if(BC.op){ v=BC.op==='×'?BC.acc*c/100:BC.op==='÷'?bcCalc(BC.acc,'÷',c/100):bcCalc(BC.acc,BC.op,BC.acc*c/100); BC.op=null; BC.acc=null; } BC.d=bcFmt(v); BC.fresh=true; }
+  else if(k==='√'){ const c=bcNum(); BC.d=c<0?(BC.err=true,'E'):bcFmt(Math.sqrt(c)); BC.fresh=true; }
+  else if(k==='M+'||k==='M−'){ if(BC.op&&!BC.fresh){ BC.d=bcFmt(bcCalc(BC.acc,BC.op,bcNum())); BC.op=null; BC.acc=null; } BC.mem+=k==='M+'?bcNum():-bcNum(); BC.fresh=true; }
+  else if(k==='MRC'){ if(was==='MRC') BC.mem=0; else { BC.d=bcFmt(BC.mem); BC.fresh=true; } }
+  bcShow(); }
+function bcShow(){ const l=$('#bcHost .lcd'); if(l) l.innerHTML=(BC.mem?'<i>M</i>':'')+esc0(BC.d); }
+function bcBuild(){ const h=$('#bcHost'); if(h.firstChild) return;
+  const K=[['+/−','r'],['√','r'],['%','r'],['÷','r'],['MRC','r'],['M−','r'],['M+','r'],['×','r'],['7'],['8'],['9'],['−','r'],['4'],['5'],['6'],['+','r'],['1'],['2'],['3'],['=','r eq'],['ON/C','r'],['0'],['.']];
+  const LBL={'+/−':'Change sign','√':'Square root','%':'Percent','÷':'Divide','×':'Multiply','−':'Subtract','+':'Add','=':'Equals','MRC':'Memory recall, press twice to clear memory','M−':'Memory minus','M+':'Memory plus','ON/C':'Clear, press twice to clear all','.':'Decimal point'};
+  h.innerHTML=`<div class="ti108"><div class="brand"><span>TEXAS INSTRUMENTS</span><b>TI-108</b></div><div class="lcd" aria-live="polite"></div><div class="keys">${K.map(([k,c])=>`<button type="button" class="${c||''}" data-k="${k}"${LBL[k]?` aria-label="${LBL[k]}"`:''}>${k}</button>`).join('')}</div></div>`;
+  h.addEventListener('click',e=>{ const b=e.target.closest('button[data-k]'); if(b) bcKey(b.dataset.k); });
+  panels.calc.addEventListener('keydown',e=>{ if($('#bcHost').hidden||e.ctrlKey||e.altKey||e.metaKey) return;
+    const m={'*':'×','x':'×','/':'÷','-':'−','+':'+','=':'=','Enter':'=','Escape':'ON/C','Delete':'ON/C','%':'%','.':'.'}, k=/^[0-9]$/.test(e.key)?e.key:m[e.key];
+    if(!k) return; e.preventDefault(); bcKey(k); });
+  bcShow(); }
+function showBasic(){ bcBuild(); $('#chooser').hidden=true; $('#desmosFrame').hidden=true; $('#desmosHost').hidden=true; $('#bcHost').hidden=false;
+  $('#calcTtl').textContent='Calculator'; $('#calcSwitch').hidden=true; $('#calcExpand').hidden=true; panels.calc.classList.add('basic'); }
+{ const sc=showChooser; showChooser=function(){ if(document.body.classList.contains('bcalc')&&document.body.classList.contains('nocalc')) return showBasic(); $('#bcHost').hidden=true; panels.calc.classList.remove('basic'); sc(); }; }
+window.SpitzBasicCalc=on=>{ document.body.classList.toggle('bcalc',!!on); if(!on) openPanel('calc',false); };
+if(window.SPITZ_CALC||/[?&]basiccalc=1\b/.test(location.search)) window.SpitzBasicCalc(true);
+
+/* ---------- ruler (Cambium's Grade 6 math ruler): centimeters along the top edge, inches along the bottom. Drag it to move it;
+   drag the circle at the end to turn it about the 0 mark. It grows with Zoom In so it still matches the pictures. ---------- */
+const RU={x:0,y:0,a:0,on:false}, RU_CM=23, RU_IN=9, RU_M=0.5, RU_W=RU_CM+2*RU_M+0.4, RU_H=3.9;
+const ruPx=()=>96/2.54*(Z[zi]||1);   // CSS pixels per centimeter at this zoom
+function ruDraw(){ const s=$('#rulerSvg'), k=ruPx(); let g='';
+  for(let m=0;m<=RU_CM*10;m++){ const x=RU_M+m/10, L=m%10===0?0.62:m%5===0?0.42:0.25; g+=`<path d="M${x.toFixed(2)} 0v${L}"/>`;
+    if(m%10===0) g+=`<text x="${x.toFixed(2)}" y="1.72" font-size="0.5" text-anchor="middle">${m/10}</text>`; }
+  const ip=2.54;
+  for(let q=0;q<=RU_IN*16;q++){ const x=RU_M+q/16*ip, L=q%16===0?0.85:q%8===0?0.6:q%4===0?0.45:q%2===0?0.32:0.2; g+=`<path d="M${x.toFixed(3)} ${RU_H}v-${L}"/>`;
+    if(q%16===0) g+=`<text x="${x.toFixed(3)}" y="${(RU_H-1.25).toFixed(2)}" font-size="0.5" text-anchor="middle">${q/16}</text>`; }
+  s.setAttribute('viewBox',`0 0 ${RU_W} ${RU_H}`); s.setAttribute('width',RU_W*k); s.setAttribute('height',RU_H*k);
+  s.innerHTML=`<rect x="0.02" y="0.02" width="${RU_W-0.04}" height="${RU_H-0.04}" rx="0.12" fill="rgba(252,249,238,.82)" stroke="#555" stroke-width="0.04"/>
+    <g stroke="#333" stroke-width="0.03">${g.replace(/<text[^>]*>[^<]*<\/text>/g,'')}</g><g fill="#111" font-family="Verdana,Arial,sans-serif">${(g.match(/<text[^>]*>[^<]*<\/text>/g)||[]).join('')}
+    <text x="${RU_M+0.35}" y="1.12" font-size="0.42">cm</text><text x="${RU_M+0.75}" y="${(RU_H-1.25).toFixed(2)}" font-size="0.42">inch</text></g>`;
+  const t=$('#rulerTool'); t.style.width=RU_W*k+'px'; t.style.height=RU_H*k+'px'; t.style.transformOrigin=`${RU_M*k}px 0`;
+  const r=$('#rulerRot'); r.style.left=(RU_W*k+18)+'px'; r.style.top=(RU_H*k/2)+'px'; t.querySelector('.rbtns').style.top=(RU_H*k+4)+'px'; ruPlace(); }
+function ruPlace(){ const t=$('#rulerTool'), k=ruPx(); RU.x=Math.max(10,Math.min(innerWidth-30,RU.x)); RU.y=Math.max(60,Math.min(innerHeight-30,RU.y)); t.style.left=(RU.x-RU_M*k)+'px'; t.style.top=RU.y+'px'; t.style.transform=`rotate(${RU.a}deg)`; }
+function ruReset(){ const hr=host.getBoundingClientRect(), k=ruPx(); RU.a=0; RU.x=Math.max(10,hr.left+Math.max(0,(hr.width-RU_W*k)/2))+RU_M*k; RU.y=Math.max(110,hr.top+60); ruPlace(); }
+function ruShow(on){ RU.on=on; $('#rulerTool').hidden=!on; if(on) $('#rulerTool').style.zIndex=++zTop; $('#bRuler').setAttribute('aria-pressed',on); if(on){ ruDraw(); if(!RU.placed){ ruReset(); RU.placed=true; } actTool('ruler'); } }
+$('#bRuler').onclick=()=>ruShow(!RU.on); $('#rulerClose').onclick=()=>ruShow(false); $('#rulerReset').onclick=ruReset;
+$('#rulerSvg').addEventListener('pointerdown',e=>{ e.preventDefault(); $('#rulerTool').style.zIndex=++zTop; const s=e.currentTarget, sx=e.clientX-RU.x, sy=e.clientY-RU.y; s.setPointerCapture(e.pointerId); s.focus({preventScroll:true});
+  const mv=ev=>{ RU.x=ev.clientX-sx; RU.y=ev.clientY-sy; ruPlace(); }, up=()=>{ s.removeEventListener('pointermove',mv); s.removeEventListener('pointerup',up); s.removeEventListener('pointercancel',up); };
+  s.addEventListener('pointermove',mv); s.addEventListener('pointerup',up); s.addEventListener('pointercancel',up); });
+$('#rulerRot').addEventListener('pointerdown',e=>{ e.preventDefault(); const b=e.currentTarget, k=ruPx(), base=Math.atan2(RU_H*k/2,(RU_W-RU_M)*k+18); b.setPointerCapture(e.pointerId);
+  const mv=ev=>{ let a=(Math.atan2(ev.clientY-RU.y,ev.clientX-RU.x)-base)*180/Math.PI; RU.a=Math.round(a*2)/2; ruPlace(); }, up=()=>{ b.removeEventListener('pointermove',mv); b.removeEventListener('pointerup',up); b.removeEventListener('pointercancel',up); };
+  b.addEventListener('pointermove',mv); b.addEventListener('pointerup',up); b.addEventListener('pointercancel',up); });
+addEventListener('resize',()=>{ if(RU.on) ruPlace(); });   /* keep it on screen when the window gets smaller */
+$('#rulerSvg').addEventListener('keydown',e=>{ const d={ArrowLeft:[-2,0],ArrowRight:[2,0],ArrowUp:[0,-2],ArrowDown:[0,2]}[e.key];
+  if(d){ RU.x+=d[0]; RU.y+=d[1]; } else if(e.key==='['||e.key===']') RU.a+=e.key===']'?1:-1; else if(e.key==='Escape') return ruShow(false); else return; e.preventDefault(); ruPlace(); });
+
 /* ---------- Notepad & Sticky Notes ---------- */
 let noteMode=null;
 const nt=$('#noteText');
@@ -2767,7 +2929,7 @@ document.addEventListener('keydown',e=>{ if(!lrOn||e.target.closest('input,texta
 /* ---------- content zoom (toolbar) ---------- */
 const Z=[1,1.25,1.5,1.75,2,2.5]; let zi=0;
 function setZoom(i){ zi=Math.max(0,Math.min(Z.length-1,i)); wrap.style.zoom=Z[zi]; document.documentElement.style.setProperty('--zoom',Z[zi]);
-  $('#bZoomOut').disabled=zi===0; $('#bZoomIn').disabled=zi===Z.length-1; setTimeout(placeBand,0); }
+  $('#bZoomOut').disabled=zi===0; $('#bZoomIn').disabled=zi===Z.length-1; setTimeout(placeBand,0); if(typeof RU!=='undefined'&&RU.on) ruDraw(); }
 $('#bZoomIn').onclick=()=>{ setZoom(zi+1); actTool('zoomIn'); }; $('#bZoomOut').onclick=()=>{ setZoom(zi-1); actTool('zoomOut'); };
 
 /* ---------- System Settings ---------- */
@@ -3018,7 +3180,7 @@ function browseStart(){
 
 /* fill in this test's name everywhere it shows */
 document.title=TD.title; document.querySelectorAll('.testTitle').forEach(e=>e.textContent=TD.title);
-{ const ref=document.querySelector('#refPanel .pbody img'); if(ref&&!document.body.matches('.rla,.noref')) if(TD.reference==='math8') ref.alt='Grade 8 mathematics reference materials: linear equations, circumference, area, surface area, volume, Pythagorean theorem, simple and compound interest'; ref.src=(window.SPITZ_ASSETS&&window.SPITZ_ASSETS['refs/'+(TD.reference||'alg1')+'.png'])||(window.SPITZ_ROOT+'refs/'+(TD.reference||'alg1')+'.png'); }
+{ const ref=document.querySelector('#refPanel .pbody img'); if(ref&&!document.body.matches('.rla,.noref')) if(TD.reference==='math8') ref.alt='Grade 8 mathematics reference materials: linear equations, circumference, area, surface area, volume, Pythagorean theorem, simple and compound interest'; else if(TD.reference==='math6') ref.alt='Grade 6 mathematics reference materials: area of a triangle, rectangle or parallelogram, and trapezoid; volume of a rectangular prism; customary and metric conversions for length, volume and capacity, and weight and mass'; ref.src=(window.SPITZ_ASSETS&&window.SPITZ_ASSETS['refs/'+(TD.reference||'alg1')+'.png'])||(window.SPITZ_ROOT+'refs/'+(TD.reference||'alg1')+'.png'); }
 window.__spitzStart=(name,period,opt={})=>{ S.name=name; S.period=period; S.started=true; ACT.t0=Date.now();
   if(opt.state){ sessionRestore(opt.state,opt.events); if(opt.state.submitted){ S.submitted=true; S.submittedAt=opt.state.submittedAt; } logEv('signInAgain'); } else logEv('start'); if(window.SPITZ_TTSCHECK) logEv('ttsCheck',window.SPITZ_TTSCHECK);
   $('#sname').textContent=`${name} (${period==='G'?'GUEST':'PERIOD '+period})`; $('#isubName').textContent=name;
@@ -3532,7 +3694,7 @@ function call(fn,arg,any){ return new Promise((res,rej)=>{ const h=(APP||any)&&g
   }catch(e){ console.warn('Spitz '+fn+' could not be sent: '+(e&&e.message||e)); fin(rej,e); } }); }
 const sleep=ms=>new Promise(r=>setTimeout(r,ms));
 window.__spitzDict=w=>call('stcDict',{word:w},true);
-async function callRetry(fn,arg,tries){ let e; for(let i=0;i<tries;i++){ try{ return await call(fn,arg); }catch(x){ e=x; if(/NOSIGNIN/.test(String(x&&x.message||x))) break; if(i<tries-1) await sleep(1200*(i+1)); } } throw e; }
+async function callRetry(fn,arg,tries){ let e; for(let i=0;i<tries;i++){ try{ return await call(fn,arg); }catch(x){ e=x; if(/NOSIGNIN/.test(String(x&&x.message||x))) break; if(i<tries-1) await sleep(1200*(i+1)*(0.7+Math.random()*0.6)); } } throw e; }   /* give or take, so a class that signs in at the bell doesn't retry in step */
 
 /* ---------- copy kept on this Chromebook ---------- */
 const LS={ get(k){ try{ return JSON.parse(localStorage.getItem(k)); }catch(e){ return null; } },
@@ -3583,8 +3745,8 @@ $('#startForm').addEventListener('submit',async e=>{ e.preventDefault();
     if(asked&&(!nm||!pd)) return err('Type your first name or initials and choose your class period.',!nm?$('#stuName'):$('#stuPeriod'));
     $('#siErr').hidden=true; $('#siBtn').disabled=true;
     const tab=Math.random().toString(36).slice(2,12);   /* this page; the server lets only the newest sign-in save */
-    let r; try{ r=await callRetry('stcSignIn',asked?{sessionId:ses,name:nm,period:pd,tab}:{sessionId:ses,tab},3); }
-    catch(x){ return err(/NOSIGNIN/.test(String(x&&x.message||x))?'Sign in to this Chromebook with your school Google account, then reload this page.':'Could not reach the testing site. Check your internet connection and try again.'); }
+    let r; try{ r=await callRetry('stcSignIn',asked?{sessionId:ses,name:nm,period:pd,tab}:{sessionId:ses,tab},5); }
+    catch(x){ const m=String(x&&x.message||x); return err(/NOSIGNIN/.test(m)?'Sign in to this Chromebook with your school Google account, then reload this page.':/too many|simultaneous|server error|busy|timed? ?out/i.test(m)?'The testing site is busy right now. Wait a few seconds, then press Sign In again.':'Could not reach the testing site. Check your internet connection and try again.'); }
     if(r&&!r.ok&&r.need==='name'){ setPeriods(r.periods||[]); setWho(r); const first=!asked; askName(true);
       return err(first?'You are not on this class list yet. Type your first name or initials and choose your class period.':r.msg,first||!nm?$('#stuName'):$('#stuPeriod')); }
     if(!r||!r.ok) return err((r&&r.msg)||'Sign in did not work. Try again.',$('#stuSession'));
@@ -3592,7 +3754,8 @@ $('#startForm').addEventListener('submit',async e=>{ e.preventDefault();
     const name=String(r.name||nm).toUpperCase(), period=String(r.period||pd);
     CTX={key:'stc:'+r.sessionId+':'+r.student, sessionId:r.sessionId, student:r.student, test:r.test, name, period, control:r.control||'', ver:r.ver||'', tab};
     if(r.own) window.__spitzOwnPending=r.own;
-    window.SPITZ_RA=!!r.readAloud; if(window.SpitzReadAloud) window.SpitzReadAloud(window.SPITZ_RA);   // the test engine may start after this; it reads SPITZ_RA then
+    window.SPITZ_RA=!!r.readAloud; if(window.SpitzReadAloud) window.SpitzReadAloud(window.SPITZ_RA);
+    window.SPITZ_CALC=!!r.calculator; if(window.SpitzBasicCalc) window.SpitzBasicCalc(window.SPITZ_CALC);   // the test engine may start after this; it reads SPITZ_RA then
     applyReview(r.review);
     const server=r.attempt?{state:r.attempt.state,events:r.attempt.events}:null, local=LS.get(CTX.key);
     const use=(server&&server.state&&server.state.submitted)?server:(newer(local,server)?local:server);
