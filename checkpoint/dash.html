@@ -2740,8 +2740,8 @@ const RLA7STD=[['2.A',0,'Print or digital resources (meaning, origin, part of sp
   ['10.Dviii',0,'Edit: punctuation (commas, semicolons)'],['10.Dix',1,'Edit: spelling, commonly confused words'],['11.B',1,'Informational essay'],['11.C',1,'Argumentative essay'],
   ['11.D',0,'Correspondence: business or friendly']];
 /* Grade 8 Science: lead4ward TEKS Snapshot (v. 5.22.25, Kody 10/30). Grade 6 and 7 standards on it are tested on Grade 8 STAAR. Process standards (8.1-8.5)
-   are dual-coded and the SEs it marks not assessed are left out. Topic = reporting category, by strand; the names match TEA's Grade 8 Science
-   Assessed Curriculum, but that copy (Fall 2010) is for the old TEKS, so the placement of the new SEs isn't checked against TEA. */
+   are dual-coded and the SEs it marks not assessed are left out. Topic = reporting category. All 42 SEs, readiness and categories
+   match TEA's STAAR Middle School Science Assessed Curriculum (effective 2025-2026). */
 const CATSCI8={1:'Matter and Energy',2:'Force, Motion, and Energy',3:'Earth and Space',4:'Organisms and Environments'};
 const SCI8=[['8.6E',1,1,'Conservation of mass in chemical reactions'],['7.6B',1,1,'Atoms in a chemical formula (periodic table)'],['6.6C',1,0,'Metals, nonmetals, metalloids, rare Earth elements'],
   ['6.6D',1,0,'Density relative to fluids'],['6.6E',1,0,'Evidence of a chemical change'],['7.6C',1,0,'Physical and chemical changes'],
@@ -2752,9 +2752,9 @@ const SCI8=[['8.6E',1,1,'Conservation of mass in chemical reactions'],['7.6B',1,
   ['8.9A',3,1,'Life cycle of stars; Hertzsprung-Russell diagram'],['7.10B',3,1,'Plate tectonics: ocean basins, earthquakes, mountains, volcanoes'],['8.10A',3,1,'Sun, hydrosphere, atmosphere: weather and climate'],
   ['6.9A',3,0,'Tilted Earth and the seasons'],['6.9B',3,0,'Earth, Sun, and Moon: tides'],['6.10B',3,0,'Layers of Earth'],['7.9B',3,0,'Gravity and motion in the solar system'],
   ['7.10A',3,0,'Evidence Earth has changed: fossils, plate tectonics, superposition'],['8.9B',3,0,'Galaxies; Earth in the Milky Way'],['8.10B',3,0,'Global atmospheric patterns and local weather'],
-  ['8.10C',3,0,'Ocean currents, air masses, tropical cyclones'],
+  ['8.10C',3,0,'Ocean currents, air masses, tropical cyclones'],['7.11A',3,0,'Human activity and watersheds'],['7.11B',3,0,'Human dependence on and impact on oceans'],
   ['8.12B',4,1,'Primary and secondary ecological succession'],['8.13A',4,1,'Functions of cell parts'],['8.13C',4,1,'Variation of traits and adaptations'],
-  ['6.12A',4,0,'Biotic and abiotic factors in ecosystems'],['6.13A',4,0,'Cell theory'],['7.11A',4,0,'Human activity and watersheds'],['7.11B',4,0,'Human dependence on and impact on oceans'],
+  ['6.12A',4,0,'Biotic and abiotic factors in ecosystems'],['6.13A',4,0,'Cell theory'],
   ['7.12A',4,0,'Energy pyramids and trophic levels'],['7.13A',4,0,'Human body systems'],['7.13C',4,0,'Asexual and sexual reproduction'],['7.13D',4,0,'Natural and artificial selection'],
   ['8.12C',4,0,'Biodiversity and ecosystem stability'],['8.13B',4,0,'Genes, chromosomes, and inherited traits']
 ].map(([k,cat,r,label])=>({k,cat,r:!!r,label,bank:[],gens:0}));
