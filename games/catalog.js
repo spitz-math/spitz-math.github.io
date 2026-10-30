@@ -170,7 +170,8 @@ window.SpitzGames=[
     paint_royale:'2026-11-09T12:00', hill_climb:'2026-11-09T12:00' };
   /* Updated games (Kody, 2026-10-30): a big change to a live game shows an UPDATED badge and a line saying what changed on its hub card
      for NEW_DAYS days, and the game sorts up with the new ones. at = when it went live (UTC). */
-  var UPDATED={ football_buds:{ at:'2026-10-30T15:00', what:'New: real points score, All-Pro mode and 3 challenges every game' } };
+  var UPDATED={ football_buds:{ at:'2026-10-30T15:00', what:'New: real points score, All-Pro mode and 3 challenges every game' },
+    hoop_buds:{ at:'2026-10-30T16:00', what:'New: real points score, All-Pro mode and 3 challenges every game' } };
   var now=Date.now(), G=window.SpitzGames;
   window.SpitzLocked=Object.keys(UNLOCK).filter(function(id){ return !UNLOCK[id]||Date.parse(UNLOCK[id]+'Z')>now; });
   Object.keys(UNLOCK).forEach(function(id){ if(UNLOCK[id]) ADDED[id]=UNLOCK[id]; });
