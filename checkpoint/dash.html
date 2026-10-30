@@ -533,8 +533,8 @@ details summary{cursor:pointer;color:var(--blue2);font-size:13px;margin-top:8px}
       <div class="msg2" id="bkMsg"></div>
       <div class="row" id="bkFileRow" hidden><button class="btn" id="bkFileBtn">Choose the question bank file</button><input type="file" id="bkFile" accept=".html,text/html" hidden></div>
       <div id="bkFilters" class="bkcol" hidden>
-        <label class="lab" for="bkCourse">Grade level</label>
-        <select id="bkCourse"><option value="alg1">Algebra I</option><option value="math6">Grade 6 Math</option><option value="math7">Grade 7 Math</option><option value="math8">Grade 8 Math</option><option value="rla6">Grade 6 Reading</option><option value="rla7">Grade 7 Reading</option><option value="rla8">Grade 8 Reading</option><option value="sci8">Grade 8 Science</option><option value="ss8">Grade 8 Social Studies</option></select>
+        <label class="lab" for="bkCourse">Grade/Subject</label>
+        <select id="bkCourse"><option value="alg1">Algebra I</option><option value="math6">Grade 6 Math</option><option value="math7">Grade 7 Math</option><option value="math8">Grade 8 Math</option><option value="rla6">Grade 6 RLA</option><option value="rla7">Grade 7 RLA</option><option value="rla8">Grade 8 RLA</option><option value="sci8">Grade 8 Science</option><option value="ss8">Grade 8 Social Studies</option></select>
         <span class="lab">Questions</span>
         <div class="seg" id="bkSrc"><button data-v="rel" aria-pressed="true">Released</button><button data-v="saved" aria-pressed="false">Saved</button><button data-v="gen" aria-pressed="false">Generated</button></div>
         <label class="lab" for="bkCat">Topic (reporting category)</label><select id="bkCat"></select>
@@ -2460,7 +2460,7 @@ async function fileChanges(P){   // what one publish will write
   if(P.oldTitle&&singleName(P.oldTitle)!==singleName(P.td.title)&&!TP.index.some(t=>t.id!==id&&singleName(t.title)===singleName(P.oldTitle))) out.push({path:'single/'+singleName(P.oldTitle),del:true});
   return out; }
 async function singleFor(id,title,reference,testJs,assets,refs){ const A={}, ref='refs/'+(reference||'alg1')+'.png';
-  const rb=(refs&&refs[ref])||(TP.files&&TP.files[ref]?await repoBytes(ref):null); if(rb) A[ref]=dataUrl(ref,rb);
+  for(const r of reference==='sci8'?[ref,'refs/sci8-pt.png']:[ref]){ const rb=(refs&&refs[r])||(TP.files&&TP.files[r]?await repoBytes(r):null); if(rb) A[r]=dataUrl(r,rb); }   // science: its periodic table too
   Object.keys(assets).sort().forEach(rel=>{ A[id+'/'+rel]=dataUrl(rel,assets[rel]); });
   return buildSingle(await ensurePlayer(),id,title,testJs,A); }
 function diffRows(P){ const o=P.old, n=P.td; if(!o) return null; const rows=[];
@@ -2675,7 +2675,7 @@ const TEKS6=[['6.2D',1,1,'Order rational numbers'],['6.4G',1,1,'Equivalent fract
 const COURSES={alg1:{name:'Algebra I',course:'Algebra I',ref:'alg1',cats:CATNAMES,re:/^alg1-20\d\d$/,src:'STAAR Algebra I',title:'Algebra I Practice'},
   math6:{name:'Grade 6 Math',course:'6th Math',ref:'math6',calc:false,cats:CAT8,re:/^math6-20\d\d$/,src:'STAAR Grade 6 Math',title:'Grade 6 Math Practice'},
   math8:{name:'Grade 8 Math',course:'8th Math',ref:'math8',cats:CAT8,re:/^math8-20\d\d$/,src:'STAAR Grade 8 Math',title:'Grade 8 Math Practice'},
-  rla8:{name:'Grade 8 Reading',course:'8th RLA',subject:'rla',cats:{1:'Reading',2:'Writing'},re:/^rla8-20\d\d$/,src:'STAAR Grade 8 Reading',title:'Grade 8 Reading Practice'}};
+  rla8:{name:'Grade 8 RLA',course:'8th RLA',subject:'rla',cats:{1:'Reading',2:'Writing'},re:/^rla8-20\d\d$/,src:'STAAR Grade 8 Reading',title:'Grade 8 RLA Practice'}};
 /* Grade 8 Reading: every STAAR-tested Grade 8 ELAR standard (TEA's TEKS Snapshot, v. 7.17.25: code, readiness, short label). The topic
    (1 Reading, 2 Writing) comes from the released tests' own tags, else writing for 10 and 11. Codes are written like the tests (6.C, 8.Diii, 10.Dvii). */
 const RLA8STD=[['2.A',0,'Print or digital resources (meaning, origin, part of speech)'],['2.B',1,'Use context to clarify unfamiliar words'],['2.C',0,'Greek and Latin roots'],
@@ -2802,8 +2802,8 @@ const STD={};   // course -> its standards: base plus any tag the published rele
    Reference sheets: refs/math7.png and refs/sci8.png (TEA's PDFs, Kody 10/30); Social Studies has none. */
 Object.assign(COURSES,{
   math7:{name:'Grade 7 Math',course:'7th Math',ref:'math7',calc:false,cats:CAT7,re:/^math7-20\d\d$/,src:'STAAR Grade 7 Math',title:'Grade 7 Math Practice',bid:'r7:',base:()=>TEKS7},
-  rla6:{name:'Grade 6 Reading',course:'6th RLA',subject:'rla',cats:{1:'Reading',2:'Writing'},re:/^rla6-20\d\d$/,src:'STAAR Grade 6 Reading',title:'Grade 6 Reading Practice',bid:'rr6:',base:()=>rlaBase(RLA6STD)},
-  rla7:{name:'Grade 7 Reading',course:'7th RLA',subject:'rla',cats:{1:'Reading',2:'Writing'},re:/^rla7-20\d\d$/,src:'STAAR Grade 7 Reading',title:'Grade 7 Reading Practice',bid:'rr7:',base:()=>rlaBase(RLA7STD)},
+  rla6:{name:'Grade 6 RLA',course:'6th RLA',subject:'rla',cats:{1:'Reading',2:'Writing'},re:/^rla6-20\d\d$/,src:'STAAR Grade 6 Reading',title:'Grade 6 RLA Practice',bid:'rr6:',base:()=>rlaBase(RLA6STD)},
+  rla7:{name:'Grade 7 RLA',course:'7th RLA',subject:'rla',cats:{1:'Reading',2:'Writing'},re:/^rla7-20\d\d$/,src:'STAAR Grade 7 Reading',title:'Grade 7 RLA Practice',bid:'rr7:',base:()=>rlaBase(RLA7STD)},
   sci8:{name:'Grade 8 Science',course:'8th Science',ref:'sci8',cats:CATSCI8,re:/^sci8-20\d\d$/,src:'STAAR Grade 8 Science',title:'Grade 8 Science Practice',bid:'rs8:',base:()=>SCI8},
   ss8:{name:'Grade 8 Social Studies',course:'8th History',ref:'none',calc:false,cats:CATSS8,re:/^ss8-20\d\d$/,src:'STAAR Grade 8 Social Studies',title:'Grade 8 Social Studies Practice',bid:'rh8:',base:()=>SS8}});
 COURSES.rla8.bid='rr8:'; COURSES.rla8.base=()=>rlaBase(RLA8STD); COURSES.math6.bid='r6:'; COURSES.math8.bid='r8:';
