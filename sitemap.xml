@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Public pages only. Never list teacher, topics, stats, board, warmup or leaderboard pages here. -->
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url><loc>https://spitzmath.com/</loc><lastmod>2026-10-30</lastmod></url>
+  <url><loc>https://spitzmath.com/arcade/</loc><lastmod>2026-10-30</lastmod></url>
+  <url><loc>https://spitzmath.com/checkpoint/</loc><lastmod>2026-10-30</lastmod></url>
+</urlset>
