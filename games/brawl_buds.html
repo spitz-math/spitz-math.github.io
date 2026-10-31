@@ -54,8 +54,9 @@ button:disabled{ cursor:default; }
 .bb-pad.sup{ color:var(--pow); border-color:rgba(255,210,63,.5); } .bb-pad.sup.on{ background:rgba(255,210,63,.25); border-color:var(--pow); }
 .bb-cornerbtn{ position:absolute; right:20px; top:18px; height:64px; padding:0 20px; border-radius:16px; background:rgba(18,12,34,.85); border:3px solid var(--border); font:800 24px/1 var(--body); display:flex; align-items:center; gap:12px; }
 .bb-cornerbtn kbd{ padding:7px 9px; border-radius:8px; background:var(--text); color:#120C22; font:800 18px/1 var(--body); }
-.bb-cornerbtn.low{ border-color:var(--pow); color:var(--pow); animation:bbPulse 1s infinite; }
-@keyframes bbPulse{ 50%{ box-shadow:0 0 0 6px rgba(255,210,63,.25); } }
+.bb-cornerbtn.low{ border-color:var(--pow); color:var(--pow); }
+.bb-cornerbtn.low::after{ content:''; position:absolute; inset:-9px; border-radius:22px; box-shadow:0 0 0 6px rgba(255,210,63,.25); opacity:0; animation:bbPulse 1s infinite; pointer-events:none; }
+@keyframes bbPulse{ 50%{ opacity:1; } }
 /* damage cards */
 .bb-dmg{ position:absolute; bottom:16px; width:338px; height:116px; border-radius:20px; padding:10px 16px 10px 12px; display:flex; align-items:center; gap:14px;
   background:linear-gradient(180deg,rgba(26,18,48,.92),rgba(14,10,28,.92)); border:3px solid var(--border); }
@@ -630,7 +631,7 @@ function launch(att,tgt,mv,id){ tgt.dmg=Math.min(999,tgt.dmg+mv.dmg); tgt.hitT=0
   var r=ang*Math.PI/180; tgt.vx=sx*Math.cos(r)*kb; tgt.vy=-Math.sin(r)*kb; if(tgt.vy<0||kb>500) tgt.ground=0;
   if(tgt.vy<0&&tgt.ground===0&&tgt.y>=MAIN.y-1&&tgt.y<=MAIN.y+1) tgt.y-=2;
   tgt.stun=Math.min(1.25,0.14+kb/2700); tgt.tumble=kb>950?1:0; tgt.atk=null; tgt.face=-sx; tgt.upUsed=0; tgt.jumps=Math.min(tgt.jumps,1);
-  freeze=Math.min(0.14,0.035+mv.dmg*0.005);
+  freeze=Math.min(0.07,0.02+mv.dmg*0.003);                                       /* a short hit-stop: long ones read as lag (Kody, 2026-10-31) */
   if(att.who==='bud'){ S.hits++; if(mv.sup) S.landed++; addPts(mv.dmg*10); }
   if(!SIM){ var hb=hurt(tgt); spark(tgt.x,hb[1]+hb[3]*0.45,att.who,kb); pop(tgt.x,hb[1]-14,mv.dmg,att.who); SND.hit(kb/2200); if(kb>1300){ shakeT=Math.max(shakeT,0.3); } if(kb>1700&&!reduced) zoomT=0.25; } }
 
@@ -719,7 +720,8 @@ try{ reduced=matchMedia('(prefers-reduced-motion: reduce)').matches; }catch(e){}
 function font(px){ return '400 '+px+'px "Dela Gothic One", Inter, sans-serif'; }
 function toStage(x,y){ return [26+x, 16+92+12+y]; }
 /* the canvases render at the size they show on screen (a 1366x768 Chromebook draws about half the pixels) */
-function sizeCanvases(){ var s=Math.min(innerWidth/1920,innerHeight/1080)*(window.devicePixelRatio||1), k=Math.min(1,Math.max(0.4,Math.round(s*20)/20));
+var RESCAP=1;                                                                     /* lowered when frames run slow (see frame) */
+function sizeCanvases(){ var s=Math.min(innerWidth/1920,innerHeight/1080)*(window.devicePixelRatio||1), k=Math.min(RESCAP,Math.max(0.4,Math.round(s*20)/20));
   if(k===RES&&bgC.width===Math.round(W*k)) return; RES=k; [bgC,fgC].forEach(function(c){ c.width=Math.round(W*k); c.height=Math.round(H*k); });
   drawBg(); dirty=true; }
 function rr(c,x,y,w,h,r){ c.beginPath(); c.moveTo(x+r,y); c.arcTo(x+w,y,x+w,y+h,r); c.arcTo(x+w,y+h,x,y+h,r); c.arcTo(x,y+h,x,y,r); c.arcTo(x,y,x+w,y,r); c.closePath(); }
@@ -796,7 +798,8 @@ function drawFighter(c,f,t){ var st=f.st, a=f.atk, mv=a?MV[a.id]:null, ph=a?(a.t
   /* arms and gloves */
   function glove(x,y,r){ c.fillStyle=f.who==='bud'&&hot()?'#FF8A1F':st.glove; c.beginPath(); c.arc(x,y,r,0,6.283); c.fill(); c.fillStyle='rgba(255,255,255,.35)'; c.beginPath(); c.arc(x-r*0.3,y-r*0.3,r*0.35,0,6.283); c.fill(); }
   c.fillStyle=skin;
-  if(a&&(a.id==='jab'||a.id==='punch')&&ph>=1){ rr(c,10,-82,a.id==='punch'?62:44,12,6); c.fill(); glove(a.id==='punch'?78:60,-76,a.id==='punch'?19:15); glove(-14,-70,13); }
+  if(!stun&&((a&&a.id==='bat')||(f.item&&f.item.k==='bat'))){ glove(-14,-72,13); }                       /* holding a bat: drawHeld draws the bat arm */
+  else if(a&&(a.id==='jab'||a.id==='punch')&&ph>=1){ rr(c,10,-82,a.id==='punch'?62:44,12,6); c.fill(); glove(a.id==='punch'?78:60,-76,a.id==='punch'?19:15); glove(-14,-70,13); }
   else if(a&&(a.id==='up'||a.id==='rocket')&&ph>=1){ rr(c,6,-160,12,72,6); c.fill(); glove(12,-166,a.id==='rocket'?19:15); glove(-16,-72,13); }
   else if(a&&ph===0){ glove(-22,-84,15); glove(-8,-70,13); }
   else if(air||stun){ rr(c,-30,-110,10,32,5); c.fill(); rr(c,22,-110,10,32,5); c.fill(); glove(-25,-114,13); glove(27,-114,13); }
@@ -863,7 +866,19 @@ function drawHeld(f,t){ var a=f.atk, s=f.st.size;
   if(f.spring>0&&!f.stun){ fg.save(); fg.scale(s,s); fg.strokeStyle='#C9D4EA'; fg.lineWidth=3; [-11,11].forEach(function(x){ fg.beginPath(); fg.moveTo(x-6,0); for(var j=1;j<=4;j++) fg.lineTo(x+(j%2?6:-6),j*3); fg.stroke(); }); fg.restore(); }
   var bat=a&&a.id==='bat', k=bat?'bat':f.item&&f.item.k; if(!k||f.stun>0) return;
   fg.save(); fg.scale(s,s);
-  if(k==='bat'){ var mv=MV.bat, ang=-0.9; if(bat){ ang=a.t<mv.s?-2.4:a.t<mv.s+mv.a?-2.4+3.3*(a.t-mv.s)/mv.a:0.9; } fg.translate(20,-82); fg.rotate(ang+0.6); fg.scale(1.3,1.3); itemIcon(fg,'bat',t); }
+  if(k==='bat'){ var mv=MV.bat, ang=-2.0+Math.sin(t*4)*0.05, from=-2.55, to=0.55, sw=0;     /* angle of the bat around the shoulder: up and back over the shoulder at rest */
+    if(bat){ if(a.t<mv.s) ang=-2.0+(from+2.0)*(a.t/mv.s);                                     /* wind up: cock it further back */
+      else if(a.t<mv.s+mv.a){ var u=(a.t-mv.s)/mv.a; u=1-(1-u)*(1-u); ang=from+(to-from)*u; sw=1; }   /* the swing: fast out of the wind-up, easing into the hit */
+      else { var r=Math.min(1,(a.t-mv.s-mv.a)/mv.e); if(r<0.35) ang=to+0.3*Math.sin(r/0.35*Math.PI*0.5); else { var v=(r-0.35)/0.65; v=v*v*(3-2*v); ang=to+0.3+(-2.0-to-0.3)*v; } } }   /* follow through, then swing it back up onto the shoulder */
+    var sx=4, sy=-84, R=24, gx=sx+Math.cos(ang)*R, gy=sy+Math.sin(ang)*R;
+    if(sw&&!reduced){ fg.save(); fg.globalAlpha=0.28; fg.strokeStyle='#FFF4C2'; fg.lineWidth=26; fg.lineCap='round'; fg.beginPath(); fg.arc(sx,sy,R+62,Math.min(from,ang),ang); fg.stroke(); fg.restore(); }
+    fg.save(); fg.translate(gx,gy); fg.rotate(ang);
+    fg.fillStyle='#7A4A22'; rr(fg,-12,-4,24,8,4); fg.fill();                                             /* handle */
+    fg.fillStyle='#D9A066'; fg.beginPath(); fg.moveTo(10,-4.5); fg.lineTo(72,-10); fg.arc(72,0,10,-Math.PI/2,Math.PI/2); fg.lineTo(10,4.5); fg.closePath(); fg.fill();   /* barrel */
+    fg.fillStyle='rgba(255,255,255,.32)'; fg.beginPath(); fg.moveTo(14,-3.5); fg.lineTo(72,-8); fg.lineTo(72,-4); fg.lineTo(14,-1); fg.closePath(); fg.fill();
+    fg.restore();
+    fg.strokeStyle='#FFD3A8'; fg.lineWidth=12; fg.lineCap='round'; fg.beginPath(); fg.moveTo(sx,sy); fg.lineTo(gx,gy); fg.stroke();   /* arm */
+    var gc=f.who==='bud'&&hot()?'#FF8A1F':f.st.glove; fg.fillStyle=gc; fg.beginPath(); fg.arc(gx,gy,13,0,6.283); fg.fill(); fg.fillStyle='rgba(255,255,255,.35)'; fg.beginPath(); fg.arc(gx-4,gy-4,4.5,0,6.283); fg.fill(); }
   else { fg.translate(26,-92); fg.scale(0.7,0.7); itemIcon(fg,'bomb',t); }
   fg.restore(); }
 /* a bubble at the edge of the screen when a fighter flies out of view */
@@ -898,7 +913,10 @@ function draw(){ fg.setTransform(RES,0,0,RES,0,0); fg.clearRect(0,0,W,H);
 /* ================= THE LOOP ================= */
 var acc=0, lastF=performance.now(), cdShown=-1, noPowMsg=0, PAUSE=false;
 function outOfPower(){ if(noPowMsg>0.4) return; noPowMsg=1.8; SND.empty(); var c=$('bb-dmgbud'); c.classList.remove('empty'); void c.offsetWidth; c.classList.add('empty'); }
-function frame(t){ var dt=Math.min(0.05,(t-lastF)/1000); lastF=t; tNow=t/1000;
+var slowN=0, slowT=0;
+function frame(t){ var raw=(t-lastF)/1000, dt=Math.min(0.05,raw); lastF=t; tNow=t/1000;
+  /* during the fight, if more than a third of frames over 2 s take longer than 1/40 s, draw the canvases smaller (down to 0.5) */
+  if(S.phase==='live'&&!PAUSE&&raw<0.5){ slowT+=raw; if(raw>0.025) slowN++; if(slowT>2){ var cnt=Math.round(slowT/0.0167); if(slowN>cnt/3&&RESCAP>0.5){ RESCAP=Math.max(0.5,Math.min(RESCAP,RES)-0.15); sizeCanvases(); } slowT=0; slowN=0; } }
   if(S.started&&!S.over){
     if(S.phase==='pit'||S.phase==='count'||S.phase==='live'){ S.clock-=dt; clockDraw(); if(S.clock<=0){ timeUp(); dirty=true; } }   /* the clock runs the whole time, corners too, so every brawl takes 4 minutes */
     if(S.phase==='live'&&PAUSE){ dirty=true; }
