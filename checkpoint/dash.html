@@ -506,7 +506,7 @@ details summary{cursor:pointer;color:var(--blue2);font-size:13px;margin-top:8px}
         <label class="fl">Test ID<input id="oeId" maxlength="60" spellcheck="false" autocomplete="off"></label>
         <label class="fl" title="Teachers of this course can use this test and copy it. Only you can change it.">Course (who can use it)<select id="oeCourse"></select></label><datalist id="oeStdList"></datalist></div>
       <div class="row"><label class="sw" id="oeCalcWrap"><input type="checkbox" id="oeCalc" checked> Students can use the calculator and graph tool</label></div>
-      <p class="hint" id="oeAbout">Students see your questions in the same testing screen as STAAR practice. The answers you mark stay in Mr. Spitzlberger's Google Sheet and never go to the students' computers, so a student can't look them up. Your tests show up only in your own lists.</p>
+      <p class="hint" id="oeAbout">Students see your questions in the same testing screen as STAAR practice. The answers you mark stay in Mr. Spitzlberger's Google Sheet and never go to the students' computers, so a student can't look them up. Teachers of the course you pick can give your test and copy it, but only you can change it. Tests stay off the students' practice list.</p>
       <p class="hint oewarn" id="oeUsed" hidden></p></section>
     <section class="tcard"><h2>Reading passages <span class="hint" style="font-weight:400">(optional)</span></h2>
       <p class="hint">A passage shows on the left with its questions beside it, like the reading test. Pick the passage on each question that goes with it.</p>
@@ -628,6 +628,7 @@ addEventListener('keydown',e=>{ if(e.key==='Escape'&&!$('#psVeil').hidden) $('#p
 const toScore=s=>s.q.filter(q=>q&&q[9]).length;   // written answers still waiting for the teacher
 const sLvl=s=>staarLvl(s.test,s.score||0,s.max||0);
 function lvPill(s){ const l=sLvl(s), w=toScore(s);
+  if(!s.submitted&&!(s.answered>0)) return '<span class="rs" title="No answers yet">–</span>';   /* not started: no level yet */
   if(w) return `<span class="lvp lvw" title="${w} written answer${w>1?'s':''} to score first. Level so far: ${esc(l[1])}">✎ Score ${w} first</span>`;
   return `<span class="lvp${s.submitted?'':' lvs'}" style="background:${l[2]}" title="${esc(l[1])}${s.submitted?'':' so far'}${l[3]?' (estimate: this test has no row in the campus standards)':''}">${esc(l[1])}${l[3]?' <i>est.</i>':''}</span>`; }
 const IDLE_MS=3*60*1000, NOSIG_MS=100*1000, POLL_MS=15000;
@@ -1693,9 +1694,9 @@ async function openRoster(){ openPage('#rpage'); $('#rlList').innerHTML='<p clas
     if(RS.for&&r.teacher!==RS.for){ $('#rsAdd').disabled=true; $('#rlList').innerHTML=''; return say($('#rlMsg'),'Loading other teachers’ rosters needs the latest Code.gs (paste it, then Deploy › New version).','err'); } RS.list=r.roster; RS.periods=r.periods; $('#rsPer').textContent=(nm?nm+'’s':'Your')+' class periods: '+r.periods.join(', '); renderRoster(); }
   catch(e){ $('#rlList').innerHTML=''; say($('#rlMsg'),errText(e),'err'); } }
 function parsePaste(t){ const out=[], skip=[];
-  String(t).split(/\r?\n/).forEach((ln,i)=>{ if(!ln.trim()) return; const parts=ln.split(/\t|,|;/).map(x=>x.trim()).filter(Boolean);
-    const e=parts.findIndex(x=>/@/.test(x)); if(e<0){ skip.push(i+1); return; }
-    const rest=parts.filter((x,k)=>k!==e), per=rest.length>1?rest[rest.length-1]:'', name=rest.length>1?rest.slice(0,-1).join(' '):rest[0]||'';
+  String(t).split(/\r?\n/).forEach((ln,i)=>{ if(!ln.trim()) return; const tab=/\t/.test(ln), parts=ln.split(tab?/\t/:/,|;/).map(x=>x.trim()).filter(Boolean);
+    const e=parts.findIndex(x=>/@/.test(x)); if(e<0){ if(!/^\s*(e-?mail|student|name)\b/i.test(ln)) skip.push(i+1); return; }   /* a header row (Email, Name, Period) is left out quietly */
+    const rest=parts.filter((x,k)=>k!==e).map(x=>tab?x.replace(/^([^,]+),\s*([^,]+)$/,'$2 $1'):x), per=rest.length>1?rest[rest.length-1]:'', name=rest.length>1?rest.slice(0,-1).join(' '):rest[0]||'';   /* from a spreadsheet, "Lopez, Ana" is one name: Ana Lopez */
     out.push({email:parts[e],name,period:per.replace(/^(\d+)(st|nd|rd|th)$/i,'$1').replace(/^period\s*/i,''),line:i+1}); });
   return {out,skip}; }
 $('#rsAdd').onclick=async()=>{ const {out,skip}=parsePaste($('#rsPaste').value); if(!out.length) return say($('#rsMsg'),'Paste at least one line: school email, first name or initials, class period.','err');
@@ -1769,7 +1770,7 @@ function render(){ if(!DATA) return; const card=$('#card'), sx=card.scrollLeft, 
   draw(); card.dataset.view=view; if(same){ card.scrollLeft=sx; card.scrollTop=sy; } }
 function draw(){ renderChips(); const L=shown(); renderTiles(L);
   [...sel].forEach(k=>{ if(!L.some(s=>s.key===k)) sel.delete(k); }); renderBulk();
-  if(!DATA.sessions.length){ $('#card').innerHTML='<div class="empty">No sessions yet. Click <b>My sessions</b> above to make one.</div>'; return; }
+  if(!DATA.sessions.length){ $('#card').innerHTML='<div class="empty">No sessions yet. New here? Start with <b>My roster</b> (or skip it: students not on it type a name and pick a period). Then click <b>My sessions</b> to make a session.</div>'; return; }
   if(!selSes.size){ $('#card').innerHTML='<div class="empty">Pick a session in the Session menu above.</div>'; return; }
   if(DATA.tooMany){ $('#card').innerHTML='<div class="empty">That is '+DATA.tooMany.toLocaleString()+' students at once, too many for one screen. Pick fewer sessions in the Session menu above, or archive old ones in My sessions.</div>'; return; }
   if(!L.length){ $('#card').innerHTML='<div class="empty">No students '+(per||qtxt?'match these filters':'have signed in to '+(selSes.size>1?'these sessions':'this session'))+' yet.</div>'; return; }

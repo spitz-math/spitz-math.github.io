@@ -3081,8 +3081,8 @@ function fillBreakdown(){
   document.getElementById('rxLevel').innerHTML=`<span class="lvl" style="background:${b[2]}">${b[1]}</span><span>${tot} of ${mx} points (${pct}%). ${ROW?`Level using the campus ${ROW} standards.`:'Estimated level (Approaches 32%, Meets 52%, Masters 69% of points).'}${wr?` Your teacher still has to score your written answer${wr>1?'s':''}, so this level can go up.`:''}</span>`;
   document.getElementById('rxTime').innerHTML=`Time spent: <b>${fmtMs(ITEMS.reduce((s,it)=>s+ACT.items[it.n].ms,0))}</b>${ACT.away?` · Left the test window <b>${ACT.away}</b> time${ACT.away===1?'':'s'}`:''}`;
   if(!CAT){ document.querySelectorAll('.rxcat').forEach(e=>e.hidden=true); return; }
-  document.getElementById('rxCats').innerHTML=Object.keys(CAT).map(Number).map(c=>{ const r=rows.filter(x=>x.it.cat===c); return `<div class="rxrow"><span class="rxl">${c}. ${CAT[c]}</span>${bar(r.reduce((s,x)=>s+x.e,0),r.reduce((s,x)=>s+x.m,0))}</div>`; }).join('');
-  document.getElementById('rxRS').innerHTML=['Readiness','Supporting'].map(k=>{ const r=rows.filter(x=>x.it.rs===k); return `<div class="rxrow"><span class="rxl">${k}</span>${bar(r.reduce((s,x)=>s+x.e,0),r.reduce((s,x)=>s+x.m,0))}</div>`; }).join('');
+  document.getElementById('rxCats').innerHTML=Object.keys(CAT).map(Number).map(c=>{ const r=rows.filter(x=>x.it.cat===c); if(!r.length) return ''; return `<div class="rxrow"><span class="rxl">${c}. ${CAT[c]}</span>${bar(r.reduce((s,x)=>s+x.e,0),r.reduce((s,x)=>s+x.m,0))}</div>`; }).join('');
+  document.getElementById('rxRS').innerHTML=['Readiness','Supporting'].map(k=>{ const r=rows.filter(x=>x.it.rs===k); if(!r.length) return ''; return `<div class="rxrow"><span class="rxl">${k}</span>${bar(r.reduce((s,x)=>s+x.e,0),r.reduce((s,x)=>s+x.m,0))}</div>`; }).join('');
 }
 window.__spitzFill=fillBreakdown;
 new MutationObserver(()=>{ if(!document.getElementById('resultsScreen').hidden) fillBreakdown(); }).observe(document.getElementById('resultsScreen'),{attributes:true,attributeFilter:['hidden']});
