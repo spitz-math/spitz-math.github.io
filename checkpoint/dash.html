@@ -291,6 +291,13 @@ details summary{cursor:pointer;color:var(--blue2);font-size:13px;margin-top:8px}
 .oeqh select,.oeqh input{font-size:13px;padding:4px 6px;border:1px solid #9fb0c8;border-radius:6px;background:#fff}
 .oeqh .std{width:110px} .oeqh .sp{flex:1}
 .oeqh .mv button{border:1px solid #9fb0c8;background:#fff;border-radius:5px;padding:2px 8px;margin-left:2px}
+.obbox{width:min(820px,96vw)} .obopt{border:1px solid var(--line);border-radius:8px;padding:10px 12px;margin-bottom:10px} .obopt h4{margin:0 0 6px;font-size:14px}
+.obopt .row{margin-top:6px} .obopt select{font-size:14px;padding:5px 6px;border:1px solid #9fb0c8;border-radius:6px;max-width:100%}
+.obf{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:8px} .obf input,.obf select{font-size:14px;padding:5px 8px;border:1px solid #9fb0c8;border-radius:6px} .obf input{flex:1;min-width:160px}
+.oblist{border:1px solid var(--line);border-radius:8px;max-height:52vh;overflow:auto} .obrow{display:flex;gap:10px;align-items:flex-start;padding:8px 10px;border-bottom:1px solid var(--line);cursor:pointer}
+.obrow:last-child{border-bottom:0} .obrow:hover{background:#f5f8fd} .obrow.on{background:#eaf3ff} .obrow input{margin-top:3px} .obrow .obt{flex:1;min-width:0} .obrow .obq{font-size:14px;overflow-wrap:anywhere}
+.obrow .obm{font-size:12px;color:#5a6b85;margin-top:3px} .obrow img{max-width:90px;max-height:60px;border:1px solid var(--line);border-radius:4px;background:#fff} .obrow .btn{font-size:12px;padding:3px 8px}
+.obfoot{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:10px} .obfoot .sp{flex:1}
 .oerich{border:1px solid #9fb0c8;border-radius:6px;background:#fff}
 .oerich:focus-within{border-color:var(--blue2);box-shadow:0 0 0 2px #dbe7ff}
 .oetools{display:flex;flex-wrap:wrap;gap:2px;padding:3px;border-bottom:1px solid #e3e9f1;background:#f7f9fc;border-radius:6px 6px 0 0}
@@ -512,7 +519,8 @@ details summary{cursor:pointer;color:var(--blue2);font-size:13px;margin-top:8px}
       <p class="hint">A passage shows on the left with its questions beside it, like the reading test. Pick the passage on each question that goes with it.</p>
       <div id="oePsgs"></div><div class="row"><button class="btn" id="oeAddPsg">+ Add a passage</button></div></section>
     <div id="oeItems"></div>
-    <section class="tcard oeadd"><div class="row" style="margin-top:0"><b>Add a question:</b>
+    <section class="tcard oeadd"><div class="row" style="margin-top:0"><b>Reuse:</b><button class="btn" id="oeFromBank">+ From your question bank</button><span class="hint">Questions you saved from any of your tests (Copy… › Save to your question bank).</span></div>
+      <div class="row"><b>Add a question:</b>
       <button class="btn" data-oeadd="mc">Multiple choice</button><button class="btn" data-oeadd="ms">Check all that apply</button>
       <button class="btn" data-oeadd="num">Number answer</button><button class="btn" data-oeadd="text">Written answer</button></div>
       <div class="row"><b>Interactive:</b><button class="btn" data-oeadd="eq">Equation editor</button><button class="btn" data-oeadd="inline">Drop-down</button><button class="btn" data-oeadd="table">Table match</button>
@@ -576,6 +584,7 @@ details summary{cursor:pointer;color:var(--blue2);font-size:13px;margin-top:8px}
 <div class="pv" id="pv" hidden><div class="pvbar"><b id="pvTitle"></b><span id="pvNote">Preview only: nothing is saved to your Sheet.</span><span class="sp"></span><label class="pvra" id="pvRA" title="See the test the way a read aloud student does: sound check first, then the speaker button on each question"><input type="checkbox" id="pvRAOn"> Read aloud</label><label class="pvra" id="pvCA" title="See the test the way a student with the basic calculator support does (tests with no calculator)"><input type="checkbox" id="pvCAOn"> Calculator</label><button class="btn pri" id="pvPrint" hidden>Print</button><button class="btn" id="pvClose">Close preview</button></div><iframe id="pvf" title="Test preview"></iframe></div>
 <div id="tip" hidden></div>
 <div class="veil" id="psVeil" hidden><div class="psbox" role="dialog" aria-modal="true" aria-labelledby="psTitle"><div class="qvh"><h3 id="psTitle">Performance standards</h3><button class="btn" id="psClose">Close</button></div><div class="psb" id="psBody"></div></div></div>
+<div class="veil" id="obVeil" hidden><div class="psbox obbox" role="dialog" aria-modal="true" aria-labelledby="obTitle"><div class="qvh"><h3 id="obTitle"></h3><button class="btn" id="obClose">Close</button></div><div class="psb" id="obBody"></div></div></div>
 <div class="veil" id="veil" hidden><div class="dlg" role="alertdialog" aria-modal="true" aria-labelledby="vTitle"><h3 id="vTitle"></h3><div id="vMsg"></div><div class="btns" id="vBtns"></div></div></div>
 
 <script>window.SPITZ_ROOT="";</script>
@@ -1522,7 +1531,7 @@ function oeCard(it,i){ const c=document.createElement('section'); c.className='t
     <select class="ty" aria-label="Question type">${Object.keys(OE_TYPES).map(k=>`<option value="${k}"${k===it.type?' selected':''}>${OE_TYPES[k]}</option>`).join('')}</select>
     <label class="hint">Points <select class="pt">${[1,2,3,4,5,6,7,8,9,10].map(p=>`<option${p===+it.points?' selected':''}>${p}</option>`).join('')}</select></label>
     <label class="hint">TEKS <input class="std" maxlength="20" list="oeStdList" placeholder="optional" value="${esc(it.std||'')}"></label>${psg}
-    <span class="sp"></span><span class="mv"><button type="button" data-mv="-1" aria-label="Move question ${i+1} up" ${i?'':'disabled'}>▲</button><button type="button" data-mv="1" aria-label="Move question ${i+1} down" ${i<n-1?'':'disabled'}>▼</button><button type="button" data-cp="1" title="Copy this question">Copy</button><button type="button" data-rm="1" aria-label="Delete question ${i+1}" style="color:var(--no)">✕</button></span></div>`;
+    <span class="sp"></span><span class="mv"><button type="button" data-mv="-1" aria-label="Move question ${i+1} up" ${i?'':'disabled'}>▲</button><button type="button" data-mv="1" aria-label="Move question ${i+1} down" ${i<n-1?'':'disabled'}>▼</button><button type="button" data-cp="1" title="Copy this question here, to another of your tests, or to your question bank">Copy…</button><button type="button" data-rm="1" aria-label="Delete question ${i+1}" style="color:var(--no)">✕</button></span></div>`;
   const rq=oeRich(it.text,['inline','blanks','twopart'].includes(it.type)?'Directions or a question (optional), like: Choose the words that complete the sentence.':'Type the question.','',()=>{ it.text=rq.html(); oeDirty(); }); c.appendChild(rq);
   /* picture */
   const pic=document.createElement('div'); pic.className='oepic';
@@ -1563,7 +1572,7 @@ function oeCard(it,i){ const c=document.createElement('section'); c.className='t
   const pw=c.querySelector('.pw'); if(pw) pw.onchange=e=>{ it.pic.w=+e.target.value; oeDirty(); };
   c.querySelector('.mv').addEventListener('click',e=>{ const b=e.target.closest('button'); if(!b) return;
     if(b.dataset.mv){ const j=i+ +b.dataset.mv; [OE.items[i],OE.items[j]]=[OE.items[j],OE.items[i]]; }
-    else if(b.dataset.cp){ OE.items.splice(i+1,0,JSON.parse(JSON.stringify(it))); }
+    else if(b.dataset.cp){ obCopy(i); return; }
     else if(b.dataset.rm){ if((oePlain(it.text)||(it.choices||[]).some(x=>oePlain(x)))&&!confirm('Delete question '+(i+1)+'?')) return; OE.items.splice(i,1); }
     oeDirty(); oeRenderItems(); });
   pic.addEventListener('click',e=>{ const b=e.target.closest('button'); if(!b) return;
@@ -1589,14 +1598,17 @@ function oeCheck(b,publish){ const P=[];
   if(!/^[a-z0-9][a-z0-9-]{1,58}[a-z0-9]$/.test(b.id)) P.push([null,'The test ID can only use lowercase letters, numbers and dashes (3 to 60 of them).']);
   b.passages.forEach((p,k)=>{ if(!oePlain(p)) P.push([null,'Passage '+(k+1)+' is blank. Type it or remove it.']); });
   if(!b.items.length) P.push([null,'Add at least one question.']);
-  if(publish) b.items.forEach((it,i)=>{ const q='Question '+(i+1)+': ';
+  if(publish) b.items.forEach((it,i)=>oeCheckOne(it,OE.items[i],i,P));
+  return P; }
+/* problems with one question: it = what is sent (oeOut), ed = the editor's own copy */
+function oeCheckOne(it,ed,i,P){ const q='Question '+(i+1)+': ';
     if(!oePlain(it.text)&&!it.pic&&!['inline','blanks','twopart'].includes(it.type)) P.push([i,q+'type the question.']);
-    if(!/^(mc|ms|num|text)$/.test(it.type)) oeCheckMore(OE.items[i],q,P,i);
+    if(!/^(mc|ms|num|text)$/.test(it.type)) oeCheckMore(ed,q,P,i);
     if(it.type==='mc'||it.type==='ms'){ it.choices.forEach((c,k)=>{ if(!oePlain(c)) P.push([i,q+'answer choice '+OE_L[k]+' is blank.']); });
       if(it.type==='mc'&&it.answer==null) P.push([i,q+'mark the correct answer.']);
       if(it.type==='ms'&&!(it.answer||[]).length) P.push([i,q+'check every correct answer.']);
       if(it.type==='ms'&&(it.answer||[]).length===it.choices.length) P.push([i,q+'at least one choice has to be wrong.']); }
-    if(it.type==='num'&&!/^-?\d+(\.\d+)?(\/-?\d+(\.\d+)?)?$/.test(String(it.answer||'').replace(/[−]/g,'-').replace(/,/g,''))) P.push([i,q+'the answer has to be a number, like 12, -3.5 or 3/4.']); });
+    if(it.type==='num'&&!/^-?\d+(\.\d+)?(\/-?\d+(\.\d+)?)?$/.test(String(it.answer||'').replace(/[−]/g,'-').replace(/,/g,''))) P.push([i,q+'the answer has to be a number, like 12, -3.5 or 3/4.']);
   return P; }
 async function oeSave(publish){ if(!OE||OE.busy) return; const b=oeGather(), P=oeCheck(b,publish), msg=$('#oeMsg');
   document.querySelectorAll('.oeq.bad').forEach(x=>x.classList.remove('bad'));
@@ -1643,6 +1655,95 @@ $('#oeTitle').oninput=()=>{ oeDirty(); oeIdAuto(); }; $('#oeId').oninput=e=>{ e.
 $('#oeCourse').onchange=()=>{ if(OE_NOCALC.includes($('#oeCourse').value)) $('#oeCalc').checked=false; oeCourseSync(); oeDirty(); }; $('#oeCalc').onchange=oeDirty;
 $('#oeBack').onclick=async()=>{ if(OE&&OE.dirty&&OE.mine&&!await ask('Leave without saving?','<p>Your changes since the last save will be lost.</p>','Leave')) return;
   $('#oepage').hidden=true; OE=null; openMySessions(); };
+/* ---------- editor helpers: copy a question to another of your tests, and your own question bank (stcBankList / stcBankSave / stcBankRemove).
+   The bank's answers stay in the Sheet ('Teacher Question Bank' tab), like the tests' answers; only the teacher who saved them gets them back. ---------- */
+const OB={list:null, pics:{}, sel:new Set()};   /* pics: pictures saved during this visit (GitHub can take a minute to show a new one) */
+function obShow(title,html){ $('#obTitle').textContent=title; $('#obBody').innerHTML=html; $('#obVeil').hidden=false; }
+function obHide(){ $('#obVeil').hidden=true; }
+$('#obClose').onclick=obHide; $('#obVeil').addEventListener('click',e=>{ if(e.target.id==='obVeil') obHide(); });
+addEventListener('keydown',e=>{ if(e.key==='Escape'&&!$('#obVeil').hidden&&$('#veil').hidden) obHide(); });
+const obPicName=f=>'q-'+Math.random().toString(36).slice(2,8)+'.'+String(f).split('.').pop();
+const obData=r=>r.blob().then(b=>new Promise((ok,no)=>{ const fr=new FileReader(); fr.onload=()=>ok(fr.result); fr.onerror=no; fr.readAsDataURL(b); }));
+async function obPic(path,have){ if(have) return have; const r=await siteGet(path); if(!r.ok) throw new Error('Could not copy the picture. Try again in a minute.'); return obData(r); }
+const obEdPic=f=>obPic('tests/'+OE.id+'/img/'+f,OE.pics[f]);   /* a picture of the question on screen: new (not saved yet) or already on GitHub */
+const obPsg=it=>{ const h=it.passage&&OE.passages[+String(it.passage).slice(1)-1]; return h&&oePlain(h)?h:''; };
+function obReady(i){ const it=OE.items[i], o=oeOut(it), P=[]; oeCheckOne(o,it,i,P); if(P.length) throw new Error(P[0][1]+(P.length>1?` (and ${plural(P.length-1,'more thing')} to fix)`:'')); return o; }
+function obMyTests(){ return ((MP.my||{}).tests||[]).filter(t=>t.kind==='own'&&!t.shared&&t.id!==OE.id); }
+/* Copy…: right below, to another of your tests, or to your question bank */
+function obCopy(i){ const it=OE.items[i], L=obMyTests();
+  obShow('Copy question '+(i+1),`<p class="hint" style="margin:0 0 10px">${esc(OE_TYPES[it.type]||it.type)} · ${plural(+it.points||1,'point')}${it.std?' · '+esc(it.std):''}${obPsg(it)?' · with its passage':''}${it.pic?' · with its picture':''}</p>
+    ${OE.mine?`<div class="obopt"><h4>In this test</h4><div class="row"><button class="btn" data-ob="here">Copy it right below</button><span class="hint">A copy you can change, as question ${i+2}.</span></div></div>`:''}
+    <div class="obopt"><h4>To another of your tests</h4>${L.length?`<div class="row"><select id="obTo" aria-label="Your test">${L.map(t=>`<option value="${esc(t.id)}">${esc(t.title)} (${t.status==='draft'?'draft':t.status==='waiting'?'waiting for approval':'published'}, ${plural(t.n||0,'question')})</option>`).join('')}</select><button class="btn pri" data-ob="to">Copy to that test</button></div>
+      <p class="hint">It goes on the end of that test, with its answer${obPsg(it)?', its passage':''}${it.pic?' and its picture':''}. ${OE.dirty?'It is copied as you see it now, with your changes. ':''}</p>`:'<p class="hint">You have no other tests yet. Save this one, then start another with Write my own test.</p>'}</div>
+    <div class="obopt"><h4>To your question bank</h4><div class="row"><button class="btn pri" data-ob="bank">Save to your question bank</button></div>
+      <p class="hint">Keep it to add to any of your tests later (+ From your question bank, under the questions). The answer stays in Mr. Spitzlberger's Google Sheet like your tests' answers; only you can see your question bank.</p></div>
+    <div class="msg2" id="obMsg"></div>`);
+  const msg=$('#obMsg'), busy=v=>$('#obBody').querySelectorAll('button').forEach(b=>b.disabled=v);
+  $('#obBody').onclick=async e=>{ const b=e.target.closest('[data-ob]'); if(!b) return; const what=b.dataset.ob;
+    if(what==='here'){ OE.items.splice(i+1,0,JSON.parse(JSON.stringify(it))); oeDirty(); oeRenderItems(); obHide(); return; }
+    try{ obReady(i); }catch(x){ return say(msg,esc(x.message),'err'); }
+    if(what==='to'){ const id=$('#obTo').value, t=L.find(x=>x.id===id);
+      if(t.status!=='draft'&&!await ask('Add it to a published test?',`<p><b>${esc(t.title)}</b> is published. The question goes on the end, as question ${(t.n||0)+1}, and students see it the next time they open the test.</p>`,'Copy it')) return;
+      busy(true); say(msg,'Copying…');
+      try{ const r=await obCopyTo(i,id); MP.tests=null; await myTests(true); renderMt();
+        say(msg,`Copied to <b>${esc(t.title)}</b> as question ${r.n}.${r.status==='draft'?' It is a draft there.':''}`,'ok'); }
+      catch(x){ say(msg,errText(x),'err'); } busy(false); }
+    if(what==='bank'){ busy(true); say(msg,'Saving…');
+      try{ const r=await obBankSave(i); say(msg,r.dup?'It is already in your question bank.':'Saved to your question bank.','ok'); }
+      catch(x){ say(msg,errText(x),'err'); } busy(false); } }; }
+/* the question as it is on screen goes on the end of another of the teacher's tests (that test is saved, and published again if it is out) */
+async function obCopyTo(i,id){ const it=OE.items[i], q=JSON.parse(JSON.stringify(obReady(i)));
+  const d=await call('stcOwnGet',{id},60000); if(!d||!d.mine) throw new Error('That test belongs to another teacher.');
+  const items=d.items.map(oeFromSheet).map(oeOut), passages=d.passages.slice(), pictures=[];
+  if(items.length>=100) throw new Error('That test already has 100 questions.');
+  q.passage=''; const ph=obPsg(it);
+  if(ph){ let k=passages.indexOf(ph); if(k<0){ if(passages.length>=20) throw new Error('That test already has 20 passages.'); passages.push(ph); k=passages.length-1; } q.passage='P'+(k+1); }
+  if(q.pic){ const data=await obEdPic(q.pic.file), f=obPicName(q.pic.file); q.pic={file:f,w:q.pic.w}; pictures.push({file:f,b64:data.split(',')[1]}); }
+  items.push(q);
+  const r=await call('stcOwnSave',{id,title:d.title,course:d.course,calc:d.calc,passages,items,pictures,publish:d.status!=='draft'},240000);
+  return Object.assign({n:items.length},r); }
+async function obBankSave(i){ const it=OE.items[i], o=obReady(i); let data='';
+  if(o.pic) data=await obEdPic(o.pic.file);
+  const r=await call('stcBankSave',{item:o,passage:obPsg(it),course:$('#oeCourse').value,n:i+1,picture:data?data.split(',')[1]:''},120000);
+  if(r&&r.item){ if(OB.list) OB.list.unshift(r.item); if(r.item.pic&&data) OB.pics[r.item.pic.file]=data; }
+  return r; }
+/* + From your question bank: pick questions, they go on the end of the test on screen */
+const obText=e=>oePlain(e.text)||oePlain(e.sent||e.qa||e.ht||'')||(e.pic?'(picture)':'(no text)');
+async function obOpen(){ OB.sel=new Set(); obShow('Your question bank','<p class="hint">Loading…</p>');
+  try{ if(!OB.list) OB.list=(await call('stcBankList',null,60000)).items||[]; }catch(x){ $('#obBody').innerHTML=`<div class="msg2 err">${errText(x)}</div>`; return; }
+  const L=OB.list, cs=[...new Set(L.map(e=>e.course))].sort((a,b)=>OE_COURSES.indexOf(a)-OE_COURSES.indexOf(b)), ty=[...new Set(L.map(e=>e.type==='dnd'&&e.venn?'venn':e.type))], cur=$('#oeCourse').value;
+  if(!L.length){ $('#obBody').innerHTML='<p>Your question bank is empty.</p><p class="hint">To save a question to it, click <b>Copy…</b> on the question, then <b>Save to your question bank</b>. Then you can add it to any of your tests from here.</p>'; return; }
+  $('#obBody').innerHTML=`<div class="obf"><input type="search" id="obFind" placeholder="Find words or a TEKS" aria-label="Find">
+      <select id="obCourse" aria-label="Course"><option value="">All courses</option>${cs.map(c=>`<option${c===cur?' selected':''}>${esc(c)}</option>`).join('')}</select>
+      <select id="obType" aria-label="Question type"><option value="">All types</option>${ty.map(t=>`<option value="${t}">${esc(OE_TYPES[t]||t)}</option>`).join('')}</select></div>
+    <div class="oblist" id="obList"></div>
+    <div class="obfoot"><span class="hint" id="obCount"></span><div class="sp"></div><button class="btn del" id="obRemove" disabled>Remove from bank</button><button class="btn pri" id="obAdd" disabled>Add to this test</button></div><div class="msg2" id="obMsg"></div>`;
+  const draw=()=>{ const f=$('#obFind').value.trim().toLowerCase(), c=$('#obCourse').value, t=$('#obType').value;
+    const show=OB.list.filter(e=>(!c||e.course===c)&&(!t||(e.type==='dnd'&&e.venn?'venn':e.type)===t)&&(!f||(obText(e)+' '+e.std).toLowerCase().includes(f)));
+    $('#obList').innerHTML=show.length?show.map(e=>`<label class="obrow${OB.sel.has(e.id)?' on':''}" data-id="${esc(e.id)}"><input type="checkbox"${OB.sel.has(e.id)?' checked':''} aria-label="Pick this question">
+      <div class="obt"><div class="obq">${esc(obText(e).slice(0,220))}</div><div class="obm">${esc(OE_TYPES[e.type==='dnd'&&e.venn?'venn':e.type]||e.type)} · ${plural(e.max||1,'point')}${e.std?' · TEKS '+esc(e.std):''} · ${esc(e.course)}${e.psg?' · with a passage':''}${e.bad?' · <b style="color:var(--no)">changed in the Sheet: '+esc(e.bad)+'</b>':''}</div></div>
+      ${e.pic?`<img src="${esc(OB.pics[e.pic.file]||ROOT+'bank/img/'+e.pic.file)}" alt="">`:''}</label>`).join(''):'<p class="hint" style="padding:10px">No questions match.</p>'; foot(); };
+  const foot=()=>{ const n=OB.sel.size; $('#obCount').textContent=plural(OB.list.length,'question')+' saved'+(n?' · '+n+' picked':'');
+    $('#obAdd').disabled=$('#obRemove').disabled=!n; $('#obAdd').textContent=n>1?'Add '+n+' to this test':'Add to this test'; };
+  $('#obFind').oninput=draw; $('#obCourse').onchange=draw; $('#obType').onchange=draw;
+  $('#obList').onchange=e=>{ const r=e.target.closest('.obrow'); if(!r) return; e.target.checked?OB.sel.add(r.dataset.id):OB.sel.delete(r.dataset.id); r.classList.toggle('on',e.target.checked); foot(); };
+  $('#obRemove').onclick=async()=>{ const n=OB.sel.size; if(!await ask('Remove from your question bank?',`<p>${plural(n,'question')} will be removed from your question bank. Tests you already added ${n>1?'them':'it'} to keep ${n>1?'them':'it'}.</p>`,'Remove')) return;
+    const ids=[...OB.sel]; $('#obRemove').disabled=true; say($('#obMsg'),'Removing…');
+    try{ await call('stcBankRemove',{ids},60000); OB.list=OB.list.filter(e=>!OB.sel.has(e.id)); OB.sel=new Set(); draw(); say($('#obMsg'),'Removed.','ok'); }
+    catch(x){ say($('#obMsg'),errText(x),'err'); draw(); } };
+  $('#obAdd').onclick=async()=>{ const pick=OB.list.filter(e=>OB.sel.has(e.id)); if(OE.items.length+pick.length>100) return say($('#obMsg'),'A test can have up to 100 questions.','err');
+    $('#obAdd').disabled=true; say($('#obMsg'),'Adding…');
+    try{ const add=[], psgs=OE.passages.slice();
+      for(const e of pick){ const ed=oeFromSheet(Object.assign({},e,{passage:'',pic:null}));
+        if(e.psg){ let k=psgs.indexOf(e.psg); if(k<0){ if(psgs.length>=20) throw new Error('A test can have up to 20 passages.'); psgs.push(e.psg); k=psgs.length-1; } ed.passage='P'+(k+1); }
+        if(e.pic){ const data=await obPic('bank/img/'+e.pic.file,OB.pics[e.pic.file]), f=obPicName(e.pic.file); OE.pics[f]=data; ed.pic={file:f,w:e.pic.w}; }
+        add.push(ed); }
+      const first=OE.items.length; OE.passages=psgs; OE.items.push(...add); oeDirty(); oeRender(); obHide();
+      say($('#oeMsg'),plural(add.length,'question')+' added from your question bank, starting at question '+(first+1)+'. Save to keep '+(add.length>1?'them':'it')+'.','ok');
+      const c=document.querySelector(`.oeq[data-i="${first}"]`); if(c) c.scrollIntoView({behavior:'smooth',block:'center'}); }
+    catch(x){ say($('#obMsg'),errText(x),'err'); $('#obAdd').disabled=false; } };
+  draw(); $('#obFind').focus(); }
+$('#oeFromBank').onclick=()=>{ if(OE) obOpen(); };
 $('#mtOwn').onclick=async()=>{ const b=$('#mtOwn'); b.disabled=true; try{ await myTests(); await oeOpen(null); }catch(x){ say($('#mtMsg'),errText(x),'err'); } b.disabled=false; };
 /* a teacher's own test, seen whole (with its answers) by the people allowed to: its test.js on the site has no answers */
 async function ownJs(id,text){ if(text!=null&&!/"keyless":true/.test(text)) return text;
