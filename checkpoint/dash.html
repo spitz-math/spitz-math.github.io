@@ -626,7 +626,7 @@ document.addEventListener('click',e=>{ const b=e.target.closest('[data-ps]'); if
 $('#psClose').onclick=()=>{ $('#psVeil').hidden=true; }; $('#psVeil').addEventListener('click',e=>{ if(e.target.id==='psVeil') $('#psVeil').hidden=true; });
 addEventListener('keydown',e=>{ if(e.key==='Escape'&&!$('#psVeil').hidden) $('#psVeil').hidden=true; });
 const toScore=s=>s.q.filter(q=>q&&q[9]).length;   // written answers still waiting for the teacher
-const sLvl=s=>staarLvl(s.test,s.score||0,s.max||0);
+const sLvl=s=>!s.submitted&&!(s.answered>0)?['','No answers yet','#c3ccd6']:staarLvl(s.test,s.score||0,s.max||0);   /* never started: no STAAR level */
 function lvPill(s){ const l=sLvl(s), w=toScore(s);
   if(!s.submitted&&!(s.answered>0)) return '<span class="rs" title="No answers yet">–</span>';   /* not started: no level yet */
   if(w) return `<span class="lvp lvw" title="${w} written answer${w>1?'s':''} to score first. Level so far: ${esc(l[1])}">✎ Score ${w} first</span>`;
@@ -2035,7 +2035,7 @@ function openDrawer(key,quiet){ const s=DATA&&DATA.students.find(x=>x.key===key)
   $('#dName').textContent=s.name+' · '+(s.period==='G'?'Guest':'Period '+s.period);
   $('#dBody').innerHTML=`<div class="dact">${s.submitted||!canAct(s.session)?'':`<button class="btn" data-act="${s.control==='paused'?'resume':'pause'}" data-k="${esc(s.key)}">${s.control==='paused'?'Resume':'Pause'}</button><button class="btn warn" data-act="${s.control==='locked'?'unlock':'lock'}" data-k="${esc(s.key)}">${s.control==='locked'?'Unlock':'Stop test'}</button>`}</div>
     <div class="kv"><b>Status</b><span><span class="pill p-${k}">${esc(label)}</span></span><b>Test</b><span>${esc(m?m.title:s.test)} · ${esc(s.session)}</span>
-    <b>Score</b><span><span class="lv" style="background:${l[2]}"></span>${s.score||0} of ${s.max||0} points (${s.pct||0}%) · ${esc(l[1])}${l[3]?' (estimate)':''}${w||!s.submitted?' so far':''}${w?` · ${w} written answer${w>1?'s':''} to score`:''}</span>
+    <b>Score</b><span><span class="lv" style="background:${l[2]}"></span>${s.score||0} of ${s.max||0} points (${s.pct||0}%) · ${esc(l[1])}${l[3]?' (estimate)':''}${(w||!s.submitted)&&l[0]!==''?' so far':''}${w?` · ${w} written answer${w>1?'s':''} to score`:''}</span>
     <b>Answered</b><span>${s.answered||0} · on question ${esc(s.item||'–')}</span><b>Started</b><span>${d(s.started)}</span><b>Submitted</b><span>${d(s.submitted)}</span>
     <b>Time</b><span>${s.minutes||0} min · left the tab ${s.away||0}× (${s.awayMin||0} min)${s.rclicks?` · tried to right-click ${s.rclicks}× (blocked)`:''}</span><b>Last input</b><span>${d(s.input)}</span><b>Last save</b><span>${d(s.saved)}</span><b>Student code</b><span>${esc(s.code)}</span></div>
     <table class="t"><tr><th>#</th><th>Result</th><th>TEKS</th><th>Time</th><th>Visits</th><th>Changes</th></tr>${s.q.map((q,i)=>{ const qi=qinfo(s,i), [pts,mx,ms,vis,ch,fl]=q;
