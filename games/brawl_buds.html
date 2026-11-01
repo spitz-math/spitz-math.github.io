@@ -407,7 +407,7 @@ function load(){ try{ var v=JSON.parse(localStorage.getItem(KEY)||'null'); muted
 /* the Rival gets a little sharper while you lead and a little easier while you trail, so fights stay close.
    A player who just stands there gets no easing. */
 /* 2026-10-31 (Kody: "way too easy"): Rivals start sharper, get sharper every round, and ease off less when you trail. All-Pro adds 0.15. */
-function skill(){ var b=0.56+0.035*Math.min(8,(S.round||1)-1)+0.07*(S.buds-S.rivals)+(S.idle>3?0.3:0)+(S.pro?0.15:0); return clamp(b,S.pro?0.6:0.45,S.pro?1:0.92); }
+function skill(){ var b=0.8+0.03*Math.min(6,(S.round||1)-1)+0.04*(S.buds-S.rivals)+(S.idle>3?0.3:0)+(S.pro?0.12:0); return clamp(b,S.pro?0.9:0.72,1); }      /* 2026-11-01 Kody: "way harder" */
 function hot(){ return S.streak>=HOT; }
 function roundReset(){ shower=0; var keep=S.P?S.P.pow:0; S.P=fighter(MAIN.x0+250,1,BUD,'bud'); S.R=fighter(MAIN.x1-250,-1,rival(),'riv'); S.P.pow=keep;
   if(S.sd){ S.P.dmg=SDDMG; S.R.dmg=SDDMG; }
@@ -478,7 +478,7 @@ function itemStep(dt){
     return !took; });
   if(!S.items.length&&(S.dropT-=dt)<=0){ S.dropT=dropNext(); spawnItem(); }
   eventStep(dt);
-  if((S.rch=(S.rch||0)+dt)>=20){ S.rch=0; if(S.R.pow<MAXP){ S.R.pow=Math.min(MAXP,S.R.pow+COST); taunt('charge'); } }
+  if((S.rch=(S.rch||0)+dt)>=12){ S.rch=0; if(S.R.pow<MAXP){ S.R.pow=Math.min(MAXP,S.R.pow+COST); taunt('charge'); } }
   [S.P,S.R].forEach(function(f){ if(f.spring>0) f.spring-=dt; });
   for(var i=bombs.length-1;i>=0;i--){ var b=bombs[i], py=b.y, boom=b.t>2.2, hitF=false; b.t+=dt; b.vy+=1500*dt; b.x+=b.vx*dt; b.y+=b.vy*dt;
     [S.P,S.R].forEach(function(f){ if(f.who===b.by||f.out) return; var h=hurt(f); if(b.x>h[0]-16&&b.x<h[0]+h[2]+16&&b.y>h[1]-16&&b.y<h[1]+h[3]+16) hitF=true; });
@@ -653,8 +653,8 @@ function hits(att,tgt){ var a=att.atk; if(!a||a.hit||tgt.inv>0) return; var mv=M
   var on=a.id==='pound'?(a.land&&a.t>=mv.s&&a.t<mv.s+mv.a):(a.t>=mv.s&&a.t<mv.s+mv.a); if(!on) return;
   if(!overlap(boxOf(att,mv),hurt(tgt))) return;
   a.hit=1; launch(att,tgt,mv,a.id); }
-function launch(att,tgt,mv,id){ tgt.dmg=Math.min(999,tgt.dmg+mv.dmg); tgt.hitT=0; tgt.lastBy=mv.sup?'sup':mv.item?'item':'';
-  var mul=(att.who==='bud'&&hot()?1.15:1)*att.st.pow, kb=(mv.base+mv.grow*tgt.dmg/100)*mul/tgt.st.weight;
+function launch(att,tgt,mv,id){ tgt.dmg=Math.min(999,tgt.dmg+mv.dmg*(att.who==='riv'?1.3:1)); tgt.hitT=0; tgt.lastBy=mv.sup?'sup':mv.item?'item':'';
+  var mul=(att.who==='bud'&&hot()?1.15:1)*att.st.pow*(att.who==='riv'?1.18:1), kb=(mv.base+mv.grow*tgt.dmg/100)*mul/tgt.st.weight/(tgt.who==='riv'?1.1:1);
   var sx=mv.both?(tgt.x>=att.x?1:-1):att.face, ang=mv.ang;
   if(ang<0&&tgt.ground) ang=55;
   var r=ang*Math.PI/180; tgt.vx=sx*Math.cos(r)*kb; tgt.vy=-Math.sin(r)*kb; if(tgt.vy<0||kb>500) tgt.ground=0;
@@ -662,7 +662,7 @@ function launch(att,tgt,mv,id){ tgt.dmg=Math.min(999,tgt.dmg+mv.dmg); tgt.hitT=0
   tgt.stun=Math.min(1.25,0.14+kb/2700); tgt.tumble=kb>950?1:0; tgt.atk=null; tgt.face=-sx; tgt.upUsed=0; tgt.jumps=Math.min(tgt.jumps,1);
   freeze=Math.min(0.07,0.02+mv.dmg*0.003);                                       /* a short hit-stop: long ones read as lag (Kody, 2026-10-31) */
   if(att.who==='bud'){ S.hits++; if(mv.sup) S.landed++; addPts(mv.dmg*10); }
-  else if(att.who==='riv'&&kb>900) taunt('hit');
+  if(att.who==='riv'){ AI.t=0.05; if(kb>900) taunt('hit'); }
   if(!SIM){ var hb=hurt(tgt); spark(tgt.x,hb[1]+hb[3]*0.45,att.who,kb); pop(tgt.x,hb[1]-14,mv.dmg,att.who); SND.hit(kb/2200); if(kb>1300){ shakeT=Math.max(shakeT,0.3); } if(kb>1700&&!reduced) zoomT=0.25; } }
 
 /* ================= THE RIVAL'S BRAIN (also drives your Bud in the test bot) ================= */
@@ -679,6 +679,11 @@ function aiInput(f,o,k,A,dt){ var ip={l:0,r:0,up:0,down:0,jump:0,atk:0,sup:0};
       else if(f.pow>=COST&&!f.atk){ ip.sup=1; if(far>240&&f.y<MAIN.y+160){ ip.up=0; } else { ip.up=1; } } }
     else if(f.vy>-120&&f.y>MAIN.y-260&&f.jumps<f.st.jumps&&far>260) ip.jump=1;
     return ip; }
+  /* see your attack coming: hop away or hit first */
+  var oa=o.atk, odx=o.x-f.x;
+  if(oa&&!oa.seen&&!f.atk&&MV[oa.id]&&oa.t<MV[oa.id].s&&Math.abs(odx)<230&&Math.abs(o.y-f.y)<160){ oa.seen=1;
+    if(Math.random()<0.75*k){ if(Math.abs(odx)<110*f.st.size&&Math.random()<0.45){ f.face=odx>=0?1:-1; ip.atk=1; return ip; }
+      if(f.ground){ ip.jump=1; ip.l=odx>0; ip.r=odx<0; A.t=0.12; return ip; } A.back=1; } }
   A.t-=dt;
   if(A.t<=0){ A.t=0.22-0.15*k+Math.random()*0.08; A.want=null;
     var dx=o.x-f.x, dy=o.y-f.y, adx=Math.abs(dx), sgn=dx>=0?1:-1;
@@ -703,7 +708,8 @@ function aiInput(f,o,k,A,dt){ var ip={l:0,r:0,up:0,down:0,jump:0,atk:0,sup:0};
         else if(o.dmg>70||Math.random()<0.4) A.want={atk:1,side:1};
         else if(Math.random()<0.25) A.want={atk:1,down:1};
         else A.want={atk:1}; }
-      else if(!f.ground&&dy>40&&dy<200&&adx<70) A.want={atk:1,down:1}; }
+      else if(!f.ground&&dy>40&&dy<200&&adx<70) A.want={atk:1,down:1};
+      else if(!f.ground&&adx<140*f.st.size&&Math.abs(dy)<100) A.want={atk:1,side:1}; }
     if(f.ground&&dy<-110&&adx<330&&Math.random()<0.4+0.5*k) A.want=A.want||{jump:1};
     if(f.ground&&f.plat>=0&&dy>110) A.hold=0.18; }
   /* walk toward the target spot, never off the edge on purpose */
