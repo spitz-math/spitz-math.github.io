@@ -1,13 +1,13 @@
 /* Algebra I 2024 STAAR released test (TEA), rebuilt for Spitz Checkpoint.
    Answer key, item types, TEKS, point values, reporting categories and readiness/supporting from TEA's 2024 answer key and appendix.
    Wording from the released items (lead4ward IQ document + TEA appendix). Q4 graphs B and C, the Q30 and Q38 drop-down
-   choices and the Q43 equation editor come from Kody's Cambium recording of the 2024 released test (10/23). Every graph is redrawn here from the item picture,
+   choices and the Q43 equation editor come from Kody's recording of the 2024 online released test (10/23). Every graph is redrawn here from the item picture,
    checked against TEA's rationale. Estimates: Q15's two lines are read from the picture (TEA gives the crossing (1.3, 4.5),
    8 miles at 2.8 h and a y-intercept of 2.5). Q17's curve is 0.25(2)^x, the only exponential through TEA's endpoints (2, 1) and (5, 8).
    Q32's curve is (x − 1)^2 − 4, from TEA's endpoints (−2, 5), (3, 0) and the minimum −4.
    TEA accepts either order of the factors in Q34 and Q47 (rationale), and any form equivalent to 500(1.02)^x in Q43. */
 (function(){
-/* static graph with any window (Cambium style: gray grid, black axes, arrowheads, Verdana labels) */
+/* static graph with any window (gray grid, black axes, arrowheads, Verdana labels) */
 let CGID=0;
 function CG(o){
   const id='cg24'+(++CGID), x0=o.x[0], x1=o.x[1], y0=o.y[0], y1=o.y[1], gx=o.gx||1, gy=o.gy||1, lx=o.lx||gx, ly=o.ly||gy, cell=o.cell||20;

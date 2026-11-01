@@ -8,7 +8,7 @@
    Graph estimates (read from the booklet pictures, checked against TEA's rationale): Q4 sideways curves x = (2/9)y^2 - 8, x = 8 - (2/9)y^2,
    x = 0.0933(y^3 - 36.75y) and y = 0.1x(x^2 - 36); Q6 parabolas a = 1/3; Q40 G/H a = 1/2; Q47 y = x^2 - 4 and y = (x + 4)^2. */
 (function(){
-/* static graph with any window (Cambium style: gray grid, black axes, arrowheads, Verdana labels); fills = gray shaded polygons */
+/* static graph with any window (gray grid, black axes, arrowheads, Verdana labels); fills = gray shaded polygons */
 let CGID=0;
 function CG(o){
   const id='cg22'+(++CGID), x0=o.x[0], x1=o.x[1], y0=o.y[0], y1=o.y[1], gx=o.gx||1, gy=o.gy||1, lx=o.lx||gx, ly=o.ly||gy, cell=o.cell||20;

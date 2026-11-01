@@ -1,6 +1,12 @@
 SPITZ CHECKPOINT
 ================
 
+Spitz Checkpoint is an independent practice tool made by Mr. Spitz. It works like the
+online state test so students know the tools, but its code, icons and wording are its own.
+It is not affiliated with or endorsed by TEA or Cambium Assessment. Released STAAR
+questions and reference sheets are (c) TEA and are used for classroom practice.
+Keep it that way: no logos, screenshots, fonts or copied help text from the state test site.
+
 What's in this folder
   index.html               The clean student link: forwards to the web app.
   player.html              The test player (the whole engine).
