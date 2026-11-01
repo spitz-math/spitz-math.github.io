@@ -1,14 +1,14 @@
 /* Algebra I 2023 STAAR released test (TEA), rebuilt for Spitz Checkpoint.
    Answer key, item types, TEKS, point values, reporting categories and readiness/supporting from TEA's 2023 answer key and appendix.
-   Wording from Kody's Cambium screenshots of the 2023 released test and TEA's 2023 test booklet (STAAR 05 2023 EOC AI E 0).
+   Wording from Kody's screenshots of the 2023 online released test and TEA's 2023 test booklet (STAAR 05 2023 EOC AI E 0).
    Every graph is redrawn here from the item picture and checked against TEA's rationale.
-   Differences between sources (Cambium screenshots used): Q30 total is $2,649.34 (booklet says $2,629.34; TEA's rationale uses 2,649.34);
-   Q49 has six choices incl. x = 0 (TEA appendix + Cambium; the booklet shows five); Q43 directions as Cambium shows them.
+   Differences between sources (online screenshots used): Q30 total is $2,649.34 (booklet says $2,629.34; TEA's rationale uses 2,649.34);
+   Q49 has six choices incl. x = 0 (TEA appendix + online test; the booklet shows five); Q43 directions as the online test shows them.
    TEA errors: the answer key lists Q29 as Drag and Drop (it is multiple choice, key B); the rationale labels the reason for Q16 C as
    "Option B" and for Q44 D as "Option C" (crops renamed rat/r16C.png and r44D.png); the Q8 distractors' zeros don't match their own factors
    (kept as released). Q46 rays: slopes estimated from the picture. */
 (function(){
-/* static graph with any window (Cambium style: gray grid, black axes, arrowheads, Verdana labels) */
+/* static graph with any window (gray grid, black axes, arrowheads, Verdana labels) */
 let CGID=0;
 function CG(o){
   const id='cg23'+(++CGID), x0=o.x[0], x1=o.x[1], y0=o.y[0], y1=o.y[1], gx=o.gx||1, gy=o.gy||1, lx=o.lx||gx, ly=o.ly||gy, cell=o.cell||20;

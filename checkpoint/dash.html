@@ -86,6 +86,7 @@ select{border:1px solid var(--line);border-radius:6px;padding:4px 6px;background
 .tile b{display:block;font-size:20px;line-height:1.1}
 .tile span{font-size:11px;color:var(--mut);text-transform:uppercase;letter-spacing:.04em}
 .main{flex:1;min-height:0;padding:10px 16px 12px;display:flex;flex-direction:column}
+.legal{flex:none;margin:0;padding:0 16px 6px;font-size:11px;color:var(--mut)}
 .card{background:#fff;border:1px solid var(--line);border-radius:8px;min-height:0;flex:1;overflow:auto;position:relative}
 .empty{padding:40px;text-align:center;color:var(--mut)}
 .bulk{display:flex;align-items:center;gap:8px;padding:6px 10px;background:#fff7e0;border:1px solid #f0d9a0;border-radius:8px;margin-bottom:8px}
@@ -414,6 +415,7 @@ details summary{cursor:pointer;color:var(--blue2);font-size:13px;margin-top:8px}
   <div class="bulk" id="bulk" hidden><b id="bulkN"></b><button class="btn" data-bulk="pause">Pause</button><button class="btn" data-bulk="resume">Resume</button><button class="btn warn" data-bulk="lock">Stop</button><button class="btn" data-bulk="unlock">Unlock</button><button class="btn" id="bulkClear">Clear selection</button></div>
   <div class="card" id="card"><div class="empty">Loading…</div></div>
 </div>
+<p class="legal">Spitz Checkpoint is an independent practice tool made by Mr. Spitz. It is not affiliated with or endorsed by the Texas Education Agency (TEA) or Cambium Assessment. STAAR&reg; is a registered trademark of TEA. Released STAAR questions and reference sheets are &copy; TEA and are used here for classroom practice.</p>
 <div class="veil" id="qvVeil" hidden><div class="qvbox" role="dialog" aria-modal="true" aria-labelledby="qvTitle"><div class="qvh"><h3 id="qvTitle">Question</h3><button class="btn" id="qvClose">Close</button></div><div class="qvmsg" id="qvMsg" hidden></div><iframe id="qvFrame" title="Question preview" sandbox="allow-scripts"></iframe></div></div>
 <aside class="drawer" id="drawer" hidden aria-label="Student details"><div class="dh"><h2 id="dName"></h2><button class="btn" id="dClose">Close</button></div><div class="db" id="dBody"></div></aside>
 <section class="tpage" id="tpage" hidden aria-label="Tests">
@@ -2552,7 +2554,7 @@ function BANKSANDBOX(){   // runs inside the sandboxed frame; must not use anyth
   const dp=new DOMParser(), esc=s=>String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
   const vars=h=>String(h).replace(/<i>([\s\S]*?)<\/i>/g,'<var>$1</var>');
   const text=h=>dp.parseFromString(String(h),'text/html').body.textContent.replace(/\s+/g,' ').trim();
-  /* Cambium look for plain text: real minus signs, stacked fractions, italic variables (x, f(x)); svg, var and sup/sub are left alone */
+  /* math look for plain text: real minus signs, stacked fractions, italic variables (x, f(x)); svg, var and sup/sub are left alone */
   function fixText(s,inScript){ let h=esc(s);
     h=h.replace(/(^|[\s(\[{,=:;<>≤≥+×÷$])-(?=\d|\.\d)/g,'$1−').replace(/ - /g,' − ').replace(/(^|\s)-(?=[a-z(]\b|\()/g,'$1−');
     if(inScript) return h;

@@ -99,7 +99,7 @@ body:not(.ruler) #bRuler{display:none}
 .ti108 button.r{background:#d8343d;color:#fff;box-shadow:0 2px 0 #8a1c22;font-size:12px}
 .ti108 button.eq{grid-row:span 2;height:auto}
 .ti108 button:active{transform:translateY(1px);box-shadow:none}
-/* ruler (Grade 6 math): centimeters on top, inches on the bottom; drag to move, drag the circle to turn it */
+/* ruler (Grade 6 and 7 math): centimeters on top, inches on the bottom; drag to move, drag the circle to turn it */
 #rulerTool{position:fixed;z-index:125;left:0;top:0;touch-action:none}
 #rulerTool[hidden]{display:none}
 #rulerTool svg{display:block;cursor:move;filter:drop-shadow(0 1px 2px rgba(0,0,0,.35))}
@@ -129,7 +129,7 @@ body:not(.ruler) #bRuler{display:none}
 #qtabs button{min-width:40px;height:38px;border:1px solid #c9d3dc;border-bottom:0;background:#eef2f5;color:var(--fg);font-weight:700;font-size:16px;border-radius:3px 3px 0 0}
 #qtabs button.on{background:var(--teal);color:#fff;border-color:var(--teal)}
 .stem .quote{border:2px solid #000;padding:10px 16px;margin:.4em auto 1em;max-width:90%;font-style:italic}
-/* written answers: Cambium's box with a formatting toolbar and a character count */
+/* written answers: a box with a formatting toolbar and a character count */
 .txbox{border:1px solid #9aa7b4;margin-top:8px;background:#fff;color:#000}
 .txtools{display:flex;flex-wrap:wrap;align-items:center;gap:2px;padding:5px 8px;border-bottom:1px solid #c9d3dc}
 .txtools button{min-width:32px;height:30px;border:0;background:none;font:600 16px Georgia,serif;border-radius:3px;cursor:pointer;padding:0 5px}
@@ -318,7 +318,7 @@ svg.hs .spot[aria-checked="true"]{fill:rgba(90,80,210,.35);stroke:#4b3fc4;stroke
 .hsimg{position:relative;margin:.4em 0;line-height:0} .hsimg img{width:100%;height:auto;display:block}
 .hsdot{position:absolute;width:28px;height:28px;margin:-14px 0 0 -14px;border-radius:50%;border:2px solid #4b3fc4;background:rgba(255,255,255,.55);cursor:pointer;padding:0}
 .hsdot:hover{background:rgba(130,120,220,.25)} .hsdot[aria-checked="true"]{background:rgba(90,80,210,.5);box-shadow:inset 0 0 0 4px #fff}
-/* Cambium graphing tools */
+/* graphing tools */
 .eq.ctr{text-align:center;margin-left:0}
 ul.steps{margin:0 0 1.2em;padding-left:1.3em} ul.steps li{margin:.15em 0 .5em}
 .cgwrap{display:flex;gap:14px;align-items:flex-start;flex-wrap:wrap}
@@ -353,7 +353,7 @@ svg[data-kb]:focus{outline:none}svg[data-kb]:focus-visible{outline:3px solid #1d
 .cgbtn[data-m="graph"].on{border:3px solid #25606a}
 .cgbtn[data-m="graph"].on::after{content:"";position:absolute;right:-22px;top:2px;border:11px solid transparent;border-left:20px solid #25606a;border-right:0}
 .cgbtn[data-m="set"].on{border:3px solid #8a2aa8}
-/* system of two inequalities: Graph 1 (teal), Graph 2 (purple), Solution Set (blue), as in Cambium */
+/* system of two inequalities: Graph 1 (teal), Graph 2 (purple), Solution Set (blue) */
 .cgsys .cgbtn[data-m="g0"]{border-color:#25606a} .cgsys .cgbtn[data-m="g1"]{border-color:#8b1a9b} .cgsys .cgbtn[data-m="set"]{border-color:#1446c9}
 .cgsys .cgbtn.on{border-width:3px;padding:1px 2px 3px}
 .cgsys .cgbtn.on::after{content:"";position:absolute;right:-22px;top:2px;border:11px solid transparent;border-right:0;border-left:20px solid #25606a}
@@ -562,8 +562,11 @@ body.th-maroon #lineBand,body.th-black #lineBand,body.th-blue #lineBand{mix-blen
 .rh svg{width:20px;height:20px}
 body.dragging iframe{pointer-events:none}
 body.dragging{user-select:none}
-#refPanel .pbody{overflow:scroll;background:#fff}
-#refPanel .pbody img{display:block;width:740px;max-width:none;height:auto;margin:4px}
+#refPanel .pbody,#ptPanel .pbody{overflow:scroll;background:#fff}
+#refPanel .pbody img,#ptPanel .pbody img{display:block;width:740px;max-width:none;height:auto;margin:4px}
+/* Grade 8 Science toolbar: its own Periodic Table button, and the calculator choice is Basic or Desmos Scientific */
+body:not(.sci) #bPT,body.sci #chTI,body.sci #chDesmos,body.sci #tiNote,body:not(.sci) #chBasic,body:not(.sci) #chSci{display:none}
+#sciFrame{position:absolute;left:0;width:100%;border:0}
 .chooser{background:#ececf0;height:100%;padding:26px 24px;display:flex;flex-direction:column;gap:26px}
 .chooser button{text-align:left;border:1px solid #9b9b9b;border-radius:16px;background:#fff;padding:16px 26px;font-family:Arial,Helvetica,sans-serif;font-size:19px;box-shadow:0 1px 2px rgba(0,0,0,.25)}
 .chooser button:hover,.chooser button:focus-visible{background:#0f5c94;color:#fff;border-color:#0f5c94;outline:none}
@@ -656,7 +659,6 @@ body.th-blue .sfoot #sApply:not(:disabled){background:#8aa0b6;color:#fff;border-
 .dlg .main{flex:1;padding:14px 18px 16px;min-width:0}
 .dlg h3{margin:0 0 2px;font-size:22px}
 .dlg .msg{font-size:17px;line-height:1.22}
-.dlg .code{font-size:11px;opacity:.7}
 .dlg .btns{display:flex;justify-content:flex-end;gap:16px;margin-top:22px}
 .dlg .btns button{min-width:100px;height:40px;border:1px solid #0f4e7a;border-radius:3px;background:var(--dlg);color:var(--dlgfg);font-size:18px}
 .dlg .btns button:hover{filter:brightness(.95)}
@@ -850,12 +852,12 @@ tr.ra-now{background:none!important;outline:0}
     <span class="sname" id="sname">GUEST, GUEST (ID: GUEST)</span>
     <span class="sess">PRACTICE SESSION</span>
     <span class="grow"></span>
-    <span class="clonebadge" title="This is Mr. Spitz's practice copy of the testing site. It is not the official STAAR test and nothing here counts."><svg class="burger" viewBox="0 0 32 28" aria-hidden="true"><path d="M3 12C3 5 9 2 16 2s13 3 13 10z" fill="#f2a33a"/><g fill="#fff3c4"><ellipse cx="10" cy="6.5" rx="1.1" ry=".6"/><ellipse cx="16" cy="5" rx="1.1" ry=".6"/><ellipse cx="21.5" cy="7" rx="1.1" ry=".6"/><ellipse cx="13" cy="9" rx="1.1" ry=".6"/><ellipse cx="19" cy="9.5" rx="1.1" ry=".6"/></g><path d="M2 12.5h28l-2.5 3-3-2-3 2.5-3-2.5-3 2.5-3-2.5-3 2.5-3-2z" fill="#5fbf3a"/><rect x="2.5" y="15" width="27" height="3" rx="1.2" fill="#f7d13b"/><rect x="2" y="17.5" width="28" height="4.2" rx="2" fill="#7a3b1d"/><path d="M3 22h26c0 2.6-2.4 4-5 4H8c-2.6 0-5-1.4-5-4z" fill="#e8913a"/></svg><span>Spitz Practice<span class="cbx"> · not the official test</span></span></span>
+    <span class="clonebadge" title="Spitz Checkpoint is an independent practice tool made by Mr. Spitz. It is not the official STAAR test, scores here do not count, and it is not affiliated with or endorsed by the Texas Education Agency (TEA) or Cambium Assessment."><svg class="burger" viewBox="0 0 32 28" aria-hidden="true"><path d="M3 12C3 5 9 2 16 2s13 3 13 10z" fill="#f2a33a"/><g fill="#fff3c4"><ellipse cx="10" cy="6.5" rx="1.1" ry=".6"/><ellipse cx="16" cy="5" rx="1.1" ry=".6"/><ellipse cx="21.5" cy="7" rx="1.1" ry=".6"/><ellipse cx="13" cy="9" rx="1.1" ry=".6"/><ellipse cx="19" cy="9.5" rx="1.1" ry=".6"/></g><path d="M2 12.5h28l-2.5 3-3-2-3 2.5-3-2.5-3 2.5-3-2.5-3 2.5-3-2z" fill="#5fbf3a"/><rect x="2.5" y="15" width="27" height="3" rx="1.2" fill="#f7d13b"/><rect x="2" y="17.5" width="28" height="4.2" rx="2" fill="#7a3b1d"/><path d="M3 22h26c0 2.6-2.4 4-5 4H8c-2.6 0-5-1.4-5-4z" fill="#e8913a"/></svg><span>Spitz Practice<span class="cbx"> · not the official test</span></span></span>
     <button class="mini" id="btnHelp" aria-label="Help">?</button>
     <button class="mini pause" id="btnPause" aria-label="Pause test"><svg viewBox="0 0 12 12"><rect x="2" y="1" width="3" height="10" fill="currentColor"/><rect x="7" y="1" width="3" height="10" fill="currentColor"/></svg></button>
     <div class="itemspanel" id="itemsPanel" hidden>
-      <div class="legend"><svg><use href="#i-flag" class="mflag"/></svg>= You have marked questions. Review these questions before submitting your test.</div>
-      <div class="legend"><svg><use href="#i-tri" class="utri"/></svg>= This symbol indicates unanswered items.</div>
+      <div class="legend"><svg><use href="#i-flag" class="mflag"/></svg>= Marked for review. Check these before you submit.</div>
+      <div class="legend"><svg><use href="#i-tri" class="utri"/></svg>= Not answered yet.</div>
       <div class="pills" id="pills"></div>
     </div>
   </div>
@@ -868,6 +870,7 @@ tr.ra-now{background:none!important;outline:0}
     </div>
     <div class="tgroup" id="rightTools">
       <button class="tbtn" id="bRuler" aria-pressed="false"><span class="ring"><svg viewBox="0 0 24 24"><rect class="f" x="1.5" y="8" width="21" height="8" rx="1"/><path d="M4 8v3.5M6.5 8v2M9 8v3.5M11.5 8v2M14 8v3.5M16.5 8v2M19 8v3.5" stroke="#fff" stroke-width="1.2"/></svg></span>Ruler</button>
+      <button class="tbtn" id="bPT" aria-pressed="false"><span class="ring"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.6"><path class="s" d="M2 5h4v4H2zM18 5h4v4h-4zM2 9h4v4H2zM6 9h4v4H6zM14 9h4v4h-4zM18 9h4v4h-4zM2 13h4v4H2zM6 13h4v4H6zM10 13h4v4h-4zM14 13h4v4h-4zM18 13h4v4h-4zM6 19h12"/></svg></span>Periodic Table</button>
       <button class="tbtn" id="bRef" aria-pressed="false"><span class="ring"><svg viewBox="0 0 24 24"><text class="f" x="1" y="18" font-family="Arial" font-size="15" font-weight="700">XY</text><text class="f" x="17" y="9" font-family="Arial" font-size="9" font-weight="700">2</text></svg></span>References</button>
       <button class="tbtn" id="bCalc" aria-pressed="false"><span class="ring"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><rect class="s" x="5" y="2.5" width="14" height="19" rx="1.5"/><rect class="s" x="7.5" y="5" width="9" height="4"/><path class="s" d="M8 12h2M11 12h2M14 12h2M8 15h2M11 15h2M14 15h2M8 18h2M11 18h2M14 18h2" stroke-width="1.8"/></svg></span>Calculator</button>
       <button class="tbtn" id="bDict" aria-pressed="false"><span class="ring"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linejoin="round"><path class="s" d="M12 6.5C10 5 7 4.5 3.5 5v13c3.5-.5 6.5 0 8.5 1.5 2-1.5 5-2 8.5-1.5V5C17 4.5 14 5 12 6.5zM12 6.5v13"/></svg></span>Dictionary</button>
@@ -901,6 +904,11 @@ tr.ra-now{background:none!important;outline:0}
 <div class="ctxmenu" id="ctxMenu" role="menu" hidden></div>
 
 <!-- References -->
+<div class="panel" id="ptPanel" hidden>
+  <div class="ph"><span class="ttl">Periodic Table</span><button class="pbtn" data-expand aria-label="Expand"><svg><use href="#i-expand"/></svg></button><button class="pbtn" data-close aria-label="Close"><svg><use href="#i-x"/></svg></button></div>
+  <div class="pbody"><img src="" alt="Periodic table of the elements: atomic number, symbol, atomic mass, and name of each element"></div>
+  <div class="rh" aria-label="Drag to resize"><svg><use href="#i-move"/></svg></div>
+</div>
 <div class="panel" id="refPanel" hidden>
   <div class="ph"><span class="ttl">References</span><button class="pbtn" data-expand aria-label="Expand"><svg><use href="#i-expand"/></svg></button><button class="pbtn" data-close aria-label="Close"><svg><use href="#i-x"/></svg></button></div>
   <div class="pbody"><img src="" alt="Algebra I reference materials: factoring, properties of exponents, linear equations, and quadratic equations"></div>
@@ -918,9 +926,12 @@ tr.ra-now{background:none!important;outline:0}
       <button id="chTI">TI Graphing Calculator</button>
       <p class="note" id="tiNote" hidden>The TI graphing calculator isn't set up in this practice test yet. Use Desmos for now.</p>
       <button id="chDesmos">Desmos Graphing Calculator</button>
+      <button id="chBasic">Basic Calculator</button>
+      <button id="chSci">Desmos Scientific Calculator</button>
     </div>
     <div id="desmosHost" hidden role="application" aria-label="Desmos graphing calculator"></div>
     <iframe id="desmosFrame" title="Desmos graphing calculator, Texas testing version" hidden></iframe>
+    <iframe id="sciFrame" title="Desmos scientific calculator, Texas testing version" hidden></iframe>
     <div id="bcHost" hidden role="application" aria-label="Basic calculator"></div>
   </div>
   <div class="rh" aria-label="Drag to resize"><svg><use href="#i-move"/></svg></div>
@@ -1029,7 +1040,7 @@ tr.ra-now{background:none!important;outline:0}
         <button class="logout sibtn" id="siBtn" type="submit">Sign In</button>
         <div class="sipr" id="siPractice" hidden><a href="https://spitzmath.com/checkpoint/player.html" target="_blank" rel="noopener">Practice tests</a><span>No Session ID? Practice any test on your own. Practice work is not sent to your teacher.</span></div>
       </div>
-      <div class="sifoot">Practice copy of the state testing site, made by Mr. Spitz. This is not the official STAAR test, and scores here do not count.</div>
+      <div class="sifoot">Spitz Checkpoint is an independent practice tool made by Mr. Spitz. It is not the official STAAR test, scores here do not count, and it is not affiliated with or endorsed by the Texas Education Agency (TEA) or Cambium Assessment.</div>
     </form>
   </div></div>
 </div>
@@ -1041,29 +1052,29 @@ tr.ra-now{background:none!important;outline:0}
   <div class="dotsep" style="background-color:var(--pg)"></div>
   <div class="scroller"><div class="waves"></div><div class="endwrap">
     <div class="endcard">
-      <h1>Congratulations, you reached the end of the test!</h1>
-      <div class="row">If you need to review your answers, select the question number you wish to review. A flag icon appears for any questions that you marked for review.</div>
+      <h1>You made it to the end of the test.</h1>
+      <div class="row">To look at an answer again, click its question number. Questions you marked for review show a flag.</div>
       <div class="row"><h2>Questions:</h2></div>
-      <div class="row"><svg width="14" height="14" style="vertical-align:-2px"><use href="#i-tri" class="utri"/></svg> = This symbol indicates unanswered items.</div>
+      <div class="row"><svg width="14" height="14" style="vertical-align:-2px"><use href="#i-tri" class="utri"/></svg> = Not answered yet.</div>
       <div class="epills" id="endPills"></div>
-      <div class="esub"><button id="submitBtn">Submit Test</button><p>Submit this test for scoring. This will end this test session. You will <b>NOT</b> be able to view this test again.</p></div>
+      <div class="esub"><button id="submitBtn">Submit Test</button><p>When you submit, your test is scored and you are done. You <b>cannot</b> come back to change answers after that.</p></div>
     </div>
   </div></div>
 </div>
 
 <!-- Results -->
 <div class="endscreen" id="resultsScreen" hidden>
-  <div class="resbar"><b>SPITZ PRACTICE TEST</b><span class="clonebadge"><svg class="burger" viewBox="0 0 32 28" aria-hidden="true"><path d="M3 12C3 5 9 2 16 2s13 3 13 10z" fill="#f2a33a"/><g fill="#fff3c4"><ellipse cx="10" cy="6.5" rx="1.1" ry=".6"/><ellipse cx="16" cy="5" rx="1.1" ry=".6"/><ellipse cx="21.5" cy="7" rx="1.1" ry=".6"/><ellipse cx="13" cy="9" rx="1.1" ry=".6"/><ellipse cx="19" cy="9.5" rx="1.1" ry=".6"/></g><path d="M2 12.5h28l-2.5 3-3-2-3 2.5-3-2.5-3 2.5-3-2.5-3 2.5-3-2z" fill="#5fbf3a"/><rect x="2.5" y="15" width="27" height="3" rx="1.2" fill="#f7d13b"/><rect x="2" y="17.5" width="28" height="4.2" rx="2" fill="#7a3b1d"/><path d="M3 22h26c0 2.6-2.4 4-5 4H8c-2.6 0-5-1.4-5-4z" fill="#e8913a"/></svg><span>Practice copy · not the official test</span></span></div>
+  <div class="resbar"><b>SPITZ PRACTICE TEST</b><span class="clonebadge"><svg class="burger" viewBox="0 0 32 28" aria-hidden="true"><path d="M3 12C3 5 9 2 16 2s13 3 13 10z" fill="#f2a33a"/><g fill="#fff3c4"><ellipse cx="10" cy="6.5" rx="1.1" ry=".6"/><ellipse cx="16" cy="5" rx="1.1" ry=".6"/><ellipse cx="21.5" cy="7" rx="1.1" ry=".6"/><ellipse cx="13" cy="9" rx="1.1" ry=".6"/><ellipse cx="19" cy="9.5" rx="1.1" ry=".6"/></g><path d="M2 12.5h28l-2.5 3-3-2-3 2.5-3-2.5-3 2.5-3-2.5-3 2.5-3-2z" fill="#5fbf3a"/><rect x="2.5" y="15" width="27" height="3" rx="1.2" fill="#f7d13b"/><rect x="2" y="17.5" width="28" height="4.2" rx="2" fill="#7a3b1d"/><path d="M3 22h26c0 2.6-2.4 4-5 4H8c-2.6 0-5-1.4-5-4z" fill="#e8913a"/></svg><span>Practice tool · not the official test</span></span></div>
   <div class="resbar2"><span>Practice Test Site</span><span id="resWho"></span></div>
   <div class="scroller"><div class="waves"></div><div class="endwrap">
     <div class="rescard">
       <h1>Your Results</h1>
       <div class="rb">
-        <div>Your test was submitted. You may review the test details below.</div>
+        <div>Your test is turned in. Your details are below.</div>
         <div class="kv"><div><b>Student Name:</b><span id="rName"></span></div><div><b>Test Name:</b><span class="testTitle"></span></div><div><b>Test Completed On:</b><span id="rDate"></span></div><div><b>Score:</b><span id="rScore"></span></div></div>
-        <div>Congratulations! You have finished your test.</div>
+        <div>Nice work finishing the test.</div>
         <table class="rtab" id="rTable"></table>
-        <div style="border-top:1px solid rgba(0,0,0,.2);padding-top:10px"><b>Next Step:</b><br>To log out of the test, select [Log Out].</div>
+        <div style="border-top:1px solid rgba(0,0,0,.2);padding-top:10px"><b>All done?</b><br>Click Log Out when you are finished here.</div>
         <button class="logout" id="logout">Log Out</button>
       </div>
     </div>
@@ -1094,7 +1105,7 @@ const IMG=(name,w)=>`<img class="fig" src="${ASSET('img/'+name+'.png')}" style="
 const T=(head,rows,cls='')=>`<table class="data ${cls}"><tr>${head.map(x=>`<th>${x}</th>`).join('')}</tr>${rows.map(r=>`<tr>${r.map(x=>`<td>${x}</td>`).join('')}</tr>`).join('')}</table>`;
 const SYS=(a,b)=>`<span class="eq sys">${a}<br>${b}</span>`;
 
-/* static Cambium-style graph: grid ±R (labels to ±(R-1)), black axes and lines with arrowheads, gray shading */
+/* static graph: grid ±R (labels to ±(R-1)), black axes and lines with arrowheads, gray shading */
 let SGID=0;
 function SG({R=6,lines=[],shade=null,w=250}){
   const id='sg'+(++SGID), cell=20, pad=26, W=2*R*cell+2*pad, X=v=>pad+(v+R)*cell, Y=v=>pad+(R-v)*cell;
@@ -1130,8 +1141,8 @@ if(window.__spitzBooted) return; window.__spitzBooted=true;
 const ITEMS=TD.items, KEYLESS=!!TD.keyless; let OWNPTS=null;
 const KEYF={graphline:'eq',graphineq:'op',graphsys:'ineqs',graphfunc:'ftype',graphexp:'a'};   /* where each graph type keeps its key (a line: its equation; an inequality: m, b, op; …) */
 const NOKEY=it=>KEYLESS&&it.type!=='text'&&it[KEYF[it.type]||'answer']===undefined;
-if(TD.subject==='rla') document.body.classList.add('rla');
-if(TD.reference==='none') document.body.classList.add('noref'); if(TD.calc===false) document.body.classList.add('nocalc'); if(TD.ruler??TD.course==='6th Math') document.body.classList.add('ruler');
+if(TD.subject==='rla') document.body.classList.add('rla'); if(/science/i.test(TD.course||'')) document.body.classList.add('sci');
+if(TD.reference==='none') document.body.classList.add('noref'); if(TD.calc===false) document.body.classList.add('nocalc'); if(TD.ruler??['6th Math','7th Math'].includes(TD.course)) document.body.classList.add('ruler');
 ITEMS.forEach((it,i)=>{ it.n=i+1; it.letters=ODD; it.max=it.max||1; ownFn(it); });
 /* ---------------- state ---------------- */
 const S={i:0,answers:{},flags:{},notes:{},name:'',modes:{hl:false,elim:false},zoomIx:1,submitted:false};
@@ -1578,7 +1589,7 @@ function buildBoxes(it,root){
 /* ---------- hot spot on a graph ---------- */
 function buildHotspot(it,root){
   /* options: R (grid radius, default 6); curve (function) and/or lines ([[m,b,dash]]) to draw; spots [[x,y]];
-     pick (how many points the student picks; 1 = one answer index, more = array of indices, Cambium "Select TWO/THREE correct answers");
+     pick (how many points the student picks; 1 = one answer index, more = array of indices, "Select TWO/THREE correct answers");
      open: true draws the pick circles hollow with no black dot (the paper/online practice-test look) */
   const id=it.n, R=it.R||6, cell=20, pad=26, X=v=>pad+(v+R)*cell, Y=v=>pad+(R-v)*cell, pick=it.pick||1, multi=pick>1;
   if(it.img) return buildHotImg(it,root,multi);
@@ -1688,7 +1699,7 @@ function buildGraphExp(it,root){
   root.appendChild(w); setMode('curve');
 }
 
-/* ---------- Cambium-style graph frame (non-square units allowed) ---------- */
+/* ---------- graph frame (non-square units allowed) ---------- */
 function cgrid({xr,yr,ys=1,lab=1,ylab=1,cell=24}){
   // xr: x range ±xr (unit = cell px); yr: ±yr with one grid row every ys units
   const cx=cell, cy=cell/ys, pad=22, W=2*xr*cx+2*pad, H=2*yr*cy+2*pad;
@@ -1904,7 +1915,7 @@ function buildEqEntry(it,root){
   root.appendChild(w); render();
 }
 
-/* ---------- full equation editor (Cambium "Equation Editor" with the algebra keypad, as in the 2024 released Q43) ----------
+/* ---------- full equation editor (algebra keypad, as needed for the 2024 released Q43) ----------
    Answer is saved as text: digits, x, y, operators, (…) for parentheses, ^{…} exponent, _{…} subscript, \r{…} square root, \f{…}{…} fraction.
    Scored by value: it.answer (same text) and the student's expression must match at several values of x ("any equivalent", TEA). */
 const EQX={
@@ -1958,7 +1969,7 @@ function buildEqFull(it,root){
    <div class="eqtools"><button type="button" data-k="left" aria-label="Move left">${T('M15 10H5M9 6l-4 4 4 4')}</button><button type="button" data-k="right" aria-label="Move right">${T('M5 10h10M11 6l4 4-4 4')}</button><button type="button" data-k="undo" aria-label="Undo">${T('M7 7l-3 3 3 3M4 10h8a4 4 0 0 1 0 8')}</button><button type="button" data-k="redo" aria-label="Redo">${T('M13 7l3 3-3 3M16 10H8a4 4 0 0 0 0 8')}</button><button type="button" data-k="bksp" aria-label="Delete">${T('M7 5h10v10H7l-4-5zM10 8l4 4M14 8l-4 4')}</button></div>
    <div class="eqpad"><div class="eqkeys full"></div></div>`;
   const field=w.querySelector('.eqfield'), keys=w.querySelector('.eqkeys');
-  const VK=it.vars||['x','y'];   /* the variable keys (Cambium shows the question's own letters, e.g. b) */
+  const VK=it.vars||['x','y'];   /* the variable keys (the question's own letters, e.g. b) */
   const K=[['1','1'],['2','2'],['3','3'],...[0,1].map(q=>VK[q]?[VK[q],`<i>${VK[q]}</i>`]:''),'','','',
            ['4','4'],['5','5'],['6','6'],['+','+'],['-','-'],['•','•'],['÷','÷'],'',
            ['7','7'],['8','8'],['9','9'],['<','&lt;'],['≤','≤'],['=','='],['≥','≥'],['>','&gt;'],
@@ -2506,12 +2517,12 @@ $('#bBack').onclick=()=>go(S.i-1);
 $('#bNext').onclick=()=>{
   const last=S.i===ITEMS.length-1;
   const next=()=>{ if(last) endDialog(); else go(S.i+1); };
-  if(!answered(ITEMS[S.i])) dialog({title:'Warning',msg:'You have not answered one or more parts of a question. Click the [Yes] button to go to the next question or the [No] button to stay on this page.',code:11743,
+  if(!answered(ITEMS[S.i])) dialog({title:'Warning',msg:'Part of this question is not answered yet. Go on to the next question anyway? Choose Yes to move on or No to stay here.',
     buttons:[{label:'Yes',pri:true,fn:next},{label:'No'}]});
   else next();
 };
-function endDialog(){ dialog({title:'Attention',msg:'You have reached the end of the test. Click [Yes] to continue to the next page. Click [No] to keep working on your test.',code:10900,buttons:[{label:'Yes',pri:true,fn:openEnd},{label:'No'}]}); }
-$('#bSave').onclick=()=>{ stamp(); toast('Your responses have been saved.'); };
+function endDialog(){ dialog({title:'Attention',msg:'That was the last question. Go to the review page? Choose Yes to see all your questions or No to keep working.',buttons:[{label:'Yes',pri:true,fn:openEnd},{label:'No'}]}); }
+$('#bSave').onclick=()=>{ stamp(); toast('Your answers are saved.'); };
 
 /* ---------- Items list ---------- */
 function buildPills(){
@@ -2527,9 +2538,9 @@ $('#itemsBtn').onclick=e=>{ e.stopPropagation(); const p=$('#itemsPanel'); if(p.
 document.addEventListener('mousedown',e=>{ if(!$('#itemsPanel').hidden&&!e.target.closest('#itemsPanel,#itemsBtn')) closeItems(); });
 
 /* ---------- dialogs & toast ---------- */
-function dialog({title,msg,html,code,buttons}){
+function dialog({title,msg,html,buttons}){
   $('#dlgTitle').textContent=title; const m=$('#dlgMsg');
-  if(html) m.innerHTML=html; else { m.textContent=msg+' '; if(code){ const c=document.createElement('span'); c.className='code'; c.textContent=`[MessageCode: ${code}]`; m.appendChild(c); } }
+  if(html) m.innerHTML=html; else m.textContent=msg;
   const b=$('#dlgBtns'); b.innerHTML='';
   buttons.forEach(o=>{ const e=document.createElement('button'); e.textContent=o.label; if(o.pri) e.className='pri'; e.onclick=()=>{ $('#veil').hidden=true; o.fn&&o.fn(); }; b.appendChild(e); });
   $('#veil').hidden=false; b.firstChild.focus();
@@ -2611,8 +2622,8 @@ const TUT={
 
 /* ---------- panels ---------- */
 let zTop=130;
-const panels={ref:$('#refPanel'),calc:$('#calcPanel'),gd:$('#gdPanel'),note:$('#notePanel'),dict:$('#dictPanel')};
-const pbtn={ref:$('#bRef'),calc:$('#bCalc'),gd:$('#bGD'),note:$('#bNote'),dict:$('#bDict')};
+const panels={pt:$('#ptPanel'),ref:$('#refPanel'),calc:$('#calcPanel'),gd:$('#gdPanel'),note:$('#notePanel'),dict:$('#dictPanel')};
+const pbtn={pt:$('#bPT'),ref:$('#bRef'),calc:$('#bCalc'),gd:$('#bGD'),note:$('#bNote'),dict:$('#bDict')};
 const placed={};
 let desmosOn=false;
 function defaultPlace(k){
@@ -2636,7 +2647,7 @@ $('#bDict').addEventListener('mousedown',()=>{ const t=String(getSelection()).tr
 function openPanel(k,show){
   const p=panels[k]; show=show??p.hidden;
   p.hidden=!show; if(pbtn[k]&&k!=='note') pbtn[k].setAttribute('aria-pressed',show);
-  if(show){ if(!placed[k]){ defaultPlace(k); placed[k]=true; } p.style.zIndex=++zTop; if(S.started) actTool(k==='calc'?'calculator':k==='ref'?'references':k==='gd'?'graphDraw':k==='dict'?'dictionary':'notes'); }
+  if(show){ if(!placed[k]){ defaultPlace(k); placed[k]=true; } p.style.zIndex=++zTop; if(S.started) actTool(k==='calc'?'calculator':k==='ref'?'references':k==='pt'?'periodicTable':k==='gd'?'graphDraw':k==='dict'?'dictionary':'notes'); }
 }
 Object.keys(panels).forEach(k=>{
   const p=panels[k], h=p.querySelector('.ph'), rh=p.querySelector('.rh');
@@ -2662,7 +2673,7 @@ const USE_DESMOS_API=false;  // true = Desmos API (needs a production key; a tri
 const DESMOS_KEY='8f04c5aafb7b4926872111685875396b';   // Mr. Spitz's Desmos API key
 let DESMOS_BANNER_PX=50;     // height of the green "Texas Version" banner to crop off (teacher fine-tune: click the calculator title bar, then Ctrl+Alt+Up/Down)
 try{ const v=localStorage.getItem('spitzDesmosCrop'); if(v!==null&&!isNaN(+v)) DESMOS_BANNER_PX=+v; }catch(e){}
-function applyCrop(){ const f=document.getElementById('desmosFrame'); if(!f) return; f.style.top=(-DESMOS_BANNER_PX)+'px'; f.style.height=`calc(100% + ${DESMOS_BANNER_PX}px)`; }
+function applyCrop(){ ['desmosFrame','sciFrame'].forEach(id=>{ const f=document.getElementById(id); if(!f) return; f.style.top=(-DESMOS_BANNER_PX)+'px'; f.style.height=`calc(100% + ${DESMOS_BANNER_PX}px)`; }); }
 const DESMOS_TX={ // Texas STAAR graphing calculator restrictions (Desmos "Texas State Test" notes)
   images:false, folders:false, notes:false,            // no images, folders, or notes
   degreeMode:true,                                     // angle mode defaults to degrees
@@ -2675,7 +2686,7 @@ const DESMOS_TX={ // Texas STAAR graphing calculator restrictions (Desmos "Texas
   border:false };
 let desmosCalc=null, desmosLoading=false, desmosFailed=false;
 function useFrameFallback(){ desmosFailed=true; $('#desmosHost').hidden=true; const f=$('#desmosFrame'); if(!f.src) f.src='https://www.desmos.com/testing/texas/graphing'; f.hidden=false; applyCrop(); }
-document.addEventListener('keydown',e=>{ if(!(e.ctrlKey&&e.altKey)||$('#calcPanel').hidden||$('#desmosFrame').hidden) return; if(e.key!=='ArrowUp'&&e.key!=='ArrowDown') return; e.preventDefault(); e.stopPropagation(); DESMOS_BANNER_PX=Math.max(0,Math.min(150,DESMOS_BANNER_PX+(e.key==='ArrowUp'?2:-2))); applyCrop(); try{ localStorage.setItem('spitzDesmosCrop',DESMOS_BANNER_PX); }catch(err){} toast('Banner crop: '+DESMOS_BANNER_PX+' px'); },true);
+document.addEventListener('keydown',e=>{ if(!(e.ctrlKey&&e.altKey)||$('#calcPanel').hidden||($('#desmosFrame').hidden&&$('#sciFrame').hidden)) return; if(e.key!=='ArrowUp'&&e.key!=='ArrowDown') return; e.preventDefault(); e.stopPropagation(); DESMOS_BANNER_PX=Math.max(0,Math.min(150,DESMOS_BANNER_PX+(e.key==='ArrowUp'?2:-2))); applyCrop(); try{ localStorage.setItem('spitzDesmosCrop',DESMOS_BANNER_PX); }catch(err){} toast('Banner crop: '+DESMOS_BANNER_PX+' px'); },true);
 function startDesmos(){
   if(!USE_DESMOS_API){ useFrameFallback(); return; }
   if(desmosCalc||desmosFailed){ return; }
@@ -2690,7 +2701,7 @@ function startDesmos(){
 }
 function desmosResize(){ if(desmosCalc&&desmosCalc.resize) try{ desmosCalc.resize(); }catch(e){} }
 if(window.ResizeObserver) new ResizeObserver(desmosResize).observe($('#desmosHost'));
-function showChooser(){ $('#chooser').hidden=false; $('#desmosFrame').hidden=true; $('#desmosHost').hidden=true; $('#calcTtl').textContent='Choose A Calculator'; $('#calcSwitch').hidden=true; $('#calcExpand').hidden=true; $('#tiNote').hidden=true; }
+function showChooser(){ $('#chooser').hidden=false; $('#desmosFrame').hidden=true; $('#sciFrame').hidden=true; $('#desmosHost').hidden=true; $('#calcTtl').textContent='Choose A Calculator'; $('#calcSwitch').hidden=true; $('#calcExpand').hidden=true; $('#tiNote').hidden=true; }
 $('#chTI').onclick=()=>{ $('#tiNote').hidden=false; };
 $('#chDesmos').onclick=()=>{
   actTool('desmos');
@@ -2733,13 +2744,19 @@ function bcBuild(){ const h=$('#bcHost'); if(h.firstChild) return;
     const m={'*':'×','x':'×','/':'÷','-':'−','+':'+','=':'=','Enter':'=','Escape':'ON/C','Delete':'ON/C','%':'%','.':'.'}, k=/^[0-9]$/.test(e.key)?e.key:m[e.key];
     if(!k) return; e.preventDefault(); bcKey(k); });
   bcShow(); }
-function showBasic(){ bcBuild(); $('#chooser').hidden=true; $('#desmosFrame').hidden=true; $('#desmosHost').hidden=true; $('#bcHost').hidden=false;
+function showBasic(){ bcBuild(); $('#chooser').hidden=true; $('#desmosFrame').hidden=true; $('#sciFrame').hidden=true; $('#desmosHost').hidden=true; $('#bcHost').hidden=false;
   $('#calcTtl').textContent='Calculator'; $('#calcSwitch').hidden=true; $('#calcExpand').hidden=true; panels.calc.classList.add('basic'); }
 { const sc=showChooser; showChooser=function(){ if(document.body.classList.contains('bcalc')&&document.body.classList.contains('nocalc')) return showBasic(); $('#bcHost').hidden=true; panels.calc.classList.remove('basic'); sc(); }; }
+/* Grade 8 Science: Basic Calculator (the TI-108 above) or the Desmos Scientific Calculator (Texas testing page, banner cropped like the graphing one) */
+$('#chBasic').onclick=()=>{ actTool('basicCalculator'); showBasic(); $('#calcSwitch').hidden=false; };
+$('#chSci').onclick=()=>{ actTool('desmosScientific'); $('#chooser').hidden=true; $('#bcHost').hidden=true; panels.calc.classList.remove('basic');
+  const f=$('#sciFrame'); if(!f.src) f.src='https://www.desmos.com/testing/texas/scientific'; f.hidden=false; applyCrop();
+  $('#calcTtl').textContent='Calculator'; $('#calcSwitch').hidden=false; $('#calcExpand').hidden=false;
+  const p=panels.calc; if(parseInt(p.style.height)<=300){ const top=Math.round(innerHeight*0.30); p.style.top=top+'px'; p.style.height=(innerHeight-top-18)+'px'; } };
 window.SpitzBasicCalc=on=>{ document.body.classList.toggle('bcalc',!!on); if(!on) openPanel('calc',false); };
 if(window.SPITZ_CALC||/[?&]basiccalc=1\b/.test(location.search)) window.SpitzBasicCalc(true);
 
-/* ---------- ruler (Cambium's Grade 6 math ruler): centimeters along the top edge, inches along the bottom. Drag it to move it;
+/* ---------- ruler (Grade 6 math): centimeters along the top edge, inches along the bottom. Drag it to move it;
    drag the circle at the end to turn it about the 0 mark. It grows with Zoom In so it still matches the pictures. ---------- */
 const RU={x:0,y:0,a:0,on:false}, RU_CM=23, RU_IN=9, RU_M=0.5, RU_W=RU_CM+2*RU_M+0.4, RU_H=3.9;
 const ruPx=()=>96/2.54*(Z[zi]||1);   // CSS pixels per centimeter at this zoom
@@ -2775,7 +2792,7 @@ const nt=$('#noteText');
 function openNote(mode){
   noteMode=mode; const n=ITEMS[S.i].n, store=mode==='sticky'?S.sticky:S.notes;
   $('#noteTtl').textContent=mode==='sticky'?'Sticky Notes':'Notepad';
-  $('#noteImp').textContent=mode==='sticky'?'Notes are not scored.':'IMPORTANT: Unsaved notes will be lost when the Notepad is closed. To save notes before closing the Notepad, click Save and Close. Notes are not scored; you must record your response in the answer space provided.';
+  $('#noteImp').textContent=mode==='sticky'?'Notes are not scored.':'Click Save and Close to keep your notes. Closing without saving clears them. Notes are not scored, so put your answer in the answer space.';
   nt.value=store[n]||''; counter(); openPanel('note',true);
   $('#bNote').setAttribute('aria-pressed',mode==='note'); nt.focus();
 }
@@ -2973,7 +2990,7 @@ $('#bSys').onclick=()=>{ if($('#sysPanel').hidden){ actTool('settings'); pend={.
 
 /* ---------- help & pause ---------- */
 $('#btnHelp').onclick=()=>dialog({title:'Help',html:`<div class="body2"><p>Use <b>Next</b> and <b>Back</b> to move between questions, or open the <b>Items</b> list to jump to any question.</p><p>The round button by the question number opens the item menu: Tutorial, Mark for Review, Sticky Notes, Strikethrough, and Highlight Selection (select some words first).</p><p>Tools: References, Calculator, Notepad, Graph/Draw, Line Reader (use the up and down arrow keys), Zoom, and System Settings.</p></div>`,buttons:[{label:'Close',pri:true}]});
-$('#btnPause').onclick=()=>dialog({title:'Attention',msg:'Are you sure you want to pause the test? Your answers will be saved.',buttons:[{label:'Yes',pri:true,fn:()=>{ $('#pauseScreen').hidden=false; actPause(true); }},{label:'No'}]});
+$('#btnPause').onclick=()=>dialog({title:'Attention',msg:'Pause the test now? Your answers stay saved, and you can resume when you are ready.',buttons:[{label:'Yes',pri:true,fn:()=>{ $('#pauseScreen').hidden=false; actPause(true); }},{label:'No'}]});
 $('#resumeBtn').onclick=()=>{ $('#pauseScreen').hidden=true; actPause(false); };
 /* teacher pause / stop from the dashboard: the pause screen without a Resume button, until the teacher releases it */
 let hold='';
@@ -3000,7 +3017,7 @@ function openEnd(){
   $('#endScreen').hidden=false;
 }
 $('#endBack').onclick=()=>{ $('#endScreen').hidden=true; go(ITEMS.length-1); };
-$('#submitBtn').onclick=()=>dialog({title:'Attention',msg:'Are you sure you want to submit your test? Once you submit, you will not be able to review or change your answers.',buttons:[{label:'Yes',pri:true,fn:showResults},{label:'No'}]});
+$('#submitBtn').onclick=()=>dialog({title:'Attention',msg:'Ready to turn in your test? After you submit, you cannot look at or change your answers.',buttons:[{label:'Yes',pri:true,fn:showResults},{label:'No'}]});
 function showResults(restored){
   if(restored!==true){ actLeaveAll(); S.submitted=true; S.submittedAt=new Date().toISOString(); logEv('submit'); }
   const E=typeof earn==='function'?earn:(it=>{const r=score(it); return r===null?null:(r?1:0);});
@@ -3064,8 +3081,8 @@ function fillBreakdown(){
   document.getElementById('rxLevel').innerHTML=`<span class="lvl" style="background:${b[2]}">${b[1]}</span><span>${tot} of ${mx} points (${pct}%). ${ROW?`Level using the campus ${ROW} standards.`:'Estimated level (Approaches 32%, Meets 52%, Masters 69% of points).'}${wr?` Your teacher still has to score your written answer${wr>1?'s':''}, so this level can go up.`:''}</span>`;
   document.getElementById('rxTime').innerHTML=`Time spent: <b>${fmtMs(ITEMS.reduce((s,it)=>s+ACT.items[it.n].ms,0))}</b>${ACT.away?` · Left the test window <b>${ACT.away}</b> time${ACT.away===1?'':'s'}`:''}`;
   if(!CAT){ document.querySelectorAll('.rxcat').forEach(e=>e.hidden=true); return; }
-  document.getElementById('rxCats').innerHTML=Object.keys(CAT).map(Number).map(c=>{ const r=rows.filter(x=>x.it.cat===c); return `<div class="rxrow"><span class="rxl">${c}. ${CAT[c]}</span>${bar(r.reduce((s,x)=>s+x.e,0),r.reduce((s,x)=>s+x.m,0))}</div>`; }).join('');
-  document.getElementById('rxRS').innerHTML=['Readiness','Supporting'].map(k=>{ const r=rows.filter(x=>x.it.rs===k); return `<div class="rxrow"><span class="rxl">${k}</span>${bar(r.reduce((s,x)=>s+x.e,0),r.reduce((s,x)=>s+x.m,0))}</div>`; }).join('');
+  document.getElementById('rxCats').innerHTML=Object.keys(CAT).map(Number).map(c=>{ const r=rows.filter(x=>x.it.cat===c); if(!r.length) return ''; return `<div class="rxrow"><span class="rxl">${c}. ${CAT[c]}</span>${bar(r.reduce((s,x)=>s+x.e,0),r.reduce((s,x)=>s+x.m,0))}</div>`; }).join('');
+  document.getElementById('rxRS').innerHTML=['Readiness','Supporting'].map(k=>{ const r=rows.filter(x=>x.it.rs===k); if(!r.length) return ''; return `<div class="rxrow"><span class="rxl">${k}</span>${bar(r.reduce((s,x)=>s+x.e,0),r.reduce((s,x)=>s+x.m,0))}</div>`; }).join('');
 }
 window.__spitzFill=fillBreakdown;
 new MutationObserver(()=>{ if(!document.getElementById('resultsScreen').hidden) fillBreakdown(); }).observe(document.getElementById('resultsScreen'),{attributes:true,attributeFilter:['hidden']});
@@ -3180,7 +3197,8 @@ function browseStart(){
 
 /* fill in this test's name everywhere it shows */
 document.title=TD.title; document.querySelectorAll('.testTitle').forEach(e=>e.textContent=TD.title);
-{ const ref=document.querySelector('#refPanel .pbody img'); if(ref&&!document.body.matches('.rla,.noref')) if(TD.reference==='math8') ref.alt='Grade 8 mathematics reference materials: linear equations, circumference, area, surface area, volume, Pythagorean theorem, simple and compound interest'; else if(TD.reference==='math6') ref.alt='Grade 6 mathematics reference materials: area of a triangle, rectangle or parallelogram, and trapezoid; volume of a rectangular prism; customary and metric conversions for length, volume and capacity, and weight and mass'; ref.src=(window.SPITZ_ASSETS&&window.SPITZ_ASSETS['refs/'+(TD.reference||'alg1')+'.png'])||(window.SPITZ_ROOT+'refs/'+(TD.reference||'alg1')+'.png'); }
+{ const ref=document.querySelector('#refPanel .pbody img'); if(ref&&!document.body.matches('.rla,.noref')) if(TD.reference==='math8') ref.alt='Grade 8 mathematics reference materials: linear equations, circumference, area, surface area, volume, Pythagorean theorem, simple and compound interest'; else if(TD.reference==='math6') ref.alt='Grade 6 mathematics reference materials: area of a triangle, rectangle or parallelogram, and trapezoid; volume of a rectangular prism; customary and metric conversions for length, volume and capacity, and weight and mass'; else if(TD.reference==='math7') ref.alt='Grade 7 mathematics reference materials: linear equations, constant of proportionality, circumference and area of a circle, area, volume of a prism and pyramid, pi, distance, simple and compound interest; customary and metric conversions for length, volume and capacity, and weight and mass'; else if(TD.reference==='sci8') ref.alt='Middle school science reference materials: formulas for average speed and net force'; ref.src=(window.SPITZ_ASSETS&&window.SPITZ_ASSETS['refs/'+(TD.reference||'alg1')+'.png'])||(window.SPITZ_ROOT+'refs/'+(TD.reference||'alg1')+'.png'); }
+{ const pt=document.querySelector('#ptPanel .pbody img'); if(pt&&document.body.classList.contains('sci')) pt.src=(window.SPITZ_ASSETS&&window.SPITZ_ASSETS['refs/sci8-pt.png'])||(window.SPITZ_ROOT+'refs/sci8-pt.png'); }
 window.__spitzStart=(name,period,opt={})=>{ S.name=name; S.period=period; S.started=true; ACT.t0=Date.now();
   if(opt.state){ sessionRestore(opt.state,opt.events); if(opt.state.submitted){ S.submitted=true; S.submittedAt=opt.state.submittedAt; } logEv('signInAgain'); } else logEv('start'); if(window.SPITZ_TTSCHECK) logEv('ttsCheck',window.SPITZ_TTSCHECK);
   $('#sname').textContent=`${name} (${period==='G'?'GUEST':'PERIOD '+period})`; $('#isubName').textContent=name;
@@ -3194,15 +3212,15 @@ if(window.__spitzPending){ const p=window.__spitzPending; window.__spitzPending=
 window.SPITZ_BUNDLE={"alg1-2023":function(){
 /* Algebra I 2023 STAAR released test (TEA), rebuilt for Spitz Checkpoint.
    Answer key, item types, TEKS, point values, reporting categories and readiness/supporting from TEA's 2023 answer key and appendix.
-   Wording from Kody's Cambium screenshots of the 2023 released test and TEA's 2023 test booklet (STAAR 05 2023 EOC AI E 0).
+   Wording from Kody's screenshots of the 2023 online released test and TEA's 2023 test booklet (STAAR 05 2023 EOC AI E 0).
    Every graph is redrawn here from the item picture and checked against TEA's rationale.
-   Differences between sources (Cambium screenshots used): Q30 total is $2,649.34 (booklet says $2,629.34; TEA's rationale uses 2,649.34);
-   Q49 has six choices incl. x = 0 (TEA appendix + Cambium; the booklet shows five); Q43 directions as Cambium shows them.
+   Differences between sources (online screenshots used): Q30 total is $2,649.34 (booklet says $2,629.34; TEA's rationale uses 2,649.34);
+   Q49 has six choices incl. x = 0 (TEA appendix + online test; the booklet shows five); Q43 directions as the online test shows them.
    TEA errors: the answer key lists Q29 as Drag and Drop (it is multiple choice, key B); the rationale labels the reason for Q16 C as
    "Option B" and for Q44 D as "Option C" (crops renamed rat/r16C.png and r44D.png); the Q8 distractors' zeros don't match their own factors
    (kept as released). Q46 rays: slopes estimated from the picture. */
 (function(){
-/* static graph with any window (Cambium style: gray grid, black axes, arrowheads, Verdana labels) */
+/* static graph with any window (gray grid, black axes, arrowheads, Verdana labels) */
 let CGID=0;
 function CG(o){
   const id='cg23'+(++CGID), x0=o.x[0], x1=o.x[1], y0=o.y[0], y1=o.y[1], gx=o.gx||1, gy=o.gy||1, lx=o.lx||gx, ly=o.ly||gy, cell=o.cell||20;

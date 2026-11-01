@@ -6,7 +6,7 @@
    Kody's choices (10/24): title "Algebra 1 Redesign Practice Test", ID alg1-redesign; Q3/Q23 hot spots extended to pick TWO/THREE
    (hollow circles, partial credit like multiselect); Q19 equation editor; Spitz-written explanations (TEA has no rationales for this test). */
 (function(){
-/* static graph with any window (Cambium style: gray grid, black axes, arrowheads, Verdana labels) — copied from alg1-2023 */
+/* static graph with any window (gray grid, black axes, arrowheads, Verdana labels) — copied from alg1-2023 */
 let CGID=0;
 function CG(o){
   const id='cg23'+(++CGID), x0=o.x[0], x1=o.x[1], y0=o.y[0], y1=o.y[1], gx=o.gx||1, gy=o.gy||1, lx=o.lx||gx, ly=o.ly||gy, cell=o.cell||20;
