@@ -367,10 +367,11 @@ function clamp(v,a,b){ return v<a?a:v>b?b:v; }
 /* the Bud and the Rivals: speed, jumps, weight (heavier flies less far), power (their hits launch farther), size */
 var BUD={ name:'You', col:'#3D9BFF', dark:'#1C5FB8', band:'#FFB020', glove:'#FFD23F', spd:520, air:440, jump:1180, jump2:1060, jumps:2, grav:1, weight:1, pow:1, size:1.15, gear:'band' };
 var ROSTER=[
-  { name:'Bonk',  col:'#FF5A36', dark:'#A8260F', band:'#5A1208', glove:'#8E1B22', spd:470, air:400, jump:1160, jump2:1020, jumps:2, grav:1,    weight:1,    pow:1,    size:1.15, gear:'band',    tip:'Bonk swings hard. Watch for the big kick.' },
-  { name:'Zip',   col:'#FF9A1F', dark:'#B25A06', band:'#3A2A10', glove:'#C2410C', spd:560, air:470, jump:1240, jump2:1120, jumps:2, grav:1.05, weight:0.85, pow:0.9,  size:1.06, gear:'goggles', tip:'Zip is fast but light. Zip flies far.' },
-  { name:'Brick', col:'#D93A2B', dark:'#7E1A12', band:'#3B0D08', glove:'#5A1208', spd:410, air:350, jump:1100, jump2:960,  jumps:2, grav:1.05, weight:1.3,  pow:1.15, size:1.3,  gear:'cap',     tip:'Brick is heavy. Build up a big % first.' },
-  { name:'Boing', col:'#FF6F61', dark:'#B23A30', band:'#FFE14D', glove:'#B23A30', spd:450, air:430, jump:1120, jump2:980,  jumps:3, grav:0.82, weight:0.95, pow:0.95, size:1.1,  gear:'antenna', tip:'Boing floats and jumps three times.' }
+  /* 2026-11-01 (Kody: "make the rivals mean"): every Rival hits harder and is harder to launch than the first version */
+  { name:'Bonk',  col:'#FF5A36', dark:'#A8260F', band:'#5A1208', glove:'#8E1B22', spd:500, air:420, jump:1170, jump2:1030, jumps:2, grav:1,    weight:1.15, pow:1.2,  size:1.15, gear:'band',    tip:'Bonk swings hard and loves the big kick.' },
+  { name:'Zip',   col:'#FF9A1F', dark:'#B25A06', band:'#3A2A10', glove:'#C2410C', spd:610, air:500, jump:1250, jump2:1130, jumps:2, grav:1.05, weight:0.98, pow:1.1,  size:1.06, gear:'goggles', tip:'Zip is super fast. Don’t let Zip chase you down.' },
+  { name:'Brick', col:'#D93A2B', dark:'#7E1A12', band:'#3B0D08', glove:'#5A1208', spd:430, air:360, jump:1100, jump2:960,  jumps:2, grav:1.05, weight:1.4,  pow:1.3,  size:1.3,  gear:'cap',     tip:'Brick is heavy. Build up a big % first.' },
+  { name:'Boing', col:'#FF6F61', dark:'#B23A30', band:'#FFE14D', glove:'#B23A30', spd:480, air:450, jump:1130, jump2:990,  jumps:3, grav:0.82, weight:1.08, pow:1.15, size:1.1,  gear:'antenna', tip:'Boing floats, jumps three times and stomps from above.' }
 ];
 /* moves: s = wind-up, a = hit window, e = recovery (seconds); box = [x ahead, y, width, height] from the feet; launch = base + grow × (% / 100) */
 var MV={
@@ -410,7 +411,7 @@ function skill(){ var b=0.56+0.035*Math.min(8,(S.round||1)-1)+0.07*(S.buds-S.riv
 function hot(){ return S.streak>=HOT; }
 function roundReset(){ shower=0; var keep=S.P?S.P.pow:0; S.P=fighter(MAIN.x0+250,1,BUD,'bud'); S.R=fighter(MAIN.x1-250,-1,rival(),'riv'); S.P.pow=keep;
   if(S.sd){ S.P.dmg=SDDMG; S.R.dmg=SDDMG; }
-  S.R.pow=COST*(S.R.st.boss?3:skill()>0.7?2:1); AI.t=0; AI.react=0; AI.back=0; fx.length=0; pops.length=0; S.items=[]; S.dropT=dropNext()*0.5; bombs.length=0; if(!SIM) faces(); }
+  S.R.pow=COST*(S.R.st.boss?3:2); S.rch=0; AI.t=0; AI.react=0; AI.back=0; fx.length=0; pops.length=0; S.items=[]; S.dropT=dropNext()*0.5; bombs.length=0; if(!SIM) faces(); }
 
 /* ================= POINTS, ALL-PRO, CHALLENGES (2026-10-30 replay update) =================
    The run's score is points, not the KO score: right answers (more on a streak), perfect corners, damage dealt, KOs (more for a Super
@@ -477,6 +478,7 @@ function itemStep(dt){
     return !took; });
   if(!S.items.length&&(S.dropT-=dt)<=0){ S.dropT=dropNext(); spawnItem(); }
   eventStep(dt);
+  if((S.rch=(S.rch||0)+dt)>=20){ S.rch=0; if(S.R.pow<MAXP){ S.R.pow=Math.min(MAXP,S.R.pow+COST); taunt('charge'); } }
   [S.P,S.R].forEach(function(f){ if(f.spring>0) f.spring-=dt; });
   for(var i=bombs.length-1;i>=0;i--){ var b=bombs[i], py=b.y, boom=b.t>2.2, hitF=false; b.t+=dt; b.vy+=1500*dt; b.x+=b.vx*dt; b.y+=b.vy*dt;
     [S.P,S.R].forEach(function(f){ if(f.who===b.by||f.out) return; var h=hurt(f); if(b.x>h[0]-16&&b.x<h[0]+h[2]+16&&b.y>h[1]-16&&b.y<h[1]+h[3]+16) hitF=true; });
@@ -498,6 +500,15 @@ function eventStep(dt){
   if((S.evT-=dt)>0) return; S.evT=28+Math.random()*8; S.evN++;
   if(S.evN%2===1){ shower=6; showerT=0.2; if(!SIM){ toast('BOMB SHOWER! Stay out of the red circles'); SND.drop(); } }
   else { for(var i=0;i<3;i++) spawnItem(); if(!SIM) toast('ITEM RAIN! Grab them before the Rival does'); } }
+/* the Rivals talk trash (playful, never about the math) */
+var TAUNT={ start:['You’re going down!','Ready to fly?','I’ve been waiting for this.','Hope you like clouds!','My turn to win!'],
+  hit:['Too slow!','Gotcha!','Is that all you’ve got?','Ha! Felt that?','Catch!'],
+  ko:['See ya!','Bye bye!','Too easy!','Out of here!','Come back soon!'],
+  lose:['No fair!','Lucky shot!','I’ll be back!','Okay, okay…'],
+  charge:['Super charged. Uh oh!','Here comes trouble!'],
+  boss:['I am MEGA BONK!','Big Bonk is here!'] };
+var tauntMsg='', tauntT=0, tauntCd=0;
+function taunt(kind){ if(SIM||!S.R) return; if(kind==='hit'&&tauntCd>0) return; var l=TAUNT[kind]; tauntMsg=l[Math.floor(Math.random()*l.length)]; tauntT=1.8; tauntCd=4; }
 var sayMsg='', sayT=0, sayCol='#FFD23F';
 function say(t,col){ sayMsg=t; sayT=1.8; sayCol=col; }
 
@@ -564,8 +575,8 @@ function openPit(kind){ S.phase='pit'; S.pitKind=kind; S.pitAns=[]; KD={}; touch
   if(!S.q||S.qDone) newQ(); else showQ(); hud(); save(); dirty=true; }
 function leavePit(){ if(S.phase!=='pit') return; if(!canGo()){ var q=$('bb-q'); q.classList.remove('nudge'); void q.offsetWidth; q.classList.add('nudge'); SND.empty(); return; }
   clearTimeout(lockT); $('bb-pit').hidden=true; S.phase='count'; S.cd=S.pitKind==='kick'?1.8:0.6; cdShown=-1;
-  if(S.pitKind==='kick') AI.react=0.3-0.18*skill(); if(document.activeElement&&document.activeElement.blur) document.activeElement.blur(); save(); hud(); }
-function goLive(){ S.phase='live'; acc=0; goT=0.7; SND.bell(); edge={}; if(S.dropBud&&S.pitKind==='kick'){ S.dropBud=0; spawnItem(null,S.P.x+S.P.face*150); } save(); hud(); }
+  if(S.pitKind==='kick') AI.react=0.15; if(document.activeElement&&document.activeElement.blur) document.activeElement.blur(); save(); hud(); }
+function goLive(){ if(S.pitKind==='kick') taunt(S.R&&S.R.st.boss?'boss':'start'); S.phase='live'; acc=0; goT=0.7; SND.bell(); edge={}; if(S.dropBud&&S.pitKind==='kick'){ S.dropBud=0; spawnItem(null,S.P.x+S.P.face*150); } save(); hud(); }
 
 /* ================= THE FIGHT: moving, hitting, launching ================= */
 var KD={}, edge={}, touch={l:0,r:0,dn:0,up:0,atk:0,sup:0};
@@ -651,6 +662,7 @@ function launch(att,tgt,mv,id){ tgt.dmg=Math.min(999,tgt.dmg+mv.dmg); tgt.hitT=0
   tgt.stun=Math.min(1.25,0.14+kb/2700); tgt.tumble=kb>950?1:0; tgt.atk=null; tgt.face=-sx; tgt.upUsed=0; tgt.jumps=Math.min(tgt.jumps,1);
   freeze=Math.min(0.07,0.02+mv.dmg*0.003);                                       /* a short hit-stop: long ones read as lag (Kody, 2026-10-31) */
   if(att.who==='bud'){ S.hits++; if(mv.sup) S.landed++; addPts(mv.dmg*10); }
+  else if(att.who==='riv'&&kb>900) taunt('hit');
   if(!SIM){ var hb=hurt(tgt); spark(tgt.x,hb[1]+hb[3]*0.45,att.who,kb); pop(tgt.x,hb[1]-14,mv.dmg,att.who); SND.hit(kb/2200); if(kb>1300){ shakeT=Math.max(shakeT,0.3); } if(kb>1700&&!reduced) zoomT=0.25; } }
 
 /* ================= THE RIVAL'S BRAIN (also drives your Bud in the test bot) ================= */
@@ -668,12 +680,12 @@ function aiInput(f,o,k,A,dt){ var ip={l:0,r:0,up:0,down:0,jump:0,atk:0,sup:0};
     else if(f.vy>-120&&f.y>MAIN.y-260&&f.jumps<f.st.jumps&&far>260) ip.jump=1;
     return ip; }
   A.t-=dt;
-  if(A.t<=0){ A.t=0.3-0.2*k+Math.random()*0.1; A.want=null;
+  if(A.t<=0){ A.t=0.22-0.15*k+Math.random()*0.08; A.want=null;
     var dx=o.x-f.x, dy=o.y-f.y, adx=Math.abs(dx), sgn=dx>=0?1:-1;
     if(A.back>0){ A.back-=1; A.tx=f.x-sgn*220; }
     else if(offStage(o)){ A.tx=clamp(o.x,MAIN.x0+70,MAIN.x1-70); }                   /* the other fighter is off the stage: wait at the edge */
     else A.tx=o.x-sgn*(o.st.size*30+46);
-    if(Math.random()<0.12*(1-k)) A.back=1+Math.floor(Math.random()*2);
+    if(Math.random()<0.04*(1-k)) A.back=1;
     /* an item on the stage: go get it when it is closer to you than to the other fighter (sometimes anyway) */
     var it=null; S.items.forEach(function(q){ if(q.landed&&(!it||Math.abs(q.x-f.x)<Math.abs(it.x-f.x))) it=q; });
     if(it&&canGrab(f,it.k)&&!offStage(o)&&(Math.abs(it.x-f.x)<Math.abs(it.x-o.x)+120||Math.random()<0.25*k)){ A.tx=it.x;
@@ -681,12 +693,14 @@ function aiInput(f,o,k,A,dt){ var ip={l:0,r:0,up:0,down:0,jump:0,atk:0,sup:0};
     /* holding a bomb: throw it from a distance */
     if(f.item&&f.item.k==='bomb'&&!offStage(o)&&!f.atk&&adx>110&&adx<500&&Math.abs(dy)<170&&Math.random()<0.4+0.4*k){ A.want={atk:1}; A.t+=0.2; }
     /* close enough to hit? */
-    if(!A.want&&!offStage(o)&&!f.atk&&Math.random()<0.35+0.6*k){
+    /* edge-guard: the other fighter is off the stage and close to the ledge: smack them back out */
+    if(!A.want&&offStage(o)&&!f.atk&&f.ground&&adx<150*f.st.size&&dy>-120&&dy<160&&Math.random()<0.5+0.5*k) A.want=dy>40?{atk:1,down:1}:{atk:1,side:1};
+    if(!A.want&&!offStage(o)&&!f.atk&&Math.random()<0.6+0.4*k){
       var ahead=adx<128*f.st.size, level=Math.abs(dy)<90, above=dy<-70&&dy>-230&&adx<90;
       if(above) A.want={atk:1,up:1};
       else if(ahead&&level){ var nearEdge=(sgn>0?MAIN.x1-o.x:o.x-MAIN.x0)<360;
-        if(f.pow>=COST&&(o.dmg>75-30*k||(nearEdge&&o.dmg>30))&&Math.random()<0.25+0.45*k) A.want={sup:1};
-        else if(o.dmg>85||Math.random()<0.3) A.want={atk:1,side:1};
+        if(f.pow>=COST&&(o.dmg>60-30*k||(nearEdge&&o.dmg>25))&&Math.random()<0.4+0.5*k) A.want={sup:1};
+        else if(o.dmg>70||Math.random()<0.4) A.want={atk:1,side:1};
         else if(Math.random()<0.25) A.want={atk:1,down:1};
         else A.want={atk:1}; }
       else if(!f.ground&&dy>40&&dy<200&&adx<70) A.want={atk:1,down:1}; }
@@ -723,6 +737,7 @@ function ko(f){ var bud=f.who==='riv';                                          
   if(bud) S.buds++; else S.rivals++;
   if(bud){ var g=800+(f.st.boss?1500:0), tag=f.st.boss?'BOSS KO':''; if(f.lastBy==='sup'){ g+=400; S.superKO++; tag=(tag?tag+' + ':'')+'SUPER KO'; } else if(f.lastBy==='item'){ g+=400; S.itemKO++; tag=(tag?tag+' + ':'')+'ITEM KO'; } if(S.sd){ g+=500; tag=(tag?tag+' + ':'')+'SUDDEN DEATH'; }
     addPts(g); koTxt=(tag?tag+' · ':'')+'+'+Math.round(g*(S.pro?PRO_X:1)).toLocaleString(); }
+  if(bud){ tauntT=0; taunt('lose'); } else taunt('ko'); tauntCd=0;
   f.out=1; S.phase='ko'; bombs.length=0; S.items=[]; S.koT=2.4; S.koBy=bud?'bud':'riv';
   var ex=clamp(f.x,0,W), ey=clamp(f.y-60,0,H); koAt={x:ex,y:ey,a:Math.atan2(f.vy,f.vx),who:f.who,t:0}; blast(ex,ey,f.who); shakeT=0.5;
   if(bud){ SND.ko(); var p=toStage(clamp(ex,140,W-140),clamp(ey,120,H-120)); confetti(p[0],p[1],140,2.8); }
@@ -929,6 +944,7 @@ function draw(){ fg.setTransform(RES,0,0,RES,0,0); fg.clearRect(0,0,W,H);
   else if(goT>0) bigText('FIGHT!','#FFD23F',300,170);
   if(S.phase==='ko'){ var bud=S.koBy==='bud'; bigText(bud?'KO!':'OOF! KO',bud?'#FFD23F':'#FF5A36',300,bud?220:150,S.sd?(bud?'You win sudden death! '+koTxt:'The Rivals win sudden death'):(S.buds+' – '+S.rivals+(bud&&koTxt?'   '+koTxt:''))); }
   if(noPowMsg>0&&S.phase==='live') pill('No Super charged! Press Enter for the corner',S.P.x,S.P.y-170,'#FF7A7A');
+  if(tauntT>0&&S.R&&!S.R.out&&(S.phase==='live'||S.phase==='ko'||S.phase==='count')){ var th=hurt(S.R); fg.save(); fg.globalAlpha=Math.min(1,tauntT*3); pill('“'+tauntMsg+'”',S.R.x,th[1]-50,'#FF5A36'); fg.restore(); }
   if(sayT>0&&S.phase==='live'){ fg.save(); fg.globalAlpha=Math.min(1,sayT*3); pill(sayMsg,S.P.x,S.P.y-(noPowMsg>0?230:180),sayCol); fg.restore(); } }
 
 /* ================= THE LOOP ================= */
@@ -945,7 +961,7 @@ function frame(t){ var raw=(t-lastF)/1000, dt=Math.min(0.05,raw); lastF=t; tNow=
     else if(S.phase==='count'){ S.cd-=dt; var n=Math.ceil(S.cd/0.6); if(S.pitKind==='kick'&&n!==cdShown&&n>0){ cdShown=n; SND.tick(); } if(S.cd<=0) goLive(); dirty=true; }
     else if(S.phase==='ko'){ acc+=dt*(S.koT>1.8?0.3:1); while(acc>=STEP){ acc-=STEP; stepKo(STEP); } S.koT-=dt; if(S.koT<=0) afterKo(); dirty=true; } }
   if(goT>0){ goT-=dt; dirty=true; } if(shakeT>0){ shakeT-=dt; dirty=true; } if(flash>0){ flash-=dt; dirty=true; } if(zoomT>0){ zoomT-=dt; dirty=true; } if(superT>0){ superT-=dt; dirty=true; }
-  if(noPowMsg>0){ noPowMsg-=dt; dirty=true; } if(sayT>0){ sayT-=dt; dirty=true; }
+  if(noPowMsg>0){ noPowMsg-=dt; dirty=true; } if(sayT>0){ sayT-=dt; dirty=true; } if(tauntT>0){ tauntT-=dt; dirty=true; } if(tauntCd>0) tauntCd-=dt;
   if(fx.length||pops.length||koAt){ partsStep(dt); dirty=true; }
   if(dirty&&S.P){ dirty=false; draw(); }                                       /* the corner draws once and then the canvas rests */
   requestAnimationFrame(frame); }
