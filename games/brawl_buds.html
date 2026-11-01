@@ -54,8 +54,9 @@ button:disabled{ cursor:default; }
 .bb-pad.sup{ color:var(--pow); border-color:rgba(255,210,63,.5); } .bb-pad.sup.on{ background:rgba(255,210,63,.25); border-color:var(--pow); }
 .bb-cornerbtn{ position:absolute; right:20px; top:18px; height:64px; padding:0 20px; border-radius:16px; background:rgba(18,12,34,.85); border:3px solid var(--border); font:800 24px/1 var(--body); display:flex; align-items:center; gap:12px; }
 .bb-cornerbtn kbd{ padding:7px 9px; border-radius:8px; background:var(--text); color:#120C22; font:800 18px/1 var(--body); }
-.bb-cornerbtn.low{ border-color:var(--pow); color:var(--pow); animation:bbPulse 1s infinite; }
-@keyframes bbPulse{ 50%{ box-shadow:0 0 0 6px rgba(255,210,63,.25); } }
+.bb-cornerbtn.low{ border-color:var(--pow); color:var(--pow); }
+.bb-cornerbtn.low::after{ content:''; position:absolute; inset:-9px; border-radius:22px; box-shadow:0 0 0 6px rgba(255,210,63,.25); opacity:0; animation:bbPulse 1s infinite; pointer-events:none; }
+@keyframes bbPulse{ 50%{ opacity:1; } }
 /* damage cards */
 .bb-dmg{ position:absolute; bottom:16px; width:338px; height:116px; border-radius:20px; padding:10px 16px 10px 12px; display:flex; align-items:center; gap:14px;
   background:linear-gradient(180deg,rgba(26,18,48,.92),rgba(14,10,28,.92)); border:3px solid var(--border); }
@@ -156,6 +157,33 @@ button:disabled{ cursor:default; }
 .bb-again.arm{ border-color:var(--no); color:var(--no); }
 .bb-credit{ font:800 18px/1 var(--body); letter-spacing:.14em; text-transform:uppercase; color:var(--muted); white-space:nowrap; }
 .bb-over .bb-credit{ position:absolute; right:36px; bottom:28px; font-size:24px; }
+/* points, challenges and All-Pro (2026-10-30 replay update): the run's real score is points, not the KO score */
+#bb-ptschip{ position:relative; min-width:250px; border-color:color-mix(in srgb,var(--pow) 55%,var(--border)); } #bb-ptschip .v{ color:var(--pow); }
+.bb-add{ position:absolute; right:14px; top:10px; z-index:20; font:400 24px/1 var(--display); color:var(--ok); opacity:0; pointer-events:none; }
+.bb-add.go{ animation:bbAdd 1.1s ease-out both; }
+@keyframes bbAdd{ 0%{ opacity:0; translate:0 10px; } 15%{ opacity:1; translate:0 0; } 70%{ opacity:1; } 100%{ opacity:0; translate:0 -8px; } }
+@media (prefers-reduced-motion:reduce){ .bb-add.go{ animation:bbAddR 1.1s step-end both; } @keyframes bbAddR{ 0%{ opacity:1; } 100%{ opacity:0; } } }
+#bb-chalchip .v{ display:flex; gap:8px; align-items:center; height:34px; }
+.bb-dot{ width:26px; height:26px; border-radius:8px; border:3px solid var(--border); display:grid; place-items:center; font:900 17px/1 var(--body); color:#120C22; }
+.bb-dot.done{ background:var(--ok); border-color:var(--ok); }
+.bb-chal{ display:grid; grid-template-columns:auto repeat(3,minmax(0,1fr)); gap:10px; align-items:stretch; }
+.bb-chal .h{ align-self:center; font:400 20px/1.1 var(--display); color:var(--pow); white-space:nowrap; }
+.bb-chal .h span{ display:block; font:800 16px/1.2 var(--body); color:var(--muted); }
+.bb-ci{ display:flex; align-items:center; gap:10px; min-width:0; padding:7px 12px; border-radius:12px; background:#0A0716; border:2px solid var(--border); font:700 19px/1.2 var(--body); color:var(--text); }
+.bb-ci .b{ flex:none; width:24px; height:24px; border-radius:7px; border:3px solid var(--border); display:grid; place-items:center; font:900 15px/1 var(--body); color:#120C22; }
+.bb-ci .t{ flex:1; min-width:0; } .bb-ci .p{ flex:none; font:800 18px/1 var(--body); color:var(--muted); white-space:nowrap; } .bb-ci .p.x{ color:var(--no); }
+.bb-ci.done{ border-color:var(--ok); color:var(--ok); } .bb-ci.done .b{ background:var(--ok); border-color:var(--ok); } .bb-ci.done .p{ color:var(--ok); }
+.bb-mode{ display:inline-flex; gap:10px; }
+.bb-len{ height:84px; padding:0 24px; border-radius:20px; background:var(--panel); border:3px solid var(--border); font:400 28px/1 var(--display); color:var(--muted); }
+.bb-len span{ font:800 20px/1 var(--body); margin-left:8px; }
+.bb-len[aria-pressed="true"]{ border-color:var(--pow); color:var(--pow); background:color-mix(in srgb,var(--pow) 12%,var(--panel)); }
+#bb-end .bb-final{ font-size:110px; color:var(--pow); }
+#bb-end .bb-final small{ display:inline; margin:0 0 0 18px; }
+.bb-badges{ display:flex; justify-content:center; gap:14px; margin-top:16px; flex-wrap:wrap; }
+.bb-badge{ display:flex; align-items:center; gap:10px; padding:10px 18px; border-radius:999px; background:var(--panel); border:3px solid var(--border); font:700 22px/1.2 var(--body); color:var(--muted); }
+.bb-badge b{ font:900 22px/1 var(--body); }
+.bb-badge.done{ border-color:var(--ok); color:var(--text); } .bb-badge.done b{ color:var(--ok); }
+.bb-badge.pro{ border-color:var(--pow); color:var(--pow); }
 .bb-toast{ position:absolute; left:960px; top:150px; white-space:nowrap; transform:translateX(-50%); z-index:30; padding:16px 30px; border-radius:999px; background:var(--text); color:#120C22; font:800 30px/1 var(--body); }
 #bb-confetti{ position:absolute; left:0; top:0; width:1920px; height:1080px; z-index:18; pointer-events:none; }
 
@@ -177,7 +205,8 @@ button:disabled{ cursor:default; }
     </div>
     <div class="bb-right">
       <div class="bb-chip" id="bb-streakchip"><span class="l" id="bb-streakl">Streak</span><span class="v" id="bb-streak">0</span></div>
-      <div class="bb-chip"><span class="l">Correct</span><span class="v" id="bb-correct">0</span></div>
+      <div class="bb-chip" id="bb-chalchip" title="This brawl's challenges"><span class="l">Challenges</span><span class="v" id="bb-chaldots"></span></div>
+      <div class="bb-chip" id="bb-ptschip"><span class="l" id="bb-ptsl">Points</span><span class="v" id="bb-pts">0</span><span class="bb-add" id="bb-add"></span></div>
     </div>
   </div>
   <div class="bb-arena" id="bb-arena">
@@ -198,6 +227,7 @@ button:disabled{ cursor:default; }
       <div class="bb-card" id="bb-q">
         <div class="bb-qhead"><span class="bb-pittitle" id="bb-pittitle">CORNER</span><span class="bb-tag" id="bb-tag">Questions</span>
           <div class="bb-tank" id="bb-tank"><div class="bb-tcell"><i></i></div><div class="bb-tcell"><i></i></div><div class="bb-tcell"><i></i></div><span id="bb-tanktxt">Supers 0 / 3</span></div><span class="bb-need" id="bb-need"></span></div>
+        <div class="bb-chal" id="bb-chal"></div>
         <div class="bb-prompt" id="bb-prompt"></div>
         <div id="bb-body"><div id="bb-visual"></div><div class="bb-choices" id="bb-choices"></div></div>
         <div class="bb-fb" id="bb-fb"></div>
@@ -208,13 +238,13 @@ button:disabled{ cursor:default; }
 
   <div class="bb-over" id="bb-start"><div class="bb-box">
     <div class="sz-eyebrow">Spitz <b>Arcade</b></div><h2 class="bb-big"><i>BRAWL</i> <b>BUDS</b></h2>
-    <p class="bb-sub"><span class="sz-setname">Slope-intercept form.</span> A 4-minute brawl against the Rivals. Answer questions to charge your Supers, then knock the Rivals off the stage.</p>
+    <p class="bb-sub"><span class="sz-setname">Slope-intercept form.</span> A 4-minute brawl against the Rivals. Answers, hits and KOs score points, plus 3 challenges every brawl.</p>
     <div class="bb-steps">
       <div class="bb-step"><b>1. Corner</b><span id="bb-step1">Before every round, answer questions. Right answers charge your Supers. Wrong answers charge nothing, so don’t guess.</span></div>
       <div class="bb-step"><b>2. Fight</b>← → move. Space jumps (twice in the air). J hits and K throws a Super. Hold ↑ or ↓ while you hit for other moves.</div>
-      <div class="bb-step"><b>3. Knock out</b>Every hit raises the Rival’s %. The higher it gets, the farther they fly. Knock them off the stage. Most KOs in 4 minutes wins.</div>
+      <div class="bb-step"><b>3. Knock out</b>Hits raise the Rival’s %, so they fly farther. Grab the items that drop: bat, bomb, spring shoes, burger. Most KOs in 4 minutes wins.</div>
     </div>
-    <div class="bb-row"><input class="bb-input" id="bb-nameinput" maxlength="24" placeholder="First name + last initial" autocomplete="off" aria-label="Your name"><button class="sz-mus" id="sz-mus" aria-label="Music on or off, key N">♪ Music on</button></div>
+    <div class="bb-row"><input class="bb-input" id="bb-nameinput" maxlength="24" placeholder="First name + last initial" autocomplete="off" aria-label="Your name"><button class="sz-mus" id="sz-mus" aria-label="Music on or off, key N">♪ Music on</button><span class="bb-mode" role="group" aria-label="Difficulty"><button class="bb-len" id="bb-rookie" aria-pressed="true">Rookie</button><button class="bb-len" id="bb-pro" aria-pressed="false" title="Sharper Rivals, and a wrong answer charges the Rival's Super. Points ×1.5">★ All-Pro <span>×1.5</span></button></span></div>
     <button class="bb-start" id="bb-go-start" disabled>Start</button>
     <div class="bb-keys">Keys: ← → or A D move · Space, ↑ or W jump · ↓ or S drop down · J or Z hit · K or X Super · Enter corner<br>1–4 answer · N music · M mute · Shift+R new game · F full screen</div>
   </div><span class="bb-credit sz-credit">Made by Spitz <i class="sz-burger" aria-hidden="true"></i></span></div>
@@ -222,8 +252,9 @@ button:disabled{ cursor:default; }
   <div class="bb-over" id="bb-end" hidden><div class="bb-box"><div class="sz-eyebrow">Spitz <b>Arcade</b></div>
     <p class="bb-sub" style="margin:0">Time! Show this screen to your teacher.</p>
     <div class="bb-name" id="bb-endname"></div>
-    <div class="bb-result" id="bb-endresult"></div>
     <div class="bb-final" id="bb-endscore"></div>
+    <div class="bb-result" id="bb-endresult"></div>
+    <div class="bb-badges" id="bb-badges"></div>
     <div class="bb-stats" id="bb-endstats"></div>
     <div class="bb-topics" id="bb-endtopics"></div>
     <button class="bb-again" id="bb-again">Play again</button>
@@ -287,6 +318,9 @@ var SND={
   super:function(){ [G5,B5,D6,G6].forEach(function(f,i){ tone(f,f,i*0.04,0.18,'triangle',0.07); }); noise(0,0.05,260,0,3000); },
   boom:function(){ tone(90,40,0,0.5,'sine',0.3); noise(0,0.12,400,0,600); },
   empty:function(){ tone(330,300,0,0.06,'triangle',0.12); tone(330,300,0.1,0.06,'triangle',0.12); },
+  drop:function(){ tone(1400,700,0,0.32,'sine',0.05); },                                                                      // an item falls in
+  grab:function(){ [C6,E6,G6].forEach(function(f,i){ tone(f,f,i*0.05,0.16,'triangle',0.06); }); },                          // picked up an item
+  heal:function(){ [G5,C6,E6].forEach(function(f,i){ tone(f,f,i*0.07,0.22,'sine',0.07); }); },
   ko:function(){ var t=0.05; tone(70,35,0,0.6,'sine',0.3); brass(G4,t+0.1,0.11); brass(C5,t+0.22,0.11); brass(E5,t+0.34,0.11); [C5,E5,G5].forEach(function(f){ brass(f,t+0.48,0.8,0.1); }); tone(C6,C6,t+0.52,0.6,'triangle',0.08);
     noise(0.1,0.1,1500,0,1400); },                                                                                                  // boom, horn and a crowd roar
   oppKo:function(){ tone(70,35,0,0.5,'sine',0.22); tone(392,370,0.1,0.22,'triangle',0.12); tone(311,290,0.32,0.4,'triangle',0.12); noise(0.1,0.035,700,0,700); },
@@ -333,10 +367,11 @@ function clamp(v,a,b){ return v<a?a:v>b?b:v; }
 /* the Bud and the Rivals: speed, jumps, weight (heavier flies less far), power (their hits launch farther), size */
 var BUD={ name:'You', col:'#3D9BFF', dark:'#1C5FB8', band:'#FFB020', glove:'#FFD23F', spd:520, air:440, jump:1180, jump2:1060, jumps:2, grav:1, weight:1, pow:1, size:1.15, gear:'band' };
 var ROSTER=[
-  { name:'Bonk',  col:'#FF5A36', dark:'#A8260F', band:'#5A1208', glove:'#8E1B22', spd:470, air:400, jump:1160, jump2:1020, jumps:2, grav:1,    weight:1,    pow:1,    size:1.15, gear:'band',    tip:'Bonk swings hard. Watch for the big kick.' },
-  { name:'Zip',   col:'#FF9A1F', dark:'#B25A06', band:'#3A2A10', glove:'#C2410C', spd:560, air:470, jump:1240, jump2:1120, jumps:2, grav:1.05, weight:0.85, pow:0.9,  size:1.06, gear:'goggles', tip:'Zip is fast but light. Zip flies far.' },
-  { name:'Brick', col:'#D93A2B', dark:'#7E1A12', band:'#3B0D08', glove:'#5A1208', spd:410, air:350, jump:1100, jump2:960,  jumps:2, grav:1.05, weight:1.3,  pow:1.15, size:1.3,  gear:'cap',     tip:'Brick is heavy. Build up a big % first.' },
-  { name:'Boing', col:'#FF6F61', dark:'#B23A30', band:'#FFE14D', glove:'#B23A30', spd:450, air:430, jump:1120, jump2:980,  jumps:3, grav:0.82, weight:0.95, pow:0.95, size:1.1,  gear:'antenna', tip:'Boing floats and jumps three times.' }
+  /* 2026-11-01 (Kody: "make the rivals mean"): every Rival hits harder and is harder to launch than the first version */
+  { name:'Bonk',  col:'#FF5A36', dark:'#A8260F', band:'#5A1208', glove:'#8E1B22', spd:500, air:420, jump:1170, jump2:1030, jumps:2, grav:1,    weight:1.15, pow:1.2,  size:1.15, gear:'band',    tip:'Bonk swings hard and loves the big kick.' },
+  { name:'Zip',   col:'#FF9A1F', dark:'#B25A06', band:'#3A2A10', glove:'#C2410C', spd:610, air:500, jump:1250, jump2:1130, jumps:2, grav:1.05, weight:0.98, pow:1.1,  size:1.06, gear:'goggles', tip:'Zip is super fast. Don’t let Zip chase you down.' },
+  { name:'Brick', col:'#D93A2B', dark:'#7E1A12', band:'#3B0D08', glove:'#5A1208', spd:430, air:360, jump:1100, jump2:960,  jumps:2, grav:1.05, weight:1.4,  pow:1.3,  size:1.3,  gear:'cap',     tip:'Brick is heavy. Build up a big % first.' },
+  { name:'Boing', col:'#FF6F61', dark:'#B23A30', band:'#FFE14D', glove:'#B23A30', spd:480, air:450, jump:1130, jump2:990,  jumps:3, grav:0.82, weight:1.08, pow:1.15, size:1.1,  gear:'antenna', tip:'Boing floats, jumps three times and stomps from above.' }
 ];
 /* moves: s = wind-up, a = hit window, e = recovery (seconds); box = [x ahead, y, width, height] from the feet; launch = base + grow × (% / 100) */
 var MV={
@@ -347,31 +382,140 @@ var MV={
   stomp: { s:0.10, a:0.16, e:0.18, box:[-38,-34,76,62], dmg:9,  base:340, grow:720,  ang:-65 },
   punch: { s:0.14, a:0.24, e:0.22, box:[14,-100,86,66], dmg:16, base:940, grow:1650, ang:30, sup:1 },
   rocket:{ s:0.10, a:0.34, e:0.24, box:[-46,-200,92,200],dmg:14, base:940, grow:1600, ang:86, sup:1 },
-  pound: { s:0.12, a:0.14, e:0.30, box:[-210,-74,420,74],dmg:13, base:880, grow:1500, ang:44, sup:1, both:1 }
+  pound: { s:0.12, a:0.14, e:0.30, box:[-210,-74,420,74],dmg:13, base:880, grow:1500, ang:44, sup:1, both:1 },
+  /* item moves: a bat swing, a bomb toss (the bomb does the damage), and the bomb's blast */
+  bat:   { s:0.10, a:0.14, e:0.24, box:[-6,-150,136,130],dmg:12, base:560, grow:1350, ang:36, item:1 },
+  toss:  { s:0.08, a:0.02, e:0.16, box:[0,0,0,0],       dmg:0,  base:0,   grow:0,    ang:0 },
+  bomb:  { s:0,    a:0,    e:0,    box:[0,0,0,0],       dmg:15, base:820, grow:1400, ang:55, both:1, item:1 }
 };
 var MOVENAME={ punch:'MEGA PUNCH', rocket:'ROCKET UPPERCUT', pound:'GROUND POUND' };
 function fighter(x,face,st,who){ return { who:who, x:x, y:MAIN.y, vx:0, vy:0, face:face, ground:1, plat:-1, jumps:0, upUsed:0, dmg:0, stun:0, tumble:0, spin:0,
   atk:null, pow:0, drop:0, downT:0, land:0, walk:0, inv:0, st:st }; }
-function rival(){ return ROSTER[(S.round-1)%ROSTER.length]; }
+/* every 4th round is a boss: Mega Bonk, huge, heavy and hard-hitting */
+var BOSS={ name:'Mega Bonk', col:'#FF3D3D', dark:'#8E1010', band:'#FFD23F', glove:'#5A1208', spd:440, air:380, jump:1180, jump2:1040, jumps:2, grav:1.05, weight:1.65, pow:1.3, size:1.55, gear:'band', boss:1, tip:'BOSS ROUND! Mega Bonk is huge. KO him for +1,500.' };
+function rivalFor(r){ return r%4===0?BOSS:ROSTER[(r-1-Math.floor(r/4))%ROSTER.length]; }
+function rival(){ return rivalFor(S.round); }
 
 /* ================= GAME STATE ================= */
 var S;
-function fresh(){ return { name:'', len:4, started:false, over:false, phase:'pit', pitKind:'kick', pitAns:[], clock:MATCH, sd:false, round:1,
+function fresh(){ return { v:3, items:[], evT:22, evN:0, frenzyOn:0, pro:proPick(), pts:0, score:0, chal:dealChallenges(), perfect:0, prow:0, prowBest:0, pits:0, maxed:0, grabs:0, itemKO:0, superKO:0,
+  dropT:8, dropBud:0, name:'', len:4, started:false, over:false, phase:'pit', pitKind:'kick', pitAns:[], clock:MATCH, sd:false, round:1,
   buds:0, rivals:0, streak:0, best:0, answered:0, correct:0, supers:0, landed:0, hits:0, topics:QS?QS.topicTable():{},
   q:null, qDone:false, picked:-1, P:null, R:null, cd:0, koT:0, koBy:'', idle:0 }; }
 function save(){ try{ localStorage.setItem(KEY,JSON.stringify(S)); localStorage.setItem(KEY+'_mute',muted?'1':'0'); }catch(e){} }
-function load(){ try{ var v=JSON.parse(localStorage.getItem(KEY)||'null'); muted=localStorage.getItem(KEY+'_mute')==='1'; if(v&&v.P&&v.R&&v.topics){ v.P.st=BUD; v.R.st=ROSTER[(v.round-1)%ROSTER.length]; return v; } }catch(e){} return null; }
+function load(){ try{ var v=JSON.parse(localStorage.getItem(KEY)||'null'); muted=localStorage.getItem(KEY+'_mute')==='1'; if(v&&v.v===3&&v.chal&&v.P&&v.R&&v.topics){ v.P.st=BUD; v.R.st=rivalFor(v.round); return v; } }catch(e){} return null; }
 /* the Rival gets a little sharper while you lead and a little easier while you trail, so fights stay close.
    A player who just stands there gets no easing. */
-function skill(){ return clamp(0.42+0.08*(S.buds-S.rivals)+(S.idle>3?0.35:0),0.28,0.85); }
+/* 2026-10-31 (Kody: "way too easy"): Rivals start sharper, get sharper every round, and ease off less when you trail. All-Pro adds 0.15. */
+function skill(){ var b=0.8+0.03*Math.min(6,(S.round||1)-1)+0.04*(S.buds-S.rivals)+(S.idle>3?0.3:0)+(S.pro?0.12:0); return clamp(b,S.pro?0.9:0.72,1); }      /* 2026-11-01 Kody: "way harder" */
 function hot(){ return S.streak>=HOT; }
-function roundReset(){ var keep=S.P?S.P.pow:0; S.P=fighter(MAIN.x0+250,1,BUD,'bud'); S.R=fighter(MAIN.x1-250,-1,rival(),'riv'); S.P.pow=keep;
+function roundReset(){ shower=0; var keep=S.P?S.P.pow:0; S.P=fighter(MAIN.x0+250,1,BUD,'bud'); S.R=fighter(MAIN.x1-250,-1,rival(),'riv'); S.P.pow=keep;
   if(S.sd){ S.P.dmg=SDDMG; S.R.dmg=SDDMG; }
-  S.R.pow=COST*(skill()>0.6?2:1); AI.t=0; AI.react=0; AI.back=0; fx.length=0; pops.length=0; if(!SIM) faces(); }
+  S.R.pow=COST*(S.R.st.boss?3:2); S.rch=0; AI.t=0; AI.react=0; AI.back=0; fx.length=0; pops.length=0; S.items=[]; S.dropT=dropNext()*0.5; bombs.length=0; if(!SIM) faces(); }
+
+/* ================= POINTS, ALL-PRO, CHALLENGES (2026-10-30 replay update) =================
+   The run's score is points, not the KO score: right answers (more on a streak), perfect corners, damage dealt, KOs (more for a Super
+   or item KO) and item grabs all add up; a win adds a bonus and each finished challenge adds 1000.
+   All-Pro (picked on the start screen) brings sharper Rivals, a wrong answer charges the Rival's Super, and every point counts 1.5 times. */
+var PRO_X=1.5, CH_PTS=1000;
+function proPick(){ try{ return localStorage.getItem('brawl_buds_pro')==='1'; }catch(e){ return false; } }
+function addPts(n){ if(!S||S.over||SIM||!(n>0)) return; n=Math.round(n*(S.pro?PRO_X:1)*(frenzy()&&S.phase!=='pit'?2:1)); S.pts+=n; $('bb-pts').textContent=S.pts.toLocaleString(); var a=$('bb-add'); a.textContent='+'+n.toLocaleString(); a.classList.remove('go'); void a.offsetWidth; a.classList.add('go'); }
+function accPct(){ return S.answered?Math.round(100*S.correct/S.answered):0; }
+var ACCN=FAST?20:10;
+/* math challenges come from the corner, play challenges from the stage; end:1 ones are judged at the final bell */
+var CHAL={
+  streak:{ math:1, txt:'Get a '+(FAST?12:6)+'-answer streak', n:FAST?12:6, v:function(){ return S.best; } },
+  perf3:{ math:1, txt:'3 perfect corners', n:3, v:function(){ return S.perfect; } },
+  prow2:{ math:1, txt:'2 perfect corners in a row', n:2, v:function(){ return S.prowBest; } },
+  max3:{ math:1, txt:'Charge all 3 Supers at once', n:1, v:function(){ return S.maxed; } },
+  acc90:{ math:1, end:1, txt:'90% right, '+ACCN+'+ questions', n:90, v:function(){ return S.answered>=ACCN?accPct():0; }, p:function(){ return S.answered<ACCN?S.answered+'/'+ACCN:accPct()+'%'; } },
+  ko3:{ txt:'Knock out 3 Rivals', n:3, v:function(){ return S.buds; } },
+  sup3:{ txt:'Land 3 Supers', n:3, v:function(){ return S.landed; } },
+  supko:{ txt:'KO a Rival with a Super', n:1, v:function(){ return S.superKO; } },
+  itemko:{ txt:'KO a Rival with an item', n:1, v:function(){ return S.itemKO; } },
+  grab3:{ txt:'Grab 3 items', n:3, v:function(){ return S.grabs; } },
+  by2:{ end:1, txt:'Win by 2 or more', n:2, v:function(){ return S.buds-S.rivals; }, p:function(){ return ''; } },
+  hold1:{ end:1, txt:'Get knocked out once or less', n:1, v:function(){ return S.rivals<=1?1:0; }, p:function(){ return S.rivals<=1?'':'missed'; } } };
+function shuffle(a){ return a.map(function(x){ return [Math.random(),x]; }).sort(function(p,q){ return p[0]-q[0]; }).map(function(p){ return p[1]; }); }
+function dealChallenges(){ var ids=Object.keys(CHAL), m=shuffle(ids.filter(function(k){ return CHAL[k].math; })), p=shuffle(ids.filter(function(k){ return !CHAL[k].math; }));
+  var pick=[m[0],p[0]], rest=shuffle(m.slice(1).concat(p.slice(1))); pick.push(rest[0]); return pick.map(function(id){ return {id:id,done:false}; }); }
+function chalProg(c){ var d=CHAL[c.id]; if(c.done) return ''; if(d.p) return d.p(); return d.n>1?Math.min(Math.max(0,d.v()),d.n)+'/'+d.n:''; }
+function chalCheck(final){ if(!S||!S.started||SIM) return; S.chal.forEach(function(c){ var d=CHAL[c.id]; if(c.done||(d.end&&!final)||d.v()<d.n) return; c.done=true; addPts(CH_PTS);
+    if(!final){ SND.fire(); toast('Challenge done! '+d.txt); } }); }
+var lastChal='';
+function chalDraw(){ var dots=S.chal.map(function(c){ return '<i class="bb-dot'+(c.done?' done':'')+'">'+(c.done?'✓':'')+'</i>'; }).join('');
+  var row='<div class="h">Challenges<span>+'+(CH_PTS*(S.pro?PRO_X:1)).toLocaleString()+' each</span></div>'+S.chal.map(function(c){ var d=CHAL[c.id], p=chalProg(c);
+    return '<div class="bb-ci'+(c.done?' done':'')+'"><span class="b">'+(c.done?'✓':'')+'</span><span class="t">'+d.txt+'</span><span class="p'+(p==='missed'?' x':'')+'">'+p+'</span></div>'; }).join('');
+  if(dots+row===lastChal) return; lastChal=dots+row; $('bb-chaldots').innerHTML=dots; $('bb-chal').innerHTML=row; }
+function modeDraw(){ $('bb-rookie').setAttribute('aria-pressed',String(!S.pro)); $('bb-pro').setAttribute('aria-pressed',String(!!S.pro)); }
+function setMode(pro){ if(S.started) return; S.pro=pro; try{ localStorage.setItem('brawl_buds_pro',pro?'1':'0'); }catch(e){} lastChal=''; modeDraw(); hud(); save(); SND.tick(); }
+
+/* ================= ITEM DROPS (2026-10-30): something to grab falls onto the stage every so often =================
+   Bat: your next 4 hits are big bat swings. Bomb: hit to throw it, and it blows up whoever it touches.
+   Spring shoes: higher jumps and one extra jump for 12 s. Burger: heals 30%.
+   Either fighter grabs it by walking into it. A perfect corner drops one right next to your Bud when the round starts. */
+var ITEMS={ bat:{ name:'BAT', tip:'Hit to swing it' }, bomb:{ name:'BOMB', tip:'Hit to throw it' }, spring:{ name:'SPRING SHOES', tip:'Higher jumps for 12 s' }, burger:{ name:'BURGER', tip:'Heals 30%' } };
+var ITEM_KEYS=['bat','bomb','spring','burger'], ITEM_R=30, ITEM_LIFE=12, SPRING_T=12, BAT_N=4, bombs=[];
+function dropNext(){ return frenzy()?4+Math.random()*2:9+Math.random()*5; }       /* seconds of fighting between drops (faster in the final 30 s) */
+function spawnItem(k,x){ var ty=MAIN.y;
+  if(x===undefined){ if(Math.random()<0.65) x=MAIN.x0+90+Math.random()*(MAIN.x1-MAIN.x0-180); else { var p=SOFT[Math.floor(Math.random()*SOFT.length)]; x=p.x0+50+Math.random()*(p.x1-p.x0-100); ty=p.y; } }
+  else x=clamp(x,MAIN.x0+60,MAIN.x1-60);
+  if(S.items.length>=4) S.items.shift();
+  S.items.push({ k:k||ITEM_KEYS[Math.floor(Math.random()*ITEM_KEYS.length)], x:x, y:-60-Math.random()*120, ty:ty, vy:0, t:0, landed:0 }); if(!SIM) SND.drop(); }
+function canGrab(f,k){ return !(f.item&&(k==='bat'||k==='bomb')); }
+function grab(f,k){ var bud=f.who==='bud';
+  if(k==='burger'){ var h=Math.min(30,Math.floor(f.dmg)); f.dmg-=h; if(!SIM){ pops.push({x:f.x,y:hurt(f)[1]-14,t:0,txt:'−'+h+'%',c:'#4ADE80'}); SND.heal(); } }
+  else if(k==='spring') f.spring=SPRING_T;
+  else f.item={ k:k, n:k==='bat'?BAT_N:1 };
+  if(bud){ S.grabs++; addPts(100); if(!SIM){ say(ITEMS[k].name+'! '+ITEMS[k].tip,'#FFD23F'); if(k!=='burger') SND.grab(); } }
+  else if(!SIM) say('The Rival grabbed the '+ITEMS[k].name.toLowerCase()+'!','#FF9A7A'); }
+function itemStep(dt){
+  S.items=S.items.filter(function(it){ it.t+=dt;
+    if(!it.landed){ it.vy=Math.min(it.vy+1400*dt,900); it.y+=it.vy*dt; if(it.y>=it.ty){ it.y=it.ty; it.landed=1; it.t=0; dust(it.x,it.y,6); } }
+    else if(it.t>ITEM_LIFE) return false;
+    var took=false; [S.P,S.R].forEach(function(f){ if(took||f.stun>0||f.out||!canGrab(f,it.k)) return; var h=hurt(f);
+      if(it.x>h[0]-ITEM_R&&it.x<h[0]+h[2]+ITEM_R&&it.y>h[1]&&it.y-2*ITEM_R<h[1]+h[3]){ took=true; grab(f,it.k); } });
+    return !took; });
+  if(!S.items.length&&(S.dropT-=dt)<=0){ S.dropT=dropNext(); spawnItem(); }
+  eventStep(dt);
+  if((S.rch=(S.rch||0)+dt)>=12){ S.rch=0; if(S.R.pow<MAXP){ S.R.pow=Math.min(MAXP,S.R.pow+COST); taunt('charge'); } }
+  [S.P,S.R].forEach(function(f){ if(f.spring>0) f.spring-=dt; });
+  for(var i=bombs.length-1;i>=0;i--){ var b=bombs[i], py=b.y, boom=b.t>2.2, hitF=false; b.t+=dt; b.vy+=1500*dt; b.x+=b.vx*dt; b.y+=b.vy*dt;
+    [S.P,S.R].forEach(function(f){ if(f.who===b.by||f.out) return; var h=hurt(f); if(b.x>h[0]-16&&b.x<h[0]+h[2]+16&&b.y>h[1]-16&&b.y<h[1]+h[3]+16) hitF=true; });
+    if(hitF) boom=true;
+    else if(b.vy>0){ if(py<=MAIN.y&&b.y>=MAIN.y&&b.x>MAIN.x0&&b.x<MAIN.x1) boom=true; SOFT.forEach(function(p){ if(py<=p.y&&b.y>=p.y&&b.x>p.x0&&b.x<p.x1) boom=true; }); }
+    if(b.x<BL.l||b.x>BL.r||b.y>BL.b){ bombs.splice(i,1); continue; }
+    if(boom){ bombs.splice(i,1); explode(b); } } }
+function explode(b){ var att={ who:b.by, st:{pow:1}, x:b.x, face:b.vx>=0?1:-1 };
+  [S.P,S.R].forEach(function(f){ if(f.who===b.by||f.out) return; if(Math.hypot(f.x-b.x,(f.y-60)-b.y)<(b.by==='sky'?150:190)) launch(att,f,MV.bomb,'bomb'); });
+  if(!SIM){ SND.boom(); shakeT=Math.max(shakeT,0.45); ring(b.x,b.y+10,'#FFD23F',1); blast(b.x,b.y,b.by==='bud'?'riv':'bud'); } }
+/* ================= STAGE EVENTS (2026-10-31): something big happens about every 30 s of fighting =================
+   Bomb shower: bombs fall from the sky for 6 s, each with a red target where it lands. They hit anyone.
+   Item rain: 3 items drop at once. Final 30 s (not sudden death): FRENZY, double points and items every 4-6 s. */
+var shower=0, showerT=0;
+function frenzy(){ return !!S&&S.started&&!S.sd&&S.clock<=30; }
+function eventStep(dt){
+  if(frenzy()&&!S.frenzyOn){ S.frenzyOn=1; S.dropT=Math.min(S.dropT,1); if(!SIM){ toast('FINAL 30 SECONDS! Double points'); SND.fire(); } }
+  if(shower>0){ shower-=dt; showerT-=dt; if(showerT<=0){ showerT=0.42+Math.random()*0.2; bombs.push({ x:MAIN.x0+40+Math.random()*(MAIN.x1-MAIN.x0-80), y:-40, vx:0, vy:0, by:'sky', t:-1 }); } }
+  if((S.evT-=dt)>0) return; S.evT=28+Math.random()*8; S.evN++;
+  if(S.evN%2===1){ shower=6; showerT=0.2; if(!SIM){ toast('BOMB SHOWER! Stay out of the red circles'); SND.drop(); } }
+  else { for(var i=0;i<3;i++) spawnItem(); if(!SIM) toast('ITEM RAIN! Grab them before the Rival does'); } }
+/* the Rivals talk trash (playful, never about the math) */
+var TAUNT={ start:['You’re going down!','Ready to fly?','I’ve been waiting for this.','Hope you like clouds!','My turn to win!'],
+  hit:['Too slow!','Gotcha!','Is that all you’ve got?','Ha! Felt that?','Catch!'],
+  ko:['See ya!','Bye bye!','Too easy!','Out of here!','Come back soon!'],
+  lose:['No fair!','Lucky shot!','I’ll be back!','Okay, okay…'],
+  charge:['Super charged. Uh oh!','Here comes trouble!'],
+  boss:['I am MEGA BONK!','Big Bonk is here!'] };
+var tauntMsg='', tauntT=0, tauntCd=0;
+function taunt(kind){ if(SIM||!S.R) return; if(kind==='hit'&&tauntCd>0) return; var l=TAUNT[kind]; tauntMsg=l[Math.floor(Math.random()*l.length)]; tauntT=1.8; tauntCd=4; }
+var sayMsg='', sayT=0, sayCol='#FFD23F';
+function say(t,col){ sayMsg=t; sayT=1.8; sayCol=col; }
 
 /* ================= HUD ================= */
 var lastClock='', lastHud='';
-function hud(){ $('bb-buds').textContent=S.buds; $('bb-rivals').textContent=S.rivals; $('bb-streak').textContent=S.streak; $('bb-correct').textContent=S.correct;
+function hud(){ $('bb-buds').textContent=S.buds; $('bb-rivals').textContent=S.rivals; $('bb-streak').textContent=S.streak;
+  chalCheck(false); $('bb-pts').textContent=S.pts.toLocaleString(); $('bb-ptsl').textContent=S.pro?'All-Pro pts':'Points'; chalDraw();
   var h=S.started&&!S.over&&hot(); $('bb-streakchip').classList.toggle('hot',h); $('bb-streakl').textContent=h?'On fire':'Streak';
   $('bb-round').textContent=S.sd?'Sudden death':'Round '+S.round; $('bb-rivname').textContent=S.R?S.R.st.name:rival().name;
   clockDraw(); cards(true); if(!$('bb-pit').hidden) pitHud(); }
@@ -409,17 +553,19 @@ function gainTxt(){ var pw=S.P.pow; return pw>=MAXP?' All 3 Supers charged!':pw%
 function markAnswered(i,fresh0){ var q=S.q, btns=$('bb-choices').querySelectorAll('.bb-ch'), c=q.choices[i], fb=$('bb-fb');
   btns.forEach(function(b,j){ b.disabled=true; if(q.choices[j].ok) b.classList.add('right'); else if(j!==i&&!FAST) b.hidden=true; }); if(!c.ok) btns[i].classList.add('wrong');
   if(c.ok){ fb.className='bb-fb ok'; fb.innerHTML='<span class="h">Correct!'+(fresh0?gainTxt():'')+(fresh0&&S.streak>1?' Streak '+S.streak+'.':'')+'</span>'+q.explain; $('bb-next').disabled=false; }
-  else { fb.className='bb-fb bad'; fb.innerHTML='<span class="h">Not quite. No power this time.</span>'+c.why+(FAST?' ':'<br>')+q.explain;
+  else { fb.className='bb-fb bad'; fb.innerHTML='<span class="h">Not quite. '+(S.pro?'The Rival charges up (All-Pro).':'No power this time.')+'</span>'+c.why+(FAST?' ':'<br>')+q.explain;
     $('bb-next').disabled=!!fresh0; if(fresh0&&!FAST){ clearTimeout(lockT); lockT=setTimeout(function(){ $('bb-next').disabled=false; },1800); } } }
 function answer(i){ if(!S.started||S.over||S.phase!=='pit'||S.qDone||!S.q) return; var c=S.q.choices[i]; if(!c) return; S.qDone=true; S.picked=i; S.answered++;
   if(!S.topics[S.q.topic]) S.topics[S.q.topic]=[0,0]; S.topics[S.q.topic][1]++; S.pitAns.push(c.ok?1:0);
   if(c.ok){ S.correct++; S.topics[S.q.topic][0]++; S.streak++; S.best=Math.max(S.best,S.streak);
-    var before=S.P.pow; S.P.pow=Math.min(MAXP,S.P.pow+GAIN);
+    addPts(50+10*Math.min(S.streak,10));
+    var before=S.P.pow; S.P.pow=Math.min(MAXP,S.P.pow+GAIN); if(before<MAXP&&S.P.pow>=MAXP) S.maxed++;
     SND.correct(); if(S.P.pow>before){ if(Math.floor(S.P.pow/COST)>Math.floor(before/COST)) SND.ready(); else SND.charge(); }
     if(S.streak===HOT){ SND.fire(); toast('ON FIRE! Your hits launch farther'); }
     markAnswered(i,true); nextT=setTimeout(function(){ if(S.qDone&&S.phase==='pit') newQ(); },FAST?150:1600); }
-  else { S.streak=0; SND.miss(); markAnswered(i,true);
+  else { S.streak=0; if(S.pro&&S.R) S.R.pow=Math.min(MAXP,S.R.pow+GAIN); SND.miss(); markAnswered(i,true);
     if(FAST) nextT=setTimeout(function(){ if(S.qDone&&S.phase==='pit') newQ(); },1200); }
+  if(S.pitKind==='kick'&&S.pitAns.length===NEED){ S.pits++; if(S.pitAns.indexOf(0)<0){ S.perfect++; S.prow++; S.prowBest=Math.max(S.prowBest,S.prow); S.dropBud=1; addPts(200); toast('Perfect corner! An item drops next to you'); } else S.prow=0; }
   save(); hud(); }
 $('bb-choices').addEventListener('click',function(e){ var b=e.target.closest('.bb-ch'); if(b) answer(+b.dataset.i); });
 $('bb-next').addEventListener('click',function(){ if(S.qDone) newQ(); });
@@ -429,8 +575,8 @@ function openPit(kind){ S.phase='pit'; S.pitKind=kind; S.pitAns=[]; KD={}; touch
   if(!S.q||S.qDone) newQ(); else showQ(); hud(); save(); dirty=true; }
 function leavePit(){ if(S.phase!=='pit') return; if(!canGo()){ var q=$('bb-q'); q.classList.remove('nudge'); void q.offsetWidth; q.classList.add('nudge'); SND.empty(); return; }
   clearTimeout(lockT); $('bb-pit').hidden=true; S.phase='count'; S.cd=S.pitKind==='kick'?1.8:0.6; cdShown=-1;
-  if(S.pitKind==='kick') AI.react=0.3-0.18*skill(); if(document.activeElement&&document.activeElement.blur) document.activeElement.blur(); save(); hud(); }
-function goLive(){ S.phase='live'; acc=0; goT=0.7; SND.bell(); edge={}; save(); hud(); }
+  if(S.pitKind==='kick') AI.react=0.15; if(document.activeElement&&document.activeElement.blur) document.activeElement.blur(); save(); hud(); }
+function goLive(){ if(S.pitKind==='kick') taunt(S.R&&S.R.st.boss?'boss':'start'); S.phase='live'; acc=0; goT=0.7; SND.bell(); edge={}; if(S.dropBud&&S.pitKind==='kick'){ S.dropBud=0; spawnItem(null,S.P.x+S.P.face*150); } save(); hud(); }
 
 /* ================= THE FIGHT: moving, hitting, launching ================= */
 var KD={}, edge={}, touch={l:0,r:0,dn:0,up:0,atk:0,sup:0};
@@ -443,6 +589,8 @@ function boxOf(f,mv){ var b=mv.box, s=f.st.size, w=b[2]*s, x=f.face>0?f.x+b[0]*s
 function overlap(a,b){ return a[0]<b[0]+b[2]&&b[0]<a[0]+a[2]&&a[1]<b[1]+b[3]&&b[1]<a[1]+a[3]; }
 function startMove(f,id,me){ var mv=MV[id]; f.atk={id:id,t:0,hit:0,land:0}; if(!SIM&&me!==false) SND.swing();
   if(id==='side'&&f.ground) f.vx=f.face*MV.side.lunge;
+  if(id==='bat'){ if(f.ground) f.vx=f.face*180; if(--f.item.n<=0) f.item=null; }
+  if(id==='toss'){ var z=f.st.size; bombs.push({ x:f.x+f.face*36*z, y:f.y-96*z, vx:f.face*820+f.vx*0.3, vy:-300, by:f.who, t:0 }); f.item=null; }
   if(id==='up'&&!f.ground&&!f.upUsed){ f.upUsed=1; f.vy=-980; }                  /* in the air, the uppercut carries you up once per jump: your way back to the stage */
   if(mv.sup){ f.pow-=COST; if(f.who==='bud'){ S.supers++; } if(!SIM){ SND.super(); flash=0.18; superName=MOVENAME[id]; superWho=f.who; superT=1; } } }
 function tryAttack(f,ip,me){ var a=f.atk;
@@ -450,6 +598,7 @@ function tryAttack(f,ip,me){ var a=f.atk;
   var dir=(ip.r?1:0)-(ip.l?1:0); if(dir) f.face=dir;
   var id=ip.up?'up':ip.down?(f.ground?'sweep':'stomp'):dir?'side':'jab';
   if(id==='up'&&!f.ground&&f.upUsed) id='jab';
+  if(f.item&&id!=='up'&&id!=='stomp') id=f.item.k==='bat'?'bat':'toss';           /* holding a bat or a bomb: HIT uses it */
   startMove(f,id,me); }
 function trySuper(f,ip,me){ if(f.atk) return; if(f.pow<COST){ if(me) outOfPower(); return; }
   var dir=(ip.r?1:0)-(ip.l?1:0); if(dir) f.face=dir;
@@ -474,7 +623,8 @@ function fstep(f,ip,dt,me){ var st=f.st, g=GRAV*st.grav, dir=(ip.r?1:0)-(ip.l?1:
       if(dir){ f.face=dir; f.vx+=dir*4200*dt; if(Math.abs(f.vx)>st.spd) f.vx=dir*st.spd; f.walk+=dt*12; }
       else { var fr2=3600*dt; f.vx=Math.abs(f.vx)<=fr2?0:f.vx-Math.sign(f.vx)*fr2; } }
     else { if(dir){ f.vx+=dir*2400*dt; if(Math.abs(f.vx)>st.air) f.vx-=Math.sign(f.vx)*Math.min(Math.abs(f.vx)-st.air,2600*dt); } else f.vx*=1-1.2*dt; }
-    if(f.bJ>0&&!(f.ground&&f.land>0)){ f.bJ=0; if(f.ground){ f.vy=-st.jump; f.ground=0; f.jumps=1; if(me) SND.jump(); dust(f.x,f.y,6); } else if(f.jumps<st.jumps){ f.vy=-st.jump2; f.jumps=Math.max(f.jumps,1)+1; if(me) SND.jump(); ring(f.x,f.y,'#FFFFFF'); } }
+    var jb=f.spring>0?1.22:1;
+    if(f.bJ>0&&!(f.ground&&f.land>0)){ f.bJ=0; if(f.ground){ f.vy=-st.jump*jb; f.ground=0; f.jumps=1; if(me) SND.jump(); dust(f.x,f.y,6); } else if(f.jumps<st.jumps+(f.spring>0?1:0)){ f.vy=-st.jump2*jb; f.jumps=Math.max(f.jumps,1)+1; if(me) SND.jump(); ring(f.x,f.y,'#FFFFFF'); } }
     if(f.bS>0&&f.stun<=0){ f.bS=0; f.bA=0; trySuper(f,ip,me); } else if(f.bA>0){ f.bA=0; tryAttack(f,ip,me); }
     if(f.ground&&f.plat>=0&&ip.down&&!(f.bA>0)&&!f.atk){ f.downT+=dt; if(f.downT>0.1){ f.ground=0; f.drop=0.25; f.downT=0; f.vy=60; } } else f.downT=0;
     if(!f.ground){ var fall=FALL; if(ip.down&&f.vy>-150) fall=FFALL, f.vy=Math.max(f.vy,600); f.vy=Math.min(f.vy+g*dt,fall); } }
@@ -503,15 +653,16 @@ function hits(att,tgt){ var a=att.atk; if(!a||a.hit||tgt.inv>0) return; var mv=M
   var on=a.id==='pound'?(a.land&&a.t>=mv.s&&a.t<mv.s+mv.a):(a.t>=mv.s&&a.t<mv.s+mv.a); if(!on) return;
   if(!overlap(boxOf(att,mv),hurt(tgt))) return;
   a.hit=1; launch(att,tgt,mv,a.id); }
-function launch(att,tgt,mv,id){ tgt.dmg=Math.min(999,tgt.dmg+mv.dmg); tgt.hitT=0;
-  var mul=(att.who==='bud'&&hot()?1.15:1)*att.st.pow, kb=(mv.base+mv.grow*tgt.dmg/100)*mul/tgt.st.weight;
+function launch(att,tgt,mv,id){ tgt.dmg=Math.min(999,tgt.dmg+mv.dmg*(att.who==='riv'?1.3:1)); tgt.hitT=0; tgt.lastBy=mv.sup?'sup':mv.item?'item':'';
+  var mul=(att.who==='bud'&&hot()?1.15:1)*att.st.pow*(att.who==='riv'?1.18:1), kb=(mv.base+mv.grow*tgt.dmg/100)*mul/tgt.st.weight/(tgt.who==='riv'?1.1:1);
   var sx=mv.both?(tgt.x>=att.x?1:-1):att.face, ang=mv.ang;
   if(ang<0&&tgt.ground) ang=55;
   var r=ang*Math.PI/180; tgt.vx=sx*Math.cos(r)*kb; tgt.vy=-Math.sin(r)*kb; if(tgt.vy<0||kb>500) tgt.ground=0;
   if(tgt.vy<0&&tgt.ground===0&&tgt.y>=MAIN.y-1&&tgt.y<=MAIN.y+1) tgt.y-=2;
   tgt.stun=Math.min(1.25,0.14+kb/2700); tgt.tumble=kb>950?1:0; tgt.atk=null; tgt.face=-sx; tgt.upUsed=0; tgt.jumps=Math.min(tgt.jumps,1);
-  freeze=Math.min(0.14,0.035+mv.dmg*0.005);
-  if(att.who==='bud'){ S.hits++; if(mv.sup) S.landed++; }
+  freeze=Math.min(0.07,0.02+mv.dmg*0.003);                                       /* a short hit-stop: long ones read as lag (Kody, 2026-10-31) */
+  if(att.who==='bud'){ S.hits++; if(mv.sup) S.landed++; addPts(mv.dmg*10); }
+  if(att.who==='riv'){ AI.t=0.05; if(kb>900) taunt('hit'); }
   if(!SIM){ var hb=hurt(tgt); spark(tgt.x,hb[1]+hb[3]*0.45,att.who,kb); pop(tgt.x,hb[1]-14,mv.dmg,att.who); SND.hit(kb/2200); if(kb>1300){ shakeT=Math.max(shakeT,0.3); } if(kb>1700&&!reduced) zoomT=0.25; } }
 
 /* ================= THE RIVAL'S BRAIN (also drives your Bud in the test bot) ================= */
@@ -528,23 +679,37 @@ function aiInput(f,o,k,A,dt){ var ip={l:0,r:0,up:0,down:0,jump:0,atk:0,sup:0};
       else if(f.pow>=COST&&!f.atk){ ip.sup=1; if(far>240&&f.y<MAIN.y+160){ ip.up=0; } else { ip.up=1; } } }
     else if(f.vy>-120&&f.y>MAIN.y-260&&f.jumps<f.st.jumps&&far>260) ip.jump=1;
     return ip; }
+  /* see your attack coming: hop away or hit first */
+  var oa=o.atk, odx=o.x-f.x;
+  if(oa&&!oa.seen&&!f.atk&&MV[oa.id]&&oa.t<MV[oa.id].s&&Math.abs(odx)<230&&Math.abs(o.y-f.y)<160){ oa.seen=1;
+    if(Math.random()<0.75*k){ if(Math.abs(odx)<110*f.st.size&&Math.random()<0.45){ f.face=odx>=0?1:-1; ip.atk=1; return ip; }
+      if(f.ground){ ip.jump=1; ip.l=odx>0; ip.r=odx<0; A.t=0.12; return ip; } A.back=1; } }
   A.t-=dt;
-  if(A.t<=0){ A.t=0.3-0.2*k+Math.random()*0.1; A.want=null;
+  if(A.t<=0){ A.t=0.22-0.15*k+Math.random()*0.08; A.want=null;
     var dx=o.x-f.x, dy=o.y-f.y, adx=Math.abs(dx), sgn=dx>=0?1:-1;
     if(A.back>0){ A.back-=1; A.tx=f.x-sgn*220; }
     else if(offStage(o)){ A.tx=clamp(o.x,MAIN.x0+70,MAIN.x1-70); }                   /* the other fighter is off the stage: wait at the edge */
     else A.tx=o.x-sgn*(o.st.size*30+46);
-    if(Math.random()<0.12*(1-k)) A.back=1+Math.floor(Math.random()*2);
+    if(Math.random()<0.04*(1-k)) A.back=1;
+    /* an item on the stage: go get it when it is closer to you than to the other fighter (sometimes anyway) */
+    var it=null; S.items.forEach(function(q){ if(q.landed&&(!it||Math.abs(q.x-f.x)<Math.abs(it.x-f.x))) it=q; });
+    if(it&&canGrab(f,it.k)&&!offStage(o)&&(Math.abs(it.x-f.x)<Math.abs(it.x-o.x)+120||Math.random()<0.25*k)){ A.tx=it.x;
+      if(f.ground&&it.y<f.y-100&&Math.abs(it.x-f.x)<260) A.want={jump:1}; else if(f.ground&&f.plat>=0&&it.y>f.y+100) A.hold=0.18; }
+    /* holding a bomb: throw it from a distance */
+    if(f.item&&f.item.k==='bomb'&&!offStage(o)&&!f.atk&&adx>110&&adx<500&&Math.abs(dy)<170&&Math.random()<0.4+0.4*k){ A.want={atk:1}; A.t+=0.2; }
     /* close enough to hit? */
-    if(!offStage(o)&&!f.atk&&Math.random()<0.35+0.6*k){
+    /* edge-guard: the other fighter is off the stage and close to the ledge: smack them back out */
+    if(!A.want&&offStage(o)&&!f.atk&&f.ground&&adx<150*f.st.size&&dy>-120&&dy<160&&Math.random()<0.5+0.5*k) A.want=dy>40?{atk:1,down:1}:{atk:1,side:1};
+    if(!A.want&&!offStage(o)&&!f.atk&&Math.random()<0.6+0.4*k){
       var ahead=adx<128*f.st.size, level=Math.abs(dy)<90, above=dy<-70&&dy>-230&&adx<90;
       if(above) A.want={atk:1,up:1};
       else if(ahead&&level){ var nearEdge=(sgn>0?MAIN.x1-o.x:o.x-MAIN.x0)<360;
-        if(f.pow>=COST&&(o.dmg>75-30*k||(nearEdge&&o.dmg>30))&&Math.random()<0.25+0.45*k) A.want={sup:1};
-        else if(o.dmg>85||Math.random()<0.3) A.want={atk:1,side:1};
+        if(f.pow>=COST&&(o.dmg>60-30*k||(nearEdge&&o.dmg>25))&&Math.random()<0.4+0.5*k) A.want={sup:1};
+        else if(o.dmg>70||Math.random()<0.4) A.want={atk:1,side:1};
         else if(Math.random()<0.25) A.want={atk:1,down:1};
         else A.want={atk:1}; }
-      else if(!f.ground&&dy>40&&dy<200&&adx<70) A.want={atk:1,down:1}; }
+      else if(!f.ground&&dy>40&&dy<200&&adx<70) A.want={atk:1,down:1};
+      else if(!f.ground&&adx<140*f.st.size&&Math.abs(dy)<100) A.want={atk:1,side:1}; }
     if(f.ground&&dy<-110&&adx<330&&Math.random()<0.4+0.5*k) A.want=A.want||{jump:1};
     if(f.ground&&f.plat>=0&&dy>110) A.hold=0.18; }
   /* walk toward the target spot, never off the edge on purpose */
@@ -559,12 +724,12 @@ function aiInput(f,o,k,A,dt){ var ip={l:0,r:0,up:0,down:0,jump:0,atk:0,sup:0};
 var SIM=false, BOT=null, freeze=0;
 function stepLive(dt){
   if(freeze>0){ freeze-=dt; return; }
-  var ip=BOT?(BOT.k<0?{}:aiInput(S.P,S.R,BOT.k,BOT.A,dt)):inputP();
+  var ip=BOT?(BOT.k<0?(BOT.ip?Object.assign({},BOT.ip):{}):aiInput(S.P,S.R,BOT.k,BOT.A,dt)):inputP();
   S.idle=(ip.l||ip.r||ip.jump||ip.atk||ip.sup||ip.up)?0:(S.idle||0)+dt;
   var k=skill(), ir=aiInput(S.R,S.P,k,AI,dt);
   fstep(S.P,ip,dt,!SIM&&!BOT); fstep(S.R,ir,dt,false);
   hits(S.P,S.R); hits(S.R,S.P);
-  bodies(S.P,S.R);
+  bodies(S.P,S.R); itemStep(dt);
   if(isOut(S.P)) ko(S.P); else if(isOut(S.R)) ko(S.R); }
 function bodies(a,b){ if(a.stun>0||b.stun>0||!a.ground||!b.ground||a.plat!==b.plat) return; var d=b.x-a.x, m=(FW*0.8)*(a.st.size+b.st.size)/2;      /* fighters on the same floor push apart gently */
   if(Math.abs(d)<m){ var p=(m-Math.abs(d))/2*(d>=0?1:-1); a.x-=p*0.5; b.x+=p*0.5; } }
@@ -572,11 +737,14 @@ function isOut(f){ return f.x<BL.l||f.x>BL.r||f.y>BL.b||f.y<BL.t; }
 function stepKo(dt){ var none={}; [S.P,S.R].forEach(function(f){ if(!f.out) fstep(f,none,dt,false); }); }
 
 /* ================= KNOCKOUTS, ROUNDS, THE CLOCK ================= */
-var goT=0, shakeT=0, flash=0, zoomT=0, superName='', superWho='', superT=0, koAt=null;
+var koTxt='', goT=0, shakeT=0, flash=0, zoomT=0, superName='', superWho='', superT=0, koAt=null;
 function ko(f){ var bud=f.who==='riv';                                             /* bud = the Bud scored the KO */
   if(SIM){ if(bud) S.buds++; else S.rivals++; SIM.ko[bud?'bud':'riv']++; if(f.hitT>1.5) SIM.sd[f.who]++; return; }
   if(bud) S.buds++; else S.rivals++;
-  f.out=1; S.phase='ko'; S.koT=2.4; S.koBy=bud?'bud':'riv';
+  if(bud){ var g=800+(f.st.boss?1500:0), tag=f.st.boss?'BOSS KO':''; if(f.lastBy==='sup'){ g+=400; S.superKO++; tag=(tag?tag+' + ':'')+'SUPER KO'; } else if(f.lastBy==='item'){ g+=400; S.itemKO++; tag=(tag?tag+' + ':'')+'ITEM KO'; } if(S.sd){ g+=500; tag=(tag?tag+' + ':'')+'SUDDEN DEATH'; }
+    addPts(g); koTxt=(tag?tag+' · ':'')+'+'+Math.round(g*(S.pro?PRO_X:1)).toLocaleString(); }
+  if(bud){ tauntT=0; taunt('lose'); } else taunt('ko'); tauntCd=0;
+  f.out=1; S.phase='ko'; bombs.length=0; S.items=[]; S.koT=2.4; S.koBy=bud?'bud':'riv';
   var ex=clamp(f.x,0,W), ey=clamp(f.y-60,0,H); koAt={x:ex,y:ey,a:Math.atan2(f.vy,f.vx),who:f.who,t:0}; blast(ex,ey,f.who); shakeT=0.5;
   if(bud){ SND.ko(); var p=toStage(clamp(ex,140,W-140),clamp(ey,120,H-120)); confetti(p[0],p[1],140,2.8); }
   else SND.oppKo();
@@ -592,7 +760,8 @@ try{ reduced=matchMedia('(prefers-reduced-motion: reduce)').matches; }catch(e){}
 function font(px){ return '400 '+px+'px "Dela Gothic One", Inter, sans-serif'; }
 function toStage(x,y){ return [26+x, 16+92+12+y]; }
 /* the canvases render at the size they show on screen (a 1366x768 Chromebook draws about half the pixels) */
-function sizeCanvases(){ var s=Math.min(innerWidth/1920,innerHeight/1080)*(window.devicePixelRatio||1), k=Math.min(1,Math.max(0.4,Math.round(s*20)/20));
+var RESCAP=1;                                                                     /* lowered when frames run slow (see frame) */
+function sizeCanvases(){ var s=Math.min(innerWidth/1920,innerHeight/1080)*(window.devicePixelRatio||1), k=Math.min(RESCAP,Math.max(0.4,Math.round(s*20)/20));
   if(k===RES&&bgC.width===Math.round(W*k)) return; RES=k; [bgC,fgC].forEach(function(c){ c.width=Math.round(W*k); c.height=Math.round(H*k); });
   drawBg(); dirty=true; }
 function rr(c,x,y,w,h,r){ c.beginPath(); c.moveTo(x+r,y); c.arcTo(x+w,y,x+w,y+h,r); c.arcTo(x+w,y+h,x,y+h,r); c.arcTo(x,y+h,x,y,r); c.arcTo(x,y,x+w,y,r); c.closePath(); }
@@ -669,7 +838,8 @@ function drawFighter(c,f,t){ var st=f.st, a=f.atk, mv=a?MV[a.id]:null, ph=a?(a.t
   /* arms and gloves */
   function glove(x,y,r){ c.fillStyle=f.who==='bud'&&hot()?'#FF8A1F':st.glove; c.beginPath(); c.arc(x,y,r,0,6.283); c.fill(); c.fillStyle='rgba(255,255,255,.35)'; c.beginPath(); c.arc(x-r*0.3,y-r*0.3,r*0.35,0,6.283); c.fill(); }
   c.fillStyle=skin;
-  if(a&&(a.id==='jab'||a.id==='punch')&&ph>=1){ rr(c,10,-82,a.id==='punch'?62:44,12,6); c.fill(); glove(a.id==='punch'?78:60,-76,a.id==='punch'?19:15); glove(-14,-70,13); }
+  if(!stun&&((a&&a.id==='bat')||(f.item&&f.item.k==='bat'))){ glove(-14,-72,13); }                       /* holding a bat: drawHeld draws the bat arm */
+  else if(a&&(a.id==='jab'||a.id==='punch')&&ph>=1){ rr(c,10,-82,a.id==='punch'?62:44,12,6); c.fill(); glove(a.id==='punch'?78:60,-76,a.id==='punch'?19:15); glove(-14,-70,13); }
   else if(a&&(a.id==='up'||a.id==='rocket')&&ph>=1){ rr(c,6,-160,12,72,6); c.fill(); glove(12,-166,a.id==='rocket'?19:15); glove(-16,-72,13); }
   else if(a&&ph===0){ glove(-22,-84,15); glove(-8,-70,13); }
   else if(air||stun){ rr(c,-30,-110,10,32,5); c.fill(); rr(c,22,-110,10,32,5); c.fill(); glove(-25,-114,13); glove(27,-114,13); }
@@ -709,9 +879,50 @@ function drawF(f,t){ if(f.out) return; var hb=hurt(f);
   if(f.inv>0&&Math.floor(f.inv*12)%2) return;
   fg.save(); fg.translate(f.x,f.y); fg.scale(f.face,1);
   if(f.who==='bud'&&hot()){ fg.globalAlpha=0.3; fg.fillStyle='#FF8A1F'; fg.beginPath(); fg.ellipse(0,-62,46,72,0,0,6.283); fg.fill(); fg.globalAlpha=1; }
-  drawFighter(fg,f,t); fg.restore();
+  drawFighter(fg,f,t); drawHeld(f,t); fg.restore();
   /* the marker over your Bud */
   if(f.who==='bud'){ var my=hb[1]-26+Math.sin(t*6)*3; fg.fillStyle='#FFF04D'; fg.beginPath(); fg.moveTo(f.x-13,my-16); fg.lineTo(f.x+13,my-16); fg.lineTo(f.x,my); fg.closePath(); fg.fill(); } }
+/* items: icons drawn from shapes, about 60 px, centred on (0,0) */
+function itemIcon(c,k,t){
+  if(k==='bat'){ c.save(); c.rotate(-0.6); c.fillStyle='#7A4A22'; rr(c,-4,2,8,28,4); c.fill(); c.fillStyle='#D9A066'; c.beginPath(); c.moveTo(-5,4); c.lineTo(-11,-34); c.arc(0,-34,11,Math.PI,0); c.lineTo(5,4); c.closePath(); c.fill();
+    c.fillStyle='rgba(255,255,255,.35)'; rr(c,-6,-38,4,30,2); c.fill(); c.restore(); }
+  else if(k==='bomb'){ c.fillStyle='#2A2340'; c.beginPath(); c.arc(0,5,20,0,6.283); c.fill(); c.fillStyle='rgba(255,255,255,.3)'; c.beginPath(); c.arc(-7,-2,6,0,6.283); c.fill();
+    c.fillStyle='#4A4060'; rr(c,-6,-19,12,8,3); c.fill(); c.strokeStyle='#C9B48A'; c.lineWidth=3; c.beginPath(); c.moveTo(2,-19); c.quadraticCurveTo(8,-28,14,-26); c.stroke();
+    c.fillStyle='#FFD23F'; c.beginPath(); for(var i=0;i<8;i++){ var a=i*Math.PI/4+t*3, r=i%2?3:7; c.lineTo(15+Math.cos(a)*r,-27+Math.sin(a)*r); } c.closePath(); c.fill(); }
+  else if(k==='spring'){ c.strokeStyle='#C9D4EA'; c.lineWidth=4; c.beginPath(); c.moveTo(-12,18); for(var j=0;j<5;j++){ c.lineTo(j%2?-12:12,12-j*6); } c.stroke();
+    c.fillStyle='#FF3D8B'; rr(c,-18,-22,36,9,4); c.fill(); c.fillStyle='#8B76C4'; rr(c,-18,17,36,7,3); c.fill(); }
+  else { c.fillStyle='#E8A33D'; rr(c,-20,8,40,11,5); c.fill(); c.fillStyle='#6B3A1E'; rr(c,-21,0,42,10,5); c.fill();
+    c.fillStyle='#FFD23F'; c.beginPath(); c.moveTo(-20,0); c.lineTo(20,0); c.lineTo(10,5); c.lineTo(0,1); c.lineTo(-12,6); c.closePath(); c.fill();
+    c.fillStyle='#7CD34A'; rr(c,-22,-4,44,5,2); c.fill(); c.fillStyle='#F2B04A'; c.beginPath(); c.moveTo(-20,-4); c.quadraticCurveTo(-20,-24,0,-24); c.quadraticCurveTo(20,-24,20,-4); c.closePath(); c.fill();
+    c.fillStyle='#FFF4D6'; [[-8,-15],[3,-19],[10,-12],[-2,-10]].forEach(function(d){ c.beginPath(); c.ellipse(d[0],d[1],2.4,1.4,0.4,0,6.283); c.fill(); }); } }
+function drawItems(t){ S.items.forEach(function(it){ var y=it.y-ITEM_R-4+(it.landed?Math.sin(t*4)*4:0), al=it.landed?clamp((ITEM_LIFE-it.t)/3,0,1):1; fg.save(); fg.globalAlpha=al; fg.translate(it.x,y);
+    fg.fillStyle='rgba(255,210,63,.14)'; fg.strokeStyle='rgba(255,210,63,.8)'; fg.lineWidth=3; fg.beginPath(); fg.arc(0,0,ITEM_R+6,0,6.283); fg.fill(); fg.stroke();
+    itemIcon(fg,it.k,t); fg.restore();
+    if(it.landed){ fg.save(); fg.globalAlpha=al; fg.font='800 20px Inter, sans-serif'; fg.textAlign='center'; fg.lineWidth=6; fg.strokeStyle='rgba(8,5,16,.9)'; fg.strokeText(ITEMS[it.k].name,it.x,y-ITEM_R-18); fg.fillStyle='#FFD23F'; fg.fillText(ITEMS[it.k].name,it.x,y-ITEM_R-18); fg.restore(); } });
+  /* a falling sky bomb shows a red target where it will land */
+  bombs.forEach(function(b){ if(b.by!=='sky') return; var ty=MAIN.y; SOFT.forEach(function(p){ if(b.x>p.x0&&b.x<p.x1&&p.y>b.y&&p.y<ty) ty=p.y; }); var u=clamp((b.y+60)/(ty+60),0,1);
+    fg.save(); fg.globalAlpha=0.35+0.5*u; fg.strokeStyle='#FF4D4D'; fg.lineWidth=4; fg.beginPath(); fg.ellipse(b.x,ty+4,60-30*u,14-6*u,0,0,6.283); fg.stroke(); fg.fillStyle='rgba(255,77,77,.18)'; fg.fill(); fg.restore(); });
+  bombs.forEach(function(b){ fg.save(); fg.translate(b.x,b.y); fg.rotate(b.t*8); fg.scale(0.8,0.8); itemIcon(fg,'bomb',t); fg.restore(); }); }
+/* what a fighter holds: drawn in the fighter's own frame (feet at 0,0, facing right) */
+function drawHeld(f,t){ var a=f.atk, s=f.st.size;
+  if(f.spring>0&&!f.stun){ fg.save(); fg.scale(s,s); fg.strokeStyle='#C9D4EA'; fg.lineWidth=3; [-11,11].forEach(function(x){ fg.beginPath(); fg.moveTo(x-6,0); for(var j=1;j<=4;j++) fg.lineTo(x+(j%2?6:-6),j*3); fg.stroke(); }); fg.restore(); }
+  var bat=a&&a.id==='bat', k=bat?'bat':f.item&&f.item.k; if(!k||f.stun>0) return;
+  fg.save(); fg.scale(s,s);
+  if(k==='bat'){ var mv=MV.bat, ang=-2.0+Math.sin(t*4)*0.05, from=-2.55, to=0.55, sw=0;     /* angle of the bat around the shoulder: up and back over the shoulder at rest */
+    if(bat){ if(a.t<mv.s) ang=-2.0+(from+2.0)*(a.t/mv.s);                                     /* wind up: cock it further back */
+      else if(a.t<mv.s+mv.a){ var u=(a.t-mv.s)/mv.a; u=1-(1-u)*(1-u); ang=from+(to-from)*u; sw=1; }   /* the swing: fast out of the wind-up, easing into the hit */
+      else { var r=Math.min(1,(a.t-mv.s-mv.a)/mv.e); if(r<0.35) ang=to+0.3*Math.sin(r/0.35*Math.PI*0.5); else { var v=(r-0.35)/0.65; v=v*v*(3-2*v); ang=to+0.3+(-2.0-to-0.3)*v; } } }   /* follow through, then swing it back up onto the shoulder */
+    var sx=4, sy=-84, R=24, gx=sx+Math.cos(ang)*R, gy=sy+Math.sin(ang)*R;
+    if(sw&&!reduced){ fg.save(); fg.globalAlpha=0.28; fg.strokeStyle='#FFF4C2'; fg.lineWidth=26; fg.lineCap='round'; fg.beginPath(); fg.arc(sx,sy,R+62,Math.min(from,ang),ang); fg.stroke(); fg.restore(); }
+    fg.save(); fg.translate(gx,gy); fg.rotate(ang);
+    fg.fillStyle='#7A4A22'; rr(fg,-12,-4,24,8,4); fg.fill();                                             /* handle */
+    fg.fillStyle='#D9A066'; fg.beginPath(); fg.moveTo(10,-4.5); fg.lineTo(72,-10); fg.arc(72,0,10,-Math.PI/2,Math.PI/2); fg.lineTo(10,4.5); fg.closePath(); fg.fill();   /* barrel */
+    fg.fillStyle='rgba(255,255,255,.32)'; fg.beginPath(); fg.moveTo(14,-3.5); fg.lineTo(72,-8); fg.lineTo(72,-4); fg.lineTo(14,-1); fg.closePath(); fg.fill();
+    fg.restore();
+    fg.strokeStyle='#FFD3A8'; fg.lineWidth=12; fg.lineCap='round'; fg.beginPath(); fg.moveTo(sx,sy); fg.lineTo(gx,gy); fg.stroke();   /* arm */
+    var gc=f.who==='bud'&&hot()?'#FF8A1F':f.st.glove; fg.fillStyle=gc; fg.beginPath(); fg.arc(gx,gy,13,0,6.283); fg.fill(); fg.fillStyle='rgba(255,255,255,.35)'; fg.beginPath(); fg.arc(gx-4,gy-4,4.5,0,6.283); fg.fill(); }
+  else { fg.translate(26,-92); fg.scale(0.7,0.7); itemIcon(fg,'bomb',t); }
+  fg.restore(); }
 /* a bubble at the edge of the screen when a fighter flies out of view */
 function offBubble(f,t){ if(f.out) return; var hb=hurt(f), cy=hb[1]+hb[3]/2; if(f.x>-10&&f.x<W+10&&cy>-10&&cy<H+10) return;
   var bx=clamp(f.x,70,W-70), by=clamp(cy,70,H-70), col=f.who==='bud'?'#3D9BFF':'#FF5A36';
@@ -730,20 +941,25 @@ function draw(){ fg.setTransform(RES,0,0,RES,0,0); fg.clearRect(0,0,W,H);
     else if(p.k===2){ fg.fillStyle=p.c; var r=p.s*(0.5+p.life/p.max); fg.beginPath(); for(var j=0;j<10;j++){ var an=j*Math.PI/5, rad=j%2?r*0.4:r; fg.lineTo(p.x+Math.cos(an)*rad,p.y+Math.sin(an)*rad); } fg.closePath(); fg.fill(); }
     else { fg.fillStyle=p.c; var s=p.s*(0.5+a*0.5); fg.fillRect(p.x-s/2,p.y-s/2,s,s); } }
   fg.globalAlpha=1;
-  drawF(S.R,tNow); drawF(S.P,tNow);
+  drawItems(tNow); drawF(S.R,tNow); drawF(S.P,tNow);
   for(i=0;i<pops.length;i++){ var q=pops[i]; fg.save(); fg.globalAlpha=Math.min(1,(0.8-q.t)*4); fg.font=font(34); fg.textAlign='center'; fg.textBaseline='middle'; fg.lineWidth=7; fg.strokeStyle='rgba(8,5,16,.9)'; fg.strokeText(q.txt,q.x,q.y); fg.fillStyle=q.c; fg.fillText(q.txt,q.x,q.y); fg.restore(); }
   offBubble(S.P,tNow); offBubble(S.R,tNow);
   if(flash>0&&!reduced){ fg.fillStyle='rgba(255,240,200,'+(flash*1.4).toFixed(2)+')'; fg.fillRect(0,0,W,H); }
   if(superT>0){ fg.save(); fg.globalAlpha=Math.min(1,superT*3); var sx=superWho==='bud'?380:W-380; fg.font=font(38); fg.textAlign='center'; fg.textBaseline='middle'; fg.lineWidth=10; fg.strokeStyle='rgba(8,5,16,.9)'; fg.strokeText(superName,sx,132); fg.fillStyle=superWho==='bud'?'#FFD23F':'#FF9A7A'; fg.fillText(superName,sx,132); fg.restore(); }
   if(S.phase==='count'){ var n=S.pitKind==='kick'?Math.ceil(S.cd/0.6):0; bigText(n>0?''+n:'FIGHT!',n>0?'#F4F0FF':'#FFD23F',220,150,S.pitKind==='kick'&&n>0?(S.sd?'Sudden death: next KO wins':'Round '+S.round+' vs '+S.R.st.name+'. '+S.R.st.tip):''); }
   else if(goT>0) bigText('FIGHT!','#FFD23F',300,170);
-  if(S.phase==='ko'){ var bud=S.koBy==='bud'; bigText(bud?'KO!':'OOF! KO',bud?'#FFD23F':'#FF5A36',300,bud?220:150,S.sd?(bud?'You win sudden death!':'The Rivals win sudden death'):(S.buds+' – '+S.rivals)); }
-  if(noPowMsg>0&&S.phase==='live') pill('No Super charged! Press Enter for the corner',S.P.x,S.P.y-170,'#FF7A7A'); }
+  if(S.phase==='ko'){ var bud=S.koBy==='bud'; bigText(bud?'KO!':'OOF! KO',bud?'#FFD23F':'#FF5A36',300,bud?220:150,S.sd?(bud?'You win sudden death! '+koTxt:'The Rivals win sudden death'):(S.buds+' – '+S.rivals+(bud&&koTxt?'   '+koTxt:''))); }
+  if(noPowMsg>0&&S.phase==='live') pill('No Super charged! Press Enter for the corner',S.P.x,S.P.y-170,'#FF7A7A');
+  if(tauntT>0&&S.R&&!S.R.out&&(S.phase==='live'||S.phase==='ko'||S.phase==='count')){ var th=hurt(S.R); fg.save(); fg.globalAlpha=Math.min(1,tauntT*3); pill('“'+tauntMsg+'”',S.R.x,th[1]-50,'#FF5A36'); fg.restore(); }
+  if(sayT>0&&S.phase==='live'){ fg.save(); fg.globalAlpha=Math.min(1,sayT*3); pill(sayMsg,S.P.x,S.P.y-(noPowMsg>0?230:180),sayCol); fg.restore(); } }
 
 /* ================= THE LOOP ================= */
 var acc=0, lastF=performance.now(), cdShown=-1, noPowMsg=0, PAUSE=false;
 function outOfPower(){ if(noPowMsg>0.4) return; noPowMsg=1.8; SND.empty(); var c=$('bb-dmgbud'); c.classList.remove('empty'); void c.offsetWidth; c.classList.add('empty'); }
-function frame(t){ var dt=Math.min(0.05,(t-lastF)/1000); lastF=t; tNow=t/1000;
+var slowN=0, slowT=0;
+function frame(t){ var raw=(t-lastF)/1000, dt=Math.min(0.05,raw); lastF=t; tNow=t/1000;
+  /* during the fight, if more than a third of frames over 2 s take longer than 1/40 s, draw the canvases smaller (down to 0.5) */
+  if(S.phase==='live'&&!PAUSE&&raw<0.5){ slowT+=raw; if(raw>0.025) slowN++; if(slowT>2){ var cnt=Math.round(slowT/0.0167); if(slowN>cnt/3&&RESCAP>0.5){ RESCAP=Math.max(0.5,Math.min(RESCAP,RES)-0.15); sizeCanvases(); } slowT=0; slowN=0; } }
   if(S.started&&!S.over){
     if(S.phase==='pit'||S.phase==='count'||S.phase==='live'){ S.clock-=dt; clockDraw(); if(S.clock<=0){ timeUp(); dirty=true; } }   /* the clock runs the whole time, corners too, so every brawl takes 4 minutes */
     if(S.phase==='live'&&PAUSE){ dirty=true; }
@@ -751,7 +967,7 @@ function frame(t){ var dt=Math.min(0.05,(t-lastF)/1000); lastF=t; tNow=t/1000;
     else if(S.phase==='count'){ S.cd-=dt; var n=Math.ceil(S.cd/0.6); if(S.pitKind==='kick'&&n!==cdShown&&n>0){ cdShown=n; SND.tick(); } if(S.cd<=0) goLive(); dirty=true; }
     else if(S.phase==='ko'){ acc+=dt*(S.koT>1.8?0.3:1); while(acc>=STEP){ acc-=STEP; stepKo(STEP); } S.koT-=dt; if(S.koT<=0) afterKo(); dirty=true; } }
   if(goT>0){ goT-=dt; dirty=true; } if(shakeT>0){ shakeT-=dt; dirty=true; } if(flash>0){ flash-=dt; dirty=true; } if(zoomT>0){ zoomT-=dt; dirty=true; } if(superT>0){ superT-=dt; dirty=true; }
-  if(noPowMsg>0){ noPowMsg-=dt; dirty=true; }
+  if(noPowMsg>0){ noPowMsg-=dt; dirty=true; } if(sayT>0){ sayT-=dt; dirty=true; } if(tauntT>0){ tauntT-=dt; dirty=true; } if(tauntCd>0) tauntCd-=dt;
   if(fx.length||pops.length||koAt){ partsStep(dt); dirty=true; }
   if(dirty&&S.P){ dirty=false; draw(); }                                       /* the corner draws once and then the canvas rests */
   requestAnimationFrame(frame); }
@@ -759,22 +975,24 @@ function frame(t){ var dt=Math.min(0.05,(t-lastF)/1000); lastF=t; tNow=t/1000;
 /* ================= START / END ================= */
 $('bb-step1').textContent='Before every round, answer '+NEED+' questions. Every '+PER+' right answers charge a Super. Wrong answers charge nothing, so don’t guess.';
 $('bb-nameinput').addEventListener('input',function(){ $('bb-go-start').disabled=!this.value.trim(); });
+$('bb-rookie').addEventListener('click',function(){ ac(); setMode(false); }); $('bb-pro').addEventListener('click',function(){ ac(); setMode(true); });
 $('bb-nameinput').addEventListener('keydown',function(e){ if(e.key==='Enter'&&this.value.trim()){ e.preventDefault(); e.stopPropagation(); $('bb-go-start').click(); } });
 $('bb-go-start').addEventListener('click',function(){ var n=$('bb-nameinput').value.trim(); if(!n) return; ac(); jingle(); S.name=n; S.started=true; $('bb-start').hidden=true;
   $('bb-nameinput').blur(); roundReset(); openPit('kick'); });
-function endRun(){ S.over=true; S.phase='over'; clearTimeout(nextT); $('bb-pit').hidden=true; save(); hud(); showEnd(true); }
+function endRun(){ chalCheck(true); addPts(S.buds>S.rivals?1500:0); S.score=S.pts; S.over=true; S.phase='over'; clearTimeout(nextT); $('bb-pit').hidden=true; save(); hud(); showEnd(true); }
 function showEnd(celebrate){ var win=S.buds>S.rivals, draw0=S.buds===S.rivals;
-  $('bb-endname').textContent=S.name; $('bb-endresult').textContent=win?(S.sd?'You win in sudden death!':'You win!'):draw0?'It’s a draw':(S.sd?'Rivals win in sudden death':'Rivals win this time');
-  $('bb-endscore').innerHTML='<div class="b">'+S.buds+'<small>BUDS</small></div><div class="d">–</div><div class="r">'+S.rivals+'<small>RIVALS</small></div>';
+  var ks=S.buds+' – '+S.rivals; $('bb-endname').textContent=S.name; $('bb-endresult').textContent=win?(S.sd?'You win in sudden death, ':'You win ')+ks+'!':draw0?'It’s a draw, '+ks:(S.sd?'Rivals win in sudden death, ':'Rivals win this time, ')+ks;
+  $('bb-endscore').innerHTML=(S.score||0).toLocaleString()+'<small>POINTS</small>';
+  $('bb-badges').innerHTML=(S.pro?'<div class="bb-badge pro"><b>★</b>All-Pro</div>':'')+S.chal.map(function(c){ return '<div class="bb-badge'+(c.done?' done':'')+'"><b>'+(c.done?'✓':'✗')+'</b>'+CHAL[c.id].txt+'</div>'; }).join('');
   var acc0=S.answered?Math.round(100*S.correct/S.answered):0;
-  $('bb-endstats').innerHTML=[['Correct',S.correct+' / '+S.answered],['Accuracy',acc0+'%'],['Best streak',S.best],['Supers landed',S.landed]].map(function(a){ return '<div class="bb-stat"><div class="l">'+a[0]+'</div><div class="v">'+a[1]+'</div></div>'; }).join('');
+  $('bb-endstats').innerHTML=[['Correct',S.correct+' / '+S.answered],['Accuracy',acc0+'%'],['Best streak',S.best],['Perfect corners',S.perfect+' / '+S.pits]].map(function(a){ return '<div class="bb-stat"><div class="l">'+a[0]+'</div><div class="v">'+a[1]+'</div></div>'; }).join('');
   $('bb-endtopics').innerHTML=Object.keys(S.topics).map(function(k){ var t=S.topics[k]; return '<div class="bb-stat"><div class="l">'+k+'</div><div class="v">'+t[0]+' / '+t[1]+'</div></div>'; }).join('');
   /* LEADERBOARD HOOK: the shared score code (scorecode.js) shows the student's code here */
   if(window.SpitzCode&&SpitzCode.show) try{ SpitzCode.show('bb','brawl_buds',S); }catch(e){}
   $('bb-end').hidden=false;
   if(celebrate){ if(win||draw0){ SND.win(); [0,350,700,1100].forEach(function(ms,i){ setTimeout(function(){ confetti(200+i*500,1070,90,1.3); confetti(1720-i*500,1070,90,1.3); },ms); }); } else SND.lose(); } }
 var armT=0; $('bb-again').addEventListener('click',function(){ var b=this; if(!b.classList.contains('arm')){ b.classList.add('arm'); b.textContent='Tap again to start over'; clearTimeout(armT); armT=setTimeout(function(){ b.classList.remove('arm'); b.textContent='Play again'; },3000); return; }
-  b.classList.remove('arm'); b.textContent='Play again'; var keepName=S.name; S=fresh(); S.name=keepName; roundReset(); fx.length=0;
+  b.classList.remove('arm'); b.textContent='Play again'; var keepName=S.name; S=fresh(); S.name=keepName; roundReset(); fx.length=0; lastChal=''; modeDraw();
   $('bb-end').hidden=true; $('bb-start').hidden=false; $('bb-nameinput').value=keepName; $('bb-go-start').disabled=!keepName; save(); hud(); dirty=true;
   $('bb-choices').innerHTML=''; $('bb-prompt').innerHTML=''; $('bb-visual').innerHTML=''; });
 
@@ -816,7 +1034,7 @@ document.querySelector('.bb-top .bb-logo').addEventListener('click',function(){ 
 $('sz-mus').addEventListener('click',function(e){ e.stopPropagation(); ac(); musicToggle(); }); musBtn();
 
 /* ================= BOOT ================= */
-S=load()||fresh(); if(!S.P) roundReset(); fit();
+S=load()||fresh(); if(!S.P) roundReset(); fit(); modeDraw();
 if(!QS){ $('bb-prompt').textContent='questions.js is missing: keep it in the same folder as this game.'; }
 if(S.started){ $('bb-start').hidden=true;
   if(S.over){ showEnd(false); }
@@ -832,12 +1050,15 @@ window.__G={ state:function(){ return S; }, answer:answer, next:function(){ retu
   set:QS?QS.set:null, fast:FAST, need:NEED, gain:GAIN, cost:COST, skill:skill, roundReset:roundReset, timeUp:timeUp, ko:ko, res:function(){ return RES; }, MV:MV, MAIN:MAIN, BL:BL,
   live:function(){ if(S.phase==='count') goLive(); }, end:function(){ endRun(); }, launch:function(att,tgt,id){ launch(att,tgt,MV[id],id); },
   press:function(name){ edge[name]=1; }, pause:function(on){ PAUSE=on; dirty=true; },
+  spawn:function(k,x){ spawnItem(k,x); }, bombs:function(){ return bombs; }, AI:AI,
+  /* step the fight by hand: your Bud takes the inputs in ip (held for every step), the Rival waits while freeze is set */
+  step:function(n,ip,freezeRival){ for(var i=0;i<n&&S.phase==='live';i++){ if(freezeRival) AI.react=1; BOT={k:-1,ip:i===0?ip:Object.assign({},ip,{atk:0,sup:0,jump:0})}; stepLive(STEP); BOT=null; } return S; },
   /* run the fight with no drawing: the Rival's brain also drives your Bud at skill k (k<0: your Bud stands still) */
   sim:function(sec,k){ var keep=JSON.stringify(S), out; SIM={ko:{bud:0,riv:0},sd:{bud:0,riv:0}}; BOT={k:k,A:{t:0,react:0,back:0,tx:0,want:null,hold:0}};
     S.buds=0; S.rivals=0; S.round=1; roundReset(); S.P.pow=12; var n=Math.round(sec/STEP), bad=0, rounds=[], last=0, maxd=0;
     for(var i=0;i<n;i++){ var b0=S.buds+S.rivals; stepLive(STEP); if(S.buds+S.rivals!==b0){ rounds.push(+((i-last)*STEP).toFixed(1)); last=i; S.round++; roundReset(); S.P.pow=12; }
       [S.P,S.R].forEach(function(f){ if(!(isFinite(f.x)&&isFinite(f.y)&&isFinite(f.vx)&&isFinite(f.vy))) bad++; maxd=Math.max(maxd,f.dmg); }); }
-    out={ko:SIM.ko,sd:SIM.sd,bad:bad,rounds:rounds,maxDmg:Math.round(maxd),landed:S.landed}; SIM=false; BOT=null; S=JSON.parse(keep); S.P.st=BUD; S.R.st=ROSTER[(S.round-1)%ROSTER.length]; return out; },
+    shower=0; out={ko:SIM.ko,sd:SIM.sd,bad:bad,rounds:rounds,maxDmg:Math.round(maxd),landed:S.landed}; SIM=false; BOT=null; S=JSON.parse(keep); S.P.st=BUD; S.R.st=rivalFor(S.round); return out; },
   hold:function(keys,ms){ keys.forEach(function(k){ KD[k]=true; }); return new Promise(function(r){ setTimeout(function(){ keys.forEach(function(k){ KD[k]=false; }); r(); },ms); }); } };
 window.__verify=function(n){ var bad=[], i; for(i=0;i<n;i++){ var q=QS.next(), ok=q.choices.filter(function(c){ return c.ok; });
     if(ok.length!==1) bad.push(['not one right',q.prompt]); if(new Set(q.choices.map(function(c){ return c.html; })).size!==4) bad.push(['repeat labels',q.prompt]);
