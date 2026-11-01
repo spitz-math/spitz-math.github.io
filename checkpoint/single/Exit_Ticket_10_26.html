@@ -768,6 +768,8 @@ body.browse>*:not(#browse):not(svg){display:none!important}
 .noadd .badd{display:none!important}
 .badd{margin-top:6px;border:1px solid #1f5fd1;background:#1f5fd1;color:#fff;border-radius:6px;padding:7px 10px;font:600 13px "Segoe UI",Roboto,Arial,sans-serif;min-width:92px;min-height:36px}
 .badd[aria-pressed="true"]{background:#fff;color:#17663a;border-color:#2e9d55}
+.badd:disabled{background:#eef2f7;color:#5a6b85;border-color:#c7d2e0;font-size:12px;cursor:default}
+.bcopy{margin-top:6px;border:1px solid #1f5fd1;background:#fff;color:#1f5fd1;border-radius:6px;padding:6px 10px;font:600 13px "Segoe UI",Roboto,Arial,sans-serif;min-width:92px;min-height:34px} .noadd .bcopy{display:none!important}
 .bmain{min-width:0;padding:14px 16px 10px}
 .bmain .body{padding:0}
 .bwait{color:#888;font-size:13px;padding:30px 0}
@@ -3165,14 +3167,15 @@ function browseStart(){
     c.innerHTML=`<div class="bmeta"><div class="byr">${esc(m.year||'New')}</div><div class="bsub">${esc(m.where||'')}</div>
         ${m.teks?`<div class="bteks" title="${esc(m.tlabel||'')}">${esc(m.teks)}</div>`:''}${m.rs?`<div class="brs${m.rs==='Readiness'?' r':''}">${esc(m.rs)}</div>`:''}
         <div class="btype">${esc(it.label||BTYPES[it.type]||it.type)}</div><div class="bpts">${it.max} point${it.max>1?'s':''}</div>${m.tag?`<div class="btag">${esc(m.tag)}</div>`:''}${m.used&&m.used.length?`<div class="bused" title="${esc(m.used.join(', '))}">Already on: ${esc(m.used.join(', '))}</div>`:''}
-        <button type="button" class="badd" aria-pressed="false"></button></div>
+        <button type="button" class="badd" aria-pressed="false"></button>${m.copy?'<button type="button" class="bcopy" title="Make it your own question to change">Copy &amp; edit</button>':''}</div>
       <div class="bmain">${m.psg?`<details class="bpsg"><summary>${esc(m.psgTitle||'Read the passage')}</summary><div class="psgtext">${m.psg}</div></details>`:''}<div class="body bitem"><div class="bwait">Loading question…</div></div>
         <div class="bfoot"><div class="bkey"><b>Correct answer:</b> <span>${keyTxt}</span></div>
           <div class="bbtns"><button type="button" data-a="blank">Try it</button><button type="button" data-a="check">Check</button><span class="bres" aria-live="polite"></span></div></div>
         ${m.src?`<div class="bsrc">${esc(m.src)}</div>`:''}</div>`;
     if(m.used&&m.used.length) c.classList.add('used'); setAdd(c); io.observe(c); return c; }
-  function setAdd(c){ const on=added.has(c.dataset.uid), b=c.querySelector('.badd'); b.setAttribute('aria-pressed',on); b.textContent=on?'✓ Added':'+ Add'; b.title=on?'Remove from your test':'Add to your test'; c.classList.toggle('on',on); }
+  function setAdd(c){ const on=added.has(c.dataset.uid), b=c.querySelector('.badd'), no=(META[+c.dataset.k]||{}).noadd; b.setAttribute('aria-pressed',on); b.textContent=on?'✓ Added':no?'Campus tests only':'+ Add'; b.disabled=!!no&&!on; b.title=no&&!on?no:on?'Remove from your test':'Add to your test'; c.classList.toggle('on',on); }
   box.addEventListener('click',e=>{ const b=e.target.closest('button'); if(!b) return; const c=b.closest('.bcard'); if(!c) return;
+    if(b.classList.contains('bcopy')){ post({op:'copy',uid:c.dataset.uid}); return; }
     if(b.classList.contains('badd')){ const on=!added.has(c.dataset.uid); on?added.add(c.dataset.uid):added.delete(c.dataset.uid); setAdd(c); post({op:'toggle',uid:c.dataset.uid,add:on}); return; }
     const a=b.dataset.a, it=ITEMS[+c.dataset.k];
     if(a==='key'||a==='blank'){ c.dataset.mode=a; fill(c); return; }
@@ -3338,7 +3341,8 @@ $('#startForm').addEventListener('submit',async e=>{ e.preventDefault();
     window.SPITZ_CALC=!!r.calculator; if(window.SpitzBasicCalc) window.SpitzBasicCalc(window.SPITZ_CALC);   // the test engine may start after this; it reads SPITZ_RA then
     applyReview(r.review);
     const server=r.attempt?{state:r.attempt.state,events:r.attempt.events}:null, local=LS.get(CTX.key);
-    const use=(server&&server.state&&server.state.submitted)?server:(newer(local,server)?local:server);
+    const reo=server&&server.state&&server.state.reopen;   /* the teacher reopened the test or gave a retake: the Sheet's copy wins over the one this Chromebook kept */
+    const use=(server&&server.state&&server.state.submitted)||reo?server:(newer(local,server)?local:server);
     window.__spitzPending={name:CTX.name,period,state:use&&use.state,events:use&&use.events};
     if(window.SPITZ_RA&&!(use&&use.state&&use.state.submitted)) await soundCheck();
     load(r.test,booted); return;
