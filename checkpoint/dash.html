@@ -184,7 +184,7 @@ table.t{width:100%;border-collapse:collapse;font-size:13px}
 .qvmsg{padding:20px;font-size:14px;color:var(--mut)} .qvmsg[hidden]{display:none}
 @media (max-width:700px){ .qv .ag{grid-template-columns:1fr 50px} .qv .ag .an{grid-column:1/-1;margin:-4px 0 6px} .qv .hidesm{display:none} }
 /* drawer */
-.drawer{position:fixed;top:0;right:0;bottom:0;width:min(470px,100vw);background:#fff;box-shadow:-6px 0 24px rgba(0,0,0,.18);z-index:50;display:flex;flex-direction:column}
+.drawer{position:fixed;top:0;right:0;bottom:0;width:min(620px,100vw);background:#fff;box-shadow:-6px 0 24px rgba(0,0,0,.18);z-index:50;display:flex;flex-direction:column}
 .drawer[hidden]{display:none}
 .dh{display:flex;align-items:center;gap:10px;padding:12px 16px;border-bottom:1px solid var(--line)}
 .dh h2{margin:0;font-size:18px;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis}
@@ -200,6 +200,7 @@ table.t{width:100%;border-collapse:collapse;font-size:13px}
 .veil[hidden]{display:none}
 .dlg{background:#fff;border-radius:10px;padding:18px 20px;max-width:420px;box-shadow:0 10px 30px rgba(0,0,0,.25)}
 .dlg h3{margin:0 0 8px;font-size:17px}
+.nsq{display:flex;flex-direction:column;gap:8px} .nsq .fl{display:flex;flex-direction:column;gap:3px;font-size:12px;font-weight:700;color:var(--mut)} .nsq select,.nsq input{font-size:14px;font-weight:400;color:var(--ink);padding:6px 8px;border:1px solid var(--line);border-radius:6px;width:100%;box-sizing:border-box}
 .dlg .btns{display:flex;justify-content:flex-end;gap:8px;margin-top:14px}
 .legend{display:flex;gap:10px;align-items:center;font-size:12px;color:var(--mut);flex-wrap:wrap}
 .legend .cell{display:inline-grid;width:16px;height:14px;vertical-align:-3px;margin-right:3px}
@@ -402,6 +403,43 @@ details summary{cursor:pointer;color:var(--blue2);font-size:13px;margin-top:8px}
   .bkcartbtn,.bkcartx{display:inline-block} .bkcartx{padding:2px 9px} .bkgrid{grid-template-rows:auto minmax(0,1fr)} }
 #bkFileRow[hidden]{display:none}
 .bkcol{display:flex;flex-direction:column;gap:6px}.bkcol[hidden]{display:none}
+
+/* 2026-11-01 dashboard ideas */
+.tb-red .btn.pri{background:#fff;border-color:#fff;color:#8f1d16;font-weight:700}
+.tb-red .btn.pri:hover{background:#fde9e7}
+.card::-webkit-scrollbar{width:12px;height:14px}
+.card::-webkit-scrollbar-track{background:#eef2f6;border-radius:0 0 8px 8px}
+.card::-webkit-scrollbar-thumb{background:#8d9cb0;border-radius:8px;border:3px solid #eef2f6}
+.card::-webkit-scrollbar-thumb:hover{background:#5f708a}
+.card::-webkit-scrollbar-corner{background:#eef2f6}
+.qnav{display:flex;align-items:center;gap:4px}
+.qnav .btn{padding:2px 10px;font-size:13px}
+.lvwait{color:var(--mut);font-size:12px;white-space:nowrap}
+.tile.alert{border-color:#e7b65a;background:#fff8e6}
+.tile.lvt{min-width:0}
+.tile.lvt small{display:block;font-size:11px;color:var(--mut);margin-top:1px}
+.showid{position:fixed;inset:0;z-index:90;background:#0f1d33;color:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2vh;padding:24px;text-align:center}
+.showid[hidden]{display:none}
+.showid .sx{position:absolute;top:16px;right:16px;background:transparent;color:#fff;border-color:rgba(255,255,255,.6);font-size:16px}
+.showid .go{font-size:clamp(18px,3vw,34px);opacity:.9}
+.showid .go b{color:#ffd166}
+.showid .ids{display:flex;flex-wrap:wrap;justify-content:center;gap:3vh 6vw}
+.showid .one{display:flex;flex-direction:column;align-items:center}
+.showid .big{font:800 clamp(90px,20vw,260px)/1 Consolas,"Courier New",monospace;letter-spacing:.08em;background:#fff;color:#0f1d33;border-radius:18px;padding:.08em .25em}
+.showid.many .big{font-size:clamp(60px,11vw,150px)}
+.showid .tt{font-size:clamp(16px,2.2vw,26px);margin-top:1.4vh;opacity:.85}
+.dans{max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.dact .btn{margin-right:6px}
+.rtg{margin-top:4px;font-size:12.5px;line-height:1.45}
+.rtg .nm{font-size:12.5px}
+.rtx{cursor:pointer}
+.rtx td:first-child b::before{content:'▸ ';color:var(--mut);font-weight:400}
+.rtx.open td:first-child b::before{content:'▾ '}
+.rtd td{background:#fafcff}
+.rtd .rtcols{display:grid;grid-template-columns:1fr 1fr;gap:6px 18px}
+.rtd h4{margin:2px 0 3px;font-size:12px;text-transform:uppercase;letter-spacing:.04em;color:var(--mut)}
+@media (max-width:1200px){ #whoLbl{display:none} .topbar .upd#upd{font-size:11px} }
+@media (max-width:1100px){ .topbar.tb-red > .btn{padding:5px 9px} label.upd span{display:none} .wm small{display:none} }
 </style>
 </head>
 <body>
@@ -409,7 +447,7 @@ details summary{cursor:pointer;color:var(--blue2);font-size:13px;margin-top:8px}
   <div class="wm"><svg viewBox="0 0 32 28" aria-hidden="true"><path d="M3 12C3 5 9 2 16 2s13 3 13 10z" fill="#f2a33a"/><g fill="#fff3c4"><ellipse cx="10" cy="6.5" rx="1.1" ry=".6"/><ellipse cx="16" cy="5" rx="1.1" ry=".6"/><ellipse cx="21.5" cy="7" rx="1.1" ry=".6"/><ellipse cx="13" cy="9" rx="1.1" ry=".6"/><ellipse cx="19" cy="9.5" rx="1.1" ry=".6"/></g><path d="M2 12.5h28l-2.5 3-3-2-3 2.5-3-2.5-3 2.5-3-2.5-3 2.5-3-2z" fill="#5fbf3a"/><rect x="2.5" y="15" width="27" height="3" rx="1.2" fill="#f7d13b"/><rect x="2" y="17.5" width="28" height="4.2" rx="2" fill="#7a3b1d"/><path d="M3 22h26c0 2.6-2.4 4-5 4H8c-2.6 0-5-1.4-5-4z" fill="#e8913a"/></svg>SPITZ <span>CHECKPOINT</span><small>Teacher Dashboard</small></div>
   <div class="sp"></div>
   <span class="upd" id="upd">Loading…</span>
-  <label class="upd"><input type="checkbox" id="auto" checked> Auto-refresh</label>
+  <label class="upd" title="Auto-refresh every 15 seconds"><input type="checkbox" id="auto" checked> <span>Auto-refresh</span></label>
   <button class="btn" id="refresh">Refresh</button>
   <span class="upd" id="whoLbl"></span>
   <button class="btn" id="mySesBtn">My sessions</button>
@@ -421,7 +459,8 @@ details summary{cursor:pointer;color:var(--blue2);font-size:13px;margin-top:8px}
   <div class="grp"><span class="lab">Session</span><div class="sesdd" id="sesDD"><button class="btn sesbtn" id="sesBtn" aria-haspopup="dialog" aria-expanded="false"><span class="sl" id="sesLabel">Loading…</span><span class="car" aria-hidden="true">&#9662;</span></button>
     <div class="sespanel" id="sesPanel" hidden role="dialog" aria-label="Pick sessions"><div class="sf"><input type="search" id="sesFind" placeholder="Find a Session ID, test or note" aria-label="Find a session"></div>
       <div class="seslist" id="sesList"></div>
-      <div class="sesfoot"><label><input type="checkbox" id="sesClosed"> Show closed sessions</label><button class="btn" id="sesClear">Clear</button><button class="btn pri" id="sesDone">Show</button></div></div></div></div>
+      <div class="sesfoot"><button class="btn" id="sesNew" title="Make a new session without leaving the dashboard">+ New session</button><label><input type="checkbox" id="sesClosed"> Show closed</label><button class="btn" id="sesClear">Clear</button><button class="btn pri" id="sesDone">Show</button></div></div></div>
+    <button class="btn" id="showIdBtn" title="Show the Session ID big, for the projector">Show Session ID</button></div>
   <div class="grp" id="arcGrp" hidden><span class="lab">Results from</span><select id="arcSel" aria-label="Results from"></select></div>
   <div class="grp" id="teaGrp" hidden><span class="lab">Teacher</span><select id="teaSel" aria-label="Teacher"></select></div>
   <div class="grp"><span class="lab">Period</span><div class="seg" id="perSeg"><button data-v="">All</button></div></div>
@@ -431,14 +470,15 @@ details summary{cursor:pointer;color:var(--blue2);font-size:13px;margin-top:8px}
 </div>
 <div class="tiles" id="tiles"></div>
 <div class="main">
-  <div class="bulk" id="bulk" hidden><b id="bulkN"></b><button class="btn" data-bulk="pause">Pause</button><button class="btn" data-bulk="resume">Resume</button><button class="btn warn" data-bulk="lock">Stop</button><button class="btn" data-bulk="unlock">Unlock</button><button class="btn" id="bulkClear">Clear selection</button></div>
+  <div class="bulk" id="bulk" hidden><b id="bulkN"></b><button class="btn" data-bulk="pause">Pause</button><button class="btn" data-bulk="resume">Resume</button><button class="btn warn" data-bulk="lock">Stop</button><button class="btn" data-bulk="unlock">Unlock</button><button class="btn" data-bulk="reopen" title="Give submitted tests back so the students can keep working">Reopen</button><button class="btn warn" data-bulk="retake" title="Erase the answers so the students start over">Retake</button><button class="btn" id="bulkClear">Clear selection</button></div>
   <div class="card" id="card"><div class="empty">Loading…</div></div>
 </div>
 <p class="legal">Spitz Checkpoint is an independent practice tool made by Mr. Spitz. It is not affiliated with or endorsed by the Texas Education Agency (TEA) or Cambium Assessment. STAAR&reg; is a registered trademark of TEA. Released STAAR questions and reference sheets are &copy; TEA and are used here for classroom practice.</p>
 <div class="veil" id="qvVeil" hidden><div class="qvbox" role="dialog" aria-modal="true" aria-labelledby="qvTitle"><div class="qvh"><h3 id="qvTitle">Question</h3><button class="btn" id="qvClose">Close</button></div><div class="qvmsg" id="qvMsg" hidden></div><iframe id="qvFrame" title="Question preview" sandbox="allow-scripts"></iframe></div></div>
+<div class="showid" id="showId" hidden role="dialog" aria-modal="true" aria-label="Session ID"><button class="btn sx" id="showIdX">Close (Esc)</button><div class="go">Go to <b>spitzmath.com/checkpoint</b> and type the Session ID</div><div class="ids" id="showIdIds"></div></div>
 <aside class="drawer" id="drawer" hidden aria-label="Student details"><div class="dh"><h2 id="dName"></h2><button class="btn" id="dClose">Close</button></div><div class="db" id="dBody"></div></aside>
 <section class="tpage" id="tpage" hidden aria-label="Tests">
-  <header class="topbar"><div class="wm">SPITZ <span>CHECKPOINT</span><small>Tests</small></div><div class="sp"></div>
+  <header class="topbar tb-red"><div class="wm"><svg viewBox="0 0 32 28" aria-hidden="true"><path d="M3 12C3 5 9 2 16 2s13 3 13 10z" fill="#f2a33a"/><g fill="#fff3c4"><ellipse cx="10" cy="6.5" rx="1.1" ry=".6"/><ellipse cx="16" cy="5" rx="1.1" ry=".6"/><ellipse cx="21.5" cy="7" rx="1.1" ry=".6"/><ellipse cx="13" cy="9" rx="1.1" ry=".6"/><ellipse cx="19" cy="9.5" rx="1.1" ry=".6"/></g><path d="M2 12.5h28l-2.5 3-3-2-3 2.5-3-2.5-3 2.5-3-2.5-3 2.5-3-2z" fill="#5fbf3a"/><rect x="2.5" y="15" width="27" height="3" rx="1.2" fill="#f7d13b"/><rect x="2" y="17.5" width="28" height="4.2" rx="2" fill="#7a3b1d"/><path d="M3 22h26c0 2.6-2.4 4-5 4H8c-2.6 0-5-1.4-5-4z" fill="#e8913a"/></svg>SPITZ <span>CHECKPOINT</span><small>Tests</small></div><div class="sp"></div>
     <button class="btn" id="tpReload">Reload</button><button class="btn pri" id="tpBack">Back to dashboard</button></header>
   <div class="tbody"><div class="tcol">
     <div class="ghs" id="ghs">Checking GitHub…</div>
@@ -459,7 +499,7 @@ details summary{cursor:pointer;color:var(--blue2);font-size:13px;margin-top:8px}
   </div></div>
 </section>
 <section class="tpage" id="mpage" hidden aria-label="My sessions">
-  <header class="topbar"><div class="wm">SPITZ <span>CHECKPOINT</span><small>My sessions</small></div><div class="sp"></div>
+  <header class="topbar tb-red"><div class="wm"><svg viewBox="0 0 32 28" aria-hidden="true"><path d="M3 12C3 5 9 2 16 2s13 3 13 10z" fill="#f2a33a"/><g fill="#fff3c4"><ellipse cx="10" cy="6.5" rx="1.1" ry=".6"/><ellipse cx="16" cy="5" rx="1.1" ry=".6"/><ellipse cx="21.5" cy="7" rx="1.1" ry=".6"/><ellipse cx="13" cy="9" rx="1.1" ry=".6"/><ellipse cx="19" cy="9.5" rx="1.1" ry=".6"/></g><path d="M2 12.5h28l-2.5 3-3-2-3 2.5-3-2.5-3 2.5-3-2.5-3 2.5-3-2z" fill="#5fbf3a"/><rect x="2.5" y="15" width="27" height="3" rx="1.2" fill="#f7d13b"/><rect x="2" y="17.5" width="28" height="4.2" rx="2" fill="#7a3b1d"/><path d="M3 22h26c0 2.6-2.4 4-5 4H8c-2.6 0-5-1.4-5-4z" fill="#e8913a"/></svg>SPITZ <span>CHECKPOINT</span><small>My sessions</small></div><div class="sp"></div>
     <button class="btn pri" id="mpBack">Back to dashboard</button></header>
   <div class="tbody"><div class="tcol">
     <section class="tcard"><h2>New session</h2>
@@ -488,7 +528,7 @@ details summary{cursor:pointer;color:var(--blue2);font-size:13px;margin-top:8px}
   </div></div>
 </section>
 <section class="tpage" id="rppage" hidden aria-label="Reports">
-  <header class="topbar"><div class="wm">SPITZ <span>CHECKPOINT</span><small>Reports</small></div><div class="sp"></div>
+  <header class="topbar tb-red"><div class="wm"><svg viewBox="0 0 32 28" aria-hidden="true"><path d="M3 12C3 5 9 2 16 2s13 3 13 10z" fill="#f2a33a"/><g fill="#fff3c4"><ellipse cx="10" cy="6.5" rx="1.1" ry=".6"/><ellipse cx="16" cy="5" rx="1.1" ry=".6"/><ellipse cx="21.5" cy="7" rx="1.1" ry=".6"/><ellipse cx="13" cy="9" rx="1.1" ry=".6"/><ellipse cx="19" cy="9.5" rx="1.1" ry=".6"/></g><path d="M2 12.5h28l-2.5 3-3-2-3 2.5-3-2.5-3 2.5-3-2.5-3 2.5-3-2z" fill="#5fbf3a"/><rect x="2.5" y="15" width="27" height="3" rx="1.2" fill="#f7d13b"/><rect x="2" y="17.5" width="28" height="4.2" rx="2" fill="#7a3b1d"/><path d="M3 22h26c0 2.6-2.4 4-5 4H8c-2.6 0-5-1.4-5-4z" fill="#e8913a"/></svg>SPITZ <span>CHECKPOINT</span><small>Reports</small></div><div class="sp"></div>
     <button class="btn" data-ps="">Performance standards</button><button class="btn" id="rpCsv" disabled>Download (CSV)</button><button class="btn" id="rpPrint" disabled>Print</button><button class="btn pri" id="rptBack">Back to dashboard</button></header>
   <div class="tbody"><div class="tcol rpcol">
     <section class="tcard rpctl"><h2>Results by standard</h2>
@@ -502,7 +542,7 @@ details summary{cursor:pointer;color:var(--blue2);font-size:13px;margin-top:8px}
   </div></div>
 </section>
 <section class="tpage" id="rpage" hidden aria-label="My roster">
-  <header class="topbar"><div class="wm">SPITZ <span>CHECKPOINT</span><small>My roster</small></div><div class="sp"></div>
+  <header class="topbar tb-red"><div class="wm"><svg viewBox="0 0 32 28" aria-hidden="true"><path d="M3 12C3 5 9 2 16 2s13 3 13 10z" fill="#f2a33a"/><g fill="#fff3c4"><ellipse cx="10" cy="6.5" rx="1.1" ry=".6"/><ellipse cx="16" cy="5" rx="1.1" ry=".6"/><ellipse cx="21.5" cy="7" rx="1.1" ry=".6"/><ellipse cx="13" cy="9" rx="1.1" ry=".6"/><ellipse cx="19" cy="9.5" rx="1.1" ry=".6"/></g><path d="M2 12.5h28l-2.5 3-3-2-3 2.5-3-2.5-3 2.5-3-2.5-3 2.5-3-2z" fill="#5fbf3a"/><rect x="2.5" y="15" width="27" height="3" rx="1.2" fill="#f7d13b"/><rect x="2" y="17.5" width="28" height="4.2" rx="2" fill="#7a3b1d"/><path d="M3 22h26c0 2.6-2.4 4-5 4H8c-2.6 0-5-1.4-5-4z" fill="#e8913a"/></svg>SPITZ <span>CHECKPOINT</span><small>My roster</small></div><div class="sp"></div>
     <button class="btn pri" id="rpBack">Back to dashboard</button></header>
   <div class="tbody"><div class="tcol">
     <section class="tcard" id="rsForCard" hidden><div class="row fr" style="margin-top:0"><label class="fl">Roster for<select id="rsFor"></select></label></div>
@@ -519,7 +559,7 @@ details summary{cursor:pointer;color:var(--blue2);font-size:13px;margin-top:8px}
   </div></div>
 </section>
 <section class="tpage" id="oepage" hidden aria-label="Write a test">
-  <header class="topbar"><div class="wm">SPITZ <span>CHECKPOINT</span><small id="oeHead">Make a test</small></div><div class="sp"></div>
+  <header class="topbar tb-red"><div class="wm"><svg viewBox="0 0 32 28" aria-hidden="true"><path d="M3 12C3 5 9 2 16 2s13 3 13 10z" fill="#f2a33a"/><g fill="#fff3c4"><ellipse cx="10" cy="6.5" rx="1.1" ry=".6"/><ellipse cx="16" cy="5" rx="1.1" ry=".6"/><ellipse cx="21.5" cy="7" rx="1.1" ry=".6"/><ellipse cx="13" cy="9" rx="1.1" ry=".6"/><ellipse cx="19" cy="9.5" rx="1.1" ry=".6"/></g><path d="M2 12.5h28l-2.5 3-3-2-3 2.5-3-2.5-3 2.5-3-2.5-3 2.5-3-2z" fill="#5fbf3a"/><rect x="2.5" y="15" width="27" height="3" rx="1.2" fill="#f7d13b"/><rect x="2" y="17.5" width="28" height="4.2" rx="2" fill="#7a3b1d"/><path d="M3 22h26c0 2.6-2.4 4-5 4H8c-2.6 0-5-1.4-5-4z" fill="#e8913a"/></svg>SPITZ <span>CHECKPOINT</span><small id="oeHead">Make a test</small></div><div class="sp"></div>
     <select id="oeQuick" class="oequick" aria-label="Write a question"></select>
     <button class="btn" id="oeBankBtn" aria-pressed="false" title="Released STAAR questions to add to your test">Question bank</button>
     <button class="btn pri" id="oeBack">Back to My sessions</button></header>
@@ -656,6 +696,7 @@ const toScore=s=>s.q.filter(q=>q&&q[9]).length;   // written answers still waiti
 const sLvl=s=>!s.submitted&&!(s.answered>0)?['','No answers yet','#c3ccd6']:staarLvl(s.test,s.score||0,s.max||0);   /* never started: no STAAR level */
 function lvPill(s){ const l=sLvl(s), w=toScore(s);
   if(!s.submitted&&!(s.answered>0)) return '<span class="rs" title="No answers yet">–</span>';   /* not started: no level yet */
+  if(!s.submitted) return '<span class="lvwait" title="The STAAR level shows once the test is submitted">After submit</span>';   /* still testing: a level from a few answers misleads (Kody 11/1) */
   if(w) return `<span class="lvp lvw" title="${w} written answer${w>1?'s':''} to score first. Level so far: ${esc(l[1])}">✎ Score ${w} first</span>`;
   return `<span class="lvp${s.submitted?'':' lvs'}" style="background:${l[2]}" title="${esc(l[1])}${s.submitted?'':' so far'}${l[3]?' (estimate: this test has no row in the campus standards)':''}">${esc(l[1])}${l[3]?' <i>est.</i>':''}</span>`; }
 const IDLE_MS=3*60*1000, NOSIG_MS=100*1000, POLL_MS=15000;
@@ -768,12 +809,12 @@ function renderMs(){ const box=$('#msList'); if(!DATA){ box.innerHTML='<p class=
   if(!L.length){ box.innerHTML='<p class="hint">No sessions yet. Make one above.</p>'; return; }
   const RV=['Score only','Score + review','Nothing'];
   box.innerHTML=`<div style="overflow-x:auto"><table class="t"><tr><th>Session ID</th><th>Test</th>${admin?'<th>Teacher</th>':''}<th>Made</th><th>Note</th><th>Status</th><th>After they submit</th><th></th></tr>${L.map(s=>`<tr data-sid="${esc(s.id)}">
-    <td><b>${esc(short(s.id))}</b></td><td>${esc(testTitle(s.test))}</td>${admin?`<td>${esc(teaName(s.teacher))}</td>`:''}<td class="rs">${esc(fmtDay(s.created))}</td><td class="rs">${esc(s.notes)}</td>
+    <td><b>${esc(short(s.id))}</b>${s.open?` <button class="btn" data-showid="${esc(s.id)}" title="Show this Session ID big, for the projector">Show</button>`:''}</td><td>${esc(testTitle(s.test))}</td>${admin?`<td>${esc(teaName(s.teacher))}</td>`:''}<td class="rs">${esc(fmtDay(s.created))}</td><td class="rs">${esc(s.notes)}</td>
     <td><span class="op${s.open?'':' cl'}">${s.open?'Open':'Closed'}</span> <button class="btn" data-ms="${s.open?'Closed':'Open'}">${s.open?'Close':'Reopen'}</button></td>
     <td><select class="rv" aria-label="After they submit">${RV.map(v=>`<option${v===s.review?' selected':''}>${v}</option>`).join('')}</select></td>
     <td><div class="acts"><button class="btn" data-rsc="1" title="Score every saved answer again with the current answer key">Re-score</button><button class="btn" data-mr="1" title="Add everyone who signed in to this session to your roster">Add to roster</button>${s.open?'':'<button class="btn" data-arc="1" title="Move this session and its results to the archive Sheet. You can still see them under Results from.">Archive</button>'}<button class="btn" data-rms="1" title="Take this session off the dashboard. Students' results stay in the Sheet.">Remove</button></div></td></tr>`).join('')}</table></div>`;
   [...new Set(L.map(s=>s.test))].filter(t=>!META[t]).forEach(t=>loadMeta(t).then(()=>{ if(!$('#mpage').hidden) renderMs(); })); }
-$('#msList').addEventListener('click',async e=>{ const b=e.target.closest('button'); if(!b) return; const id=b.closest('tr').dataset.sid;
+$('#msList').addEventListener('click',async e=>{ const b=e.target.closest('button'); if(!b||b.dataset.showid) return; const id=b.closest('tr').dataset.sid;
   if(b.dataset.arc){ const s=DATA.sessions.find(x=>x.id===id);
     if(!await ask('Archive session '+short(id)+'?',`<p>${esc(s?testTitle(s.test):'')}</p><p>Its results move to this school year's archive Sheet. You can still see them on the dashboard: Results from › the year.</p>`,'Archive')) return;
     b.disabled=true; await runArchive({ids:[id]},$('#msMsg')); b.disabled=false; return; }
@@ -799,7 +840,7 @@ $('#nsGo').onclick=async()=>{ const test=$('#nsTest').value; if(!test) return sa
   const b=$('#nsGo'); b.disabled=true; b.textContent='Setting up your class…'; say($('#nsMsg'),'Making the session and getting your roster ready. This can take up to a minute.','');
   try{ const r=await call('stcNewSession',{test,review:$('#nsReview').value,notes:$('#nsNote').value.trim()},150000);
     $('#nsNote').value=''; await load(); selSes=new Set([r.id]); keep('ses',[r.id]); renderMs(); $('#nsMsg').textContent='';
-    dlg('New session',`<p>${esc(testTitle(test))}</p><div class="sid">${esc(short(r.id))}</div><p class="hint">Students type this Session ID to sign in. It is open now; close it in My sessions when the class is done.</p>`); }
+    dlg('New session',`<p>${esc(testTitle(test))}</p><div class="sid">${esc(short(r.id))}</div><p class="hint">Students type this Session ID to sign in. It is open now; close it in My sessions when the class is done.</p><p><button class="btn" data-showid="${esc(r.id)}">Show it big for the projector</button></p>`); }
   catch(e){ say($('#nsMsg'),'Not made: '+errText(e),'err'); }
   finally{ b.disabled=false; b.textContent='Make the session'; } };
 /* ---------- Reports: one test across every session it was given in (the admin: all teachers), grouped by teacher or class period.
@@ -2077,10 +2118,12 @@ document.addEventListener('pointerdown',e=>{ if(sesDraft&&!e.target.closest('#se
 document.addEventListener('keydown',e=>{ if(e.key==='Escape'&&sesDraft){ closeSes(false); $('#sesBtn').focus(); } });
 function renderTiles(L){ const c={work:0,idle:0,away:0,nosig:0,paused:0,locked:0,sub:0,end:0,ns:0}; L.forEach(s=>c[stat(s)[0]]++);
   const subs=L.filter(s=>s.submitted), avg=subs.length?Math.round(subs.reduce((a,s)=>a+(s.pct||0),0)/subs.length):null, lc=LEVELS.map(l=>subs.filter(s=>!toScore(s)&&sLvl(s)[4]===l[1]).length), leveled=lc.reduce((a,b)=>a+b,0), meets=lc[0]+lc[1];
-  const T=(v,l)=>`<div class="tile"><b>${v}</b><span>${l}</span></div>`;
-  $('#tiles').innerHTML=(c.ns?T((L.length-c.ns)+' / '+L.length,'Signed in'):T(L.length,'Students'))+T(c.work+c.end,'Working')+T(c.idle,'Idle 3m+')+T(c.away+c.nosig,'Away / no signal')+T(c.paused+c.locked,'Paused / stopped')+T(c.sub,'Submitted')
-    +T(avg==null?'–':avg+'%','Avg score (submitted)')+T(leveled?Math.round(100*meets/leveled)+'%':'–','Meets or above')
-    +`<div class="tile" title="Submitted tests by STAAR level${subs.length>leveled?'. '+(subs.length-leveled)+' still have written answers to score':''}"><b>${lc.map((n,i)=>`<i style="font-style:normal;color:${LEVELS[i][2]}">${n}</i>`).join(' · ')}</b><span>Masters · Meets · Approaches · Did Not Meet</span></div>`; }
+  const T=(v,l,cls,tip)=>`<div class="tile${cls?' '+cls:''}"${tip?` title="${esc(tip)}"`:''}><b>${v}</b><span>${l}</span></div>`;
+  /* the tiles a teacher needs at a glance; Idle, Away and Paused only show up when someone is (11/1: fewer zeros) */
+  $('#tiles').innerHTML=(c.ns?T((L.length-c.ns)+' / '+L.length,'Signed in'):T(L.length,'Students'))+T(c.work+c.end,'Working','',c.end?c.end+' at the end screen, not submitted yet':'')
+    +(c.idle?T(c.idle,'Idle 3m+','alert','No clicks or typing for 3 minutes or more'):'')+(c.away+c.nosig?T(c.away+c.nosig,'Away / no signal','alert','Left the test tab, or the Chromebook stopped saving'):'')+(c.paused+c.locked?T(c.paused+c.locked,'Paused / stopped','alert'):'')
+    +T(c.sub,'Submitted')+T(avg==null?'–':avg+'%','Avg score','','Average score of submitted tests')
+    +`<div class="tile lvt" title="Submitted tests by STAAR level${subs.length>leveled?'. '+(subs.length-leveled)+' still have written answers to score':''}"><b>${lc.map((n,i)=>`<i style="font-style:normal;color:${LEVELS[i][2]}">${n}</i>`).join(' · ')}<small>${leveled?Math.round(100*meets/leveled)+'% Meets or above':'Levels show as tests are submitted'}</small></b><span>Masters · Meets · Approaches · Did Not Meet</span></div>`; }
 function renderBulk(){ $('#bulk').hidden=!sel.size; $('#bulkN').textContent=sel.size+' selected'; }
 const ICON={pause:'<svg viewBox="0 0 14 14"><rect x="3" y="2" width="3" height="10" rx="1" fill="currentColor"/><rect x="8" y="2" width="3" height="10" rx="1" fill="currentColor"/></svg>',
   lock:'<svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="2.5" y="6" width="9" height="6.5" rx="1.3" fill="currentColor" stroke="none"/><path d="M4.5 6V4.3a2.5 2.5 0 015 0V6"/></svg>'};
@@ -2100,24 +2143,39 @@ function renderLive(L,tests){
       <td class="fx c2">${esc(s.period==='G'?'G':s.period)}</td>
       <td class="fx c3"><span class="pill p-${k}" title="${esc(label+(s.away?' · left the tab '+s.away+'×':''))}">${esc(label)}</span></td>
       <td class="fx c4"><div class="prog"><i><b style="width:${Math.round(100*ans/n)}%"></b></i><em>${ans}/${n}</em></div></td>
-      <td class="fx c5" title="${esc(l[1])}"><span class="lv" style="background:${l[2]}"></span>${s.score||0}/${s.max||0} <span class="rs">${s.pct||0}%</span></td>
+      <td class="fx c5"${s.submitted?` title="${esc(l[1])}"`:''}><span class="lv" style="background:${s.submitted?l[2]:'#c3ccd6'}"></span>${s.score||0}/${s.max||0} <span class="rs">${s.pct||0}%</span></td>
       <td class="fx cL">${lvPill(s)}</td>
       <td class="fx c6">${s.minutes!==''&&s.minutes!=null?Math.round(s.minutes)+'m':''}</td>
-      <td class="fx c7"><div class="acts">${s.submitted||!canAct(s.session)?'':`<button class="ib" data-act="${s.control==='paused'?'resume':'pause'}" data-k="${esc(s.key)}" aria-pressed="${s.control==='paused'}" title="${s.control==='paused'?'Resume':'Pause'}">${ICON.pause}</button><button class="ib lk" data-act="${s.control==='locked'?'unlock':'lock'}" data-k="${esc(s.key)}" aria-pressed="${s.control==='locked'}" title="${s.control==='locked'?'Unlock':'Stop test'}">${ICON.lock}</button>`}</div></td>
+      <td class="fx c7"><div class="acts">${s.submitted||!canAct(s.session)||k==='ns'?'':`<button class="ib" data-act="${s.control==='paused'?'resume':'pause'}" data-k="${esc(s.key)}" aria-pressed="${s.control==='paused'}" title="${s.control==='paused'?'Resume':'Pause'}">${ICON.pause}</button><button class="ib lk" data-act="${s.control==='locked'?'unlock':'lock'}" data-k="${esc(s.key)}" aria-pressed="${s.control==='locked'}" title="${s.control==='locked'?'Unlock':'Stop test'}">${ICON.lock}</button>`}</div></td>
       ${Array.from({length:nq},(_,i)=>`<td class="q">${cellHtml(s,i,cellMode)}</td>`).join('')}</tr>`; }).join('');
   const foot=`<tr><td class="fx c0"></td><td class="fx c1" style="font-weight:700">% correct</td><td class="fx c2"></td><td class="fx c3"></td><td class="fx c4"></td><td class="fx c5"></td><td class="fx cL"></td><td class="fx c6"></td><td class="fx c7"></td>${Array.from({length:nq},(_,i)=>{
       const a=L.filter(s=>s.q[i]&&s.q[i][0]!=null); if(!a.length) return '<td class="q"></td>';
       const p=Math.round(100*a.reduce((t,s)=>t+s.q[i][0],0)/a.reduce((t,s)=>t+s.q[i][1],0)); return `<td class="q qfoot" style="color:${p>=70?'var(--ok)':p>=40?'#9a6b00':'var(--no)'}" title="${a.length} answered">${p}</td>`; }).join('')}</tr>`;
   $('#card').innerHTML=`<div style="display:flex;justify-content:space-between;align-items:center;gap:10px;padding:8px 10px;border-bottom:1px solid var(--line);position:sticky;left:0;flex-wrap:wrap">
       <div class="legend"><span><span class="cell ok"></span>Correct</span><span><span class="cell part"></span>Partly</span><span><span class="cell no"></span>Incorrect</span><span><span class="cell bl"></span>Seen, blank</span>${L.some(s=>s.q.some(q=>q&&q[9]))?'<span><span class="cell wr">✎</span>Needs scoring</span>':''}<span><span class="cell un"></span>Not seen</span><span><span class="cell un cur"></span>On it now</span><span><span class="cell un fl"></span>Flagged</span></div>
+      <div class="qnav" id="qnav" hidden><span class="lab">Questions</span><button class="btn" data-qnav="-1" title="Earlier questions" aria-label="Earlier questions">◀</button><button class="btn" data-qnav="1" title="Later questions" aria-label="Later questions">▶</button></div>
+      <button class="btn" id="gbCsv" title="Each student's score and STAAR level (the students shown now), for your gradebook">Download scores</button>
       <div class="grp"><span class="lab">Cells show</span><div class="seg" id="cellSeg"><button data-v="score" aria-pressed="${cellMode==='score'}">Correctness</button><button data-v="time" aria-pressed="${cellMode==='time'}">Time</button></div></div></div>
     <table class="grid${cellMode==='time'?' tmode':''}"><thead>${head}</thead><tbody>${rows}</tbody><tfoot>${foot}</tfoot></table>`;
   const all=$('#allBox'); all.checked=L.length>0&&L.every(s=>sel.has(s.key)); all.indeterminate=!all.checked&&L.some(s=>sel.has(s.key));
   all.onchange=()=>{ L.forEach(s=>all.checked?sel.add(s.key):sel.delete(s.key)); render(); };
   document.querySelectorAll('.rowBox').forEach(b=>b.onchange=()=>{ b.checked?sel.add(b.dataset.k):sel.delete(b.dataset.k); renderBulk(); const a=$('#allBox'); a.checked=L.every(s=>sel.has(s.key)); a.indeterminate=!a.checked&&sel.size>0; });
   document.querySelectorAll('#cellSeg button').forEach(b=>b.onclick=()=>{ cellMode=b.dataset.v; render(); });
-  pinCols();
+  pinCols(); qnavSet(); $('#gbCsv').onclick=()=>gradebook(L);
 }
+/* Download scores: one row per student shown (period and name filters apply), for the gradebook (11/1) */
+function gradebook(L){ const q=v=>{ v=v==null?'':String(v); return /[",\n]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v; }, d=v=>v?new Date(v).toLocaleString([], {year:'numeric',month:'numeric',day:'numeric',hour:'numeric',minute:'2-digit'}):'';
+  const rows=[['Name','Period','Session ID','Test','Status','Answered','Questions','Points','Max points','Percent','STAAR level','Submitted','Minutes']];
+  L.forEach(s=>{ const n=Math.max(s.q.length,(meta(s.test)||{items:[]}).items.length), l=sLvl(s), w=toScore(s);
+    rows.push([s.name,perName(s.period),short(s.session),testTitle(s.test),stat(s)[1],s.answered||0,n,s.score||0,s.max||0,s.submitted||s.answered>0?(s.pct||0):'',s.submitted?(w?'Score '+w+' written first':l[1]+(l[3]?' (estimate)':'')):'',d(s.submitted),s.minutes||'']); });
+  const tests=[...new Set(L.map(s=>s.test))], name=(tests.length===1?testTitle(tests[0]):'Checkpoint')+' scores '+new Date().toISOString().slice(0,10);
+  const blob=new Blob(['\ufeff'+rows.map(r=>r.map(q).join(',')).join('\r\n')],{type:'text/csv'}), a=document.createElement('a');
+  a.href=URL.createObjectURL(blob); a.download=name.replace(/[\\/:*?"<>|]+/g,'-')+'.csv'; document.body.appendChild(a); a.click(); a.remove(); setTimeout(()=>URL.revokeObjectURL(a.href),60000); }
+/* the question grid scrolls sideways under the frozen name columns: a scroll bar that always shows (Chromebooks hide it until you touch it) plus ◀ ▶ */
+function qnavSet(){ const n=$('#qnav'), c=$('#card'); if(n) n.hidden=!(c.scrollWidth>c.clientWidth+2); }
+function frozenW(){ const L=[...document.querySelectorAll('table.grid thead th.fx')]; return L.length?L[L.length-1].getBoundingClientRect().right-$('#card').getBoundingClientRect().left:0; }
+document.addEventListener('click',e=>{ const b=e.target.closest('[data-qnav]'); if(!b) return; const c=$('#card'); c.scrollBy({left:+b.dataset.qnav*Math.max(120,c.clientWidth-frozenW()-60),behavior:'smooth'}); });
+addEventListener('resize',()=>{ if($('#qnav')) qnavSet(); });
 /* frozen columns: measure the header cells and give every frozen cell its left offset */
 function pinCols(){ const g=document.querySelector('table.grid'); if(!g) return; let x=0, css='';   /* one CSS rule per column, not a style on every cell: hundreds of rows stay quick */
   g.querySelectorAll('thead th.fx').forEach(th=>{ const c=[...th.classList].find(k=>/^c[0-9L]$/.test(k)); if(c) css+=`table.grid .fx.${c}{left:${x}px}`; x+=th.getBoundingClientRect().width; });
@@ -2138,20 +2196,35 @@ function renderStd(L,tests){
       return `<tr><td>${c}. ${esc(m&&m.categories?m.categories[c]:'')}</td><td class="n">${P.length}</td><td class="n">${e}/${mx}</td><td>${pctBar(e,mx)}</td></tr>`; }).join('')}</table></section>`;
   const tk={}; per.forEach(p=>{ if(!p.teks) return; (tk[p.teks]=tk[p.teks]||{teks:p.teks,rs:p.rs,cat:p.cat,qs:[],e:0,mx:0}); const t=tk[p.teks]; t.qs.push(p.i+1); t.e+=p.e; t.mx+=p.mx; });
   const tks=Object.values(tk).sort((a,b)=>(a.mx?a.e/a.mx:1)-(b.mx?b.e/b.mx:1));
-  h+=`<section><h2>By standard (weakest first)</h2><table class="t"><tr><th>TEKS</th><th>Type</th><th>Questions</th><th style="width:38%">Class result</th></tr>${tks.map(t=>`<tr><td><b>${esc(t.teks)}</b></td><td class="rs">${esc(t.rs)}</td><td class="rs">${t.qs.join(', ')}</td><td>${pctBar(t.e,t.mx)}</td></tr>`).join('')}</table></section>`;
+  /* reteach groups (11/1): click a TEKS for the students under 70% on it and the ones who have it */
+  const grp=t=>{ const need=[], got=[]; L1.forEach(st=>{ let e=0,mx=0; t.qs.forEach(n=>{ const q=st.q[n-1]; if(q&&(subOnly||q[0]!=null)){ e+=q[0]||0; mx+=q[1]; } }); if(!mx) return; const p=Math.round(100*e/mx); (p<RT_CUT?need:got).push({st,p}); });
+    need.sort((a,b)=>a.p-b.p||String(a.st.name).localeCompare(String(b.st.name))); got.sort((a,b)=>String(a.st.name).localeCompare(String(b.st.name))); return {need,got}; };
+  const who=L=>L.map(x=>`<button class="nm" data-open="${esc(x.st.key)}">${esc(x.st.name)}</button> <span class="rs">${x.st.period&&x.st.period!=='G'?'('+esc(x.st.period)+') ':''}${x.p}%</span>`).join(', ')||'<span class="rs">Nobody</span>';
+  h+=`<section><h2>By standard (weakest first)</h2><p class="note" style="margin:-4px 0 6px">Click a standard for its reteach group: the students under ${RT_CUT}% on it.</p><table class="t"><tr><th>TEKS</th><th>Type</th><th>Questions</th><th style="width:38%">Class result</th></tr>${tks.map(t=>{ const o=STDOPEN.has(t.teks), g=grp(t);
+    return `<tr class="rtx${o?' open':''}" data-rt="${esc(t.teks)}" tabindex="0" aria-expanded="${o}"><td><b>${esc(t.teks)}</b><div class="rs">${g.need.length} to reteach</div></td><td class="rs">${esc(t.rs)}</td><td class="rs">${t.qs.join(', ')}</td><td>${pctBar(t.e,t.mx)}</td></tr>`
+      +(o?`<tr class="rtd"><td colspan="4"><div class="rtcols"><div><h4>Reteach (${g.need.length})</h4><div class="rtg">${who(g.need)}</div></div><div><h4>Has it (${g.got.length})</h4><div class="rtg">${who(g.got)}</div></div></div>${g.need.length?`<p style="margin:6px 0 0"><button class="btn" data-rtcopy="${esc(t.teks)}">Copy the reteach names</button> <span class="rs rtmsg"></span></p>`:''}</td></tr>`:''); }).join('')}</table></section>`;
+  STDGRP=t=>grp(tk[t]);
   h+=`<section class="full"><h2>Students by category</h2><p class="note">Percent of points in each reporting category${subOnly?'':' (answered questions only for tests in progress)'}.</p><table class="t hm"><tr><th>Student</th><th>Per.</th><th>Total</th>${cats.map(c=>`<th title="${esc(m&&m.categories?m.categories[c]:'')}">Cat. ${c}</th>`).join('')}</tr>${L1.slice().sort((a,b)=>String(a.name).localeCompare(String(b.name))).map(s=>{
       const cell=(e,mx)=>{ if(!mx) return '<td class="hc">–</td>'; const p=Math.round(100*e/mx), l=lvl(p); return `<td class="hc" style="background:color-mix(in srgb, ${l[2]} 18%, white)">${p}%</td>`; };
       const tot=s.q.reduce((a,q)=>{ if(q&&(subOnly||q[0]!=null)){ a[0]+=q[0]||0; a[1]+=q[1]; } return a; },[0,0]);
       return `<tr><td><button class="nm" data-open="${esc(s.key)}">${esc(s.name)}</button></td><td>${esc(s.period)}</td>${cell(tot[0],tot[1])}${cats.map(c=>{ let e=0,mx=0; s.q.forEach((q,i)=>{ if(q&&qinfo(s,i).cat===c&&(subOnly||q[0]!=null)){ e+=q[0]||0; mx+=q[1]; } }); return cell(e,mx); }).join('')}</tr>`; }).join('')}</table></section>`;
   h+=`<section class="full"><h2>By question</h2><table class="t"><tr><th>#</th><th>TEKS</th><th>Category</th><th>Avg. time</th><th style="width:45%">Class result</th></tr>${per.map(p=>`<tr><td><b>${p.i+1}</b></td><td>${esc(p.teks)} <span class="rs">${esc(p.rs)}</span></td><td class="rs">${p.cat||''}</td><td class="n">${p.avgMs?fmtMs(p.avgMs):'–'}</td><td>${pctBar(p.e,p.mx)}</td></tr>`).join('')}</table></section></div>`;
   $('#card').innerHTML=h; bindStd(); }
-function bindStd(){ const b=$('#subOnly'); if(b) b.onchange=()=>{ keep('subOnly',b.checked); render(); }; }
+const STDOPEN=new Set(), RT_CUT=70; let STDGRP=null;
+function bindStd(){ const b=$('#subOnly'); if(b) b.onchange=()=>{ keep('subOnly',b.checked); render(); };
+  document.querySelectorAll('.std tr.rtx').forEach(tr=>{ const t=()=>{ const k=tr.dataset.rt; STDOPEN.has(k)?STDOPEN.delete(k):STDOPEN.add(k); render(); };
+    tr.onclick=e=>{ if(!e.target.closest('button')) t(); }; tr.onkeydown=e=>{ if(e.key==='Enter'||e.key===' '){ e.preventDefault(); t(); } }; });
+  document.querySelectorAll('[data-rtcopy]').forEach(x=>x.onclick=async()=>{ const g=STDGRP&&STDGRP(x.dataset.rtcopy), m=x.parentNode.querySelector('.rtmsg'); if(!g) return;
+    const txt=x.dataset.rtcopy+' reteach: '+g.need.map(y=>y.st.name+(y.st.period&&y.st.period!=='G'?' ('+y.st.period+')':'')).join(', ');
+    try{ await navigator.clipboard.writeText(txt); m.textContent='Copied.'; }catch(e){ const ta=document.createElement('textarea'); ta.value=txt; document.body.appendChild(ta); ta.select(); try{ document.execCommand('copy'); m.textContent='Copied.'; }catch(z){ m.textContent=txt; } ta.remove(); } }); }
 
 /* ---------- questions view: class result, blanks and the most common wrong answer for each question ----------
    Answers come from stcDash (q[8], the student's answer as JSON text). Answer wording comes from the test's own test.js (metaOf). */
 const QV={open:new Set(), order:store('qorder')||'weak', td:{}, frame:null, tok:null, ready:null, onReady:null};
 const qvDP=new DOMParser();
-function qvTxt(h){ return (qvDP.parseFromString(String(h==null?'':h).replace(/<span class="frac"><span>([\s\S]*?)<\/span><span>([\s\S]*?)<\/span><\/span>/g,'($1)/($2)').replace(/\{GRAPH\}/g,' ').replace(/<\/(td|th|p|div|li|tr)>|<br\s*\/?>/gi,' $&'),'text/html').body.textContent||'').replace(/\s+/g,' ').trim(); }
+function qvTxt(h){ h=String(h==null?'':h); if(/<svg[\s>]/i.test(h)&&!(qvDP.parseFromString(h.replace(/<svg[\s\S]*?<\/svg>/gi,''),'text/html').body.textContent||'').trim()) return '(a graph)';   /* a choice that is only a picture */
+  h=h.replace(/<svg[\s\S]*?<\/svg>/gi,' (graph) ').replace(/<img\b[^>]*>/gi,' (picture) ').replace(/<sup>([\s\S]*?)<\/sup>/gi,'^$1');
+  return (qvDP.parseFromString(h.replace(/<span class="frac"><span>([\s\S]*?)<\/span><span>([\s\S]*?)<\/span><\/span>/g,'($1)/($2)').replace(/\{GRAPH\}/g,' ').replace(/<\/(td|th|p|div|li|tr)>|<br\s*\/?>/gi,' $&'),'text/html').body.textContent||'').replace(/\s+/g,' ').trim(); }
 const qvN=v=>{ const x=+v; return isFinite(x)?String(Math.round(x*1000)/1000).replace(/^-/,'−'):String(v); };
 const qvPt=P=>`(${qvN(P[0])}, ${qvN(P[1])})`;
 const qvCut=(t,n)=>t.length>n?t.slice(0,n-1)+'…':t;
@@ -2289,17 +2362,32 @@ $('#qvClose').onclick=qvClose; $('#qvVeil').addEventListener('click',e=>{ if(e.t
 addEventListener('keydown',e=>{ if(e.key==='Escape'&&!$('#qvVeil').hidden) qvClose(); });
 
 /* ---------- student drawer ---------- */
+/* the student's own answers for the drawer: the live view doesn't fetch answers (they're the big column), so the drawer asks for this student's session once */
+const DANS={}, DANS_BUSY={};
+function drawerAns(s){ const have=s.q.some(q=>q&&q[8]); if(have) return s.q.map(q=>q&&q[8]||'');
+  const c=DANS[s.key]; if(c&&c.t>=(s.saved||0)) return c.a;
+  if(!DANS_BUSY[s.session]){ DANS_BUSY[s.session]=1;
+    call('stcDash',{sessions:[s.session],answers:true,archive:arc},60000).then(r=>{ (r&&r.students||[]).forEach(x=>{ DANS[x.key]={t:x.saved||0,a:x.q.map(q=>q&&q[8]||'')}; });
+      if(openKey&&DANS[openKey]) openDrawer(openKey,true); }).catch(()=>{}).finally(()=>{ delete DANS_BUSY[s.session]; }); }
+  return c?c.a:null; }
+function drawerAnsText(it,raw){ if(!raw) return ''; let a; try{ a=JSON.parse(raw); }catch(e){ return ''; }
+  if(it&&it.type==='text'){ const t=(new DOMParser().parseFromString(String(a),'text/html').body.textContent||'').trim(); return qvCut(t,140); }
+  return qvAns(it,a); }
 function openDrawer(key,quiet){ const s=DATA&&DATA.students.find(x=>x.key===key); if(!s){ closeDrawer(); return; } openKey=key;
   const [k,label]=stat(s), m=meta(s.test), l=sLvl(s), w=toScore(s), d=v=>v?new Date(v).toLocaleString([], {month:'short',day:'numeric',hour:'numeric',minute:'2-digit'}):'–';
   $('#dName').textContent=s.name+' · '+(s.period==='G'?'Guest':'Period '+s.period);
-  $('#dBody').innerHTML=`<div class="dact">${s.submitted||!canAct(s.session)?'':`<button class="btn" data-act="${s.control==='paused'?'resume':'pause'}" data-k="${esc(s.key)}">${s.control==='paused'?'Resume':'Pause'}</button><button class="btn warn" data-act="${s.control==='locked'?'unlock':'lock'}" data-k="${esc(s.key)}">${s.control==='locked'?'Unlock':'Stop test'}</button>`}</div>
+  const its=qvItems(s.test), ans=drawerAns(s), can=canAct(s.session)&&!arc;
+  if(its===null) metaOf(s.test).then(()=>setTimeout(()=>{ if(openKey===key) openDrawer(key,true); },50)).catch(()=>{});
+  $('#dBody').innerHTML=`<div class="dact">${s.submitted||!can||k==='ns'?'':`<button class="btn" data-act="${s.control==='paused'?'resume':'pause'}" data-k="${esc(s.key)}">${s.control==='paused'?'Resume':'Pause'}</button><button class="btn warn" data-act="${s.control==='locked'?'unlock':'lock'}" data-k="${esc(s.key)}">${s.control==='locked'?'Unlock':'Stop test'}</button>`}${can&&s.submitted?`<button class="btn" data-reopen="reopen" data-k="${esc(s.key)}" title="Give the test back: their answers stay and they go on where they left off">Reopen test</button>`:''}${can&&(s.submitted||s.answered>0)?`<button class="btn warn" data-reopen="retake" data-k="${esc(s.key)}" title="Erase their answers so they can take the test again from the start">Retake</button>`:''}</div>
     <div class="kv"><b>Status</b><span><span class="pill p-${k}">${esc(label)}</span></span><b>Test</b><span>${esc(m?m.title:s.test)} · ${esc(s.session)}</span>
-    <b>Score</b><span><span class="lv" style="background:${l[2]}"></span>${s.score||0} of ${s.max||0} points (${s.pct||0}%) · ${esc(l[1])}${l[3]?' (estimate)':''}${(w||!s.submitted)&&l[0]!==''?' so far':''}${w?` · ${w} written answer${w>1?'s':''} to score`:''}</span>
+    <b>Score</b><span><span class="lv" style="background:${s.submitted?l[2]:'#c3ccd6'}"></span>${s.score||0} of ${s.max||0} points (${s.pct||0}%)${s.submitted?` · ${esc(l[1])}${l[3]?' (estimate)':''}${w?' so far':''}`:' · STAAR level shows once submitted'}${w?` · ${w} written answer${w>1?'s':''} to score`:''}</span>
     <b>Answered</b><span>${s.answered||0} · on question ${esc(s.item||'–')}</span><b>Started</b><span>${d(s.started)}</span><b>Submitted</b><span>${d(s.submitted)}</span>
     <b>Time</b><span>${s.minutes||0} min · left the tab ${s.away||0}× (${s.awayMin||0} min)${s.rclicks?` · tried to right-click ${s.rclicks}× (blocked)`:''}</span><b>Last input</b><span>${d(s.input)}</span><b>Last save</b><span>${d(s.saved)}</span><b>Student code</b><span>${esc(s.code)}</span></div>
-    <table class="t"><tr><th>#</th><th>Result</th><th>TEKS</th><th>Time</th><th>Visits</th><th>Changes</th></tr>${s.q.map((q,i)=>{ const qi=qinfo(s,i), [pts,mx,ms,vis,ch,fl]=q;
-      const r=pts==null?(vis?'Blank':'Not seen'):pts>=mx?'Correct':pts>0?`Partly (${pts}/${mx})`:'Incorrect';
-      return `<tr><td><b>${i+1}</b>${fl?' ⚑':''}</td><td><span class="cell ${pts==null?(vis?'bl':'un'):pts>=mx?'ok':pts>0?'part':'no'}" style="display:inline-grid;width:14px;height:12px;vertical-align:-2px;margin-right:4px"></span>${r}</td><td class="rs">${esc(qi.teks)}</td><td class="n">${ms?fmtMs(ms):'–'}</td><td class="n">${vis}</td><td class="n">${ch}</td></tr>`; }).join('')}</table>`;
+    <table class="t"><tr><th>#</th><th>Result</th><th>Their answer</th><th>TEKS</th><th>Time</th><th title="Visits">Vis.</th><th title="Times they changed the answer">Chg.</th></tr>${s.q.map((q,i)=>{ const qi=qinfo(s,i), [pts,mx,ms,vis,ch,fl]=q;
+      const r=q[9]?'To score':pts==null?(vis?'Blank':'Not seen'):pts>=mx?'Correct':pts>0?`Partly (${pts}/${mx})`:'Incorrect';
+      const at=ans&&ans[i]?drawerAnsText(its&&its[i],ans[i]):'', aCell=at?`<td class="dans" title="${esc(at)}">${esc(at)}</td>`:`<td class="rs">${pts==null&&!q[9]?'':ans===null&&!arc?'…':'–'}</td>`;
+      return `<tr><td><button class="nm" data-dsee="${i}" title="See question ${i+1}">${i+1}</button>${fl?' ⚑':''}</td><td style="white-space:nowrap"><span class="cell ${q[9]?'wr':pts==null?(vis?'bl':'un'):pts>=mx?'ok':pts>0?'part':'no'}" style="display:inline-grid;width:14px;height:12px;vertical-align:-2px;margin-right:4px"></span>${r}</td>${aCell}<td class="rs">${esc(qi.teks)}</td><td class="n">${ms?fmtMs(ms):'–'}</td><td class="n">${vis}</td><td class="n">${ch}</td></tr>`; }).join('')}</table>`;
+  $('#dBody').querySelectorAll('[data-dsee]').forEach(b=>b.onclick=()=>qvShow(s.test,+b.dataset.dsee));
   $('#drawer').hidden=false; if(!quiet) $('#dClose').focus(); }
 function closeDrawer(){ openKey=null; $('#drawer').hidden=true; }
 $('#dClose').onclick=closeDrawer;
@@ -2321,7 +2409,21 @@ async function control(action,keys){ keys=keys.filter(k=>{ const s=DATA.students
   else go(); }
 document.addEventListener('click',e=>{ const a=e.target.closest('[data-act]'); if(a){ control(a.dataset.act,[a.dataset.k]); return; }
   const o=e.target.closest('[data-open]'); if(o){ openDrawer(o.dataset.open); return; }
-  const b=e.target.closest('[data-bulk]'); if(b){ control(b.dataset.bulk,[...sel]); } });
+  const r=e.target.closest('[data-reopen]'); if(r){ reopen(r.dataset.reopen,[r.dataset.k]); return; }
+  const b=e.target.closest('[data-bulk]'); if(b){ if(b.dataset.bulk==='reopen'||b.dataset.bulk==='retake') reopen(b.dataset.bulk,[...sel]); else control(b.dataset.bulk,[...sel]); } });
+/* ---------- reopen a submitted test, or a retake (start over) (11/1, needs stcReopen in Code.gs) ---------- */
+async function reopen(mode,keys){ const L=keys.map(k=>DATA.students.find(x=>x.key===k)).filter(s=>s&&canAct(s.session)&&(mode==='reopen'?s.submitted:(s.submitted||s.answered>0||s.saved)));
+  if(arc) return say0('Archived results are read only.');
+  if(!L.length) return say0(mode==='reopen'?'Only submitted tests can be reopened.':'Nobody selected has started the test.');
+  const who=L.length===1?esc(L[0].name)+"'s":L.length+' students\'';
+  const ok=mode==='reopen'?await ask('Reopen '+(L.length===1?L[0].name+"'s test":L.length+' tests')+'?',`<p>${who} answers stay. They sign in again with the same Session ID and go on where they left off, then submit again.</p>`,'Reopen')
+    :await ask('Retake: start '+(L.length===1?L[0].name:L.length+' students')+' over?',`<p>${who} answers and score are <b>erased</b>, and the test starts fresh when they sign in again with the same Session ID. This can't be undone.</p>`,'Erase and start over');
+  if(!ok) return;
+  try{ const r=await call('stcReopen',{mode,keys:L.map(s=>s.key)});
+    const shut=(r.closed||[]).map(short);
+    say0((mode==='reopen'?'Reopened ':'Started over: ')+plural(r.changed||0,'test')+'. They sign in again with the Session ID.'+(shut.length?' Session '+shut.join(', ')+' is closed: reopen it in My sessions first.':''));
+    L.forEach(s=>{ delete DANS[s.key]; }); sel.clear(); setTimeout(load,800); }
+  catch(e){ const m=String(e&&e.message||e); $('#upd').textContent=/stcReopen|not.*function|Unknown/i.test(m)?'Reopen and Retake need the latest Code.gs (paste it, then Deploy › New version).':'Could not '+(mode==='reopen'?'reopen':'start over')+': '+m; $('#upd').classList.add('err'); } }
 $('#bulkClear').onclick=()=>{ sel.clear(); render(); };
 
 /* ---------- filters ---------- */
@@ -2575,6 +2677,41 @@ async function newSession(id){ const m=await metaOf(id); if(TP.working) return;
   try{ const r=await call('stcNewSession',{test:id},150000); load();
     dlg('New session',`<p>${esc((m&&m.title)||id)}</p><div class="sid">${esc(short(r.id))}</div><p class="hint">Students type this on the sign-in screen. It is open now with Review set to “Score only”; change that in the Sessions tab, and close it there when you are done.</p>`); }
   catch(e){ dlg('Could not make a session',errText(e)); } }
+
+/* ---------- Show Session ID: big, for the projector (11/1) ---------- */
+function showIds(ids){ const L=(ids||[]).map(id=>DATA&&DATA.sessions.find(s=>s.id===id)).filter(Boolean);
+  if(!L.length){ $('#upd').textContent='Pick a session first (Session menu).'; return; }
+  const box=$('#showId'); box.classList.toggle('many',L.length>1);
+  $('#showIdIds').innerHTML=L.slice(0,6).map(s=>`<div class="one"><div class="big">${esc(short(s.id))}</div><div class="tt">${esc(testTitle(s.test))}${s.notes?' · '+esc(s.notes):''}${s.open?'':' · closed'}</div></div>`).join('');
+  $('#veil').hidden=true; box.hidden=false; $('#showIdX').focus(); }
+function hideIds(){ $('#showId').hidden=true; }
+$('#showIdBtn').onclick=()=>{ if(!DATA||!selSes) return; const L=DATA.sessions.filter(s=>selSes.has(s.id)), open=L.filter(s=>s.open); showIds((open.length?open:L).map(s=>s.id)); };
+$('#showIdX').onclick=hideIds; $('#showId').addEventListener('click',e=>{ if(e.target.id==='showId') hideIds(); });
+document.addEventListener('click',e=>{ const b=e.target.closest('[data-showid]'); if(b){ e.preventDefault(); showIds([b.dataset.showid]); } });
+addEventListener('keydown',e=>{ if(e.key==='Escape'&&!$('#showId').hidden){ e.stopImmediatePropagation(); hideIds(); } },true);
+
+/* ---------- + New session from the Session menu, without leaving the dashboard (11/1) ---------- */
+$('#sesNew').onclick=async()=>{ closeSes(false); if(arc) return say0('Switch Results from back to this year first.');
+  $('#vTitle').textContent='New session';
+  $('#vMsg').innerHTML=`<p class="hint" style="margin-top:0">Students type the Session ID it gives you. Everyone on your roster is ready the moment it is made.</p>
+    <div class="nsq"><label class="fl">Test<select id="nqTest"><option value="">Loading…</option></select></label>
+    <label class="fl">After they submit<select id="nqReview"><option>Score only</option><option>Score + review</option><option>Nothing</option></select></label>
+    <label class="fl">Note (optional)<input id="nqNote" maxlength="60" placeholder="for example 3rd period"></label></div><div class="msg2" id="nqMsg"></div>`;
+  const b=$('#vBtns'); b.innerHTML=''; const cancel=document.createElement('button'); cancel.className='btn'; cancel.textContent='Cancel'; cancel.onclick=()=>{ $('#veil').hidden=true; };
+  const go=document.createElement('button'); go.className='btn pri'; go.textContent='Make the session'; go.disabled=true; b.append(cancel,go); $('#veil').hidden=false;
+  try{ const L=await publishedTests(), cur=DATA&&selSes?DATA.sessions.find(s=>selSes.has(s.id)):null;
+    $('#nqTest').innerHTML='<option value="" hidden>Choose a test</option>'+L.map(t=>`<option value="${esc(t.id)}">${esc(t.title||t.id)}</option>`).join('');
+    if(cur&&L.some(t=>t.id===cur.test)){ $('#nqTest').value=cur.test; $('#nqReview').value=cur.review||'Score only'; }
+    go.disabled=false; $('#nqTest').focus(); }
+  catch(e){ say($('#nqMsg'),errText(e),'err'); }
+  go.onclick=async()=>{ const test=$('#nqTest').value; if(!test) return say($('#nqMsg'),'Choose a test first.','err');
+    go.disabled=cancel.disabled=true; go.textContent='Setting up your class…'; say($('#nqMsg'),'Making the session and getting your roster ready. This can take up to a minute.','');
+    try{ const r=await call('stcNewSession',{test,review:$('#nqReview').value,notes:$('#nqNote').value.trim()},150000);
+      selSes=new Set([r.id]); keep('ses',[r.id]); await load();
+      for(let k=0;k<30&&!(DATA&&DATA.sessions.some(x=>x.id===r.id));k++){ await new Promise(z=>setTimeout(z,500)); await load(); }   /* a refresh was already on its way */
+      showIds([r.id]); }
+    catch(e){ go.disabled=cancel.disabled=false; go.textContent='Make the session'; say($('#nqMsg'),errText(e),'err'); } }; };
+function say0(t){ $('#upd').textContent=t; }
 function dlg(title,html){ $('#vTitle').textContent=title; $('#vMsg').innerHTML=html; const b=$('#vBtns'); b.innerHTML='';
   const x=document.createElement('button'); x.className='btn pri'; x.textContent='OK'; x.onclick=()=>{ $('#veil').hidden=true; }; b.appendChild(x); $('#veil').hidden=false; x.focus(); }
 

@@ -3332,7 +3332,8 @@ $('#startForm').addEventListener('submit',async e=>{ e.preventDefault();
     window.SPITZ_CALC=!!r.calculator; if(window.SpitzBasicCalc) window.SpitzBasicCalc(window.SPITZ_CALC);   // the test engine may start after this; it reads SPITZ_RA then
     applyReview(r.review);
     const server=r.attempt?{state:r.attempt.state,events:r.attempt.events}:null, local=LS.get(CTX.key);
-    const use=(server&&server.state&&server.state.submitted)?server:(newer(local,server)?local:server);
+    const reo=server&&server.state&&server.state.reopen;   /* the teacher reopened the test or gave a retake: the Sheet's copy wins over the one this Chromebook kept */
+    const use=(server&&server.state&&server.state.submitted)||reo?server:(newer(local,server)?local:server);
     window.__spitzPending={name:CTX.name,period,state:use&&use.state,events:use&&use.events};
     if(window.SPITZ_RA&&!(use&&use.state&&use.state.submitted)) await soundCheck();
     load(r.test,booted); return;
