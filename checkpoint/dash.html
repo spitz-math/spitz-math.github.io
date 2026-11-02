@@ -464,7 +464,7 @@ details summary{cursor:pointer;color:var(--blue2);font-size:13px;margin-top:8px}
   <div class="sp"></div>
   <span class="upd" id="upd">Loading…</span>
   <label class="upd" title="Auto-refresh every 15 seconds"><input type="checkbox" id="auto" checked> <span>Auto-refresh</span></label>
-  <button class="btn" id="alertBtn" aria-pressed="true" title="Alerts: a pop-up and a sound when a student leaves the test tab, goes idle or loses signal">🔔 Alerts on</button>
+  <button class="btn" id="alertBtn" aria-pressed="true" title="Alerts: a pop-up when a student leaves the test tab, goes idle or loses signal">🔔 Alerts on</button>
   <button class="btn" id="refresh">Refresh</button>
   <span class="upd" id="whoLbl"></span>
   <button class="btn" id="mySesBtn">My sessions</button>
@@ -770,14 +770,12 @@ async function load(){ if(busy) return; busy=true;
     else { $('#upd').textContent='Could not refresh ('+m+'). Trying again…'; $('#upd').classList.add('err'); } }
   finally{ busy=false; } }
 
-/* ---------- alerts (11/2): a pop-up and a sound when a student leaves the test tab, goes idle or loses signal ---------- */
-const AL={prev:null, on:store('alerts')!==false, unseen:0, ctx:null, title:document.title};
+/* ---------- alerts (11/2): a pop-up when a student leaves the test tab, goes idle or loses signal (no sound: Kody 11/2) ---------- */
+const AL={prev:null, on:store('alerts')!==false, unseen:0, title:document.title};
 const AL_TXT={away:'left the test tab',idle:'has been idle 3 minutes',nosig:'stopped saving (no signal)'};
 function alSet(){ const b=$('#alertBtn'); b.setAttribute('aria-pressed',AL.on); b.textContent=AL.on?'🔔 Alerts on':'🔕 Alerts off'; }
-$('#alertBtn').onclick=()=>{ AL.on=!AL.on; keep('alerts',AL.on); alSet(); if(!AL.on) $('#toasts').innerHTML=''; alBeep(true); };
+$('#alertBtn').onclick=()=>{ AL.on=!AL.on; keep('alerts',AL.on); alSet(); if(!AL.on) $('#toasts').innerHTML=''; };
 alSet();
-addEventListener('pointerdown',()=>{ if(!AL.ctx){ try{ AL.ctx=new (window.AudioContext||window.webkitAudioContext)(); }catch(e){} } },{once:true,capture:true});
-function alBeep(test){ if(!AL.on||!AL.ctx) return; try{ const c=AL.ctx, o=c.createOscillator(), g=c.createGain(); o.type='sine'; o.frequency.value=test?660:880; g.gain.setValueAtTime(0.0001,c.currentTime); g.gain.exponentialRampToValueAtTime(0.15,c.currentTime+0.02); g.gain.exponentialRampToValueAtTime(0.0001,c.currentTime+0.35); o.connect(g); g.connect(c.destination); o.start(); o.stop(c.currentTime+0.4); }catch(e){} }
 function alCheck(){ if(!DATA||arc||!selSes) return; const now={}, hits=[];
   DATA.students.forEach(s=>{ if(!selSes.has(s.session)) return; const k=stat(s)[0]; now[s.key]=k;
     if(AL.prev&&AL_TXT[k]&&AL.prev[s.key]!==undefined&&AL.prev[s.key]!==k&&!(k==='idle'&&AL.prev[s.key]==='away')) hits.push([s,k]); });
@@ -787,7 +785,7 @@ function alCheck(){ if(!DATA||arc||!selSes) return; const now={}, hits=[];
     t.onclick=e=>{ t.remove(); if(!e.target.closest('button')) openDrawer(s.key); };
     box.appendChild(t); setTimeout(()=>t.remove(),20000); while(box.children.length>5) box.firstChild.remove(); });
   if(hits.length>6){ const t=document.createElement('div'); t.className='toast'; t.textContent='…and '+(hits.length-6)+' more'; t.onclick=()=>t.remove(); box.appendChild(t); setTimeout(()=>t.remove(),20000); }
-  alBeep(); if(document.hidden){ AL.unseen+=hits.length; document.title='('+AL.unseen+') '+AL.title; } }
+  if(document.hidden){ AL.unseen+=hits.length; document.title='('+AL.unseen+') '+AL.title; } }
 document.addEventListener('visibilitychange',()=>{ if(!document.hidden){ AL.unseen=0; document.title=AL.title; } });
 function stop(){ clearInterval(timer); timer=null; }
 let hidTick=0;   /* in another tab, keep checking every 30 s while alerts are on so they still come (11/2) */
