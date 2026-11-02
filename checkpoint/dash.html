@@ -665,6 +665,8 @@ details summary{cursor:pointer;color:var(--blue2);font-size:13px;margin-top:8px}
 
 <script>window.SPITZ_ROOT="";</script>
 <script>
+/* The independent-tool note shows on every dashboard screen: copy it to the bottom of each full-page screen. */
+(function(){ const n=document.querySelector('body>.legal'); if(n) document.querySelectorAll('.tpage,.bkpage').forEach(pg=>pg.appendChild(n.cloneNode(true))); })();
 (function(){
 "use strict";
 const $=s=>document.querySelector(s), esc=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
