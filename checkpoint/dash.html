@@ -99,7 +99,7 @@ table.grid{border-collapse:separate;border-spacing:0;font-size:13px}
 .grid .fx{position:sticky;background:#fff;z-index:2}
 .grid thead .fx,.grid tfoot .fx{z-index:4;background:#f6f8fb}
 .grid .c0{min-width:32px;max-width:32px;text-align:center}
-.grid .c1{min-width:118px;max-width:150px;padding:0 6px;overflow:hidden;text-overflow:ellipsis}
+.grid .c1{min-width:118px;max-width:210px;padding:0 6px;overflow:hidden;text-overflow:ellipsis}
 .grid .c2{min-width:38px;text-align:center}
 .grid .c3{min-width:120px;padding:0 6px}
 .grid .c4{min-width:92px;padding:0 6px}
@@ -404,6 +404,22 @@ details summary{cursor:pointer;color:var(--blue2);font-size:13px;margin-top:8px}
 #bkFileRow[hidden]{display:none}
 .bkcol{display:flex;flex-direction:column;gap:6px}.bkcol[hidden]{display:none}
 
+/* 2026-11-02 questions view: choices as students saw them, A/B/C/D bars */
+.chx{font-weight:600}.chx .frac{display:inline-flex;flex-direction:column;align-items:center;vertical-align:middle;font-size:.85em;line-height:1.1;margin:0 2px}
+.chx .frac>span:first-child{border-bottom:1px solid currentColor;padding:0 2px}.chx table{border-collapse:collapse;display:inline-table;vertical-align:middle;font-size:.9em}.chx td,.chx th{border:1px solid #c9d2dc;padding:0 5px}
+.chx .chl{display:inline-block;min-width:1.3em;font-weight:800}.chx .sys{display:inline-flex;flex-direction:column;vertical-align:middle;border-left:2px solid currentColor;padding-left:6px;margin-left:2px}
+.dist{display:flex;gap:8px;align-items:flex-end;justify-content:flex-start;width:max-content;height:auto;margin:4px 0 8px}.dist .db{display:flex;flex-direction:column;align-items:center;justify-content:flex-end;width:36px;font-size:11px;line-height:14px;color:var(--mut);white-space:nowrap}
+.dist .db i{display:block;flex:0 0 auto;width:20px;background:#c9d2dc;border-radius:3px 3px 0 0;min-height:2px}.dist .db.ok i{background:var(--ok)}.dist .db.ok b{color:var(--ok)}
+.dist .db b{font-size:12px;line-height:16px;color:var(--ink)}
+/* 2026-11-02 alerts */
+.toasts{position:fixed;left:16px;bottom:16px;z-index:70;display:flex;flex-direction:column-reverse;gap:8px;max-width:min(380px,calc(100vw - 32px))}
+.toast{display:flex;gap:10px;align-items:flex-start;background:#1f2a3a;color:#fff;border-radius:8px;padding:9px 10px 9px 12px;box-shadow:0 6px 20px rgba(0,0,0,.25);font-size:13.5px;border-left:5px solid #f0a020;cursor:pointer;animation:tin .2s ease-out}
+.toast.t-nosig{border-left-color:#e05545}.toast.t-idle{border-left-color:#8fa3bd}
+.toast b{font-weight:700}.toast .tt{flex:1}.toast .tm{display:block;font-size:11.5px;opacity:.75}.toast button{background:none;border:0;color:#fff;opacity:.7;font-size:16px;padding:0 2px;line-height:1}
+@keyframes tin{from{transform:translateY(8px);opacity:0}to{transform:none;opacity:1}}
+#alertBtn[aria-pressed="false"]{opacity:.75}
+.sup{display:inline-flex;gap:3px;margin-left:5px;vertical-align:-2px}.sup i{font-style:normal;font-size:10.5px;font-weight:700;border-radius:4px;padding:0 4px;line-height:16px;height:16px;color:#fff}
+.sup .ra{background:#6b46c1}.sup .ca{background:#0f7b6c}
 /* 2026-11-01 dashboard ideas */
 .tb-red .btn.pri{background:#fff;border-color:#fff;color:#8f1d16;font-weight:700}
 .tb-red .btn.pri:hover{background:#fde9e7}
@@ -448,6 +464,7 @@ details summary{cursor:pointer;color:var(--blue2);font-size:13px;margin-top:8px}
   <div class="sp"></div>
   <span class="upd" id="upd">Loading…</span>
   <label class="upd" title="Auto-refresh every 15 seconds"><input type="checkbox" id="auto" checked> <span>Auto-refresh</span></label>
+  <button class="btn" id="alertBtn" aria-pressed="true" title="Alerts: a pop-up and a sound when a student leaves the test tab, goes idle or loses signal">🔔 Alerts on</button>
   <button class="btn" id="refresh">Refresh</button>
   <span class="upd" id="whoLbl"></span>
   <button class="btn" id="mySesBtn">My sessions</button>
@@ -475,6 +492,7 @@ details summary{cursor:pointer;color:var(--blue2);font-size:13px;margin-top:8px}
 </div>
 <p class="legal">Spitz Checkpoint is an independent practice tool made by Mr. Spitz. It is not affiliated with or endorsed by the Texas Education Agency (TEA) or Cambium Assessment. STAAR&reg; is a registered trademark of TEA. Released STAAR questions and reference sheets are &copy; TEA and are used here for classroom practice.</p>
 <div class="veil" id="qvVeil" hidden><div class="qvbox" role="dialog" aria-modal="true" aria-labelledby="qvTitle"><div class="qvh"><h3 id="qvTitle">Question</h3><button class="btn" id="qvClose">Close</button></div><div class="qvmsg" id="qvMsg" hidden></div><iframe id="qvFrame" title="Question preview" sandbox="allow-scripts"></iframe></div></div>
+<div class="toasts" id="toasts" aria-live="polite"></div>
 <div class="showid" id="showId" hidden role="dialog" aria-modal="true" aria-label="Session ID"><button class="btn sx" id="showIdX">Close (Esc)</button><div class="go">Go to <b>spitzmath.com/checkpoint</b> and type the Session ID</div><div class="ids" id="showIdIds"></div></div>
 <aside class="drawer" id="drawer" hidden aria-label="Student details"><div class="dh"><h2 id="dName"></h2><button class="btn" id="dClose">Close</button></div><div class="db" id="dBody"></div></aside>
 <section class="tpage" id="tpage" hidden aria-label="Tests">
@@ -745,14 +763,35 @@ async function load(){ if(busy) return; busy=true;
     renderMe(); renderArc();
     await Promise.all([...new Set(r.students.map(s=>s.test).concat(r.sessions.filter(s=>selSes.has(s.id)).map(s=>s.test)))].filter(Boolean).map(loadMeta));
     $('#upd').textContent=(arc?'Archive '+arc+' (read only) · ':'')+'Updated '+new Date().toLocaleTimeString([], {hour:'numeric',minute:'2-digit',second:'2-digit'}); $('#upd').classList.remove('err');
-    render();
+    render(); alCheck();
   }catch(e){ const m=String(e&&e.message||e);
     if(/NOTOWNER/.test(m)){ $('#card').innerHTML='<div class="empty">This page is only for teachers on the Spitz Checkpoint list. Ask the Checkpoint admin to add your school email.</div>'; stop(); }
     else if(m==='offline'){ $('#card').innerHTML='<div class="empty">Open the dashboard from the web app link with <b>?view=dash</b> at the end (Sheet menu: Spitz Checkpoint &gt; Open the dashboard).</div>'; stop(); }
     else { $('#upd').textContent='Could not refresh ('+m+'). Trying again…'; $('#upd').classList.add('err'); } }
   finally{ busy=false; } }
+
+/* ---------- alerts (11/2): a pop-up and a sound when a student leaves the test tab, goes idle or loses signal ---------- */
+const AL={prev:null, on:store('alerts')!==false, unseen:0, ctx:null, title:document.title};
+const AL_TXT={away:'left the test tab',idle:'has been idle 3 minutes',nosig:'stopped saving (no signal)'};
+function alSet(){ const b=$('#alertBtn'); b.setAttribute('aria-pressed',AL.on); b.textContent=AL.on?'🔔 Alerts on':'🔕 Alerts off'; }
+$('#alertBtn').onclick=()=>{ AL.on=!AL.on; keep('alerts',AL.on); alSet(); if(!AL.on) $('#toasts').innerHTML=''; alBeep(true); };
+alSet();
+addEventListener('pointerdown',()=>{ if(!AL.ctx){ try{ AL.ctx=new (window.AudioContext||window.webkitAudioContext)(); }catch(e){} } },{once:true,capture:true});
+function alBeep(test){ if(!AL.on||!AL.ctx) return; try{ const c=AL.ctx, o=c.createOscillator(), g=c.createGain(); o.type='sine'; o.frequency.value=test?660:880; g.gain.setValueAtTime(0.0001,c.currentTime); g.gain.exponentialRampToValueAtTime(0.15,c.currentTime+0.02); g.gain.exponentialRampToValueAtTime(0.0001,c.currentTime+0.35); o.connect(g); g.connect(c.destination); o.start(); o.stop(c.currentTime+0.4); }catch(e){} }
+function alCheck(){ if(!DATA||arc||!selSes) return; const now={}, hits=[];
+  DATA.students.forEach(s=>{ if(!selSes.has(s.session)) return; const k=stat(s)[0]; now[s.key]=k;
+    if(AL.prev&&AL_TXT[k]&&AL.prev[s.key]!==undefined&&AL.prev[s.key]!==k&&!(k==='idle'&&AL.prev[s.key]==='away')) hits.push([s,k]); });
+  AL.prev=now; if(!AL.on||!hits.length) return;
+  const box=$('#toasts'); hits.slice(0,6).forEach(([s,k])=>{ const t=document.createElement('div'); t.className='toast t-'+k; t.dataset.k=s.key;
+    t.innerHTML=`<span class="tt"><b>${esc(s.name)}</b> ${AL_TXT[k]}<span class="tm">${s.period&&s.period!=='G'?'Period '+esc(s.period)+' · ':''}${new Date().toLocaleTimeString([], {hour:'numeric',minute:'2-digit'})} · click to see</span></span><button aria-label="Dismiss">✕</button>`;
+    t.onclick=e=>{ t.remove(); if(!e.target.closest('button')) openDrawer(s.key); };
+    box.appendChild(t); setTimeout(()=>t.remove(),20000); while(box.children.length>5) box.firstChild.remove(); });
+  if(hits.length>6){ const t=document.createElement('div'); t.className='toast'; t.textContent='…and '+(hits.length-6)+' more'; t.onclick=()=>t.remove(); box.appendChild(t); setTimeout(()=>t.remove(),20000); }
+  alBeep(); if(document.hidden){ AL.unseen+=hits.length; document.title='('+AL.unseen+') '+AL.title; } }
+document.addEventListener('visibilitychange',()=>{ if(!document.hidden){ AL.unseen=0; document.title=AL.title; } });
 function stop(){ clearInterval(timer); timer=null; }
-function startAuto(){ stop(); if($('#auto').checked) timer=setInterval(()=>{ if(!document.hidden) load(); },POLL_MS); }
+let hidTick=0;   /* in another tab, keep checking every 30 s while alerts are on so they still come (11/2) */
+function startAuto(){ stop(); if($('#auto').checked) timer=setInterval(()=>{ if(!document.hidden||(AL.on&&(++hidTick%2===0))) load(); },POLL_MS); }
 $('#auto').onchange=startAuto; $('#refresh').onclick=load;
 document.addEventListener('visibilitychange',()=>{ if(!document.hidden&&$('#auto').checked) load(); });
 
@@ -2133,13 +2172,24 @@ function cellHtml(s,i,mode){ const q=s.q[i]; const cur=!s.submitted&&+s.item===i
   if(q[9]) cls='wr'; else if(pts==null) cls=visits?'bl':'un'; else if(pts>=mx) cls='ok'; else if(pts>0) cls='part'; else cls='no';
   if(mode==='time'&&ms) txt=ms<60000?Math.round(ms/1000)+'s':Math.round(ms/60000)+'m'; else if(cls==='part') txt=pts; else if(cls==='wr') txt='✎';
   return `<div class="cell ${cls}${cur?' cur':''}${fl?' fl':''}" data-k="${esc(s.key)}" data-i="${i}">${txt}</div>`; }
+
+/* ---------- supports at a glance (11/2): read aloud and calculator from the teachers' rosters (stcRoster) ---------- */
+const SUP={by:{}, at:{}, busy:{}};
+function supFor(s){ const sess=DATA&&DATA.sessions.find(x=>x.id===s.session), t=sess&&sess.teacher||'';
+  if(!(t in SUP.by)||Date.now()-(SUP.at[t]||0)>300000){ if(!SUP.busy[t]){ SUP.busy[t]=1;
+      const me=DATA&&DATA.me||{}, req=me.admin&&t&&t!==me.email?{teacher:t}:{};
+      if(!me.admin&&t&&t!==me.email){ SUP.by[t]={}; SUP.at[t]=Date.now(); delete SUP.busy[t]; }
+      else call('stcRoster',req).then(r=>{ const m={}; (r&&r.roster||[]).forEach(x=>{ if(x.ra||x.calc) m[x.code]={ra:!!x.ra,calc:!!x.calc}; }); const had=JSON.stringify(SUP.by[t]||null); SUP.by[t]=m; SUP.at[t]=Date.now(); if(had!==JSON.stringify(m)&&view==='live') render(); })
+        .catch(()=>{ SUP.by[t]=SUP.by[t]||{}; SUP.at[t]=Date.now(); }).finally(()=>{ delete SUP.busy[t]; }); } }
+  return (SUP.by[t]||{})[s.code]||null; }
+function supTag(s){ const x=supFor(s); if(!x) return ''; return `<span class="sup">${x.ra?'<i class="ra" title="Read aloud: questions and answer choices are read to this student">RA</i>':''}${x.calc?'<i class="ca" title="Basic calculator on tests with no calculator">Calc</i>':''}</span>`; }
 function renderLive(L,tests){
   const nq=Math.max(...L.map(s=>Math.max(s.q.length,(meta(s.test)||{items:[]}).items.length)),0);
   const mixed=tests.length>1;
   const head=`<tr><th class="fx c0"><input type="checkbox" id="allBox" aria-label="Select all shown"></th><th class="fx c1" style="text-align:left">Name</th><th class="fx c2">Per.</th><th class="fx c3" style="text-align:left">Status</th><th class="fx c4" style="text-align:left">Answered</th><th class="fx c5" style="text-align:left">Score</th><th class="fx cL" style="text-align:left">STAAR level <button class="ib0" data-ps="${esc(tests[0]||'')}" title="Performance standards" aria-label="Show the performance standards">ⓘ</button></th><th class="fx c6">Time</th><th class="fx c7">Pause / Stop</th>${Array.from({length:nq},(_,i)=>`<th class="qh">${i+1}</th>`).join('')}</tr>`;
   const rows=L.map(s=>{ const [k,label]=stat(s), n=Math.max(s.q.length,(meta(s.test)||{items:[]}).items.length)||1, ans=s.answered||0, l=sLvl(s);
     return `<tr data-k="${esc(s.key)}"><td class="fx c0"><input type="checkbox" class="rowBox" data-k="${esc(s.key)}" ${sel.has(s.key)?'checked':''} aria-label="Select ${esc(s.name)}"></td>
-      <td class="fx c1"><button class="nm" data-open="${esc(s.key)}" title="${esc(s.name)}">${esc(s.name)}</button>${s.rclicks?`<span class="rcb" title="Tried to right-click ${s.rclicks}× (Chrome's menu, where Google Lens is). The test blocked it.">Right-click ${s.rclicks}×</span>`:''}${mixed?`<div class="rs">${esc(s.session)}</div>`:''}</td>
+      <td class="fx c1"><button class="nm" data-open="${esc(s.key)}" title="${esc(s.name)}">${esc(s.name)}</button>${supTag(s)}${s.rclicks?`<span class="rcb" title="Tried to right-click ${s.rclicks}× (Chrome's menu, where Google Lens is). The test blocked it.">Right-click ${s.rclicks}×</span>`:''}${mixed?`<div class="rs">${esc(s.session)}</div>`:''}</td>
       <td class="fx c2">${esc(s.period==='G'?'G':s.period)}</td>
       <td class="fx c3"><span class="pill p-${k}" title="${esc(label+(s.away?' · left the tab '+s.away+'×':''))}">${esc(label)}</span></td>
       <td class="fx c4"><div class="prog"><i><b style="width:${Math.round(100*ans/n)}%"></b></i><em>${ans}/${n}</em></div></td>
@@ -2154,6 +2204,7 @@ function renderLive(L,tests){
   $('#card').innerHTML=`<div style="display:flex;justify-content:space-between;align-items:center;gap:10px;padding:8px 10px;border-bottom:1px solid var(--line);position:sticky;left:0;flex-wrap:wrap">
       <div class="legend"><span><span class="cell ok"></span>Correct</span><span><span class="cell part"></span>Partly</span><span><span class="cell no"></span>Incorrect</span><span><span class="cell bl"></span>Seen, blank</span>${L.some(s=>s.q.some(q=>q&&q[9]))?'<span><span class="cell wr">✎</span>Needs scoring</span>':''}<span><span class="cell un"></span>Not seen</span><span><span class="cell un cur"></span>On it now</span><span><span class="cell un fl"></span>Flagged</span></div>
       <div class="qnav" id="qnav" hidden><span class="lab">Questions</span><button class="btn" data-qnav="-1" title="Earlier questions" aria-label="Earlier questions">◀</button><button class="btn" data-qnav="1" title="Later questions" aria-label="Later questions">▶</button></div>
+      <button class="btn" id="rptPrint" title="One page per student: score, standards to work on, and each missed question with how to solve it">Student reports</button>
       <button class="btn" id="gbCsv" title="Each student's score and STAAR level (the students shown now), for your gradebook">Download scores</button>
       <div class="grp"><span class="lab">Cells show</span><div class="seg" id="cellSeg"><button data-v="score" aria-pressed="${cellMode==='score'}">Correctness</button><button data-v="time" aria-pressed="${cellMode==='time'}">Time</button></div></div></div>
     <table class="grid${cellMode==='time'?' tmode':''}"><thead>${head}</thead><tbody>${rows}</tbody><tfoot>${foot}</tfoot></table>`;
@@ -2161,7 +2212,7 @@ function renderLive(L,tests){
   all.onchange=()=>{ L.forEach(s=>all.checked?sel.add(s.key):sel.delete(s.key)); render(); };
   document.querySelectorAll('.rowBox').forEach(b=>b.onchange=()=>{ b.checked?sel.add(b.dataset.k):sel.delete(b.dataset.k); renderBulk(); const a=$('#allBox'); a.checked=L.every(s=>sel.has(s.key)); a.indeterminate=!a.checked&&sel.size>0; });
   document.querySelectorAll('#cellSeg button').forEach(b=>b.onclick=()=>{ cellMode=b.dataset.v; render(); });
-  pinCols(); qnavSet(); $('#gbCsv').onclick=()=>gradebook(L);
+  pinCols(); qnavSet(); $('#gbCsv').onclick=()=>gradebook(L); $('#rptPrint').onclick=()=>printReports(L);
 }
 /* Download scores: one row per student shown (period and name filters apply), for the gradebook (11/1) */
 function gradebook(L){ const q=v=>{ v=v==null?'':String(v); return /[",\n]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v; }, d=v=>v?new Date(v).toLocaleString([], {year:'numeric',month:'numeric',day:'numeric',hour:'numeric',minute:'2-digit'}):'';
@@ -2262,6 +2313,27 @@ function qvAns(it,a){   // a student's answer in words (matches the player's "Yo
     case 'twopart': return `A: ${a.a==null?'—':L8[a.a]}; B: ${(a.b||[]).map(k=>L8[k]).join(', ')||'—'}`;
     case 'graphline': return [...(a.lines||[]).map(L=>`line through ${qvPt(L[0])} and ${qvPt(L[1])}`),...(a.pts||[]).map(P=>'point '+qvPt(P))].join('; ')||'No answer';
     default: return qvCut(JSON.stringify(a),80); } }catch(e){ return qvCut(JSON.stringify(a),80); } }
+
+/* an answer choice the way students saw it: the test's own markup (fractions, exponents, tables), pictures and graphs named */
+const CH_OK=new Set(['B','STRONG','I','EM','SUP','SUB','SPAN','BR','DIV','P','TABLE','TBODY','THEAD','TR','TD','TH','MATH','MI','MN','MO','MROW','MSUP','MFRAC','MSQRT']);
+function qvHtml(h){ h=String(h==null?'':h).replace(/\{GRAPH\}/g,' (graph) ');
+  const d=new DOMParser().parseFromString('<div>'+h+'</div>','text/html'), out=document.createElement('span');
+  const walk=(src,dst)=>src.childNodes.forEach(c=>{ if(c.nodeType===3) dst.appendChild(document.createTextNode(c.textContent));
+    else if(c.nodeType===1){ const T=c.tagName.toUpperCase();
+      if(T==='SVG'||T==='IMG'||T==='CANVAS'){ dst.appendChild(document.createTextNode(T==='IMG'?' (picture) ':' (graph) ')); return; }
+      if(CH_OK.has(T)){ const e=document.createElement(T==='DIV'||T==='P'?'span':T.toLowerCase()); const cl=(c.getAttribute('class')||'').split(/\s+/).filter(x=>/^(frac|sys)$/.test(x)); if(cl.length) e.className=cl.join(' '); if(T==='DIV'||T==='P'){ dst.appendChild(e); walk(c,e); dst.appendChild(document.createElement('br')); } else { dst.appendChild(e); walk(c,e); } }
+      else if(!/^(SCRIPT|STYLE|IFRAME|OBJECT|EMBED|TEMPLATE)$/.test(T)) walk(c,dst); } });
+  walk(d.body.firstChild||d.body,out); while(out.lastChild&&out.lastChild.nodeName==='BR') out.lastChild.remove();
+  if(!out.textContent.replace(/\(graph\)|\(picture\)/g,'').trim()&&/\((graph|picture)\)/.test(out.textContent)) return '<i>(a '+(/graph/.test(out.textContent)?'graph':'picture')+')</i>';
+  return out.innerHTML; }
+function qvAnsHtml(it,a){ const t=it&&it.type;
+  try{ if(t==='mc'&&a!=null&&it.choices&&it.choices[a]!=null) return `<span class="chx"><span class="chl">${L8[a]}</span> ${qvHtml(it.choices[a])}</span>`;
+    if(t==='ms'&&Array.isArray(a)&&a.length&&it.choices) return `<span class="chx">${a.map(k=>`<span class="chl">${L8[k]}</span> ${qvHtml(it.choices[k])}`).join('<br>')}</span>`; }catch(e){}
+  return esc(qvAns(it,a)); }
+/* how many picked each letter (multiple choice and multiselect) */
+function qvDist(it,r){ if(!it||!(it.type==='mc'||it.type==='ms')||!it.choices) return ''; const n=it.choices.length, c=new Array(n).fill(0), ok=it.type==='mc'?[it.answer]:(it.answer||[]); let tot=0;
+  r.groups.forEach(G=>{ if(!G.k||G.a==null) return; [].concat(G.a).forEach(k=>{ if(k>=0&&k<n) c[k]+=G.names.length; }); tot+=G.names.length; }); if(!tot) return '';
+  const mx=Math.max(...c,1); return `<div class="dist" title="How many students picked each choice">${c.map((v,k)=>`<div class="db${ok.includes(k)?' ok':''}"><b>${v}</b><i style="height:${Math.round(28*v/mx)+2}px"></i>${L8[k]}${ok.includes(k)?' ✓':''}</div>`).join('')}</div>`; }
 const QV_GRAPH=/^(graph|cline|hotspot)/;
 const QV_TYPES={mc:'Multiple choice',ms:'Multiselect',num:'Number entry',eq:'Equation',inline:'Drop-down',table:'Match table',dnd:'Drag and drop',graph:'Plot a point',graphline:'Graph a line',cline:'Graph a line',graphsys:'Graph a system',boxes:'Drag into boxes',hotspot:'Hot spot',graphineq:'Graph an inequality',graphexp:'Graph a function',graphfunc:'Graph a function',numline:'Number line',filltable:'Fill in a table',datadisp:'Data display',shade:'Shade a model',figure:'Draw a figure',blanks:'Fill in the blanks',label:'Label a picture',order:'Put in order',hottext:'Hot text',twopart:'Two-part'};
 function qvStats(L1,i,subOnly){   // one question: points, blanks and the students behind every answer
@@ -2325,14 +2397,14 @@ function renderQues(L,tests){
     const wrong=r.groups.filter(G=>G.pts<G.max&&G.k), top=wrong[0];
     let wa='–';
     if(top){ const vary=QV_GRAPH.test(mi.type||(it&&it.type)||'')&&top.names.length===1&&wrong.length>1;
-      wa=vary?`<span class="rs">Answers vary (${wrong.reduce((a,G)=>a+G.names.length,0)} students)</span>`:`<b>${esc(qvAns(it,top.a))}</b><span class="rs">${top.names.length} of ${r.cnt} student${r.cnt===1?'':'s'} (${Math.round(100*top.names.length/r.cnt)}%)${top.pts>0?' · partly correct':''}</span>`; }
+      wa=vary?`<span class="rs">Answers vary (${wrong.reduce((a,G)=>a+G.names.length,0)} students)</span>`:`<b>${qvAnsHtml(it,top.a)}</b><span class="rs">${top.names.length} of ${r.cnt} student${r.cnt===1?'':'s'} (${Math.round(100*top.names.length/r.cnt)}%)${top.pts>0?' · partly correct':''}</span>`; }
     else if(!anyAns) wa='<span class="rs">–</span>';
     h+=`<tr class="qr${open?' open':''}" data-q="${r.i}" tabindex="0" aria-expanded="${open}"><td class="qn"><span class="car">${open?'▾':'▸'}</span>${r.i+1}</td><td class="hidesm">${esc(qi.teks)} <span class="rs">${esc(qi.rs)}</span></td><td class="hidesm rs">${esc(mi.venn?'Venn diagram':QV_TYPES[mi.type]||mi.type||'')}</td><td>${pctBar(r.e,r.mx)}</td><td class="n">${r.blank.length||(subOnly?0:'–')}</td><td class="wa">${wa}</td></tr>`;
     if(open){ const nm=L=>L.slice().sort((a,b)=>String(a.name).localeCompare(String(b.name))).map(x=>esc(x.name)+(x.period&&x.period!=='G'?' ('+esc(x.period)+')':'')).join(', ');
       const gl=r.groups.map(G=>{ const c=!G.k?'bl':G.pts>=G.max?'ok':G.pts>0?'part':'no', mark=c==='ok'?'✓ ':c==='part'?'◐ ':c==='no'?'✗ ':'';
-          return `<div class="al ${c}">${mark}${esc(G.k?qvAns(it,G.a):'Answer not available')}${c==='part'?` <span class="rs">(${G.pts} of ${G.max})</span>`:''}</div><div class="ac">${G.names.length}</div><div class="an">${nm(G.names)}</div>`; }).join('')
+          return `<div class="al ${c}">${mark}${G.k?qvAnsHtml(it,G.a):'Answer not available'}${c==='part'?` <span class="rs">(${G.pts} of ${G.max})</span>`:''}</div><div class="ac">${G.names.length}</div><div class="an">${nm(G.names)}</div>`; }).join('')
         +(r.blank.length?`<div class="al bl">No answer</div><div class="ac">${r.blank.length}</div><div class="an">${nm(r.blank)}</div>`:'');
-      h+=`<tr class="qd"><td colspan="6"><div class="ag">${gl||'<div class="rs">No answers yet.</div>'}</div><div class="qbtns"><button class="btn" data-see="${r.i}">See the question</button></div></td></tr>`; } });
+      h+=`<tr class="qd"><td colspan="6">${qvDist(it,r)}<div class="ag">${gl||'<div class="rs">No answers yet.</div>'}</div><div class="qbtns"><button class="btn" data-see="${r.i}">See the question</button></div></td></tr>`; } });
   $('#card').innerHTML=h+'</table></div>'; bindQues(); }
 function bindQues(){ bindStd();
   document.querySelectorAll('#qOrder button').forEach(b=>b.onclick=()=>{ QV.order=b.dataset.v; keep('qorder',QV.order); render(); });
@@ -2378,7 +2450,7 @@ function openDrawer(key,quiet){ const s=DATA&&DATA.students.find(x=>x.key===key)
   $('#dName').textContent=s.name+' · '+(s.period==='G'?'Guest':'Period '+s.period);
   const its=qvItems(s.test), ans=drawerAns(s), can=canAct(s.session)&&!arc;
   if(its===null) metaOf(s.test).then(()=>setTimeout(()=>{ if(openKey===key) openDrawer(key,true); },50)).catch(()=>{});
-  $('#dBody').innerHTML=`<div class="dact">${s.submitted||!can||k==='ns'?'':`<button class="btn" data-act="${s.control==='paused'?'resume':'pause'}" data-k="${esc(s.key)}">${s.control==='paused'?'Resume':'Pause'}</button><button class="btn warn" data-act="${s.control==='locked'?'unlock':'lock'}" data-k="${esc(s.key)}">${s.control==='locked'?'Unlock':'Stop test'}</button>`}${can&&s.submitted?`<button class="btn" data-reopen="reopen" data-k="${esc(s.key)}" title="Give the test back: their answers stay and they go on where they left off">Reopen test</button>`:''}${can&&(s.submitted||s.answered>0)?`<button class="btn warn" data-reopen="retake" data-k="${esc(s.key)}" title="Erase their answers so they can take the test again from the start">Retake</button>`:''}</div>
+  $('#dBody').innerHTML=`<div class="dact">${s.submitted||!can||k==='ns'?'':`<button class="btn" data-act="${s.control==='paused'?'resume':'pause'}" data-k="${esc(s.key)}">${s.control==='paused'?'Resume':'Pause'}</button><button class="btn warn" data-act="${s.control==='locked'?'unlock':'lock'}" data-k="${esc(s.key)}">${s.control==='locked'?'Unlock':'Stop test'}</button>`}${s.submitted||s.answered>0?`<button class="btn" id="dReport" title="One page: score, standards to work on, and each missed question with how to solve it">Print report</button>`:''}${can&&s.submitted?`<button class="btn" data-reopen="reopen" data-k="${esc(s.key)}" title="Give the test back: their answers stay and they go on where they left off">Reopen test</button>`:''}${can&&(s.submitted||s.answered>0)?`<button class="btn warn" data-reopen="retake" data-k="${esc(s.key)}" title="Erase their answers so they can take the test again from the start">Retake</button>`:''}</div>
     <div class="kv"><b>Status</b><span><span class="pill p-${k}">${esc(label)}</span></span><b>Test</b><span>${esc(m?m.title:s.test)} · ${esc(s.session)}</span>
     <b>Score</b><span><span class="lv" style="background:${s.submitted?l[2]:'#c3ccd6'}"></span>${s.score||0} of ${s.max||0} points (${s.pct||0}%)${s.submitted?` · ${esc(l[1])}${l[3]?' (estimate)':''}${w?' so far':''}`:' · STAAR level shows once submitted'}${w?` · ${w} written answer${w>1?'s':''} to score`:''}</span>
     <b>Answered</b><span>${s.answered||0} · on question ${esc(s.item||'–')}</span><b>Started</b><span>${d(s.started)}</span><b>Submitted</b><span>${d(s.submitted)}</span>
@@ -2387,6 +2459,7 @@ function openDrawer(key,quiet){ const s=DATA&&DATA.students.find(x=>x.key===key)
       const r=q[9]?'To score':pts==null?(vis?'Blank':'Not seen'):pts>=mx?'Correct':pts>0?`Partly (${pts}/${mx})`:'Incorrect';
       const at=ans&&ans[i]?drawerAnsText(its&&its[i],ans[i]):'', aCell=at?`<td class="dans" title="${esc(at)}">${esc(at)}</td>`:`<td class="rs">${pts==null&&!q[9]?'':ans===null&&!arc?'…':'–'}</td>`;
       return `<tr><td><button class="nm" data-dsee="${i}" title="See question ${i+1}">${i+1}</button>${fl?' ⚑':''}</td><td style="white-space:nowrap"><span class="cell ${q[9]?'wr':pts==null?(vis?'bl':'un'):pts>=mx?'ok':pts>0?'part':'no'}" style="display:inline-grid;width:14px;height:12px;vertical-align:-2px;margin-right:4px"></span>${r}</td>${aCell}<td class="rs">${esc(qi.teks)}</td><td class="n">${ms?fmtMs(ms):'–'}</td><td class="n">${vis}</td><td class="n">${ch}</td></tr>`; }).join('')}</table>`;
+  if($('#dReport')) $('#dReport').onclick=()=>printReports([s]);
   $('#dBody').querySelectorAll('[data-dsee]').forEach(b=>b.onclick=()=>qvShow(s.test,+b.dataset.dsee));
   $('#drawer').hidden=false; if(!quiet) $('#dClose').focus(); }
 function closeDrawer(){ openKey=null; $('#drawer').hidden=true; }
@@ -2733,6 +2806,26 @@ async function printTest(id,withKey){ const L=await publishedTests(), t=L.find(x
   const f=$('#pvf'); for(let i=0;i<150;i++){ await new Promise(z=>setTimeout(z,200)); try{ if(f.contentWindow.__spitzPrintReady){ await f.contentWindow.__spitzPrintReady; break; } }catch(e){} }
   if(!f.contentWindow.__spitzPrintReady) throw new Error('The test could not be drawn for printing.');
   $('#pvPrint').disabled=false; $('#pvPrint').focus(); }
+/* student reports (11/2): one page per student with their missed questions and the explanations (player: window.__spitzReport) */
+async function printReports(L){ L=L.filter(s=>s.submitted||s.answered>0); if(!L.length) return say0('Nobody shown has answered yet.');
+  const test=L[0].test; L=L.filter(s=>s.test===test); const title=testTitle(test);
+  $('#pvTitle').textContent=title+' · Student reports'; $('#pvNote').textContent='Getting the reports ready…'; $('#pvPrint').hidden=false; $('#pvPrint').disabled=true; $('#pvRA').hidden=$('#pvCA').hidden=true; $('#pvf').srcdoc='<p style="font:15px sans-serif;padding:20px">Getting the reports ready…</p>'; $('#pv').hidden=false;
+  try{ let ans={}; const need=L.filter(s=>!s.q.some(q=>q&&q[8]));
+    if(need.length){ const r=await call('stcDash',{sessions:[...new Set(need.map(s=>s.session))],answers:true,archive:arc},90000); (r&&r.students||[]).forEach(x=>{ ans[x.key]=x.q.map(q=>q&&q[8]||''); }); }
+    const list=L.map(s=>{ const raw=ans[s.key]||s.q.map(q=>q&&q[8]||''), a={}; raw.forEach((t,i)=>{ if(t){ try{ a[i+1]=JSON.parse(t); }catch(e){} } });
+      const l=sLvl(s), w=toScore(s);
+      return {name:s.name,period:s.period,date:s.submitted?new Date(s.submitted).toLocaleDateString():'',score:s.score||0,max:s.max||0,pct:s.pct||0,level:s.submitted&&!w?l[1]+(l[3]?' (estimate)':''):'',answers:a,
+        pts:s.q.map(q=>q?[q[0],q[1],q[9]?1:0,s.submitted||q[3]?1:0]:null)}; });
+    const r=await siteGet('tests/'+encodeURIComponent(test)+'/test.js'); if(!r.ok) throw new Error('Could not download the test.');
+    const pages=TP.gh&&TP.gh.pages||ROOT;
+    let html=buildSingle(await ensurePlayer(),test,title,await ownJs(test,await r.text()),{});
+    html=html.replace('window.SPITZ_ROOT="";window.SPITZ_TESTS=',()=>'window.SPITZ_ROOT='+JSON.stringify(pages)+';window.SPITZ_PRINT=1;window.SPITZ_TESTS=')
+      .replace(/<\/body>\s*<\/html>\s*$/,'')+'<scr'+'ipt>window.__rpData='+JSON.stringify(list).replace(/</g,'\\u003c')+';addEventListener("load",function(){ window.SPITZ_TESTID='+JSON.stringify(test)+'; window.SPITZ_BASE=window.SPITZ_ROOT+"tests/"+'+JSON.stringify(test)+'+"/"; window.SPITZ_BUNDLE['+JSON.stringify(test)+'](); window.__spitzPrintReady=window.__spitzReport?window.__spitzReport(window.__rpData):Promise.reject(new Error("old player")); });<\/scr'+'ipt></body></html>';
+    const f=$('#pvf'); f.srcdoc=html;
+    for(let i=0;i<150;i++){ await new Promise(z=>setTimeout(z,200)); try{ if(f.contentWindow.__spitzPrintReady){ await f.contentWindow.__spitzPrintReady; break; } }catch(e){ throw new Error('the player.html on GitHub is older than this dashboard. Upload the new player.html first.'); } }
+    if(!f.contentWindow.__spitzPrintReady) throw new Error('The reports could not be drawn.');
+    $('#pvNote').textContent=plural(list.length,'student')+', one page each, with the questions they missed and how to solve them. Press Print (or Save as PDF).'; $('#pvPrint').disabled=false; $('#pvPrint').focus(); }
+  catch(e){ $('#pvNote').textContent='Could not make the reports: '+errText(e); } }
 $('#pvPrint').onclick=()=>{ try{ $('#pvf').contentWindow.focus(); $('#pvf').contentWindow.print(); }catch(e){ dlg('Could not print',errText(e)); } };
 const prGo=withKey=>async()=>{ const id=$('#prTest').value; if(!id) return say($('#prMsg'),'Choose a test first.','err');
   const bs=[$('#prPlain'),$('#prKey')]; bs.forEach(b=>b.disabled=true); say($('#prMsg'),'Getting the test ready to print…','');

@@ -2387,6 +2387,59 @@ body>*:not(#printDoc){display:none!important}
   // ready once every picture has loaded (or failed), so nothing prints blank
   return Promise.all([...doc.querySelectorAll('img')].map(i=>i.complete?0:new Promise(r=>{ i.onload=i.onerror=r; setTimeout(r,15000); })));
 };
+/* student reports for the dashboard (only when the page sets SPITZ_PRINT): one page per student with their score, the
+   standards to work on and every question they missed, with their answer, the correct answer and the explanation */
+if(window.SPITZ_PRINT) window.__spitzReport=function(list){
+  const esc=t=>String(t==null?'':t).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])), LT='ABCDEFGH';
+  const st=document.createElement('style'); st.textContent=`html,body{height:auto!important;overflow:visible!important;background:#fff!important;color:#000}
+body>*:not(#printDoc){display:none!important}
+#printDoc{max-width:860px;margin:0 auto;padding:18px 18px 40px;font-size:15px;line-height:1.45}
+.rpst{break-after:page;page-break-after:always;padding-bottom:20px}.rpst:last-child{break-after:auto;page-break-after:auto}
+.rph{border-bottom:2px solid #000;padding-bottom:8px;margin-bottom:8px}.rph h1{font-size:21px;margin:0 0 2px}.rph .rpl{display:flex;flex-wrap:wrap;gap:6px 18px;font-size:14px}
+.rpsum{display:flex;flex-wrap:wrap;gap:8px 22px;margin:8px 0;font-size:15px}.rpsum b{font-size:17px}
+.rptk{margin:6px 0 10px;font-size:14px}.rptk span{display:inline-block;border:1px solid #999;border-radius:12px;padding:1px 9px;margin:2px 4px 2px 0}
+.rpq{border-top:1px solid #bbb;padding:12px 0 10px;break-inside:avoid;page-break-inside:avoid}
+.rpqh{display:flex;flex-wrap:wrap;gap:4px 14px;align-items:baseline;margin-bottom:6px}.rpqh .n{font-weight:800;font-size:17px}.rpqh .m{font-size:12.5px;color:#444}
+.rpa{display:grid;grid-template-columns:auto 1fr;gap:2px 10px;margin:8px 0;font-size:14px}.rpa .no{color:#9d2a20;font-weight:700}.rpa .ok{color:#13512a;font-weight:700}
+.rpx{border:1px solid #ccc;border-left:4px solid #1b6e3a;border-radius:4px;padding:6px 10px;margin-top:6px;font-size:14px}.rpx h4{margin:2px 0;font-size:14px}.rpx ol{margin:2px 0;padding-left:22px}.rpx p{margin:3px 0}
+.rpx .bad{border-left-color:#c0392b}.rpnone{color:#555;font-style:italic;font-size:13.5px}
+#printDoc .item{max-width:none;padding:0;margin:0}#printDoc .choice{cursor:default;box-shadow:none;background:#fff}
+#printDoc .choice.pright{border:3px solid #1b6e3a}#printDoc .choice.pwrong{border:3px dashed #c0392b}
+#printDoc .rpst .choice,#printDoc .rpst .choice:focus{outline:none!important}
+#printDoc .choice.pright::after{content:'✓ correct';margin-left:auto;padding-left:12px;font-weight:700;color:#13512a;white-space:nowrap}
+#printDoc .choice.pwrong::after{content:'✗ your answer';margin-left:auto;padding-left:12px;font-weight:700;color:#9d2a20;white-space:nowrap}
+#printDoc input,#printDoc select,#printDoc textarea{pointer-events:none}.ratimg{max-width:5.5in}
+.rpgood{margin:14px 0;font-size:16px;font-weight:600;color:#13512a}
+@media print{#printDoc{max-width:none;padding:0;font-size:12.5px;line-height:1.35}#printDoc svg{max-width:3.3in;height:auto}#printDoc img{max-width:5.5in}#printDoc .choice{padding:4px 10px!important;margin:0!important}#printDoc .choices{gap:5px!important}}
+@page{margin:.5in}`;
+  document.head.appendChild(st);
+  const doc=document.createElement('div'); doc.id='printDoc'; const keep=S.answers;
+  const rat=(n,lab)=>{ const it0=ITEMS[n-1]; if(it0&&it0.rat) return it0.rat[lab]?`<p>${it0.rat[lab]}</p>`:''; const R=TD.rationale&&TD.rationale[n]; const src=R&&R.includes(lab)?ASSET('rat/r'+String(n).padStart(2,'0')+lab+'.png'):null; return src?`<img class="ratimg" src="${src}" alt="Explanation for question ${n}${lab!=='all'?', choice '+lab:''}">`:''; };
+  (list||[]).forEach(stu=>{ const page=document.createElement('section'); page.className='rpst'; S.answers=stu.answers||{};
+    const missed=ITEMS.filter(it=>{ const p=stu.pts[it.n-1]; return p&&!p[2]&&(p[0]==null?p[3]:p[0]<p[1]); });
+    const tk={}; missed.forEach(it=>{ if(it.teks) tk[it.teks]=(tk[it.teks]||0)+1; });
+    page.innerHTML=`<div class="rph"><h1>${esc(stu.name)}</h1><div class="rpl"><span>${esc(TD.title||'')}</span>${stu.period?`<span>${esc(stu.period==='G'?'Guest':'Period '+stu.period)}</span>`:''}${stu.date?`<span>${esc(stu.date)}</span>`:''}</div></div>
+      <div class="rpsum"><span>Score: <b>${stu.score} of ${stu.max}</b> points (${stu.pct}%)</span>${stu.level?`<span>STAAR level: <b>${esc(stu.level)}</b></span>`:''}<span>Questions to fix: <b>${missed.length}</b></span></div>
+      ${Object.keys(tk).length?`<div class="rptk"><b>Standards to work on:</b> ${Object.keys(tk).sort((a,b)=>tk[b]-tk[a]).map(t=>`<span>${esc(t)}${tk[t]>1?' ×'+tk[t]:''}</span>`).join('')}</div>`:''}
+      ${missed.length?'':'<p class="rpgood">Every question right. Great work!</p>'}`;
+    missed.forEach(it=>{ const a=S.answers[it.n], p=stu.pts[it.n-1], X=it.explain, q=document.createElement('div'); q.className='rpq';
+      const correct=it.type==='mc'?[it.answer]:it.type==='ms'?(it.answer||[]):[], chosen=it.type==='mc'&&a!=null?[a]:it.type==='ms'&&a?a:[], wrong=chosen.filter(k=>!correct.includes(k));
+      q.innerHTML=`<div class="rpqh"><span class="n">Question ${it.n}</span><span class="m">${[it.teks,it.rs,(p[0]||0)+' of '+p[1]+' point'+(p[1]>1?'s':'')].filter(Boolean).map(esc).join(' · ')}</span></div><div class="rpb"></div>
+        <div class="rpa"><span class="no">Your answer:</span><span>${a==null?'No answer':show(it,a)}</span><span class="ok">Correct answer:</span><span>${key(it)}</span></div>`;
+      let el; try{ el=build(it); el.querySelectorAll('[id]').forEach(x=>{ if(!x.closest('svg')) x.removeAttribute('id'); }); el.querySelectorAll('[tabindex]').forEach(x=>x.removeAttribute('tabindex'));
+        if(correct.length) el.querySelectorAll('.choice').forEach(ch=>{ const k=+ch.dataset.k; ch.classList.remove('sel'); if(correct.includes(k)) ch.classList.add('pright'); else if(chosen.includes(k)) ch.classList.add('pwrong'); }); q.querySelector('.rpb').appendChild(el); }catch(e){}
+      let xh='';
+      if(X){ const xw=X.why||{};
+        const parts=correct.length?wrong.map(k=>xw[k]?`<p><b>${LT[k]}:</b> ${xw[k]}</p>`:'').join(''):(a!=null&&X.miss?`<p>${X.miss}</p>`:'');
+        if(parts) xh+=`<div class="rpx bad"><h4>Why that answer doesn't work</h4>${parts}</div>`;
+        xh+=`<div class="rpx"><h4>How to solve it</h4><ol>${(X.how||[]).map(h=>`<li>${h}</li>`).join('')}</ol>${[['Check it',X.check],['Desmos',X.desmos],['NumWorks',X.numworks]].filter(x=>x[1]).map(([l,v])=>`<p><b>${l}:</b> ${v}</p>`).join('')}</div>`; }
+      else { const r=correct.length?correct.map(k=>rat(it.n,LT[k])).join('')+wrong.map(k=>rat(it.n,LT[k])).join(''):rat(it.n,'all');
+        xh=r?`<div class="rpx"><h4>Explanation</h4>${r}</div>`:it.rubric?`<div class="rpx"><h4>How it is scored</h4>${it.rubric}</div>`:'<p class="rpnone">No written explanation for this question yet.</p>'; }
+      q.insertAdjacentHTML('beforeend',xh); page.appendChild(q); });
+    doc.appendChild(page); });
+  S.answers=keep; document.body.appendChild(doc); scrollTo(0,0);
+  return Promise.all([...doc.querySelectorAll('img')].map(i=>i.complete?0:new Promise(r=>{ i.onload=i.onerror=r; setTimeout(r,15000); })));
+};
 function earn(it){ const a=S.answers[it.n]; if(a==null||it.type==='text') return null; /* written answers: the teacher scores them */ if(NOKEY(it)){ const p=OWNPTS&&OWNPTS[it.n]; return p==null?null:+p; } const full=score(it)===true; if(it.max===1||full) return full?it.max:0;
   let hit=0, parts=2;
   if(it.type==='boxes'){ if(it.unordered){ const left=[...it.answer]; a.forEach(q=>{ const i=left.indexOf(q); if(q!=null&&i>=0){ hit++; left.splice(i,1); } }); } else hit=it.answer.filter((q,i)=>a[i]===q).length; parts=it.answer.length; }
