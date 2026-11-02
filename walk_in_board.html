@@ -708,8 +708,10 @@ const SAVE_URL = "https://script.google.com/macros/s/AKfycbx639KsczdlRGLuWguhvJO
        not just the last row. Rows without a readable date fall back to highlighting the last row. */
     const dayOf = r => { for(const c of r){ const m = c.text.match(/\b(\d{1,2})\/(\d{1,2})\/(\d{2,4})\b/); if(m){ const y = +m[3] < 100 ? 2000 + +m[3] : +m[3]; return y * 10000 + +m[1] * 100 + +m[2]; } } return 0; };
     const now = new Date(), todayN = now.getFullYear() * 10000 + (now.getMonth() + 1) * 100 + now.getDate();
-    const days = rows.map(dayOf), past = days.filter(d => d && d <= todayN);   // rows dated after today (added ahead of time) wait their turn
-    const last = past.length ? Math.max(...past) : Math.max(...days);
+    /* today's entries win; on a day with no entry, the next upcoming entry (added ahead of time) is highlighted;
+       with nothing upcoming, the most recent past entry stays highlighted */
+    const days = rows.map(dayOf), past = days.filter(d => d && d <= todayN), ahead = days.filter(d => d > todayN);
+    const last = days.includes(todayN) ? todayN : ahead.length ? Math.min(...ahead) : past.length ? Math.max(...past) : 0;
     const newest = new Set(last ? days.map((d, i) => d === last ? i : -1).filter(i => i >= 0) : [rows.length - 1]);
     const cls = i => i === 0 ? "c-first" : (i === n - 1 && n > 2 ? "c-last" : "");
     const cell = (c, i, tag) => "<" + tag + ' class="' + cls(i) + '">' + (c.href && tag === "td" ? '<a href="' + esc(c.href) + '" target="_blank" rel="noopener">' + esc(c.text) + "</a>" : esc(c.text)) + "</" + tag + ">";
