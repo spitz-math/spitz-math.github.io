@@ -226,7 +226,7 @@ button:disabled{ cursor:default; }
     <p class="rk-sub"><span class="sz-setname">Multiplication facts, 0 to 12.</span> A 4-minute car soccer match against the Rivals. Answers, goals and saves score points, plus 3 challenges every match.</p>
     <div class="rk-steps">
       <div class="rk-step"><b>1. Pit stop</b><span id="rk-step1">Before every kickoff, answer questions. Each right answer fills your boost. Wrong answers fill nothing, so don’t guess.</span></div>
-      <div class="rk-step"><b>2. Drive</b>← → drive. Space jumps (press it again in the air to jump higher). Hold Shift to boost. Shift with ↑ flies.</div>
+      <div class="rk-step"><b>2. Drive</b>← → drive. Space jumps (press it again in the air to jump higher). Hold Shift to boost. Shift with ↑ flies. Drive over the gold pads for a little extra boost.</div>
       <div class="rk-step"><b>3. Score</b>Hit the ball into the orange goal. Aerial goals and long shots score extra. Most goals after 4 minutes wins.</div>
     </div>
     <div class="rk-row"><input class="rk-input" id="rk-nameinput" maxlength="24" placeholder="First name + last initial" autocomplete="off" aria-label="Your name"><button class="sz-mus" id="sz-mus" aria-label="Music on or off, key N">♪ Music on</button><span class="rk-mode" role="group" aria-label="Difficulty"><button class="rk-len" id="rk-rookie" aria-pressed="true">Rookie</button><button class="rk-len" id="rk-pro" aria-pressed="false" title="A sharper Rival, and a wrong answer drains 10 boost. Points ×1.5">★ All-Pro <span>×1.5</span></button></span></div>
@@ -342,7 +342,10 @@ var KIT=SpitzKit.game({ ac:function(){ return AC; }, muted:function(){ return mu
 
 /* ================= THE ARENA: sizes and physics (world px and seconds) ================= */
 var W=1868, H=944, FLOOR=820, CEIL=26, WL=150, WR=W-150, GT=FLOOR-220, GD=118, BR=44, CW=140, CH=54, SC=CW/124;
-var GRAV=1900, BGRAV=1250, ACC=1250, AIRACC=700, FRIC=1700, SPD=460, BMAX=880, BOOSTACC=2300, DRAIN=30, JUMP=760, JUMP2=640;
+var GRAV=1900, BGRAV=1250, ACC=1450, AIRACC=900, FRIC=1700, SPD=540, BMAX=1200, BOOSTACC=3200, DRAIN=24, JUMP=780, JUMP2=680;   /* 2026-11-02 Kody: "more chaotic, crazy boosting around" */
+/* boost pads on the floor: drive over one for +PADB boost, it comes back after PADT seconds */
+var PADS=[WL+230,W*0.33,W/2,W*0.67,WR-230], PADB=14, PADT=4, padT=[0,0,0,0,0];
+function pads(c,me){ if(c.y+CH/2<FLOOR-30) return; for(var i=0;i<PADS.length;i++){ if(padT[i]<=0&&Math.abs(c.x-PADS[i])<CW/2&&c.boost<100){ padT[i]=PADT; c.boost=Math.min(100,c.boost+PADB); if(me){ tone(E6,G6,0,0.1,'sine',0.035); } } } }
 var MATCH=240, OTLEN=60, KX=520, STEP=1/120;
 var NEED=FAST?3:2, GAIN=FAST?20:34, HOT=FAST?8:5;      /* questions before each kickoff; boost per right answer; streak that makes you Supersonic */
 function clamp(v,a,b){ return v<a?a:v>b?b:v; }
@@ -360,7 +363,7 @@ function load(){ try{ var v=JSON.parse(localStorage.getItem(KEY)||'null'); muted
 /* the Rival gets a little better while you lead and a little easier while you trail, so matches stay close */
 function skill(){ return S.pro? clamp(0.6+0.1*(S.buds-S.rivals)+(S.idle>3?0.3:0),0.45,1) : clamp(0.4+0.1*(S.buds-S.rivals)+(S.idle>3?0.35:0),0.28,0.85); }   /* a player who just sits there gets no easing; All-Pro starts 0.2 sharper */
 function hot(){ return S.streak>=HOT; }
-function kickoffReset(){ S.P=car(W/2-KX,1); S.R=car(W/2+KX,-1); S.R.boost=Math.round(30+50*skill()); S.B=ballAtKick(); AI.t=0; AI.j2=false; fx.length=0; }
+function kickoffReset(){ S.P=car(W/2-KX,1); S.R=car(W/2+KX,-1); S.R.boost=Math.round(30+50*skill()); S.B=ballAtKick(); AI.t=0; AI.j2=false; fx.length=0; padT=[0,0,0,0,0]; }
 
 /* ================= POINTS, ALL-PRO, CHALLENGES (2026-10-30 replay update) =================
    The run's score is points, not the goal score: right answers (more on a streak), perfect pit stops, goals (more for aerial goals,
@@ -478,15 +481,18 @@ function carStep(c,ip,dt,mul,me){
   clampX(c); }
 function clampX(c){ var lo=WL+CW/2, hi=WR-CW/2; if(c.x<lo){ c.x=lo; if(c.vx<0) c.vx=0; } if(c.x>hi){ c.x=hi; if(c.vx>0) c.vx=0; } }
 function carsCollide(a,c){ var ox=CW-Math.abs(a.x-c.x), oy=CH-Math.abs(a.y-c.y); if(ox<=0||oy<=0) return;
-  if(ox<oy){ var s=a.x>=c.x?1:-1; a.x+=s*ox/2; c.x-=s*ox/2; if((a.vx-c.vx)*s<0){ var m=(a.vx+c.vx)/2; a.vx=m+s*90; c.vx=m-s*90; if(!SIM) SND.bump(); } }
+  if(ox<oy){ var s=a.x>=c.x?1:-1; a.x+=s*ox/2; c.x-=s*ox/2; if((a.vx-c.vx)*s<0){ var rel=Math.abs(a.vx-c.vx), m=(a.vx+c.vx)/2;
+    if(rel>760){ var hit=Math.abs(a.vx)<Math.abs(c.vx)?a:c, hs=hit===a?s:-s; hit.vx=hs*720; hit.vy=-640; hit.ground=false; hit.jumps=2;   /* a boosted ram sends the other car flying */
+      if(!SIM){ SND.bump(); SND.hit(900); pops.push({t:'BUMP!',x:hit.x,y:hit.y-70,life:0}); shakeT=Math.max(shakeT,0.2); } }
+    else { a.vx=m+s*90; c.vx=m-s*90; if(!SIM) SND.bump(); } } }
   else { var top=a.y<c.y?a:c, bot=top===a?c:a, s2=top.x>=bot.x?1:-1; top.y=bot.y-CH; if(top.vy>0) top.vy=-120; top.vx=bot.vx+s2*320; }   // a car that lands on the other slides off its roof
   clampX(a); clampX(c); }
 function ballStep(b,dt){ b.vy+=BGRAV*dt; var dr=1-0.4*dt; b.vx*=dr; b.vy*=dr;
   b.x+=b.vx*dt; b.y+=b.vy*dt; b.rot+=b.vx*dt/BR;
-  if(b.y+BR>FLOOR){ b.y=FLOOR-BR; if(b.vy>0){ if(b.vy>260&&!SIM) SND.bounce(b.vy); b.vy=b.vy>90?-b.vy*0.66:0; } var f=200*dt; b.vx=Math.abs(b.vx)<=f?0:b.vx-Math.sign(b.vx)*f; }
+  if(b.y+BR>FLOOR){ b.y=FLOOR-BR; if(b.vy>0){ if(b.vy>260&&!SIM) SND.bounce(b.vy); b.vy=b.vy>90?-b.vy*0.74:0; } var f=200*dt; b.vx=Math.abs(b.vx)<=f?0:b.vx-Math.sign(b.vx)*f; }
   if(b.y-BR<CEIL){ b.y=CEIL+BR; if(b.vy<0) b.vy=-b.vy*0.55; }
   side(b,-1); side(b,1);
-  var sp=Math.hypot(b.vx,b.vy); if(sp>1600){ b.vx*=1600/sp; b.vy*=1600/sp; } }
+  var sp=Math.hypot(b.vx,b.vy); if(sp>2100){ b.vx*=2100/sp; b.vy*=2100/sp; } }
 /* one side wall with its goal. u = distance into the field from the goal line (below 0 = inside the goal) */
 function side(b,s){ var wx=s<0?WL:WR, u=s<0?b.x-wx:wx-b.x, vu=s<0?b.vx:-b.vx;
   if(u<BR&&u>=0){
@@ -506,7 +512,7 @@ function hitBall(c,b,pow,who){ b.pvx=b.vx; var hx=CW/2, hy=CH/2, ix=hx-RC, iy=hy
   b.x+=nx*pen; b.y+=ny*pen;
   var vn=(b.vx-c.vx)*nx+(b.vy-c.vy)*ny, vt=-(b.vx-c.vx)*ny+(b.vy-c.vy)*nx;
   if(vn<0){ b.vx+=0.35*vt*ny; b.vy-=0.35*vt*nx; }                                                       // grip: the ball picks up some of the car's sideways speed
-  if(vn<-80){ b.vx-=1.5*vn*nx; b.vy-=1.5*vn*ny; var cs=Math.max(0,c.vx*nx+c.vy*ny), kick=(110+0.4*cs)*pow; b.vx+=nx*kick; b.vy+=ny*kick;
+  if(vn<-80){ b.vx-=1.5*vn*nx; b.vy-=1.5*vn*ny; var cs=Math.max(0,c.vx*nx+c.vy*ny), kick=(150+0.45*cs)*pow; b.vx+=nx*kick; b.vy+=ny*kick;
     if(ny>-0.6) b.vy-=(110+0.22*Math.abs(c.vx))*pow;                                                    // a hit from the side pops the ball up
     b.vx+=(Math.random()-0.5)*70+(who==='bud'?170:-150);                                              // a little aim help: touches lean toward the other goal
     if(!SIM){ var t=performance.now(); if(t-lastHit>110){ lastHit=t; SND.hit(-vn); spark(b.x-nx*BR,b.y-ny*BR,who); } }
@@ -524,7 +530,7 @@ function aiInput(c,b,k,A,dt,o){ var ip={l:0,r:0,up:0,down:0,boost:0,jump:0};
     if(dx<-10){                                                    // the ball is behind (toward its own goal): get back around it
       var gap=-dx, low=b.y>FLOOR-170, near=px>=WR-250; A.tx=Math.min(WR-CW/2,px+200);
       if(b.vx>250&&px>W*0.45&&Math.random()<0.35+k*0.6){ A.tx=WR-CW/2-20; A.boost=c.boost>0; }      // a shot is coming: get back in front of the goal
-      else if(b.vx>300||px>W*0.62) A.boost=Math.random()<0.4+k*0.6;
+      else if(b.vx>300||px>W*0.62) A.boost=Math.random()<0.6+k*0.4;
       if(low&&near&&A.hold<1.5){ A.tx=Math.max(WL+CW/2,px-240); A.hold+=A.t0; A.boost=false; }       // too close to its own goal to get around: hold back instead of pushing it in
       else if(low&&gap<320){ if(gap>110&&c.ground){ A.jump=true; A.j2f=true; } else if(gap<=110&&c.ground) A.tx=c.x-120;   // hop over the ball, never through it
         if(A.hold>=1.5){ A.boost=c.boost>0; A.air=true; } }
@@ -533,8 +539,8 @@ function aiInput(c,b,k,A,dt,o){ var ip={l:0,r:0,up:0,down:0,boost:0,jump:0};
       A.tx=px+(high?48:26);                                         // meet a high ball with the nose, so it flies toward the goal
       if(o&&o.x<px&&px-o.x<420&&!high&&dx<170&&c.ground&&Math.random()<0.4+k*0.6) A.jump=true;   // a car is in the way: chip the ball over it
       if(dx<240&&b.y<c.y-55&&b.y>FLOOR-420&&c.ground) A.jump=true;
-      if(dx>420&&Math.random()<k*0.8) A.boost=true;
-      if(high&&b.y<FLOOR-330&&dx<200&&k>0.5&&c.boost>15&&Math.random()<k){ A.jump=true; A.air=true; A.boost=true; }
+      if(dx>200&&Math.random()<0.45+k*0.5) A.boost=true;
+      if(high&&b.y<FLOOR-260&&dx<260&&k>0.3&&c.boost>10&&Math.random()<0.4+k*0.6){ A.jump=true; A.air=true; A.boost=true; }
     } }
   ip.l=A.tx<c.x-14; ip.r=A.tx>c.x+14;
   if(A.jump){ if(c.ground){ ip.jump=1; A.j2=A.j2f||b.y<FLOOR-230&&Math.random()<0.3+k*0.6; A.j2f=false; } A.jump=false; }
@@ -548,7 +554,9 @@ function stepLive(dt){
   var ip=BOT?(BOT.k<0?{}:mirrorIn(S.P,S.B,BOT.k,BOT.A,dt)):inputP(), sup=hot();
   S.idle=(ip.l||ip.r||ip.jump||ip.boost||ip.up)?0:(S.idle||0)+dt;
   carStep(S.P,ip,dt,sup?1.12:1,!SIM&&!BOT);
-  carStep(S.R,aiInput(S.R,S.B,skill(),AI,dt,S.P),dt,0.75+0.3*skill(),false);
+  carStep(S.R,aiInput(S.R,S.B,skill(),AI,dt,S.P),dt,0.85+0.2*skill(),false);
+  for(var pi=0;pi<padT.length;pi++) if(padT[pi]>0) padT[pi]-=dt;
+  pads(S.P,!SIM&&!BOT); pads(S.R,false);
   carsCollide(S.P,S.R);
   ballStep(S.B,dt);
   hitBall(S.P,S.B,sup?1.18:1,'bud'); hitBall(S.R,S.B,1,'riv'); keepIn(S.B);
@@ -659,6 +667,8 @@ function draw(){ fg.setTransform(RES,0,0,RES,0,0); fg.clearRect(0,0,W,H);
   if(shakeT>0&&!reduced) fg.translate((Math.random()-0.5)*14*shakeT,(Math.random()-0.5)*14*shakeT);
   var b=S.B; shadow(b.x,b.y,BR*0.85); shadow(S.P.x,S.P.y+CH/2,CW*0.47); shadow(S.R.x,S.R.y+CH/2,CW*0.47);
   for(var i=0;i<fx.length;i++){ var p=fx[i], a=1-p.life/p.max; fg.globalAlpha=a; fg.fillStyle=p.c; var s=p.s*(0.5+a*0.5); fg.fillRect(p.x-s/2,p.y-s/2,s,s); } fg.globalAlpha=1;
+  for(var qi=0;qi<PADS.length;qi++){ var on=padT[qi]<=0, fr=on?1:1-padT[qi]/PADT; fg.globalAlpha=on?0.95:0.25+0.25*fr; fg.fillStyle='#FFC93C';
+    fg.beginPath(); fg.ellipse(PADS[qi],FLOOR-3,on?46:46*fr,9,0,0,Math.PI*2); fg.fill(); if(on){ fg.globalAlpha=0.28; fg.beginPath(); fg.ellipse(PADS[qi],FLOOR-6,62,16,0,0,Math.PI*2); fg.fill(); } } fg.globalAlpha=1;
   drawCar(S.R,'riv'); drawCar(S.P,'bud');
   fg.save(); fg.translate(b.x,b.y); fg.rotate(b.rot); var bs=BR/40; fg.drawImage(ballSprite(),-50*bs,-50*bs,100*bs,100*bs); fg.restore();
   /* the arrow over your car, so you can always find it */
