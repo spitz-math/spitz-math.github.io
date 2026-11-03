@@ -283,23 +283,35 @@ details summary{cursor:pointer;color:var(--blue2);font-size:13px;margin-top:8px}
 .sw{display:inline-flex;align-items:center;gap:6px;font-size:13px}
 @media (max-width:900px){ .std{grid-template-columns:1fr} .wm small{display:none} }
 /* write-a-test page (teachers' own questions) */
-.oecol{max-width:900px}
-.oemain{flex:1;min-height:0;display:flex} .oemain>.tbody{flex:1 1 52%;min-width:0}
-.oebank{flex:1 1 48%;min-width:0;display:flex;flex-direction:column;border-left:1px solid var(--line);background:#fff} .oebank[hidden]{display:none}
-.oebh{display:flex;gap:8px;align-items:center;padding:8px 12px;border-bottom:1px solid var(--line);flex-wrap:wrap} .oebh .hint{flex:1;min-width:180px;margin:0} .oebx{display:none}
-.oebg{flex:1;min-height:0;display:grid;grid-template-columns:232px minmax(0,1fr)} .oebside{border-right:1px solid var(--line)} #oeBankSide{padding:12px 10px} #oeBankSide .seg button{flex:1 1 auto;min-width:0;padding:6px 5px;font-size:13px;white-space:normal;line-height:1.2} .oebview{position:relative;min-width:0;min-height:0;display:flex} .oebview>.bkmain{flex:1}
-.oequick{font-size:14px;padding:6px 8px;border:1px solid #9fb0c8;border-radius:6px;background:#fff;max-width:210px}
+/* Make a test (Kody 11/3: like the admin's question bank): bank or one question in the middle, Your test list on the right */
+.oemain{flex:1;min-height:0;display:grid;grid-template-columns:minmax(0,1fr) 300px}
+.oebank,.oeedit{grid-column:1;grid-row:1;min-width:0;min-height:0} .oeside{grid-column:2;grid-row:1}
+.oebank{display:grid;grid-template-columns:240px minmax(0,1fr);grid-template-rows:auto minmax(0,1fr);background:#fff} .oebank[hidden],.oeedit[hidden]{display:none}
+.oebh{grid-column:1/-1;display:none;gap:8px;align-items:center;padding:8px 12px;border-bottom:1px solid var(--line)} .oebh b{flex:1}
+.oebside{border-right:1px solid var(--line);grid-row:2} #oeBankSide{padding:12px 12px} #oeBankSide .seg button{flex:1 1 auto;min-width:0;padding:6px 5px;font-size:13px;white-space:normal;line-height:1.2} .oebview{grid-row:2;position:relative;min-width:0;min-height:0;display:flex} .oebview>.bkmain{flex:1}
+.oecol{max-width:940px;margin:0 auto;display:grid;gap:12px}
+.oenav{display:flex;align-items:center;gap:8px;flex-wrap:wrap} .oenav b{font-size:16px;margin-right:auto} .oenav .hint{margin:0}
+.oeside{background:#fff;border-left:1px solid var(--line);overflow:auto;padding:12px 14px;min-height:0;display:flex;flex-direction:column;gap:8px}
+.oeside label{font-size:12px;font-weight:700;color:var(--mut);display:flex;flex-direction:column;gap:3px}
+.oeside input:not([type=checkbox]),.oeside select{width:100%;border:1px solid #9fb0c8;border-radius:6px;padding:6px 8px;background:#fff;min-height:34px;font-size:14px}
+.oeside label.oecalc{flex-direction:row;align-items:center;gap:6px;font-weight:600;color:var(--ink);font-size:13px}
+.oe2{display:grid;grid-template-columns:minmax(0,1fr) 112px;gap:8px} #oeId{font-family:Consolas,"Courier New",monospace;font-size:13px}
+.oeside .bkclist{min-height:120px} .oeside .msg2{margin-top:0}
+.bkci.on{background:#e8f0fe;box-shadow:inset 3px 0 0 #1f5fd1} .bkci.bad{background:#fdecea} .bkci.bad .t1{color:var(--no)}
+.bkci .t1 .stag{color:#5b2ca0;white-space:nowrap}
+.oeadds,.oebtns{display:flex;gap:6px;flex-wrap:wrap} .oeadds .btn,.oebtns .btn{flex:1 1 auto} .oeadds #oeWrite{flex-basis:100%}
+.oebtns{border-top:1px solid var(--line);padding-top:8px}
+.oetg h3{font-size:13px;text-transform:uppercase;letter-spacing:.04em;color:var(--mut);margin:14px 0 6px}
+.oetiles{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:6px} .oetiles .btn{text-align:left;padding:9px 12px;white-space:normal;line-height:1.25}
 #oeBankBtn[aria-pressed="true"]{background:#e8f0fe;border-color:#1f5fd1}
 .oestaar .oetag{font-size:12px;font-weight:700;color:#5b2ca0;background:#f1eafd;border-radius:999px;padding:2px 9px}
-.oesq{border:1px solid var(--line);border-radius:8px;padding:10px 12px;background:#fafcff;overflow:auto;max-height:420px} .oesq img,.oesq svg,.oespsg img{max-width:100%;height:auto}
+.oesq{border:1px solid var(--line);border-radius:8px;padding:10px 12px;background:#fafcff;overflow:auto} .oesq img,.oesq svg,.oespsg img{max-width:100%;height:auto}
 .oesq ol.oech2{margin:8px 0 0;padding-left:0;list-style:none} .oech2 li{display:flex;gap:8px;padding:3px 0} .oech2 li b{min-width:18px} .oech2 li.ok{color:#17663a;font-weight:700}
 .oespsg{margin-bottom:8px} .oespsg>div{max-height:260px;overflow:auto;border:1px solid var(--line);border-radius:8px;padding:8px 12px;font-size:14px}
-@media (max-width:1180px){ .oebg{grid-template-columns:minmax(0,1fr);grid-template-rows:auto minmax(0,1fr)} .oebside{max-height:32vh;border-right:0;border-bottom:1px solid var(--line)} }
-@media (max-width:900px){ .oebank{position:fixed;inset:0;z-index:48} .oebx{display:inline-block} .oequick{max-width:150px} }
-.oegrow{flex:1;min-width:220px} #oeId{width:190px;font-family:Consolas,"Courier New",monospace}
+@media (max-width:1240px){ .oemain{grid-template-columns:minmax(0,1fr) 262px} .oebank{grid-template-columns:200px minmax(0,1fr)} #oeBankSide{padding:10px 8px} }
+@media (max-width:900px){ .oemain{grid-template-columns:minmax(0,1fr);grid-template-rows:minmax(0,1fr) auto} .oeside{grid-column:1;grid-row:2;border-left:0;border-top:1px solid var(--line);max-height:45vh}
+  .oebank{position:fixed;inset:0;z-index:48;grid-template-columns:minmax(0,1fr);grid-template-rows:auto auto minmax(0,1fr)} .oebh{display:flex} .oebside{grid-row:2;max-height:32vh;border-right:0;border-bottom:1px solid var(--line)} .oebview{grid-row:3} }
 .oewarn{color:#8a5a00;background:#fff6dc;border:1px solid #f0d58a;border-radius:6px;padding:6px 10px}
-.oebar{flex:0 0 auto;display:flex;align-items:center;gap:10px;background:#fff;border-top:1px solid var(--line);padding:8px 16px;flex-wrap:wrap}
-.oebar .sp{flex:1} .oebar .msg2{margin-top:0}
 .oeq{position:relative} .oeq.bad{border-color:var(--no);box-shadow:0 0 0 2px var(--nobg)}
 .oeqh{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:8px}
 .oeqh .num{font-weight:800;font-size:15px;min-width:90px}
@@ -355,7 +367,7 @@ details summary{cursor:pointer;color:var(--blue2);font-size:13px;margin-top:8px}
 .oenl .btn.on{background:#1f6feb;border-color:#1f6feb;color:#fff} .oenlw .oegrid svg{cursor:pointer} .oeshp{display:flex;gap:12px;flex-wrap:wrap;align-items:center;margin-top:8px}
 .oeord .mv{display:flex;gap:2px;padding-top:6px} .oeord .mv button{border:1px solid var(--line);background:#fff;border-radius:4px;padding:2px 6px} .oehtl{margin-top:2px}
 .oeft td.fb{background:#fff6cc} .oeft .fbt{border:0;background:none;font-size:17px;padding:0 4px;cursor:pointer;vertical-align:middle} .oetab.oeft th input,.oetab.oeft td input:not([type]){width:96px}
-@media (max-width:700px){ .oeqh .num{min-width:0;width:100%} #oeId{width:100%} }
+@media (max-width:700px){ .oeqh .num{min-width:0;width:100%} }
 /* question bank page */
 .bkpage{position:fixed;inset:0;background:var(--bg);z-index:46;display:flex;flex-direction:column}
 .bkpage[hidden]{display:none}
@@ -586,36 +598,33 @@ details summary{cursor:pointer;color:var(--blue2);font-size:13px;margin-top:8px}
 </section>
 <section class="tpage" id="oepage" hidden aria-label="Write a test">
   <header class="topbar tb-red"><div class="wm"><svg viewBox="0 0 32 28" aria-hidden="true"><path d="M3 12C3 5 9 2 16 2s13 3 13 10z" fill="#f2a33a"/><g fill="#fff3c4"><ellipse cx="10" cy="6.5" rx="1.1" ry=".6"/><ellipse cx="16" cy="5" rx="1.1" ry=".6"/><ellipse cx="21.5" cy="7" rx="1.1" ry=".6"/><ellipse cx="13" cy="9" rx="1.1" ry=".6"/><ellipse cx="19" cy="9.5" rx="1.1" ry=".6"/></g><path d="M2 12.5h28l-2.5 3-3-2-3 2.5-3-2.5-3 2.5-3-2.5-3 2.5-3-2z" fill="#5fbf3a"/><rect x="2.5" y="15" width="27" height="3" rx="1.2" fill="#f7d13b"/><rect x="2" y="17.5" width="28" height="4.2" rx="2" fill="#7a3b1d"/><path d="M3 22h26c0 2.6-2.4 4-5 4H8c-2.6 0-5-1.4-5-4z" fill="#e8913a"/></svg>SPITZ <span>CHECKPOINT</span><small id="oeHead">Make a test</small></div><div class="sp"></div>
-    <select id="oeQuick" class="oequick" aria-label="Write a question"></select>
     <button class="btn" id="oeBankBtn" aria-pressed="false" title="Released STAAR questions to add to your test">Question bank</button>
     <button class="btn pri" id="oeBack">Back to My sessions</button></header>
-  <div class="oemain"><div class="tbody"><div class="tcol oecol">
-    <section class="tcard"><h2>Your test</h2>
-      <div class="row fr" style="margin-top:0"><label class="fl oegrow">Title<input id="oeTitle" maxlength="80" placeholder="for example Unit 3 Quiz"></label>
-        <label class="fl">Test ID<input id="oeId" maxlength="60" spellcheck="false" autocomplete="off"></label>
-        <label class="fl" title="Teachers of this course can use this test and copy it. Only you can change it.">Course (who can use it)<select id="oeCourse"></select></label><datalist id="oeStdList"></datalist></div>
-      <div class="row"><label class="sw" id="oeCalcWrap"><input type="checkbox" id="oeCalc" checked> Students can use the calculator and graph tool</label></div>
-      <p class="hint" id="oeAbout">Students see your questions in the same testing screen as STAAR practice. The answers you mark stay in Mr. Spitzlberger's Google Sheet and never go to the students' computers, so a student can't look them up. Teachers of the course you pick can give your test and copy it, but only you can change it. Tests stay off the students' practice list.</p>
-      <p class="hint oewarn" id="oeUsed" hidden></p></section>
-    <section class="tcard"><h2>Reading passages <span class="hint" style="font-weight:400">(optional)</span></h2>
+  <div class="oemain">
+  <div class="oebank" id="oeBank" hidden aria-label="Campus question bank"><div class="oebh"><b>Campus question bank</b><button class="btn oebx" id="oeBankX">Close</button></div>
+    <div class="bkside oebside" id="oeBankSide"></div><div class="oebview" id="oeBankView"></div></div>
+  <div class="tbody oeedit" id="oeEdit"><div class="oecol">
+    <div class="oenav" id="oeNav"></div>
+    <section class="tcard" id="oePsgCard" hidden><h2>Reading passages</h2>
       <p class="hint">A passage shows on the left with its questions beside it, like the reading test. Pick the passage on each question that goes with it.</p>
       <div id="oePsgs"></div><div class="row"><button class="btn" id="oeAddPsg">+ Add a passage</button></div></section>
     <div id="oeItems"></div>
-    <section class="tcard oeadd"><div class="row" style="margin-top:0"><b>Reuse:</b><button class="btn" id="oeFromStaar">+ Released STAAR questions</button><button class="btn" id="oeFromBank">+ Shared questions</button><span class="hint">Shared questions: ones you and other teachers of your course saved (Copy… › Save to shared questions).</span></div>
-      <div class="row"><b>Add a question:</b>
-      <button class="btn" data-oeadd="mc">Multiple choice</button><button class="btn" data-oeadd="ms">Check all that apply</button>
-      <button class="btn" data-oeadd="num">Number answer</button><button class="btn" data-oeadd="text">Written answer</button></div>
-      <div class="row"><b>Interactive:</b><button class="btn" data-oeadd="eq">Equation editor</button><button class="btn" data-oeadd="inline">Drop-down</button><button class="btn" data-oeadd="table">Table match</button>
-      <button class="btn" data-oeadd="boxes">Drag into boxes</button><button class="btn" data-oeadd="graph">Plot a point</button><button class="btn" data-oeadd="graphline">Draw a line</button>
-      <button class="btn" data-oeadd="dnd">Drag into groups</button><button class="btn" data-oeadd="venn">Venn diagram</button><button class="btn" data-oeadd="hotspot">Hot spot</button><button class="btn" data-oeadd="graphineq">Graph an inequality</button>
-      <button class="btn" data-oeadd="graphsys">Graph a system</button><button class="btn" data-oeadd="graphfunc">Graph a function</button><button class="btn" data-oeadd="graphexp">Graph an exponential curve</button>
-      <button class="btn" data-oeadd="numline">Number line</button><button class="btn" data-oeadd="filltable">Fill in a table</button><button class="btn" data-oeadd="datadisp">Data display</button><button class="btn" data-oeadd="shade">Shade a model</button>
-      <button class="btn" data-oeadd="figure">Draw a figure</button><button class="btn" data-oeadd="blanks">Fill in the blanks</button><button class="btn" data-oeadd="label">Label a picture</button><button class="btn" data-oeadd="order">Put in order</button><button class="btn" data-oeadd="hottext">Hot text</button><button class="btn" data-oeadd="twopart">Two-part</button></div></section>
+    <section class="tcard oeadd" id="oeAddCard" hidden><p class="hint" style="margin-top:0">Pick the kind of question. You can change it later.</p>
+      <div class="oetg"><h3>Basic</h3><div class="oetiles"><button class="btn" data-oeadd="mc">Multiple choice</button><button class="btn" data-oeadd="ms">Check all that apply</button><button class="btn" data-oeadd="num">Number answer</button><button class="btn" data-oeadd="text">Written answer</button></div></div><div class="oetg"><h3>Type or pick</h3><div class="oetiles"><button class="btn" data-oeadd="eq">Equation editor</button><button class="btn" data-oeadd="inline">Drop-down</button><button class="btn" data-oeadd="blanks">Fill in the blanks</button><button class="btn" data-oeadd="table">Table match</button><button class="btn" data-oeadd="filltable">Fill in a table</button><button class="btn" data-oeadd="twopart">Two-part</button></div></div><div class="oetg"><h3>Drag and sort</h3><div class="oetiles"><button class="btn" data-oeadd="boxes">Drag into boxes</button><button class="btn" data-oeadd="dnd">Drag into groups</button><button class="btn" data-oeadd="venn">Venn diagram</button><button class="btn" data-oeadd="order">Put in order</button><button class="btn" data-oeadd="label">Label a picture</button><button class="btn" data-oeadd="hottext">Hot text</button><button class="btn" data-oeadd="hotspot">Hot spot</button></div></div><div class="oetg"><h3>Graphs and models</h3><div class="oetiles"><button class="btn" data-oeadd="graph">Plot a point</button><button class="btn" data-oeadd="graphline">Draw a line</button><button class="btn" data-oeadd="graphineq">Graph an inequality</button><button class="btn" data-oeadd="graphsys">Graph a system</button><button class="btn" data-oeadd="graphfunc">Graph a function</button><button class="btn" data-oeadd="graphexp">Graph an exponential curve</button><button class="btn" data-oeadd="numline">Number line</button><button class="btn" data-oeadd="datadisp">Data display</button><button class="btn" data-oeadd="shade">Shade a model</button><button class="btn" data-oeadd="figure">Draw a figure</button></div></div>
+      <p class="hint" id="oeAbout">Students see your questions in the same testing screen as STAAR practice. The answers you mark stay in Mr. Spitzlberger's Google Sheet and never go to the students' computers, so a student can't look them up. Teachers of the course you pick can give your test and copy it, but only you can change it. Tests stay off the students' practice list.</p></section>
   </div></div>
-  <aside class="oebank" id="oeBank" hidden aria-label="Campus question bank"><div class="oebh"><b>Campus question bank</b><span class="hint"><b>+ Add</b> puts a released STAAR question in your test as it is. <b>Copy &amp; edit</b> makes it your own question to change.</span><button class="btn oebx" id="oeBankX">Close</button></div>
-    <div class="oebg"><div class="bkside oebside" id="oeBankSide"></div><div class="oebview" id="oeBankView"></div></div></aside></div>
-  <footer class="oebar"><span id="oeCount" class="hint"></span><span class="msg2" id="oeMsg"></span><div class="sp"></div>
-    <button class="btn" id="oePreview">Preview</button><button class="btn" id="oeDraft">Save draft</button><button class="btn pri" id="oePublish">Publish</button></footer>
+  <aside class="oeside" id="oeSide" aria-label="Your test">
+    <div class="bkch"><h3>Your test</h3><span id="oeCount"></span></div>
+    <label>Title<input id="oeTitle" maxlength="80" placeholder="for example Unit 3 Quiz"></label>
+    <div class="oe2"><label>Test ID<input id="oeId" maxlength="60" spellcheck="false" autocomplete="off"></label>
+      <label title="Teachers of this course can use this test and copy it. Only you can change it.">Course<select id="oeCourse"></select></label></div><datalist id="oeStdList"></datalist>
+    <label class="sw oecalc" id="oeCalcWrap"><input type="checkbox" id="oeCalc" checked> Calculator and graph tool</label>
+    <p class="hint oewarn" id="oeUsed" hidden></p>
+    <div class="bkclist" id="oeList"></div>
+    <div class="oeadds"><button class="btn pri" id="oeWrite">+ Write a question</button><button class="btn" id="oeFromBank" title="Questions you and other teachers of your course saved (Copy… › Save to shared questions)">Shared questions</button><button class="btn" id="oePsgBtn">Passages</button></div>
+    <div class="msg2" id="oeMsg"></div>
+    <div class="oebtns"><button class="btn" id="oePreview">Preview</button><button class="btn" id="oeDraft">Save draft</button><button class="btn pri" id="oePublish">Publish</button></div>
+  </aside></div>
   <input type="file" id="oeFile" accept="image/png,image/jpeg,image/gif,image/webp" hidden>
 </section>
 <section class="bkpage" id="bkpage" hidden aria-label="Question bank">
@@ -1591,7 +1600,7 @@ function oeSlug(s){ return String(s).toLowerCase().replace(/[^a-z0-9]+/g,'-').re
 async function oeTaken(){ const L=await campusTests().catch(()=>[]); return new Set(L.map(t=>t.id).concat(((MP.my||{}).tests||[]).map(t=>t.id))); }
 async function oeIdAuto(){ if(!OE||!OE.isNew||$('#oeId').dataset.touched) return; const taken=await oeTaken();
   let base=oeSlug($('#oeTitle').value.replace(/<[^>]*>/g,' '))||'my-test'; if(base.length<3) base+='-test'; let id=base, n=2; while(taken.has(id)) id=base+'-'+(n++); $('#oeId').value=id; }
-function oeDirty(){ if(OE) OE.dirty=true; oeCount(); }
+function oeDirty(){ if(!OE) return; OE.dirty=true; oeCount(); clearTimeout(OE.lt); OE.lt=setTimeout(()=>{ if(OE) oeRenderList(); },400); }
 function oeCount(){ if(!OE) return; const n=OE.items.length, p=OE.items.reduce((a,it)=>a+(+it.points||0),0); $('#oeCount').textContent=plural(n,'question')+(n?' · '+plural(p,'point'):''); }
 /* open the editor: a new test, or one of the teacher's own (id) */
 /* a question as the server sends it -> the editor's; one changed by hand in the Sheet (it.bad) keeps only the parts shaped as the editor expects */
@@ -1606,7 +1615,7 @@ async function oeOpen(id,copy){   /* copy: another teacher's test (or your own) 
     const b=await r.blob(); pics[f]=await new Promise((ok,no)=>{ const fr=new FileReader(); fr.onload=()=>ok(fr.result); fr.onerror=no; fr.readAsDataURL(b); }); }));
   const old=d; if(copy) d=Object.assign({},d,{id:'',status:null,mine:true,title:('Copy of '+d.title).slice(0,80)});
   OE={isNew:!d||!!copy, id:d?d.id:'', status:d?d.status:null, mine:d?d.mine:true, pics, sent:new Set(), dirty:!!copy,
-    passages:d?d.passages.slice():[], items:d?d.items.map(oeFromSheet):[oeBlank('mc')], sig0:d&&!copy?d.items.map(it=>it.type).join():''};
+    passages:d?d.passages.slice():[], items:d?d.items.map(oeFromSheet):[], view:'q', sel:0, bad:new Set(), sig0:d&&!copy?d.items.map(it=>it.type).join():''};
   if(d&&!copy) oeStaarNames(OE.items).forEach(f=>OE.sent.add(f));
   $('#oeTitle').value=d?d.title:''; $('#oeId').value=d?d.id:''; $('#oeId').disabled=!!d&&!copy; delete $('#oeId').dataset.touched;
   $('#oeCourse').innerHTML=OE_COURSES.map(c=>`<option>${c}</option>`).join(''); $('#oeCourse').value=d?d.course:oeCourseFor((MP.my||{}).subject||'');
@@ -1614,11 +1623,11 @@ async function oeOpen(id,copy){   /* copy: another teacher's test (or your own) 
   const S=(DATA?DATA.sessions:[]).filter(s=>d&&s.test===d.id);
   $('#oeUsed').hidden=!S.length; $('#oeUsed').textContent=S.length?`Students have taken this test in ${plural(S.length,'session')}. If you change an answer, click Re-score on those sessions in Your sessions so their scores use the new answer.`:'';
   $('#oeHead').textContent=copy?'Your copy of '+old.title:d?(OE.mine?'Edit your test':'Look at a test'):'Make a test';
-  const bad=d?d.items.filter(it=>it.bad):[]; say($('#oeMsg'),bad.length?bad.map(it=>`Question ${it.n} was changed in the Sheet: ${it.bad}`).join(' ')+' Fix '+(bad.length>1?'them':'it')+' here and save.':'',bad.length?'err':''); oeButtons(); oeRender(); openPage('#oepage'); $('#oepage .tbody').scrollTop=0;
+  const bad=d?d.items.filter(it=>it.bad):[]; say($('#oeMsg'),bad.length?bad.map(it=>`Question ${it.n} was changed in the Sheet: ${it.bad}`).join(' ')+' Fix '+(bad.length>1?'them':'it')+' here and save.':'',bad.length?'err':''); oeButtons(); oeRender(); openPage('#oepage'); $('#oeEdit').scrollTop=0;
   oeBankShow(!!OE.mine&&innerWidth>900&&(!d||!!copy||OE.items.some(it=>it.type==='staar')));
   if(!d||copy) await oeIdAuto(); }
 function oeButtons(){ const out=OE.status&&OE.status!=='draft';
-  $('#oeDraft').hidden=out||!OE.mine; $('#oePublish').hidden=!OE.mine; $('#oePublish').textContent=out?'Save changes':'Publish'; }
+  $('#oeDraft').hidden=out||!OE.mine; $('#oePublish').hidden=!OE.mine; ['#oeWrite','#oeFromBank'].forEach(k=>$(k).hidden=!OE.mine); $('#oePublish').textContent=out?'Save changes':'Publish'; }
 function oeCourseSync(){ const rla=/RLA/.test($('#oeCourse').value); $('#oeCalcWrap').hidden=rla;
   $('#oeStdList').innerHTML=courseStds($('#oeCourse').value).map(t=>`<option value="${esc(t.k)}">${esc(t.k+'  '+t.label)}</option>`).join(''); }
 const OE_NOCALC=['6th Math','7th Math','8th History'];
@@ -1633,8 +1642,39 @@ function oeRenderPsgs(){ const box=$('#oePsgs'); box.innerHTML='';
   box.querySelectorAll('[data-rp]').forEach(b=>b.onclick=()=>{ const i=+b.dataset.rp;
     if(OE.passages[i]&&!confirm('Remove passage '+(i+1)+'? Questions that use it stay, without a passage.')) return;
     OE.passages.splice(i,1); OE.items.forEach(it=>{ const k=+String(it.passage||'').slice(1); if(k===i+1) it.passage=''; else if(k>i+1) it.passage='P'+(k-1); }); oeDirty(); oeRender(); }); }
-function oeRenderItems(){ const box=$('#oeItems'); box.innerHTML='';
-  OE.items.forEach((it,i)=>box.appendChild(oeCard(it,i))); }
+/* the middle shows the question bank (OE.view 'bank'), one question (q, OE.sel), the passages (psg) or the kinds of question to write (add);
+   the Your test list on the right shows every question (Kody 11/3: like the admin's question bank, not one long page) */
+function oeShowMid(){ const v=OE.view, bank=v==='bank'; $('#oeBank').hidden=!bank; $('#oeEdit').hidden=bank; $('#oeBankBtn').setAttribute('aria-pressed',bank);
+  $('#oePsgCard').hidden=v!=='psg'; $('#oeAddCard').hidden=v!=='add'; $('#oeItems').hidden=v!=='q'; }
+function oeRenderItems(){ if(!OE.bad) OE.bad=new Set(); if(!OE.view) OE.view='q'; const n=OE.items.length; OE.sel=Math.max(0,Math.min(OE.sel|0,n-1)); if(OE.view==='q'&&!n) OE.view=OE.mine?'add':'q';
+  const box=$('#oeItems'); box.innerHTML=''; if(OE.view==='q'&&n){ const c=oeCard(OE.items[OE.sel],OE.sel); if(OE.bad.has(OE.sel)) c.classList.add('bad'); box.appendChild(c); }
+  oeShowMid(); oeRenderList(); oeRenderNav(); }
+function oeItemInfo(it){ if(it.type==='staar'){ const S=it.staar||{}, q=S.item||{}, m=String(S.src||'').match(/(\d{4})\D*?Q(\d+)/); return {t1:'<span class="stag">STAAR'+(m?' '+m[1]+' Q'+m[2]:'')+'</span>', t2:plainText(q.stem||'')}; }
+  return {t1:esc(OE_TYPES[it.type==='dnd'&&it.venn?'venn':it.type]||it.type), t2:oePlain(it.text)||(it.pic?'(a picture)':'')}; }
+function oeRenderList(){ const n=OE.items.length, mine=OE.mine;
+  $('#oeList').innerHTML=n?OE.items.map((it,i)=>{ const f=oeItemInfo(it); return `<div class="bkci${OE.view==='q'&&i===OE.sel?' on':''}${OE.bad.has(i)?' bad':''}" data-i="${i}" title="Open question ${i+1}"><span class="num">${i+1}</span><div style="min-width:0"><div class="t1">${it.std?esc(it.std)+' · ':''}${f.t1}${+it.points>1?' · '+it.points+' pts':''}</div><div class="t2">${esc(f.t2.slice(0,90))||'<i>blank</i>'}</div></div>
+    ${mine?`<div class="mv"><button data-mv="-1" aria-label="Move question ${i+1} up" ${i?'':'disabled'}>▲</button><button data-mv="1" aria-label="Move question ${i+1} down" ${i<n-1?'':'disabled'}>▼</button><button data-rm aria-label="Delete question ${i+1}">✕</button></div>`:''}</div>`; }).join('')
+    :'<div class="bkempty">Click <b>+ Add</b> on a question in the bank, or <b>+ Write a question</b>.</div>';
+  $('#oePsgBtn').textContent='Passages'+(OE.passages.length?' ('+OE.passages.length+')':''); $('#oePsgBtn').classList.toggle('on',OE.view==='psg');
+  const sel=$('#oeList .bkci.on'); if(sel) sel.scrollIntoView({block:'nearest'}); }
+function oeRenderNav(){ const v=OE.view, n=OE.items.length, bk=OE.mine?'<button class="btn" data-nav="bank">‹ Question bank</button>':'';
+  $('#oeNav').innerHTML=v==='q'?(n?`<b>Question ${OE.sel+1} of ${n}</b><button class="btn" data-nav="prev" ${OE.sel?'':'disabled'}>‹ Previous</button><button class="btn" data-nav="next" ${OE.sel<n-1?'':'disabled'}>Next ›</button>${bk}`:'<b>No questions yet</b>'+bk)
+    :v==='psg'?'<b>Reading passages</b>'+(n?'<button class="btn" data-nav="q">Back to question '+(OE.sel+1)+'</button>':'')+bk
+    :'<b>Write a question</b>'+(n?'<button class="btn" data-nav="q">Back to question '+(OE.sel+1)+'</button>':'')+bk; }
+/* open question i (or another view) in the middle */
+function oeGo(i,view){ if(!OE) return; OE.view=view||'q'; if(i!=null) OE.sel=i; oeRenderItems(); $('#oeEdit').scrollTop=0;
+  const it=OE.items[OE.sel]; if(OE.view==='q'&&it&&it.type!=='staar'&&!oePlain(it.text)){ const ed=$('#oeItems .oeed'); if(ed) ed.focus(); } }
+/* move question i to j, keeping the open one open */
+function oeMove(i,j){ [OE.items[i],OE.items[j]]=[OE.items[j],OE.items[i]]; if(OE.sel===i) OE.sel=j; else if(OE.sel===j) OE.sel=i; OE.bad.clear(); oeDirty(); oeRenderItems(); }
+function oeRemove(i){ const it=OE.items[i]; OE.items.splice(i,1); if(OE.sel>i||OE.sel>=OE.items.length) OE.sel=Math.max(0,OE.sel-1); OE.bad.clear();
+  if(it&&it.type==='staar'&&QB.inEd) viewPost({op:'added',added:addedUids()}); oeDirty(); oeRenderItems(); }
+$('#oeList').addEventListener('click',e=>{ const row=e.target.closest('.bkci'); if(!row||!OE) return; const i=+row.dataset.i, it=OE.items[i], mv=e.target.closest('[data-mv]');
+  if(mv){ oeMove(i,i+ +mv.dataset.mv); return; }
+  if(e.target.closest('[data-rm]')){ if(it.type!=='staar'&&(oePlain(it.text)||(it.choices||[]).some(x=>oePlain(x)))&&!confirm('Delete question '+(i+1)+'?')) return; oeRemove(i); say($('#oeMsg'),'Deleted question '+(i+1)+'.','ok'); return; }
+  say($('#oeMsg'),''); oeGo(i); });
+$('#oeNav').addEventListener('click',e=>{ const b=e.target.closest('[data-nav]'); if(!b||!OE) return; const k=b.dataset.nav;
+  if(k==='bank') oeBankShow(true); else if(k==='prev') oeGo(OE.sel-1); else if(k==='next') oeGo(OE.sel+1); else oeGo(null,'q'); });
+$('#oeWrite').onclick=()=>{ say($('#oeMsg'),''); oeGo(null,'add'); }; $('#oePsgBtn').onclick=()=>oeGo(null,'psg');
 function oeCard(it,i){ if(it.type==='staar') return oeStaarCard(it,i); const c=document.createElement('section'); c.className='tcard oeq'; c.dataset.i=i; const n=OE.items.length;
   const psg=OE.passages.length?`<label class="hint">Passage <select class="pg"><option value="">None</option>${OE.passages.map((p,k)=>`<option value="P${k+1}"${it.passage==='P'+(k+1)?' selected':''}>Passage ${k+1}</option>`).join('')}</select></label>`:'';
   c.innerHTML=`<div class="oeqh"><span class="num">Question ${i+1}</span>
@@ -1681,10 +1721,9 @@ function oeCard(it,i){ if(it.type==='staar') return oeStaarCard(it,i); const c=d
   const pg=c.querySelector('.pg'); if(pg) pg.onchange=e=>{ it.passage=e.target.value; oeDirty(); };
   const pw=c.querySelector('.pw'); if(pw) pw.onchange=e=>{ it.pic.w=+e.target.value; oeDirty(); };
   c.querySelector('.mv').addEventListener('click',e=>{ const b=e.target.closest('button'); if(!b) return;
-    if(b.dataset.mv){ const j=i+ +b.dataset.mv; [OE.items[i],OE.items[j]]=[OE.items[j],OE.items[i]]; }
-    else if(b.dataset.cp){ obCopy(i); return; }
-    else if(b.dataset.rm){ if((oePlain(it.text)||(it.choices||[]).some(x=>oePlain(x)))&&!confirm('Delete question '+(i+1)+'?')) return; OE.items.splice(i,1); }
-    oeDirty(); oeRenderItems(); });
+    if(b.dataset.mv){ oeMove(i,i+ +b.dataset.mv); return; }
+    if(b.dataset.cp){ obCopy(i); return; }
+    if(b.dataset.rm){ if((oePlain(it.text)||(it.choices||[]).some(x=>oePlain(x)))&&!confirm('Delete question '+(i+1)+'?')) return; oeRemove(i); } });
   pic.addEventListener('click',e=>{ const b=e.target.closest('button'); if(!b) return;
     if(b.dataset.pr){ it.pic=null; oeDirty(); oeRenderItems(); return; }
     if(b.dataset.pa){ OE.picFor=i; $('#oeFile').value=''; $('#oeFile').click(); } });
@@ -1721,10 +1760,10 @@ function oeCheckOne(it,ed,i,P){ const q='Question '+(i+1)+': '; if(it.type==='st
     if(it.type==='num'&&!/^-?\d+(\.\d+)?(\/-?\d+(\.\d+)?)?$/.test(String(it.answer||'').replace(/[−]/g,'-').replace(/,/g,''))) P.push([i,q+'the answer has to be a number, like 12, -3.5 or 3/4.']);
   return P; }
 async function oeSave(publish){ if(!OE||OE.busy) return; const b=oeGather(), P=oeCheck(b,publish), msg=$('#oeMsg');
-  document.querySelectorAll('.oeq.bad').forEach(x=>x.classList.remove('bad'));
-  if(P.length){ P.forEach(([i])=>{ if(i!=null){ const c=document.querySelector(`.oeq[data-i="${i}"]`); if(c) c.classList.add('bad'); } });
-    say(msg,esc(P[0][1])+(P.length>1?` (and ${plural(P.length-1,'more thing')} to fix)`:''),'err');
-    const c=P[0][0]!=null&&document.querySelector(`.oeq[data-i="${P[0][0]}"]`); if(c) c.scrollIntoView({behavior:'smooth',block:'center'}); return; }
+  OE.bad=new Set(P.map(x=>x[0]).filter(i=>i!=null));
+  if(P.length){ say(msg,esc(P[0][1])+(P.length>1?` (and ${plural(P.length-1,'more thing')} to fix)`:''),'err');
+    const q=P.find(x=>x[0]!=null); if(q) oeGo(q[0]); else oeRenderItems(); return; }
+  oeRenderItems();
   const used=new Set(b.items.filter(it=>it.pic).map(it=>it.pic.file));
   try{ await oeStaarPics(b.items,OE.pics,OE.sent); }catch(x){ return say(msg,errText(x),'err'); }
   oeStaarNames(b.items).forEach(f=>used.add(f));
@@ -1764,7 +1803,7 @@ $('#oePreview').onclick=async()=>{ if(!OE) return; const b=oeGather(); if(!b.ite
 $('#oeDraft').onclick=()=>oeSave(false); $('#oePublish').onclick=()=>oeSave(true);
 $('#oeAddPsg').onclick=()=>{ if(OE.passages.length>=20) return; OE.passages.push(''); oeDirty(); oeRender(); };
 document.querySelector('.oeadd').addEventListener('click',e=>{ const b=e.target.closest('[data-oeadd]'); if(!b||!OE) return; if(OE.items.length>=100) return say($('#oeMsg'),'A test can have up to 100 questions.','err');
-  OE.items.push(oeBlank(b.dataset.oeadd)); oeDirty(); oeRenderItems(); const last=$('#oeItems').lastElementChild; last.scrollIntoView({behavior:'smooth',block:'center'}); const ed=last.querySelector('.oeed'); if(ed) ed.focus(); });
+  OE.items.push(oeBlank(b.dataset.oeadd)); oeDirty(); oeGo(OE.items.length-1); });
 $('#oeTitle').oninput=()=>{ oeDirty(); oeIdAuto(); }; $('#oeId').oninput=e=>{ e.target.dataset.touched=1; oeDirty(); };
 $('#oeCourse').onchange=()=>{ if(OE_NOCALC.includes($('#oeCourse').value)) $('#oeCalc').checked=false; oeCourseSync(); oeDirty(); }; $('#oeCalc').onchange=oeDirty;
 $('#oeBack').onclick=async()=>{ if(OE&&OE.dirty&&OE.mine&&!await ask('Leave without saving?','<p>Your changes since the last save will be lost.</p>','Leave')) return;
@@ -1794,7 +1833,7 @@ function obCopy(i){ const it=OE.items[i], L=obMyTests();
     <div class="msg2" id="obMsg"></div>`);
   const msg=$('#obMsg'), busy=v=>$('#obBody').querySelectorAll('button').forEach(b=>b.disabled=v);
   $('#obBody').onclick=async e=>{ const b=e.target.closest('[data-ob]'); if(!b) return; const what=b.dataset.ob;
-    if(what==='here'){ OE.items.splice(i+1,0,JSON.parse(JSON.stringify(it))); oeDirty(); oeRenderItems(); obHide(); return; }
+    if(what==='here'){ OE.items.splice(i+1,0,JSON.parse(JSON.stringify(it))); oeDirty(); oeGo(i+1); obHide(); say($('#oeMsg'),'Copied as question '+(i+2)+'.','ok'); return; }
     try{ obReady(i); }catch(x){ return say(msg,esc(x.message),'err'); }
     if(what==='to'){ const id=$('#obTo').value, t=L.find(x=>x.id===id);
       if(t.status!=='draft'&&!await ask('Add it to a published test?',`<p><b>${esc(t.title)}</b> is published. The question goes on the end, as question ${(t.n||0)+1}, and students see it the next time they open the test.</p>`,'Copy it')) return;
@@ -1856,7 +1895,7 @@ async function obOpen(){ OB.sel=new Set(); obShow('Shared questions','<p class="
         add.push(ed); }
       const first=OE.items.length; OE.passages=psgs; OE.items.push(...add); oeDirty(); oeRender(); obHide();
       say($('#oeMsg'),plural(add.length,'question')+' added from shared questions, starting at question '+(first+1)+'. Save to keep '+(add.length>1?'them':'it')+'.','ok');
-      const c=document.querySelector(`.oeq[data-i="${first}"]`); if(c) c.scrollIntoView({behavior:'smooth',block:'center'}); }
+      oeGo(first); }
     catch(x){ say($('#obMsg'),errText(x),'err'); $('#obAdd').disabled=false; } };
   draw(); $('#obFind').focus(); }
 $('#oeFromBank').onclick=()=>{ if(OE) obOpen(); };
@@ -1874,8 +1913,11 @@ function oeBankUnmount(){ QB.inEd=false; if(!OEB.mounted) return; OEB.mounted=fa
   document.querySelector('#bkpage .bkside').append($('#bkMsg'),$('#bkFileRow'),$('#bkFilters'));
   document.querySelector('#bkpage .bkgrid').insertBefore($('#bkMain'),document.querySelector('#bkpage .bkcart')); QB.frameReady=null; if(QB.ready) viewFrame().then(()=>refreshView()).catch(()=>{}); }
 const oeBankCourse=()=>Object.keys(COURSES).find(k=>COURSES[k].course===$('#oeCourse').value)||null;
-async function oeBankShow(on){ $('#oeBank').hidden=!on; $('#oeBankBtn').setAttribute('aria-pressed',on); $('#oeBankBtn').hidden=!(OE&&OE.mine); if(!on) return;
-  oeBankMount(); QB.mine=true;
+async function oeBankShow(on){ if(!OE) return; $('#oeBankBtn').hidden=!OE.mine; if(!OE.mine) on=false;
+  if(!on){ if(OE.view==='bank') OE.view='q'; oeRenderItems(); return; }
+  const keep=OEB.mounted&&QB.ready&&!!QB.frameReady&&OEB.for===OE;   /* back to the bank from a question: it stays where the teacher left it */
+  OE.view='bank'; oeRenderItems(); oeBankMount(); QB.mine=true;
+  if(keep){ viewPost({op:'added',added:addedUids()}); return; } OEB.for=OE;
   const c=oeBankCourse(); if(c&&c!==QB.course){ QB.course=c; $('#bkCourse').value=c; if(c!=='alg1'&&QB.mode!=='rel'){ QB.mode='rel'; segSet('#bkSrc','rel'); } $('#bkCat').value=''; $('#bkStd').value='*'; QB.genKey=''; }
   else if(!QB.course){ QB.course=bkCourseFor(); $('#bkCourse').value=QB.course; }
   try{ if(!TP.index.length) TP.index=await campusTests(); }catch(e){}
@@ -1883,7 +1925,7 @@ async function oeBankShow(on){ $('#oeBank').hidden=!on; $('#oeBankBtn').setAttri
   await QB.loading;
   try{ await viewFrame(); }catch(e){ over('The preview could not start: '+errText(e)); return; }
   if(QB.ready){ fillFilters(); refreshView(); } }
-$('#oeBankBtn').onclick=()=>oeBankShow($('#oeBank').hidden); $('#oeBankX').onclick=()=>oeBankShow(false); $('#oeFromStaar').onclick=()=>oeBankShow(true);
+$('#oeBankBtn').onclick=()=>oeBankShow($('#oeBank').hidden); $('#oeBankX').onclick=()=>oeBankShow(false);
 $('#oeCourse').addEventListener('change',()=>{ if(!$('#oeBank').hidden&&OEB.mounted&&QB.ready){ const c=oeBankCourse(); if(c&&c!==QB.course){ QB.course=c; $('#bkCourse').value=c; if(c!=='alg1'&&QB.mode!=='rel'){ QB.mode='rel'; segSet('#bkSrc','rel'); } $('#bkCat').value=''; $('#bkStd').value='*'; QB.genKey=''; fillFilters(); refreshView(); } } });
 /* why a released question can't go in a teacher's test ('' = it can) */
 function oeStaarNo(e){ const q=e&&e.item; if(!q) return 'That question is not in the list anymore.';
@@ -1917,8 +1959,7 @@ async function oeBankCopy(uid){ const e=QB.view.find(x=>x.uid===uid); if(!e) ret
   say($('#oeMsg'),'Copying…');
   try{ const ed=await oeConvert({item:e.item,psg:e.psg||'',src:e.item.src||''},e.std||''); if(oeBlankStart()) OE.items.splice(0,1);
     OE.items.push(ed); oeDirty(); oeRender(); const n=OE.items.length;
-    say($('#oeMsg'),'Copied as question '+n+'. It is your own question now: change anything you like.','ok');
-    const c=document.querySelector(`.oeq[data-i="${n-1}"]`); if(c) c.scrollIntoView({behavior:'smooth',block:'center'}); }
+    say($('#oeMsg'),'Copied as question '+n+'. It is your own question now: change anything you like.','ok'); oeGo(n-1); }
   catch(x){ say($('#oeMsg'),errText(x),'err'); } }
 /* a released question's pictures (@@test/img/file@@): their names in the teacher's test, and getting the ones not saved there yet */
 const oeStaarRefs=items=>{ const out=[]; items.filter(it=>it.type==='staar'&&it.staar).forEach(it=>{ for(const m of (JSON.stringify(it.staar.item)+(it.staar.psg||'')).matchAll(/@@([a-z0-9-]+)\/img\/([A-Za-z0-9._\-\/]+)@@/g)) out.push({id:m[1],f:m[2],name:'s-'+fnv(m[1]+'/'+m[2])+'.'+m[2].split('.').pop().toLowerCase()}); }); return out; };
@@ -1946,13 +1987,12 @@ function oeStaarCard(it,i){ const c=document.createElement('section'); c.classNa
   c.querySelector('.pt').onchange=e=>{ it.points=+e.target.value; oeDirty(); };
   c.querySelector('.std').oninput=e=>{ it.std=e.target.value; oeDirty(); };
   c.querySelector('.mv').addEventListener('click',e=>{ const b=e.target.closest('button'); if(!b) return;
-    if(b.dataset.mv){ const j=i+ +b.dataset.mv; [OE.items[i],OE.items[j]]=[OE.items[j],OE.items[i]]; }
-    else if(b.dataset.cp){ obCopy(i); return; }
-    else if(b.dataset.rm){ OE.items.splice(i,1); if(QB.inEd) viewPost({op:'added',added:addedUids()}); }
-    oeDirty(); oeRenderItems(); });
+    if(b.dataset.mv){ oeMove(i,i+ +b.dataset.mv); return; }
+    if(b.dataset.cp){ obCopy(i); return; }
+    if(b.dataset.rm) oeRemove(i); });
   const cv=c.querySelector('[data-cv]'); if(cv) cv.onclick=async()=>{ cv.disabled=true;
     try{ const ed=await oeConvert(S,it.std||''); ed.points=+it.points||ed.points; OE.items.splice(i+1,0,ed); oeDirty(); oeRender(); say($('#oeMsg'),'Copied as question '+(i+2)+'. It is your own question now: change anything you like. You can delete the STAAR one if you don\'t need it.','ok');
-      const nc=document.querySelector(`.oeq[data-i="${i+1}"]`); if(nc) nc.scrollIntoView({behavior:'smooth',block:'center'}); }
+      oeGo(i+1); }
     catch(x){ say($('#oeMsg'),errText(x),'err'); cv.disabled=false; } };
   return c; }
 /* Copy & edit: a released question -> the teacher's own question. Its pictures and graphs become one picture under the question. */
@@ -1986,11 +2026,6 @@ async function oeConvert(S,std){ const q=S.item||{}; if(oeConvNo(q)) throw new E
   const ed=oeFromSheet(o);
   if(S.psg){ const h=S.psg.replace(/<img[^>]*>/gi,''); let k=OE.passages.indexOf(h); if(k<0&&OE.passages.length<20){ OE.passages.push(h); k=OE.passages.length-1; } if(k>=0) ed.passage='P'+(k+1); }
   return ed; }
-/* + Write a question (top bar): a new question of the type picked, at the end */
-$('#oeQuick').innerHTML='<option value="">+ Write a question…</option>'+Object.keys(OE_TYPES).map(k=>`<option value="${k}">${esc(OE_TYPES[k])}</option>`).join('');
-$('#oeQuick').onchange=e=>{ const t=e.target.value; e.target.value=''; if(!t||!OE) return; if(OE.items.length>=100) return say($('#oeMsg'),'A test can have up to 100 questions.','err');
-  if(oeBlankStart()&&t!=='mc') OE.items.splice(0,1); else if(oeBlankStart()) return document.querySelector('.oeq[data-i="0"] .oeed')?.focus();
-  OE.items.push(oeBlank(t)); oeDirty(); oeRenderItems(); const last=$('#oeItems').lastElementChild; last.scrollIntoView({behavior:'smooth',block:'center'}); const ed=last.querySelector('.oeed'); if(ed) ed.focus(); };
 $('#mtOwn').onclick=async()=>{ const b=$('#mtOwn'); b.disabled=true; try{ await myTests(); await oeOpen(null); }catch(x){ say($('#mtMsg'),errText(x),'err'); } b.disabled=false; };
 /* a teacher's own test, seen whole (with its answers) by the people allowed to: its test.js on the site has no answers */
 async function ownJs(id,text){ if(text!=null&&!/"keyless":true/.test(text)) return text;
