@@ -131,6 +131,64 @@
      ]
     }
    }
+  },
+  {
+   "bid": "s:d53bcd3073394595",
+   "std": "A.3E",
+   "kind": "new numbers",
+   "year": 2024,
+   "q": 38,
+   "firstTest": "exit-ticket-11-4",
+   "savedAt": "2026-11-03",
+   "item": {
+    "teks": "A1.2.3.E",
+    "cat": 2,
+    "rs": "Supporting",
+    "src": "Based on STAAR Algebra I 2024, Q38 (adapted from a drop-down format) (fresh numbers)",
+    "type": "mc",
+    "label": "Multiple choice",
+    "choices": [
+     "The graph of <var>g</var> is steeper than the graph of <var>f</var>, and <var>g</var> has a <var>y</var>-intercept that is less than that of <var>f</var>.",
+     "The graph of <var>g</var> has the same steepness as the graph of <var>f</var>, and <var>g</var> has a <var>y</var>-intercept that is greater than that of <var>f</var>.",
+     "The graph of <var>g</var> is steeper than the graph of <var>f</var>, and <var>g</var> has a <var>y</var>-intercept that is greater than that of <var>f</var>.",
+     "The graph of <var>g</var> is less steep than the graph of <var>f</var>, and <var>g</var> has a <var>y</var>-intercept that is greater than that of <var>f</var>."
+    ],
+    "answer": 2,
+    "stem": "<p>The graph of <var>f</var>(<var>x</var>) = <var>x</var> is transformed to create the graph of <var>g</var>(<var>x</var>) = 3<var>f</var>(<var>x</var>) + 1.</p><p>Which statement correctly compares the graphs of <var>f</var> and <var>g</var>?</p>",
+    "notes": {
+     "work": "Multiplying by 3 makes the graph steeper, and adding 1 raises the y-intercept from 0 to 1, which is greater than f's y-intercept.",
+     "why": null
+    }
+   }
+  },
+  {
+   "bid": "s:2fb996a0b14e47e6",
+   "std": "A.3E",
+   "kind": "new numbers",
+   "year": 2018,
+   "q": 35,
+   "firstTest": "exit-ticket-11-4",
+   "savedAt": "2026-11-03",
+   "item": {
+    "teks": "A1.2.3.E",
+    "cat": 2,
+    "rs": "Supporting",
+    "src": "Based on STAAR Algebra I 2018, Q35 (fresh numbers)",
+    "type": "mc",
+    "label": "Multiple choice with graph",
+    "choices": [
+     "<var>g</var>(<var>x</var>) = <var>f</var>(<var>x</var>) − 1",
+     "<var>g</var>(<var>x</var>) = 2<var>f</var>(<var>x</var>)",
+     "<var>g</var>(<var>x</var>) = <var>f</var>(<var>x</var>) − 5",
+     "<var>g</var>(<var>x</var>) = <span class=\"frac\"><span>1</span><span>2</span></span><var>f</var>(<var>x</var>)"
+    ],
+    "answer": 3,
+    "stem": "<p>The graphs of linear functions <var>f</var> and <var>g</var> are shown on the grid (<var>f</var> in orange, <var>g</var> in blue).</p><div><svg viewBox=\"0 0 240 190\" xmlns=\"http://www.w3.org/2000/svg\" style=\"background:#fff\" class=\"fig\" width=\"340\"><line x1=\"22\" y1=\"22\" x2=\"22\" y2=\"168\" stroke=\"#e5e5e2\" stroke-width=\"1\"/><line x1=\"36\" y1=\"22\" x2=\"36\" y2=\"168\" stroke=\"#e5e5e2\" stroke-width=\"1\"/><line x1=\"50\" y1=\"22\" x2=\"50\" y2=\"168\" stroke=\"#e5e5e2\" stroke-width=\"1\"/><line x1=\"64\" y1=\"22\" x2=\"64\" y2=\"168\" stroke=\"#e5e5e2\" stroke-width=\"1\"/><line x1=\"78\" y1=\"22\" x2=\"78\" y2=\"168\" stroke=\"#e5e5e2\" stroke-width=\"1\"/><line x1=\"92\" y1=\"22\" x2=\"92\" y2=\"168\" stroke=\"#e5e5e2\" stroke-width=\"1\"/><line x1=\"106\" y1=\"22\" x2=\"106\" y2=\"168\" stroke=\"#e5e5e2\" stroke-width=\"1\"/><line x1=\"120\" y1=\"22\" x2=\"120\" y2=\"168\" stroke=\"#e5e5e2\" stroke-width=\"1\"/><line x1=\"134\" y1=\"22\" x2=\"134\" y2=\"168\" stroke=\"#e5e5e2\" stroke-width=\"1\"/><line x1=\"148\" y1=\"22\" x2=\"148\" y2=\"168\" stroke=\"#e5e5e2\" stroke-width=\"1\"/><line x1=\"162\" y1=\"22\" x2=\"162\" y2=\"168\" stroke=\"#e5e5e2\" stroke-width=\"1\"/><line x1=\"176\" y1=\"22\" x2=\"176\" y2=\"168\" stroke=\"#e5e5e2\" stroke-width=\"1\"/><line x1=\"190\" y1=\"22\" x2=\"190\" y2=\"168\" stroke=\"#e5e5e2\" stroke-width=\"1\"/><line x1=\"204\" y1=\"22\" x2=\"204\" y2=\"168\" stroke=\"#e5e5e2\" stroke-width=\"1\"/><line x1=\"218\" y1=\"22\" x2=\"218\" y2=\"168\" stroke=\"#e5e5e2\" stroke-width=\"1\"/><line x1=\"22\" y1=\"168\" x2=\"218\" y2=\"168\" stroke=\"#e5e5e2\" stroke-width=\"1\"/><line x1=\"22\" y1=\"157.57142857142858\" x2=\"218\" y2=\"157.57142857142858\" stroke=\"#e5e5e2\" stroke-width=\"1\"/><line x1=\"22\" y1=\"147.14285714285714\" x2=\"218\" y2=\"147.14285714285714\" stroke=\"#e5e5e2\" stroke-width=\"1\"/><line x1=\"22\" y1=\"136.71428571428572\" x2=\"218\" y2=\"136.71428571428572\" stroke=\"#e5e5e2\" stroke-width=\"1\"/><line x1=\"22\" y1=\"126.28571428571428\" x2=\"218\" y2=\"126.28571428571428\" stroke=\"#e5e5e2\" stroke-width=\"1\"/><line x1=\"22\" y1=\"115.85714285714286\" x2=\"218\" y2=\"115.85714285714286\" stroke=\"#e5e5e2\" stroke-width=\"1\"/><line x1=\"22\" y1=\"105.42857142857143\" x2=\"218\" y2=\"105.42857142857143\" stroke=\"#e5e5e2\" stroke-width=\"1\"/><line x1=\"22\" y1=\"95\" x2=\"218\" y2=\"95\" stroke=\"#e5e5e2\" stroke-width=\"1\"/><line x1=\"22\" y1=\"84.57142857142857\" x2=\"218\" y2=\"84.57142857142857\" stroke=\"#e5e5e2\" stroke-width=\"1\"/><line x1=\"22\" y1=\"74.14285714285714\" x2=\"218\" y2=\"74.14285714285714\" stroke=\"#e5e5e2\" stroke-width=\"1\"/><line x1=\"22\" y1=\"63.71428571428571\" x2=\"218\" y2=\"63.71428571428571\" stroke=\"#e5e5e2\" stroke-width=\"1\"/><line x1=\"22\" y1=\"53.28571428571429\" x2=\"218\" y2=\"53.28571428571429\" stroke=\"#e5e5e2\" stroke-width=\"1\"/><line x1=\"22\" y1=\"42.85714285714286\" x2=\"218\" y2=\"42.85714285714286\" stroke=\"#e5e5e2\" stroke-width=\"1\"/><line x1=\"22\" y1=\"32.428571428571416\" x2=\"218\" y2=\"32.428571428571416\" stroke=\"#e5e5e2\" stroke-width=\"1\"/><line x1=\"22\" y1=\"22\" x2=\"218\" y2=\"22\" stroke=\"#e5e5e2\" stroke-width=\"1\"/><line x1=\"16\" y1=\"95\" x2=\"224\" y2=\"95\" stroke=\"#1a1a1a\" stroke-width=\"1.3\"/><line x1=\"120\" y1=\"174\" x2=\"120\" y2=\"16\" stroke=\"#1a1a1a\" stroke-width=\"1.3\"/><polygon points=\"224,90.8 224,99.2 231.14,95\" fill=\"#1a1a1a\"/><polygon points=\"16,90.8 16,99.2 8.86,95\" fill=\"#1a1a1a\"/><polygon points=\"115.8,16 124.2,16 120,8.86\" fill=\"#1a1a1a\"/><polygon points=\"115.8,174 124.2,174 120,181.14\" fill=\"#1a1a1a\"/><text x=\"216\" y=\"89\" font-size=\"9\" font-family=\"Georgia,serif\" fill=\"#1a1a1a\">x</text><text x=\"126\" y=\"26\" font-size=\"9\" font-family=\"Georgia,serif\" fill=\"#1a1a1a\">y</text><text x=\"22\" y=\"106\" font-size=\"7.5\" text-anchor=\"middle\" fill=\"#5a5a55\">−7</text><text x=\"36\" y=\"106\" font-size=\"7.5\" text-anchor=\"middle\" fill=\"#5a5a55\">−6</text><text x=\"50\" y=\"106\" font-size=\"7.5\" text-anchor=\"middle\" fill=\"#5a5a55\">−5</text><text x=\"64\" y=\"106\" font-size=\"7.5\" text-anchor=\"middle\" fill=\"#5a5a55\">−4</text><text x=\"78\" y=\"106\" font-size=\"7.5\" text-anchor=\"middle\" fill=\"#5a5a55\">−3</text><text x=\"92\" y=\"106\" font-size=\"7.5\" text-anchor=\"middle\" fill=\"#5a5a55\">−2</text><text x=\"106\" y=\"106\" font-size=\"7.5\" text-anchor=\"middle\" fill=\"#5a5a55\">−1</text><text x=\"134\" y=\"106\" font-size=\"7.5\" text-anchor=\"middle\" fill=\"#5a5a55\">1</text><text x=\"148\" y=\"106\" font-size=\"7.5\" text-anchor=\"middle\" fill=\"#5a5a55\">2</text><text x=\"162\" y=\"106\" font-size=\"7.5\" text-anchor=\"middle\" fill=\"#5a5a55\">3</text><text x=\"176\" y=\"106\" font-size=\"7.5\" text-anchor=\"middle\" fill=\"#5a5a55\">4</text><text x=\"190\" y=\"106\" font-size=\"7.5\" text-anchor=\"middle\" fill=\"#5a5a55\">5</text><text x=\"204\" y=\"106\" font-size=\"7.5\" text-anchor=\"middle\" fill=\"#5a5a55\">6</text><text x=\"218\" y=\"106\" font-size=\"7.5\" text-anchor=\"middle\" fill=\"#5a5a55\">7</text><text x=\"113\" y=\"171\" font-size=\"7.5\" text-anchor=\"end\" fill=\"#5a5a55\">−7</text><text x=\"113\" y=\"160.57142857142858\" font-size=\"7.5\" text-anchor=\"end\" fill=\"#5a5a55\">−6</text><text x=\"113\" y=\"150.14285714285714\" font-size=\"7.5\" text-anchor=\"end\" fill=\"#5a5a55\">−5</text><text x=\"113\" y=\"139.71428571428572\" font-size=\"7.5\" text-anchor=\"end\" fill=\"#5a5a55\">−4</text><text x=\"113\" y=\"129.28571428571428\" font-size=\"7.5\" text-anchor=\"end\" fill=\"#5a5a55\">−3</text><text x=\"113\" y=\"118.85714285714286\" font-size=\"7.5\" text-anchor=\"end\" fill=\"#5a5a55\">−2</text><text x=\"113\" y=\"108.42857142857143\" font-size=\"7.5\" text-anchor=\"end\" fill=\"#5a5a55\">−1</text><text x=\"113\" y=\"87.57142857142857\" font-size=\"7.5\" text-anchor=\"end\" fill=\"#5a5a55\">1</text><text x=\"113\" y=\"77.14285714285714\" font-size=\"7.5\" text-anchor=\"end\" fill=\"#5a5a55\">2</text><text x=\"113\" y=\"66.71428571428571\" font-size=\"7.5\" text-anchor=\"end\" fill=\"#5a5a55\">3</text><text x=\"113\" y=\"56.28571428571429\" font-size=\"7.5\" text-anchor=\"end\" fill=\"#5a5a55\">4</text><text x=\"113\" y=\"45.85714285714286\" font-size=\"7.5\" text-anchor=\"end\" fill=\"#5a5a55\">5</text><text x=\"113\" y=\"35.428571428571416\" font-size=\"7.5\" text-anchor=\"end\" fill=\"#5a5a55\">6</text><text x=\"113\" y=\"25\" font-size=\"7.5\" text-anchor=\"end\" fill=\"#5a5a55\">7</text><line x1=\"22\" y1=\"168\" x2=\"218\" y2=\"22\" stroke=\"#e8590c\" stroke-width=\"2.2\" /><polygon points=\"19.87,165.14 24.13,170.86 15.60,172.77\" fill=\"#e8590c\"/><polygon points=\"220.13,24.86 215.87,19.14 224.40,17.23\" fill=\"#e8590c\"/><line x1=\"22\" y1=\"131.5\" x2=\"218\" y2=\"58.5\" stroke=\"#1a3a8f\" stroke-width=\"2.2\" /><polygon points=\"20.75,128.15 23.25,134.85 14.52,134.29\" fill=\"#1a3a8f\"/><polygon points=\"219.25,61.85 216.75,55.15 225.48,55.71\" fill=\"#1a3a8f\"/></svg></div><p>Which function is best represented by the graph of <var>g</var>?</p>",
+    "notes": {
+     "work": "Both lines pass through the origin, but g is less steep than f. Since f(x) = x, g must be a fractional multiple: g(x) = 1/2f(x).",
+     "why": null
+    }
+   }
   }
  ]
 }
