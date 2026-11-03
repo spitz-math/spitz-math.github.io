@@ -2055,7 +2055,7 @@ $('#rsAdd').onclick=async()=>{ const {out,skip}=parsePaste($('#rsPaste').value);
   catch(e){ say($('#rsMsg'),errText(e),'err'); } finally{ b.disabled=false; } };
 /* ---------- Google Classroom import: the Classroom helper (a second, small web app that runs as the teacher) reads the teacher's own
    classes; this tab polls stcClassroomTake with a random code until the list arrives; the teacher picks a period for each class ---------- */
-let GC={url:'', code:'', poll:0, until:0, classes:null};
+let GC={url:'', code:'', poll:0, until:0, classes:null, win:null};
 function gcSetup(url){ GC.url=url; $('#gcLive').hidden=!url; if(!url){ gcStop(); $('#gcMap').innerHTML=''; }
   $('#gcOr').textContent=url?'Or upload':'Upload';
   $('#gcFilePer').innerHTML='<option value="">Pick one</option>'+RS.periods.map(p=>`<option>${esc(p)}</option>`).join(''); }
@@ -2063,16 +2063,16 @@ function gcStop(){ clearTimeout(GC.poll); GC.poll=0; }
 function gcGuess(c){ const t=c.section+' '+c.name, m=t.match(/\b(?:p|per|period)\.?\s*0*(\d{1,2})(?![0-9])/i)||t.match(/\b0*(\d{1,2})(?:st|nd|rd|th)\b/i)||String(c.section).trim().match(/^0*(\d{1,2})$/);
   return m&&RS.periods.includes(m[1])?m[1]:''; }
 $('#gcGo').onclick=()=>{ const a=new Uint8Array(24); crypto.getRandomValues(a); GC.code=[...a].map(x=>'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789'[x%56]).join('');
-  const w=window.open(GC.url+'?code='+GC.code,'gcHelper','popup,width=520,height=640');
+  const w=window.open(GC.url+'?code='+GC.code,'gcHelper','popup,width=520,height=640'); GC.win=w;
   GC.classes=null; $('#gcMap').innerHTML=''; $('#gcCheck').hidden=false; GC.until=Date.now()+15*60000; gcStop(); GC.poll=setTimeout(gcTake,4000);
-  say($('#gcMsg'),w?'Getting your classes from Google Classroom… (the first time, click <b>Allow</b> in the small Google window)':'Your browser blocked the Google window. <a href="'+esc(GC.url+'?code='+GC.code)+'" target="_blank" rel="noopener">Open it here</a>.',''); };
+  say($('#gcMsg'),w?'Getting your classes from Google Classroom… Big classes can take up to a minute. (The first time, click <b>Allow</b> in the small Google window.)':'Your browser blocked the Google window. <a href="'+esc(GC.url+'?code='+GC.code)+'" target="_blank" rel="noopener">Open it here</a>.',''); };
 $('#gcCheck').onclick=()=>gcTake(true);
 async function gcTake(byHand){ gcStop(); if(!GC.code) return; const b=$('#gcCheck'); b.disabled=true;
   try{ const r=await call('stcClassroomTake',{code:GC.code},60000);
     if(r.wait){ if(byHand===true) say($('#gcMsg'),'Nothing yet. If the small Google window is still open, click <b>Allow</b> there, or close it and click <b>Get my Google Classroom classes</b> again.','err');
       if(Date.now()<GC.until) GC.poll=setTimeout(gcTake,document.hidden?8000:4000); return; }
     if(r.other){ return say($('#gcMsg'),`The Google window was signed in as <b>${esc(r.other)}</b>, not ${esc(DATA.me.email)}. Switch to your school account in Google and click <b>Get my Google Classroom classes</b> again.`,'err'); }
-    GC.code=''; $('#gcCheck').hidden=true; GC.classes=r.classes||[]; gcRender(); }
+    GC.code=''; $('#gcCheck').hidden=true; try{ if(GC.win&&!GC.win.closed) GC.win.close(); }catch(x){} GC.win=null; GC.classes=r.classes||[]; gcRender(); }   /* the window can't close itself from Google's page, but the tab that opened it can */
   catch(e){ say($('#gcMsg'),errText(e),'err'); }
   finally{ b.disabled=false; } }
 function gcRender(){ const L=GC.classes||[]; if(!L.length){ $('#gcMap').innerHTML=''; return say($('#gcMsg'),'No classes came over from Google Classroom.','err'); }
