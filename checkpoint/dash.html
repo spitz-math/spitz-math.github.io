@@ -294,6 +294,7 @@ details summary{cursor:pointer;color:var(--blue2);font-size:13px;margin-top:8px}
 .oeside{background:#fff;border-left:1px solid var(--line);overflow:auto;padding:12px 14px;min-height:0;display:flex;flex-direction:column;gap:8px}
 .oeside label{font-size:12px;font-weight:700;color:var(--mut);display:flex;flex-direction:column;gap:3px}
 .oeside input:not([type=checkbox]),.oeside select{width:100%;border:1px solid #9fb0c8;border-radius:6px;padding:6px 8px;background:#fff;min-height:34px;font-size:14px}
+.oeside .oecalcn{margin:0;font-size:12.5px}
 .oeside label.oecalc{flex-direction:row;align-items:center;gap:6px;font-weight:600;color:var(--ink);font-size:13px}
 .oe2{display:grid;grid-template-columns:minmax(0,1fr) 112px;gap:8px} #oeId{font-family:Consolas,"Courier New",monospace;font-size:13px}
 .oeside .bkclist{min-height:120px} .oeside .msg2{margin-top:0}
@@ -618,7 +619,7 @@ details summary{cursor:pointer;color:var(--blue2);font-size:13px;margin-top:8px}
     <label>Title<input id="oeTitle" maxlength="80" placeholder="for example Unit 3 Quiz"></label>
     <div class="oe2"><label>Test ID<input id="oeId" maxlength="60" spellcheck="false" autocomplete="off"></label>
       <label title="Teachers of this course can use this test and copy it. Only you can change it.">Course<select id="oeCourse"></select></label></div><datalist id="oeStdList"></datalist>
-    <label class="sw oecalc" id="oeCalcWrap"><input type="checkbox" id="oeCalc" checked> Calculator and graph tool</label>
+    <label class="sw oecalc" id="oeCalcWrap"><input type="checkbox" id="oeCalc" checked> Calculator and graph tool</label><p class="hint oecalcn" id="oeCalcNote" hidden></p>
     <p class="hint oewarn" id="oeUsed" hidden></p>
     <div class="bkclist" id="oeList"></div>
     <div class="oeadds"><button class="btn pri" id="oeWrite">+ Write a question</button><button class="btn" id="oeFromBank" title="Questions you and other teachers of your course saved (Copy… › Save to shared questions)">Shared questions</button><button class="btn" id="oePsgBtn">Passages</button></div>
@@ -1619,7 +1620,7 @@ async function oeOpen(id,copy){   /* copy: another teacher's test (or your own) 
   if(d&&!copy) oeStaarNames(OE.items).forEach(f=>OE.sent.add(f));
   $('#oeTitle').value=d?d.title:''; $('#oeId').value=d?d.id:''; $('#oeId').disabled=!!d&&!copy; delete $('#oeId').dataset.touched;
   $('#oeCourse').innerHTML=OE_COURSES.map(c=>`<option>${c}</option>`).join(''); $('#oeCourse').value=d?d.course:oeCourseFor((MP.my||{}).subject||'');
-  $('#oeCalc').checked=d?d.calc!==false:!OE_NOCALC.includes($('#oeCourse').value); oeCourseSync();   /* Grade 6 and 7 Math and Social Studies STAAR have no calculator */
+  $('#oeCalc').checked=d?d.calc!==false:true; oeCourseSync();   /* the course decides the calculator (calcRule); only 'Other' tests have the checkbox */
   const S=(DATA?DATA.sessions:[]).filter(s=>d&&s.test===d.id);
   $('#oeUsed').hidden=!S.length; $('#oeUsed').textContent=S.length?`Students have taken this test in ${plural(S.length,'session')}. If you change an answer, click Re-score on those sessions in Your sessions so their scores use the new answer.`:'';
   $('#oeHead').textContent=copy?'Your copy of '+old.title:d?(OE.mine?'Edit your test':'Look at a test'):'Make a test';
@@ -1628,9 +1629,14 @@ async function oeOpen(id,copy){   /* copy: another teacher's test (or your own) 
   if(!d||copy) await oeIdAuto(); }
 function oeButtons(){ const out=OE.status&&OE.status!=='draft';
   $('#oeDraft').hidden=out||!OE.mine; $('#oePublish').hidden=!OE.mine; ['#oeWrite','#oeFromBank'].forEach(k=>$(k).hidden=!OE.mine); $('#oePublish').textContent=out?'Save changes':'Publish'; }
-function oeCourseSync(){ const rla=/RLA/.test($('#oeCourse').value); $('#oeCalcWrap').hidden=rla;
+function oeCourseSync(){ const r=calcRule($('#oeCourse').value); $('#oeCalcWrap').hidden=!!r; $('#oeCalcNote').hidden=!r; $('#oeCalcNote').textContent=CALC_SAY[r]||'';
   $('#oeStdList').innerHTML=courseStds($('#oeCourse').value).map(t=>`<option value="${esc(t.k)}">${esc(t.k+'  '+t.label)}</option>`).join(''); }
-const OE_NOCALC=['6th Math','7th Math','8th History'];
+/* calculator rules by course (Kody 11/3): 8th Math, Algebra I and 8th Science always have the calculator; 6th and 7th Math have none, but
+   students marked Calculator on their teacher's roster get the basic calculator (an accommodation); reading and Social Studies never have one.
+   Only 'Other' tests keep the checkbox. The player follows the same rules (player.html calcRule), so older tests follow them too. */
+const CALC_ON=['8th Math','Algebra I','8th Science'], CALC_BASIC=['6th Math','7th Math'];
+function calcRule(course){ const c=String(course||''); return CALC_ON.includes(c)?'on':CALC_BASIC.includes(c)?'basic':/RLA|Reading|History|Social/i.test(c)?'none':''; }
+const CALC_SAY={on:'Calculator and graph tool: always on for this course.',basic:'No calculator. Students marked Calculator in My roster get the basic calculator.',none:'No calculator for this course.'};
 /* the TEKS box suggests the course's STAAR standards (the question bank's tables; Algebra I once the question bank file has loaded) */
 function courseStds(course){ const c=Object.keys(COURSES).find(k=>COURSES[k].course===course); if(!c) return [];
   return c==='alg1'?(BK.cat||[]):c==='math6'?TEKS6:c==='math8'?TEKS8:STD[c]||COURSES[c].base(); }
@@ -1740,7 +1746,7 @@ $('#oeFile').onchange=async e=>{ const f=e.target.files[0], i=OE&&OE.picFor; if(
   try{ const r=await oeImage(f), name='q-'+Math.random().toString(36).slice(2,8)+'.'+r.ext; OE.pics[name]=r.data; OE.items[i].pic={file:name,w:400}; oeDirty(); oeRenderItems(); }
   catch(x){ say($('#oeMsg'),errText(x),'err'); } };
 /* what goes to the server; problems are listed here first so the teacher sees them on the question */
-function oeGather(){ return { id:$('#oeId').value.trim(), title:$('#oeTitle').value.trim(), course:$('#oeCourse').value, calc:/RLA/.test($('#oeCourse').value)?false:$('#oeCalc').checked,
+function oeGather(){ return { id:$('#oeId').value.trim(), title:$('#oeTitle').value.trim(), course:$('#oeCourse').value, calc:(r=>r?r==='on':$('#oeCalc').checked)(calcRule($('#oeCourse').value)),
   passages:OE.passages.slice(), items:OE.items.map(oeOut) }; }
 function oeCheck(b,publish){ const P=[];
   if(!b.title) P.push([null,'Give the test a title.']);
@@ -1805,7 +1811,7 @@ $('#oeAddPsg').onclick=()=>{ if(OE.passages.length>=20) return; OE.passages.push
 document.querySelector('.oeadd').addEventListener('click',e=>{ const b=e.target.closest('[data-oeadd]'); if(!b||!OE) return; if(OE.items.length>=100) return say($('#oeMsg'),'A test can have up to 100 questions.','err');
   OE.items.push(oeBlank(b.dataset.oeadd)); oeDirty(); oeGo(OE.items.length-1); });
 $('#oeTitle').oninput=()=>{ oeDirty(); oeIdAuto(); }; $('#oeId').oninput=e=>{ e.target.dataset.touched=1; oeDirty(); };
-$('#oeCourse').onchange=()=>{ if(OE_NOCALC.includes($('#oeCourse').value)) $('#oeCalc').checked=false; oeCourseSync(); oeDirty(); }; $('#oeCalc').onchange=oeDirty;
+$('#oeCourse').onchange=()=>{ oeCourseSync(); oeDirty(); }; $('#oeCalc').onchange=oeDirty;
 $('#oeBack').onclick=async()=>{ if(OE&&OE.dirty&&OE.mine&&!await ask('Leave without saving?','<p>Your changes since the last save will be lost.</p>','Leave')) return;
   $('#oepage').hidden=true; $('#oeBank').hidden=true; OE=null; openMySessions(); };
 /* ---------- editor helpers: copy a question to another of your tests, and your own question bank (stcBankList / stcBankSave / stcBankRemove).
@@ -1946,7 +1952,7 @@ function oeStaarItem(e){ const full=JSON.parse(JSON.stringify(e.item)); delete f
 function oeBankFit(e){ const crs=COURSES[entryCourse(e)].course, cur=$('#oeCourse').value; if(crs===cur) return '';
   const other=OE.items.find(it=>it.type==='staar'&&it.staar.course&&it.staar.course!==crs);
   if(other) return 'no:Your test has '+other.staar.course+' STAAR questions. A test is one grade level, so this '+crs+' question can\'t go in it.';
-  $('#oeCourse').value=crs; if(OE_NOCALC.includes(crs)) $('#oeCalc').checked=false; oeCourseSync(); return 'Your test\'s course is now '+crs+', like its STAAR questions.'; }
+  $('#oeCourse').value=crs; oeCourseSync(); return 'Your test\'s course is now '+crs+', like its STAAR questions.'; }
 function oeBankToggle(uid,add){ const e=QB.view.find(x=>x.uid===uid);
   if(!add){ const i=OE.items.findIndex(it=>it.type==='staar'&&it.staar.uid===uid); if(i>=0){ OE.items.splice(i,1); oeDirty(); oeRenderItems(); say($('#oeMsg'),'Removed question '+(i+1)+'.','ok'); } viewPost({op:'added',added:addedUids()}); return; }
   const why=oeStaarNo(e)||(OE.items.length>=100?'A test can have up to 100 questions.':''), fit=why?'':oeBankFit(e);
@@ -2153,16 +2159,22 @@ $('#gcFile').onchange=async()=>{ const f=$('#gcFile').files[0]; if(!f) return; c
     const box=$('#rsPaste'), cur=box.value.trim(); box.value=(cur?cur+'\n':'')+L.map(s=>s.email+', '+s.name+', '+p).join('\n');
     say($('#gcFileMsg'),`${L.length} student${L.length===1?'':'s'} for period ${esc(p)} are in the box below. Check the names, then click <b>${esc($('#rsAdd').textContent)}</b>.`,'ok'); box.scrollIntoView({block:'center'}); }
   catch(e){ say($('#gcFileMsg'),errText(e),'err'); } };
-function renderRoster(){ const L=RS.list||[], q=$('#rlFind').value.trim().toLowerCase();
+/* the roster's Calculator column shows only for teachers of 6th or 7th Math (calcRule 'basic'), a blank Subject (all courses),
+   or when a student already has it (so it can be turned off). Courses: the teacher's own from stcMyTests, another teacher's from the dashboard data. */
+function rsCalcCol(L){ if(L.some(s=>s.calc)) return true;
+  let C; if(RS.for){ const t=(DATA&&DATA.teachers||[]).find(x=>x.email===RS.for); C=t&&t.courses; }
+  else if(MP.my) C=MP.my.courses; else { myTests().then(()=>{ if(RS.list) renderRoster(); }); return false; }
+  return !Array.isArray(C)||!C.length||C.some(c=>calcRule(c)==='basic'); }
+function renderRoster(){ const L=RS.list||[], q=$('#rlFind').value.trim().toLowerCase(), ca=rsCalcCol(L);
   const pers=[...new Set(L.map(s=>s.period))].sort((a,b)=>(+a||99)-(+b||99)); if(RS.per&&!pers.includes(RS.per)) RS.per='';
   $('#rlPer').innerHTML='<button data-v="">All</button>'+pers.map(p=>`<button data-v="${esc(p)}">${esc(p)}</button>`).join(''); setSeg('#rlPer',RS.per);
   $('#rlTitle').textContent=(RS.for?teaName(RS.for)+'’s roster':'Your roster')+' ('+L.length+' student'+(L.length===1?'':'s')+')';
   const S=L.filter(s=>(!RS.per||s.period===RS.per)&&(!q||s.name.toLowerCase().includes(q))).sort((a,b)=>(+a.period||99)-(+b.period||99)||a.name.localeCompare(b.name));
   if(!L.length){ $('#rlList').innerHTML='<p class="hint">No students yet. Paste your class list above.</p>'; return; }
   const popts=v=>RS.periods.concat(RS.periods.includes(v)?[]:[v]).map(p=>`<option${p===v?' selected':''}>${esc(p)}</option>`).join('');
-  $('#rlList').innerHTML=`<div style="overflow-x:auto"><table class="t"><tr><th>Name</th><th>Period</th><th title="The test reads questions and answer choices out loud to this student">Read aloud</th><th title="A basic calculator on tests that have no calculator (Grade 6 designated support)">Calculator</th><th></th></tr>${S.map(s=>RS.edit===s.code
-    ?`<tr data-c="${esc(s.code)}"><td><input class="rn" maxlength="20" value="${esc(s.name)}" aria-label="Name"></td><td><select class="rp" aria-label="Period">${popts(s.period)}</select></td><td>${s.ra?'Yes':''}</td><td>${s.calc?'Yes':''}</td><td><div class="acts" style="gap:6px"><button class="btn pri" data-re="save">Save</button><button class="btn" data-re="cancel">Cancel</button></div></td></tr>`
-    :`<tr data-c="${esc(s.code)}"><td>${esc(s.name)}</td><td>${esc(s.period)}</td><td><label class="rac"><input type="checkbox" class="ra" ${s.ra?'checked':''} aria-label="Read aloud for ${esc(s.name)}"></label></td><td><label class="rac"><input type="checkbox" class="ca" ${s.calc?'checked':''} aria-label="Basic calculator for ${esc(s.name)}"></label></td><td><div class="acts" style="gap:6px"><button class="btn" data-re="edit">Edit</button><button class="btn del" data-re="rm">Remove</button></div></td></tr>`).join('')}</table></div>`+(S.length?'':'<p class="hint">No one matches.</p>'); }
+  $('#rlList').innerHTML=`<div style="overflow-x:auto"><table class="t"><tr><th>Name</th><th>Period</th><th title="The test reads questions and answer choices out loud to this student">Read aloud</th>${ca?'<th title="A basic calculator on 6th and 7th Math tests (an accommodation). 8th Math, Algebra I and Science always have the calculator; reading and Social Studies never do.">Calculator</th>':''}<th></th></tr>${S.map(s=>RS.edit===s.code
+    ?`<tr data-c="${esc(s.code)}"><td><input class="rn" maxlength="20" value="${esc(s.name)}" aria-label="Name"></td><td><select class="rp" aria-label="Period">${popts(s.period)}</select></td><td>${s.ra?'Yes':''}</td>${ca?`<td>${s.calc?'Yes':''}</td>`:''}<td><div class="acts" style="gap:6px"><button class="btn pri" data-re="save">Save</button><button class="btn" data-re="cancel">Cancel</button></div></td></tr>`
+    :`<tr data-c="${esc(s.code)}"><td>${esc(s.name)}</td><td>${esc(s.period)}</td><td><label class="rac"><input type="checkbox" class="ra" ${s.ra?'checked':''} aria-label="Read aloud for ${esc(s.name)}"></label></td>${ca?`<td><label class="rac"><input type="checkbox" class="ca" ${s.calc?'checked':''} aria-label="Basic calculator for ${esc(s.name)}"></label></td>`:''}<td><div class="acts" style="gap:6px"><button class="btn" data-re="edit">Edit</button><button class="btn del" data-re="rm">Remove</button></div></td></tr>`).join('')}</table></div>`+(S.length?'':'<p class="hint">No one matches.</p>'); }
 $('#rlFind').oninput=renderRoster;
 $('#rlList').addEventListener('change',async e=>{ const x=e.target, ca=x.classList.contains('ca'); if(!ca&&!x.classList.contains('ra')) return; const code=x.closest('tr').dataset.c, v=x.checked; x.disabled=true;
   try{ const r=await call('stcRosterEdit',{...rsT(),code,[ca?'calculator':'readAloud']:v}); const st=(r.roster||[]).find(t=>t.code===code);

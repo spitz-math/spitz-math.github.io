@@ -84,7 +84,7 @@ body:not([class*="th-maroon"]):not([class*="th-black"]):not([class*="th-blue"]) 
 .itemwrap{max-width:960px;margin:0 auto;padding:22px 16px 60px;position:relative}
 /* reading: the passage on the left, its questions on the right with a tab per question (like the state test) */
 body.rla #bRef,body.rla #bCalc,body.rla #bGD{display:none}
-body.noref #bRef,body.nocalc:not(.bcalc) #bCalc,body.nocalc #bGD{display:none}
+body.noref #bRef,body.nocalc:not(.bcalc) #bCalc,body.nocalc #bGD,body.calcnone #bCalc{display:none}
 /* basic calculator (TI-108 style): a designated support on tests with no calculator (Grade 6) */
 body:not(.ruler) #bRuler{display:none}
 #calcPanel.basic{width:250px!important;height:auto!important}
@@ -434,10 +434,11 @@ svg.cgrid .dpt.idle{pointer-events:none} svg.cgrid .dpt.idle .halo{display:none}
 .rvfoot{display:flex;justify-content:space-between;margin-top:16px}
 
 /* --- round 6 fixes --- */
-select.inl{appearance:none;-webkit-appearance:none;min-width:190px;height:27px;padding:0 28px 0 8px;margin:0 .2em;border:1px solid #9a9a9a;border-radius:4px;font-size:.95em;color:#000;vertical-align:middle;
+select.inl{appearance:none;-webkit-appearance:none;min-width:190px;height:auto;min-height:1.85em;line-height:1.3;box-sizing:border-box;padding:.25em 28px .25em 8px;margin:0 .2em;border:1px solid #9a9a9a;border-radius:4px;font-size:.95em;color:#000;vertical-align:middle;
   background:#ececec url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='14' viewBox='0 0 10 14'%3E%3Cpath d='M1.5 5.5L5 2l3.5 3.5M1.5 8.5L5 12l3.5-3.5' fill='none' stroke='%23333' stroke-width='1.5'/%3E%3C/svg%3E") no-repeat right 9px center}
 select.inl:focus{outline:none;box-shadow:0 0 0 2px #9fd6ef}
 select.inl.filled{background-color:#ececec;border-color:#9a9a9a}
+select.inl option{line-height:1.3;padding:4px 8px;color:#000;background:#fff}
 .inline-stem{line-height:2.6}
 .cgwrap.big svg.cgrid{width:min(600px,100%,calc(100vh - 230px));min-width:min(420px,100%)}
 .choices.grid2{display:flex;flex-direction:column;gap:12px}
@@ -1144,7 +1145,10 @@ const ITEMS=TD.items, KEYLESS=!!TD.keyless; let OWNPTS=null;
 const KEYF={graphline:'eq',graphineq:'op',graphsys:'ineqs',graphfunc:'ftype',graphexp:'a'};   /* where each graph type keeps its key (a line: its equation; an inequality: m, b, op; …) */
 const NOKEY=it=>KEYLESS&&it.type!=='text'&&it[KEYF[it.type]||'answer']===undefined;
 if(TD.subject==='rla') document.body.classList.add('rla'); if(/science/i.test(TD.course||'')) document.body.classList.add('sci');
-if(TD.reference==='none') document.body.classList.add('noref'); if(TD.calc===false) document.body.classList.add('nocalc'); if(TD.ruler??['6th Math','7th Math'].includes(TD.course)) document.body.classList.add('ruler');
+/* calculator rules by course (Kody 11/3, same as dash.html calcRule): 8th Math, Algebra I and 8th Science always have it; 6th and 7th Math
+   have none but the basic calculator for students marked Calculator on the roster; reading and Social Studies never have one; any other course: test.calc */
+const CALCR=(c=>['8th Math','Algebra I','8th Science'].includes(c)?'on':['6th Math','7th Math'].includes(c)?'basic':TD.subject==='rla'||/RLA|Reading|History|Social/i.test(c)?'none':TD.calc===false?'basic':'on')(String(TD.course||''));
+if(TD.reference==='none') document.body.classList.add('noref'); if(CALCR!=='on') document.body.classList.add('nocalc'); if(CALCR==='none') document.body.classList.add('calcnone'); if(TD.ruler??['6th Math','7th Math'].includes(TD.course)) document.body.classList.add('ruler');
 ITEMS.forEach((it,i)=>{ it.n=i+1; it.letters=ODD; it.max=it.max||1; ownFn(it); });
 /* ---------------- state ---------------- */
 const S={i:0,answers:{},flags:{},notes:{},name:'',modes:{hl:false,elim:false},zoomIx:1,submitted:false};

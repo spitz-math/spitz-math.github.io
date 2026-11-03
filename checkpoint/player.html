@@ -84,7 +84,7 @@ body:not([class*="th-maroon"]):not([class*="th-black"]):not([class*="th-blue"]) 
 .itemwrap{max-width:960px;margin:0 auto;padding:22px 16px 60px;position:relative}
 /* reading: the passage on the left, its questions on the right with a tab per question (like the state test) */
 body.rla #bRef,body.rla #bCalc,body.rla #bGD{display:none}
-body.noref #bRef,body.nocalc:not(.bcalc) #bCalc,body.nocalc #bGD{display:none}
+body.noref #bRef,body.nocalc:not(.bcalc) #bCalc,body.nocalc #bGD,body.calcnone #bCalc{display:none}
 /* basic calculator (TI-108 style): a designated support on tests with no calculator (Grade 6) */
 body:not(.ruler) #bRuler{display:none}
 #calcPanel.basic{width:250px!important;height:auto!important}
@@ -1144,7 +1144,10 @@ const ITEMS=TD.items, KEYLESS=!!TD.keyless; let OWNPTS=null;
 const KEYF={graphline:'eq',graphineq:'op',graphsys:'ineqs',graphfunc:'ftype',graphexp:'a'};   /* where each graph type keeps its key (a line: its equation; an inequality: m, b, op; …) */
 const NOKEY=it=>KEYLESS&&it.type!=='text'&&it[KEYF[it.type]||'answer']===undefined;
 if(TD.subject==='rla') document.body.classList.add('rla'); if(/science/i.test(TD.course||'')) document.body.classList.add('sci');
-if(TD.reference==='none') document.body.classList.add('noref'); if(TD.calc===false) document.body.classList.add('nocalc'); if(TD.ruler??['6th Math','7th Math'].includes(TD.course)) document.body.classList.add('ruler');
+/* calculator rules by course (Kody 11/3, same as dash.html calcRule): 8th Math, Algebra I and 8th Science always have it; 6th and 7th Math
+   have none but the basic calculator for students marked Calculator on the roster; reading and Social Studies never have one; any other course: test.calc */
+const CALCR=(c=>['8th Math','Algebra I','8th Science'].includes(c)?'on':['6th Math','7th Math'].includes(c)?'basic':TD.subject==='rla'||/RLA|Reading|History|Social/i.test(c)?'none':TD.calc===false?'basic':'on')(String(TD.course||''));
+if(TD.reference==='none') document.body.classList.add('noref'); if(CALCR!=='on') document.body.classList.add('nocalc'); if(CALCR==='none') document.body.classList.add('calcnone'); if(TD.ruler??['6th Math','7th Math'].includes(TD.course)) document.body.classList.add('ruler');
 ITEMS.forEach((it,i)=>{ it.n=i+1; it.letters=ODD; it.max=it.max||1; ownFn(it); });
 /* ---------------- state ---------------- */
 const S={i:0,answers:{},flags:{},notes:{},name:'',modes:{hl:false,elim:false},zoomIx:1,submitted:false};
