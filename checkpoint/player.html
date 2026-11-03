@@ -2335,7 +2335,7 @@ const lattice=(R,f)=>{ const P=[]; for(let x=-R;x<=R&&P.length<2;x++){ const y=f
       let region=null; for(let X=-it.R+0.5;X<it.R&&!region;X+=1) for(let Y=-it.R+0.5;Y<it.R&&!region;Y+=1) if(it.ineqs.every(q=>q.op[0]==='>'?Y>q.m*X+q.b:Y<q.m*X+q.b)) region=[X,Y];
       if(!region) throw new Error('the two inequalities have no region in common on the grid'); return {g,region}; }
     case 'cline': { const P=lattice(R,x=>it.eq[1]?(it.eq[2]-it.eq[0]*x)/it.eq[1]:null); if(P.length<2) throw new Error('the correct line does not go through two grid points'); return {pts:P}; }
-    case 'graphexp': return {a:it.a,b:it.b};
+    case 'graphexp': return {a:it.a,b:it.b,pts:[[0,it.a],[1,it.a*it.b]]};
     case 'numline': return it.mode==='ineq'?Object.assign({},it.answer):it.answer.slice();
     case 'filltable': return it.answer.map(String);
     case 'datadisp': return it.answer.slice();
@@ -2352,6 +2352,79 @@ if(window.SPITZ_SELFCHECK) window.__spitzSelfCheck=function(){
 if(window.SPITZ_SELFCHECK) window.__spitzRescore=function(list){ const keep=S.answers, max=ITEMS.reduce((s,it)=>s+(it.max||1),0);
   const out=list.map(a=>{ S.answers=a||{}; const pts=ITEMS.map(it=>{ try{ return earn(it); }catch(e){ return null; } }); return {pts,score:pts.reduce((s,p)=>s+(p||0),0),max}; });
   S.answers=keep; return out; };
+/* paper versions of the interactive questions (Print buttons and student reports only): the on-screen tools
+   (keypads, tool bars, Clear buttons, "Your graph: …" lines, drag and click hints) are taken out, and a short
+   pencil instruction goes under the question. Drop-downs list their choices to circle, tiles get letters to write,
+   Put in order gets blanks to number, and Label a picture gets a word bank and a line for each spot.
+   mode: 'blank' (students' copy), 'key' (answers drawn in), 'report' (a student's own answers). */
+const PAPER_CSS=`#printDoc .phint{margin:6px 0 8px;font-size:.92em;font-weight:600;font-style:italic}
+#printDoc .pdrop{display:inline-flex;flex-direction:column;vertical-align:middle;border:1px solid #555;border-radius:4px;padding:2px 9px 2px 6px;margin:3px 4px;line-height:1.3;text-align:left}
+#printDoc .pdrop>span{display:flex;align-items:center;gap:6px;white-space:nowrap}
+#printDoc .pdrop i.pb0{flex:none;width:.85em;height:.85em;border:1.5px solid #000;border-radius:50%;display:inline-block;font-style:normal}
+#printDoc .pdrop .on i.pb0{background:#1b6e3a;border-color:#1b6e3a;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+#printDoc .pdrop .on{font-weight:700;color:#13512a}
+#printDoc .inline-stem{line-height:2.1}
+#printDoc .plet{display:inline-grid;place-items:center;vertical-align:middle;min-width:1.35em;height:1.35em;border:1.5px solid #000;border-radius:50%;font:700 .8em/1 inherit;margin-right:6px;flex:none}
+#printDoc .tile,#printDoc .btile{color:#000!important;background:#fff!important;box-shadow:none!important;opacity:1!important}
+#printDoc .tilebank{border:1px solid #000!important;background:#fff!important;width:max-content;max-width:100%}
+#printDoc .btile{border-right:1px solid #000!important}#printDoc .btile:last-child{border-right:0!important}
+#printDoc .bank{border:1px solid #888!important;background:#fff!important;min-height:0!important}
+#printDoc .dbox{border:1.5px solid #000;min-width:4.2em;min-height:2.3em;background:#fff}
+#printDoc .dz{border-color:#555!important;background:#fff!important}
+#printDoc .venn{max-width:5.6in}#printDoc .venn svg{max-width:none!important;width:100%;height:auto}
+#printDoc .odnum{display:inline-block;min-width:2.4em;height:1.6em;border-bottom:1.5px solid #000;margin-right:10px;text-align:center;color:#13512a;font-weight:700}
+#printDoc .odit{border:1px solid #999!important;background:#fff!important;box-shadow:none!important}
+#printDoc .pbankl{display:flex;flex-wrap:wrap;gap:6px 18px;border:1px solid #555;border-radius:4px;padding:6px 10px;margin:4px 0 8px}
+#printDoc .pbankl span{display:inline-flex;align-items:center}
+#printDoc .plines{display:flex;flex-wrap:wrap;gap:8px 26px;margin-top:8px}
+#printDoc .plines span{display:inline-flex;align-items:flex-end;gap:6px}
+#printDoc .plines u{display:inline-block;min-width:4em;border-bottom:1.5px solid #000;text-decoration:none;text-align:center;font-weight:700;color:#13512a}
+#printDoc .lbspot{border:2px solid #000!important;background:#fff!important}#printDoc .lbspot .lbn{color:#000!important}
+#printDoc .hsdot{border:2px solid #000!important;background:#fff!important;display:grid;place-items:center;font:700 13px/1 sans-serif;color:#000}
+#printDoc .hsdot[aria-checked="true"],#printDoc .hot[aria-checked="true"]{outline:3px solid #1b6e3a;outline-offset:2px}
+#printDoc .hot{border-bottom:1.5px dotted #000!important}#printDoc .hot[aria-checked="true"]{background:none!important;font-weight:700}
+#printDoc svg.hs .spot[aria-checked="true"]{fill:none!important;stroke:#1b6e3a!important;stroke-width:3!important}
+#printDoc .pcircle{display:flex;gap:22px;align-items:center;margin:2px 0 8px}#printDoc .pcircle span{padding:2px 8px}
+#printDoc .pcircle span.on{border:2px solid #1b6e3a;border-radius:14px;font-weight:700;color:#13512a}
+#printDoc .pwrite{border:1px solid #888;border-radius:4px;height:var(--h,1.9in);margin-top:4px;background:repeating-linear-gradient(#fff 0,#fff 31px,#bbb 31px,#bbb 32px);-webkit-print-color-adjust:exact;print-color-adjust:exact}
+#printDoc .eqfield,#printDoc input.mathin{border:1.5px solid #000!important;background:#fff!important;box-shadow:none!important}
+#printDoc .eqfield .caret{display:none}`;
+function paperize(it,el,mode){ const t=it.type, rm=s=>el.querySelectorAll(s).forEach(x=>x.remove()), L='ABCDEFGHIJKL', key=mode==='key';
+  const pl=(n,one,many)=>n>1?many.replace('#',n):one;
+  el.querySelectorAll('.gread').forEach(g=>{ const p=g.parentElement; (p&&p!==el&&/^\s*(Your |Shaded)/.test(p.textContent)?p:g).remove(); });   /* "Your graph: …" lines */
+  rm('.hint,.gtools,.btnline,.eqtools,.eqpad,.keypad,.txtools,.txcnt,.odbt,.cgpanel,.kbcur');
+  let say='';
+  if(t==='text'){ const b=el.querySelector('.txbox'); if(b){ const w=document.createElement('div'); w.className='pwrite'; w.style.setProperty('--h',(it.limit||475)>1000?'4.2in':'1.9in'); b.replaceWith(w); } }
+  else if(t==='inline'){ el.querySelectorAll('select.inl').forEach(sel=>{ const k=+sel.dataset.k, s=document.createElement('span'); s.className='pdrop';
+      s.innerHTML=(it.drops[k]||[]).map((o,j)=>`<span${sel.value!==''&&+sel.value===j?' class="on"':''}><i class="pb0"></i>${o}</span>`).join(''); sel.replaceWith(s); });
+    say='Circle one answer in each box.'; }
+  else if(t==='boxes'){ say='Write an answer from the list in each box.'; }
+  else if(t==='dnd'){ el.querySelectorAll('.tile').forEach(x=>{ x.insertAdjacentHTML('afterbegin',`<b class="plet">${L[+x.dataset.t]}</b>`); });
+    const bk=el.querySelector('.bank'); if(bk&&!bk.querySelector('.tile')) bk.remove();
+    say=it.venn?'Write the letter of each tile in its place in the diagram.':'Write the letter of each tile in its group.'; }
+  else if(t==='order'){ el.querySelectorAll('.odit').forEach((li,j)=>{ const n=li.querySelector('.odnum'); if(n) n.textContent=key?String(it.answer.indexOf(j)+1):mode==='report'?n.textContent:''; });
+    if(mode!=='report') say=`Number the items in order from 1 (first) to ${it.tiles.length} (last).`; }
+  else if(t==='label'){ const bank=el.querySelector('.lbbank'), a=key?it.answer:S.answers[it.n]||[];
+    if(bank){ bank.className='pbankl'; bank.innerHTML=it.tiles.map((x,k)=>`<span><b class="plet">${L[k]}</b>${x}</span>`).join(''); }
+    el.querySelectorAll('.lbspot').forEach(s=>{ const q=+s.dataset.s; s.classList.remove('full'); s.innerHTML=`<span class="lbn">${q+1}</span>`; });
+    const img=el.querySelector('.lbimg'); if(img) img.insertAdjacentHTML('afterend',`<div class="plines">${it.spots.map((p,q)=>`<span>${q+1}.<u>${a[q]!=null?L[a[q]]:''}</u></span>`).join('')}</div>`);
+    say='Write the letter of the correct label on the line for each numbered spot.'; }
+  else if(t==='hottext') say=pl(it.pick||1,'Circle the correct part of the text.','Circle the # correct parts of the text.');
+  else if(t==='hotspot'){ if(it.img){ el.querySelectorAll('.hsdot').forEach(d=>{ d.textContent=L[+d.dataset.k]; }); say=pl(it.pick||1,'Circle the correct spot.','Circle the # correct spots.'); }
+    else say=pl(it.pick||1,'Circle the correct point.','Circle the # correct points.'); }
+  else if(t==='graph') say='Plot the point on the grid.';
+  else if(t==='graphline'||t==='cline') say='Draw the line on the grid.';
+  else if(t==='graphineq') say='Draw the boundary line (solid or dashed), then shade the solution set.';
+  else if(t==='graphsys') say='Graph both boundary lines (solid or dashed), then shade the solution set.';
+  else if(t==='graphfunc'){ const tb=el.querySelector('.typebtns'); if(tb){ const c=document.createElement('div'); c.className='pcircle';
+      c.innerHTML='<b>Circle one:</b>'+[...tb.querySelectorAll('button')].map(b=>`<span${b.getAttribute('aria-checked')==='true'?' class="on"':''}>${b.textContent}</span>`).join(''); tb.replaceWith(c); const w=c.parentElement; if(w) w.before(c); }
+    say='Circle the type of function, then graph it on the grid.'; }
+  else if(t==='graphexp') say='Draw the curve on the grid.';
+  else if(t==='numline') say=it.mode==='ineq'?'Draw an open or closed circle, then shade the number line.':'Plot the points on the number line.';
+  else if(t==='datadisp') say=it.kind==='dot'?'Draw the dots above the number line.':'Draw the bars on the graph.';
+  else if(t==='shade') say='Shade the model.';
+  else if(t==='figure') say='Draw the figure on the grid.';
+  if(say&&mode!=='report'){ const p=document.createElement('p'); p.className='phint'; p.textContent=say; const st=el.querySelector('.stem'); if(st) st.after(p); else el.prepend(p); } }
 /* paper copy for the dashboard's Print buttons (only when the page sets SPITZ_PRINT; students never do): every question
    on one long page, a name line on top; withKey marks the right choices, adds "Answer:" under each question and a key table */
 if(window.SPITZ_PRINT) window.__spitzPrint=function(withKey){
@@ -2373,6 +2446,7 @@ body>*:not(#printDoc){display:none!important}
 #printDoc .choice{padding:4px 10px!important;border-width:1px!important;margin:0!important}#printDoc .choices{gap:5px!important}
 #printDoc svg{max-width:3.3in;height:auto}#printDoc img{max-width:5.5in}#printDoc .choice.pright{border:3px solid #1b6e3a!important}}
 #printDoc .choice.pright::after{content:'✓ correct';margin-left:auto;padding-left:12px;font-weight:700;color:#13512a;white-space:nowrap}
+${PAPER_CSS}
 @page{margin:.5in}`;
   document.head.appendChild(st);
   const doc=document.createElement('div'); doc.id='printDoc';
@@ -2381,8 +2455,10 @@ body>*:not(#printDoc){display:none!important}
     :`<div class="pline"><span>Name ______________________</span><span>Date __________</span><span>Period ____</span></div>`)+`</div>`
     +(withKey?`<table class="pkt"><tr><th>#</th><th>Answer</th><th>Points</th><th>TEKS</th></tr>${ITEMS.map(it=>`<tr><td><b>${it.n}</b></td><td>${key(it)}</td><td>${it.max||1}</td><td>${esc(it.teks||'')}</td></tr>`).join('')}</table>`:'');
   ITEMS.forEach(it=>{ const q=document.createElement('div'); q.className='pq'; q.innerHTML=`<div class="pn">${it.n}</div><div class="pb"></div>`;
-    const el=build(it); el.querySelectorAll('[id]').forEach(x=>{ if(!x.closest('svg')) x.removeAttribute('id'); });
-    el.querySelectorAll('[tabindex]').forEach(x=>x.removeAttribute('tabindex'));
+    delete S.answers[it.n]; if(withKey&&!['text','order','label'].includes(it.type)){ try{ S.answers[it.n]=keyAns(it); }catch(e){ delete S.answers[it.n]; } }   /* the key draws each answer in (graphs, boxes, drop-downs …) */
+    let el; try{ el=build(it); }catch(e){ delete S.answers[it.n]; el=build(it); }   /* an answer the item can't draw: print it blank (the key line still gives it) */
+    el.querySelectorAll('[id]').forEach(x=>{ if(!x.closest('svg')) x.removeAttribute('id'); });
+    el.querySelectorAll('[tabindex]').forEach(x=>x.removeAttribute('tabindex')); paperize(it,el,withKey?'key':'blank');
     if(withKey&&(it.type==='mc'||it.type==='ms')){ const ok=it.type==='mc'?[it.answer]:it.answer; el.querySelectorAll('.choice').forEach(ch=>{ if(ok.includes(+ch.dataset.k)) ch.classList.add('pright'); }); }
     const b=q.querySelector('.pb'); b.appendChild(el);
     if(withKey){ b.insertAdjacentHTML('beforeend',`<div class="pkey">Answer: ${key(it)}</div><div class="pmeta">${[it.teks,it.max>1?it.max+' points':''].filter(Boolean).map(esc).join(' · ')}</div>`); }
@@ -2413,6 +2489,7 @@ body>*:not(#printDoc){display:none!important}
 #printDoc .choice.pright::after{content:'✓ correct';margin-left:auto;padding-left:12px;font-weight:700;color:#13512a;white-space:nowrap}
 #printDoc .choice.pwrong::after{content:'✗ your answer';margin-left:auto;padding-left:12px;font-weight:700;color:#9d2a20;white-space:nowrap}
 #printDoc input,#printDoc select,#printDoc textarea{pointer-events:none}.ratimg{max-width:5.5in}
+${PAPER_CSS}
 .rpgood{margin:14px 0;font-size:16px;font-weight:600;color:#13512a}
 @media print{#printDoc{max-width:none;padding:0;font-size:12.5px;line-height:1.35}#printDoc svg{max-width:3.3in;height:auto}#printDoc img{max-width:5.5in}#printDoc .choice{padding:4px 10px!important;margin:0!important}#printDoc .choices{gap:5px!important}}
 @page{margin:.5in}`;
@@ -2430,7 +2507,7 @@ body>*:not(#printDoc){display:none!important}
       const correct=it.type==='mc'?[it.answer]:it.type==='ms'?(it.answer||[]):[], chosen=it.type==='mc'&&a!=null?[a]:it.type==='ms'&&a?a:[], wrong=chosen.filter(k=>!correct.includes(k));
       q.innerHTML=`<div class="rpqh"><span class="n">Question ${it.n}</span><span class="m">${[it.teks,it.rs,(p[0]||0)+' of '+p[1]+' point'+(p[1]>1?'s':'')].filter(Boolean).map(esc).join(' · ')}</span></div><div class="rpb"></div>
         <div class="rpa"><span class="no">Your answer:</span><span>${a==null?'No answer':show(it,a)}</span><span class="ok">Correct answer:</span><span>${key(it)}</span></div>`;
-      let el; try{ el=build(it); el.querySelectorAll('[id]').forEach(x=>{ if(!x.closest('svg')) x.removeAttribute('id'); }); el.querySelectorAll('[tabindex]').forEach(x=>x.removeAttribute('tabindex'));
+      let el; try{ el=build(it); el.querySelectorAll('[id]').forEach(x=>{ if(!x.closest('svg')) x.removeAttribute('id'); }); el.querySelectorAll('[tabindex]').forEach(x=>x.removeAttribute('tabindex')); paperize(it,el,'report');
         if(correct.length) el.querySelectorAll('.choice').forEach(ch=>{ const k=+ch.dataset.k; ch.classList.remove('sel'); if(correct.includes(k)) ch.classList.add('pright'); else if(chosen.includes(k)) ch.classList.add('pwrong'); }); q.querySelector('.rpb').appendChild(el); }catch(e){}
       let xh='';
       if(X){ const xw=X.why||{};
