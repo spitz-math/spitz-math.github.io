@@ -250,6 +250,7 @@ details.tcard[open]>summary{margin-bottom:10px}
 .tcol{max-width:1080px;margin:0 auto;display:grid;gap:14px}
 .tcard{background:#fff;border:1px solid var(--line);border-radius:8px;padding:14px 16px;min-width:0}
 .tcard h2{margin:0 0 10px;font-size:16px}
+.gcrow{display:flex;gap:10px;align-items:center;flex-wrap:wrap;padding:7px 4px;border-bottom:1px solid var(--line)} .gcrow .gcn{flex:1;min-width:180px} .gcrow select{padding:4px 6px;border:1px solid var(--line);border-radius:6px}
 .tcard h3{margin:14px 0 6px;font-size:14px}
 .tcard p{margin:6px 0}
 .ghs{font-size:13px;padding:8px 12px;border-radius:8px;background:#f6f8fb;border:1px solid var(--line)}
@@ -565,6 +566,13 @@ details summary{cursor:pointer;color:var(--blue2);font-size:13px;margin-top:8px}
   <div class="tbody"><div class="tcol">
     <section class="tcard" id="rsForCard" hidden><div class="row fr" style="margin-top:0"><label class="fl">Roster for<select id="rsFor"></select></label></div>
       <p class="hint">You can load and fix any teacher's roster. Teachers see only their own.</p></section>
+    <section class="tcard" id="gcCard"><h2>Bring in a class list</h2>
+      <div id="gcLive" hidden><p class="hint">Get your students straight from <b>Google Classroom</b>. A Google page opens in a new tab: the first time, click <b>Allow</b> (Checkpoint can only read your class lists). Tick your classes there, click <b>Send to Checkpoint</b>, and come back to this tab. Do it again any time to add new students.</p>
+        <div class="row"><button class="btn pri" id="gcGo">Get my Google Classroom classes</button><button class="btn" id="gcCheck" hidden>I sent them. Bring them in</button></div>
+        <div class="msg2" id="gcMsg"></div><div id="gcMap"></div></div>
+      <p class="hint" style="margin-top:10px"><span id="gcOr">Or upload</span> a class list file (.csv), like a grades file downloaded from Google Classroom or any spreadsheet saved as CSV that has a column of student emails. Each student’s name and email go in the box below so you can check them before adding.</p>
+      <div class="row"><input type="file" id="gcFile" accept=".csv,text/csv" aria-label="Class list file"><label class="fl" style="flex-direction:row;align-items:center;gap:6px">Class period<select id="gcFilePer"></select></label></div>
+      <div class="msg2" id="gcFileMsg"></div></section>
     <section class="tcard"><h2>Add students</h2>
       <p class="hint">Students on your roster only type the Session ID; their name and period come from here. Paste one student per line: <b>school email, first name or initials, class period</b>. You can copy the three columns straight from a spreadsheet. Each email is turned into the student’s private code right away and is never saved.</p>
       <textarea id="rsPaste" spellcheck="false" placeholder="jsmith123@misdtx.net, Jaylen S, 3&#10;mlopez456@misdtx.net, Maria L, 3"></textarea>
@@ -2030,7 +2038,7 @@ async function openRoster(){ openPage('#rpage'); $('#rlList').innerHTML='<p clas
   const nm=RS.for?teaName(RS.for):''; $('#rsAdd').textContent=nm?'Add to '+nm+'’s roster':'Add to my roster';
   $('#rsAdd').disabled=false;
   try{ const r=await call('stcRoster',rsT());
-    if(RS.for&&r.teacher!==RS.for){ $('#rsAdd').disabled=true; $('#rlList').innerHTML=''; return say($('#rlMsg'),'Loading other teachers’ rosters needs the latest Code.gs (paste it, then Deploy › New version).','err'); } RS.list=r.roster; RS.periods=r.periods; $('#rsPer').textContent=(nm?nm+'’s':'Your')+' class periods: '+r.periods.join(', '); renderRoster(); }
+    if(RS.for&&r.teacher!==RS.for){ $('#rsAdd').disabled=true; $('#rlList').innerHTML=''; return say($('#rlMsg'),'Loading other teachers’ rosters needs the latest Code.gs (paste it, then Deploy › New version).','err'); } RS.list=r.roster; RS.periods=r.periods; gcSetup(r.classroom||''); $('#rsPer').textContent=(nm?nm+'’s':'Your')+' class periods: '+r.periods.join(', '); renderRoster(); }
   catch(e){ $('#rlList').innerHTML=''; say($('#rlMsg'),errText(e),'err'); } }
 function parsePaste(t){ const out=[], skip=[];
   String(t).split(/\r?\n/).forEach((ln,i)=>{ if(!ln.trim()) return; const tab=/\t/.test(ln), parts=ln.split(tab?/\t/:/,|;/).map(x=>x.trim()).filter(Boolean);
@@ -2045,6 +2053,71 @@ $('#rsAdd').onclick=async()=>{ const {out,skip}=parsePaste($('#rsPaste').value);
     $('#rsPaste').value=bad.length?$('#rsPaste').value.split(/\r?\n/).filter((l,i)=>bad.includes(i+1)).join('\n'):'';
     say($('#rsMsg'),`Added ${r.added}${r.changed?', updated '+r.changed:''}.`+(bad.length?` ${bad.length} line${bad.length===1?'':'s'} left in the box could not be read: each needs a school email, a name and one of the class periods listed above (not Guest).`:''),bad.length?'err':'ok'); }
   catch(e){ say($('#rsMsg'),errText(e),'err'); } finally{ b.disabled=false; } };
+/* ---------- Google Classroom import: the Classroom helper (a second, small web app that runs as the teacher) reads the teacher's own
+   classes; this tab polls stcClassroomTake with a random code until the list arrives; the teacher picks a period for each class ---------- */
+let GC={url:'', code:'', poll:0, until:0, classes:null};
+function gcSetup(url){ GC.url=url; $('#gcLive').hidden=!url; if(!url){ gcStop(); $('#gcMap').innerHTML=''; }
+  $('#gcOr').textContent=url?'Or upload':'Upload';
+  $('#gcFilePer').innerHTML='<option value="">Pick one</option>'+RS.periods.map(p=>`<option>${esc(p)}</option>`).join(''); }
+function gcStop(){ clearTimeout(GC.poll); GC.poll=0; }
+function gcGuess(c){ const t=c.section+' '+c.name, m=t.match(/\b(?:p|per|period)\.?\s*0*(\d{1,2})(?![0-9])/i)||t.match(/\b0*(\d{1,2})(?:st|nd|rd|th)\b/i)||String(c.section).trim().match(/^0*(\d{1,2})$/);
+  return m&&RS.periods.includes(m[1])?m[1]:''; }
+$('#gcGo').onclick=()=>{ const a=new Uint8Array(24); crypto.getRandomValues(a); GC.code=[...a].map(x=>'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789'[x%56]).join('');
+  const w=window.open(GC.url+'?code='+GC.code,'_blank');
+  GC.classes=null; $('#gcMap').innerHTML=''; $('#gcCheck').hidden=false; GC.until=Date.now()+15*60000; gcStop(); GC.poll=setTimeout(gcTake,6000);
+  say($('#gcMsg'),w?'Finish in the Google Classroom tab. Your classes show up here once you click <b>Send to Checkpoint</b> there.':'Your browser blocked the new tab. <a href="'+esc(GC.url+'?code='+GC.code)+'" target="_blank" rel="noopener">Open Google Classroom here</a>.',''); };
+$('#gcCheck').onclick=()=>gcTake(true);
+async function gcTake(byHand){ gcStop(); if(!GC.code) return; const b=$('#gcCheck'); b.disabled=true;
+  try{ const r=await call('stcClassroomTake',{code:GC.code},60000);
+    if(r.wait){ if(byHand===true) say($('#gcMsg'),'Nothing yet. In the Google Classroom tab, tick your classes and click <b>Send to Checkpoint</b>, then try again.','err');
+      if(Date.now()<GC.until) GC.poll=setTimeout(gcTake,document.hidden?15000:6000); return; }
+    if(r.other){ return say($('#gcMsg'),`The Google Classroom tab was signed in as <b>${esc(r.other)}</b>, not ${esc(DATA.me.email)}. Switch that tab to your school account and click <b>Get my Google Classroom classes</b> again.`,'err'); }
+    GC.code=''; $('#gcCheck').hidden=true; GC.classes=r.classes||[]; gcRender(); }
+  catch(e){ say($('#gcMsg'),errText(e),'err'); }
+  finally{ b.disabled=false; } }
+function gcRender(){ const L=GC.classes||[]; if(!L.length){ $('#gcMap').innerHTML=''; return say($('#gcMsg'),'No classes came over. Tick at least one class in the Google Classroom tab.','err'); }
+  say($('#gcMsg'),'Pick the class period for each class, then add them. Students who are already on your roster get their name and period updated.','ok');
+  $('#gcMap').innerHTML=L.map((c,i)=>{ const g=gcGuess(c); return `<div class="gcrow" data-i="${i}"><label class="rac"><input type="checkbox" class="gcon" ${g?'checked':''} aria-label="Add ${esc(c.name)}"></label><div class="gcn"><b>${esc(c.name)}</b>${c.section?' <span class="hint">'+esc(c.section)+'</span>':''}<br><span class="hint">${c.students.length} student${c.students.length===1?'':'s'}</span></div>
+    <label class="fl" style="flex-direction:row;align-items:center;gap:6px">Period<select class="gcper"><option value="">Pick one</option>${RS.periods.map(p=>`<option${p===g?' selected':''}>${esc(p)}</option>`).join('')}</select></label></div>`; }).join('')
+    +'<div class="row"><button class="btn pri" id="gcAdd">Add to my roster</button></div><div class="msg2" id="gcAddMsg"></div>'; }
+$('#gcMap').addEventListener('change',e=>{ if(e.target.classList.contains('gcper')&&e.target.value) e.target.closest('.gcrow').querySelector('.gcon').checked=true; });
+$('#gcMap').addEventListener('click',async e=>{ const b=e.target.closest('button'); if(!b) return;
+  if(b.id==='gcDrop'){ const codes=b.dataset.c.split(','); b.disabled=true; let r=null;
+    try{ for(const code of codes) r=await call('stcRosterEdit',{code,remove:true}); if(r){ RS.list=r.roster; renderRoster(); } say($('#gcAddMsg'),`Took ${codes.length} student${codes.length===1?'':'s'} off your roster.`,'ok'); }
+    catch(x){ b.disabled=false; say($('#gcAddMsg'),errText(x),'err'); } return; }
+  if(b.id!=='gcAdd') return;
+  const rows=[...$('#gcMap').querySelectorAll('.gcrow')].filter(r=>r.querySelector('.gcon').checked), lines=[], per={};
+  if(!rows.length) return say($('#gcAddMsg'),'Tick at least one class.','err');
+  for(const r of rows){ const c=GC.classes[+r.dataset.i], p=r.querySelector('.gcper').value; if(!p) return say($('#gcAddMsg'),'Pick a class period for '+esc(c.name)+'.','err');
+    (per[p]=per[p]||new Set()); c.students.forEach(s=>{ lines.push({email:s.email,name:s.name,period:p}); per[p].add(s.code); }); }
+  if(!lines.length) return say($('#gcAddMsg'),'Those classes have no students yet.','err');
+  b.disabled=true;
+  try{ const r=await call('stcRosterAdd',{lines},120000); RS.list=r.roster; renderRoster();
+    const all=new Set(Object.values(per).flatMap(x=>[...x])), gone=r.roster.filter(s=>per[s.period]&&!all.has(s.code));   /* on the roster in one of these periods, but in none of the classes */
+    say($('#gcAddMsg'),`Added ${r.added}${r.changed?', updated '+r.changed:''}${r.bad.length?'. '+r.bad.length+' could not be added':''}.`
+      +(gone.length?`<br>${gone.length} student${gone.length===1?' is':'s are'} on your roster in period ${esc(Object.keys(per).join(', '))} but not in these Google Classroom classes: ${gone.map(s=>esc(s.name)).join(', ')}. <button class="btn del" id="gcDrop" data-c="${esc(gone.map(s=>s.code).join(','))}">Take them off my roster</button>`:''),r.bad.length?'err':'ok'); }
+  catch(x){ say($('#gcAddMsg'),errText(x),'err'); } finally{ b.disabled=false; } });
+/* a class list file: a Classroom grades CSV (Last Name, First Name, Email Address) or any CSV with an email column -> the paste box */
+function csvRows(t){ const out=[]; let row=[], f='', q=false;
+  for(let i=0;i<t.length;i++){ const ch=t[i];
+    if(q){ if(ch==='"'){ if(t[i+1]==='"'){ f+='"'; i++; } else q=false; } else f+=ch; }
+    else if(ch==='"') q=true; else if(ch===','){ row.push(f); f=''; } else if(ch==='\n'||ch==='\r'){ if(ch==='\r'&&t[i+1]==='\n') i++; row.push(f); out.push(row); row=[]; f=''; } else f+=ch; }
+  if(f||row.length){ row.push(f); out.push(row); } return out.map(r=>r.map(x=>x.trim())); }
+function csvStudents(t){ const R=csvRows(String(t).replace(/^﻿/,'')), h=R.findIndex(r=>r.some(x=>/e-?mail/i.test(x)));
+  const H=h>=0?R[h].map(x=>x.toLowerCase()):[], col=re=>H.findIndex(x=>re.test(x));
+  const ce=col(/e-?mail/), cf=col(/first|given/), cl=col(/last|family|surname/), cn=col(/^(student\s*)?name$|full name|student$/);
+  const out=[]; R.slice(h+1).forEach(r=>{ const email=(ce>=0?r[ce]:r.find(x=>/@/.test(x)))||''; if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) return;
+    let first=cf>=0?r[cf]:'', last=cl>=0?r[cl]:'';
+    if(!first&&cn>=0){ const n=r[cn]; if(/,/.test(n)){ last=n.split(',')[0].trim(); first=n.split(',').slice(1).join(' ').trim(); } else { const w=n.trim().split(/\s+/); first=w[0]||''; last=w.length>1?w[w.length-1]:''; } }
+    first=first.trim().split(/\s+/)[0]||''; if(first) out.push({email:email.trim(),name:first+(last.trim()?' '+last.trim().charAt(0).toUpperCase():'')}); });
+  return out; }
+$('#gcFile').onchange=async()=>{ const f=$('#gcFile').files[0]; if(!f) return; const p=$('#gcFilePer').value;
+  if(!p){ $('#gcFile').value=''; return say($('#gcFileMsg'),'Pick the class period first, then choose the file.','err'); }
+  try{ const L=csvStudents(await f.text()); $('#gcFile').value='';
+    if(!L.length) return say($('#gcFileMsg'),'No school emails were found in that file. It needs a column of student emails.','err');
+    const box=$('#rsPaste'), cur=box.value.trim(); box.value=(cur?cur+'\n':'')+L.map(s=>s.email+', '+s.name+', '+p).join('\n');
+    say($('#gcFileMsg'),`${L.length} student${L.length===1?'':'s'} for period ${esc(p)} are in the box below. Check the names, then click <b>${esc($('#rsAdd').textContent)}</b>.`,'ok'); box.scrollIntoView({block:'center'}); }
+  catch(e){ say($('#gcFileMsg'),errText(e),'err'); } };
 function renderRoster(){ const L=RS.list||[], q=$('#rlFind').value.trim().toLowerCase();
   const pers=[...new Set(L.map(s=>s.period))].sort((a,b)=>(+a||99)-(+b||99)); if(RS.per&&!pers.includes(RS.per)) RS.per='';
   $('#rlPer').innerHTML='<button data-v="">All</button>'+pers.map(p=>`<button data-v="${esc(p)}">${esc(p)}</button>`).join(''); setSeg('#rlPer',RS.per);
