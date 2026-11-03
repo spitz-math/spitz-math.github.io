@@ -567,8 +567,8 @@ details summary{cursor:pointer;color:var(--blue2);font-size:13px;margin-top:8px}
     <section class="tcard" id="rsForCard" hidden><div class="row fr" style="margin-top:0"><label class="fl">Roster for<select id="rsFor"></select></label></div>
       <p class="hint">You can load and fix any teacher's roster. Teachers see only their own.</p></section>
     <section class="tcard" id="gcCard"><h2>Bring in a class list</h2>
-      <div id="gcLive" hidden><p class="hint">Get your students straight from <b>Google Classroom</b>. A Google page opens in a new tab: the first time, click <b>Allow</b> (Checkpoint can only read your class lists). Tick your classes there, click <b>Send to Checkpoint</b>, and come back to this tab. Do it again any time to add new students.</p>
-        <div class="row"><button class="btn pri" id="gcGo">Get my Google Classroom classes</button><button class="btn" id="gcCheck" hidden>I sent them. Bring them in</button></div>
+      <div id="gcLive" hidden><p class="hint">Get your students straight from <b>Google Classroom</b>. A small Google window opens, sends your classes here and closes itself. The first time, click <b>Allow</b> in it (Checkpoint can only read your class lists). Then pick which classes to add. Do it again any time to add new students.</p>
+        <div class="row"><button class="btn pri" id="gcGo">Get my Google Classroom classes</button><button class="btn" id="gcCheck" hidden>Check again</button></div>
         <div class="msg2" id="gcMsg"></div><div id="gcMap"></div></div>
       <p class="hint" style="margin-top:10px"><span id="gcOr">Or upload</span> a class list file (.csv), like a grades file downloaded from Google Classroom or any spreadsheet saved as CSV that has a column of student emails. Each student’s name and email go in the box below so you can check them before adding.</p>
       <div class="row"><input type="file" id="gcFile" accept=".csv,text/csv" aria-label="Class list file"><label class="fl" style="flex-direction:row;align-items:center;gap:6px">Class period<select id="gcFilePer"></select></label></div>
@@ -2063,20 +2063,20 @@ function gcStop(){ clearTimeout(GC.poll); GC.poll=0; }
 function gcGuess(c){ const t=c.section+' '+c.name, m=t.match(/\b(?:p|per|period)\.?\s*0*(\d{1,2})(?![0-9])/i)||t.match(/\b0*(\d{1,2})(?:st|nd|rd|th)\b/i)||String(c.section).trim().match(/^0*(\d{1,2})$/);
   return m&&RS.periods.includes(m[1])?m[1]:''; }
 $('#gcGo').onclick=()=>{ const a=new Uint8Array(24); crypto.getRandomValues(a); GC.code=[...a].map(x=>'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789'[x%56]).join('');
-  const w=window.open(GC.url+'?code='+GC.code,'_blank');
-  GC.classes=null; $('#gcMap').innerHTML=''; $('#gcCheck').hidden=false; GC.until=Date.now()+15*60000; gcStop(); GC.poll=setTimeout(gcTake,6000);
-  say($('#gcMsg'),w?'Finish in the Google Classroom tab. Your classes show up here once you click <b>Send to Checkpoint</b> there.':'Your browser blocked the new tab. <a href="'+esc(GC.url+'?code='+GC.code)+'" target="_blank" rel="noopener">Open Google Classroom here</a>.',''); };
+  const w=window.open(GC.url+'?code='+GC.code,'gcHelper','popup,width=520,height=640');
+  GC.classes=null; $('#gcMap').innerHTML=''; $('#gcCheck').hidden=false; GC.until=Date.now()+15*60000; gcStop(); GC.poll=setTimeout(gcTake,4000);
+  say($('#gcMsg'),w?'Getting your classes from Google Classroom… (the first time, click <b>Allow</b> in the small Google window)':'Your browser blocked the Google window. <a href="'+esc(GC.url+'?code='+GC.code)+'" target="_blank" rel="noopener">Open it here</a>.',''); };
 $('#gcCheck').onclick=()=>gcTake(true);
 async function gcTake(byHand){ gcStop(); if(!GC.code) return; const b=$('#gcCheck'); b.disabled=true;
   try{ const r=await call('stcClassroomTake',{code:GC.code},60000);
-    if(r.wait){ if(byHand===true) say($('#gcMsg'),'Nothing yet. In the Google Classroom tab, tick your classes and click <b>Send to Checkpoint</b>, then try again.','err');
-      if(Date.now()<GC.until) GC.poll=setTimeout(gcTake,document.hidden?15000:6000); return; }
-    if(r.other){ return say($('#gcMsg'),`The Google Classroom tab was signed in as <b>${esc(r.other)}</b>, not ${esc(DATA.me.email)}. Switch that tab to your school account and click <b>Get my Google Classroom classes</b> again.`,'err'); }
+    if(r.wait){ if(byHand===true) say($('#gcMsg'),'Nothing yet. If the small Google window is still open, click <b>Allow</b> there, or close it and click <b>Get my Google Classroom classes</b> again.','err');
+      if(Date.now()<GC.until) GC.poll=setTimeout(gcTake,document.hidden?8000:4000); return; }
+    if(r.other){ return say($('#gcMsg'),`The Google window was signed in as <b>${esc(r.other)}</b>, not ${esc(DATA.me.email)}. Switch to your school account in Google and click <b>Get my Google Classroom classes</b> again.`,'err'); }
     GC.code=''; $('#gcCheck').hidden=true; GC.classes=r.classes||[]; gcRender(); }
   catch(e){ say($('#gcMsg'),errText(e),'err'); }
   finally{ b.disabled=false; } }
-function gcRender(){ const L=GC.classes||[]; if(!L.length){ $('#gcMap').innerHTML=''; return say($('#gcMsg'),'No classes came over. Tick at least one class in the Google Classroom tab.','err'); }
-  say($('#gcMsg'),'Pick the class period for each class, then add them. Students who are already on your roster get their name and period updated.','ok');
+function gcRender(){ const L=GC.classes||[]; if(!L.length){ $('#gcMap').innerHTML=''; return say($('#gcMsg'),'No classes came over from Google Classroom.','err'); }
+  say($('#gcMsg'),'Tick the classes to add and pick the class period for each. Students who are already on your roster get their name and period updated.','ok');
   $('#gcMap').innerHTML=L.map((c,i)=>{ const g=gcGuess(c); return `<div class="gcrow" data-i="${i}"><label class="rac"><input type="checkbox" class="gcon" ${g?'checked':''} aria-label="Add ${esc(c.name)}"></label><div class="gcn"><b>${esc(c.name)}</b>${c.section?' <span class="hint">'+esc(c.section)+'</span>':''}<br><span class="hint">${c.students.length} student${c.students.length===1?'':'s'}</span></div>
     <label class="fl" style="flex-direction:row;align-items:center;gap:6px">Period<select class="gcper"><option value="">Pick one</option>${RS.periods.map(p=>`<option${p===g?' selected':''}>${esc(p)}</option>`).join('')}</select></label></div>`; }).join('')
     +'<div class="row"><button class="btn pri" id="gcAdd">Add to my roster</button></div><div class="msg2" id="gcAddMsg"></div>'; }
