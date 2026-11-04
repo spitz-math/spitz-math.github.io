@@ -1,6 +1,11 @@
 {
  "hidden": [],
- "off": {},
+ "off": {
+  "shift": [
+   "gr",
+   "ne"
+  ]
+ },
  "assign": [],
  "suggest": {
   "sets": [
@@ -12,10 +17,13 @@
    },
    {
     "id": "evalf"
+   },
+   {
+    "id": "shift"
    }
   ],
   "note": ""
  },
  "bonus": 25,
- "updated": "2026-10-30T12:39:34.207Z"
+ "updated": "2026-11-04T19:20:00.377Z"
 }
