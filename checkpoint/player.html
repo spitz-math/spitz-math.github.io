@@ -1430,9 +1430,10 @@ function buildGraph(it,root){
   const toGrid=e=>{ const p=svg.createSVGPoint(); p.x=e.clientX; p.y=e.clientY; const q=p.matrixTransform(svg.getScreenCTM().inverse());
     const gx=Math.round((q.x-g.pad)/g.cell-g.R), gy=Math.round(g.R-(q.y-g.pad)/g.cell);
     if(Math.abs(gx)>g.R||Math.abs(gy)>g.R) return null; return [gx,gy]; };
-  const draw=()=>{ pts.innerHTML=''; const a=S.answers[id];
+  const paint=()=>{ pts.innerHTML=''; const a=S.answers[id];
     if(a){ const c=document.createElementNS('http://www.w3.org/2000/svg','circle'); c.setAttribute('class','pt'); c.setAttribute('cx',g.X(a[0])); c.setAttribute('cy',g.Y(a[1])); c.setAttribute('r',7); pts.appendChild(c);
-      read.textContent=`(${fmtN(a[0])}, ${fmtN(a[1])})`; } else read.textContent='none'; refresh(); };
+      read.textContent=`(${fmtN(a[0])}, ${fmtN(a[1])})`; } else read.textContent='none'; };
+  const draw=()=>{ paint(); refresh(); }; paint();   /* paint the saved point right away (after a reload, in reviews, reports and the printed key) */
   svg.addEventListener('pointermove',e=>{ const p=toGrid(e); if(!p){hov.style.display='none';return;} hov.style.display=''; hov.setAttribute('cx',g.X(p[0])); hov.setAttribute('cy',g.Y(p[1])); });
   svg.addEventListener('pointerleave',()=>hov.style.display='none');
   svg.addEventListener('click',e=>{ const p=toGrid(e); if(!p) return; const a=S.answers[id];
@@ -2402,7 +2403,7 @@ function paperize(it,el,mode){ const t=it.type, rm=s=>el.querySelectorAll(s).for
   else if(t==='dnd'){ el.querySelectorAll('.tile').forEach(x=>{ x.insertAdjacentHTML('afterbegin',`<b class="plet">${L[+x.dataset.t]}</b>`); });
     const bk=el.querySelector('.bank'); if(bk&&!bk.querySelector('.tile')) bk.remove();
     say=it.venn?'Write the letter of each tile in its place in the diagram.':'Write the letter of each tile in its group.'; }
-  else if(t==='order'){ el.querySelectorAll('.odit').forEach((li,j)=>{ const n=li.querySelector('.odnum'); if(n) n.textContent=key?String(it.answer.indexOf(j)+1):mode==='report'?n.textContent:''; });
+  else if(t==='order'){ el.querySelectorAll('.odit').forEach((li,j)=>{ const n=li.querySelector('.odnum'); if(n) n.textContent=key?String(it.answer.indexOf(j)+1):mode==='report'&&S.answers[it.n]!=null?n.textContent:''; });   /* a report with no answer: blank lines, not 1, 2, 3 */
     if(mode!=='report') say=`Number the items in order from 1 (first) to ${it.tiles.length} (last).`; }
   else if(t==='label'){ const bank=el.querySelector('.lbbank'), a=key?it.answer:S.answers[it.n]||[];
     if(bank){ bank.className='pbankl'; bank.innerHTML=it.tiles.map((x,k)=>`<span><b class="plet">${L[k]}</b>${x}</span>`).join(''); }
