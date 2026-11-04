@@ -1,5 +1,5 @@
 {
- "updated": "2026-10-30T16:47:09.691Z",
+ "updated": "2026-11-04T19:19:40.868Z",
  "games": {
   "splat_range": {
    "name": "Splat Range",
@@ -68,6 +68,14 @@
      "bonus": 1
     },
     {
+     "name": "Izael F",
+     "score": "780,375",
+     "acc": 97,
+     "set": "Parallel & perpendicular · Parallel slopes",
+     "date": "2026-10-30",
+     "bonus": 1
+    },
+    {
      "name": "Spitz",
      "score": "631,125",
      "acc": 98,
@@ -122,13 +130,6 @@
      "acc": 91,
      "set": "Multiplication facts",
      "date": "2026-10-16"
-    },
-    {
-     "name": "william E",
-     "score": "88,295",
-     "acc": 97,
-     "set": "Multiplication facts · Facts 0–3",
-     "date": "2026-10-16"
     }
    ]
   },
@@ -144,10 +145,11 @@
     },
     {
      "name": "Juan M",
-     "score": "22,970",
-     "acc": 78,
-     "set": "Multiplication facts",
-     "date": "2026-10-16"
+     "score": "28,886",
+     "acc": 85,
+     "set": "HOY & VUX",
+     "date": "2026-10-30",
+     "bonus": 1
     },
     {
      "name": "Noah C",
@@ -197,6 +199,30 @@
      "date": "2026-10-23"
     },
     {
+     "name": "Dion C",
+     "score": "2,409",
+     "acc": 93,
+     "set": "Parallel & perpendicular",
+     "date": "2026-10-30",
+     "bonus": 1
+    },
+    {
+     "name": "Felix L",
+     "score": "2,200",
+     "acc": 98,
+     "set": "HOY & VUX",
+     "date": "2026-10-30",
+     "bonus": 1
+    },
+    {
+     "name": "Selene G",
+     "score": "1,709",
+     "acc": 97,
+     "set": "HOY & VUX",
+     "date": "2026-10-30",
+     "bonus": 1
+    },
+    {
      "name": "Grace W",
      "score": "1,533",
      "acc": 100,
@@ -213,6 +239,13 @@
      "bonus": 1
     },
     {
+     "name": "Lorena B",
+     "score": "1,213",
+     "acc": 91,
+     "set": "HOY & VUX",
+     "date": "2026-10-30"
+    },
+    {
      "name": "Noah C",
      "score": "1,119",
      "acc": 98,
@@ -224,20 +257,6 @@
      "score": "1,053",
      "acc": 95,
      "set": "Multiplication facts · Facts 0–3, Facts 4–6, Facts 7–9",
-     "date": "2026-10-16"
-    },
-    {
-     "name": "Lorena Barroso",
-     "score": "1,021",
-     "acc": 95,
-     "set": "Multiplication facts",
-     "date": "2026-10-16"
-    },
-    {
-     "name": "melanie guerra",
-     "score": "953",
-     "acc": 97,
-     "set": "Multiplication facts",
      "date": "2026-10-16"
     }
    ]
@@ -347,6 +366,14 @@
    "name": "Dash",
    "top": [
     {
+     "name": "Saul G",
+     "score": "27,825",
+     "acc": 100,
+     "set": "HOY & VUX",
+     "date": "2026-10-30",
+     "bonus": 1
+    },
+    {
      "name": "SERGIO.C",
      "score": "24,300",
      "acc": 100,
@@ -368,6 +395,14 @@
      "acc": 93,
      "set": "Functions",
      "date": "2026-10-16"
+    },
+    {
+     "name": "Selene G",
+     "score": "13,000",
+     "acc": 85,
+     "set": "HOY & VUX",
+     "date": "2026-11-04",
+     "bonus": 1
     },
     {
      "name": "william E",
@@ -404,20 +439,6 @@
      "acc": 79,
      "set": "Slope-intercept form",
      "date": "2026-10-23"
-    },
-    {
-     "name": "Kaelyn M",
-     "score": "4,160",
-     "acc": 100,
-     "set": "Standard form",
-     "date": "2026-10-16"
-    },
-    {
-     "name": "Janet F",
-     "score": "3,950",
-     "acc": 98,
-     "set": "Multiplication facts",
-     "date": "2026-10-16"
     }
    ]
   },
@@ -453,6 +474,14 @@
    "name": "Mini Golf",
    "top": [
     {
+     "name": "Saul G",
+     "score": "15,181",
+     "acc": 83,
+     "set": "HOY & VUX",
+     "date": "2026-10-30",
+     "bonus": 1
+    },
+    {
      "name": "Saulo G",
      "score": "11,475",
      "acc": 100,
@@ -461,12 +490,19 @@
      "bonus": 1
     },
     {
-     "name": "Saul G",
-     "score": "10,588",
-     "acc": 95,
-     "set": "Slide and Slice · Slide",
-     "date": "2026-10-26",
+     "name": "Eliud M",
+     "score": "7,500",
+     "acc": 53,
+     "set": "HOY & VUX",
+     "date": "2026-11-04",
      "bonus": 1
+    },
+    {
+     "name": "Noah C",
+     "score": "2,950",
+     "acc": 94,
+     "set": "Multiplication facts",
+     "date": "2026-10-30"
     },
     {
      "name": "David.V",
@@ -557,6 +593,14 @@
    "name": "Brick Breaker",
    "top": [
     {
+     "name": "Izael F",
+     "score": "388,569",
+     "acc": 100,
+     "set": "Parallel & perpendicular · Parallel slopes",
+     "date": "2026-11-04",
+     "bonus": 1
+    },
+    {
      "name": "Saulo G",
      "score": "342,246",
      "acc": 100,
@@ -565,11 +609,12 @@
      "bonus": 1
     },
     {
-     "name": "Izael F",
-     "score": "77,640",
-     "acc": 96,
-     "set": "Multiplication facts · Facts 0–3",
-     "date": "2026-10-28"
+     "name": "esperanza r",
+     "score": "52,100",
+     "acc": 100,
+     "set": "HOY & VUX",
+     "date": "2026-10-30",
+     "bonus": 1
     },
     {
      "name": "Sebastian E.",
@@ -656,6 +701,13 @@
      "date": "2026-10-16"
     },
     {
+     "name": "Noah C",
+     "score": "3,471",
+     "acc": 93,
+     "set": "Multiplication facts",
+     "date": "2026-10-30"
+    },
+    {
      "name": "Leah C",
      "score": "2,942",
      "acc": 93,
@@ -717,6 +769,21 @@
    "name": "Snake Arena",
    "top": [
     {
+     "name": "Izael F",
+     "score": "65,271",
+     "acc": 95,
+     "set": "Parallel & perpendicular · Parallel slopes",
+     "date": "2026-11-04",
+     "bonus": 1
+    },
+    {
+     "name": "Jose CB",
+     "score": "50,692",
+     "acc": 95,
+     "set": "Multiplication facts",
+     "date": "2026-11-02"
+    },
+    {
      "name": "tanix.b",
      "score": "35,165",
      "acc": 94,
@@ -757,6 +824,14 @@
      "acc": 86,
      "set": "Multiplication facts",
      "date": "2026-10-27"
+    },
+    {
+     "name": "Eliud M",
+     "score": "15,041",
+     "acc": 50,
+     "set": "HOY & VUX",
+     "date": "2026-11-04",
+     "bonus": 1
     }
    ]
   },
@@ -765,10 +840,26 @@
    "top": [
     {
      "name": "Saulo G",
-     "score": "914,125",
+     "score": "1,048,575",
      "acc": 100,
-     "set": "Slide and Slice · Slide",
-     "date": "2026-10-27",
+     "set": "Parallel & perpendicular · Parallel slopes",
+     "date": "2026-11-04",
+     "bonus": 1
+    },
+    {
+     "name": "Izael F",
+     "score": "1,048,575",
+     "acc": 100,
+     "set": "Parallel & perpendicular · Parallel slopes",
+     "date": "2026-10-30",
+     "bonus": 1
+    },
+    {
+     "name": "Gael R",
+     "score": "724,056",
+     "acc": 100,
+     "set": "HOY & VUX · Find the slope",
+     "date": "2026-10-30",
      "bonus": 1
     },
     {
@@ -788,14 +879,7 @@
     },
     {
      "name": "Felix L",
-     "score": "347,785",
-     "acc": 92,
-     "set": "HOY & VUX",
-     "date": "2026-10-29"
-    },
-    {
-     "name": "Gael R",
-     "score": "322,113",
+     "score": "395,713",
      "acc": 100,
      "set": "HOY & VUX",
      "date": "2026-10-30",
@@ -817,33 +901,32 @@
      "date": "2026-10-27"
     },
     {
+     "name": "Noah C",
+     "score": "223,275",
+     "acc": 90,
+     "set": "Multiplication facts",
+     "date": "2026-10-30"
+    },
+    {
      "name": "Sylvestre Cantu:0",
      "score": "177,475",
      "acc": 46,
      "set": "HOY & VUX",
      "date": "2026-10-30"
-    },
-    {
-     "name": "Gael",
-     "score": "76,081",
-     "acc": 87,
-     "set": "HOY & VUX",
-     "date": "2026-10-30",
-     "bonus": 1
-    },
-    {
-     "name": "Grace W",
-     "score": "48,100",
-     "acc": 94,
-     "set": "Slide and Slice · Slide",
-     "date": "2026-10-27",
-     "bonus": 1
     }
    ]
   },
   "fit_check": {
    "name": "Fit Check",
    "top": [
+    {
+     "name": "Selene G",
+     "score": "6,494",
+     "acc": 87,
+     "set": "HOY & VUX",
+     "date": "2026-11-04",
+     "bonus": 1
+    },
     {
      "name": "David.V",
      "score": "4,300",
@@ -866,6 +949,94 @@
      "acc": 97,
      "set": "Multiplication facts",
      "date": "2026-10-29"
+    }
+   ]
+  },
+  "football_buds": {
+   "name": "Football Buds",
+   "top": [
+    {
+     "name": "Alexander R",
+     "score": "28,738",
+     "acc": 83,
+     "set": "HOY & VUX",
+     "date": "2026-10-30",
+     "bonus": 1
+    }
+   ]
+  },
+  "hoop_buds": {
+   "name": "Hoop Buds",
+   "top": [
+    {
+     "name": "Felix L",
+     "score": "53,438",
+     "acc": 98,
+     "set": "HOY & VUX",
+     "date": "2026-10-30",
+     "bonus": 1
+    },
+    {
+     "name": "ismael Z",
+     "score": "50,719",
+     "acc": 98,
+     "set": "HOY & VUX",
+     "date": "2026-10-30",
+     "bonus": 1
+    },
+    {
+     "name": "Hector",
+     "score": "43,188",
+     "acc": 99,
+     "set": "HOY & VUX",
+     "date": "2026-10-30"
+    },
+    {
+     "name": "Alexander",
+     "score": "34,988",
+     "acc": 92,
+     "set": "HOY & VUX",
+     "date": "2026-10-30"
+    },
+    {
+     "name": "Noah C",
+     "score": "28,050",
+     "acc": 98,
+     "set": "Multiplication facts",
+     "date": "2026-10-30"
+    }
+   ]
+  },
+  "rocket_buds": {
+   "name": "Rocket Buds",
+   "top": [
+    {
+     "name": "joel",
+     "score": "12,525",
+     "acc": 87,
+     "set": "HOY & VUX",
+     "date": "2026-11-04",
+     "bonus": 1
+    }
+   ]
+  },
+  "brawl_buds": {
+   "name": "Brawl Buds",
+   "top": [
+    {
+     "name": "Sylvestre Cantu",
+     "score": "51,731",
+     "acc": 100,
+     "set": "HOY & VUX",
+     "date": "2026-11-03"
+    },
+    {
+     "name": "Saulo G",
+     "score": "44,794",
+     "acc": 97,
+     "set": "Parallel & perpendicular · Parallel slopes",
+     "date": "2026-11-03",
+     "bonus": 1
     }
    ]
   }
