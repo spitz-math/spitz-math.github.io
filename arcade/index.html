@@ -81,24 +81,26 @@ h1{font-family:var(--display);font-weight:400;margin:0;line-height:1;text-align:
 /* game cards: the only framed things on the page, because they're what you pick */
 .games{display:grid;grid-template-columns:repeat(auto-fill,minmax(196px,1fr));gap:var(--s3)}
 .games.feat{grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:var(--s4)}
-.game{all:unset;box-sizing:border-box;position:relative;cursor:pointer;display:flex;flex-direction:column;gap:4px;min-width:0;padding:8px 8px 12px;border-radius:var(--r-l);
+/* the button is a still hit area; only its .face moves, so tilting or lifting never slides the card out from under the pointer (no hover flicker) */
+.game{all:unset;box-sizing:border-box;display:block;cursor:pointer;min-width:0;border-radius:var(--r-l)}
+.face{box-sizing:border-box;position:relative;height:100%;display:flex;flex-direction:column;gap:4px;min-width:0;padding:8px 8px 12px;border-radius:var(--r-l);
   background:linear-gradient(180deg,color-mix(in srgb,var(--acc) 8%,#0b0e2c),#070920);border:2px solid color-mix(in srgb,var(--acc) 28%,#1b2155);
   transition:transform .18s ease-out,border-color .18s,box-shadow .18s;overflow:hidden}
 /* tilt toward the cursor (mouse/trackpad only) and one shine sweep on hover; set by JS through --rx/--ry */
-.game::after{content:"";position:absolute;inset:0;pointer-events:none;border-radius:inherit;opacity:0;
+.face::after{content:"";position:absolute;inset:0;pointer-events:none;border-radius:inherit;opacity:0;
   background:linear-gradient(105deg,transparent 35%,rgba(255,255,255,.16) 48%,rgba(255,255,255,.05) 54%,transparent 62%) no-repeat;background-size:250% 100%;background-position:110% 0}
 @media (hover:hover) and (pointer:fine) and (prefers-reduced-motion:no-preference){
-  .game.tilt{transform:perspective(800px) rotateX(var(--rx,0deg)) rotateY(var(--ry,0deg)) translateY(-3px);transition:transform .12s ease-out,border-color .18s,box-shadow .18s}
-  .game:hover::after{opacity:1;background-position:-60% 0;transition:background-position .7s ease-out,opacity .1s}
+  .games .game.tilt .face{transform:perspective(800px) rotateX(var(--rx,0deg)) rotateY(var(--ry,0deg)) translateY(-3px);transition:transform .12s ease-out,border-color .18s,box-shadow .18s}
+  .game:hover .face::after{opacity:1;background-position:-60% 0;transition:background-position .7s ease-out,opacity .1s}
 }
 .art{display:block;width:100%;height:auto;aspect-ratio:200/110;border-radius:var(--r-s);overflow:hidden;background:var(--gpanel)}
 .game b{margin-top:4px;font:900 16px/1.2 var(--body);letter-spacing:.04em;text-transform:uppercase;color:var(--acc);padding:2px 4px 0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .feat .game b{font:400 20px/1.15 var(--display);letter-spacing:.02em;text-transform:none}
 .game small{font:700 13.5px/1.25 var(--body);color:var(--dim);padding-inline:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .game small.what{color:var(--cyan)}
-.game:hover,.game:focus-visible{transform:translateY(-3px);border-color:var(--acc);box-shadow:0 6px 18px color-mix(in srgb,var(--acc) 35%,transparent)}
+.game:hover .face,.game:focus-visible .face{transform:translateY(-3px);border-color:var(--acc);box-shadow:0 6px 18px color-mix(in srgb,var(--acc) 35%,transparent)}
 .game:focus-visible{outline:3px solid #fff;outline-offset:3px}
-.game:active{transform:translateY(0);transition-duration:.08s}
+.game:active .face{transform:translateY(0);transition-duration:.08s}
 .game .new{position:absolute;top:2px;right:2px;z-index:1;font:400 10px/1 var(--pixel);letter-spacing:.06em;color:var(--bg);background:var(--yellow);padding:7px 8px;border-radius:var(--r-s)}
 .game .new.upd{background:var(--cyan)}
 
@@ -186,7 +188,7 @@ h1{font-family:var(--display);font-weight:400;margin:0;line-height:1;text-align:
 .sheet.coin .play{transform:translateY(5px);box-shadow:0 0 0 #b38a00,0 0 26px rgba(255,225,58,.55);transition:transform .08s,box-shadow .2s}
 .sheet.coin .gside .art{transform:scale(1.1);transition:transform .45s cubic-bezier(.5,0,.75,0)}
 .sheet.coin .box{opacity:0;transform:scale(1.04);transition:opacity .25s .2s ease-in,transform .45s cubic-bezier(.5,0,.75,0)}
-@media (prefers-reduced-motion:reduce){:root{--ms:7000ms}.star{animation:none}.game,.lb,.play,.chip span{transition:none}.sheet.coin .box,.sheet.coin .gside .art{transition:none;transform:none;opacity:1}}
+@media (prefers-reduced-motion:reduce){:root{--ms:7000ms}.star{animation:none}.face,.lb,.play,.chip span{transition:none}.sheet.coin .box,.sheet.coin .gside .art{transition:none;transform:none;opacity:1}}
 
 @media (max-width:760px){
   header{grid-template-columns:1fr auto;grid-template-areas:"home lb" "brand brand"}
@@ -313,7 +315,7 @@ function $(i){ return document.getElementById(i); }
 function save(){ try{ localStorage.setItem('spitz_hub2',JSON.stringify(st)); }catch(e){} }
 function esc(v){ return String(v).replace(/[&<>"]/g,function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]; }); }
 
-function card(g){ return '<button class="game" type="button" style="--acc:'+g.acc+';--gpanel:'+g.panel+'" data-g="'+g.id+'" aria-haspopup="dialog">'+(g.isNew?'<span class="new">NEW</span>':g.isUpd?'<span class="new upd">UPDATED</span>':'')+'<svg class="art" viewBox="0 0 200 110" aria-hidden="true">'+g.art+'</svg><b>'+g.name+'</b>'+(g.isUpd?'<small class="what" title="'+esc(g.more)+'">'+esc(g.what)+'</small>':'<small>'+g.d+'</small>')+'</button>'; }
+function card(g){ return '<button class="game" type="button" style="--acc:'+g.acc+';--gpanel:'+g.panel+'" data-g="'+g.id+'" aria-haspopup="dialog">'+'<span class="face">'+(g.isNew?'<span class="new">NEW</span>':g.isUpd?'<span class="new upd">UPDATED</span>':'')+'<svg class="art" viewBox="0 0 200 110" aria-hidden="true">'+g.art+'</svg><b>'+g.name+'</b>'+(g.isUpd?'<small class="what" title="'+esc(g.more)+'">'+esc(g.what)+'</small>':'<small>'+g.d+'</small>')+'</span></button>'; }
 /* new and updated games get their own bigger row (they are never shown twice) */
 var FEAT=GAMES.filter(function(g){ return g.isNew||g.isUpd; });
 $('games-feat').innerHTML=FEAT.map(card).join(''); $('feat').hidden=!FEAT.length;
