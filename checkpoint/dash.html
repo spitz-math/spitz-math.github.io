@@ -781,7 +781,6 @@ html[data-nav="side"] .sesbtn .sdot{display:none}
 .ibl{display:none}
 .look #lkNav{margin-top:8px}
 /* ---------- side bar option (11/5): Manage › Look › Side bar ---------- */
-@media (min-width:760px){
 html[data-nav="side"] body{padding-left:236px}
 html[data-nav="side"] .dbar{position:fixed;inset:0 auto 0 0;width:236px;z-index:30;flex-direction:column;align-items:stretch;flex-wrap:nowrap;gap:8px;padding:18px 14px 14px;border-bottom:0;border-right:1px solid var(--line);box-shadow:inset 4px 0 0 var(--tb);overflow-y:auto}
 html[data-nav="side"] .dbar .wm{font-size:18px;margin:0 0 10px 2px}
@@ -813,10 +812,27 @@ html[data-nav="side"] .dbar .qwrap{order:1} html[data-nav="side"] .dbar #sesDD{o
 html[data-nav="side"] .dbar #arcGrp,html[data-nav="side"] .dbar #teaGrp{order:5} html[data-nav="side"] .dbar .grp:not([id]){order:6} html[data-nav="side"] .dbar .sp{order:7}
 html[data-nav="side"] .dbar .upd{order:8} html[data-nav="side"] #alertBtn{order:9} html[data-nav="side"] .dbar .mng{order:10} html[data-nav="side"] .dbar .wm{order:0}
 html[data-nav="side"] .tpage,html[data-nav="side"] .bkpage{z-index:45}
+/* phones: the side bar slides in from a menu button */
+.mbar,.navbg{display:none}
+@media (max-width:759px){
+html[data-nav="side"] body{padding-left:0}
+html[data-nav="side"] .mbar{display:flex;align-items:center;gap:10px;padding:10px 14px;background:var(--card,#fff);border-bottom:1px solid var(--line);box-shadow:inset 0 3px 0 var(--tb);flex:0 0 auto}
+.mbar .mnav{display:inline-grid;place-items:center;width:38px;height:38px;border-radius:8px;border:1px solid var(--line);background:var(--card,#fff);color:var(--ink);padding:0}
+.mbar .mnav svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round}
+.mbar .mt{font:700 16px var(--fd);color:var(--ink)} .mbar .mv{margin-left:auto;font-size:13px;font-weight:600;color:var(--mut)}
+html[data-nav="side"] .dbar{width:min(290px,86vw);z-index:70;transform:translateX(-105%);transition:transform .25s ease;box-shadow:inset 4px 0 0 var(--tb),8px 0 30px rgba(0,0,0,.25)}
+html[data-nav="side"].navopen .dbar{transform:none}
+html[data-nav="side"].navopen .navbg{display:block;position:fixed;inset:0;z-index:65;background:rgba(10,12,16,.4)}
+html[data-nav="side"] .dbar .mngpanel{position:absolute;left:0;right:0;bottom:calc(100% + 6px);top:auto}
+html[data-nav="side"] .dbar .mng{position:relative}
+html[data-nav="side"] .sespanel{left:0;top:calc(100% + 6px);width:min(320px,80vw)}
+html[data-nav="side"] .dbar .grp .lab{display:block}
 }
 </style>
 </head>
 <body>
+<div class="mbar" id="mbar"><button class="mnav" id="mnav" aria-label="Open the menu"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button><span class="mt">Spitz Checkpoint</span><span class="mv" id="mview"></span></div>
+<div class="navbg" id="navbg"></div>
 <header class="topbar tb-red dbar">
   <div class="wm"><span class="mk" aria-hidden="true"></span><span class="wmt">Spitz Checkpoint</span></div>
   <div class="sesdd" id="sesDD"><button class="btn sesbtn" id="sesBtn" aria-haspopup="dialog" aria-expanded="false"><span class="sl" id="sesLabel">Loading…</span><span class="car" aria-hidden="true">&#9662;</span></button>
@@ -1200,6 +1216,13 @@ document.addEventListener('visibilitychange',()=>{ if(!document.hidden){ AL.unse
 function stop(){ clearInterval(timer); timer=null; }
 let hidTick=0;   /* in another tab, keep checking every 30 s while alerts are on so they still come (11/2) */
 function startAuto(){ stop(); if($('#auto').checked) timer=setInterval(()=>{ if(!document.hidden||(AL.on&&(++hidTick%2===0))) load(true); },POLL_MS); }
+/* phone side bar: menu button slides it in; picking a view or period closes it */
+(function(){ const h=document.documentElement, set=o=>h.classList.toggle('navopen',o);
+  $('#mnav').onclick=()=>set(true); $('#navbg').onclick=()=>set(false);
+  document.addEventListener('keydown',e=>{ if(e.key==='Escape'&&h.classList.contains('navopen')) set(false); });
+  const lbl=()=>{ const v=document.querySelector('#viewSeg button[aria-pressed="true"]'); $('#mview').textContent=v?v.textContent:''; };
+  ['#viewSeg','#perSeg'].forEach(q=>$(q).addEventListener('click',e=>{ if(e.target.closest('button')) setTimeout(()=>{ set(false); lbl(); },0); }));
+  new MutationObserver(lbl).observe($('#viewSeg'),{attributes:true,subtree:true}); lbl(); })();
 $('#auto').onchange=startAuto; $('#refresh').onclick=()=>load(); $('#upd').onclick=()=>load();
 /* top bar (11/5): start typing anywhere on the dashboard to find a name */
 document.addEventListener('keydown',e=>{ if(e.ctrlKey||e.metaKey||e.altKey||e.key.length!==1||!/[a-z]/i.test(e.key)) return;
