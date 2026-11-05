@@ -1122,7 +1122,7 @@ html[data-theme="dark"] .rtbox{background:var(--card);color:var(--ink)}
 </header>
 <div class="herow">
 <div class="tiles" id="tiles"></div>
-  <div class="vctl" id="vctl"><div class="grp" id="expGrp"><button class="btn" id="vRep" title="One page per student: score, standards to work on, and each missed question with how to solve it">Student reports</button><button class="btn" id="vCsv" title="Each student's score and STAAR level (the students shown now), for your gradebook">Download scores</button></div><div class="grp" id="layGrp"><div class="seg" id="laySeg" aria-label="Layout"><button data-v="room">Room</button><button data-v="grid">Grid</button></div></div>
+  <div class="vctl" id="vctl"><div class="grp" id="expGrp"><button class="btn" id="vRep" title="One page per student: score, standards to work on, and each missed question with how to solve it">Student reports</button></div><div class="grp" id="layGrp"><div class="seg" id="laySeg" aria-label="Layout"><button data-v="room">Room</button><button data-v="grid">Grid</button></div></div>
     <div class="grp" id="sortGrp"><span class="lab">Sort</span><select id="sort"><option value="needs">Needs you first</option><option value="name">First name</option><option value="last">Last name</option><option value="period">Period</option><option value="status">Status</option><option value="progress">Progress</option><option value="score">Score</option><option value="input">Last activity</option></select></div></div>
 </div>
 <div class="main">
@@ -1218,7 +1218,7 @@ html[data-theme="dark"] .rtbox{background:var(--card);color:var(--ink)}
 </section>
 <section class="tpage" id="rppage" hidden aria-label="Reports">
   <header class="topbar tb-red"><div class="wm"><span class="mk" aria-hidden="true"></span>Spitz Checkpoint<small>Reports</small></div><div class="sp"></div>
-    <button class="btn" data-ps="">Performance standards</button><button class="btn" id="rpCsv" disabled>Download (CSV)</button><button class="btn" id="rpPrint" disabled>Print</button><button class="btn pri" id="rptBack">Back to dashboard</button></header>
+    <button class="btn" data-ps="">Performance standards</button><button class="btn" id="rpScores" disabled title="Each student's score and STAAR level on this test, for your gradebook">Download scores</button><button class="btn" id="rpCsv" disabled title="The tables on this page as a spreadsheet">Download report</button><button class="btn" id="rpPrint" disabled>Print</button><button class="btn pri" id="rptBack">Back to dashboard</button></header>
   <div class="tbody"><div class="tcol rpcol">
     <section class="tcard rpctl"><h2>Results by standard</h2>
       <p class="hint">One test across classes, for PLCs: how each group did overall, on each TEKS and on each question. Uses every session given with that test.</p>
@@ -1508,7 +1508,9 @@ function alCheck(){ if(!DATA||arc||!selSes) return; const now={}, hits=[];
 document.addEventListener('visibilitychange',()=>{ if(!document.hidden){ AL.unseen=0; document.title=AL.title; } });
 function stop(){ clearInterval(timer); timer=null; }
 let hidTick=0;   /* in another tab, keep checking every 30 s while alerts are on so they still come (11/2) */
-function startAuto(){ stop(); if($('#auto').checked) timer=setInterval(()=>{ if(!document.hidden||(AL.on&&(++hidTick%2===0))) load(true); },POLL_MS); }
+function startAuto(){ stop(); if($('#auto').checked) timer=setInterval(()=>{ if(GB.on&&(++gbTick%2)) return;   /* Google busy: refresh every 30 s instead of 15, which frees room for students' saves */
+  if(!document.hidden||(AL.on&&(++hidTick%2===0))) load(true); },POLL_MS); }
+let gbTick=0;
 /* settings follow the teacher (11/5): Look, Room/Grid, order, alerts and a few view choices are saved to the teacher's
    sign-in through stcPrefs in Code.gs, so they carry to any computer. This device keeps a copy so the page opens right away.
    Without stcPrefs in Code.gs it quietly stays on this device only. */
@@ -1700,7 +1702,7 @@ function rpOpen(){ openPage('#rppage'); const admin=seeAll();
   $('#rpTeaWrap').hidden=!admin||T.length<2; $('#rpTea').innerHTML='<option value="">All teachers</option>'+T.map(t=>`<option value="${esc(t.email)}">${esc(t.name)}</option>`).join('');
   $('#rpTea').value=teaF||''; rpTeaVis(); if(RP.rows) rpRender(); }
 function rpTeaVis(){ $('#rpTeaWrap').style.visibility=$('#rpBy').value==='per'?'':'hidden'; }
-async function rpLoad(){ const test=$('#rpTest').value; if(!test) return; RP.test=test; RP.rows=null; $('#rpOut').innerHTML=''; ['#rpCsv','#rpPrint'].forEach(b=>$(b).disabled=true);
+async function rpLoad(){ const test=$('#rpTest').value; if(!test) return; RP.test=test; RP.rows=null; $('#rpOut').innerHTML=''; ['#rpCsv','#rpPrint','#rpScores'].forEach(b=>$(b).disabled=true);
   const ids=DATA.sessions.filter(s=>s.test===test).map(s=>s.id); say($('#rpMsg'),'Reading '+plural(ids.length,'session')+'…','');
   try{ await loadMeta(test); const r=await call('stcDash',{sessions:ids,answers:false,archive:arc,report:1},180000); if(RP.test!==test) return;
     if(r.tooMany){ say($('#rpMsg'),'This test has '+r.tooMany.toLocaleString()+' results, too many for one report. Archive old sessions in My sessions, then try again.','err'); return; }
@@ -1709,13 +1711,13 @@ async function rpLoad(){ const test=$('#rpTest').value; if(!test) return; RP.tes
   catch(e){ say($('#rpMsg'),errText(e),'err'); } }
 function rpRender(){ const out=$('#rpOut'), test=RP.test, m=meta(test), sub=$('#rpSub').checked, by=$('#rpBy').value, tf=$('#rpTea').value;
   let L=(RP.rows||[]).filter(x=>!sub||x.submitted); if(by==='per'&&tf) L=L.filter(x=>x.teacher===tf);
-  if(!L.length){ out.innerHTML=`<section class="tcard"><p class="hint">${sub?'No submitted tests yet for this test. Uncheck “Submitted tests only” to include tests in progress.':'No answers yet.'}</p></section>`; return; }
+  if(!L.length){ RP.L=[]; $('#rpScores').disabled=true; out.innerHTML=`<section class="tcard"><p class="hint">${sub?'No submitted tests yet for this test. Uncheck “Submitted tests only” to include tests in progress.':'No answers yet.'}</p></section>`; return; }
   const multiT=new Set(L.map(x=>x.teacher)).size>1;
   const gName=x=>by==='tea'?teaName(x.teacher):(multiT?teaName(x.teacher)+' · ':'')+(x.period==='G'?'Guest':'Period '+x.period);
   const groups={}; L.forEach(x=>{ const k=gName(x); (groups[k]=groups[k]||[]).push(x); });
   const G=Object.keys(groups).sort((a,b)=>a.localeCompare(b,undefined,{numeric:true})), cols=[['All',L]].concat(G.map(k=>[k,groups[k]]));
   const n=Math.max(...L.map(x=>x.q.length),m?m.items.length:0), pts=(S,f)=>{ let e=0,mx=0; S.forEach(x=>x.q.forEach((q,i)=>{ if(q&&f(i)&&(sub||q[0]!=null)){ e+=q[0]||0; mx+=q[1]; } })); return [e,mx]; };
-  const pc=([e,mx])=>mx?Math.round(100*e/mx):null, cell=p=>p==null?'<td class="c">–</td>':`<td class="c" style="background:color-mix(in srgb, ${lvl(p)[2]} 22%, white)">${p}%</td>`;
+  const pc=([e,mx])=>mx?Math.round(100*e/mx):null, cell=p=>p==null?'<td class="c">–</td>':`<td class="c" style="background:color-mix(in srgb, ${lvl(p)[2]} 22%, var(--card));color:var(--ink)">${p}%</td>`;
   const qi=Array.from({length:n},(_,i)=>{ const x=L.find(y=>y.q[i])||L[0]; return qinfo(x,i); });
   const csv=[[testTitle(test)+' · '+(sub?'submitted tests':'all tests')+' · '+new Date().toLocaleDateString()],[]];
   // 1. overall
@@ -1743,7 +1745,7 @@ function rpRender(){ const out=$('#rpOut'), test=RP.test, m=meta(test), sub=$('#
   csv.push([],['By question (percent of points)'],['Question','TEKS'].concat(cols.map(c=>c[0])));
   qi.forEach((q,i)=>{ const v=cols.map(([,S])=>pc(pts(S,j=>j===i))); h+=`<tr><td><b>${i+1}</b></td><td>${esc(q.teks)} <span class="sm">${esc(q.rs||'')}</span></td>${v.map(cell).join('')}</tr>`; csv.push([i+1,q.teks].concat(v.map(x=>x==null?'':x))); });
   h+='</table></div></section>';
-  out.innerHTML=h; RP.csv=csv; ['#rpCsv','#rpPrint'].forEach(b=>$(b).disabled=false); }
+  out.innerHTML=h; RP.csv=csv; RP.L=L; ['#rpCsv','#rpPrint','#rpScores'].forEach(b=>$(b).disabled=false); }
 /* Manage menu (2026-11-05): opens under the button, closes on a pick, a click outside or Esc */
 (function(){ const b=$('#mngBtn'), m=$('#mngPanel'); const set=o=>{ m.hidden=!o; b.setAttribute('aria-expanded',o); };
   b.onclick=e=>{ e.stopPropagation(); set(m.hidden); };
@@ -1762,8 +1764,9 @@ function rpRender(){ const out=$('#rpOut'), test=RP.test, m=meta(test), sub=$('#
   matchMedia('(prefers-color-scheme: dark)').addEventListener('change',lkPaint); lkPaint();
   document.addEventListener('click',e=>{ if(!m.hidden&&!m.contains(e.target)) set(false); });
   document.addEventListener('keydown',e=>{ if(e.key==='Escape'&&!m.hidden){ set(false); b.focus(); } }); })();
-$('#vRep').onclick=()=>printReports(shown()); $('#vCsv').onclick=()=>gradebook(shown()); $('#rptBtn').onclick=rpOpen; $('#rptBack').onclick=()=>closePage('#rppage');
+$('#vRep').onclick=()=>printReports(shown()); $('#rptBtn').onclick=rpOpen; $('#rptBack').onclick=()=>closePage('#rppage');
 $('#rpTest').onchange=rpLoad; $('#rpSub').onchange=rpRender; $('#rpBy').onchange=()=>{ rpTeaVis(); rpRender(); }; $('#rpTea').onchange=rpRender;
+$('#rpScores').onclick=()=>{ if(RP.L&&RP.L.length) gradebook(RP.L); };
 $('#rpCsv').onclick=()=>{ if(!RP.csv) return; const q=v=>{ v=String(v); return /[",\n]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v; };
   const blob=new Blob(['\ufeff'+RP.csv.map(r=>r.map(q).join(',')).join('\r\n')],{type:'text/csv'}), a=document.createElement('a');
   a.href=URL.createObjectURL(blob); a.download=(RP.test||'report')+'-report.csv'; document.body.appendChild(a); a.click(); a.remove(); setTimeout(()=>URL.revokeObjectURL(a.href),60000); };
