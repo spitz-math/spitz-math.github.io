@@ -604,6 +604,13 @@ table.grid,.tiles,.t,.bar em,.prog em{font-variant-numeric:tabular-nums}
 [data-theme="dark"] .chx :is(td,th){border-color:var(--line)} [data-theme="dark"] .dist .db i{background:#3d4959}
 [data-theme="dark"] .oeed:empty::before{color:#6b7888} [data-theme="dark"] .oerich:focus-within{box-shadow:0 0 0 2px #27406e}
 [data-theme="dark"] .tpage :is(h1,h2,h3){color:var(--ink)}
+/* dark hovers (11/5): no hover turns a button or row light */
+[data-theme="dark"] .tb-red .btn:hover,[data-theme="dark"] .tb-red .btn.pri:hover{background:rgba(255,255,255,.22);color:#fff}
+[data-theme="dark"] :is(.sesrow:hover,.sesgh:hover,.qv tr.qr:hover td){background:var(--hov)}
+[data-theme="dark"] .qv tr.qr.open td{background:#1b2a45}
+[data-theme="dark"] .hm{--hcp:32%}
+[data-theme="dark"] .ib:hover{background:#243042}
+[data-theme="dark"] .btn.del:hover{background:var(--nobg);color:#ffaaa3}
 [data-theme="dark"] .pst :is(th,td){border-color:var(--line)} [data-theme="dark"] .pst tr.on td{outline-color:var(--ink)}
 </style>
 </head>
@@ -2458,14 +2465,21 @@ function cellHtml(s,i,mode){ const q=s.q[i]; const cur=!s.submitted&&+s.item===i
   if(mode==='ans'&&(cls==='no'||cls==='part')) txt=cellAns(s,i,q[8]); else if(mode==='time'&&ms) txt=ms<60000?Math.round(ms/1000)+'s':Math.round(ms/60000)+'m'; else if(cls==='part') txt=pts; else if(cls==='wr') txt='✎';
   return `<div class="cell ${cls}${cur?' cur':''}${fl?' fl':''}" data-k="${esc(s.key)}" data-i="${i}">${txt}</div>`; }
 
-/* the short answer for a cell in "Cells show: Answers": the letter(s) for multiple choice, a short number, otherwise a dot */
-function cellAns(s,i,raw){ if(!raw) return cellAnsWait(); let a; try{ a=JSON.parse(raw); }catch(e){ return ''; }
-  const m=meta(s.test), t=m&&m.items&&m.items[i]&&m.items[i].type;
-  if(t==='mc'&&typeof a==='number') return L8[a]||'';
-  if(t==='ms'&&Array.isArray(a)) return a.map(k=>L8[k]).join('').slice(0,3);
-  if((t==='num'||t==='eq')&&a!=null){ const v=String(a).replace(/\s/g,''); return esc(v.length>4?v.slice(0,3)+'…':v); }
-  return '•'; }
-function cellAnsWait(){ return DATA&&DATA.ansReq?'':'·'; }
+/* the short answer for a cell in "Cells show: Answers": the letter(s) for multiple choice, a short number, otherwise nothing.
+   Answers come with the live data when this mode is on; if a student's are missing, they are fetched the same way the student drawer gets them */
+function cellAns(s,i,raw){ if(!raw){ const c=DANS[s.key]; raw=c&&c.a&&c.a[i]; if(!raw){ cellAnsFetch(s.session); return ''; } }
+  let a; try{ a=JSON.parse(raw); }catch(e){ a=raw; }
+  if(a&&typeof a==='object'&&!Array.isArray(a)&&'a' in a) a=a.a;
+  const m=meta(s.test), t=m&&m.items&&m.items[i]&&m.items[i].type, idx=v=>typeof v==='number'||(typeof v==='string'&&/^\d$/.test(v))?L8[+v]:null;
+  if((t==='mc'||!t)&&idx(a)) return idx(a);
+  if((t==='ms'||!t)&&Array.isArray(a)&&a.length&&a.every(idx)) return a.map(idx).join('').slice(0,3);
+  if(typeof a==='string'&&/^[A-H]$/.test(a)) return a;
+  if((t==='num'||t==='eq')&&a!=null&&typeof a!=='object'){ const v=String(a).replace(/\s/g,''); return esc(v.length>4?v.slice(0,3)+'…':v); }
+  return ''; }
+const CANS={};
+function cellAnsFetch(ses){ if(!ses||CANS[ses]) return; CANS[ses]=1;
+  call('stcDash',{sessions:[ses],answers:true,archive:arc},60000).then(r=>{ (r&&r.students||[]).forEach(x=>{ DANS[x.key]={t:x.saved||0,a:x.q.map(q=>q&&q[8]||'')}; });
+    if(view==='live'&&cellMode==='ans') render(); }).catch(()=>{}).finally(()=>setTimeout(()=>{ delete CANS[ses]; },20000)); }
 /* ---------- supports at a glance (11/2): read aloud and calculator from the teachers' rosters (stcRoster) ---------- */
 const SUP={by:{}, at:{}, busy:{}};
 function supFor(s){ const sess=DATA&&DATA.sessions.find(x=>x.id===s.session), t=sess&&sess.teacher||'';
@@ -2578,7 +2592,7 @@ function renderStd(L,tests){
       +(o?`<tr class="rtd"><td colspan="4"><div class="rtcols"><div><h4>Reteach (${g.need.length})</h4><div class="rtg">${who(g.need)}</div></div><div><h4>Has it (${g.got.length})</h4><div class="rtg">${who(g.got)}</div></div></div>${g.need.length?`<p style="margin:6px 0 0"><button class="btn" data-rtcopy="${esc(t.teks)}">Copy the reteach names</button> <span class="rs rtmsg"></span></p>`:''}</td></tr>`:''); }).join('')}</table></section>`;
   STDGRP=t=>grp(tk[t]);
   h+=`<section class="full"><h2>Students by category</h2><p class="note">Percent of points in each reporting category${subOnly?'':' (answered questions only for tests in progress)'}.</p><table class="t hm"><tr><th>Student</th><th>Per.</th><th>Total</th>${cats.map(c=>`<th title="${esc(m&&m.categories?m.categories[c]:'')}">Cat. ${c}</th>`).join('')}</tr>${L1.slice().sort((a,b)=>String(a.name).localeCompare(String(b.name))).map(s=>{
-      const cell=(e,mx)=>{ if(!mx) return '<td class="hc">–</td>'; const p=Math.round(100*e/mx), l=lvl(p); return `<td class="hc" style="background:color-mix(in srgb, ${l[2]} 18%, white)">${p}%</td>`; };
+      const cell=(e,mx)=>{ if(!mx) return '<td class="hc">–</td>'; const p=Math.round(100*e/mx), l=lvl(p); return `<td class="hc" style="background:color-mix(in srgb, ${l[2]} var(--hcp,18%), var(--card))">${p}%</td>`; };
       const tot=s.q.reduce((a,q)=>{ if(q&&(subOnly||q[0]!=null)){ a[0]+=q[0]||0; a[1]+=q[1]; } return a; },[0,0]);
       return `<tr><td><button class="nm" data-open="${esc(s.key)}">${esc(s.name)}</button></td><td>${esc(s.period)}</td>${cell(tot[0],tot[1])}${cats.map(c=>{ let e=0,mx=0; s.q.forEach((q,i)=>{ if(q&&qinfo(s,i).cat===c&&(subOnly||q[0]!=null)){ e+=q[0]||0; mx+=q[1]; } }); return cell(e,mx); }).join('')}</tr>`; }).join('')}</table></section>`;
   h+=`<section class="full"><h2>By question</h2><table class="t"><tr><th>#</th><th>TEKS</th><th>Category</th><th>Avg. time</th><th style="width:45%">Class result</th></tr>${per.map(p=>`<tr><td><b>${p.i+1}</b></td><td>${esc(p.teks)} <span class="rs">${esc(p.rs)}</span></td><td class="rs">${p.cat||''}</td><td class="n">${p.avgMs?fmtMs(p.avgMs):'–'}</td><td>${pctBar(p.e,p.mx)}</td></tr>`).join('')}</table></section></div>`;
