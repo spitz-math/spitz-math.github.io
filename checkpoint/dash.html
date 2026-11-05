@@ -535,7 +535,7 @@ table.grid,.tiles,.t,.bar em,.prog em{font-variant-numeric:tabular-nums}
 .lksw button{width:22px;height:22px;border-radius:999px;border:2px solid transparent;background:var(--sw);padding:0;box-shadow:0 0 0 1px rgba(0,0,0,.15) inset}
 .lksw button[aria-pressed="true"]{border-color:var(--ink);box-shadow:0 0 0 2px var(--card) inset}
 
-/* ---------- dark mode (11/5): the live dashboard, menus and the student drawer. The tool pages (My sessions, roster, reports, Tests, the editor) stay light ---------- */
+/* ---------- dark mode (11/5): the live dashboard, menus and the student drawer. and the tool pages (My sessions, roster, reports, Tests, the editor, question bank) ---------- */
 [data-theme="dark"]{color-scheme:dark;
   --bg:#0e131a; --card:#151c26; --ink:#e4e9f0; --mut:#95a3b4; --line:#2a3443; --blue:#9cbcff; --blue2:#3b7cf0; --top:#1b2330;
   --ok:#4cc27a; --okbg:#173a26; --no:#f07167; --nobg:#4a1f1c; --part:#f0b43a; --partbg:#45370f; --blank:#262f3c; --unseen:#151c26;
@@ -572,12 +572,29 @@ table.grid,.tiles,.t,.bar em,.prog em{font-variant-numeric:tabular-nums}
 [data-theme="dark"] .lvwait{color:#5d6b7a}
 [data-theme="dark"] tr.chg td.fx{animation-name:rowglowd} @keyframes rowglowd{from{background:#4a3d12}}
 [data-theme="dark"] .card::-webkit-scrollbar-track,[data-theme="dark"] .card::-webkit-scrollbar-corner{background:var(--card)}
-[data-theme="dark"] :is(.tpage,.bkpage,.veil){color-scheme:light;
-  --bg:#eef2f7; --card:#fff; --ink:#1d2733; --mut:#5d6b7a; --line:#d5dde6; --blue:#0b3fa8; --blue2:#1f5fd1; --top:#c8d4e6;
-  --ok:#2e9d55; --okbg:#d8f0df; --no:#d2453b; --nobg:#f8dcd9; --part:#e3a21a; --partbg:#fbedc9; --blank:#e7ebf0; --unseen:#fff; --surf2:#f6f8fb; --hov:#f4f8ff; --barok:#a9b6c6;
-  color:var(--ink)}
-[data-theme="dark"] :is(.tpage,.bkpage,.veil) :is(.btn,.seg button,select,input[type=search],input[type=text]){background:#fff;border-color:#9fb0c8;color:var(--ink)}
-[data-theme="dark"] :is(.tpage,.bkpage,.veil) .card{background:#fff}
+/* dark mode for the tool pages: My sessions, roster, reports, Tests, Write a test, question bank. Student previews (.pv, the bank frame) stay light like the real test */
+[data-theme="dark"] :is(.tcard,.dlg,.oebank,.oeside,.bkside,.bkcart,.oerich,.oesym button,.oeqh .mv button,.oeord .mv button,.bkci .mv button){background:var(--card);border-color:var(--line);color:var(--ink)}
+[data-theme="dark"] :is(.fl select,.fl input,.t input.rn,.t select.rp,.t select.rv,#rsPaste,.oeside input:not([type=checkbox]),.oeside select,.oeqh select,.oeqh input,.obopt select,.obf input,.obf select,.oenum input,.oeeq .ea,.oech input.dc,.oetab input:not([type]),.oeboxkey select,.oech select.tz,.oech input.zn,.oegw select,.oenl input:not([type]),.oenl select,.bkside select,.bkcart input,.tpage input:not([type=checkbox]):not([type=radio]):not([type=range]):not([type=color]),.tpage select,.tpage textarea){background:#1c2532;border-color:#3a4758;color:var(--ink)}
+[data-theme="dark"] :is(.ghs,.oetools,.oesq,.oedd,.rpt tr.all td,.bktable tr.bkcat td){background:var(--surf2);border-color:var(--line);color:var(--ink)}
+[data-theme="dark"] .rpt th{background:var(--surf2)} [data-theme="dark"] .rpt :is(th,td){border-color:var(--line)}
+[data-theme="dark"] .oetools,[data-theme="dark"] .oesym{border-bottom-color:var(--line)} [data-theme="dark"] .oetools button:hover{background:#243042;border-color:#3a4758}
+[data-theme="dark"] .ghs.bad{background:#3a1d1a;border-color:#7a302a}
+[data-theme="dark"] .drop{background:var(--surf2);border-color:#3a4758} [data-theme="dark"] .drop.over{background:#1b2a45;border-color:var(--blue2);color:var(--blue)}
+[data-theme="dark"] :is(.bktable tr.on td,.bkci:hover,.obrow:hover){background:var(--hov)}
+[data-theme="dark"] :is(.bkci.on,.obrow.on,#oeBankBtn[aria-pressed="true"]){background:#1b2a45} [data-theme="dark"] .bkci.on{box-shadow:inset 3px 0 0 var(--blue2)}
+[data-theme="dark"] .bkci.bad{background:#3a1d1a} [data-theme="dark"] .oesys.on{background:#1b2a45}
+[data-theme="dark"] .bkcat td,[data-theme="dark"] .obrow .obm{color:var(--mut)}
+[data-theme="dark"] :is(.bkci .t1 .stag,.oestaar .oetag){color:#c9b8ff} [data-theme="dark"] .oestaar .oetag{background:#2c2346}
+[data-theme="dark"] .bkci .t3{color:#ffc061} [data-theme="dark"] .chk .e{color:#ffaaa3} [data-theme="dark"] .oech2 li.ok{color:#8fe0ad}
+[data-theme="dark"] .oewarn{background:#45370f;border-color:#7a5f1c;color:#ffd67a}
+[data-theme="dark"] .oetab td.right{background:#173a26} [data-theme="dark"] .oeft td.fb{background:#45370f}
+[data-theme="dark"] .badge{background:#173a26;color:#8fe0ad} [data-theme="dark"] .badge.rep{background:#45370f;color:#ffd67a} [data-theme="dark"] .badge.hid{background:#2a323e;color:#c3ccd8}
+[data-theme="dark"] .tile.alert{background:#2a2310;border-color:#7a5f1c}
+[data-theme="dark"] :is(.bkover,.bkmain iframe){background:var(--bg)}
+[data-theme="dark"] .chx :is(td,th){border-color:var(--line)} [data-theme="dark"] .dist .db i{background:#3d4959}
+[data-theme="dark"] .oeed:empty::before{color:#6b7888} [data-theme="dark"] .oerich:focus-within{box-shadow:0 0 0 2px #27406e}
+[data-theme="dark"] .tpage :is(h1,h2,h3){color:var(--ink)}
+[data-theme="dark"] .pst :is(th,td){border-color:var(--line)} [data-theme="dark"] .pst tr.on td{outline-color:var(--ink)}
 </style>
 </head>
 <body>
@@ -836,10 +853,10 @@ function staarLvl(test,e,mx){ const m=meta(test), row=m&&stdRow(m.course,m.subje
 const STD_YEAR='2026-2027', STD_GROUPS=[['6th RLA','7th RLA','8th RLA'],['6th Math','7th Math','8th Math','Algebra I'],['8th Science'],['8th History']];
 /* the campus table for teachers, with the row the test uses outlined */
 function psShow(test){ if(test==null||test==='') test=($('#rppage')&&!$('#rppage').hidden&&$('#rpTest')?$('#rpTest').value:'');
-  const m=test?meta(test):null, row=m?stdRow(m.course,m.subject):null, tint=c=>`color-mix(in srgb, ${c} 22%, white)`, cols=BANDS6.slice(0,5).reverse();
+  const m=test?meta(test):null, row=m?stdRow(m.course,m.subject):null, tint=c=>`color-mix(in srgb, ${c} 22%, var(--card))`, cols=BANDS6.slice(0,5).reverse();
   $('#psTitle').textContent=STD_YEAR+' Performance Standards';
   $('#psBody').innerHTML=`<p class="hint" style="margin:0 0 10px">Percent of points a student needs to reach each level. Below the first column is Did Not Meet.${row?` <b>${esc(m.title||test)}</b> uses the <b>${esc(row)}</b> row (outlined).`:m?` <b>${esc(m.title||test)}</b> has no row here, so its levels are estimates.`:''}</p>
-    <table class="pst"><tr><th style="background:#fff"></th>${cols.map(b=>`<th style="background:${b[2]}">${esc(b[0])}</th>`).join('')}</tr>
+    <table class="pst"><tr><th style="background:transparent"></th>${cols.map(b=>`<th style="background:${b[2]}">${esc(b[0])}</th>`).join('')}</tr>
     ${STD_GROUPS.map((g,k)=>(k?'<tr class="gap"><td colspan="6"></td></tr>':'')+g.map(r=>`<tr${r===row?' class="on"':''}><td>${esc(r)}</td>${STANDARDS[r].map((v,i)=>`<td style="background:${tint(cols[i][2])}">${v}%</td>`).join('')}</tr>`).join('')).join('')}</table>`;
   $('#psVeil').hidden=false; $('#psClose').focus(); if(test&&!m) loadMeta(test).then(d=>{ if(d&&!$('#psVeil').hidden) psShow(test); }); }
 document.addEventListener('click',e=>{ const b=e.target.closest('[data-ps]'); if(b) psShow(b.dataset.ps); });
