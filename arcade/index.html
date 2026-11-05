@@ -213,6 +213,12 @@ h1{font-family:var(--display);font-weight:400;margin:0;line-height:1;text-align:
 .navbtn:active,.navbtn.sunk{transform:translateY(5px);box-shadow:0 0 0 color-mix(in srgb,var(--c) 55%,#000)}
 /* pages fade in when they open and fade out when a button leaves */
 @media (prefers-reduced-motion:no-preference){ body{animation:pg-in .4s ease-out backwards} body.leaving{opacity:0;transition:opacity .3s .1s ease-in} }
+/* one light sweep across NEW / UPDATED badges when the hub opens (once, then still) */
+.game .new{overflow:hidden}
+@media (prefers-reduced-motion:no-preference){.game .new::after{content:"";position:absolute;inset:0;background:linear-gradient(105deg,transparent 30%,rgba(255,255,255,.85) 50%,transparent 70%);transform:translateX(-130%);animation:shine .9s .7s ease-in-out both;pointer-events:none}}
+@keyframes shine{to{transform:translateX(130%)}}
+/* magnetic Press Start: it leans a few px toward the pointer (translate, so the sink and hover transforms still work) */
+.play{translate:var(--mx,0) var(--my,0);transition:transform .1s ease-out,box-shadow .1s ease-out,translate .25s cubic-bezier(.2,.7,.2,1)}
 @keyframes pg-in{from{opacity:0}}
 </style>
 </head>
@@ -447,6 +453,17 @@ document.querySelectorAll('a.navbtn').forEach(function(a){ a.addEventListener('c
   e.preventDefault(); var href=a.href; chime(); a.classList.add('sunk'); if(RM.matches){ setTimeout(function(){ location.href=href; },180); return; }
   document.body.classList.add('leaving'); setTimeout(function(){ location.href=href; },420); }); });
 addEventListener('pageshow',function(e){ if(e.persisted){ document.body.classList.remove('leaving'); document.querySelectorAll('.navbtn.sunk').forEach(function(a){ a.classList.remove('sunk'); }); } });
+})();
+</script>
+<script>
+/* magnetic buttons: lean up to 6px toward a nearby pointer; mouse/trackpad only, off with reduce motion */
+(function(){ if(!matchMedia('(hover:hover) and (pointer:fine)').matches||matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  var R=90, M=6;
+  addEventListener('pointermove',function(e){ var b=document.getElementById('play'); if(!b||!b.offsetParent) return;
+    var r=b.getBoundingClientRect(), cx=r.left+r.width/2, cy=r.top+r.height/2, dx=e.clientX-cx, dy=e.clientY-cy,
+      near=Math.abs(dx)<r.width/2+R&&Math.abs(dy)<r.height/2+R&&b.getAttribute('aria-disabled')!=='true';
+    b.style.setProperty('--mx',near?Math.max(-M,Math.min(M,dx*.12)).toFixed(1)+'px':'0px');
+    b.style.setProperty('--my',near?Math.max(-M,Math.min(M,dy*.18)).toFixed(1)+'px':'0px'); },{passive:true});
 })();
 </script>
 </body>
