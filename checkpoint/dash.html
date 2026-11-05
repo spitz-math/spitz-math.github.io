@@ -899,7 +899,7 @@ html[data-nav="side"] :is(#mpBack,#rpBack,#rptBack,#tpBack){display:none}
   <div class="card" id="card"></div>
 </div>
 <p class="legal">Spitz Checkpoint is an independent practice tool made by Mr. Spitz. It is not affiliated with or endorsed by the Texas Education Agency (TEA) or Cambium Assessment. STAAR&reg; is a registered trademark of TEA. Released STAAR questions and reference sheets are &copy; TEA and are used here for classroom practice.</p>
-<div class="veil" id="qvVeil" hidden><div class="qvbox" role="dialog" aria-modal="true" aria-labelledby="qvTitle"><div class="qvh"><h3 id="qvTitle">Question</h3><button class="btn" id="qvClose">Close</button></div><div class="qvmsg" id="qvMsg" hidden></div><iframe id="qvFrame" title="Question preview" sandbox="allow-scripts"></iframe></div></div>
+<div class="veil" id="qvVeil" hidden><div class="qvbox" role="dialog" aria-modal="true" aria-labelledby="qvTitle"><div class="qvh"><h3 id="qvTitle">Question</h3><button class="btn" id="qvReveal" aria-pressed="false" title="The correct answer stays hidden until you ask, so it is safe on a projector">Show the answer</button><button class="btn" id="qvClose">Close</button></div><div class="qvmsg" id="qvMsg" hidden></div><iframe id="qvFrame" title="Question preview" sandbox="allow-scripts"></iframe></div></div>
 <div class="veil" id="rgVeil" hidden><div class="qvbox" role="dialog" aria-modal="true" aria-labelledby="rgTitle"><div class="qvh"><h3 id="rgTitle">Customize</h3><button class="btn" id="rgClose">Close</button></div><div class="rgbody rgopt" id="rgBody"></div></div></div>
 <div class="toasts" id="toasts" aria-live="polite"></div>
 <div class="showid" id="showId" hidden role="dialog" aria-modal="true" aria-label="Session ID"><button class="btn sx" id="showIdX">Close (Esc)</button><div class="go">Go to <b>spitzmath.com/checkpoint</b> and type the Session ID</div><div class="ids" id="showIdIds"></div></div>
@@ -3211,13 +3211,16 @@ async function qvFrameReady(){ if(QV.ready) return QV.ready;
     await ready; })().catch(e=>{ QV.ready=null; throw e; }); }
 addEventListener('message',e=>{ const m=e.data; if(!m||!QV.tok||m.bview!==QV.tok||!QV.frame||e.source!==QV.frame.contentWindow) return;
   if(m.op==='ready'&&QV.onReady) QV.onReady(); else if(m.op==='err') qvMsg('The question could not be shown: '+m.err); });
-async function qvShow(test,i){ const v=$('#qvVeil'), mt=meta(test); v.hidden=false; $('#qvTitle').textContent=`Question ${i+1} · ${mt?mt.title:test}`; qvMsg('Loading the question…'); $('#qvClose').focus();
+/* the correct answer stays hidden until the teacher taps Show the answer (11/5): the viewer opens in its blank (Try it) mode */
+function qvRevealSet(on){ QV.reveal=!!on; const rb=$('#qvReveal'); rb.setAttribute('aria-pressed',QV.reveal); rb.textContent=QV.reveal?'Hide the answer':'Show the answer'; }
+async function qvShow(test,i){ const v=$('#qvVeil'), mt=meta(test); v.hidden=false; qvRevealSet(false); $('#qvTitle').textContent=`Question ${i+1} · ${mt?mt.title:test}`; qvMsg('Loading the question…'); $('#qvClose').focus();
   try{ const td=await metaOf(test), it=td&&td.items&&td.items[i]; if(!it) throw new Error('this test could not be read');
     const body=JSON.parse(it.body.replace(/src=\\"(img\/[A-Za-z0-9._\-\/]+)\\"/g,'src=\\"@@'+test+'/$1@@\\"')), item=Object.assign(body,JSON.parse(it.key),{type:it.type,teks:it.teks,cat:it.cat,rs:it.rs,max:it.max||1,label:it.label});
     await qvFrameReady(); if(v.hidden) return; qvMsg('');
-    QV.frame.contentWindow.postMessage({bview:QV.tok,op:'list',append:false,code:itemsCode([item],false),meta:[{uid:'qv',year:'Q'+(i+1),teks:it.teks,rs:it.rs,where:mt?mt.title:test}],more:false,endText:' ',noAdd:true,added:[]},'*'); }
+    QV.frame.contentWindow.postMessage({bview:QV.tok,op:'list',showKey:false,append:false,code:itemsCode([item],false),meta:[{uid:'qv',year:'Q'+(i+1),teks:it.teks,rs:it.rs,where:mt?mt.title:test}],more:false,endText:' ',noAdd:true,added:[]},'*'); }
   catch(e){ qvMsg('The question could not be shown: '+(e&&e.message||e)); } }
 function qvClose(){ $('#qvVeil').hidden=true; }
+$('#qvReveal').onclick=()=>{ qvRevealSet(!QV.reveal); if(QV.frame) QV.frame.contentWindow.postMessage({bview:QV.tok,op:'key',on:QV.reveal},'*'); };
 $('#qvClose').onclick=qvClose; $('#qvVeil').addEventListener('click',e=>{ if(e.target.id==='qvVeil') qvClose(); });
 addEventListener('keydown',e=>{ if(e.key==='Escape'&&!$('#qvVeil').hidden) qvClose(); });
 
