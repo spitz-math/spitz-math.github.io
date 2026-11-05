@@ -761,6 +761,7 @@ table.grid,.tiles,.t,.bar em,.prog em{font-variant-numeric:tabular-nums}
 .herow .tiles{flex:1;min-width:0}
 .vctl{display:flex;align-items:center;gap:8px;padding-bottom:10px;flex:none}
 .vctl .lab{font-size:12.5px;text-transform:none;letter-spacing:0;font-weight:600}
+.gbusy{margin:0 0 10px;padding:10px 14px;border-radius:14px;border:1px solid color-mix(in srgb,var(--app) 55%,var(--line));background:color-mix(in srgb,var(--app) 12%,var(--card));color:var(--ink);font-size:14px;line-height:1.45} .gbusy[hidden]{display:none} .gbusy b{font-weight:700}
 #expGrp{display:flex;gap:6px} #expGrp .btn{padding:6px 12px;font-size:13.5px}
 @media (max-width:1180px){ .dbar .wmt{display:none} .dbar .wm{margin-right:0} }
 @media (max-width:1000px){ .dbar{flex-wrap:wrap} .dbar .vgrp{order:9;flex-basis:100%;margin-left:0} .dbar #viewSeg button{margin-bottom:-9px} }
@@ -1126,6 +1127,7 @@ html[data-theme="dark"] .rtbox{background:var(--card);color:var(--ink)}
 </div>
 <div class="main">
   <div class="bulk" id="bulk" hidden><b id="bulkN"></b><button class="btn" data-bulk="pause">Pause</button><button class="btn" data-bulk="resume">Resume</button><button class="btn warn" data-bulk="lock">Stop</button><button class="btn" data-bulk="unlock">Unlock</button><button class="btn" data-bulk="reopen" title="Give submitted tests back so the students can keep working">Reopen</button><button class="btn warn" data-bulk="retake" title="Erase the answers so the students start over">Retake</button><button class="btn" id="bulkClear">Clear selection</button></div>
+  <div class="gbusy" id="gbusy" role="status" hidden><b>Google is busy right now, so answers may show up a minute or two late.</b> Nothing is lost: every answer is saved on the student’s Chromebook and sent as soon as Google catches up.</div>
   <div class="card" id="card"></div>
 </div>
 <p class="legal">Spitz Checkpoint is an independent practice tool made by Mr. Spitz. It is not affiliated with or endorsed by the Texas Education Agency (TEA) or Cambium Assessment. STAAR&reg; is a registered trademark of TEA. Released STAAR questions and reference sheets are &copy; TEA and are used here for classroom practice.</p>
@@ -1456,7 +1458,10 @@ const waiting=()=>!!(DATA&&selSes&&[...selSes].some(id=>!covers(id)));
 let loading=null, again=null;
 function load(quiet){ if(loading){ if(quiet===true) return loading; return again||(again=loading.then(()=>{ again=null; return load(); })); }
   loading=load1(quiet===true).finally(()=>{ loading=null; }); return loading; }
-async function load1(quiet){ busy=true;
+/* Google busy notice (Kody 11/5): on a school-wide test day Google slows down and the test pages save less often, so Live runs late.
+   A refresh over 8 s (or one that gets no answer) shows the notice; two quick refreshes in a row take it away. */
+const GB={on:false,fast:0,set(slow){ if(slow){ GB.fast=0; GB.on=true; } else if(GB.on&&++GB.fast>=2) GB.on=false; const n=$('#gbusy'); if(n) n.hidden=!GB.on; }};
+async function load1(quiet){ busy=true; const gt0=Date.now();
   if(!quiet) $('#upd').textContent=DATA?'Refreshing…':'Loading…';
   try{ const wantAns=view==='ques'||view==='wr'||(view==='live'&&(cellMode==='ans'||RG.ansWanted)),
       ask=selSes?[...selSes]:(arc?[]:(store('ses')||[]).filter(x=>typeof x==='string')),   // first load: ask for the saved sessions straight away
@@ -1475,11 +1480,12 @@ async function load1(quiet){ busy=true;
     await Promise.all(need.map(loadMeta));
     [...new Set(r.students.map(s=>s.test))].filter(t=>t&&!need.includes(t)).forEach(loadMeta);
     { const u=$('#upd'), tm=new Date().toLocaleTimeString([], {hour:'numeric',minute:'2-digit',second:'2-digit'}); u.textContent=arc?'Archive '+arc+' (read only)':'Live'; u.title='Updated '+tm+'. Click to refresh now.'; u.classList.remove('err'); u.classList.add('ok'); u.classList.remove('beat'); void u.offsetWidth; u.classList.add('beat'); }
+    GB.set(Date.now()-gt0>8000);
     render(); alCheck(); if(!load.seen){ load.seen=1; tourMaybe(); }
   }catch(e){ const m=String(e&&e.message||e);
     if(/NOTOWNER/.test(m)){ $('#card').innerHTML='<div class="empty">This page is only for teachers on the Spitz Checkpoint list. Ask the Checkpoint admin to add your school email.</div>'; stop(); }
     else if(m==='offline'){ $('#card').innerHTML='<div class="empty">Open the dashboard from the web app link with <b>?view=dash</b> at the end (Sheet menu: Spitz Checkpoint &gt; Open the dashboard).</div>'; stop(); }
-    else { $('#upd').textContent='Could not refresh ('+m+'). Trying again…'; $('#upd').classList.add('err'); loadFailed(m);
+    else { $('#upd').textContent='Could not refresh ('+m+'). Trying again…'; $('#upd').classList.add('err'); loadFailed(m); GB.set(true);
       if(!DATA) setTimeout(()=>load(true),4000); } }   // nothing on screen yet: try again soon, not in 15 seconds
   finally{ busy=false; } }
 
