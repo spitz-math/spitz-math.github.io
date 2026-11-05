@@ -141,8 +141,6 @@ footer{grid-column:1/-1;justify-self:center;display:flex;flex-direction:column;a
 }
 /* the page fades in when it opens (the first-visit intro does its own entrance) */
 @media (prefers-reduced-motion:no-preference){ html:not(.intro) body{animation:pg-in .4s ease-out backwards} }
-/* meteors: now and then one streak crosses the upper sky (WAAPI, transform/opacity only; none with reduce motion or a hidden tab) */
-.meteor{position:fixed;z-index:0;width:140px;height:2px;border-radius:999px;pointer-events:none;background:linear-gradient(90deg,#fff,rgba(33,230,255,.5) 30%,transparent);opacity:0;rotate:-35deg;transform-origin:0 50%}
 .door .btn{translate:var(--mx,0) var(--my,0);transition:transform .1s ease-out,box-shadow .1s ease-out,translate .25s cubic-bezier(.2,.7,.2,1)}
 @keyframes pg-in{from{opacity:0}}
 </style>
@@ -192,13 +190,6 @@ addEventListener('pageshow',function(e){ if(e.persisted){ document.body.classLis
 </script>
 <script>
 (function(){ if(matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-  function meteor(){ if(!document.hidden&&!document.body.classList.contains('going')){
-      var m=document.createElement('i'), W=innerWidth, x=W*(.35+Math.random()*.6), y=innerHeight*(Math.random()*.3);
-      m.className='meteor'; m.style.left=x+'px'; m.style.top=y+'px'; document.body.appendChild(m);
-      var d=Math.min(W*.35,420), dx=-d*Math.cos(.61), dy=d*Math.sin(.61);
-      m.animate([{transform:'translate(0,0)',opacity:0},{opacity:.9,offset:.2},{transform:'translate('+dx+'px,'+dy+'px)',opacity:0}],{duration:1100,easing:'cubic-bezier(.3,.5,.6,1)'}).onfinish=function(){ m.remove(); }; }
-    setTimeout(meteor,6000+Math.random()*7000); }
-  setTimeout(meteor,2500);
   /* magnetic Press Start on the two doors */
   if(!matchMedia('(hover:hover) and (pointer:fine)').matches) return;
   addEventListener('pointermove',function(e){ document.querySelectorAll('.door .btn').forEach(function(b){
