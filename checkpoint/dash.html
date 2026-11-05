@@ -1043,6 +1043,16 @@ html[data-nav="side"] #hpBack{display:none}
 .hpask a.btn{text-decoration:none;display:inline-block} .hpask a.btn[hidden]{display:none}
 .hpask .hint a{color:var(--acc);font-weight:600}
 @media (prefers-reduced-motion:reduce){.faq summary::after{transition:none}}
+/* benchmark day check */
+.ltbox{margin-top:16px} .ltbox[hidden]{display:none}
+.ltbar{height:6px;border-radius:999px;background:var(--blank);overflow:hidden} .ltbar i{display:block;height:100%;width:0;background:var(--acc);transition:width .4s linear}
+.ltst{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin-top:14px}
+.ltst div{border:1px solid var(--line);border-radius:12px;padding:10px 12px} .ltst b{display:block;font:700 22px var(--fd);color:var(--ink)} .ltst span{font-size:12.5px;color:var(--mut)}
+.ltst .bad b{color:var(--no)}
+.ltsay{margin-top:14px;font-size:14.5px;line-height:1.5} .ltsay b{font-family:var(--fd)}
+.ltsay.ok{color:var(--ink)} .ltsay .tag{display:inline-block;font:700 13px Onest,sans-serif;border-radius:999px;padding:2px 10px;margin-right:8px;vertical-align:1px}
+.ltsay .tag.g{background:var(--okbg);color:color-mix(in srgb,var(--ok) 70%,#000)} .ltsay .tag.y{background:var(--partbg);color:color-mix(in srgb,var(--part) 55%,#000)} .ltsay .tag.r{background:var(--nobg);color:var(--no)}
+html[data-theme="dark"] .ltsay .tag.g{color:#8fe0ad} html[data-theme="dark"] .ltsay .tag.y{color:#ffd67a}
 /* reteach group dialog */
 .rtbox{width:min(560px,96vw)} .rtbox .psb{padding:16px 20px 6px}
 .rtsum{margin:0 0 14px;font-size:14px;color:var(--mut)} .rtsum b{color:var(--ink);font-family:var(--fd);font-size:16px}
@@ -1130,6 +1140,17 @@ html[data-theme="dark"] .rtbox{background:var(--card);color:var(--ink)}
       <p class="hint">Each test as one file that works without internet or a Session ID (saved on that computer only). They are rebuilt every time you publish a test; use this after player.html changes.</p>
       <div class="row"><button class="btn" id="rebuild">Rebuild single files</button></div><div class="msg2" id="rbMsg"></div>
     </section>
+    <section class="tcard" id="ltCard"><h2>Benchmark day check</h2>
+      <p class="hint">Pretends hundreds of students are testing at the same moment, to see whether saving keeps up before a school-wide test. Each pretend student signs in during the first minute, then saves about every 30 seconds, just like a real test page. Their saves run the real save code but go to a separate <b>Load Test</b> sheet that is deleted at the end, so real sessions and results are never touched. Run it when no class is testing: it uses the same Google account as real tests.</p>
+      <div class="row fr"><label class="fl">Students<select id="ltN"><option>100</option><option selected>300</option><option>600</option><option>900</option></select></label>
+        <label class="fl">How long<select id="ltMin"><option value="2">2 minutes</option><option value="3" selected>3 minutes</option><option value="5">5 minutes</option></select></label>
+        <label class="fl">Teachers watching Live<select id="ltT"><option value="0">None</option><option value="5">5</option><option value="25" selected>25</option></select></label>
+        <button class="btn pri" id="ltGo">Start the check</button></div>
+      <div class="ltbox" id="ltBox" hidden>
+        <div class="ltbar"><i id="ltBar"></i></div>
+        <div class="ltst" id="ltStats"></div>
+        <div class="ltsay" id="ltSay"></div></div>
+      <div class="msg2" id="ltMsg"></div></section>
   </div></div>
 </section>
 <section class="tpage" id="hpage" hidden aria-label="Support">
@@ -2851,6 +2872,43 @@ document.querySelectorAll('#hpage .faq').forEach(d=>{ const sm=d.querySelector('
     an.onfinish=()=>{ an=null; p.style.overflow=''; if(!opening){ d.open=false; d.classList.remove('closing'); } }; }); });
 $('#hpOpen').onclick=openSupport; $('#hpBack').onclick=()=>closePage('#hpage');
 $('#hpTour').onclick=()=>{ closePage('#hpage'); setTimeout(tourStart,300); };
+/* ---------- benchmark day check (11/5): pretend students save through stcLoadTest (the real save code, a separate Load Test sheet) ---------- */
+const LT={on:false, stop:null};
+function ltPayload(i,k,n){ const items=[]; for(let q=1;q<=n;q++){ const done=q<=k; items.push({n:q,type:q%9===0?'ms':'mc',points:done?(Math.random()<.6?1:0):null,max:1,ms:done?20000+Math.floor(Math.random()*60000):0,visits:done?1+(q%3):0,changes:done?q%2:0,flagged:q%13===0,teks:'A.'+(2+q%10)+(String.fromCharCode(65+q%5)),cat:1+q%5}); }
+  const answers={}; for(let q=1;q<=k;q++) answers[q]=q%9===0?[0,2]:q%4;
+  const ev=[]; for(let e=0;e<k*2;e++) ev.push({t:Date.now()-e*15000,e:e%2?'next':'answer',i:1+Math.floor(e/2)});
+  const sc=items.reduce((a,x)=>a+(x.points||0),0);
+  return {sessionId:'LOADTEST',name:'TEST '+i,period:'1',final:false,status:'test',lastInputAt:Date.now(),state:{rev:k+1,answers,item:k+1,flags:{},notes:{}},
+    sum:{item:k+1,answered:k,score:sc,max:n,elapsedMs:k*45000,awayCount:0,awayMs:0,startedAt:Date.now()-k*45000,rclicks:0},items,events:ev}; }
+function ltStats(R,need,el){ const ms=R.ms.slice().sort((a,b)=>a-b), q=f=>ms.length?ms[Math.min(ms.length-1,Math.floor(f*ms.length))]:0, sec=v=>(v/1000).toFixed(v<10000?1:0)+' s';
+  const got=Math.max(0,...Object.values(R.bk))/5;   /* busiest 5 seconds */
+  $('#ltStats').innerHTML=`<div><b>${R.ok}</b><span>saves done of ${R.sent}</span></div><div><b>${got.toFixed(1)}</b><span>saves a second at the busiest (${R.n||0} students need about ${need.toFixed(1)})</span></div>
+    <div><b>${ms.length?sec(q(.5)):'–'}</b><span>typical save</span></div><div class="${q(.95)>8000?'bad':''}"><b>${ms.length?sec(q(.95)):'–'}</b><span>slowest 1 in 20</span></div>
+    <div class="${R.busy?'bad':''}"><b>${R.busy}</b><span>had to try again</span></div><div class="${R.fail?'bad':''}"><b>${R.fail}</b><span>did not save</span></div>${R.dash?`<div><b>${R.dashMs.length?sec(R.dashMs.slice().sort((a,b)=>a-b)[Math.floor(R.dashMs.length/2)]):'–'}</b><span>typical Live refresh (${R.dash} done)</span></div>`:''}`;
+  return {p50:q(.5),p95:q(.95),got}; }
+async function ltRun(){ const N=+$('#ltN').value, MIN=+$('#ltMin').value, TN=+$('#ltT').value, NQ=50, END=MIN*60000, run=String(Date.now()%1e8);
+  const R={sent:0,ok:0,busy:0,fail:0,ms:[],dash:0,dashMs:[],inflight:0,maxIn:0,bk:{}}, T0=Date.now(), timers=[], need=N/30;
+  R.n=N; LT.on=true; $('#ltGo').textContent='Stop'; $('#ltBox').hidden=false; $('#ltSay').innerHTML='Students are signing in…'; $('#ltSay').className='ltsay'; say($('#ltMsg'),'','');
+  const tick=setInterval(()=>{ const el=Date.now()-T0; $('#ltBar').style.width=Math.min(100,100*el/END)+'%'; ltStats(R,need,el); },500);
+  let stopped=false; LT.stop=()=>{ stopped=true; };
+  const save=(i,k,tries)=>{ if(stopped) return; R.sent+=tries?0:1; R.inflight++; R.maxIn=Math.max(R.maxIn,R.inflight); const t=Date.now();
+    call('stcLoadTest',{op:'save',n:i,run,p:ltPayload(i,k,NQ)},60000).then(r=>{ R.inflight--; if(r&&r.ok){ R.ok++; R.ms.push(Date.now()-t); const b=Math.floor(Date.now()/5000); R.bk[b]=(R.bk[b]||0)+1; } else if(r&&r.busy&&tries<5){ R.busy++; timers.push(setTimeout(()=>save(i,k,tries+1),2000+Math.random()*2000)); } else R.fail++; })
+      .catch(e=>{ R.inflight--; if(/NOTOWNER|stcLoadTest/.test(String(e&&e.message))) LT.err=e; if(tries<5){ R.busy++; timers.push(setTimeout(()=>save(i,k,tries+1),4000)); } else R.fail++; }); };
+  for(let i=1;i<=N;i++){ let at=Math.random()*60000, k=0; while(at<END){ const kk=k; timers.push(setTimeout(()=>save(i,kk,0),at)); k=Math.min(NQ,k+1); at+=27000+Math.random()*6000; } }
+  for(let t=0;t<TN;t++) for(let at=Math.random()*15000;at<END;at+=15000) timers.push(setTimeout(()=>{ if(stopped) return; const t0=Date.now(); call('stcLoadTest',{op:'dash'},60000).then(()=>{ R.dash++; R.dashMs.push(Date.now()-t0); }).catch(()=>{}); },at));
+  await new Promise(res=>{ const w=setInterval(()=>{ if(stopped||(Date.now()-T0>END&&!R.inflight)||Date.now()-T0>END+90000){ clearInterval(w); res(); } },500); });
+  timers.forEach(clearTimeout); clearInterval(tick); const el=Math.min(Date.now()-T0,END), S=ltStats(R,need,el); $('#ltBar').style.width='100%';
+  LT.on=false; $('#ltGo').textContent='Start the check';
+  if(LT.err&&!R.ok){ $('#ltSay').innerHTML=''; say($('#ltMsg'),'The check needs the newest Code.gs (stcLoadTest). Paste it, then Deploy › Manage deployments › Edit › New version.','err'); LT.err=null; return; }
+  const sec=v=>(v/1000).toFixed(1)+' s', lost=R.fail, slow=S.p95>8000||R.busy>N*.05, bad=lost>0||S.p95>20000;
+  $('#ltSay').innerHTML=stopped?'Stopped early. The numbers above are for the part that ran.'
+    :bad?`<span class="tag r">Not ready</span><b>${lost} save${lost===1?'':'s'} never went through</b>${S.p95>20000?` and the slowest saves took ${sec(S.p95)}`:''}. With ${N} students at once some answers would arrive late. Their pages keep every answer and keep trying, but split the benchmark into smaller groups (by grade or by period) and tell me what you saw.`
+    :slow?`<span class="tag y">Close to the limit</span>Every save went through, but the slowest took ${sec(S.p95)}${R.busy?` and ${R.busy} had to try again`:''}. ${N} students at once works, with little room to spare. Stagger start times by a few minutes if you can.`
+    :`<span class="tag g">Ready</span>All ${R.ok} saves went through. A typical save took ${sec(S.p50)}, the slowest ${sec(S.p95)}. ${N} students testing at once is fine.`;
+  say($('#ltMsg'),'Removing the pretend saves…','');
+  try{ const r=await call('stcLoadTest',{op:'clear'},120000); say($('#ltMsg'),`Cleaned up: the Load Test sheet (${r.removed} pretend students) is deleted.`,'ok'); }
+  catch(e){ say($('#ltMsg'),'Could not delete the Load Test sheet: '+errText(e)+'. You can delete it by hand in the Sheet.','err'); } }
+$('#ltGo').onclick=()=>{ if(LT.on){ if(LT.stop) LT.stop(); return; } ltRun(); };
 $('#mySesBtn').onclick=openMySessions; $('#mpBack').onclick=()=>closePage('#mpage');
 
 $('#rsFor').onchange=()=>{ RS.for=$('#rsFor').value; RS.edit=null; RS.per=''; $('#rlMsg').textContent=''; $('#rsMsg').textContent=''; openRoster(); };
