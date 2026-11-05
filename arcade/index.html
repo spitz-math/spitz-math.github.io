@@ -179,11 +179,10 @@ h1{font-family:var(--display);font-weight:400;margin:0;line-height:1;text-align:
 @keyframes fade{from{opacity:0}}
 @keyframes pop{from{transform:scale(.6)}to{transform:none}}
 @keyframes drop{from{transform:translateY(-6px);opacity:0}to{transform:none;opacity:1}}
-/* the picked card's art glides into the sheet (View Transitions); the sheet itself springs in */
-::view-transition-group(gart){animation-duration:.5s;animation-timing-function:var(--spring)}
-::view-transition-old(gart),::view-transition-new(gart){animation-duration:.25s;height:100%;object-fit:cover}
-::view-transition-group(gbox){animation-duration:.42s;animation-timing-function:cubic-bezier(.2,.8,.3,1)}
-.sheet.vt[open] .box,.sheet.vt[open]::backdrop{animation:none}
+/* the picked card's art glides into the sheet: a copy flies from the card to its place (Web Animations, see open()) */
+.fly{position:fixed;left:0;top:0;margin:0;z-index:10;pointer-events:none;transform-origin:0 0;border-radius:var(--r-s);overflow:hidden;will-change:transform}
+.sheet.flying .gside .art{visibility:hidden}
+.sheet.out .box{opacity:0}
 /* insert coin: Press Start stays sunk, the art zooms toward you, the sheet dims, then the game loads */
 .sheet.coin .play{transform:translateY(5px);box-shadow:0 0 0 #b38a00,0 0 26px rgba(255,225,58,.55);transition:transform .08s,box-shadow .2s}
 .sheet.coin .gside .art{transform:scale(1.1);transition:transform .45s cubic-bezier(.5,0,.75,0)}
@@ -368,24 +367,25 @@ function render(){
     $('g-d').className=g.isUpd?'d what':'d'; $('g-d').textContent=g.isUpd?g.more:g.d; }
 }
 var sheet=$('sheet'), RM=matchMedia('(prefers-reduced-motion: reduce)');
-/* card -> sheet glide (Chrome's View Transitions): the card's art and the sheet's art share a name for the length of the transition */
-function vt(card,fn){ if(!document.startViewTransition||RM.matches||!card){ fn(); return; }
-  var a=card.querySelector('.art'); a.style.viewTransitionName='gart'; sheet.classList.add('vt');
-  var t=document.startViewTransition(function(){ a.style.viewTransitionName=''; fn(); });
-  t.finished.then(function(){ a.style.viewTransitionName=''; sheet.classList.remove('vt'); },function(){ a.style.viewTransitionName=''; sheet.classList.remove('vt'); }); }
 function cardOf(id){ return document.querySelector('.game[data-g="'+id+'"]'); }
-function open(id){ var c=cardOf(id); vt(c,function(){ st.game=id; save(); render(); sheet.classList.remove('coin');
-    $('g-art').style.viewTransitionName='gart'; sheet.querySelector('.box').style.viewTransitionName='gbox';
-    if(!sheet.open){ if(sheet.showModal) sheet.showModal(); else sheet.setAttribute('open',''); }
-    var on=document.querySelector('.row.on'); if(on) on.scrollIntoView({block:'nearest'}); $('play').focus({preventScroll:true}); });
-  setTimeout(function(){ $('g-art').style.viewTransitionName=''; sheet.querySelector('.box').style.viewTransitionName=''; },700); }
-function shut(){ var c=cardOf(st.game), a=c&&c.querySelector('.art'), anim=a&&document.startViewTransition&&!RM.matches;
-  function done(){ if(sheet.close) sheet.close(); else sheet.removeAttribute('open'); if(c) c.focus({preventScroll:true}); }
-  function clear(){ $('g-art').style.viewTransitionName=''; if(a) a.style.viewTransitionName=''; sheet.classList.remove('vt'); }
-  if(!anim){ done(); return; }
-  /* the sheet's art glides back into its card */
-  $('g-art').style.viewTransitionName='gart'; sheet.classList.add('vt');
-  document.startViewTransition(function(){ $('g-art').style.viewTransitionName=''; a.style.viewTransitionName='gart'; done(); }).finished.then(clear,clear); }
+/* card -> sheet glide: a copy of the card's art flies from the card to the sheet's art spot with a spring, then the real art shows.
+   Plain Web Animations on one element (transform only), no page snapshots, so nothing on screen swaps or blinks. */
+function glide(c){ var from=c&&c.querySelector('.art'), to=$('g-art'); if(!from||RM.matches||!to.animate) return;
+  var f=from.getBoundingClientRect(), t=to.getBoundingClientRect(); if(!f.width||!t.width) return;
+  var fly=to.cloneNode(true); fly.removeAttribute('id'); fly.classList.add('fly'); fly.style.width=t.width+'px'; fly.style.height=t.height+'px';
+  sheet.appendChild(fly); sheet.classList.add('flying');
+  var k=f.width/t.width, an=fly.animate([{transform:'translate('+f.left+'px,'+f.top+'px) scale('+k+')'},{transform:'translate('+t.left+'px,'+t.top+'px)'}],
+    {duration:520,easing:getComputedStyle(document.documentElement).getPropertyValue('--spring').trim()||'ease-out',fill:'both'});
+  function end(){ fly.remove(); sheet.classList.remove('flying'); }
+  an.onfinish=end; an.oncancel=end; }
+function open(id){ var c=cardOf(id); st.game=id; save(); render(); sheet.classList.remove('coin','out');
+  if(!sheet.open){ if(sheet.showModal) sheet.showModal(); else sheet.setAttribute('open',''); glide(c); }
+  var on=document.querySelector('.row.on'); if(on) on.scrollIntoView({block:'nearest'}); $('play').focus({preventScroll:true}); }
+function shut(){ var c=cardOf(st.game);
+  function done(){ sheet.classList.remove('out'); if(sheet.close) sheet.close(); else sheet.removeAttribute('open'); if(c) c.focus({preventScroll:true}); }
+  if(RM.matches||!sheet.animate){ done(); return; }
+  /* a quick fade and drop instead of a hard cut */
+  sheet.classList.add('out'); sheet.querySelector('.box').animate([{opacity:1,transform:'none'},{opacity:0,transform:'translateY(12px) scale(.98)'}],{duration:160,easing:'ease-in'}).onfinish=done; }
 /* cards lean toward the cursor (mouse and trackpad only; reduce-motion turns it off in CSS) */
 (function(){ var raf=0, cur=null, ev=null;
   function apply(){ raf=0; if(!cur||!ev) return; var r=cur.getBoundingClientRect(), x=(ev.clientX-r.left)/r.width-.5, y=(ev.clientY-r.top)/r.height-.5;
