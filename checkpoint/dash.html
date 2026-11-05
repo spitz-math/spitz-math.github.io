@@ -2,7 +2,7 @@
 <html lang="en">
 <script>/* the teacher's look (11/5): light or dark, and a color for the top bar, saved on this computer */
 try{ const t=JSON.parse(localStorage.getItem('spitzDash:look')||'{}'), d=t.mode==='dark'||(t.mode==='auto'&&matchMedia('(prefers-color-scheme: dark)').matches);
-  document.documentElement.dataset.theme=d?'dark':'light'; document.documentElement.dataset.accent=t.accent||'orange'; document.documentElement.dataset.nav=t.nav||'top'; }catch(e){ document.documentElement.dataset.theme='light'; document.documentElement.dataset.accent='orange'; }</script>
+  document.documentElement.dataset.theme=d?'dark':'light'; document.documentElement.dataset.accent=t.accent||'orange'; document.documentElement.dataset.nav='side'; document.documentElement.dataset.rail=t.rail?'1':''; }catch(e){ document.documentElement.dataset.theme='light'; document.documentElement.dataset.accent='orange'; document.documentElement.dataset.nav='side'; }</script>
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -853,20 +853,70 @@ html[data-nav="side"] :is(.tpage,.bkpage)>.topbar .wm small{display:inline!impor
 html[data-nav="side"] :is(#mpBack,#rpBack,#rptBack,#tpBack){display:none}
 @media (min-width:760px){ html[data-nav="side"] :is(.tpage,.bkpage){left:236px} }
 @media (max-width:759px){ html[data-nav="side"] :is(.tpage,.bkpage){top:59px} html[data-nav="side"] :is(.tpage,.bkpage)>.topbar{padding:12px 14px 8px} html[data-nav="side"] :is(.tpage,.bkpage)>.topbar .wm small{font-size:20px} }
+
+/* ---------- side bar only (11/5): the color tints the whole side bar; collapse to a rail ---------- */
+html[data-nav="side"] .dbar{--sb:color-mix(in srgb,var(--tb) 10%,#fff);background:var(--sb)!important}
+html[data-theme="dark"][data-nav="side"] .dbar{--sb:color-mix(in srgb,var(--tb) 20%,#1c1d21)}
+html[data-nav="side"] .mbar{background:var(--sb,var(--card))}
+html[data-nav="side"] .dbar :is(#viewSeg button,.pgnav button){display:flex;align-items:center;gap:11px}
+html[data-nav="side"] .dbar #viewSeg button svg,html[data-nav="side"] .pgnav button svg{width:18px;height:18px;flex:none;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+html[data-nav="side"] .dbar #viewSeg button[aria-pressed="true"],html[data-nav="side"] .pgnav button[aria-current="page"]{background:color-mix(in srgb,var(--tb) 88%,#000)!important;color:#fff!important;border-left-color:transparent!important;border-radius:8px}
+html[data-nav="side"] .dbar #viewSeg button,html[data-nav="side"] .pgnav button{border-radius:8px;border-left:0}
+html[data-nav="side"] .dbar #viewSeg button:not([aria-pressed="true"]):hover,html[data-nav="side"] .pgnav button:not([aria-current="page"]):hover{background:color-mix(in srgb,var(--tb) 12%,transparent)}
+html[data-nav="side"].pgopen .dbar #viewSeg button[aria-pressed="true"]{background:none!important;color:var(--mut)!important}
+html[data-nav="side"] .dbar :is(.sesbtn,.qwrap #q,#perSeg button){background:var(--card,#fff)}
+html[data-nav="side"] .dbar #perSeg button[aria-pressed="true"]{background:color-mix(in srgb,var(--tb) 88%,#000);color:#fff}
+html[data-nav="side"] .pgnav{border-top-color:color-mix(in srgb,var(--tb) 22%,transparent)!important}
+html[data-nav="side"] .dbar{border-right-color:color-mix(in srgb,var(--tb) 25%,var(--line))}
+.wm .rlbtn{display:none}
+#viewSeg button[hidden],.pgnav button[hidden]{display:none!important}
+@media (min-width:760px){
+  html[data-nav="side"] .wm .rlbtn{display:inline-grid;place-items:center;margin-left:auto;width:28px;height:28px;border-radius:8px;border:0;background:none;color:var(--mut);padding:0}
+  html[data-nav="side"] .wm .rlbtn:hover{background:color-mix(in srgb,var(--tb) 14%,transparent);color:var(--ink)}
+  html[data-nav="side"] .wm .rlbtn svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;transition:transform .2s}
+  html[data-nav="side"] .dbar .wm{width:100%}
+  html[data-rail="1"] body{padding-left:68px}
+  html[data-rail="1"] .dbar{width:68px;padding:14px 10px;align-items:center}
+  html[data-rail="1"] .dbar .wm{flex-direction:column;gap:8px;margin:0 0 6px}
+  html[data-rail="1"] .wm .rlbtn{margin:0} html[data-rail="1"] .wm .rlbtn svg{transform:rotate(180deg)}
+  html[data-rail="1"] .dbar :is(.wmt,.vl,.ibl,.mngs,.lab,#perSeg,.sesbtn .sl small,.sesbtn .car){display:none!important}
+  html[data-rail="1"] .dbar .sesbtn{width:48px;padding:7px 2px;justify-content:center;font-size:12px}
+  html[data-rail="1"] .dbar .sesbtn .sl{white-space:nowrap;overflow:hidden;text-overflow:clip}
+  html[data-rail="1"] .dbar .grp{margin:0}
+  html[data-rail="1"] .dbar .qwrap{width:48px;height:38px;justify-content:center;border-radius:8px;background:var(--card,#fff);border:1px solid var(--line);cursor:pointer}
+  html[data-rail="1"] .dbar .qwrap svg{position:static} html[data-rail="1"] .dbar .qwrap #q{display:none}
+  html[data-rail="1"] .dbar :is(#viewSeg button,.pgnav button,.ibtn,.mngbtn){width:48px;justify-content:center;padding:10px 0!important}
+  html[data-rail="1"] .dbar .vgrp,html[data-rail="1"] .dbar .pgnav{width:48px}
+  html[data-rail="1"] .dbar .upd.live{font-size:0;gap:0;width:48px;justify-content:center;padding:10px 0}
+  html[data-rail="1"] .dbar .mng{width:48px}
+  html[data-rail="1"] .dbar .mngpanel{left:76px}
+  html[data-rail="1"] :is(.tpage,.bkpage){left:68px}
+  html[data-rail="1"] .sespanel{left:calc(100% + 12px)}
+}
+/* the color picker: named swatches, the picked one ringed */
+.look .lkch{font-size:12px;font-weight:600;color:var(--mut);margin:10px 0 6px}
+.lksw{display:grid!important;grid-template-columns:1fr 1fr;gap:4px!important;margin-top:0!important}
+.lksw button{width:auto!important;height:auto!important;display:flex;align-items:center;gap:8px;padding:6px 8px!important;border-radius:8px!important;border:1px solid transparent!important;background:none!important;box-shadow:none!important;font-size:13px;font-weight:600;color:var(--ink);text-align:left}
+.lksw button i{width:18px;height:18px;border-radius:999px;background:var(--sw);flex:none;box-shadow:inset 0 0 0 1px rgba(0,0,0,.15)}
+.lksw button:hover{background:color-mix(in srgb,var(--sw) 10%,transparent)!important}
+.lksw button[aria-pressed="true"]{border-color:var(--sw)!important;background:color-mix(in srgb,var(--sw) 14%,transparent)!important}
+.lksw button[aria-pressed="true"] i{box-shadow:0 0 0 2px var(--card,#fff),0 0 0 4px var(--sw)}
+.lksw button[aria-pressed="true"]::after{content:"✓";margin-left:auto;color:var(--sw);font-weight:800}
+html[data-theme="dark"] .lksw button[aria-pressed="true"]::after{color:var(--ink)}
 </style>
 </head>
 <body>
 <div class="mbar" id="mbar"><button class="mnav" id="mnav" aria-label="Open the menu"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button><span class="mt">Spitz Checkpoint</span><span class="mv" id="mview"></span></div>
 <div class="navbg" id="navbg"></div>
 <header class="topbar tb-red dbar">
-  <div class="wm"><span class="mk" aria-hidden="true"></span><span class="wmt">Spitz Checkpoint</span></div>
+  <div class="wm"><span class="mk" aria-hidden="true"></span><span class="wmt">Spitz Checkpoint</span><button class="rlbtn" id="railBtn" aria-label="Collapse the side bar" title="Collapse the side bar"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 6l-6 6 6 6"/></svg></button></div>
   <div class="sesdd" id="sesDD"><button class="btn sesbtn" id="sesBtn" aria-haspopup="dialog" aria-expanded="false"><span class="sl" id="sesLabel">Loading…</span><span class="car" aria-hidden="true">&#9662;</span></button>
     <div class="sespanel" id="sesPanel" hidden role="dialog" aria-label="Pick sessions"><div class="sf"><input type="search" id="sesFind" placeholder="Find a Session ID, test or note" aria-label="Find a session"></div>
       <div class="seslist" id="sesList"></div>
       <div class="sesfoot"><button class="btn" id="sesNew" title="Make a new session without leaving the dashboard">+ New session</button><label><input type="checkbox" id="sesClosed"> Show closed</label><button class="btn" id="sesClear">Clear</button><button class="btn pri" id="sesDone">Show</button></div></div></div>
   <button class="btn ibtn" id="showIdBtn" title="Show the Session ID big, for the projector" aria-label="Show the Session ID big"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="12" rx="2"/><path d="M8 21h8M12 17v4"/></svg><span class="ibl">Show Session ID</span></button>
-  <nav class="vgrp" aria-label="View"><div class="seg" id="viewSeg"><button data-v="live">Live</button><button data-v="std">Standards</button><button data-v="ques">Questions</button><button data-v="wr" id="wrViewBtn" hidden>Written</button></div></nav>
-  <nav class="pgnav" id="pgNav" aria-label="Pages"><button data-pg="ses"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="5" width="16" height="15" rx="2"/><path d="M4 10h16M9 3v4M15 3v4"/></svg>My sessions</button><button data-pg="ros"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="9" r="3.2"/><path d="M3.5 19c.8-3 3-4.6 5.5-4.6s4.7 1.6 5.5 4.6"/><circle cx="17" cy="8.5" r="2.4"/><path d="M16 13.6c2.2-.1 3.9 1.3 4.5 3.9"/></svg>My roster</button><button data-pg="rpt"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 20V10M10 20V5M15 20v-7M20 20V8"/></svg>Reports</button><button data-pg="tst" hidden><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 3h7l4 4v14H7z"/><path d="M14 3v4h4M10 12h5M10 16h5"/></svg>Tests</button></nav>
+  <nav class="vgrp" aria-label="View"><div class="seg" id="viewSeg"><button data-v="live" title="Live"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="2.6"/><path d="M6.3 6.3a8 8 0 0 0 0 11.4M17.7 6.3a8 8 0 0 1 0 11.4"/></svg><span class="vl">Live</span></button><button data-v="std" title="Standards"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 19h16M7 16V9M12 16V5M17 16v-4"/></svg><span class="vl">Standards</span></button><button data-v="ques" title="Questions"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M9.6 9.4a2.5 2.5 0 1 1 3.4 2.3c-.6.3-1 .8-1 1.5v.6M12 16.8v.2"/></svg><span class="vl">Questions</span></button><button data-v="wr" id="wrViewBtn" hidden title="Written"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20h4L19 9l-4-4L4 16z"/><path d="M13.5 6.5l4 4"/></svg><span class="vl">Written</span></button></div></nav>
+  <nav class="pgnav" id="pgNav" aria-label="Pages"><button data-pg="ses" title="My sessions"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="5" width="16" height="15" rx="2"/><path d="M4 10h16M9 3v4M15 3v4"/></svg><span class="vl">My sessions</span></button><button data-pg="ros" title="My roster"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="9" r="3.2"/><path d="M3.5 19c.8-3 3-4.6 5.5-4.6s4.7 1.6 5.5 4.6"/><circle cx="17" cy="8.5" r="2.4"/><path d="M16 13.6c2.2-.1 3.9 1.3 4.5 3.9"/></svg><span class="vl">My roster</span></button><button data-pg="rpt" title="Reports"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 20V10M10 20V5M15 20v-7M20 20V8"/></svg><span class="vl">Reports</span></button><button data-pg="tst" title="Tests" hidden><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 3h7l4 4v14H7z"/><path d="M14 3v4h4M10 12h5M10 16h5"/></svg><span class="vl">Tests</span></button></nav>
   <div class="sp"></div>
   <div class="grp" id="arcGrp" hidden><span class="lab">Results from</span><select id="arcSel" aria-label="Results from"></select></div>
   <div class="grp" id="teaGrp" hidden><span class="lab">Teacher</span><select id="teaSel" aria-label="Teacher"></select></div>
@@ -885,8 +935,7 @@ html[data-nav="side"] :is(#mpBack,#rpBack,#rptBack,#tpBack){display:none}
   <button class="btn" id="testsBtn" role="menuitem">Tests</button>
       <div class="look" id="look"><div class="lkh">Look</div>
         <div class="seg lkmode" id="lkMode"><button data-v="light">Light</button><button data-v="dark">Dark</button><button data-v="auto">Auto</button></div>
-        <div class="seg lkmode" id="lkNav" aria-label="Menu"><button data-v="top">Top bar</button><button data-v="side">Side bar</button></div>
-        <div class="lksw" id="lkSw"><button data-v="orange" title="Orange (school colors)" style="--sw:#e2660f"></button><button data-v="red" title="Red" style="--sw:#b3261e"></button><button data-v="navy" title="Navy" style="--sw:#1d3a7a"></button><button data-v="teal" title="Teal" style="--sw:#0f766e"></button><button data-v="purple" title="Purple" style="--sw:#5b3a9e"></button><button data-v="green" title="Green" style="--sw:#2f6b2f"></button><button data-v="slate" title="Slate" style="--sw:#334155"></button></div></div>
+        <div class="lkch">Side bar color</div><div class="lksw" id="lkSw"><button data-v="orange" style="--sw:#e2660f"><i></i>Orange</button><button data-v="red" style="--sw:#b3261e"><i></i>Red</button><button data-v="navy" style="--sw:#1d3a7a"><i></i>Navy</button><button data-v="teal" style="--sw:#0f766e"><i></i>Teal</button><button data-v="purple" style="--sw:#5b3a9e"><i></i>Purple</button><button data-v="green" style="--sw:#2f6b2f"><i></i>Green</button><button data-v="slate" style="--sw:#334155"><i></i>Slate</button></div></div>
     </div></div>
 </header>
 <div class="herow">
@@ -1258,6 +1307,10 @@ function pfApply(p){ PF_KEYS.forEach(k=>{ if(k in p) try{ localStorage.setItem('
   if(DATA) render(); }
 (async()=>{ if(!APP) return; try{ const r=await call('stcPrefs',{},30000); pfOk=true;
   if(r&&r.prefs&&Object.keys(r.prefs).length) pfApply(r.prefs); else if(Object.keys(pfLocal()).length) pfDirty('look'); }catch(e){} })();
+/* collapse the side bar to a slim rail (11/5); saved with the teacher's Look */
+$('#railBtn').onclick=()=>{ const on=document.documentElement.dataset.rail!=='1'; if(window.lkSave) lkSave({rail:on}); };
+document.querySelector('.dbar').addEventListener('click',e=>{ if(document.documentElement.dataset.rail!=='1'||innerWidth<760) return;
+  const t=e.target.closest('.qwrap,#sesBtn,.grp'); if(!t) return; e.preventDefault(); e.stopPropagation(); lkSave({rail:false}); if(t.classList.contains('qwrap')) setTimeout(()=>$('#q').focus(),260); },true);
 /* side bar pages (11/5): My sessions, roster, Reports, Tests open beside the side bar; Live / Standards / Questions close them */
 (function(){ const PG=[['ses','#mpage','#mySesBtn','#mpBack'],['ros','#rpage','#rosBtn','#rpBack'],['rpt','#rppage','#rptBtn','#rptBack'],['tst','#tpage','#testsBtn','#tpBack']];
   const open=()=>{ if(!$('#oepage').hidden) return {sec:'#oepage',back:'#oeBack',k:'ses',sub:1}; if(!$('#bkpage').hidden) return {sec:'#bkpage',back:'#bkBack',k:(typeof QB!=='undefined'&&QB.mine)?'ses':'tst',sub:1};
@@ -1437,12 +1490,12 @@ function rpRender(){ const out=$('#rpOut'), test=RP.test, m=meta(test), sub=$('#
   m.addEventListener('click',e=>{ if(!e.target.closest('#look')) set(false); });
   /* Look: light / dark / auto and the top bar color, kept on this computer */
   const LK=()=>{ try{ return JSON.parse(localStorage.getItem('spitzDash:look')||'{}'); }catch(e){ return {}; } };
-  const lkPaint=()=>{ const t=LK(), mode=t.mode||'light', d=mode==='dark'||(mode==='auto'&&matchMedia('(prefers-color-scheme: dark)').matches);
-    document.documentElement.dataset.theme=d?'dark':'light'; document.documentElement.dataset.accent=t.accent||'orange'; document.documentElement.dataset.nav=t.nav||'top';
+  const lkPaint=()=>{ const t=LK(), mode=t.mode||'light', d=mode==='dark'||(mode==='auto'&&matchMedia('(prefers-color-scheme: dark)').matches); { const rb=document.getElementById('railBtn'); if(rb){ const l=t.rail?'Expand the side bar':'Collapse the side bar'; rb.title=l; rb.setAttribute('aria-label',l); } }
+    document.documentElement.dataset.theme=d?'dark':'light'; document.documentElement.dataset.accent=t.accent||'orange'; document.documentElement.dataset.nav='side'; document.documentElement.dataset.rail=t.rail?'1':'';
     document.querySelectorAll('#lkMode button').forEach(b=>b.setAttribute('aria-pressed',b.dataset.v===mode));
     document.querySelectorAll('#lkSw button').forEach(b=>b.setAttribute('aria-pressed',b.dataset.v===(t.accent||'orange')));
     document.querySelectorAll('#lkNav button').forEach(b=>b.setAttribute('aria-pressed',b.dataset.v===(t.nav||'top'))); };
-  const lkSave=x=>{ try{ localStorage.setItem('spitzDash:look',JSON.stringify(Object.assign(LK(),x))); }catch(e){} lkPaint(); pfDirty('look'); }; window.lkPaint=lkPaint;
+  const lkSave=x=>{ try{ localStorage.setItem('spitzDash:look',JSON.stringify(Object.assign(LK(),x))); }catch(e){} lkPaint(); pfDirty('look'); }; window.lkPaint=lkPaint; window.lkSave=lkSave;
   document.querySelectorAll('#lkMode button').forEach(b=>b.onclick=()=>lkSave({mode:b.dataset.v}));
   document.querySelectorAll('#lkSw button').forEach(b=>b.onclick=()=>lkSave({accent:b.dataset.v}));
   document.querySelectorAll('#lkNav button').forEach(b=>b.onclick=()=>lkSave({nav:b.dataset.v}));
