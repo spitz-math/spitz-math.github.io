@@ -200,6 +200,18 @@ button:disabled{ cursor:default; }
 .pb-over .sz-eyebrow{ margin-bottom:12px; }
 :root{ --sz-fs-x:0.121; }
 .pb-help{ margin-bottom:46px; }
+/* start screen steps and scene (2026-11-05) */
+#pb-start .pb-step{ background:none; border:0; border-radius:0; box-shadow:none; transform:none; padding:0; }
+#pb-start .pb-steps{ gap:34px; }
+#pb-start .pb-step b{ display:table; padding:12px 54px 12px 22px; color:#1A0A0A; background:var(--lamp); clip-path:polygon(0 0,calc(100% - 34px) 0,100% 50%,calc(100% - 34px) 100%,0 100%);
+  filter:drop-shadow(0 0 14px color-mix(in srgb,var(--lamp) 60%,transparent)); margin-bottom:16px; }
+#pb-start .pb-step:nth-child(2) b{ background:var(--pink); color:#1A0A0A; } #pb-start .pb-step:nth-child(3) b{ background:var(--cyan); color:#1A0A0A; }
+#pb-start > .pb-box{ position:relative; z-index:1; }
+#pb-start::before,#pb-start::after{ content:''; position:absolute; pointer-events:none; z-index:0; }
+#pb-start::before{ inset:22px; border-radius:14px; border:3px solid rgba(255,77,58,.35);
+  background:radial-gradient(circle,#FFD45A 0 5px,transparent 6px) 0 0/48px 48px repeat-x, radial-gradient(circle,#FFD45A 0 5px,transparent 6px) 0 100%/48px 48px repeat-x;
+  filter:drop-shadow(0 0 6px rgba(255,212,90,.8)); opacity:.7; }
+/* end start screen steps */
 </style>
 <script src="kit.js"></script>
 </head>
@@ -251,13 +263,13 @@ button:disabled{ cursor:default; }
     <div class="sz-eyebrow">Spitz <b>Arcade</b></div><h2 class="pb-big"><span class="pb-orb" aria-hidden="true"></span><span><b>PIN</b><i>BALL</i></span></h2>
     <p class="pb-sub"><span class="sz-setname">Slope-intercept form.</span> You have 5 minutes on the Burger Ball machine. Answer questions to light up your multiplier, then fill burger orders on the table.</p>
     <div class="pb-steps">
-      <div class="pb-step"><b>1. Answer</b><span id="pb-step1">Every right answer lights the next multiplier lamp: 2X, 3X, 4X, 5X. Answer 2 questions to launch.</span></div>
-      <div class="pb-step"><b>2. Flip</b>Fill 4 orders to stack a burger, then cook Big Patty for a Burger Rush. The Order Up window asks a bonus question.</div>
-      <div class="pb-step"><b>3. Upgrade</b>If the ball drains, your multiplier resets, so answer again. Spend cash on more lamps, kickbacks and power-ups.</div>
+      <div class="pb-step"><b>Answer</b><span id="pb-step1">Every right answer lights the next multiplier lamp: 2X, 3X, 4X, 5X. Answer 2 questions to launch.</span></div>
+      <div class="pb-step"><b>Flip</b>Fill 4 orders to stack a burger, then cook Big Patty for a Burger Rush. The Order Up window asks a bonus question.</div>
+      <div class="pb-step"><b>Upgrade</b>If the ball drains, your multiplier resets, so answer again. Spend cash on more lamps, kickbacks and power-ups.</div>
     </div>
     <div class="pb-row"><input class="pb-input" id="pb-nameinput" maxlength="24" placeholder="First name + last initial" autocomplete="off" aria-label="Your name"><button class="sz-mus" id="sz-mus" aria-label="Music on or off, key N">♪ Music on</button></div>
     <button class="pb-start" id="pb-go-start" disabled>Start</button>
-    <div class="pb-keys">Keys: 1–4 answer · Enter next question · ← → or Z / flippers · hold Space to launch<br>S shop · N music · M mute · Shift+R new game · F full screen</div>
+    <div class="pb-keys"><div class="sz-ctl" data-ctl="1234=Answer | LR=Flippers | Space=Hold to launch | S=Shop"></div>N music · M mute · Shift+R new game · F full screen</div>
   </div><span class="pb-credit sz-credit">Made by Spitz <i class="sz-burger" aria-hidden="true"></i></span></div>
 
   <div class="pb-over" id="pb-end" hidden><div class="pb-box"><div class="sz-eyebrow">Spitz <b>Arcade</b></div>

@@ -243,13 +243,13 @@ var szm=/[?&]set=([a-z]+)/.exec(location.search); if(szm) document.documentEleme
     <div class="sz-eyebrow">Spitz <b>Arcade</b></div><h2 class="sw-big"><b>STAR</b> <i>SWARM</i></h2>
     <p class="sw-sub"><span class="sz-setname">Slope-intercept form, point-slope form, graphs, HOY and VUX.</span> You have 5 minutes: answer to power your ship, then blast the swarm.</p>
     <div class="sw-steps">
-      <div class="sw-step"><b>1. Answer</b>Each right answer adds energy and earns cash. A wrong answer costs $5 and breaks your streak.</div>
-      <div class="sw-step"><b>2. Blast</b>Hold Space to fire. Grab power-ups, chain your zaps and dodge their shots. Stop to answer and your shield goes up.</div>
-      <div class="sw-step"><b>3. Upgrade</b>Spend cash in the Shop on more energy, bigger guns, score multipliers and power-ups.</div>
+      <div class="sw-step"><b>Answer</b>Each right answer adds energy and earns cash. A wrong answer costs $5 and breaks your streak.</div>
+      <div class="sw-step"><b>Blast</b>Hold Space to fire. Grab power-ups, chain your zaps and dodge their shots. Stop to answer and your shield goes up.</div>
+      <div class="sw-step"><b>Upgrade</b>Spend cash in the Shop on more energy, bigger guns, score multipliers and power-ups.</div>
     </div>
     <div class="sw-row"><input class="sw-input" id="sw-nameinput" maxlength="24" placeholder="First name + last initial" autocomplete="off" aria-label="Your name"><button class="sz-mus" id="sz-mus" aria-label="Music on or off, key N">♪ Music on</button></div>
     <button class="sw-go" id="sw-go" disabled>Start</button>
-    <div class="sw-keys">Keys: 1–4 answer · Enter next · A D or ← → move · hold Space or W to fire · B shop · N music · M mute · Shift+R new game · F full screen</div>
+    <div class="sw-keys"><div class="sz-ctl" data-ctl="1234=Answer | LR=Move | Space=Hold to fire | B=Shop"></div>N music · M mute · Shift+R new game · F full screen</div>
   </div><span class="sw-credit sz-credit">Made by Spitz <i class="sz-burger" aria-hidden="true"></i></span></div>
 
   <div class="sw-over" id="sw-end" hidden><div class="sw-box"><div class="sz-eyebrow">Spitz <b>Arcade</b></div>

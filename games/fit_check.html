@@ -154,6 +154,18 @@ button:disabled{ cursor:default; }
 
 /* the full-screen reminder sits in the empty middle of the top bar */
 body:not(:has(#fc-start:not([hidden]))):not(:has(#fc-end:not([hidden]))) .sz-fs{ top:30px !important; bottom:auto !important; left:42% !important; }   /* during play only */
+/* start screen steps and scene (2026-11-05) */
+#fc-start .fc-step{ background:none; border:0; border-radius:0; box-shadow:none; transform:none; padding:0; }
+#fc-start .fc-steps{ gap:34px; }
+#fc-start .fc-step b{ position:relative; display:table; padding:12px 30px 12px 52px; margin-bottom:16px; color:#1A0A14; background:var(--teal);
+  clip-path:polygon(22px 0,100% 0,100% 100%,22px 100%,0 50%); font-size:36px;
+  -webkit-mask:radial-gradient(circle 8px at 30px 50%,#0000 98%,#000); mask:radial-gradient(circle 8px at 30px 50%,#0000 98%,#000); }
+#fc-start .fc-step:nth-child(2) b{ background:var(--accent); color:#1A0A14; } #fc-start .fc-step:nth-child(3) b{ background:var(--gold); color:#1A0A14; }
+#fc-start > .fc-box{ position:relative; z-index:1; }
+#fc-start::before,#fc-start::after{ content:''; position:absolute; pointer-events:none; z-index:0; }
+#fc-start::before{ inset:0; background:conic-gradient(from 160deg at 22% -5%,transparent,rgba(255,240,250,.09) 8deg,transparent 18deg), conic-gradient(from 182deg at 78% -5%,transparent,rgba(255,240,250,.09) 10deg,transparent 18deg); }
+#fc-start::after{ left:50%; bottom:0; width:520px; height:90px; margin-left:-260px; background:radial-gradient(circle,#FFE6F4 0 4px,transparent 5px) 0 50%/52px 24px repeat-x, linear-gradient(#2A1022,#2A1022); clip-path:polygon(18% 0,82% 0,100% 100%,0 100%); opacity:.7; }
+/* end start screen steps */
 </style>
 <script src="kit.js"></script>
 </head>
@@ -193,13 +205,13 @@ body:not(:has(#fc-start:not([hidden]))):not(:has(#fc-end:not([hidden]))) .sz-fs{
     <div class="sz-eyebrow">Spitz <b>Arcade</b></div><h2 class="fc-big"><svg class="fc-crown" aria-hidden="true" viewBox="0 0 60 42"><path d="M30 13V11a6 6 0 1 0-6-6M30 13 4 36h52Z" fill="none" stroke="currentColor" stroke-width="5.5" stroke-linecap="round" stroke-linejoin="round"/></svg><span><b>FIT</b> <i>CHECK</i></span></h2>
     <p class="fc-sub"><span class="sz-setname">Slope-intercept form.</span> You have 5 minutes: answer questions for gems, style a look that fits the theme, and walk the runway for the judges.</p>
     <div class="fc-steps">
-      <div class="fc-step"><b>1. Answer</b>Each right answer earns gems. A streak earns bonus gems.</div>
-      <div class="fc-step"><b>2. Style</b>Pick clothes that fit the theme (they cost gems). Read the judges' secret notes.</div>
-      <div class="fc-step"><b>3. Walk</b>Hit the poses on the beat. The judges score you against two rivals.</div>
+      <div class="fc-step"><b>Answer</b>Each right answer earns gems. A streak earns bonus gems.</div>
+      <div class="fc-step"><b>Style</b>Pick clothes that fit the theme (they cost gems). Read the judges' secret notes.</div>
+      <div class="fc-step"><b>Walk</b>Hit the poses on the beat. The judges score you against two rivals.</div>
     </div>
     <div class="fc-row"><input class="fc-input" id="fc-nameinput" maxlength="24" placeholder="First name + last initial" autocomplete="off" aria-label="Your name"><button class="sz-mus" id="sz-mus" aria-label="Music on or off, key N">♪ Music on</button></div>
     <button class="fc-go" id="fc-go" disabled><span>Start</span></button>
-    <div class="fc-keys">Keys: 1–4 answer · Enter next question · click a piece to wear it (or ← → rack, ↑ ↓ pick, Space wear)<br>G walk the runway · arrows pose · N music · M mute · Shift+R new game · F full screen</div>
+    <div class="fc-keys"><div class="sz-ctl" data-ctl="1234=Answer | Click=Wear a piece | G=Walk the runway | ARROWS=Pose"></div>N music · M mute · Shift+R new game · F full screen</div>
   </div><span class="fc-credit sz-credit">Made by Spitz <i class="sz-burger" aria-hidden="true"></i></span></div>
 
   <div class="fc-over" id="fc-end" hidden><div class="fc-box"><div class="sz-eyebrow">Spitz <b>Arcade</b></div>

@@ -250,13 +250,13 @@ var szm=/[?&]set=([a-z]+)/.exec(location.search); if(szm) document.documentEleme
     <div class="sz-eyebrow">Spitz <b>Arcade</b></div><h2 class="rc-big"><b>SHIFT</b> <i>RACER</i></h2>
     <p class="rc-sub"><span class="sz-setname">Translations of linear functions: up, down, left and right.</span> You have 5 minutes: answer to fuel up, then drive to as many checkpoints as you can.</p>
     <div class="rc-steps">
-      <div class="rc-step"><b>1. Answer</b>Right answers add fuel and cash. 2 in a row unlocks 4th gear, 4 in a row 5th. A wrong answer costs $5 and locks you back to 3rd.</div>
-      <div class="rc-step"><b>2. Drive</b>Hold ↑ to drive, ← → to change lanes. Press Space to shift when the needle hits green. Dodge traffic close for bonus points.</div>
-      <div class="rc-step"><b>3. Upgrade</b>Spend cash in the Shop on a faster engine, a bigger fuel tank, a smoother gearbox and power-ups.</div>
+      <div class="rc-step"><b>Answer</b>Right answers add fuel and cash. 2 in a row unlocks 4th gear, 4 in a row 5th. A wrong answer costs $5 and locks you back to 3rd.</div>
+      <div class="rc-step"><b>Drive</b>Hold ↑ to drive, ← → to change lanes. Press Space to shift when the needle hits green. Dodge traffic close for bonus points.</div>
+      <div class="rc-step"><b>Upgrade</b>Spend cash in the Shop on a faster engine, a bigger fuel tank, a smoother gearbox and power-ups.</div>
     </div>
     <div class="rc-row"><input class="rc-input" id="rc-nameinput" maxlength="24" placeholder="First name + last initial" autocomplete="off" aria-label="Your name"><button class="sz-mus" id="sz-mus" aria-label="Music on or off, key N">♪ Music on</button></div>
     <button class="rc-go" id="rc-go" disabled>Start</button>
-    <div class="rc-keys">Keys: 1–4 answer · Enter next · ↑ drive · ← → lanes · Space shift up · S shop · N music · M mute · Shift+R new game · F full screen</div>
+    <div class="rc-keys"><div class="sz-ctl" data-ctl="1234=Answer | ↑=Drive | LR=Change lanes | Space=Shift up | S=Shop"></div>N music · M mute · Shift+R new game · F full screen</div>
   </div><span class="rc-credit sz-credit">Made by Spitz <i class="sz-burger" aria-hidden="true"></i></span></div>
 
   <div class="rc-over" id="rc-end" hidden><div class="rc-box"><div class="sz-eyebrow">Spitz <b>Arcade</b></div>

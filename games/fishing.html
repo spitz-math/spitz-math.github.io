@@ -145,6 +145,19 @@ html.fh-tile .fh-prompt{ font:700 100px/1.1 var(--display); text-align:center; m
 .fh-lake.frenzy::after{ content:''; position:absolute; inset:0; border-radius:inherit; box-shadow:inset 0 0 40px 6px rgba(255,209,102,.75); opacity:0; z-index:40; pointer-events:none; animation:szGlowO 0.8s infinite alternate; }
 @keyframes szGlowO{ to{ opacity:1; } }
 /* ================= /PERF ================= */
+/* start screen steps and scene (2026-11-05) */
+#fh-start .fh-step{ background:none; border:0; border-radius:0; box-shadow:none; transform:none; padding:0; }
+#fh-start .fh-steps{ gap:34px; padding-top:8px; }
+#fh-start .fh-step{ position:relative; padding-top:74px; }
+#fh-start .fh-step::before{ content:''; position:absolute; left:15px; top:-10px; width:2px; height:52px; background:rgba(255,255,255,.55); }
+#fh-start .fh-step::after{ content:''; position:absolute; left:2px; top:38px; width:28px; height:28px; border-radius:50%; background:linear-gradient(#FF5A4E 0 50%,#fff 50%); box-shadow:0 0 0 3px #0B1A24; }
+#fh-start .fh-step b::before{ display:none; }
+#fh-start .fh-step b{ color:var(--c); font-size:38px; }
+#fh-start > .fh-box{ position:relative; z-index:1; }
+#fh-start::before,#fh-start::after{ content:''; position:absolute; pointer-events:none; z-index:0; }
+#fh-start::before{ left:0; right:0; bottom:0; height:44%; background:linear-gradient(rgba(30,120,160,.18),rgba(5,30,50,.4));
+  -webkit-mask:radial-gradient(60px 18px at 60px 0,transparent 98%,#000) 0 0/120px 100% repeat-x; mask:radial-gradient(60px 18px at 60px 0,transparent 98%,#000) 0 0/120px 100% repeat-x; }
+/* end start screen steps */
 </style>
 <script>/* a hub link with an algebra set: answers can be long, so layouts that tile short answers fall back to a list */
 if(/[?&]set=(?!mult\b)[a-z]/.test(location.search)) document.documentElement.classList.add('sz-alg');
@@ -188,13 +201,13 @@ if(/[?&]set=mult\b/.test(location.search)) document.documentElement.classList.ad
     <div class="sz-eyebrow">Spitz <b>Arcade</b></div><h2 class="fh-big"><b>GO</b> <i>FISH</i></h2>
     <p class="fh-sub"><span class="sz-setname">Slope-intercept form, point-slope form, graphs, HOY and VUX.</span> You have 5 minutes: answer to earn bait, then drop your line deep for the rarest fish.</p>
     <div class="fh-steps">
-      <div class="fh-step"><b>1. Answer</b>Each right answer earns bait and cash. Every fish you hook takes 1 bait. A wrong answer costs $5.</div>
-      <div class="fh-step"><b>2. Drop</b>Press Space to drop your line. Dodge fish on the way down to go deep. On the way up, steer into fish to hook them.</div>
-      <div class="fh-step"><b>3. Upgrade</b>Spend cash in the Tackle Shop on a longer line, more bait, better prices and power-ups.</div>
+      <div class="fh-step"><b>Answer</b>Each right answer earns bait and cash. Every fish you hook takes 1 bait. A wrong answer costs $5.</div>
+      <div class="fh-step"><b>Drop</b>Press Space to drop your line. Dodge fish on the way down to go deep. On the way up, steer into fish to hook them.</div>
+      <div class="fh-step"><b>Upgrade</b>Spend cash in the Tackle Shop on a longer line, more bait, better prices and power-ups.</div>
     </div>
     <div class="fh-row"><input class="fh-input" id="fh-nameinput" maxlength="24" placeholder="First name + last initial" autocomplete="off" aria-label="Your name"><button class="sz-mus" id="sz-mus" aria-label="Music on or off, key N">♪ Music on</button></div>
     <button class="fh-go" id="fh-go" disabled>Start</button>
-    <div class="fh-keys">Keys: 1–4 answer · Enter next question · Space drop line · ← → steer · S shop · N music · M mute · Shift+R new game · F full screen</div>
+    <div class="fh-keys"><div class="sz-ctl" data-ctl="1234=Answer | Space=Drop line | LR=Steer | S=Shop"></div>N music · M mute · Shift+R new game · F full screen</div>
   </div><span class="fh-credit sz-credit">Made by Spitz <i class="sz-burger" aria-hidden="true"></i></span></div>
 
   <div class="fh-over" id="fh-end" hidden><div class="fh-box"><div class="sz-eyebrow">Spitz <b>Arcade</b></div>

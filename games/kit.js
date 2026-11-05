@@ -141,6 +141,75 @@ function ready(){
 }
 if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',ready); else ready();
 
+/* ---------- the start screen (2026-11-05, matches the hub): parts rise in once, a Start button you can press down ----------
+   Only opacity and translate move, so a game's own skew or tilt stays. */
+var css2=[
+'[id$="-start"] [id$="-go"],[id$="-start"] [id$="-go-start"]{ transition:translate .08s ease-out; }',
+'[id$="-start"] [id$="-go"]:active:not(:disabled),[id$="-start"] [id$="-go-start"]:active:not(:disabled){ translate:0 5px; }'
+].join('\n');
+var st2=document.createElement('style'); st2.id='sz-kit-css2'; st2.textContent=css2; (document.head||document.documentElement).appendChild(st2);
+function startIntro(){
+  var ov=document.querySelector('[id$="-start"]'), eb=ov&&ov.querySelector('.sz-eyebrow'); if(!eb||!eb.animate) return;
+  var box=eb.parentElement, RM=matchMedia('(prefers-reduced-motion: reduce)');
+  function play(){ if(RM.matches) return; var parts=[], i=0;
+    [].forEach.call(box.children,function(c){ if(/-steps\b/.test(c.className)) [].push.apply(parts,c.children); else parts.push(c); });
+    parts.forEach(function(el){ if(el.hidden||!el.offsetParent) return;
+      el.animate([{opacity:0,translate:'0 18px'},{opacity:1,translate:'0 0'}],{duration:420,delay:60+i*55,easing:'cubic-bezier(.22,1,.36,1)',fill:'backwards'}); i++; }); }
+  /* Kody 2026-11-05: no animation on every visit. It plays the first time a game opens on a Chromebook, then the screen just shows */
+  var key='sz_intro_'+location.pathname.split('/').pop(); try{ if(localStorage.getItem(key)) return; localStorage.setItem(key,'1'); }catch(e){ return; }
+  if(!ov.hidden&&ov.offsetParent) play();
+}
+if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',startIntro); else startIntro();
+
+/* ---------- the controls card (2026-11-05, Kody: "they dont read"): each start screen draws its keys as keycaps with a word or two under each.
+   A game writes <div class="sz-ctl" data-ctl="1234=Answer | LR/AD=Move | Space=Jump"></div>.
+   Groups split on |, keys = label; / means "or". Tokens: 1234 and 123 (number keys), LR (← →), AD, ARROWS and WASD (the T of four keys),
+   Space, Shift, Enter, Click, Mouse, Drag, or any single key (← → ↑ ↓ or a letter). */
+var css3=[
+'.sz-ctl{ display:flex; justify-content:center; flex-wrap:wrap; gap:14px 44px; margin:0 0 14px; }',
+'.sz-ctl .g{ display:flex; flex-direction:column; align-items:center; justify-content:flex-end; gap:8px; }',
+'.sz-ctl .k{ display:flex; align-items:flex-end; gap:6px; }',
+'.sz-ctl kbd{ display:inline-grid; place-items:center; min-width:58px; height:58px; padding:0 12px; box-sizing:border-box; border-radius:6px; background:#F2F2F6; color:#15151D; font:800 28px/1 Inter,system-ui,sans-serif; box-shadow:inset 0 -6px 0 rgba(0,0,0,.28); }',
+'.sz-ctl kbd.wide{ min-width:170px; } .sz-ctl kbd.mid{ min-width:104px; font-size:23px; }',
+'.sz-ctl .t{ display:inline-grid; grid-template-columns:repeat(3,40px); grid-auto-rows:40px; gap:4px; }',
+'.sz-ctl .t kbd{ min-width:40px; height:40px; padding:0; font-size:21px; box-shadow:inset 0 -4px 0 rgba(0,0,0,.28); } .sz-ctl .t kbd:first-child{ grid-column:2; }',
+'.sz-ctl .or{ align-self:center; font:700 19px/1 Inter,system-ui,sans-serif; color:var(--muted,#9aa); margin:0 2px; }',
+'.sz-ctl .l{ font:800 26px/1.1 Inter,system-ui,sans-serif; color:var(--text,#fff); white-space:nowrap; }',
+'.sz-ctl svg{ display:block; height:64px; width:auto; }'
+].join('\n');
+var st3=document.createElement('style'); st3.id='sz-kit-css3'; st3.textContent=css3; (document.head||document.documentElement).appendChild(st3);
+function ctlKeys(tok){
+  function k(t,c){ return '<kbd'+(c?' class="'+c+'"':'')+'>'+t+'</kbd>'; }
+  function tee(a){ return '<span class="t">'+a.map(function(x){ return k(x); }).join('')+'</span>'; }
+  var mouse=function(lit,extra){ return '<svg viewBox="0 0 44 64" aria-hidden="true"><rect x="3" y="3" width="38" height="58" rx="19" fill="#F2F2F6"/>'+(lit?'<path d="M22 3a19 19 0 0 0-19 19v4h19z" fill="var(--sz-mark,#ffcf3a)"/>':'')+'<path d="M22 3v23M3 26h38" stroke="#15151D" stroke-width="3"/>'+(extra||'')+'</svg>'; };
+  switch(tok){
+    case '1234': return k('1')+k('2')+k('3')+k('4');
+    case '123': return k('1')+k('2')+k('3');
+    case 'LR': return k('←')+k('→');
+    case 'AD': return k('A')+k('D');
+    case 'ARROWS': return tee(['↑','←','↓','→']);
+    case 'WASD': return tee(['W','A','S','D']);
+    case 'Space': return k('Space','wide');
+    case 'Shift': case 'Enter': return k(tok,'mid');
+    case 'Click': return mouse(true);
+    case 'Mouse': return mouse(false);
+    case 'Drag': return mouse(true,'<path d="M30 50 L40 60 M40 52 v8 h-8" stroke="var(--sz-mark,#ffcf3a)" stroke-width="4" fill="none" stroke-linecap="round"/>');
+    default: return k(tok);
+  }
+}
+function ctlCards(){ document.querySelectorAll('.sz-ctl[data-ctl]').forEach(function(el){
+  el.innerHTML=el.getAttribute('data-ctl').split('|').map(function(g){ var p=g.split('='), keys=p[0].trim(), lab=(p[1]||'').trim();
+    return '<div class="g"><div class="k">'+keys.split('/').map(function(a){ return a.trim().split(/\s+/).map(ctlKeys).join(''); }).join('<span class="or">or</span>')+'</div><div class="l">'+lab+'</div></div>'; }).join(''); }); }
+if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',ctlCards); else ctlCards();
+/* the keys card made a few start screens taller than the game screen: shrink that start screen's box just enough to fit (Chrome's zoom keeps it crisp) */
+function fitStart(){ var ov=document.querySelector('[id$="-start"]'), eb=ov&&ov.querySelector('.sz-eyebrow'), sg=document.getElementById('stage'); if(!eb||!sg||ov.hidden) return;
+  var box=eb.parentElement; box.style.zoom=''; var k=1920/(sg.getBoundingClientRect().width||1920), hi=1e9, lo=-1e9;
+  box.querySelectorAll('*').forEach(function(e){ var r=e.getBoundingClientRect(); if(r.height){ hi=Math.min(hi,r.top); lo=Math.max(lo,r.bottom); } });
+  var h=(lo-hi)*k; if(h>1040) box.style.zoom=(1030/h).toFixed(3); }
+function fitWatch(){ fitStart(); if(document.fonts&&document.fonts.ready) document.fonts.ready.then(fitStart); var ov=document.querySelector('[id$="-start"]');
+  if(ov) new MutationObserver(function(){ if(!ov.hidden) fitStart(); }).observe(ov,{attributes:true,attributeFilter:['hidden']}); addEventListener('resize',function(){ setTimeout(fitStart,60); }); }
+if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',fitWatch); else fitWatch();
+
 /* ---------- offline cache (games/sw.js): a game opens from the Chromebook's cache, then refreshes in the background ---------- */
 if('serviceWorker' in navigator && location.protocol==='https:') addEventListener('load',function(){ try{ navigator.serviceWorker.register('sw.js',{scope:'./'}).catch(function(){}); }catch(e){} });
 })();

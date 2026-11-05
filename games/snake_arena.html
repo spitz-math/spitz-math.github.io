@@ -190,6 +190,16 @@ kbd{ font:inherit; }
 
 /* the full-screen reminder sits in the empty middle of the top bar */
 :root{ --sz-fs-x:0.52; --sz-fs-y:top; }   /* during play the hint sits at the top of the stage, between the Time chip and the score chips, and follows the stage at any window size */
+/* start screen steps and scene (2026-11-05) */
+#sn-start .sn-step{ background:none; border:0; border-radius:0; box-shadow:none; transform:none; padding:0; }
+#sn-start .sn-steps{ gap:34px; }
+#sn-start .sn-step b{ position:relative; padding-bottom:28px; margin-bottom:12px; }
+#sn-start .sn-step b::after{ content:''; position:absolute; left:0; right:24px; bottom:4px; height:16px; border-radius:999px; background:radial-gradient(circle at 8px 8px,currentColor 6px,transparent 7px) 0 0/22px 16px repeat-x; opacity:.85; }
+#sn-start .sn-step b::before{ content:''; position:absolute; right:0; bottom:0; width:24px; height:24px; border-radius:50%; background:currentColor; box-shadow:inset -5px -4px 0 rgba(0,0,0,.25); }
+#sn-start > .sn-box{ position:relative; z-index:1; }
+#sn-start::before,#sn-start::after{ content:''; position:absolute; pointer-events:none; z-index:0; }
+#sn-start::before{ left:50%; top:50%; width:1760px; height:980px; margin:-490px 0 0 -880px; border-radius:50%; border:8px dashed color-mix(in srgb,var(--lime) 14%,transparent); }
+/* end start screen steps */
 </style>
 <script src="kit.js"></script>
 </head>
@@ -248,13 +258,13 @@ kbd{ font:inherit; }
     <div class="sz-eyebrow">Spitz <b>Arcade</b></div><h2 class="sn-big"><svg class="sn-mark" width="190" height="111"><use href="#sn-snek"/></svg><span><b>SNAKE</b> <i>ARENA</i></span></h2>
     <p class="sn-sub"><span class="sz-setname">Slope-intercept form.</span> You have 5 minutes: answer questions for energy, then rule the arena.</p>
     <div class="sn-steps">
-      <div class="sn-step"><b>1. Snack stop</b><span id="sn-step1">Answer questions for energy and cash. Slithering uses energy. When it runs out, you stop here, safe.</span></div>
-      <div class="sn-step"><b>2. Lasso</b>Eat snacks to grow. Circle around snacks to scoop them all up at once. Circle a Rival’s head to catch it!</div>
-      <div class="sn-step"><b>3. Cut them off</b>Boost in front of Rivals so they crash into you. Hunt the Wanted snake, the Titan and the Gold Rush.</div>
+      <div class="sn-step"><b>Snack stop</b><span id="sn-step1">Answer questions for energy and cash. Slithering uses energy. When it runs out, you stop here, safe.</span></div>
+      <div class="sn-step"><b>Lasso</b>Eat snacks to grow. Circle around snacks to scoop them all up at once. Circle a Rival’s head to catch it!</div>
+      <div class="sn-step"><b>Cut them off</b>Boost in front of Rivals so they crash into you. Hunt the Wanted snake, the Titan and the Gold Rush.</div>
     </div>
     <div class="sn-rowx"><input class="sn-input" id="sn-nameinput" maxlength="24" placeholder="First name + last initial" autocomplete="off" aria-label="Your name"><button class="sz-mus" id="sz-mus" aria-label="Music on or off, key N">♪ Music on</button></div>
     <button class="sn-start" id="sn-go-start" disabled>Start</button>
-    <div class="sn-keys">Keys: arrows or WASD steer (or move the mouse) · hold Space or click to boost · Enter snack stop<br>1–4 answer · B shop · N music · M mute · Shift+R new game · F full screen</div>
+    <div class="sn-keys"><div class="sz-ctl" data-ctl="1234=Answer | ARROWS=Steer | Space=Boost | Enter=Snack stop | B=Shop"></div>N music · M mute · Shift+R new game · F full screen</div>
   </div><span class="sn-credit sz-credit">Made by Spitz <i class="sz-burger" aria-hidden="true"></i></span></div>
 
   <div class="sn-over" id="sn-end" hidden><div class="sn-box"><div class="sz-eyebrow">Spitz <b>Arcade</b></div>

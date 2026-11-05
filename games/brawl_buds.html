@@ -191,6 +191,17 @@ button:disabled{ cursor:default; }
 
 .bb-over .sz-eyebrow{ margin-bottom:12px; }
 .sz-ask h2{ font-size:72px; }
+/* start screen steps and scene (2026-11-05) */
+#bb-start .bb-step{ background:none; border:0; border-radius:0; box-shadow:none; transform:none; padding:0; }
+#bb-start .bb-steps{ gap:34px; }
+#bb-start .bb-step{ padding-left:22px; border-left:6px solid var(--pow); }
+#bb-start .bb-step:nth-child(2){ border-left-color:var(--bud); } #bb-start .bb-step:nth-child(3){ border-left-color:var(--accent); }
+#bb-start .bb-step b{ display:table; margin:0 0 16px -10px; padding:10px 26px; transform:skewX(-14deg); background:var(--pow); color:#111; font-size:32px; }
+#bb-start .bb-step:nth-child(2) b{ background:var(--bud); color:#111; } #bb-start .bb-step:nth-child(3) b{ background:var(--accent); color:#111; }
+#bb-start > .bb-box{ position:relative; z-index:1; }
+#bb-start::before,#bb-start::after{ content:''; position:absolute; pointer-events:none; z-index:0; }
+#bb-start::before{ inset:0; background:linear-gradient(105deg, color-mix(in srgb,var(--bud) 16%,transparent) 0 49.8%, color-mix(in srgb,var(--accent) 16%,transparent) 50.2% 100%); }
+/* end start screen steps */
 </style>
 <script src="kit.js"></script>
 </head>
@@ -240,13 +251,13 @@ button:disabled{ cursor:default; }
     <div class="sz-eyebrow">Spitz <b>Arcade</b></div><h2 class="bb-big"><i>BRAWL</i> <b>BUDS</b></h2>
     <p class="bb-sub"><span class="sz-setname">Slope-intercept form.</span> A 4-minute brawl against the Rivals. Answers, hits and KOs score points, plus 3 challenges every brawl.</p>
     <div class="bb-steps">
-      <div class="bb-step"><b>1. Corner</b><span id="bb-step1">Before every round, answer questions. Right answers charge your Supers. Wrong answers charge nothing, so don’t guess.</span></div>
-      <div class="bb-step"><b>2. Fight</b>← → move. Space jumps (twice in the air). J hits and K throws a Super. Hold ↑ or ↓ while you hit for other moves.</div>
-      <div class="bb-step"><b>3. Knock out</b>Hits raise the Rival’s %, so they fly farther. Grab the items that drop: bat, bomb, spring shoes, burger. Most KOs in 4 minutes wins.</div>
+      <div class="bb-step"><b>Corner</b><span id="bb-step1">Before every round, answer questions. Right answers charge your Supers. Wrong answers charge nothing, so don’t guess.</span></div>
+      <div class="bb-step"><b>Fight</b>← → move. Space jumps (twice in the air). J hits and K throws a Super. Hold ↑ or ↓ while you hit for other moves.</div>
+      <div class="bb-step"><b>Knock out</b>Hits raise the Rival’s %, so they fly farther. Grab the items that drop: bat, bomb, spring shoes, burger. Most KOs in 4 minutes wins.</div>
     </div>
     <div class="bb-row"><input class="bb-input" id="bb-nameinput" maxlength="24" placeholder="First name + last initial" autocomplete="off" aria-label="Your name"><button class="sz-mus" id="sz-mus" aria-label="Music on or off, key N">♪ Music on</button><span class="bb-mode" role="group" aria-label="Difficulty"><button class="bb-len" id="bb-rookie" aria-pressed="true">Rookie</button><button class="bb-len" id="bb-pro" aria-pressed="false" title="Sharper Rivals, and a wrong answer charges the Rival's Super. Points ×1.5">★ All-Pro <span>×1.5</span></button></span></div>
     <button class="bb-start" id="bb-go-start" disabled>Start</button>
-    <div class="bb-keys">Keys: ← → or A D move · Space, ↑ or W jump · ↓ or S drop down · J or Z hit · K or X Super · Enter corner<br>1–4 answer · N music · M mute · Shift+R new game · F full screen</div>
+    <div class="bb-keys"><div class="sz-ctl" data-ctl="LR=Move | Space=Jump | J=Hit | K=Super | 1234=Answer | Enter=Corner"></div>N music · M mute · Shift+R new game · F full screen</div>
   </div><span class="bb-credit sz-credit">Made by Spitz <i class="sz-burger" aria-hidden="true"></i></span></div>
 
   <div class="bb-over" id="bb-end" hidden><div class="bb-box"><div class="sz-eyebrow">Spitz <b>Arcade</b></div>

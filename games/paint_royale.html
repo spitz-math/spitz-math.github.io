@@ -149,6 +149,19 @@ button:disabled{ cursor:default; }
 
 /* the full-screen reminder sits in the empty middle of the top bar */
 :root{ --sz-fs-x:0.42; --sz-fs-y:top; }   /* during play the hint sits at the top of the stage, between the Time chip and the score chips, and follows the stage at any window size */
+/* start screen steps and scene (2026-11-05) */
+#pr-start .pr-step{ background:none; border:0; border-radius:0; box-shadow:none; transform:none; padding:0; }
+#pr-start .pr-steps{ gap:34px; }
+#pr-start .pr-step b{ display:table; padding:10px 34px 14px; margin-bottom:14px; background:var(--teal); color:#0C0919; border-radius:46% 54% 40% 60% / 62% 44% 56% 38%; transform:rotate(-2deg); }
+#pr-start .pr-step:nth-child(2) b{ background:var(--grape); color:#fff; border-radius:58% 42% 55% 45% / 40% 60% 40% 60%; transform:rotate(1.5deg); }
+#pr-start .pr-step:nth-child(3) b{ background:var(--gold); color:#0C0919; border-radius:40% 60% 48% 52% / 56% 40% 60% 44%; }
+#pr-start > .pr-box{ position:relative; z-index:1; }
+#pr-start::before,#pr-start::after{ content:''; position:absolute; pointer-events:none; z-index:0; }
+#pr-start::before{ left:0; right:0; top:0; height:150px;
+  background:radial-gradient(14px 40px at 6% 60px,var(--teal) 98%,transparent) , radial-gradient(12px 70px at 19% 70px,var(--grape) 98%,transparent), radial-gradient(16px 50px at 33% 50px,var(--gold) 98%,transparent),
+  radial-gradient(12px 80px at 67% 80px,var(--teal) 98%,transparent), radial-gradient(16px 46px at 81% 46px,var(--grape) 98%,transparent), radial-gradient(12px 64px at 94% 64px,var(--gold) 98%,transparent),
+  linear-gradient(90deg,var(--teal) 0 25%,var(--grape) 25% 50%,var(--gold) 50% 75%,var(--teal) 75%) 0 0/100% 22px no-repeat; opacity:.55; }
+/* end start screen steps */
 </style>
 <script src="kit.js"></script>
 </head>
@@ -190,13 +203,13 @@ button:disabled{ cursor:default; }
     <div class="sz-eyebrow">Spitz <b>Arcade</b></div><h2 class="pr-big"><span class="pr-crown" aria-hidden="true"></span><span><b>PAINT</b> <i>ROYALE</i></span></h2>
     <p class="pr-sub"><span class="sz-setname">Slope-intercept form.</span> You have 5 minutes: answer questions to fill your paint, then be the last Bud standing.</p>
     <div class="pr-steps">
-      <div class="pr-step"><b>1. Answer</b>Each right answer fills your paint and earns cash. It also opens any crate you picked up.</div>
-      <div class="pr-step"><b>2. Splat</b>Time only moves when you move. Splat rivals, grab crates and stay inside the circle.</div>
-      <div class="pr-step"><b>3. Upgrade</b>Spend cash in the Paint Shop on more paint, stronger shots, a raincoat and power-ups.</div>
+      <div class="pr-step"><b>Answer</b>Each right answer fills your paint and earns cash. It also opens any crate you picked up.</div>
+      <div class="pr-step"><b>Splat</b>Time only moves when you move. Splat rivals, grab crates and stay inside the circle.</div>
+      <div class="pr-step"><b>Upgrade</b>Spend cash in the Paint Shop on more paint, stronger shots, a raincoat and power-ups.</div>
     </div>
     <div class="pr-row"><input class="pr-input" id="pr-nameinput" maxlength="24" placeholder="First name + last initial" autocomplete="off" aria-label="Your name"><button class="sz-mus" id="sz-mus" aria-label="Music on or off, key N">♪ Music on</button></div>
     <button class="pr-go" id="pr-go" disabled><span>Start</span></button>
-    <div class="pr-keys">Keys: 1–4 answer · Enter next question · WASD or arrows move · Space splats the nearest rival (or click to aim)<br>B shop · N music · M mute · Shift+R new game · F full screen</div>
+    <div class="pr-keys"><div class="sz-ctl" data-ctl="1234=Answer | ARROWS=Move | Space=Splat | B=Shop"></div>N music · M mute · Shift+R new game · F full screen</div>
   </div><span class="pr-credit sz-credit">Made by Spitz <i class="sz-burger" aria-hidden="true"></i></span></div>
 
   <div class="pr-over" id="pr-end" hidden><div class="pr-box"><div class="sz-eyebrow">Spitz <b>Arcade</b></div>
