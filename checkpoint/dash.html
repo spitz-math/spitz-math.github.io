@@ -1035,6 +1035,8 @@ html[data-theme="dark"] #oeBankBtn[aria-pressed="true"]{background:color-mix(in 
 .sespanel input[type=checkbox]{accent-color:var(--acc)}
 /* menus that open from the side bar (session picker, Settings) wear the side bar's color, with an accent edge, so they stand out on the dark page */
 html[data-nav="side"] .dbar :is(.sespanel,.mngpanel){background:var(--sb)!important;border:1px solid color-mix(in srgb,var(--tb) 45%,var(--line))!important}
+/* menus open past the side bar, so lift it over the tool pages (.tpage z 45) while one is open */
+@media (min-width:760px){ html[data-nav="side"] .dbar:has(:is(.mngpanel,.sespanel):not([hidden])){z-index:50} }
 html[data-theme="dark"][data-nav="side"] .dbar :is(.sespanel,.mngpanel){box-shadow:0 16px 40px rgba(0,0,0,.55),0 0 0 1px rgba(0,0,0,.4)}
 html[data-nav="side"] .dbar .mngpanel .btn{background:transparent;color:var(--ink)} html[data-nav="side"] .dbar .mngpanel .btn:is(:hover,:focus-visible){background:color-mix(in srgb,var(--tb) 16%,transparent)}
 html[data-nav="side"] .dbar .mngpanel .seg button[aria-pressed="true"]{background:var(--acc)!important;border-color:var(--acc)!important;color:#fff!important}
