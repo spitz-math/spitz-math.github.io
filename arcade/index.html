@@ -23,21 +23,25 @@
 <link href="../fonts/bungee-pressstart2p-nunito-5675ec.css" rel="stylesheet" onerror="this.onerror=null;this.href='https://fonts.googleapis.com/css2?family=Bungee&family=Press+Start+2P&family=Nunito:wght@600;700;800;900&display=swap'">
 <style>
 /* Arcade hub, neon look to match the spitzmath.com launch pad (same night sky, scanlines, floor grid, Bungee + Press Start 2P).
-   Step 1 pick a game (cabinet cards), step 2 pick a question set (compact tiles; the picked one opens its topics), then the
-   control panel at the bottom shows both picks and PRESS START. No flashing: only slow glows and pulses. */
+   Pick a game (new and updated games get a bigger row up top), and its sheet opens: game art on the left, question sets on the
+   right (Mr. Spitz's suggested sets once, in gold, then the rest as a plain list), PRESS START always in view. 2026-11-05 cleanup:
+   only the game cards and the sheet are framed, glows mark state only, nothing pulses, corner sizes are --r-s / --r-l / 999px. */
 :root{
   color-scheme:dark;
   --bg:#06081a; --bg2:#02030c; --panel:rgba(8,11,36,.86); --panel2:#11163f; --line:#262d66;
   --fg:#eaf6ff; --dim:rgba(234,246,255,.62);
   --pink:#ff2bd6; --cyan:#21e6ff; --yellow:#ffe13a; --orange:#ff7a1a;
   --ms:3600ms;
+  --r-s:6px; --r-l:14px;
+  /* a spring that overshoots a little and settles (CSS linear() easing, no library) */
+  --spring:linear(0, .009, .035 2.1%, .141, .281 6.7%, .723 12.9%, .938 16.7%, 1.017, 1.077, 1.121, 1.149 24.3%, 1.159, 1.163, 1.161, 1.154 29.9%, 1.129 32.8%, 1.051 39.6%, 1.017 43.1%, .991, .977 51%, .974 53.8%, .975 57.1%, .997 69.8%, 1.003 76.9%, 1);
+  --s2:8px; --s3:12px; --s4:24px; --s5:32px;
   --display:'Bungee',Impact,sans-serif; --pixel:'Press Start 2P',monospace; --body:'Nunito',system-ui,sans-serif;
 }
 *{box-sizing:border-box}
-html{scroll-padding-bottom:110px}
 body{margin:0;color:var(--fg);font:600 16px/1.45 var(--body);min-height:100vh;position:relative;overflow-x:hidden;
   background:linear-gradient(180deg,#0a0f33 0%,var(--bg) 40%,var(--bg2) 100%) fixed var(--bg);
-  padding:0 max(16px,env(safe-area-inset-right,0px)) 130px max(16px,env(safe-area-inset-left,0px))}
+  padding:0 max(16px,env(safe-area-inset-right,0px)) 48px max(16px,env(safe-area-inset-left,0px))}
 .bgfx{position:fixed;inset:0;pointer-events:none;z-index:0;overflow:hidden;
   background:repeating-linear-gradient(180deg,rgba(255,255,255,.03) 0 1px,transparent 1px 4px),radial-gradient(ellipse at 50% 120%,rgba(33,230,255,.14),transparent 55%)}
 .bgfx::after{content:"";position:absolute;left:-20%;right:-20%;bottom:0;height:34%;opacity:.55;
@@ -45,12 +49,12 @@ body{margin:0;color:var(--fg);font:600 16px/1.45 var(--body);min-height:100vh;po
   transform:perspective(500px) rotateX(62deg);transform-origin:50% 100%;
   -webkit-mask-image:linear-gradient(180deg,transparent,#000 60%);mask-image:linear-gradient(180deg,transparent,#000 60%)}
 .star{position:fixed;width:3px;height:3px;border-radius:50%;background:#fff;opacity:.5;pointer-events:none;z-index:0;animation:twinkle 2.6s ease-in-out infinite}
-.wrap{position:relative;z-index:1;max-width:1180px;margin:0 auto;display:flex;flex-direction:column;gap:30px}
+.wrap{position:relative;z-index:1;max-width:1180px;margin:0 auto;display:flex;flex-direction:column;gap:var(--s5)}
 
 /* header: back link, burger + title, leaderboard */
 header{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:12px;padding-top:18px}
-.home{justify-self:start;font-family:var(--pixel);font-size:10px;letter-spacing:.08em;color:var(--cyan);text-decoration:none;text-transform:uppercase;padding:10px 12px;border:2px solid transparent;border-radius:8px}
-.home:hover,.home:focus-visible{border-color:var(--cyan);box-shadow:0 0 10px var(--cyan);outline:none}
+.home{justify-self:start;font-family:var(--pixel);font-size:10px;letter-spacing:.08em;color:var(--cyan);text-decoration:none;text-transform:uppercase;padding:10px 12px;border:2px solid transparent;border-radius:var(--r-s)}
+.home:hover,.home:focus-visible{border-color:var(--cyan);outline:none}
 .brand{display:flex;align-items:center;gap:14px}
 /* burger + starburst, same motion as the launch pad (slow bob, burst breathing, halo glow) */
 .logo{position:relative;flex:none;width:clamp(70px,8.4vw,104px);aspect-ratio:1312/1199}
@@ -65,126 +69,141 @@ h1{font-family:var(--display);font-weight:400;margin:0;line-height:1;text-align:
   filter:drop-shadow(.05em .06em 0 #140800) drop-shadow(0 0 3px #fff7b0) drop-shadow(0 0 12px #ffb21f) drop-shadow(0 0 26px rgba(255,122,26,.75));animation:sway var(--ms) ease-in-out infinite;will-change:transform}
 .sub{margin:8px 0 0;text-align:center;font:400 clamp(8px,.9vw,11px)/1.4 var(--pixel);letter-spacing:.14em;text-transform:uppercase;color:var(--pink);text-shadow:0 0 8px var(--pink)}
 .lb{justify-self:end;--c:var(--cyan);display:inline-flex;align-items:center;gap:10px;font-family:var(--pixel);font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:#fff;text-decoration:none;
-  padding:13px 16px;border-radius:10px;border:3px solid var(--c);background:rgba(4,6,28,.72);box-shadow:0 0 10px var(--c),inset 0 0 16px rgba(33,230,255,.25);transition:transform .2s,box-shadow .2s}
+  padding:12px 16px;border-radius:var(--r-s);border:2px solid var(--c);background:rgba(4,6,28,.72);transition:transform .18s ease-out,box-shadow .18s}
 .lb span{font-size:18px}
-.lb:hover,.lb:focus-visible{transform:translateY(-2px);box-shadow:0 0 18px var(--c),0 0 40px rgba(33,230,255,.5),inset 0 0 16px rgba(33,230,255,.35);outline:none}
+.lb:hover,.lb:focus-visible{transform:translateY(-2px);box-shadow:0 0 14px color-mix(in srgb,var(--c) 60%,transparent);outline:none}
 
-/* step headings */
-h2{--c:var(--pink);display:flex;align-items:center;flex-wrap:wrap;gap:14px;margin:0 0 16px;font:400 clamp(20px,2.6vw,28px)/1.1 var(--display);text-transform:uppercase;letter-spacing:.04em;color:#fff;text-shadow:0 0 8px var(--c),0 0 20px var(--c)}
-h2 .n{display:grid;place-items:center;width:40px;height:40px;border-radius:10px;font:400 16px/1 var(--pixel);color:var(--bg);background:var(--c);box-shadow:0 0 12px var(--c);text-shadow:none}
-h2 .hint{font:800 15px/1.3 var(--body);letter-spacing:0;text-transform:none;color:var(--dim);text-shadow:none}
-#step2 h2{--c:var(--cyan)}
+/* section labels: small pixel eyebrows, so the page title and the game names stay the loudest things */
+.lab2{display:flex;align-items:baseline;gap:12px;margin:0 0 var(--s3);font:400 11px/1.4 var(--pixel);letter-spacing:.1em;text-transform:uppercase;color:var(--pink)}
+.lab2 small{font:700 14px/1.3 var(--body);letter-spacing:0;text-transform:none;color:var(--dim)}
+#all .lab2{color:var(--cyan)}
 
-/* game cards */
-.games{display:grid;grid-template-columns:repeat(auto-fill,minmax(196px,1fr));gap:14px}
-.game{all:unset;box-sizing:border-box;position:relative;cursor:pointer;display:flex;flex-direction:column;gap:6px;min-width:0;padding:8px 8px 12px;border-radius:16px;
-  background:linear-gradient(180deg,color-mix(in srgb,var(--acc) 10%,#0b0e2c),#070920);border:3px solid color-mix(in srgb,var(--acc) 40%,#1b2155);
-  box-shadow:inset 0 0 18px color-mix(in srgb,var(--acc) 12%,transparent);transition:transform .2s cubic-bezier(.3,1.4,.5,1),box-shadow .2s,border-color .2s}
-.art{display:block;width:100%;height:auto;aspect-ratio:200/110;border-radius:10px;overflow:hidden;background:var(--gpanel)}
-.game b{font:400 19px/1.15 var(--display);letter-spacing:.02em;color:var(--acc);padding:2px 4px 0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-shadow:0 0 10px color-mix(in srgb,var(--acc) 70%,transparent)}
-.game small{font:700 13.5px/1.2 var(--body);color:var(--dim);padding-inline:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+/* game cards: the only framed things on the page, because they're what you pick */
+.games{display:grid;grid-template-columns:repeat(auto-fill,minmax(196px,1fr));gap:var(--s3)}
+.games.feat{grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:var(--s4)}
+/* the button is a still hit area; only its .face moves, so tilting or lifting never slides the card out from under the pointer (no hover flicker) */
+.game{all:unset;box-sizing:border-box;display:block;cursor:pointer;min-width:0;border-radius:var(--r-l)}
+.face{box-sizing:border-box;position:relative;height:100%;display:flex;flex-direction:column;gap:4px;min-width:0;padding:8px 8px 12px;border-radius:var(--r-l);
+  background:linear-gradient(180deg,color-mix(in srgb,var(--acc) 8%,#0b0e2c),#070920);border:2px solid color-mix(in srgb,var(--acc) 28%,#1b2155);
+  transition:transform .18s ease-out,border-color .18s,box-shadow .18s;overflow:hidden}
+/* tilt toward the cursor (mouse/trackpad only) and one shine sweep on hover; set by JS through --rx/--ry */
+.face::after{content:"";position:absolute;inset:0;pointer-events:none;border-radius:inherit;opacity:0;
+  background:linear-gradient(105deg,transparent 35%,rgba(255,255,255,.16) 48%,rgba(255,255,255,.05) 54%,transparent 62%) no-repeat;background-size:250% 100%;background-position:110% 0}
+@media (hover:hover) and (pointer:fine) and (prefers-reduced-motion:no-preference){
+  .games .game.tilt .face{transform:perspective(800px) rotateX(var(--rx,0deg)) rotateY(var(--ry,0deg)) translateY(-3px);transition:transform .12s ease-out,border-color .18s,box-shadow .18s}
+  .game:hover .face::after{opacity:1;background-position:-60% 0;transition:background-position .7s ease-out,opacity .1s}
+}
+.art{display:block;width:100%;height:auto;aspect-ratio:200/110;border-radius:var(--r-s);overflow:hidden;background:var(--gpanel)}
+.game b{margin-top:4px;font:900 16px/1.2 var(--body);letter-spacing:.04em;text-transform:uppercase;color:var(--acc);padding:2px 4px 0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.feat .game b{font:400 20px/1.15 var(--display);letter-spacing:.02em;text-transform:none}
+.game small{font:700 13.5px/1.25 var(--body);color:var(--dim);padding-inline:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .game small.what{color:var(--cyan)}
-.game .new.upd{background:var(--cyan);box-shadow:0 0 10px var(--cyan),0 2px 8px rgba(0,0,0,.5);animation:none}
-.game:hover{transform:translateY(-4px);border-color:var(--acc);box-shadow:0 0 14px color-mix(in srgb,var(--acc) 60%,transparent),inset 0 0 18px color-mix(in srgb,var(--acc) 20%,transparent)}
+.game:hover .face,.game:focus-visible .face{transform:translateY(-3px);border-color:var(--acc);box-shadow:0 6px 18px color-mix(in srgb,var(--acc) 35%,transparent)}
 .game:focus-visible{outline:3px solid #fff;outline-offset:3px}
-.game[aria-pressed="true"]{border-color:var(--acc);transform:translateY(-4px);
-  box-shadow:0 0 0 3px #fff,0 0 22px var(--acc),0 0 46px color-mix(in srgb,var(--acc) 55%,transparent),inset 0 0 22px color-mix(in srgb,var(--acc) 30%,transparent)}
-.game .pick{position:absolute;left:50%;bottom:-13px;translate:-50% 0;font:400 9px/1 var(--pixel);letter-spacing:.08em;white-space:nowrap;color:var(--bg);background:#fff;padding:6px 9px;border-radius:6px;box-shadow:0 0 10px var(--acc);opacity:0;transition:opacity .2s}
-.game[aria-pressed="true"] .pick{opacity:1}
-.game .new{position:absolute;top:2px;right:2px;z-index:1;font:400 10px/1 var(--pixel);letter-spacing:.06em;color:var(--bg);background:var(--yellow);padding:7px 8px;border-radius:7px;box-shadow:0 0 10px var(--yellow),0 2px 8px rgba(0,0,0,.5);animation:glow 2.4s ease-in-out infinite}
+.game:active .face{transform:translateY(0);transition-duration:.08s}
+.game .new{position:absolute;top:2px;right:2px;z-index:1;font:400 10px/1 var(--pixel);letter-spacing:.06em;color:var(--bg);background:var(--yellow);padding:7px 8px;border-radius:var(--r-s)}
+.game .new.upd{background:var(--cyan)}
 
-/* suggested / assigned banner */
-.skill{--c:var(--yellow);display:flex;flex-wrap:wrap;align-items:center;gap:12px 14px;margin:0 0 18px;padding:16px 18px;border-radius:16px;border:3px solid var(--c);
-  background:linear-gradient(90deg,rgba(255,225,58,.13),rgba(255,122,26,.05)) ,var(--panel);box-shadow:0 0 12px rgba(255,225,58,.55),inset 0 0 22px rgba(255,225,58,.12)}
-.skill[hidden]{display:none}
-.skill .lab{font:400 11px/1.6 var(--pixel);letter-spacing:.06em;color:var(--c);text-transform:uppercase;text-shadow:0 0 8px rgba(255,225,58,.7);margin-right:6px}
-.skill .brk{flex-basis:100%;height:0}
-.skill .note{flex-basis:100%;margin:0;color:var(--fg);font-size:16px}
-.skill button{all:unset;box-sizing:border-box;cursor:pointer;display:flex;flex-direction:column;gap:2px;padding:10px 16px;border-radius:12px;border:2px solid var(--c);background:rgba(4,6,28,.8);color:#fff;font:900 16px/1.2 var(--body);transition:transform .2s,box-shadow .2s}
-.skill button small{font-weight:700;font-size:13px;color:var(--dim)}
-.skill button:hover,.skill button:focus-visible{transform:translateY(-2px);box-shadow:0 0 14px var(--c)}
-.skill button:focus-visible{outline:3px solid #fff;outline-offset:2px}
-.skill button.on{background:var(--c);color:var(--bg);box-shadow:0 0 14px var(--c)}
-.skill button.on small{color:rgba(6,8,26,.75)}
-
-/* question sets: compact tiles, the picked one shows its topics */
-.sets{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:12px;align-items:start}
-.set{--c:var(--cyan);position:relative;border-radius:14px;border:2px solid var(--line);background:var(--panel);transition:border-color .2s,box-shadow .2s}
-.set .head{all:unset;box-sizing:border-box;cursor:pointer;display:flex;align-items:center;gap:12px;width:100%;padding:13px 14px;border-radius:12px}
-.set .head:focus-visible{outline:3px solid #fff;outline-offset:2px}
-.set .dot{flex:none;width:20px;height:20px;border-radius:50%;border:2px solid var(--dim)}
-.set .name{display:block;font:900 17px/1.2 var(--body);color:#fff}
-.set .unit{display:block;font:700 13.5px/1.3 var(--body);color:var(--dim)}
-.set:hover{border-color:color-mix(in srgb,var(--c) 60%,var(--line))}
-.set.on{border:3px solid var(--c);box-shadow:0 0 14px var(--c),inset 0 0 22px rgba(33,230,255,.14)}
-.set.on .dot{border-color:var(--c);background:radial-gradient(circle,var(--c) 0 45%,transparent 50%);box-shadow:0 0 8px var(--c)}
-.set .tp{display:none;padding:0 14px 14px}
-.set.on .tp{display:block}
-.tp p{margin:0 0 8px;font:400 9px/1.4 var(--pixel);letter-spacing:.06em;color:var(--c);text-transform:uppercase}
+/* the game sheet: opens when you pick a game. Art and name on the left, questions on the right, Press Start always in view */
+.sheet{padding:0;border:0;background:transparent;color:var(--fg);max-width:none;max-height:none;width:min(1000px,calc(100vw - 32px));height:min(560px,calc(100vh - 32px));overflow:visible}
+.sheet::backdrop{background:rgba(2,3,12,.78)}
+.sheet .box{height:100%;display:grid;grid-template-columns:minmax(0,320px) minmax(0,1fr);border-radius:var(--r-l);overflow:hidden;
+  background:#0a0d29;border:2px solid var(--acc,var(--line));box-shadow:0 20px 60px rgba(0,0,0,.6),0 0 28px color-mix(in srgb,var(--acc,var(--cyan)) 30%,transparent)}
+@media (prefers-reduced-motion:no-preference){ .sheet[open] .box{animation:rise .26s cubic-bezier(.2,.8,.3,1)} .sheet[open]::backdrop{animation:fade .2s ease-out} }
+.gside{display:flex;flex-direction:column;gap:var(--s2);padding:var(--s4);background:linear-gradient(180deg,color-mix(in srgb,var(--acc) 14%,#0b0e2c),#080a22);min-width:0}
+.gside .art{border-radius:var(--r-s);border:2px solid color-mix(in srgb,var(--acc) 50%,transparent)}
+.gside h3{margin:var(--s3) 0 0;font:400 28px/1.05 var(--display);color:var(--acc);text-wrap:balance}
+.gside p{margin:0;color:var(--dim);font-size:15px}
+.gside p.what{color:var(--cyan)}
+.back{all:unset;box-sizing:border-box;cursor:pointer;margin-top:auto;align-self:flex-start;font:400 10px/1 var(--pixel);letter-spacing:.08em;text-transform:uppercase;color:var(--cyan);padding:10px 12px;border-radius:var(--r-s);border:2px solid transparent}
+.back:hover,.back:focus-visible{border-color:var(--cyan)}
+.qside{display:flex;flex-direction:column;min-width:0;min-height:0}
+.qlist{flex:1;min-height:0;overflow-y:auto;padding:var(--s4) var(--s4) var(--s3);overscroll-behavior:contain}
+.grp{margin:0 0 var(--s2);font:400 10px/1.5 var(--pixel);letter-spacing:.1em;text-transform:uppercase;color:var(--dim)}
+.grp.gold{color:var(--yellow)}
+.grp + .rows{margin-bottom:var(--s5)}
+.note{margin:0 0 var(--s3);color:var(--fg);font-size:15px}
+.rows{border-top:1px solid var(--line)}
+.row{border-bottom:1px solid var(--line)}
+.rh{all:unset;box-sizing:border-box;cursor:pointer;display:flex;align-items:center;gap:var(--s3);width:100%;padding:10px 8px;border-radius:var(--r-s)}
+.rh:hover{background:rgba(255,255,255,.04)}
+.rh:focus-visible{outline:3px solid #fff;outline-offset:-3px}
+.rh .dot{flex:none;width:18px;height:18px;border-radius:50%;border:2px solid var(--dim)}
+.rh .nm{flex:1;min-width:0}
+.rh b{display:block;font:800 16px/1.25 var(--body);color:#fff}
+.rh small{display:block;font:700 13px/1.3 var(--body);color:var(--dim)}
+.rh .bn{flex:none;font:800 13px/1 var(--body);color:var(--yellow)}
+.lead .rh b{color:var(--yellow)}
+.row.on .dot{border-color:var(--c);background:radial-gradient(circle,var(--c) 0 42%,transparent 48%)}
+@media (prefers-reduced-motion:no-preference){ .row.on .dot{animation:pop .5s var(--spring)} .chip input:checked + span{animation:pop .45s var(--spring)} .row.on .tp .chips,.row.on .tp .whole{animation:drop .35s var(--spring)} }
+.row{--c:var(--cyan)}
+.lead .row{--c:var(--yellow)}
+.row.on .rh{background:color-mix(in srgb,var(--c) 10%,transparent)}
+.tp{padding:2px 8px 14px 38px}
+.tp:empty{display:none}
+.tp .whole{margin:0;font:700 14px/1.3 var(--body);color:var(--fg)}
 .chips{display:flex;flex-wrap:wrap;gap:8px}
-.tp .whole{margin:0;font:800 14px/1.3 var(--body);color:#fff;letter-spacing:0;text-transform:none}
 .chip{position:relative}
 .chip input{position:absolute;opacity:0;pointer-events:none}
-.chip span{display:block;padding:8px 13px;border-radius:99px;border:2px solid var(--line);background:rgba(17,22,63,.6);color:var(--dim);font:800 14px/1.2 var(--body);cursor:pointer;transition:background .15s,color .15s}
+.chip span{display:block;padding:7px 12px;border-radius:999px;border:2px solid var(--line);color:var(--dim);font:800 14px/1.2 var(--body);cursor:pointer;transition:background .15s,color .15s}
 .chip span::before{content:"○ "}
-.chip input:checked + span{background:var(--c);border-color:var(--c);color:var(--bg);box-shadow:0 0 8px rgba(33,230,255,.6)}
+.chip input:checked + span{background:var(--c);border-color:var(--c);color:var(--bg)}
 .chip input:checked + span::before{content:"✓ "}
 .chip input:focus-visible + span{outline:3px solid #fff;outline-offset:2px}
-.set .tag{position:absolute;top:-11px;right:12px;z-index:1;font:400 8px/1 var(--pixel);letter-spacing:.06em;text-transform:uppercase;color:var(--bg);background:var(--yellow);padding:5px 7px;border-radius:5px;box-shadow:0 0 8px rgba(255,225,58,.8)}
-.set .tag.as{background:var(--pink);box-shadow:0 0 8px rgba(255,43,214,.8)}
+.go{display:flex;align-items:center;gap:var(--s3);padding:var(--s3) var(--s4);border-top:1px solid var(--line);background:#070920}
+.go .sum{flex:1;min-width:0;font:800 15px/1.3 var(--body);color:var(--fg)}
+.go .sum small{display:block;font:400 9px/1.6 var(--pixel);letter-spacing:.08em;text-transform:uppercase;color:var(--dim)}
+.go .sum .bn{color:var(--yellow)}
+/* Press Start: a real arcade button. It sits on a darker base and sinks when pressed (no looping glow) */
+.play{flex:none;font:400 15px/1 var(--pixel);letter-spacing:.06em;text-transform:uppercase;text-decoration:none;color:var(--bg);background:var(--yellow);padding:16px 22px;border-radius:var(--r-s);
+  box-shadow:0 5px 0 #b38a00,0 8px 18px rgba(255,225,58,.28);transition:transform .1s ease-out,box-shadow .1s ease-out}
+.play:hover{transform:translateY(-1px);box-shadow:0 6px 0 #b38a00,0 10px 22px rgba(255,225,58,.4)}
+.play:focus-visible{outline:3px solid #fff;outline-offset:3px}
+.play:active{transform:translateY(5px);box-shadow:0 0 0 #b38a00,0 2px 8px rgba(255,225,58,.3)}
+.play[aria-disabled="true"]{background:#1a1f4a;color:var(--dim);box-shadow:none;pointer-events:none}
 
-/* suggestion box */
-.ideas{--c:var(--pink);display:flex;flex-wrap:wrap;gap:14px 24px;align-items:center;justify-content:space-between;padding:18px 20px;border-radius:16px;border:2px dashed color-mix(in srgb,var(--c) 70%,transparent);background:var(--panel)}
+/* suggestion box: a quiet line at the bottom, not another box */
+.ideas{display:flex;flex-wrap:wrap;align-items:center;gap:var(--s2) var(--s4);padding-top:var(--s4);border-top:1px solid var(--line);color:var(--dim);font-size:15px}
 .ideas[hidden]{display:none}
-.ideas h2{margin:0 0 6px;font-size:20px}
-.ideas p{margin:0;color:var(--dim);font-size:15px;max-width:520px}
-.ideas .btns{display:flex;flex-wrap:wrap;gap:10px}
-.ideas a{font:900 16px/1 var(--body);color:#fff;background:rgba(4,6,28,.8);border:2px solid var(--c);border-radius:12px;padding:13px 16px;text-decoration:none;transition:box-shadow .2s,transform .2s}
-.ideas a:hover,.ideas a:focus-visible{box-shadow:0 0 14px var(--c);transform:translateY(-2px);outline:none}
-.made{align-self:center;font-family:var(--display);font-size:12px;letter-spacing:.1em;background:#fff;color:var(--bg);padding:5px 12px;border-radius:6px;box-shadow:0 0 10px #fff}
+.ideas a{font-weight:800;color:var(--fg);text-decoration:underline;text-decoration-color:var(--pink);text-underline-offset:4px;text-decoration-thickness:2px}
+.ideas a:hover,.ideas a:focus-visible{color:var(--pink);outline:none}
+.made{align-self:center;font-family:var(--display);font-size:12px;letter-spacing:.1em;background:#fff;color:var(--bg);padding:5px 12px;border-radius:var(--r-s)}
 .made img{height:1.2em;width:auto;vertical-align:-.25em}
-
-/* control panel at the bottom: what you picked + PRESS START */
-.bar{position:fixed;left:0;right:0;bottom:0;z-index:5;padding:10px 16px calc(10px + env(safe-area-inset-bottom,0px));
-  background:linear-gradient(180deg,rgba(6,8,26,.82),rgba(2,3,12,.96));backdrop-filter:blur(8px);border-top:3px solid var(--pink);box-shadow:0 -4px 22px rgba(255,43,214,.35)}
-.bar .in{max-width:1180px;margin:0 auto;display:flex;align-items:center;gap:12px}
-.slot{all:unset;box-sizing:border-box;cursor:pointer;flex:1 1 0;min-width:0;display:flex;align-items:center;gap:12px;padding:6px 10px;border-radius:12px;border:2px solid transparent}
-.slot:hover,.slot:focus-visible{border-color:var(--line);outline:none}
-.slot .ic{flex:none;width:76px;height:42px;border-radius:8px;display:grid;place-items:center;overflow:hidden;border:2px dashed var(--line);font:400 16px/1 var(--pixel);color:var(--dim)}
-.slot .ic svg{width:100%;height:100%;display:block}
-.slot.done .ic{border:2px solid var(--acc,var(--cyan));box-shadow:0 0 8px var(--acc,var(--cyan))}
-.slot .tx{min-width:0}
-.slot .k{display:block;font:400 9px/1.4 var(--pixel);letter-spacing:.06em;color:var(--pink);text-transform:uppercase}
-.slot.s .k{color:var(--cyan)}
-.slot .v{display:block;font:900 16px/1.25 var(--body);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.slot .v .bn{color:var(--yellow)}
-.slot:not(.done) .v{color:var(--dim)}
-.play{--c:var(--yellow);flex:none;font:400 15px/1 var(--pixel);letter-spacing:.06em;text-transform:uppercase;text-decoration:none;color:var(--bg);background:var(--c);padding:17px 22px;border-radius:12px;border:3px solid #fff;
-  box-shadow:0 0 12px var(--c),0 0 28px rgba(255,225,58,.6);animation:pulse 2.4s ease-in-out infinite;transition:transform .2s}
-.play:hover,.play:focus-visible{transform:scale(1.04);animation:none;outline:none;box-shadow:0 0 18px var(--c),0 0 44px rgba(255,225,58,.8)}
-.play[aria-disabled="true"]{background:#1a1f4a;color:var(--dim);border-color:var(--line);box-shadow:none;animation:none;pointer-events:none}
 
 @keyframes sway{0%,100%{transform:translateY(0) rotate(-1.5deg)}50%{transform:translateY(-4px) rotate(1.5deg)}}
 @keyframes bob{0%,100%{transform:translateY(0) rotate(-2deg)}50%{transform:translateY(-5px) rotate(2deg)}}
 @keyframes burst{0%,100%{transform:scale(.95) rotate(-4deg)}50%{transform:scale(1.05) rotate(4deg)}}
 @keyframes halo{0%,100%{transform:scale(.9);opacity:.16}50%{transform:scale(1.1);opacity:.3}}
-@keyframes pulse{50%{box-shadow:0 0 4px var(--c),0 0 10px rgba(255,225,58,.4)}}
-@keyframes glow{50%{box-shadow:0 0 3px var(--yellow),0 2px 8px rgba(0,0,0,.5)}}
 @keyframes twinkle{50%{opacity:.1}}
-@media (prefers-reduced-motion:reduce){:root{--ms:7000ms}.star,.play,.game .new{animation:none}.game,.lb,.skill button,.ideas a{transition:none}}
+@keyframes rise{from{transform:translateY(24px) scale(.98);opacity:0}to{transform:none;opacity:1}}
+@keyframes fade{from{opacity:0}}
+@keyframes pop{from{transform:scale(.6)}to{transform:none}}
+@keyframes drop{from{transform:translateY(-6px);opacity:0}to{transform:none;opacity:1}}
+/* the picked card's art glides into the sheet: a copy flies from the card to its place (Web Animations, see open()) */
+.fly{position:fixed;left:0;top:0;margin:0;z-index:10;pointer-events:none;transform-origin:0 0;border-radius:var(--r-s);overflow:hidden;will-change:transform}
+.sheet.flying .gside .art{visibility:hidden}
+.sheet.out .box{opacity:0}
+/* insert coin: Press Start stays sunk, the art zooms toward you, the sheet dims, then the game loads */
+.sheet.coin .play{transform:translateY(5px);box-shadow:0 0 0 #b38a00,0 0 26px rgba(255,225,58,.55);transition:transform .08s,box-shadow .2s}
+.sheet.coin .gside .art{transform:scale(1.1);transition:transform .45s cubic-bezier(.5,0,.75,0)}
+.sheet.coin .box{opacity:0;transform:scale(1.04);transition:opacity .25s .2s ease-in,transform .45s cubic-bezier(.5,0,.75,0)}
+@media (prefers-reduced-motion:reduce){:root{--ms:7000ms}.star{animation:none}.face,.lb,.play,.chip span{transition:none}.sheet.coin .box,.sheet.coin .gside .art{transition:none;transform:none;opacity:1}}
 
 @media (max-width:760px){
   header{grid-template-columns:1fr auto;grid-template-areas:"home lb" "brand brand"}
   .home{grid-area:home}.lb{grid-area:lb;padding:10px 12px;font-size:9px}.brand{grid-area:brand;justify-self:center}
-  .games{grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px}
-  .game b{font-size:18px}
-  .slot .ic{display:none}
-  .bar .in{gap:6px}
-  .slot{padding:4px 6px}
-  .slot .v{font-size:14px}
+  .games,.games.feat{grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px}
+  .sheet{width:100vw;height:calc(100dvh - 24px);margin:auto 0 0;max-width:100vw}
+  .sheet .box{grid-template-columns:1fr;grid-template-rows:auto minmax(0,1fr);border-radius:var(--r-l) var(--r-l) 0 0;border-bottom:0}
+  .gside{display:grid;grid-template-columns:120px 1fr;align-items:center;gap:4px 12px;padding:12px 16px}
+  .gside .art{grid-row:span 3}
+  .gside h3{margin:0;font-size:20px}
+  .gside p.d{display:none}
+  .back{margin:0;grid-column:2;padding:6px 0}
+  .qlist{padding:12px 16px}
+  .go{padding:10px 16px calc(10px + env(safe-area-inset-bottom,0px))}
   .play{padding:14px 14px;font-size:12px}
 }
-@media (max-width:460px){ .slot.g{display:none} }
 </style>
 </head>
 <body>
@@ -201,32 +220,38 @@ h2 .hint{font:800 15px/1.3 var(--body);letter-spacing:0;text-transform:none;colo
     <a class="lb" href="../leaderboard.html"><span aria-hidden="true">🏆</span>Leaderboard</a>
   </header>
 
-  <section id="step1">
-    <h2><span class="n">1</span>Pick a game</h2>
+  <section id="feat" hidden>
+    <h2 class="lab2">New and updated</h2>
+    <div class="games feat" id="games-feat"></div>
+  </section>
+
+  <section id="all">
+    <h2 class="lab2">All games <small>Pick one to choose your questions.</small></h2>
     <div class="games" id="games"></div>
   </section>
 
-  <section id="step2">
-    <h2><span class="n">2</span>Pick your questions <span class="hint">Tap a skill, then turn topics on or off.</span></h2>
-    <div class="skill" id="skill" hidden></div>
-    <div class="sets" id="sets"></div>
-  </section>
-
-  <section class="ideas" id="ideas" hidden>
-    <div><h2><span aria-hidden="true">💡</span> Suggestion box</h2><p>Found a bug, or have an idea for a new game? Tell us here. Only Mr. Spitz sees what you send.</p></div>
-    <div class="btns"><a id="idea-bug" target="_blank" rel="noopener" href="#">🐞 Report a bug</a><a id="idea-game" target="_blank" rel="noopener" href="#">🎮 Suggest a game</a></div>
-  </section>
+  <p class="ideas" id="ideas" hidden>Found a bug, or have an idea for a new game? Only Mr. Spitz sees what you send. <a id="idea-bug" target="_blank" rel="noopener" href="#">Report a bug</a> <a id="idea-game" target="_blank" rel="noopener" href="#">Suggest a game</a></p>
 
   <span class="made">MADE BY SPITZ <img src="/burger_mark.png" alt="🍔"></span>
 </div>
 
-<div class="bar">
-  <div class="in">
-    <button class="slot g" id="slot-g" type="button"><span class="ic" id="ic-g">1</span><span class="tx"><span class="k">Game</span><span class="v" id="v-g">Pick a game</span></span></button>
-    <button class="slot s" id="slot-s" type="button"><span class="ic" id="ic-s">2</span><span class="tx"><span class="k">Questions</span><span class="v" id="v-s">Pick your questions</span></span></button>
-    <a class="play" id="play" href="#" aria-disabled="true">Press Start ▶</a>
+<dialog class="sheet" id="sheet" aria-labelledby="g-name">
+  <div class="box">
+    <div class="gside">
+      <svg class="art" id="g-art" viewBox="0 0 200 110" aria-hidden="true"></svg>
+      <h3 id="g-name"></h3>
+      <p class="d" id="g-d"></p>
+      <button class="back" id="back" type="button">◀ Back to games</button>
+    </div>
+    <div class="qside">
+      <div class="qlist" id="qlist"></div>
+      <div class="go">
+        <p class="sum" id="sum"></p>
+        <a class="play" id="play" href="#" aria-disabled="true">Press Start ▶</a>
+      </div>
+    </div>
   </div>
-</div>
+</dialog>
 
 <script src="../games/catalog.js"></script>
 <script>
@@ -289,63 +314,103 @@ function $(i){ return document.getElementById(i); }
 function save(){ try{ localStorage.setItem('spitz_hub2',JSON.stringify(st)); }catch(e){} }
 function esc(v){ return String(v).replace(/[&<>"]/g,function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]; }); }
 
-$('games').innerHTML=GAMES.map(function(g){ return '<button class="game" type="button" style="--acc:'+g.acc+';--gpanel:'+g.panel+'" data-g="'+g.id+'" aria-pressed="false">'+(g.isNew?'<span class="new">NEW</span>':g.isUpd?'<span class="new upd">UPDATED</span>':'')+'<svg class="art" viewBox="0 0 200 110" aria-hidden="true">'+g.art+'</svg><b>'+g.name+'</b>'+(g.isUpd?'<small class="what" title="'+esc(g.more)+'">'+esc(g.what)+'</small>':'<small>'+g.d+'</small>')+'<span class="pick" aria-hidden="true">✓ PICKED</span></button>'; }).join('');
-$('sets').innerHTML=SETS.map(function(s){ return '<div class="set" data-s="'+s.id+'"><button class="head" type="button" aria-pressed="false"><span class="dot" aria-hidden="true"></span><span><span class="name">'+s.name+'</span><span class="unit">'+s.unit+'</span></span></button><div class="tp">'+(s.whole?'<p class="whole">'+s.whole+'</p></div></div>':'<p>Topics</p><div class="chips">'+
-  s.topics.map(function(t){ return '<label class="chip"><input type="checkbox" id="t-'+s.id+'-'+t[0]+'" data-s="'+s.id+'" value="'+t[0]+'"><span>'+t[1]+'</span></label>'; }).join('')+'</div></div></div>'); }).join('');
+function card(g){ return '<button class="game" type="button" style="--acc:'+g.acc+';--gpanel:'+g.panel+'" data-g="'+g.id+'" aria-haspopup="dialog">'+'<span class="face">'+(g.isNew?'<span class="new">NEW</span>':g.isUpd?'<span class="new upd">UPDATED</span>':'')+'<svg class="art" viewBox="0 0 200 110" aria-hidden="true">'+g.art+'</svg><b>'+g.name+'</b>'+(g.isUpd?'<small class="what" title="'+esc(g.more)+'">'+esc(g.what)+'</small>':'<small>'+g.d+'</small>')+'</span></button>'; }
+/* new and updated games get their own bigger row (they are never shown twice) */
+var FEAT=GAMES.filter(function(g){ return g.isNew||g.isUpd; });
+$('games-feat').innerHTML=FEAT.map(card).join(''); $('feat').hidden=!FEAT.length;
+$('games').innerHTML=GAMES.filter(function(g){ return !(g.isNew||g.isUpd); }).map(card).join('');
 
 /* does this pick earn the score bonus? Same rule as scorecode.js bonusPct: the set is suggested or assigned, and every topic played is one it names */
 function bonusFor(id,ts){ if(!(TOPICS.bonus>0)) return 0;
   return TOPICS.suggest.sets.concat(TOPICS.assign).some(function(k){ return k.id===id&&(!k.topics.length||ts.every(function(t){ return k.topics.indexOf(t)>=0; })); })?TOPICS.bonus:0; }
 function gameOf(){ return GAMES.filter(function(x){ return x.id===st.game; })[0]; }
-var skillList=[];
+function same(a,b){ return a.length===b.length&&a.every(function(t){ return b.indexOf(t)>=0; }); }
+
+/* Suggested skills (Kody, 2026-10-19): Mr. Spitz points students at what to practice, set on topics.html (TOPICS.suggest). A suggestion can
+   name topics; picking it picks exactly those. Suggested and assigned runs earn TOPICS.bonus percent on the score (scorecode.js).
+   While the lock is on, the assigned sets lead the list and only suggestions inside the assignment show.
+   Each set shows once: a set in the gold group is left out of "All question sets". */
+var LOCK=ASSIGN.length, LEAD=(function(){
+  var as=ASSIGN.map(function(s){ var o=OPEN.filter(function(x){ return x.id===s.id; })[0]; return {s:s,t:o&&s.topics.length<o.topics.length?s.topics.map(function(t){ return t[0]; }):[],as:1}; }),
+    sug=TOPICS.suggest.sets.map(function(k){ var s=SETS.filter(function(x){ return x.id===k.id; })[0]; return s&&{s:s,t:k.topics.filter(function(t){ return s.topics.some(function(y){ return y[0]===t; }); })}; }).filter(Boolean);
+  /* an assigned set that is also suggested with the same topics shows once, as suggested */
+  as=as.filter(function(a){ return !sug.some(function(k){ return k.s.id===a.s.id&&same(want(k),want(a)); }); });
+  return sug.concat(as);
+})();
+function want(k){ return k.t.length&&!k.s.whole?k.t.slice():allOf(k.s); }
+function rowHtml(s,k,i){ var tn=k&&k.t.length?k.t.map(function(t){ return s.topics.filter(function(y){ return y[0]===t; })[0][1]; }):[], bn=k?bonusFor(s.id,want(k)):0;
+  return '<div class="row" data-s="'+s.id+'"'+(k?' data-k="'+i+'"':'')+'><button class="rh" type="button" aria-pressed="false"><span class="dot" aria-hidden="true"></span><span class="nm"><b>'+esc(s.name)+'</b><small>'+esc(tn.length?tn.join(', '):s.unit)+'</small></span>'+(bn?'<span class="bn">⭐ +'+bn+'%</span>':'')+'</button><div class="tp"></div></div>'; }
+(function(){
+  var leadIds=LEAD.map(function(k){ return k.s.id; }), rest=SETS.filter(function(s){ return leadIds.indexOf(s.id)<0; }), note=TOPICS.suggest.note.trim(), h='';
+  if(LEAD.length){ var anyAs=LEAD.some(function(k){ return k.as; }), anySug=LEAD.some(function(k){ return !k.as; });
+    h+='<p class="grp gold">'+(anyAs?'📌 Assigned':'')+(anyAs&&anySug?' and ':'')+(anySug?(anyAs?'suggested':'⭐ Suggested')+' by Mr. Spitz':' by Mr. Spitz')+(TOPICS.bonus?' · +'+TOPICS.bonus+'% score bonus':'')+'</p>'+
+      (note?'<p class="note">'+esc(note)+'</p>':'')+'<div class="rows lead">'+LEAD.map(function(k,i){ return rowHtml(k.s,k,i); }).join('')+'</div>'; }
+  if(rest.length) h+='<p class="grp">'+(LEAD.length?'All question sets':'Question sets')+'</p><div class="rows">'+rest.map(function(s){ return rowHtml(s,null); }).join('')+'</div>';
+  $('qlist').innerHTML=h;
+})();
+/* which row is lit: a gold row whose topics match, else the first gold row of that set, else the set's own row */
+function activeRow(){ var ts=st.t[st.set], k=-1;
+  LEAD.forEach(function(x,i){ if(k<0&&x.s.id===st.set&&same(want(x),ts)) k=i; });
+  if(k<0) LEAD.forEach(function(x,i){ if(k<0&&x.s.id===st.set) k=i; });
+  return k>=0?document.querySelector('.row[data-k="'+k+'"]'):document.querySelector('.row[data-s="'+st.set+'"]:not([data-k])'); }
 function render(){
-  var g=gameOf();
-  document.querySelectorAll('.game').forEach(function(b){ b.setAttribute('aria-pressed',b.dataset.g===st.game?'true':'false'); });
-  document.querySelectorAll('.set').forEach(function(el){ var on=el.dataset.s===st.set; el.classList.toggle('on',on); el.querySelector('.head').setAttribute('aria-pressed',on?'true':'false'); });
+  var g=gameOf(), s=SETS.filter(function(x){ return x.id===st.set; })[0], ts=st.t[st.set], ok=g&&ts.length, p=$('play'), bn=bonusFor(st.set,ts), on=activeRow();
+  document.querySelectorAll('.row').forEach(function(r){ var a=r===on; r.classList.toggle('on',a); r.querySelector('.rh').setAttribute('aria-pressed',a?'true':'false');
+    var tp=r.querySelector('.tp'); if(!a){ tp.innerHTML=''; return; }
+    if(tp.dataset.s!==st.set||!tp.innerHTML) tp.innerHTML=s.whole?'<p class="whole">'+esc(s.whole)+'</p>':'<div class="chips">'+s.topics.map(function(t){ return '<label class="chip"><input type="checkbox" id="t-'+s.id+'-'+t[0]+'" data-s="'+s.id+'" value="'+t[0]+'"><span>'+t[1]+'</span></label>'; }).join('')+'</div>';
+    tp.dataset.s=st.set; });
   document.querySelectorAll('.chip input').forEach(function(c){ c.checked=st.t[c.dataset.s].indexOf(c.value)>=0; });
-  var s=SETS.filter(function(x){ return x.id===st.set; })[0], ts=st.t[st.set], ok=g&&ts.length, p=$('play'), bn=bonusFor(st.set,ts);
-  document.querySelectorAll('.skill [data-k]').forEach(function(b){ var k=skillList[+b.dataset.k], want=k.t.length?k.t:k.s.topics.map(function(t){ return t[0]; });
-    b.classList.toggle('on',k.s.id===st.set&&want.length===ts.length&&want.every(function(t){ return ts.indexOf(t)>=0; })); });
   p.setAttribute('aria-disabled',ok?'false':'true');
   p.href=ok?'../games/'+g.id+'.html?set='+st.set+'&topics='+ts.join(','):'#';
-  $('slot-g').classList.toggle('done',!!g); $('slot-g').style.setProperty('--acc',g?g.acc:'');
-  $('ic-g').innerHTML=g?'<svg viewBox="0 0 200 110" aria-hidden="true">'+g.art+'</svg>':'1';
-  $('v-g').textContent=g?g.name:'Pick a game';
-  $('slot-s').classList.toggle('done',!!ts.length);
-  $('ic-s').textContent=ts.length?'✓':'2';
-  $('v-s').innerHTML=!ts.length?'Turn on at least one topic':esc(s.name)+(ts.length<s.topics.length?' · '+ts.length+' of '+s.topics.length+' topics':' · all topics')+(bn?' <span class="bn">⭐ +'+bn+'%</span>':'');
+  $('sum').innerHTML='<small>Questions</small>'+(!ts.length?'Turn on at least one topic':esc(s.name)+(s.whole?'':ts.length<s.topics.length?' · '+ts.length+' of '+s.topics.length+' topics':' · all topics')+(bn?' <span class="bn">⭐ +'+bn+'%</span>':''));
+  if(g){ var b=$('sheet').querySelector('.box'); b.style.setProperty('--acc',g.acc); $('g-art').style.setProperty('--gpanel',g.panel); $('g-art').innerHTML=g.art; $('g-name').textContent=g.name;
+    $('g-d').className=g.isUpd?'d what':'d'; $('g-d').textContent=g.isUpd?g.more:g.d; }
 }
-$('games').addEventListener('click',function(e){ var b=e.target.closest('.game'); if(!b) return; st.game=b.dataset.g; save(); render(); });
-$('slot-g').addEventListener('click',function(){ $('step1').scrollIntoView({behavior:'smooth'}); });
-$('slot-s').addEventListener('click',function(){ $('step2').scrollIntoView({behavior:'smooth'}); });
-/* Suggested skills (Kody, 2026-10-19): Mr. Spitz points students at what to practice, set on topics.html (TOPICS.suggest). A suggestion can
-   name topics; its button picks exactly those. Suggested and assigned runs earn TOPICS.bonus percent on the score (scorecode.js), so the banner says so.
-   While the lock is on the banner lists the assigned sets too, and only suggestions inside the assignment show. */
-(function(){
-  var lock=ASSIGN.length, as=ASSIGN.map(function(s){ var o=OPEN.filter(function(x){ return x.id===s.id; })[0]; return {s:s,t:o&&s.topics.length<o.topics.length?s.topics.map(function(t){ return t[0]; }):[]}; }),
-    sug=TOPICS.suggest.sets.map(function(k){ var s=SETS.filter(function(x){ return x.id===k.id; })[0]; return s&&{s:s,t:k.topics.filter(function(t){ return s.topics.some(function(y){ return y[0]===t; }); })}; }).filter(Boolean),
-    list=as.concat(sug), bonus=TOPICS.bonus, note=TOPICS.suggest.note.trim();
-  if(!list.length) return;
-  function btn(k,i){ var tn=k.t.map(function(t){ return k.s.topics.filter(function(y){ return y[0]===t; })[0][1]; });
-    return '<button type="button" data-k="'+i+'">'+esc(k.s.name)+'<small>'+esc(tn.length?tn.join(', '):k.s.unit)+'</small></button>'; }
-  var lab='⭐ Suggested'+(lock?'':' by Mr. Spitz')+(bonus?' · +'+bonus+'% score bonus':'');
-  /* everything assigned is also suggested: one row */
-  var same=lock&&sug.length===as.length&&as.every(function(a){ return sug.some(function(k){ return k.s.id===a.s.id&&(!k.t.length||k.t.join()===a.t.join()); }); });
-  if(same){ sug=[]; list=as; }
-  skillList=list;
-  $('skill').innerHTML=(lock?'<span class="lab">📌 Assigned by Mr. Spitz'+(bonus?' · ⭐ +'+bonus+'% score bonus':'')+'</span>'+as.map(btn).join(''):'')+
-    (sug.length?(lock?'<span class="brk"></span>':'')+'<span class="lab">'+lab+'</span>'+sug.map(function(k,i){ return btn(k,as.length+i); }).join(''):'')+
-    (note?'<p class="note">'+esc(note)+'</p>':'');
-  $('skill').hidden=false;
-  /* suggested cards go first, then assigned */
-  sug.concat(as).reverse().forEach(function(k){ var el=document.querySelector('.set[data-s="'+k.s.id+'"]'); if(!el) return;
-    var sg=!same&&sug.some(function(x){ return x.s.id===k.s.id; }), old=el.querySelector('.tag'); if(old) old.remove();
-    el.insertAdjacentHTML('afterbegin','<span class="tag'+(sg?'':' as')+'">'+(sg?'⭐ Suggested':'📌 Assigned')+'</span>'); $('sets').prepend(el); });
-  $('skill').addEventListener('click',function(e){ var b=e.target.closest('[data-k]'); if(!b) return; var k=list[+b.dataset.k];
-    st.set=k.s.id; st.t[k.s.id]=k.t.length&&!k.s.whole?k.t.slice():allOf(k.s); save(); render(); });
+var sheet=$('sheet'), RM=matchMedia('(prefers-reduced-motion: reduce)');
+function cardOf(id){ return document.querySelector('.game[data-g="'+id+'"]'); }
+/* card -> sheet glide: a copy of the card's art flies from the card to the sheet's art spot with a spring, then the real art shows.
+   Plain Web Animations on one element (transform only), no page snapshots, so nothing on screen swaps or blinks. */
+function glide(c){ var from=c&&c.querySelector('.art'), to=$('g-art'); if(!from||RM.matches||!to.animate) return;
+  var f=from.getBoundingClientRect(), t=to.getBoundingClientRect(); if(!f.width||!t.width) return;
+  var fly=to.cloneNode(true); fly.removeAttribute('id'); fly.classList.add('fly'); fly.style.width=t.width+'px'; fly.style.height=t.height+'px';
+  sheet.appendChild(fly); sheet.classList.add('flying');
+  var k=f.width/t.width, an=fly.animate([{transform:'translate('+f.left+'px,'+f.top+'px) scale('+k+')'},{transform:'translate('+t.left+'px,'+t.top+'px)'}],
+    {duration:520,easing:getComputedStyle(document.documentElement).getPropertyValue('--spring').trim()||'ease-out',fill:'both'});
+  function end(){ fly.remove(); sheet.classList.remove('flying'); }
+  an.onfinish=end; an.oncancel=end; }
+function open(id){ var c=cardOf(id); st.game=id; save(); render(); sheet.classList.remove('coin','out');
+  if(!sheet.open){ if(sheet.showModal) sheet.showModal(); else sheet.setAttribute('open',''); glide(c); }
+  var on=document.querySelector('.row.on'); if(on) on.scrollIntoView({block:'nearest'}); $('play').focus({preventScroll:true}); }
+function shut(){ var c=cardOf(st.game);
+  function done(){ sheet.classList.remove('out'); if(sheet.close) sheet.close(); else sheet.removeAttribute('open'); if(c) c.focus({preventScroll:true}); }
+  if(RM.matches||!sheet.animate){ done(); return; }
+  /* a quick fade and drop instead of a hard cut */
+  sheet.classList.add('out'); sheet.querySelector('.box').animate([{opacity:1,transform:'none'},{opacity:0,transform:'translateY(12px) scale(.98)'}],{duration:160,easing:'ease-in'}).onfinish=done; }
+/* cards lean toward the cursor (mouse and trackpad only; reduce-motion turns it off in CSS) */
+(function(){ var raf=0, cur=null, ev=null;
+  function apply(){ raf=0; if(!cur||!ev) return; var r=cur.getBoundingClientRect(), x=(ev.clientX-r.left)/r.width-.5, y=(ev.clientY-r.top)/r.height-.5;
+    cur.style.setProperty('--ry',(x*10).toFixed(2)+'deg'); cur.style.setProperty('--rx',(-y*8).toFixed(2)+'deg'); }
+  document.addEventListener('pointermove',function(e){ if(e.pointerType!=='mouse') return; var c=e.target.closest&&e.target.closest('.game');
+    if(c!==cur){ if(cur){ cur.classList.remove('tilt'); cur.style.removeProperty('--rx'); cur.style.removeProperty('--ry'); } cur=c; if(cur) cur.classList.add('tilt'); }
+    ev=e; if(cur&&!raf) raf=requestAnimationFrame(apply); },{passive:true});
 })();
-$('sets').addEventListener('click',function(e){ var h=e.target.closest('.head'); if(!h) return; st.set=h.parentNode.dataset.s; save(); render(); });
-$('sets').addEventListener('change',function(e){ var el=e.target;
+/* insert coin: a soft two-note chime (sine, quiet), Press Start stays sunk and the art zooms in, then the game loads */
+function coin(){ try{ var C=window.AudioContext||window.webkitAudioContext, ac=new C(), t=ac.currentTime;
+  [[988,0],[1319,.09]].forEach(function(n){ var o=ac.createOscillator(), g=ac.createGain(); o.type='sine'; o.frequency.value=n[0];
+    g.gain.setValueAtTime(0,t+n[1]); g.gain.linearRampToValueAtTime(.09,t+n[1]+.012); g.gain.exponentialRampToValueAtTime(.0001,t+n[1]+.5);
+    o.connect(g); g.connect(ac.destination); o.start(t+n[1]); o.stop(t+n[1]+.55); }); }catch(e){} }
+$('play').addEventListener('click',function(e){ if(this.getAttribute('aria-disabled')==='true'||e.ctrlKey||e.metaKey||e.shiftKey||e.button) return;
+  e.preventDefault(); var href=this.href; coin(); if(RM.matches){ setTimeout(function(){ location.href=href; },180); return; }
+  sheet.classList.add('coin'); setTimeout(function(){ location.href=href; },480); });
+/* coming back with the browser's Back button: don't stay on the faded sheet */
+addEventListener('pageshow',function(e){ if(e.persisted){ sheet.classList.remove('coin'); } });
+document.querySelectorAll('.games').forEach(function(el){ el.addEventListener('click',function(e){ var b=e.target.closest('.game'); if(b) open(b.dataset.g); }); });
+$('back').addEventListener('click',shut);
+sheet.addEventListener('cancel',function(e){ e.preventDefault(); shut(); });   /* Esc closes with the same glide */
+sheet.addEventListener('click',function(e){ if(e.target===sheet) shut(); });   /* a click on the dark backdrop closes it */
+$('qlist').addEventListener('click',function(e){ var h=e.target.closest('.rh'); if(!h) return; var r=h.parentNode;
+  if(r.dataset.k!=null){ var k=LEAD[+r.dataset.k]; st.set=k.s.id; st.t[k.s.id]=want(k); } else st.set=r.dataset.s; save(); render(); });
+$('qlist').addEventListener('change',function(e){ var el=e.target;
   var a=st.t[el.dataset.s]; if(el.checked){ if(a.indexOf(el.value)<0) a.push(el.value); } else st.t[el.dataset.s]=a.filter(function(v){ return v!==el.value; }); st.set=el.dataset.s;
   save(); render(); });
 render();
