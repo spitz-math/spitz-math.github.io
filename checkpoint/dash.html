@@ -2830,7 +2830,7 @@ $('#arcGo').onclick=async()=>{ const d=$('#arcBefore').value; if(!d) return say(
   if(!await ask('Archive closed sessions?',`<p>Every closed session made before ${esc(new Date(d+'T00:00').toLocaleDateString())} (${n} on the dashboard now, every teacher's) moves to the archive Sheet. Open sessions stay.</p>`,'Archive')) return;
   const b=$('#arcGo'); b.disabled=true; await runArchive({before:d+'T00:00:00'},$('#arcMsg')); b.disabled=false; };
 /* ---------- Support (11/5): who to email, getting started, common questions ---------- */
-const SUPPORT={name:'Mr. Spitz', email:''};   /* put the support email here; blank = the campus admin's email from the Teachers tab when there is one */
+const SUPPORT={name:'Mr. Spitz', email:'kody.spitzlberger@misdtx.net'};   /* put the support email here; blank = the campus admin's email from the Teachers tab when there is one */
 function hpWhere(){ const t=(DATA&&DATA.teachers||[]).find(x=>x.admin&&x.email); return SUPPORT.email||(t&&t.email)||''; }
 function hpDetails(){ const ses=[...(selSes||[])].map(short).join(', '), me=DATA&&DATA.me||{};
   return ['Checkpoint help','Teacher: '+(me.name?me.name+' ':'')+(me.email?'<'+me.email+'>':''),'Session: '+(ses||'none picked'),'Browser: '+navigator.userAgent,'Screen: '+innerWidth+'x'+innerHeight,'Time: '+new Date().toLocaleString(),'','What happened:',''].join('\n'); }
