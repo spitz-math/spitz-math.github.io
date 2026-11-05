@@ -33,6 +33,8 @@
   --pink:#ff2bd6; --cyan:#21e6ff; --yellow:#ffe13a; --orange:#ff7a1a;
   --ms:3600ms;
   --r-s:6px; --r-l:14px;
+  /* a spring that overshoots a little and settles (CSS linear() easing, no library) */
+  --spring:linear(0, .009, .035 2.1%, .141, .281 6.7%, .723 12.9%, .938 16.7%, 1.017, 1.077, 1.121, 1.149 24.3%, 1.159, 1.163, 1.161, 1.154 29.9%, 1.129 32.8%, 1.051 39.6%, 1.017 43.1%, .991, .977 51%, .974 53.8%, .975 57.1%, .997 69.8%, 1.003 76.9%, 1);
   --s2:8px; --s3:12px; --s4:24px; --s5:32px;
   --display:'Bungee',Impact,sans-serif; --pixel:'Press Start 2P',monospace; --body:'Nunito',system-ui,sans-serif;
 }
@@ -81,7 +83,14 @@ h1{font-family:var(--display);font-weight:400;margin:0;line-height:1;text-align:
 .games.feat{grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:var(--s4)}
 .game{all:unset;box-sizing:border-box;position:relative;cursor:pointer;display:flex;flex-direction:column;gap:4px;min-width:0;padding:8px 8px 12px;border-radius:var(--r-l);
   background:linear-gradient(180deg,color-mix(in srgb,var(--acc) 8%,#0b0e2c),#070920);border:2px solid color-mix(in srgb,var(--acc) 28%,#1b2155);
-  transition:transform .18s ease-out,border-color .18s,box-shadow .18s}
+  transition:transform .18s ease-out,border-color .18s,box-shadow .18s;overflow:hidden}
+/* tilt toward the cursor (mouse/trackpad only) and one shine sweep on hover; set by JS through --rx/--ry */
+.game::after{content:"";position:absolute;inset:0;pointer-events:none;border-radius:inherit;opacity:0;
+  background:linear-gradient(105deg,transparent 35%,rgba(255,255,255,.16) 48%,rgba(255,255,255,.05) 54%,transparent 62%) no-repeat;background-size:250% 100%;background-position:110% 0}
+@media (hover:hover) and (pointer:fine) and (prefers-reduced-motion:no-preference){
+  .game.tilt{transform:perspective(800px) rotateX(var(--rx,0deg)) rotateY(var(--ry,0deg)) translateY(-3px);transition:transform .12s ease-out,border-color .18s,box-shadow .18s}
+  .game:hover::after{opacity:1;background-position:-60% 0;transition:background-position .7s ease-out,opacity .1s}
+}
 .art{display:block;width:100%;height:auto;aspect-ratio:200/110;border-radius:var(--r-s);overflow:hidden;background:var(--gpanel)}
 .game b{margin-top:4px;font:900 16px/1.2 var(--body);letter-spacing:.04em;text-transform:uppercase;color:var(--acc);padding:2px 4px 0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .feat .game b{font:400 20px/1.15 var(--display);letter-spacing:.02em;text-transform:none}
@@ -124,6 +133,7 @@ h1{font-family:var(--display);font-weight:400;margin:0;line-height:1;text-align:
 .rh .bn{flex:none;font:800 13px/1 var(--body);color:var(--yellow)}
 .lead .rh b{color:var(--yellow)}
 .row.on .dot{border-color:var(--c);background:radial-gradient(circle,var(--c) 0 42%,transparent 48%)}
+@media (prefers-reduced-motion:no-preference){ .row.on .dot{animation:pop .5s var(--spring)} .chip input:checked + span{animation:pop .45s var(--spring)} .row.on .tp .chips,.row.on .tp .whole{animation:drop .35s var(--spring)} }
 .row{--c:var(--cyan)}
 .lead .row{--c:var(--yellow)}
 .row.on .rh{background:color-mix(in srgb,var(--c) 10%,transparent)}
@@ -165,7 +175,18 @@ h1{font-family:var(--display);font-weight:400;margin:0;line-height:1;text-align:
 @keyframes twinkle{50%{opacity:.1}}
 @keyframes rise{from{transform:translateY(24px) scale(.98);opacity:0}to{transform:none;opacity:1}}
 @keyframes fade{from{opacity:0}}
-@media (prefers-reduced-motion:reduce){:root{--ms:7000ms}.star{animation:none}.game,.lb,.play,.chip span{transition:none}}
+@keyframes pop{from{transform:scale(.6)}to{transform:none}}
+@keyframes drop{from{transform:translateY(-6px);opacity:0}to{transform:none;opacity:1}}
+/* the picked card's art glides into the sheet (View Transitions); the sheet itself springs in */
+::view-transition-group(gart){animation-duration:.5s;animation-timing-function:var(--spring)}
+::view-transition-old(gart),::view-transition-new(gart){animation-duration:.25s;height:100%;object-fit:cover}
+::view-transition-group(gbox){animation-duration:.42s;animation-timing-function:cubic-bezier(.2,.8,.3,1)}
+.sheet.vt[open] .box,.sheet.vt[open]::backdrop{animation:none}
+/* insert coin: Press Start stays sunk, the art zooms toward you, the sheet dims, then the game loads */
+.sheet.coin .play{transform:translateY(5px);box-shadow:0 0 0 #b38a00,0 0 26px rgba(255,225,58,.55);transition:transform .08s,box-shadow .2s}
+.sheet.coin .gside .art{transform:scale(1.1);transition:transform .45s cubic-bezier(.5,0,.75,0)}
+.sheet.coin .box{opacity:0;transform:scale(1.04);transition:opacity .25s .2s ease-in,transform .45s cubic-bezier(.5,0,.75,0)}
+@media (prefers-reduced-motion:reduce){:root{--ms:7000ms}.star{animation:none}.game,.lb,.play,.chip span{transition:none}.sheet.coin .box,.sheet.coin .gside .art{transition:none;transform:none;opacity:1}}
 
 @media (max-width:760px){
   header{grid-template-columns:1fr auto;grid-template-areas:"home lb" "brand brand"}
@@ -344,12 +365,46 @@ function render(){
   if(g){ var b=$('sheet').querySelector('.box'); b.style.setProperty('--acc',g.acc); $('g-art').style.setProperty('--gpanel',g.panel); $('g-art').innerHTML=g.art; $('g-name').textContent=g.name;
     $('g-d').className=g.isUpd?'d what':'d'; $('g-d').textContent=g.isUpd?g.more:g.d; }
 }
-var sheet=$('sheet');
-function open(id){ st.game=id; save(); render(); if(!sheet.open){ if(sheet.showModal) sheet.showModal(); else sheet.setAttribute('open',''); }
-  var on=document.querySelector('.row.on'); if(on) on.scrollIntoView({block:'nearest'}); $('play').focus({preventScroll:true}); }
-function shut(){ if(sheet.close) sheet.close(); else sheet.removeAttribute('open'); var b=document.querySelector('.game[data-g="'+st.game+'"]'); if(b) b.focus({preventScroll:true}); }
+var sheet=$('sheet'), RM=matchMedia('(prefers-reduced-motion: reduce)');
+/* card -> sheet glide (Chrome's View Transitions): the card's art and the sheet's art share a name for the length of the transition */
+function vt(card,fn){ if(!document.startViewTransition||RM.matches||!card){ fn(); return; }
+  var a=card.querySelector('.art'); a.style.viewTransitionName='gart'; sheet.classList.add('vt');
+  var t=document.startViewTransition(function(){ a.style.viewTransitionName=''; fn(); });
+  t.finished.then(function(){ a.style.viewTransitionName=''; sheet.classList.remove('vt'); },function(){ a.style.viewTransitionName=''; sheet.classList.remove('vt'); }); }
+function cardOf(id){ return document.querySelector('.game[data-g="'+id+'"]'); }
+function open(id){ var c=cardOf(id); vt(c,function(){ st.game=id; save(); render(); sheet.classList.remove('coin');
+    $('g-art').style.viewTransitionName='gart'; sheet.querySelector('.box').style.viewTransitionName='gbox';
+    if(!sheet.open){ if(sheet.showModal) sheet.showModal(); else sheet.setAttribute('open',''); }
+    var on=document.querySelector('.row.on'); if(on) on.scrollIntoView({block:'nearest'}); $('play').focus({preventScroll:true}); });
+  setTimeout(function(){ $('g-art').style.viewTransitionName=''; sheet.querySelector('.box').style.viewTransitionName=''; },700); }
+function shut(){ var c=cardOf(st.game), a=c&&c.querySelector('.art'), anim=a&&document.startViewTransition&&!RM.matches;
+  function done(){ if(sheet.close) sheet.close(); else sheet.removeAttribute('open'); if(c) c.focus({preventScroll:true}); }
+  function clear(){ $('g-art').style.viewTransitionName=''; if(a) a.style.viewTransitionName=''; sheet.classList.remove('vt'); }
+  if(!anim){ done(); return; }
+  /* the sheet's art glides back into its card */
+  $('g-art').style.viewTransitionName='gart'; sheet.classList.add('vt');
+  document.startViewTransition(function(){ $('g-art').style.viewTransitionName=''; a.style.viewTransitionName='gart'; done(); }).finished.then(clear,clear); }
+/* cards lean toward the cursor (mouse and trackpad only; reduce-motion turns it off in CSS) */
+(function(){ var raf=0, cur=null, ev=null;
+  function apply(){ raf=0; if(!cur||!ev) return; var r=cur.getBoundingClientRect(), x=(ev.clientX-r.left)/r.width-.5, y=(ev.clientY-r.top)/r.height-.5;
+    cur.style.setProperty('--ry',(x*10).toFixed(2)+'deg'); cur.style.setProperty('--rx',(-y*8).toFixed(2)+'deg'); }
+  document.addEventListener('pointermove',function(e){ if(e.pointerType!=='mouse') return; var c=e.target.closest&&e.target.closest('.game');
+    if(c!==cur){ if(cur){ cur.classList.remove('tilt'); cur.style.removeProperty('--rx'); cur.style.removeProperty('--ry'); } cur=c; if(cur) cur.classList.add('tilt'); }
+    ev=e; if(cur&&!raf) raf=requestAnimationFrame(apply); },{passive:true});
+})();
+/* insert coin: a soft two-note chime (sine, quiet), Press Start stays sunk and the art zooms in, then the game loads */
+function coin(){ try{ var C=window.AudioContext||window.webkitAudioContext, ac=new C(), t=ac.currentTime;
+  [[988,0],[1319,.09]].forEach(function(n){ var o=ac.createOscillator(), g=ac.createGain(); o.type='sine'; o.frequency.value=n[0];
+    g.gain.setValueAtTime(0,t+n[1]); g.gain.linearRampToValueAtTime(.09,t+n[1]+.012); g.gain.exponentialRampToValueAtTime(.0001,t+n[1]+.5);
+    o.connect(g); g.connect(ac.destination); o.start(t+n[1]); o.stop(t+n[1]+.55); }); }catch(e){} }
+$('play').addEventListener('click',function(e){ if(this.getAttribute('aria-disabled')==='true'||e.ctrlKey||e.metaKey||e.shiftKey||e.button) return;
+  e.preventDefault(); var href=this.href; coin(); if(RM.matches){ setTimeout(function(){ location.href=href; },180); return; }
+  sheet.classList.add('coin'); setTimeout(function(){ location.href=href; },480); });
+/* coming back with the browser's Back button: don't stay on the faded sheet */
+addEventListener('pageshow',function(e){ if(e.persisted){ sheet.classList.remove('coin'); } });
 document.querySelectorAll('.games').forEach(function(el){ el.addEventListener('click',function(e){ var b=e.target.closest('.game'); if(b) open(b.dataset.g); }); });
 $('back').addEventListener('click',shut);
+sheet.addEventListener('cancel',function(e){ e.preventDefault(); shut(); });   /* Esc closes with the same glide */
 sheet.addEventListener('click',function(e){ if(e.target===sheet) shut(); });   /* a click on the dark backdrop closes it */
 $('qlist').addEventListener('click',function(e){ var h=e.target.closest('.rh'); if(!h) return; var r=h.parentNode;
   if(r.dataset.k!=null){ var k=LEAD[+r.dataset.k]; st.set=k.s.id; st.t[k.s.id]=want(k); } else st.set=r.dataset.s; save(); render(); });
