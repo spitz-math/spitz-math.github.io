@@ -828,6 +828,31 @@ html[data-nav="side"] .dbar .mng{position:relative}
 html[data-nav="side"] .sespanel{left:0;top:calc(100% + 6px);width:min(320px,80vw)}
 html[data-nav="side"] .dbar .grp .lab{display:block}
 }
+
+/* side bar pages + settings gear (11/5) */
+.pgnav,.mngbtn .gear,.mngbtn .mngs{display:none}
+html[data-nav="side"] .dbar .pgnav{display:flex;flex-direction:column;gap:2px;order:7;margin-top:14px;padding-top:12px;border-top:1px solid var(--line)}
+html[data-nav="side"] .pgnav button{display:flex;align-items:center;gap:11px;border:0;background:none;text-align:left;padding:8px 12px;border-left:3px solid transparent;border-radius:0 8px 8px 0;font-size:14.5px;font-weight:600;color:var(--mut)}
+html[data-nav="side"] .pgnav button[hidden]{display:none}
+html[data-nav="side"] .pgnav button svg{width:18px;height:18px;flex:none;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+html[data-nav="side"] .pgnav button:hover{background:var(--surf2,#f1f4f8);color:var(--ink)}
+html[data-nav="side"] .pgnav button[aria-current="page"]{border-left-color:var(--tb);background:color-mix(in srgb,var(--tb) 10%,transparent);color:var(--ink)}
+html[data-nav="side"].pgopen .dbar #viewSeg button[aria-pressed="true"]{border-left-color:transparent;background:none;color:var(--mut)}
+html[data-nav="side"] .dbar .sp{order:8} html[data-nav="side"] .dbar .upd{order:9} html[data-nav="side"] #alertBtn{order:10} html[data-nav="side"] .dbar .mng{order:11}
+html[data-nav="side"] .mngbtn .gear{display:block;width:19px;height:19px;flex:none;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round}
+html[data-nav="side"] .mngbtn .mngs{display:inline} html[data-nav="side"] .mngbtn .mngt,html[data-nav="side"] .mngbtn .car{display:none}
+html[data-nav="side"] .dbar .mng .mngbtn{justify-content:flex-start;gap:10px;border-color:transparent;background:none;font-weight:600;color:var(--mut);padding:8px 10px;border-radius:8px}
+html[data-nav="side"] .dbar .mng .mngbtn:hover{background:var(--surf2,#f1f4f8);color:var(--ink)}
+html[data-nav="side"] .mngpanel :is(#mySesBtn,#rosBtn,#rptBtn,#testsBtn){display:none}
+html[data-nav="side"] .mngpanel .mauto{border-bottom:0;margin-bottom:0}
+/* the pages sit beside the side bar, with their own title */
+html[data-nav="side"] :is(.tpage,.bkpage)>.topbar{box-shadow:none;padding:16px 24px 12px}
+html[data-nav="side"] :is(.tpage,.bkpage)>.topbar .wm{font-size:0;gap:0}
+html[data-nav="side"] :is(.tpage,.bkpage)>.topbar .wm .mk{display:none}
+html[data-nav="side"] :is(.tpage,.bkpage)>.topbar .wm small{display:inline!important;font:700 24px var(--fd);color:var(--ink);border:0;margin:0;padding:0}
+html[data-nav="side"] :is(#mpBack,#rpBack,#rptBack,#tpBack){display:none}
+@media (min-width:760px){ html[data-nav="side"] :is(.tpage,.bkpage){left:236px} }
+@media (max-width:759px){ html[data-nav="side"] :is(.tpage,.bkpage){top:59px} html[data-nav="side"] :is(.tpage,.bkpage)>.topbar{padding:12px 14px 8px} html[data-nav="side"] :is(.tpage,.bkpage)>.topbar .wm small{font-size:20px} }
 </style>
 </head>
 <body>
@@ -841,6 +866,7 @@ html[data-nav="side"] .dbar .grp .lab{display:block}
       <div class="sesfoot"><button class="btn" id="sesNew" title="Make a new session without leaving the dashboard">+ New session</button><label><input type="checkbox" id="sesClosed"> Show closed</label><button class="btn" id="sesClear">Clear</button><button class="btn pri" id="sesDone">Show</button></div></div></div>
   <button class="btn ibtn" id="showIdBtn" title="Show the Session ID big, for the projector" aria-label="Show the Session ID big"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="12" rx="2"/><path d="M8 21h8M12 17v4"/></svg><span class="ibl">Show Session ID</span></button>
   <nav class="vgrp" aria-label="View"><div class="seg" id="viewSeg"><button data-v="live">Live</button><button data-v="std">Standards</button><button data-v="ques">Questions</button><button data-v="wr" id="wrViewBtn" hidden>Written</button></div></nav>
+  <nav class="pgnav" id="pgNav" aria-label="Pages"><button data-pg="ses"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="5" width="16" height="15" rx="2"/><path d="M4 10h16M9 3v4M15 3v4"/></svg>My sessions</button><button data-pg="ros"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="9" r="3.2"/><path d="M3.5 19c.8-3 3-4.6 5.5-4.6s4.7 1.6 5.5 4.6"/><circle cx="17" cy="8.5" r="2.4"/><path d="M16 13.6c2.2-.1 3.9 1.3 4.5 3.9"/></svg>My roster</button><button data-pg="rpt"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 20V10M10 20V5M15 20v-7M20 20V8"/></svg>Reports</button><button data-pg="tst" hidden><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 3h7l4 4v14H7z"/><path d="M14 3v4h4M10 12h5M10 16h5"/></svg>Tests</button></nav>
   <div class="sp"></div>
   <div class="grp" id="arcGrp" hidden><span class="lab">Results from</span><select id="arcSel" aria-label="Results from"></select></div>
   <div class="grp" id="teaGrp" hidden><span class="lab">Teacher</span><select id="teaSel" aria-label="Teacher"></select></div>
@@ -849,7 +875,7 @@ html[data-nav="side"] .dbar .grp .lab{display:block}
   <button class="upd live" id="upd" title="Click to refresh now">Loading…</button>
   <button class="btn" id="refresh" hidden>Refresh</button>
   <button class="btn ibtn" id="alertBtn" aria-pressed="true"></button>
-  <div class="mng" id="mng"><button class="btn mngbtn" id="mngBtn" aria-haspopup="menu" aria-expanded="false">Manage <span aria-hidden="true">&#9662;</span></button>
+  <div class="mng" id="mng"><button class="btn mngbtn" id="mngBtn" aria-haspopup="menu" aria-expanded="false"><svg viewBox="0 0 24 24" class="gear" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M12 2.8v2.4M12 18.8v2.4M2.8 12h2.4M18.8 12h2.4M5.5 5.5l1.7 1.7M16.8 16.8l1.7 1.7M5.5 18.5l1.7-1.7M16.8 7.2l1.7-1.7"/></svg><span class="mngt">Manage</span><span class="mngs">Settings</span> <span class="car" aria-hidden="true">&#9662;</span></button>
     <div class="mngpanel" id="mngPanel" role="menu" hidden>
   <div class="mwho" id="whoLbl"></div>
   <label class="mauto" title="Auto-refresh every 15 seconds"><input type="checkbox" id="auto" checked> Auto-refresh every 15 seconds</label>
@@ -1216,12 +1242,24 @@ document.addEventListener('visibilitychange',()=>{ if(!document.hidden){ AL.unse
 function stop(){ clearInterval(timer); timer=null; }
 let hidTick=0;   /* in another tab, keep checking every 30 s while alerts are on so they still come (11/2) */
 function startAuto(){ stop(); if($('#auto').checked) timer=setInterval(()=>{ if(!document.hidden||(AL.on&&(++hidTick%2===0))) load(true); },POLL_MS); }
+/* side bar pages (11/5): My sessions, roster, Reports, Tests open beside the side bar; Live / Standards / Questions close them */
+(function(){ const PG=[['ses','#mpage','#mySesBtn','#mpBack'],['ros','#rpage','#rosBtn','#rpBack'],['rpt','#rppage','#rptBtn','#rptBack'],['tst','#tpage','#testsBtn','#tpBack']];
+  const open=()=>{ if(!$('#oepage').hidden) return {sec:'#oepage',back:'#oeBack',k:'ses',sub:1}; if(!$('#bkpage').hidden) return {sec:'#bkpage',back:'#bkBack',k:(typeof QB!=='undefined'&&QB.mine)?'ses':'tst',sub:1};
+    for(const [k,sec,,back] of PG) if(!$(sec).hidden) return {sec,back,k}; return null; };
+  const wait=ms=>new Promise(r=>setTimeout(r,ms));
+  async function closeAll(){ for(let i=0;i<6;i++){ const o=open(); if(!o) return true; $(o.back).click(); await wait(150); if(!$(o.sec).hidden) return false; } return !open(); }
+  function paint(){ const o=open(); document.querySelectorAll('#pgNav button').forEach(b=>b.setAttribute('aria-current',o&&o.k===b.dataset.pg?'page':'false'));
+    document.documentElement.classList.toggle('pgopen',!!o); { const v=o?document.querySelector('#pgNav [data-pg="'+o.k+'"]'):document.querySelector('#viewSeg button[aria-pressed="true"]'); if(v) $('#mview').textContent=v.textContent; } $('#pgNav [data-pg="tst"]').hidden=$('#testsBtn').hidden; }
+  document.querySelectorAll('#pgNav button').forEach(b=>b.onclick=async()=>{ const o=open(); if(o&&o.k===b.dataset.pg&&!o.sub) return;
+    if(!await closeAll()) return; $(PG.find(p=>p[0]===b.dataset.pg)[2]).click(); });
+  $('#viewSeg').addEventListener('click',e=>{ if(e.target.closest('button')&&open()) closeAll(); });
+  const mo=new MutationObserver(paint); ['#mpage','#rpage','#rppage','#tpage','#oepage','#bkpage','#testsBtn'].forEach(q=>mo.observe($(q),{attributes:true,attributeFilter:['hidden']})); paint(); })();
 /* phone side bar: menu button slides it in; picking a view or period closes it */
 (function(){ const h=document.documentElement, set=o=>h.classList.toggle('navopen',o);
   $('#mnav').onclick=()=>set(true); $('#navbg').onclick=()=>set(false);
   document.addEventListener('keydown',e=>{ if(e.key==='Escape'&&h.classList.contains('navopen')) set(false); });
   const lbl=()=>{ const v=document.querySelector('#viewSeg button[aria-pressed="true"]'); $('#mview').textContent=v?v.textContent:''; };
-  ['#viewSeg','#perSeg'].forEach(q=>$(q).addEventListener('click',e=>{ if(e.target.closest('button')) setTimeout(()=>{ set(false); lbl(); },0); }));
+  ['#viewSeg','#perSeg','#pgNav'].forEach(q=>$(q).addEventListener('click',e=>{ if(e.target.closest('button')) setTimeout(()=>{ set(false); lbl(); },0); }));
   new MutationObserver(lbl).observe($('#viewSeg'),{attributes:true,subtree:true}); lbl(); })();
 $('#auto').onchange=startAuto; $('#refresh').onclick=()=>load(); $('#upd').onclick=()=>load();
 /* top bar (11/5): start typing anywhere on the dashboard to find a name */
