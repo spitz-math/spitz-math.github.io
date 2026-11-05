@@ -1037,7 +1037,7 @@ html[data-nav="side"] #hpBack{display:none}
 .tpage .faq summary{list-style:none;cursor:pointer;padding:12px 28px 12px 0;margin:0;font:600 15px/1.35 Onest,sans-serif;color:var(--ink);position:relative}
 .faq summary::-webkit-details-marker{display:none}
 .faq summary::after{content:"";position:absolute;right:6px;top:17px;width:8px;height:8px;border-right:2px solid var(--mut);border-bottom:2px solid var(--mut);transform:rotate(45deg);transition:transform .2s}
-.faq[open] summary::after{transform:rotate(225deg);top:20px}
+.faq[open]:not(.closing) summary::after{transform:rotate(225deg);top:20px} .faq summary::after{transition:transform .25s,top .25s}
 .tpage .faq summary:hover{color:var(--acc)}
 .faq p{margin:0 0 14px;font-size:14px;line-height:1.55;color:var(--mut);max-width:70ch} .faq p b{color:var(--ink)}
 .hpask a.btn{text-decoration:none;display:inline-block} .hpask a.btn[hidden]{display:none}
@@ -2841,6 +2841,14 @@ function openSupport(){ openPage('#hpage'); const em=hpWhere(), a=$('#hpMail');
 $('#hpMail').onclick=()=>{ const em=hpWhere(); if(!em) return;
   const u='https://mail.google.com/mail/?view=cm&fs=1&to='+encodeURIComponent(em)+'&su='+encodeURIComponent('Checkpoint help')+'&body='+encodeURIComponent(hpDetails());
   const w=window.open(u,'_blank'); if(w){ try{ w.opener=null; }catch(x){} } else $('#hpMsg').innerHTML='Your browser blocked the new tab. <a href="'+esc(u)+'" target="_blank" rel="noopener">Open the email here</a>, or write to '+esc(em)+'.'; };
+/* common questions slide open and closed (reduce motion: they just open) */
+document.querySelectorAll('#hpage .faq').forEach(d=>{ const sm=d.querySelector('summary'), p=d.querySelector('p'); let an=null;
+  sm.addEventListener('click',e=>{ if(matchMedia('(prefers-reduced-motion: reduce)').matches) return; e.preventDefault(); if(an){ an.cancel(); an=null; }
+    const opening=!d.open||d.classList.contains('closing'); d.classList.remove('closing'); if(opening) d.open=true;
+    const h=p.offsetHeight+14, k=[{height:'0px',opacity:0,transform:'translateY(-6px)',marginBottom:'0px'},{height:h-14+'px',opacity:1,transform:'none',marginBottom:'14px'}];
+    if(!opening) d.classList.add('closing'); p.style.overflow='hidden';
+    an=p.animate(opening?k:k.slice().reverse(),{duration:opening?260:200,easing:opening?'cubic-bezier(.2,.7,.2,1)':'cubic-bezier(.4,0,.6,1)'});
+    an.onfinish=()=>{ an=null; p.style.overflow=''; if(!opening){ d.open=false; d.classList.remove('closing'); } }; }); });
 $('#hpOpen').onclick=openSupport; $('#hpBack').onclick=()=>closePage('#hpage');
 $('#hpTour').onclick=()=>{ closePage('#hpage'); setTimeout(tourStart,300); };
 $('#mySesBtn').onclick=openMySessions; $('#mpBack').onclick=()=>closePage('#mpage');
