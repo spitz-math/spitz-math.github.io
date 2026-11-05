@@ -1156,9 +1156,10 @@ html[data-theme="dark"] .rtbox{background:var(--card);color:var(--ink)}
       <div class="row"><button class="btn" id="rebuild">Rebuild single files</button></div><div class="msg2" id="rbMsg"></div>
     </section>
     <section class="tcard" id="ltCard"><h2>Benchmark day check</h2>
-      <p class="hint">Pretends hundreds of students are testing at the same moment, to see whether saving keeps up before a school-wide test. Each pretend student signs in during the first minute, then saves about every 30 seconds (every 50 when Google is busy), just like a real test page. Their saves run the real save code but go to a separate <b>Load Test</b> sheet that is deleted at the end, so real sessions and results are never touched. Run it when no class is testing: it uses the same Google account as real tests.</p>
+      <p class="hint">Pretends hundreds of students are testing at the same moment, to see whether saving keeps up before a school-wide test. Each pretend student signs in (all of them within the time you pick), then saves about every 30 seconds (every 50 when Google is busy), just like a real test page. Their saves run the real save code but go to a separate <b>Load Test</b> sheet that is deleted at the end, so real sessions and results are never touched. Run it when no class is testing: it uses the same Google account as real tests.</p>
       <div class="row fr"><label class="fl">Students<select id="ltN"><option>100</option><option selected>300</option><option>600</option><option>900</option></select></label>
         <label class="fl">How long<select id="ltMin"><option value="2">2 minutes</option><option value="3" selected>3 minutes</option><option value="5">5 minutes</option></select></label>
+        <label class="fl">Everyone signs in within<select id="ltSi"><option value="15">15 seconds</option><option value="60" selected>1 minute</option><option value="300">5 minutes</option></select></label>
         <label class="fl">Teachers watching Live<select id="ltT"><option value="0">None</option><option value="5">5</option><option value="25" selected>25</option></select></label>
         <button class="btn pri" id="ltGo">Start the check</button></div>
       <div class="ltbox" id="ltBox" hidden>
@@ -2906,10 +2907,11 @@ function ltStats(R,need,el){ const ms=R.ms.slice().sort((a,b)=>a-b), q=f=>ms.len
   const got=Math.max(0,...Object.values(R.bk))/5;   /* busiest 5 seconds */
   $('#ltStats').innerHTML=`<div><b>${R.ok}</b><span>saves done of ${R.sent}</span></div><div><b>${got.toFixed(1)}</b><span>saves a second at the busiest (${R.n||0} students need about ${need.toFixed(1)})</span></div>
     <div><b>${ms.length?sec(q(.5)):'–'}</b><span>typical save</span></div><div class="${q(.95)>8000?'bad':''}"><b>${ms.length?sec(q(.95)):'–'}</b><span>slowest 1 in 20</span></div>
-    <div class="${R.busy?'bad':''}"><b>${R.busy}</b><span>had to try again</span></div><div class="${R.fail?'bad':''}"><b>${R.fail}</b><span>did not save</span></div>${R.dash?`<div><b>${R.dashMs.length?sec(R.dashMs.slice().sort((a,b)=>a-b)[Math.floor(R.dashMs.length/2)]):'–'}</b><span>typical Live refresh (${R.dash} done)</span></div>`:''}`;
-  return {p50:q(.5),p95:q(.95),got}; }
-async function ltRun(){ const N=+$('#ltN').value, MIN=+$('#ltMin').value, TN=+$('#ltT').value, NQ=50, END=MIN*60000, run=String(Date.now()%1e8);
-  const R={sent:0,ok:0,busy:0,fail:0,ms:[],dash:0,dashMs:[],inflight:0,maxIn:0,bk:{}}, timers=[], need=N/30; let T0=Date.now();
+    <div class="${R.busy?'bad':''}"><b>${R.busy}</b><span>had to try again</span></div><div class="${R.fail?'bad':''}"><b>${R.fail}</b><span>did not save</span></div>${R.si||R.siFail?(()=>{ const m=R.siMs.slice().sort((a,b)=>a-b), p=f=>m.length?sec(m[Math.min(m.length-1,Math.floor(f*m.length))]):'–'; return `<div><b>${p(.5)}</b><span>typical sign-in (${R.si} done)</span></div><div class="${m.length&&m[Math.floor(.95*m.length)]>10000?'bad':''}"><b>${p(.95)}</b><span>slowest sign-in, 1 in 20</span></div>${R.siFail?`<div class="bad"><b>${R.siFail}</b><span>could not sign in after 3 tries</span></div>`:''}`; })():''}${R.dash?`<div><b>${R.dashMs.length?sec(R.dashMs.slice().sort((a,b)=>a-b)[Math.floor(R.dashMs.length/2)]):'–'}</b><span>typical Live refresh (${R.dash} done)</span></div>`:''}`;
+  const sm=R.siMs.slice().sort((a,b)=>a-b);
+  return {p50:q(.5),p95:q(.95),got,si95:sm.length?sm[Math.min(sm.length-1,Math.floor(.95*sm.length))]:0}; }
+async function ltRun(){ const N=+$('#ltN').value, MIN=+$('#ltMin').value, TN=+$('#ltT').value, SI=+$('#ltSi').value*1000, NQ=50, END=MIN*60000, run=String(Date.now()%1e8);
+  const R={sent:0,ok:0,busy:0,fail:0,ms:[],dash:0,dashMs:[],inflight:0,maxIn:0,bk:{},si:0,siFail:0,siMs:[]}, timers=[], need=N/30; let T0=Date.now();
   R.n=N; LT.on=true; $('#ltGo').textContent='Stop'; $('#ltBox').hidden=false; $('#ltSay').innerHTML='Students are signing in…'; $('#ltSay').className='ltsay'; say($('#ltMsg'),'','');
   const tick=setInterval(()=>{ const el=Date.now()-T0; $('#ltBar').style.width=Math.min(100,100*el/END)+'%'; ltStats(R,need,el); },500);
   let stopped=false; LT.stop=()=>{ stopped=true; };
@@ -2923,17 +2925,23 @@ async function ltRun(){ const N=+$('#ltN').value, MIN=+$('#ltMin').value, TN=+$(
   T0=Date.now(); $('#ltSay').innerHTML='Students are signing in…';
   /* like the real page: the next save comes ~30 s later, or ~50 s when Google is busy (the last save took over 4 s) */
   function next(i,k,slow){ const at=(slow?45000:27000)+Math.random()*(slow?10000:6000); if(Date.now()-T0+at<END) timers.push(setTimeout(()=>save(i,Math.min(NQ,k+1),0),at)); }
-  for(let i=1;i<=N;i++) timers.push(setTimeout(()=>save(i,0,0),Math.random()*60000));
+  /* a sign-in (the page, the roster, the student's row), then the page's first save right away; a failed sign-in is tried again like a student would */
+  const signin=(i,tries)=>{ if(stopped) return; const t=Date.now(); R.inflight++;
+    call('stcLoadTest',{op:'signin',n:i,run},60000).then(r=>{ R.inflight--; if(r&&r.ok&&r.found===undefined){ LT.old=true; stopped=true; return; } if(r&&r.ok){ R.si++; R.siMs.push(Date.now()-t); save(i,0,0); } else throw new Error('signin'); })
+      .catch(e=>{ R.inflight--; if(/NOTOWNER|stcLoadTest/.test(String(e&&e.message))) LT.err=e; if(tries<3) timers.push(setTimeout(()=>signin(i,tries+1),3000+Math.random()*3000)); else R.siFail++; }); };
+  for(let i=1;i<=N;i++) timers.push(setTimeout(()=>signin(i,0),Math.random()*SI));
   for(let t=0;t<TN;t++) for(let at=Math.random()*15000;at<END;at+=15000) timers.push(setTimeout(()=>{ if(stopped) return; const t0=Date.now(); call('stcLoadTest',{op:'dash'},60000).then(()=>{ R.dash++; R.dashMs.push(Date.now()-t0); }).catch(()=>{}); },at));
   await new Promise(res=>{ const w=setInterval(()=>{ if(stopped||(Date.now()-T0>END&&!R.inflight)||Date.now()-T0>END+90000){ clearInterval(w); res(); } },500); });
   timers.forEach(clearTimeout); clearInterval(tick); const el=Math.min(Date.now()-T0,END), S=ltStats(R,need,el); $('#ltBar').style.width='100%';
   LT.on=false; $('#ltGo').textContent='Start the check';
+  if(LT.old){ LT.old=false; $('#ltSay').innerHTML=''; say($('#ltMsg'),'The check needs the newest Code.gs (it now pretends sign-ins too). Paste it, then Deploy › Manage deployments › Edit › New version. Nothing was changed.','err'); try{ await call('stcLoadTest',{op:'clear'},120000); }catch(e){} return; }
   if(LT.err&&!R.ok){ $('#ltSay').innerHTML=''; say($('#ltMsg'),'The check needs the newest Code.gs (stcLoadTest). Paste it, then Deploy › Manage deployments › Edit › New version.','err'); LT.err=null; return; }
-  const sec=v=>(v/1000).toFixed(1)+' s', lost=R.fail, slow=S.p95>8000||R.busy>N*.05, bad=lost>0||S.p95>20000;
+  const sec=v=>(v/1000).toFixed(1)+' s', lost=R.fail, siBad=R.siFail>0||S.si95>30000, bad=lost>0||S.p95>45000||siBad, slow=S.p95>8000||S.si95>10000;
+  const sm=R.siMs.slice().sort((a,b)=>a-b), siTxt=`${R.si} sign-ins within ${SI<60000?SI/1000+' seconds':SI/60000+' minute'+(SI>60000?'s':'')}: typical ${sec(sm.length?sm[Math.floor(sm.length/2)]:0)}, slowest ${sec(S.si95)}`;
   $('#ltSay').innerHTML=stopped?'Stopped early. The numbers above are for the part that ran.'
-    :bad?`<span class="tag r">Not ready</span><b>${lost} save${lost===1?'':'s'} never went through</b>${S.p95>20000?` and the slowest saves took ${sec(S.p95)}`:''}. With ${N} students at once some answers would arrive late. Their pages keep every answer and keep trying, but split the benchmark into smaller groups (by grade or by period) and tell me what you saw.`
-    :slow?`<span class="tag y">Close to the limit</span>Every save went through, but the slowest took ${sec(S.p95)}${R.busy?` and ${R.busy} had to try again`:''}. ${N} students at once works, with little room to spare. Stagger start times by a few minutes if you can.`
-    :`<span class="tag g">Ready</span>All ${R.ok} saves went through. A typical save took ${sec(S.p50)}, the slowest ${sec(S.p95)}. ${N} students testing at once is fine.`;
+    :bad?`<span class="tag r">Not ready</span>${lost?`<b>${lost} save${lost===1?'':'s'} gave up after 5 tries</b> (a real page keeps trying and keeps every answer). `:''}${S.p95>45000?`The slowest saves took ${sec(S.p95)}. `:''}${R.siFail?`<b>${R.siFail} student${R.siFail===1?'':'s'} could not sign in.</b> `:S.si95>30000?`The slowest sign-ins took ${sec(S.si95)}. `:''}${siBad?`Have fewer students sign in at the same moment: start grades several minutes apart.`:`Split the benchmark into smaller groups (by grade or by period).`}`
+    :slow?`<span class="tag y">Works, with short delays</span>Every student signed in and every save went through. A typical save took ${sec(S.p50)} and the slowest ${sec(S.p95)}, so answers can show up on Live that late, and teachers will see the “Google is busy” notice. ${siTxt}. Start grades a few minutes apart to make sign-in smoother.`
+    :`<span class="tag g">Ready</span>All ${R.ok} saves went through. A typical save took ${sec(S.p50)}, the slowest ${sec(S.p95)}. ${siTxt}. ${N} students testing at once is fine.`;
   say($('#ltMsg'),'Removing the pretend saves…','');
   try{ const r=await call('stcLoadTest',{op:'clear'},120000); say($('#ltMsg'),`Cleaned up: the Load Test sheet (${r.removed} pretend students) is deleted.`,'ok'); }
   catch(e){ say($('#ltMsg'),'Could not delete the Load Test sheet: '+errText(e)+'. You can delete it by hand in the Sheet.','err'); } }
