@@ -139,6 +139,9 @@ footer{grid-column:1/-1;justify-self:center;display:flex;flex-direction:column;a
   .door{max-width:440px}
   .door h2{font-size:clamp(34px,10vw,48px)}
 }
+/* the page fades in when it opens (the first-visit intro does its own entrance) */
+@media (prefers-reduced-motion:no-preference){ html:not(.intro) body{animation:pg-in .4s ease-out backwards} }
+@keyframes pg-in{from{opacity:0}}
 </style>
 <script>try{ if(!localStorage.getItem('spitz_intro')){ document.documentElement.classList.add('intro'); localStorage.setItem('spitz_intro','1'); } }catch(e){}</script>
 </head>
