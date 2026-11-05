@@ -169,13 +169,18 @@ var css3=[
 '.sz-ctl{ display:flex; justify-content:center; flex-wrap:wrap; gap:14px 44px; margin:0 0 14px; }',
 '.sz-ctl .g{ display:flex; flex-direction:column; align-items:center; justify-content:flex-end; gap:8px; }',
 '.sz-ctl .k{ display:flex; align-items:flex-end; gap:6px; }',
-'.sz-ctl kbd{ display:inline-grid; place-items:center; min-width:58px; height:58px; padding:0 12px; box-sizing:border-box; border-radius:6px; background:#F2F2F6; color:#15151D; font:800 28px/1 Inter,system-ui,sans-serif; box-shadow:inset 0 -6px 0 rgba(0,0,0,.28); }',
+'.sz-ctl kbd{ letter-spacing:0; text-transform:none; display:inline-grid; place-items:center; min-width:58px; height:58px; padding:0 12px; box-sizing:border-box; border-radius:6px; background:#F2F2F6; color:#15151D; font:800 28px/1 Inter,system-ui,sans-serif; box-shadow:inset 0 -6px 0 rgba(0,0,0,.28); }',
 '.sz-ctl kbd.wide{ min-width:170px; } .sz-ctl kbd.mid{ min-width:104px; font-size:23px; }',
 '.sz-ctl .t{ display:inline-grid; grid-template-columns:repeat(3,40px); grid-auto-rows:40px; gap:4px; }',
 '.sz-ctl .t kbd{ min-width:40px; height:40px; padding:0; font-size:21px; box-shadow:inset 0 -4px 0 rgba(0,0,0,.28); } .sz-ctl .t kbd:first-child{ grid-column:2; }',
 '.sz-ctl .or{ align-self:center; font:700 19px/1 Inter,system-ui,sans-serif; color:var(--muted,#9aa); margin:0 2px; }',
-'.sz-ctl .l{ font:800 26px/1.1 Inter,system-ui,sans-serif; color:var(--text,#fff); white-space:nowrap; }',
-'.sz-ctl svg{ display:block; height:64px; width:auto; }'
+'.sz-ctl .l{ font:800 26px/1.1 Inter,system-ui,sans-serif; letter-spacing:0; text-transform:none; color:var(--text,#fff); white-space:nowrap; }',
+'.sz-ctl svg{ display:block; height:64px; width:auto; }',
+/* the small keys line and the Spitz Arcade eyebrow look the same in every game and sit on a dark band, so they read on any theme */
+'.sz-meta{ display:inline-flex; flex-wrap:wrap; justify-content:center; align-items:center; gap:10px 24px; padding:8px 20px; border-radius:999px; background:rgba(6,8,20,.8); font:700 20px/1 Inter,system-ui,sans-serif; letter-spacing:0; text-transform:none; color:#E9E9F2; }',
+'.sz-meta span{ display:inline-flex; align-items:center; gap:8px; white-space:nowrap; }',
+'.sz-meta kbd{ display:inline-grid; place-items:center; min-width:30px; height:30px; padding:0 8px; box-sizing:border-box; border-radius:6px; background:#F2F2F6; color:#15151D; font:800 16px/1 Inter,system-ui,sans-serif; box-shadow:inset 0 -3px 0 rgba(0,0,0,.28); }',
+'.sz-eyebrow.sz-eyebrow{ font:800 22px/1 Inter,system-ui,sans-serif; letter-spacing:.34em; text-transform:uppercase; color:#fff; text-shadow:none; padding:9px 22px; border-radius:999px; background:rgba(6,8,20,.78); }'
 ].join('\n');
 var st3=document.createElement('style'); st3.id='sz-kit-css3'; st3.textContent=css3; (document.head||document.documentElement).appendChild(st3);
 function ctlKeys(tok){
@@ -199,7 +204,12 @@ function ctlKeys(tok){
 }
 function ctlCards(){ document.querySelectorAll('.sz-ctl[data-ctl]').forEach(function(el){
   el.innerHTML=el.getAttribute('data-ctl').split('|').map(function(g){ var p=g.split('='), keys=p[0].trim(), lab=(p[1]||'').trim();
-    return '<div class="g"><div class="k">'+keys.split('/').map(function(a){ return a.trim().split(/\s+/).map(ctlKeys).join(''); }).join('<span class="or">or</span>')+'</div><div class="l">'+lab+'</div></div>'; }).join(''); }); }
+    return '<div class="g"><div class="k">'+keys.split('/').map(function(a){ return a.trim().split(/\s+/).map(ctlKeys).join(''); }).join('<span class="or">or</span>')+'</div><div class="l">'+lab+'</div></div>'; }).join('');
+  /* the rest of that keys line (music, mute, new game, full screen) becomes one band of small keycaps */
+  var par=el.parentNode, n=el.nextSibling; while(n){ var nx=n.nextSibling; par.removeChild(n); n=nx; }
+  var m=document.createElement('div'); m.className='sz-meta';
+  m.innerHTML='<span><kbd>N</kbd>Music</span><span><kbd>M</kbd>Mute</span><span><kbd>Shift+R</kbd>New game</span><span><kbd>F</kbd>Full screen</span>';
+  par.appendChild(m); if(/left|start/.test(getComputedStyle(par).textAlign)) el.style.justifyContent='flex-start'; }); }
 if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',ctlCards); else ctlCards();
 /* the keys card made a few start screens taller than the game screen: shrink that start screen's box just enough to fit (Chrome's zoom keeps it crisp) */
 function fitStart(){ var ov=document.querySelector('[id$="-start"]'), eb=ov&&ov.querySelector('.sz-eyebrow'), sg=document.getElementById('stage'); if(!eb||!sg||ov.hidden) return;

@@ -99,7 +99,7 @@ h1{font-family:var(--display);font-weight:400;margin:0;line-height:1;text-align:
 .game small{font:700 13.5px/1.25 var(--body);color:var(--dim);padding-inline:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .game small.what{color:var(--cyan)}
 .game:hover .face,.game:focus-visible .face{transform:translateY(-3px);border-color:var(--acc);box-shadow:0 6px 18px color-mix(in srgb,var(--acc) 35%,transparent)}
-.game:focus-visible{outline:3px solid #fff;outline-offset:3px}
+.game:focus-visible{outline:none}
 .game:active .face{transform:translateY(0);transition-duration:.08s}
 .game .new{position:absolute;top:2px;right:2px;z-index:1;font:400 10px/1 var(--pixel);letter-spacing:.06em;color:var(--bg);background:var(--yellow);padding:7px 8px;border-radius:var(--r-s)}
 .game .new.upd{background:var(--cyan)}
@@ -127,7 +127,7 @@ h1{font-family:var(--display);font-weight:400;margin:0;line-height:1;text-align:
 .row{border-bottom:1px solid var(--line)}
 .rh{all:unset;box-sizing:border-box;cursor:pointer;display:flex;align-items:center;gap:var(--s3);width:100%;padding:10px 8px;border-radius:var(--r-s)}
 .rh:hover{background:rgba(255,255,255,.04)}
-.rh:focus-visible{outline:3px solid #fff;outline-offset:-3px}
+.rh:focus-visible{outline:2px solid color-mix(in srgb,var(--cyan) 70%,transparent);outline-offset:-2px}
 .rh .dot{flex:none;width:18px;height:18px;border-radius:50%;border:2px solid var(--dim)}
 .rh .nm{flex:1;min-width:0}
 .rh b{display:block;font:800 16px/1.25 var(--body);color:#fff}
@@ -151,7 +151,7 @@ h1{font-family:var(--display);font-weight:400;margin:0;line-height:1;text-align:
 .chip span::before{content:"○ "}
 .chip input:checked + span{background:var(--c);border-color:var(--c);color:var(--bg)}
 .chip input:checked + span::before{content:"✓ "}
-.chip input:focus-visible + span{outline:3px solid #fff;outline-offset:2px}
+.chip input:focus-visible + span{outline:2px solid color-mix(in srgb,var(--cyan) 70%,transparent);outline-offset:2px}
 .go{display:flex;align-items:center;gap:var(--s3);padding:var(--s3) var(--s4);border-top:1px solid var(--line);background:#070920}
 .go .sum{flex:1;min-width:0;font:800 15px/1.3 var(--body);color:var(--fg)}
 .go .sum small{display:block;font:400 9px/1.6 var(--pixel);letter-spacing:.08em;text-transform:uppercase;color:var(--dim)}
@@ -160,7 +160,7 @@ h1{font-family:var(--display);font-weight:400;margin:0;line-height:1;text-align:
 .play{flex:none;font:400 15px/1 var(--pixel);letter-spacing:.06em;text-transform:uppercase;text-decoration:none;color:var(--bg);background:var(--yellow);padding:16px 22px;border-radius:var(--r-s);
   box-shadow:0 5px 0 #b38a00,0 8px 18px rgba(255,225,58,.28);transition:transform .1s ease-out,box-shadow .1s ease-out}
 .play:hover{transform:translateY(-1px);box-shadow:0 6px 0 #b38a00,0 10px 22px rgba(255,225,58,.4)}
-.play:focus-visible{outline:3px solid #fff;outline-offset:3px}
+.play:focus-visible{outline:none}
 .play:active{transform:translateY(5px);box-shadow:0 0 0 #b38a00,0 2px 8px rgba(255,225,58,.3)}
 .play[aria-disabled="true"]{background:#1a1f4a;color:var(--dim);box-shadow:none;pointer-events:none}
 
@@ -209,7 +209,7 @@ h1{font-family:var(--display);font-weight:400;margin:0;line-height:1;text-align:
 .navbtn{--c:var(--cyan);display:inline-flex;align-items:center;gap:10px;font:400 11px/1 var(--pixel);letter-spacing:.06em;text-transform:uppercase;text-decoration:none;color:var(--bg);background:var(--c);
   padding:12px 16px;border:0;border-radius:6px;box-shadow:0 5px 0 color-mix(in srgb,var(--c) 55%,#000);transition:transform .1s ease-out,box-shadow .1s ease-out}
 .navbtn:hover{transform:translateY(-1px);box-shadow:0 6px 0 color-mix(in srgb,var(--c) 55%,#000),0 8px 18px color-mix(in srgb,var(--c) 30%,transparent)}
-.navbtn:focus-visible{outline:3px solid #fff;outline-offset:3px}
+.navbtn:focus-visible{outline:2px solid color-mix(in srgb,var(--c) 60%,transparent);outline-offset:4px}
 .navbtn:active,.navbtn.sunk{transform:translateY(5px);box-shadow:0 0 0 color-mix(in srgb,var(--c) 55%,#000)}
 /* pages fade in when they open and fade out when a button leaves */
 @media (prefers-reduced-motion:no-preference){ body{animation:pg-in .4s ease-out backwards} body.leaving{opacity:0;transition:opacity .3s .1s ease-in} }
@@ -387,9 +387,9 @@ function glide(c){ var from=c&&c.querySelector('.art'), to=$('g-art'); if(!from|
   an.onfinish=end; an.oncancel=end; }
 function open(id){ var c=cardOf(id); st.game=id; save(); render(); sheet.classList.remove('coin','out');
   if(!sheet.open){ if(sheet.showModal) sheet.showModal(); else sheet.setAttribute('open',''); glide(c); }
-  var on=document.querySelector('.row.on'); if(on) on.scrollIntoView({block:'nearest'}); $('play').focus({preventScroll:true}); }
+  var on=document.querySelector('.row.on'); if(on) on.scrollIntoView({block:'nearest'}); $('play').focus({preventScroll:true,focusVisible:false}); }
 function shut(){ var c=cardOf(st.game);
-  function done(){ sheet.classList.remove('out'); if(sheet.close) sheet.close(); else sheet.removeAttribute('open'); if(c) c.focus({preventScroll:true}); }
+  function done(){ sheet.classList.remove('out'); if(sheet.close) sheet.close(); else sheet.removeAttribute('open'); if(c) c.focus({preventScroll:true,focusVisible:false}); }
   if(RM.matches||!sheet.animate){ done(); return; }
   /* a quick fade and drop instead of a hard cut */
   sheet.classList.add('out'); sheet.querySelector('.box').animate([{opacity:1,transform:'none'},{opacity:0,transform:'translateY(12px) scale(.98)'}],{duration:160,easing:'ease-in'}).onfinish=done; }
