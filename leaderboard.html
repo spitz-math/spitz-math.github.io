@@ -137,6 +137,12 @@ h1{font-family:var(--display);font-weight:400;margin:0;line-height:1;text-align:
 .navbtn:active,.navbtn.sunk{transform:translateY(5px);box-shadow:0 0 0 color-mix(in srgb,var(--c) 55%,#000)}
 /* pages fade in when they open and fade out when a button leaves */
 @media (prefers-reduced-motion:no-preference){ body{animation:pg-in .4s ease-out backwards} body.leaving{opacity:0;transition:opacity .3s .1s ease-in} }
+/* spotlight on #1: one lamp line and a soft light falling on the row (static after it lights) */
+.lb.g1{position:relative;background:radial-gradient(ellipse 55% 140% at 50% -40%,rgba(255,210,63,.26),transparent 70%),rgba(255,210,63,.07)}
+.lb.g1::before{content:"";position:absolute;top:-2px;left:28%;right:28%;height:2px;border-radius:999px;background:var(--gold);box-shadow:0 0 10px 1px rgba(255,210,63,.8),0 6px 18px rgba(255,210,63,.35);pointer-events:none}
+@media (prefers-reduced-motion:no-preference){.lb.g1::before{animation:lamp .7s .25s cubic-bezier(.2,.7,.2,1) both}}
+@keyframes lamp{from{transform:scaleX(0);opacity:0}}
+.lb .sc{font-variant-numeric:tabular-nums}
 @keyframes pg-in{from{opacity:0}}
 </style>
 </head>
@@ -201,7 +207,19 @@ function render(){
       var meta=[e.bonus?'⭐ Suggested skill bonus':'',e.set,fmtDay(e.date)].filter(Boolean).join(' · ');
       return '<div class="lb'+(i<3?' g'+(i+1):'')+'" style="animation-delay:'+(i*50)+'ms"><span class="rk">'+(ORD[i]||(i+1)+'TH')+'</span><span class="nm">'+esc(e.name)+(meta?'<span class="meta">'+esc(meta)+'</span>':'')+'</span><span class="sc">'+esc(e.score)+'</span><span class="ac" title="Accuracy">'+(e.acc==null?'':esc(e.acc)+'%')+'</span></div>'; }).join('')
     :'<div class="empty"><b>No scores yet</b>Nobody is on the '+esc(g.name)+' board yet. Be the first!</div>';
+  tick();
 }
+/* number ticker: each score rolls up to its exact text once the board shows */
+var tickT=0;
+function tick(){ var tok=++tickT; if(matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  [].forEach.call(document.querySelectorAll('#board .lb .sc'),function(el,i){ var txt=el.textContent, m=txt.match(/^(\d[\d,]*)(.*)$/); if(!m) return;
+    var end=+m[1].replace(/,/g,''), com=m[1].indexOf(',')>=0, t0=null, D=700, W=i*50+120; if(!(end>9)) return;
+    el.style.minWidth=el.offsetWidth+'px';
+    function f(n){ return com?n.toLocaleString('en-US'):String(n); }
+    el.textContent=f(0)+m[2];
+    function step(now){ if(tok!==tickT) return; if(t0==null) t0=now+W; var k=Math.max(0,Math.min(1,(now-t0)/D)), e=1-Math.pow(1-k,3);
+      if(k<1){ el.textContent=f(Math.round(end*e))+m[2]; requestAnimationFrame(step); } else el.textContent=txt; }
+    requestAnimationFrame(step); }); }
 function pick(id,scroll){ sel=id; try{ history.replaceState(null,'','#'+id); }catch(e){} render();
   if(scroll&&window.innerWidth<=860) $('panel').scrollIntoView({ behavior:'smooth', block:'start' }); }
 $('games').addEventListener('click',function(e){ var b=e.target.closest('.game'); if(b) pick(b.dataset.g,true); });

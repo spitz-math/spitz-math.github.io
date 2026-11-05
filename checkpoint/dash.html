@@ -535,6 +535,16 @@ table.grid,.tiles,.t,.bar em,.prog em{font-variant-numeric:tabular-nums}
 .lksw button{width:22px;height:22px;border-radius:999px;border:2px solid transparent;background:var(--sw);padding:0;box-shadow:0 0 0 1px rgba(0,0,0,.15) inset}
 .lksw button[aria-pressed="true"]{border-color:var(--ink);box-shadow:0 0 0 2px var(--card) inset}
 
+/* Cells show: Answers (11/5): the picked letter in wrong and partly right cells, so a wave of B's stands out */
+.amode .cell{font-size:11px;font-weight:800;letter-spacing:-.02em}
+.amode .cell.part{font-size:10px}
+/* border beam (11/5): one light runs around a row when that student submits */
+.beam{position:absolute;pointer-events:none;z-index:4;overflow:visible}
+.beam rect{fill:none;stroke-width:2.5;stroke-linecap:round}
+/* Session ID scramble and ticking tiles use tabular digits so nothing jumps */
+.tile b,.showid .big{font-variant-numeric:tabular-nums}
+/* heat row */
+.grid thead th.qh.heat{background:color-mix(in srgb,var(--h) 26%,var(--surf2,#f6f8fb));box-shadow:inset 0 -3px 0 var(--h)}
 /* ---------- dark mode (11/5): the live dashboard, menus and the student drawer. and the tool pages (My sessions, roster, reports, Tests, the editor, question bank) ---------- */
 [data-theme="dark"]{color-scheme:dark;
   --bg:#0e131a; --card:#151c26; --ink:#e4e9f0; --mut:#95a3b4; --line:#2a3443; --blue:#9cbcff; --blue2:#3b7cf0; --top:#1b2330;
@@ -905,7 +915,7 @@ setSeg('#perSeg',per); setSeg('#viewSeg',view);
 
 /* ---------- load ---------- */
 async function load(){ if(busy) return; busy=true;
-  try{ const wantAns=view==='ques'||view==='wr', r=await call('stcDash',{sessions:selSes?[...selSes]:[],answers:wantAns,archive:arc});
+  try{ const wantAns=view==='ques'||view==='wr'||(view==='live'&&cellMode==='ans'), r=await call('stcDash',{sessions:selSes?[...selSes]:[],answers:wantAns,archive:arc});
     DATA=r; DATA.skew=Date.now()-r.now; DATA.ansReq=wantAns;
     if((r.archive||'')!==arc) return;   // the Results from choice changed while this was loading
     if(!selSes){ const saved=arc?[]:store('ses'); const ids=new Set(r.sessions.map(s=>s.id));
@@ -2423,6 +2433,13 @@ $('#sesList').addEventListener('change',e=>{ const x=e.target; if(!sesDraft) ret
   renderSesList(); });
 document.addEventListener('pointerdown',e=>{ if(sesDraft&&!e.target.closest('#sesDD')) closeSes(true); });
 document.addEventListener('keydown',e=>{ if(e.key==='Escape'&&sesDraft){ closeSes(false); $('#sesBtn').focus(); } });
+const TPREV={};
+function tickTiles(){ const rm=matchMedia('(prefers-reduced-motion: reduce)').matches;
+  document.querySelectorAll('#tiles .tile:not(.lvt)').forEach(t=>{ const k=t.querySelector('span')&&t.querySelector('span').textContent, b=t.querySelector('b'); if(!k||!b) return;
+    const txt=b.textContent, m=txt.match(/^(\d+)(.*)$/), was=TPREV[k]; TPREV[k]=m?+m[1]:null;
+    if(rm||!m||was==null||was===+m[1]) return; const from=was, to=+m[1], t0=performance.now(), D=Math.min(900,300+60*Math.abs(to-from));
+    const step=now=>{ if(!b.isConnected) return; const k2=Math.min(1,(now-t0)/D), e=1-Math.pow(1-k2,3); b.textContent=Math.round(from+(to-from)*e)+m[2]; if(k2<1) requestAnimationFrame(step); else b.textContent=txt; };
+    b.textContent=from+m[2]; requestAnimationFrame(step); }); }
 function renderTiles(L){ const c={work:0,idle:0,away:0,nosig:0,paused:0,locked:0,sub:0,end:0,ns:0}; L.forEach(s=>c[stat(s)[0]]++);
   const subs=L.filter(s=>s.submitted), avg=subs.length?Math.round(subs.reduce((a,s)=>a+(s.pct||0),0)/subs.length):null, lc=LEVELS.map(l=>subs.filter(s=>!toScore(s)&&sLvl(s)[4]===l[1]).length), leveled=lc.reduce((a,b)=>a+b,0), meets=lc[0]+lc[1];
   const T=(v,l,cls,tip)=>`<div class="tile${cls?' '+cls:''}"${tip?` title="${esc(tip)}"`:''}><b>${v}</b><span>${l}</span></div>`;
@@ -2430,7 +2447,7 @@ function renderTiles(L){ const c={work:0,idle:0,away:0,nosig:0,paused:0,locked:0
   $('#tiles').innerHTML=(c.ns?T((L.length-c.ns)+' / '+L.length,'Signed in'):T(L.length,'Students'))+T(c.work+c.end,'Working','',c.end?c.end+' at the end screen, not submitted yet':'')
     +(c.idle?T(c.idle,'Idle 3m+','alert','No clicks or typing for 3 minutes or more'):'')+(c.away+c.nosig?T(c.away+c.nosig,'Away / no signal','alert','Left the test tab, or the Chromebook stopped saving'):'')+(c.paused+c.locked?T(c.paused+c.locked,'Paused / stopped','alert'):'')
     +T(c.sub,'Submitted')+T(avg==null?'–':avg+'%','Avg score','','Average score of submitted tests')
-    +`<div class="tile lvt" title="Submitted tests by STAAR level${subs.length>leveled?'. '+(subs.length-leveled)+' still have written answers to score':''}"><b>${lc.map((n,i)=>`<i style="font-style:normal;color:${LEVELS[i][2]}">${n}</i>`).join(' · ')}${leveled?`<span class="lvbar">${lc.map((n,i)=>n?`<i style="flex:${n};background:${LEVELS[i][2]}"></i>`:'').join('')}</span>`:''}<small>${leveled?Math.round(100*meets/leveled)+'% Meets or above':'Levels show as tests are submitted'}</small></b><span>Masters · Meets · Approaches · Did Not Meet</span></div>`; }
+    +`<div class="tile lvt" title="Submitted tests by STAAR level${subs.length>leveled?'. '+(subs.length-leveled)+' still have written answers to score':''}"><b>${lc.map((n,i)=>`<i style="font-style:normal;color:${LEVELS[i][2]}">${n}</i>`).join(' · ')}${leveled?`<span class="lvbar">${lc.map((n,i)=>n?`<i style="flex:${n};background:${LEVELS[i][2]}"></i>`:'').join('')}</span>`:''}<small>${leveled?Math.round(100*meets/leveled)+'% Meets or above':'Levels show as tests are submitted'}</small></b><span>Masters · Meets · Approaches · Did Not Meet</span></div>`;  tickTiles(); }
 function renderBulk(){ $('#bulk').hidden=!sel.size; $('#bulkN').textContent=sel.size+' selected'; }
 const ICON={pause:'<svg viewBox="0 0 14 14"><rect x="3" y="2" width="3" height="10" rx="1" fill="currentColor"/><rect x="8" y="2" width="3" height="10" rx="1" fill="currentColor"/></svg>',
   lock:'<svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="2.5" y="6" width="9" height="6.5" rx="1.3" fill="currentColor" stroke="none"/><path d="M4.5 6V4.3a2.5 2.5 0 015 0V6"/></svg>'};
@@ -2438,9 +2455,17 @@ function cellHtml(s,i,mode){ const q=s.q[i]; const cur=!s.submitted&&+s.item===i
   if(!q) return `<div class="cell un${cur?' cur':''}"></div>`;
   const [pts,mx,ms,visits,,fl]=q; let cls, txt='';
   if(q[9]) cls='wr'; else if(pts==null) cls=visits?'bl':'un'; else if(pts>=mx) cls='ok'; else if(pts>0) cls='part'; else cls='no';
-  if(mode==='time'&&ms) txt=ms<60000?Math.round(ms/1000)+'s':Math.round(ms/60000)+'m'; else if(cls==='part') txt=pts; else if(cls==='wr') txt='✎';
+  if(mode==='ans'&&(cls==='no'||cls==='part')) txt=cellAns(s,i,q[8]); else if(mode==='time'&&ms) txt=ms<60000?Math.round(ms/1000)+'s':Math.round(ms/60000)+'m'; else if(cls==='part') txt=pts; else if(cls==='wr') txt='✎';
   return `<div class="cell ${cls}${cur?' cur':''}${fl?' fl':''}" data-k="${esc(s.key)}" data-i="${i}">${txt}</div>`; }
 
+/* the short answer for a cell in "Cells show: Answers": the letter(s) for multiple choice, a short number, otherwise a dot */
+function cellAns(s,i,raw){ if(!raw) return cellAnsWait(); let a; try{ a=JSON.parse(raw); }catch(e){ return ''; }
+  const m=meta(s.test), t=m&&m.items&&m.items[i]&&m.items[i].type;
+  if(t==='mc'&&typeof a==='number') return L8[a]||'';
+  if(t==='ms'&&Array.isArray(a)) return a.map(k=>L8[k]).join('').slice(0,3);
+  if((t==='num'||t==='eq')&&a!=null){ const v=String(a).replace(/\s/g,''); return esc(v.length>4?v.slice(0,3)+'…':v); }
+  return '•'; }
+function cellAnsWait(){ return DATA&&DATA.ansReq?'':'·'; }
 /* ---------- supports at a glance (11/2): read aloud and calculator from the teachers' rosters (stcRoster) ---------- */
 const SUP={by:{}, at:{}, busy:{}};
 function supFor(s){ const sess=DATA&&DATA.sessions.find(x=>x.id===s.session), t=sess&&sess.teacher||'';
@@ -2451,10 +2476,14 @@ function supFor(s){ const sess=DATA&&DATA.sessions.find(x=>x.id===s.session), t=
         .catch(()=>{ SUP.by[t]=SUP.by[t]||{}; SUP.at[t]=Date.now(); }).finally(()=>{ delete SUP.busy[t]; }); } }
   return (SUP.by[t]||{})[s.code]||null; }
 function supTag(s){ const x=supFor(s); if(!x) return ''; return `<span class="sup">${x.ra?'<i class="ra" title="Read aloud: questions and answer choices are read to this student">RA</i>':''}${x.calc?'<i class="ca" title="Basic calculator on tests with no calculator">Calc</i>':''}</span>`; }
+/* heat row (11/5): each question number is tinted by the class's % correct, so hard questions show before you scroll */
+function heat(L,i){ const a=L.filter(s=>s.q[i]&&s.q[i][0]!=null); if(a.length<2) return null;
+  const p=Math.round(100*a.reduce((t,s)=>t+s.q[i][0],0)/a.reduce((t,s)=>t+s.q[i][1],0));
+  return [p,p>=70?'var(--ok)':p>=40?'var(--part)':'var(--no)',a.length]; }
 function renderLive(L,tests){
   const nq=Math.max(...L.map(s=>Math.max(s.q.length,(meta(s.test)||{items:[]}).items.length)),0);
   const mixed=tests.length>1;
-  const head=`<tr><th class="fx c0"><input type="checkbox" id="allBox" aria-label="Select all shown"></th><th class="fx c1" style="text-align:left">Name</th><th class="fx c2">Per.</th><th class="fx c3" style="text-align:left">Status</th><th class="fx c4" style="text-align:left">Answered</th><th class="fx c5" style="text-align:left">Score</th><th class="fx cL" style="text-align:left">STAAR level <button class="ib0" data-ps="${esc(tests[0]||'')}" title="Performance standards" aria-label="Show the performance standards">ⓘ</button></th><th class="fx c6">Time</th><th class="fx c7">Pause / Stop</th>${Array.from({length:nq},(_,i)=>`<th class="qh">${i+1}</th>`).join('')}</tr>`;
+  const head=`<tr><th class="fx c0"><input type="checkbox" id="allBox" aria-label="Select all shown"></th><th class="fx c1" style="text-align:left">Name</th><th class="fx c2">Per.</th><th class="fx c3" style="text-align:left">Status</th><th class="fx c4" style="text-align:left">Answered</th><th class="fx c5" style="text-align:left">Score</th><th class="fx cL" style="text-align:left">STAAR level <button class="ib0" data-ps="${esc(tests[0]||'')}" title="Performance standards" aria-label="Show the performance standards">ⓘ</button></th><th class="fx c6">Time</th><th class="fx c7">Pause / Stop</th>${Array.from({length:nq},(_,i)=>{ const h=heat(L,i); return `<th class="qh${h?' heat':''}"${h?` style="--h:${h[1]}" title="Question ${i+1}: ${h[0]}% correct (${h[2]} answered)"`:''}>${i+1}</th>`; }).join('')}</tr>`;
   const rows=L.map(s=>{ const [k,label]=stat(s), n=Math.max(s.q.length,(meta(s.test)||{items:[]}).items.length)||1, ans=s.answered||0, l=sLvl(s);
     return `<tr data-k="${esc(s.key)}"><td class="fx c0"><input type="checkbox" class="rowBox" data-k="${esc(s.key)}" ${sel.has(s.key)?'checked':''} aria-label="Select ${esc(s.name)}"></td>
       <td class="fx c1"><button class="nm" data-open="${esc(s.key)}" title="${esc(s.name)}">${esc(s.name)}</button>${supTag(s)}${s.rclicks?`<span class="rcb" title="Tried to right-click ${s.rclicks}× (Chrome's menu, where Google Lens is). The test blocked it.">Right-click ${s.rclicks}×</span>`:''}${mixed?`<div class="rs">${esc(s.session)}</div>`:''}</td>
@@ -2475,12 +2504,12 @@ function renderLive(L,tests){
       <div class="mng exp"><button class="btn" id="expBtn" aria-haspopup="menu" aria-expanded="${EXP.open}">Export <span aria-hidden="true">&#9662;</span></button><div class="mngpanel" id="expPanel" role="menu"${EXP.open?'':' hidden'}>
       <button class="btn" id="rptPrint" role="menuitem" title="One page per student: score, standards to work on, and each missed question with how to solve it">Student reports</button>
       <button class="btn" id="gbCsv" role="menuitem" title="Each student's score and STAAR level (the students shown now), for your gradebook">Download scores</button></div></div>
-      <div class="grp"><span class="lab">Cells show</span><div class="seg" id="cellSeg"><button data-v="score" aria-pressed="${cellMode==='score'}">Correctness</button><button data-v="time" aria-pressed="${cellMode==='time'}">Time</button></div></div></div>
-    <table class="grid${cellMode==='time'?' tmode':''}"><thead>${head}</thead><tbody>${rows}</tbody><tfoot>${foot}</tfoot></table>`;
+      <div class="grp"><span class="lab">Cells show</span><div class="seg" id="cellSeg"><button data-v="score" aria-pressed="${cellMode==='score'}">Correctness</button><button data-v="time" aria-pressed="${cellMode==='time'}">Time</button><button data-v="ans" aria-pressed="${cellMode==='ans'}" title="Wrong and partly right cells show the answer the student picked">Answers</button></div></div></div>
+    <table class="grid${cellMode==='time'?' tmode':''}${cellMode==='ans'?' amode':''}"><thead>${head}</thead><tbody>${rows}</tbody><tfoot>${foot}</tfoot></table>`;
   const all=$('#allBox'); all.checked=L.length>0&&L.every(s=>sel.has(s.key)); all.indeterminate=!all.checked&&L.some(s=>sel.has(s.key));
   all.onchange=()=>{ L.forEach(s=>all.checked?sel.add(s.key):sel.delete(s.key)); render(); };
   document.querySelectorAll('.rowBox').forEach(b=>b.onchange=()=>{ b.checked?sel.add(b.dataset.k):sel.delete(b.dataset.k); renderBulk(); const a=$('#allBox'); a.checked=L.every(s=>sel.has(s.key)); a.indeterminate=!a.checked&&sel.size>0; });
-  document.querySelectorAll('#cellSeg button').forEach(b=>b.onclick=()=>{ cellMode=b.dataset.v; render(); });
+  document.querySelectorAll('#cellSeg button').forEach(b=>b.onclick=()=>{ cellMode=b.dataset.v; render(); if(cellMode==='ans'&&!DATA.ansReq) load(); });
   pinCols(); qnavSet(); $('#gbCsv').onclick=()=>{ EXP.set(false); gradebook(L); }; $('#rptPrint').onclick=()=>{ EXP.set(false); printReports(L); };
   $('#expBtn').onclick=e=>{ e.stopPropagation(); EXP.set(!EXP.open); };
   liveFx(L);
@@ -2494,9 +2523,19 @@ const FX={};
 function liveFx(L){ const first=!Object.keys(FX).length, rm=matchMedia('(prefers-reduced-motion: reduce)').matches;
   L.forEach(s=>{ const st=stat(s)[0], ans=s.q.map(q=>q&&q[0]!=null?1:0).join(''), was=FX[s.key];
     if(was&&!first&&!rm){ const tr=document.querySelector(`#card tr[data-k="${CSS.escape(s.key)}"]`);
-      if(tr){ if(was.st!==st) tr.classList.add('chg');
+      if(tr){ if(was.st!==st) tr.classList.add('chg'); if(was.st!==st&&st==='sub') beam(tr);
         for(let i=0;i<ans.length;i++) if(ans[i]==='1'&&was.ans[i]!=='1'){ const c=tr.querySelector(`.cell[data-i="${i}"]`); if(c) c.classList.add('pop'); } } }
     FX[s.key]={st,ans}; }); }
+function beam(tr){ const card=$('#card'); if(!card) return; const c=card.getBoundingClientRect(), r=tr.getBoundingClientRect();
+  const w=Math.min(r.width,card.clientWidth)-4, h=r.height-2, NS='http://www.w3.org/2000/svg', svg=document.createElementNS(NS,'svg'), rc=document.createElementNS(NS,'rect');
+  svg.setAttribute('class','beam'); svg.setAttribute('width',w); svg.setAttribute('height',h);
+  svg.style.left=(card.scrollLeft+2)+'px'; svg.style.top=(r.top-c.top+card.scrollTop+1)+'px';
+  const id='bm'+Math.random().toString(36).slice(2,7);
+  svg.innerHTML=`<defs><linearGradient id="${id}"><stop offset="0" stop-color="#2e9d55" stop-opacity="0"/><stop offset=".6" stop-color="#2e9d55"/><stop offset="1" stop-color="#f6c344"/></linearGradient></defs>`;
+  rc.setAttribute('x',1); rc.setAttribute('y',1); rc.setAttribute('width',w-2); rc.setAttribute('height',h-2); rc.setAttribute('rx',6); rc.setAttribute('pathLength',100);
+  rc.setAttribute('stroke',`url(#${id})`); rc.setAttribute('stroke-dasharray','22 78'); svg.appendChild(rc); card.appendChild(svg);
+  const a=rc.animate([{strokeDashoffset:100},{strokeDashoffset:0}],{duration:1500,easing:'cubic-bezier(.45,0,.3,1)'});
+  svg.animate([{opacity:1},{opacity:1,offset:.75},{opacity:0}],{duration:1500}); a.onfinish=()=>svg.remove(); }
 /* Download scores: one row per student shown (period and name filters apply), for the gradebook (11/1) */
 function gradebook(L){ const q=v=>{ v=v==null?'':String(v); return /[",\n]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v; }, d=v=>v?new Date(v).toLocaleString([], {year:'numeric',month:'numeric',day:'numeric',hour:'numeric',minute:'2-digit'}):'';
   const rows=[['Name','Period','Session ID','Test','Status','Answered','Questions','Points','Max points','Percent','STAAR level','Submitted','Minutes']];
@@ -3039,7 +3078,14 @@ function showIds(ids){ const L=(ids||[]).map(id=>DATA&&DATA.sessions.find(s=>s.i
   if(!L.length){ $('#upd').textContent='Pick a session first (Session menu).'; return; }
   const box=$('#showId'); box.classList.toggle('many',L.length>1);
   $('#showIdIds').innerHTML=L.slice(0,6).map(s=>`<div class="one"><div class="big">${esc(short(s.id))}</div><div class="tt">${esc(testTitle(s.test))}${s.notes?' · '+esc(s.notes):''}${s.open?'':' · closed'}</div></div>`).join('');
-  $('#veil').hidden=true; box.hidden=false; $('#showIdX').focus(); }
+  $('#veil').hidden=true; box.hidden=false; $('#showIdX').focus(); scramble(box); }
+/* the code scrambles into place left to right (0.8 s), like an arcade readout; off with reduce motion */
+function scramble(box){ if(matchMedia('(prefers-reduced-motion: reduce)').matches) return; const CH='ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+  box.querySelectorAll('.big').forEach((el,n)=>{ const fin=el.textContent, t0=performance.now()+n*120, D=800;
+    const step=now=>{ if(box.hidden) { el.textContent=fin; return; } const k=(now-t0)/D, lock=Math.floor(Math.max(0,k)*fin.length*1.05);
+      el.textContent=[...fin].map((c,i)=>i<lock||c===' '||c==='-'?c:CH[Math.floor(Math.random()*CH.length)]).join('');
+      if(k<1) requestAnimationFrame(step); else el.textContent=fin; };
+    requestAnimationFrame(step); }); }
 function hideIds(){ $('#showId').hidden=true; }
 $('#showIdBtn').onclick=()=>{ if(!DATA||!selSes) return; const L=DATA.sessions.filter(s=>selSes.has(s.id)), open=L.filter(s=>s.open); showIds((open.length?open:L).map(s=>s.id)); };
 $('#showIdX').onclick=hideIds; $('#showId').addEventListener('click',e=>{ if(e.target.id==='showId') hideIds(); });
