@@ -181,7 +181,7 @@ h1{font-family:var(--display);font-weight:400;margin:0;line-height:1;text-align:
 @keyframes pop{from{transform:scale(.6)}to{transform:none}}
 @keyframes drop{from{transform:translateY(-6px);opacity:0}to{transform:none;opacity:1}}
 /* the picked card's art glides into the sheet: a copy flies from the card to its place (Web Animations, see open()) */
-.fly{position:fixed;left:0;top:0;margin:0;z-index:10;pointer-events:none;transform-origin:0 0;border-radius:var(--r-s);overflow:hidden;will-change:transform}
+.fly{position:fixed;margin:0;z-index:10;pointer-events:none;box-sizing:border-box;border-radius:var(--r-s);overflow:hidden;border:2px solid color-mix(in srgb,var(--acc) 50%,transparent)}
 .sheet.flying .gside .art{visibility:hidden}
 .sheet.out .box{opacity:0}
 /* insert coin: Press Start stays sunk, the art zooms toward you, the sheet dims, then the game loads */
@@ -373,13 +373,14 @@ function cardOf(id){ return document.querySelector('.game[data-g="'+id+'"]'); }
    Plain Web Animations on one element (transform only), no page snapshots, so nothing on screen swaps or blinks. */
 function glide(c){ var from=c&&c.querySelector('.art'), to=$('g-art'); if(!from||RM.matches||!to.animate) return;
   var f=from.getBoundingClientRect(), t=to.getBoundingClientRect(); if(!f.width||!t.width) return;
-  var fly=to.cloneNode(true); fly.removeAttribute('id'); fly.classList.add('fly'); fly.style.width=t.width+'px'; fly.style.height=t.height+'px';
+  /* the copy changes its real size (not a scaled snapshot), so the picture is drawn sharp every frame and the copy matches
+     the real art pixel for pixel when it lands: it is simply removed, nothing redraws or resizes after the slide */
+  var fly=to.cloneNode(true); fly.removeAttribute('id'); fly.classList.add('fly'); fly.style.setProperty('--acc',getComputedStyle(sheet.querySelector('.box')).getPropertyValue('--acc'));
   sheet.appendChild(fly); sheet.classList.add('flying');
-  /* smooth ease-out with no overshoot, then the copy fades into the real art (no snap at the end) */
-  var k=f.width/t.width, an=fly.animate([{transform:'translate('+f.left+'px,'+f.top+'px) scale('+k+')'},{transform:'translate('+t.left+'px,'+t.top+'px)'}],
-    {duration:420,easing:'cubic-bezier(.22,1,.36,1)',fill:'both'});
-  function end(){ sheet.classList.remove('flying'); fly.animate([{opacity:1},{opacity:0}],{duration:140,easing:'ease-out',fill:'both'}).onfinish=function(){ fly.remove(); }; }
-  an.onfinish=end; an.oncancel=function(){ fly.remove(); sheet.classList.remove('flying'); }; }
+  function box(r){ return {left:r.left+'px',top:r.top+'px',width:r.width+'px',height:r.height+'px'}; }
+  var an=fly.animate([box(f),box(t)],{duration:420,easing:'cubic-bezier(.22,1,.36,1)',fill:'both'});
+  function end(){ sheet.classList.remove('flying'); fly.remove(); }
+  an.onfinish=end; an.oncancel=end; }
 function open(id){ var c=cardOf(id); st.game=id; save(); render(); sheet.classList.remove('coin','out');
   if(!sheet.open){ if(sheet.showModal) sheet.showModal(); else sheet.setAttribute('open',''); glide(c); }
   var on=document.querySelector('.row.on'); if(on) on.scrollIntoView({block:'nearest'}); $('play').focus({preventScroll:true}); }
