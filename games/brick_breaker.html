@@ -155,6 +155,17 @@ button:disabled{ cursor:default; }
 .bb-field.frenzy::after{ content:''; position:absolute; inset:0; border-radius:inherit; box-shadow:inset 0 0 40px 6px rgba(255,122,61,.8); opacity:0; z-index:40; pointer-events:none; animation:szGlowO 0.6s infinite alternate; }
 @keyframes szGlowO{ to{ opacity:1; } }
 /* ================= /PERF ================= */
+/* start screen steps and scene (2026-11-05) */
+#bb-start .bb-step{ background:none; border:0; border-radius:0; box-shadow:none; transform:none; padding:0; }
+#bb-start .bb-steps{ gap:30px; }
+#bb-start .bb-step b{ display:block; padding:14px 18px; margin-bottom:16px; border-radius:6px; color:#14101E; background:var(--rose); box-shadow:inset 0 -8px 0 rgba(0,0,0,.22), inset 0 6px 0 rgba(255,255,255,.35); text-align:center; }
+#bb-start .bb-step:nth-child(2) b{ background:var(--tang); color:#14101E; } #bb-start .bb-step:nth-child(3) b{ background:var(--mint); color:#14101E; }
+#bb-start > .bb-box{ position:relative; z-index:1; }
+#bb-start::before,#bb-start::after{ content:''; position:absolute; pointer-events:none; z-index:0; }
+#bb-start::before,#bb-start::after{ top:0; bottom:0; width:124px; opacity:.22;
+  background:repeating-linear-gradient(#0D0A13 0 4px,transparent 4px 48px), linear-gradient(90deg,var(--rose) 0 58px,#0D0A13 58px 62px,var(--tang) 62px 120px,#0D0A13 120px); }
+#bb-start::before{ left:0; } #bb-start::after{ right:0; transform:scaleX(-1); }
+/* end start screen steps */
 </style>
 <script src="kit.js"></script>
 </head>
@@ -198,7 +209,7 @@ button:disabled{ cursor:default; }
     <div class="bb-wall" aria-hidden="true"><span style="background:#FF5D73"></span><span style="background:#FF7A3D"></span><span style="background:#FFC83D"></span><span style="background:#5CF2C2"></span><span style="background:#4DC3FF"></span><span style="background:#9B7BFF"></span></div>
     <h2 class="bb-big"><b>BRICK</b> <i>BREAKER</i></h2>
     <p class="bb-sub"><span class="sz-setname">Slope-intercept form.</span> You have 5 minutes: answer questions to earn bounces, then smash the walls.</p>
-    <div class="bb-steps sz-steps">
+    <div class="bb-steps">
       <div class="bb-step"><b>Answer</b>Each right answer earns bounces and cash. A wrong answer costs cash and breaks your streak.</div>
       <div class="bb-step"><b>Smash</b>Each paddle hit uses 1 bounce. Blow up TNT, catch capsules and beat the Big Brick.</div>
       <div class="bb-step"><b>Upgrade</b>Spend cash on a wider paddle, more balls per launch, bigger bounce packs and power-ups.</div>

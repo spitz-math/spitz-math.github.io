@@ -180,6 +180,16 @@ button:disabled{ cursor:default; }
 /* ================= SPITZ ARCADE BRAND: the shared styles live in games/kit.js (anything below is this game's own) ================= */
 
 .rk-over .sz-eyebrow{ margin-bottom:12px; }
+/* start screen steps and scene (2026-11-05) */
+#rk-start .rk-step{ background:none; border:0; border-radius:0; box-shadow:none; transform:none; padding:0; }
+#rk-start .rk-steps{ gap:30px; }
+#rk-start .rk-step b{ position:relative; padding:14px 20px; margin-bottom:16px; border-radius:6px; background:#05070F radial-gradient(circle,rgba(255,255,255,.08) 1.5px,transparent 2px) 0 0/8px 8px; border:3px solid #26304A;
+  text-shadow:0 0 12px currentColor; letter-spacing:.06em; text-transform:uppercase; }
+#rk-start > .rk-box{ position:relative; z-index:1; }
+#rk-start::before,#rk-start::after{ content:''; position:absolute; pointer-events:none; z-index:0; }
+#rk-start::before{ inset:0; background:conic-gradient(from 150deg at 0 0,transparent,rgba(255,255,255,.08) 12deg,transparent 24deg), conic-gradient(from 186deg at 100% 0,transparent,rgba(255,255,255,.08) 12deg,transparent 24deg); }
+#rk-start::after{ left:50%; bottom:-360px; width:720px; height:720px; margin-left:-360px; border-radius:50%; border:6px solid rgba(255,255,255,.12); box-shadow:0 0 0 0 transparent; background:linear-gradient(rgba(255,255,255,.12),rgba(255,255,255,.12)) 50% 0/6px 100% no-repeat; }
+/* end start screen steps */
 </style>
 <script src="kit.js"></script>
 </head>
@@ -224,7 +234,7 @@ button:disabled{ cursor:default; }
   <div class="rk-over" id="rk-start"><div class="rk-box">
     <div class="sz-eyebrow">Spitz <b>Arcade</b></div><h2 class="rk-big"><i>ROCKET</i> <b>BUDS</b></h2>
     <p class="rk-sub"><span class="sz-setname">Multiplication facts, 0 to 12.</span> A 4-minute car soccer match against the Rivals. Answers, goals and saves score points, plus 3 challenges every match.</p>
-    <div class="rk-steps sz-steps">
+    <div class="rk-steps">
       <div class="rk-step"><b>Pit stop</b><span id="rk-step1">Before every kickoff, answer questions. Each right answer fills your boost. Wrong answers fill nothing, so don’t guess.</span></div>
       <div class="rk-step"><b>Drive</b>← → drive. Space jumps (press it again in the air to jump higher). Hold Shift to boost. Shift with ↑ flies. Drive over the gold pads for a little extra boost.</div>
       <div class="rk-step"><b>Score</b>Hit the ball into the orange goal. Aerial goals and long shots score extra. Most goals after 4 minutes wins.</div>

@@ -141,13 +141,9 @@ function ready(){
 }
 if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',ready); else ready();
 
-/* ---------- the start screen (2026-11-05, matches the hub): steps without boxes, parts rise in once, a Start button you can press down ----------
-   A game opts its three steps into the plain look with class="sz-steps" on the steps row (the themed ones, like Skate's stickers, keep their own).
-   This style goes in last, so it wins over the game's card styles. Only opacity and translate move, so a game's own skew or tilt stays. */
+/* ---------- the start screen (2026-11-05, matches the hub): parts rise in once, a Start button you can press down ----------
+   Only opacity and translate move, so a game's own skew or tilt stays. */
 var css2=[
-'.sz-steps{ gap:48px !important; }',
-'.sz-steps > *{ background:none !important; border:0 !important; border-radius:0 !important; box-shadow:none !important; transform:none !important; padding:0 !important; }',
-'.sz-steps > * > b:first-child{ padding-top:16px; border-top:4px solid; }',
 '[id$="-start"] [id$="-go"],[id$="-start"] [id$="-go-start"]{ transition:translate .08s ease-out; }',
 '[id$="-start"] [id$="-go"]:active:not(:disabled),[id$="-start"] [id$="-go-start"]:active:not(:disabled){ translate:0 5px; }'
 ].join('\n');

@@ -113,7 +113,6 @@ html.fh-tile .fh-q:not(.vis) .fh-ch .k{ position:absolute; left:12px; top:12px; 
 .fh-step{ border-radius:26px; background:rgba(15,31,42,.92); border:3px solid var(--border); padding:22px; font:600 29px/1.3 var(--body); }
 .fh-step b{ display:flex; align-items:center; gap:12px; font:700 34px/1.2 var(--display); color:var(--text); margin-bottom:8px; }
 .fh-step b::before{ content:''; width:22px; height:22px; border-radius:50%; background:var(--c); box-shadow:0 0 0 5px color-mix(in srgb,var(--c) 30%,transparent); }
-.fh-steps.sz-steps > * > b:first-child{ border-top-color:var(--c); }
 .fh-step:nth-child(1){ --c:var(--sea); } .fh-step:nth-child(2){ --c:var(--coral); } .fh-step:nth-child(3){ --c:var(--gold); }
 .fh-row{ display:flex; justify-content:center; align-items:center; gap:16px; margin-bottom:24px; flex-wrap:wrap; }
 .fh-input{ width:520px; height:84px; border-radius:42px; border:3px solid var(--border); background:var(--panel); color:var(--text); font:800 38px/1 var(--body); padding:0 30px; -webkit-user-select:text; user-select:text; }
@@ -146,6 +145,19 @@ html.fh-tile .fh-prompt{ font:700 100px/1.1 var(--display); text-align:center; m
 .fh-lake.frenzy::after{ content:''; position:absolute; inset:0; border-radius:inherit; box-shadow:inset 0 0 40px 6px rgba(255,209,102,.75); opacity:0; z-index:40; pointer-events:none; animation:szGlowO 0.8s infinite alternate; }
 @keyframes szGlowO{ to{ opacity:1; } }
 /* ================= /PERF ================= */
+/* start screen steps and scene (2026-11-05) */
+#fh-start .fh-step{ background:none; border:0; border-radius:0; box-shadow:none; transform:none; padding:0; }
+#fh-start .fh-steps{ gap:34px; padding-top:8px; }
+#fh-start .fh-step{ position:relative; padding-top:74px; }
+#fh-start .fh-step::before{ content:''; position:absolute; left:15px; top:-10px; width:2px; height:52px; background:rgba(255,255,255,.55); }
+#fh-start .fh-step::after{ content:''; position:absolute; left:2px; top:38px; width:28px; height:28px; border-radius:50%; background:linear-gradient(#FF5A4E 0 50%,#fff 50%); box-shadow:0 0 0 3px #0B1A24; }
+#fh-start .fh-step b::before{ display:none; }
+#fh-start .fh-step b{ color:var(--c); font-size:38px; }
+#fh-start > .fh-box{ position:relative; z-index:1; }
+#fh-start::before,#fh-start::after{ content:''; position:absolute; pointer-events:none; z-index:0; }
+#fh-start::before{ left:0; right:0; bottom:0; height:44%; background:linear-gradient(rgba(30,120,160,.18),rgba(5,30,50,.4));
+  -webkit-mask:radial-gradient(60px 18px at 60px 0,transparent 98%,#000) 0 0/120px 100% repeat-x; mask:radial-gradient(60px 18px at 60px 0,transparent 98%,#000) 0 0/120px 100% repeat-x; }
+/* end start screen steps */
 </style>
 <script>/* a hub link with an algebra set: answers can be long, so layouts that tile short answers fall back to a list */
 if(/[?&]set=(?!mult\b)[a-z]/.test(location.search)) document.documentElement.classList.add('sz-alg');
@@ -188,7 +200,7 @@ if(/[?&]set=mult\b/.test(location.search)) document.documentElement.classList.ad
   <div class="fh-over" id="fh-start"><div class="fh-box">
     <div class="sz-eyebrow">Spitz <b>Arcade</b></div><h2 class="fh-big"><b>GO</b> <i>FISH</i></h2>
     <p class="fh-sub"><span class="sz-setname">Slope-intercept form, point-slope form, graphs, HOY and VUX.</span> You have 5 minutes: answer to earn bait, then drop your line deep for the rarest fish.</p>
-    <div class="fh-steps sz-steps">
+    <div class="fh-steps">
       <div class="fh-step"><b>Answer</b>Each right answer earns bait and cash. Every fish you hook takes 1 bait. A wrong answer costs $5.</div>
       <div class="fh-step"><b>Drop</b>Press Space to drop your line. Dodge fish on the way down to go deep. On the way up, steer into fish to hook them.</div>
       <div class="fh-step"><b>Upgrade</b>Spend cash in the Tackle Shop on a longer line, more bait, better prices and power-ups.</div>

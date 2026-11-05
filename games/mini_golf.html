@@ -184,6 +184,17 @@ button:disabled{ cursor:default; }
 .mg-fire{ position:absolute; right:14px; top:10px; z-index:5; display:flex; align-items:center; gap:7px; padding:8px 16px; border-radius:999px; background:rgba(4,10,7,.84); border:2px solid #3A4A40; font:700 20px/1 var(--display); letter-spacing:.04em; color:#F2FBF6; pointer-events:none; }
 .mg-fire i{ width:14px; height:18px; border-radius:50% 50% 45% 45%/62% 62% 38% 38%; background:#3A4A40; } .mg-fire i.on{ background:#FF8A3D; } .mg-fire b{ margin-right:4px; }
 .mg-fire.hot{ border-color:#FF8A3D; color:#FFC08A; box-shadow:0 0 18px rgba(255,138,61,.45); }
+/* start screen steps and scene (2026-11-05) */
+#mg-start .mg-step{ background:none; border:0; border-radius:0; box-shadow:none; transform:none; padding:0; }
+#mg-start .mg-steps{ gap:0; border-radius:6px; overflow:hidden; background:#F4F7EE; color:#1D2A22; border:4px solid #1F7A4D; }
+#mg-start .mg-step{ padding:0 20px 20px; } #mg-start .mg-step + .mg-step{ border-left:3px solid #BFD3C4; }
+#mg-start .mg-step b, #mg-start .mg-step:nth-child(2) b, #mg-start .mg-step:nth-child(3) b{ margin:0 -20px 16px; padding:12px 20px; background:#1F7A4D; color:#fff; }
+#mg-start > .mg-box{ position:relative; z-index:1; }
+#mg-start::before,#mg-start::after{ content:''; position:absolute; pointer-events:none; z-index:0; }
+#mg-start::before{ inset:0; background:repeating-linear-gradient(90deg,rgba(120,220,150,.05) 0 120px,transparent 120px 240px); }
+#mg-start::after{ right:110px; bottom:110px; width:110px; height:320px; opacity:.8;
+  background:linear-gradient(to bottom right,var(--coral) 50%,transparent 50.5%) 8px 0/100px 34px no-repeat, linear-gradient(to top right,var(--coral) 50%,transparent 50.5%) 8px 34px/100px 34px no-repeat, linear-gradient(#F4F7EE,#F4F7EE) 0 0/8px 100% no-repeat; }
+/* end start screen steps */
 </style>
 <script src="kit.js"></script>
 </head>
@@ -238,7 +249,7 @@ button:disabled{ cursor:default; }
   <div class="mg-over" id="mg-start"><div class="mg-box">
     <div class="sz-eyebrow">Spitz <b>Arcade</b></div><h2 class="mg-big"><b>MINI</b> <i>GOLF</i></h2>
     <p class="mg-sub"><span class="sz-setname">Slope-intercept form.</span> You have 5 minutes: answer questions to earn golf balls, then take on a wild course of spinners, portals and black holes.</p>
-    <div class="mg-steps sz-steps">
+    <div class="mg-steps">
       <div class="mg-step"><b>Answer</b>Each right answer earns golf balls and cash. A wrong answer costs a little cash and breaks your streak.</div>
       <div class="mg-step"><b>Putt</b>Click where the ball should stop, hold Space and let go at 100%. Bank shots, portals and coins earn bonus points.</div>
       <div class="mg-step"><b>Get hot</b>Make par or better 3 holes in a row and you are ON FIRE: double points. Spend cash in the Pro Shop.</div>

@@ -171,6 +171,20 @@ button:disabled{ cursor:default; }
 .bs-bin.glow::after{ content:''; position:absolute; inset:0; border-radius:inherit; box-shadow:0 0 26px var(--pickle); opacity:0; pointer-events:none; animation:szGlowO 0.8s infinite alternate; }
 @keyframes szGlowO{ to{ opacity:1; } }
 /* ================= /PERF ================= */
+/* start screen steps and scene (2026-11-05) */
+#bs-start .bs-step{ background:none; border:0; border-radius:0; box-shadow:none; transform:none; padding:0; }
+#bs-start .bs-steps{ gap:0; padding:26px 10px; border-radius:14px; background:#2A1810; border:6px solid #6B3F22; box-shadow:inset 0 0 0 3px #1A0E08; }
+#bs-start .bs-step{ padding:0 30px; }
+#bs-start .bs-step + .bs-step{ border-left:3px dotted rgba(255,236,200,.35); }
+#bs-start .bs-step b{ display:flex; align-items:baseline; gap:12px; font-size:40px; }
+#bs-start .bs-step b::after{ content:''; flex:1; border-bottom:4px dotted currentColor; opacity:.5; }
+#bs-start > .bs-box{ position:relative; z-index:1; }
+#bs-start::before,#bs-start::after{ content:''; position:absolute; pointer-events:none; z-index:0; }
+#bs-start::before{ left:0; right:0; top:0; height:58px; opacity:.75; background:repeating-linear-gradient(90deg,#C8321E 0 80px,#F6E7C8 80px 160px);
+  -webkit-mask:linear-gradient(#000 0 0) 0 0/100% 40px no-repeat, radial-gradient(40px 18px at 40px 40px,#000 98%,transparent) 0 0/80px 100% repeat-x;
+          mask:linear-gradient(#000 0 0) 0 0/100% 40px no-repeat, radial-gradient(40px 18px at 40px 40px,#000 98%,transparent) 0 0/80px 100% repeat-x; }
+#bs-start > .bs-box{ margin-top:30px; }
+/* end start screen steps */
 </style>
 <script src="kit.js"></script>
 </head>
@@ -213,7 +227,7 @@ button:disabled{ cursor:default; }
   <div class="bs-over" id="bs-start"><div class="bs-box">
     <div class="sz-eyebrow">Spitz <b>Arcade</b></div><h2 class="bs-big"><b>BURGER</b> <i>SHOP</i></h2>
     <p class="bs-sub"><span class="sz-setname">Slope-intercept form.</span> You have 5 minutes: answer questions to stock the kitchen, then grill, stack and serve for 3 stars.</p>
-    <div class="bs-steps sz-steps">
+    <div class="bs-steps">
       <div class="bs-step"><b>Answer</b>Each right answer earns ingredients and cash. A wrong answer costs a little cash and breaks your streak.</div>
       <div class="bs-step"><b>Cook</b>Grill patties: flip and pull on green. Drop each layer when the dropper is over the plate. Earn 3 stars.</div>
       <div class="bs-step"><b>Upgrade</b>Spend cash in the Supply Shop on more ingredients, fancy plates, steady hands and power-ups.</div>

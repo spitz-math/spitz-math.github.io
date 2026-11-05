@@ -148,6 +148,21 @@ button:disabled{ cursor:default; }
 
 /* the full-screen reminder sits in the empty middle of the top bar during play */
 :root{ --sz-fs-x:0.41; --sz-fs-y:top; --sz-fs-top:24; }
+/* start screen steps and scene (2026-11-05) */
+#bl-start .bl-step{ background:none; border:0; border-radius:0; box-shadow:none; transform:none; padding:0; }
+#bl-start .bl-steps{ gap:34px; padding-top:18px; border-top:6px solid #3A3550; }
+#bl-start .bl-step{ position:relative; background:#FFF4DC; color:#2A1A10; padding:30px 24px 40px; border-radius:0 0 6px 6px; transform:rotate(-1.2deg); transform-origin:50% 0;
+  -webkit-mask:linear-gradient(#000 0 0) top/100% calc(100% - 14px) no-repeat, conic-gradient(from -45deg at bottom,#0000,#000 1deg 89deg,#0000 90deg) bottom/28px 14px repeat-x;
+          mask:linear-gradient(#000 0 0) top/100% calc(100% - 14px) no-repeat, conic-gradient(from -45deg at bottom,#0000,#000 1deg 89deg,#0000 90deg) bottom/28px 14px repeat-x; }
+#bl-start .bl-step:nth-child(2){ transform:rotate(1deg); } #bl-start .bl-step:nth-child(3){ transform:rotate(-.4deg); }
+#bl-start .bl-step::before{ content:''; position:absolute; left:50%; top:-12px; width:56px; height:22px; margin-left:-28px; border-radius:6px; background:#8A8FA8; }
+#bl-start .bl-step b{ color:#D7261E; font-size:50px; padding-bottom:10px; margin-bottom:12px; border-bottom:3px dashed rgba(42,26,16,.35); }
+#bl-start .bl-step:nth-child(2) b{ color:#E07B00; } #bl-start .bl-step:nth-child(3) b{ color:#2E8B2E; }
+#bl-start > .bl-box{ position:relative; z-index:1; }
+#bl-start::before,#bl-start::after{ content:''; position:absolute; pointer-events:none; z-index:0; }
+#bl-start::before{ inset:0; background:repeating-conic-gradient(from 0deg at 50% 22%, rgba(255,196,0,.07) 0 7deg, transparent 7deg 15deg); }
+#bl-start::after{ left:0; right:0; bottom:0; height:120px; background:repeating-linear-gradient(135deg,#D7261E 0 40px,#B81E17 40px 80px); opacity:.35; -webkit-mask:linear-gradient(transparent,#000); mask:linear-gradient(transparent,#000); }
+/* end start screen steps */
 </style>
 <script src="kit.js"></script>
 </head>
@@ -189,7 +204,7 @@ button:disabled{ cursor:default; }
   <div class="bl-over" id="bl-start"><div class="bl-box">
     <div class="sz-eyebrow">Spitz <b>Arcade</b></div><h2 class="bl-big"><b>BURGER</b> <i>BLASTER</i></h2>
     <p class="bl-sub"><span class="sz-setname">Slope-intercept form.</span> You have 5 minutes: answer questions to earn burgers, then blast the towers.</p>
-    <div class="bl-steps sz-steps">
+    <div class="bl-steps">
       <div class="bl-step"><b>Answer</b>Each right answer loads burgers and earns cash. A wrong answer costs a little cash and breaks your streak.</div>
       <div class="bl-step"><b>Blast</b>Drag back and let go to feed every Muncher. A streak of 3 loads a special burger: press Space in the air!</div>
       <div class="bl-step"><b>Upgrade</b>Spend cash in the Snack Shop on more burgers, heavier patties, more points and power-ups.</div>

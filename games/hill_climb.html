@@ -177,6 +177,19 @@ button:disabled{ cursor:default; }
 /* ================= SPITZ ARCADE BRAND: the shared styles live in games/kit.js (anything below is this game's own) ================= */
 
 .hc-over .sz-eyebrow{ margin-bottom:12px; }
+/* start screen steps and scene (2026-11-05) */
+#hc-start .hc-step{ background:none; border:0; border-radius:0; box-shadow:none; transform:none; padding:0; }
+#hc-start .hc-steps{ gap:34px; }
+#hc-start .hc-step{ position:relative; padding-left:26px; border-left:8px solid #8C8C96; }
+#hc-start .hc-step b{ display:table; margin:0 0 16px -26px; padding:12px 24px; border-radius:6px; background:#0E6B3A; color:#fff; box-shadow:inset 0 0 0 4px #0E6B3A, inset 0 0 0 7px #fff; font-size:36px; }
+#hc-start .hc-step:nth-child(2) b{ background:#0B4F9C; box-shadow:inset 0 0 0 4px #0B4F9C, inset 0 0 0 7px #fff; }
+#hc-start .hc-step:nth-child(3) b{ background:#F2B01E; color:#1E1300; box-shadow:inset 0 0 0 4px #F2B01E, inset 0 0 0 7px #1E1300; }
+#hc-start > .hc-box{ position:relative; z-index:1; }
+#hc-start::before,#hc-start::after{ content:''; position:absolute; pointer-events:none; z-index:0; }
+#hc-start::before{ left:0; right:0; bottom:0; height:300px;
+  background:radial-gradient(60% 100% at 20% 100%,#2B2010 70%,transparent 71%), radial-gradient(55% 90% at 75% 100%,#3A2A12 70%,transparent 71%), radial-gradient(40% 70% at 50% 100%,#4A3514 70%,transparent 71%); opacity:.9; }
+#hc-start::after{ left:0; right:0; bottom:46px; height:6px; background:repeating-linear-gradient(90deg,#F2B01E 0 70px,transparent 70px 130px); opacity:.5; }
+/* end start screen steps */
 </style>
 <script src="kit.js"></script>
 </head>
@@ -236,7 +249,7 @@ button:disabled{ cursor:default; }
   <div class="hc-over" id="hc-start"><div class="hc-box">
     <div class="sz-eyebrow">Spitz <b>Arcade</b></div><h2 class="hc-big">HILL <b>CLIMB</b></h2>
     <p class="hc-sub"><span class="sz-setname">Slope-intercept form.</span> Drive your monster truck as far as you can in 5 minutes. Right answers fill your gas tank.</p>
-    <div class="hc-steps sz-steps">
+    <div class="hc-steps">
       <div class="hc-step"><b>Fill up</b><span id="hc-step1">Each right answer adds gas and cash. Wrong answers add nothing, so don’t guess.</span></div>
       <div class="hc-step"><b>Drive</b>→ gas, ← brake. In the air, brake tips the nose up and gas tips it down. Land flat on both wheels for a speed boost!</div>
       <div class="hc-step"><b>Upgrade</b>Spend cash in the Garage on a bigger engine, grippier tires and more gas per answer.</div>
