@@ -932,6 +932,15 @@ html[data-theme="dark"] .tbtns .tskip{background:none}
   @keyframes sbin{from{opacity:0;transform:translateX(-10px)}}
 }
 html[data-nav="side"] .dbar{overflow-x:hidden}
+
+/* dialogs in dark mode (11/5): the Customize box and the question viewer frame */
+html[data-theme="dark"] .qvbox{background:var(--card);color:var(--ink)}
+html[data-theme="dark"] .qvbox iframe{background:#f4f6f9}
+html[data-theme="dark"] .rgopt .ch{background:#232428;border-color:#3d4046;color:var(--ink)}
+html[data-theme="dark"] .rgopt .ch[aria-pressed="true"]{background:color-mix(in srgb,var(--tb) 30%,#232428);border-color:var(--tb);color:#fff}
+.rgopt .ch[aria-pressed="true"]{border-color:var(--tb);background:color-mix(in srgb,var(--tb) 14%,var(--card,#fff))}
+.rgopt input{accent-color:color-mix(in srgb,var(--tb) 88%,#000)}
+html[data-theme="dark"] .rgopt label,html[data-theme="dark"] .qvh h3{color:var(--ink)}
 </style>
 </head>
 <body>
@@ -957,7 +966,7 @@ html[data-nav="side"] .dbar{overflow-x:hidden}
   <div class="mng" id="mng"><button class="btn mngbtn" id="mngBtn" aria-haspopup="menu" aria-expanded="false"><svg viewBox="0 0 24 24" class="gear" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M12 2.8v2.4M12 18.8v2.4M2.8 12h2.4M18.8 12h2.4M5.5 5.5l1.7 1.7M16.8 16.8l1.7 1.7M5.5 18.5l1.7-1.7M16.8 7.2l1.7-1.7"/></svg><span class="mngt">Manage</span><span class="mngs">Settings</span> <span class="car" aria-hidden="true">&#9662;</span></button>
     <div class="mngpanel" id="mngPanel" role="menu" hidden>
   <div class="mwho" id="whoLbl"></div>
-  <button class="btn" id="needBtn" role="menuitem">Who needs you, Room and Grid…</button>
+  <button class="btn" id="needBtn" role="menuitem">Customize Live…</button>
   <button class="btn" id="tourBtn" role="menuitem">Take the tour</button>
   <label class="mauto" title="Auto-refresh every 15 seconds"><input type="checkbox" id="auto" checked> Auto-refresh every 15 seconds</label>
   <button class="btn" id="mySesBtn" role="menuitem">My sessions</button>
@@ -971,7 +980,7 @@ html[data-nav="side"] .dbar{overflow-x:hidden}
 </header>
 <div class="herow">
 <div class="tiles" id="tiles"></div>
-  <div class="vctl" id="vctl"><div class="grp" id="layGrp"><div class="seg" id="laySeg" aria-label="Layout"><button data-v="room">Room</button><button data-v="grid">Grid</button></div><button class="btn" id="rgCust">Customize</button></div>
+  <div class="vctl" id="vctl"><div class="grp" id="layGrp"><div class="seg" id="laySeg" aria-label="Layout"><button data-v="room">Room</button><button data-v="grid">Grid</button></div></div>
     <div class="grp" id="sortGrp"><span class="lab">Sort</span><select id="sort"><option value="needs">Needs you first</option><option value="name">First name</option><option value="last">Last name</option><option value="period">Period</option><option value="status">Status</option><option value="progress">Progress</option><option value="score">Score</option><option value="input">Last activity</option></select></div></div>
 </div>
 <div class="main">
@@ -980,7 +989,7 @@ html[data-nav="side"] .dbar{overflow-x:hidden}
 </div>
 <p class="legal">Spitz Checkpoint is an independent practice tool made by Mr. Spitz. It is not affiliated with or endorsed by the Texas Education Agency (TEA) or Cambium Assessment. STAAR&reg; is a registered trademark of TEA. Released STAAR questions and reference sheets are &copy; TEA and are used here for classroom practice.</p>
 <div class="veil" id="qvVeil" hidden><div class="qvbox" role="dialog" aria-modal="true" aria-labelledby="qvTitle"><div class="qvh"><h3 id="qvTitle">Question</h3><button class="btn" id="qvReveal" aria-pressed="false" title="The correct answer stays hidden until you ask, so it is safe on a projector">Show the answer</button><button class="btn" id="qvClose">Close</button></div><div class="qvmsg" id="qvMsg" hidden></div><iframe id="qvFrame" title="Question preview" sandbox="allow-scripts"></iframe></div></div>
-<div class="veil" id="rgVeil" hidden><div class="qvbox" role="dialog" aria-modal="true" aria-labelledby="rgTitle"><div class="qvh"><h3 id="rgTitle">Customize</h3><button class="btn" id="rgClose">Close</button></div><div class="rgbody rgopt" id="rgBody"></div></div></div>
+<div class="veil" id="rgVeil" hidden><div class="qvbox" role="dialog" aria-modal="true" aria-labelledby="rgTitle"><div class="qvh"><h3 id="rgTitle">Customize Live</h3><button class="btn" id="rgClose">Close</button></div><div class="rgbody rgopt" id="rgBody"></div></div></div>
 <div class="toasts" id="toasts" aria-live="polite"></div>
 <div class="showid" id="showId" hidden role="dialog" aria-modal="true" aria-label="Session ID"><button class="btn sx" id="showIdX">Close (Esc)</button><div class="go">Go to <b>spitzmath.com/checkpoint</b> and type the Session ID</div><div class="ids" id="showIdIds"></div></div>
 <aside class="drawer" id="drawer" hidden aria-label="Student details"><div class="dh"><h2 id="dName"></h2><button class="btn" id="dClose">Close</button></div><div class="db" id="dBody"></div></aside>
@@ -1353,7 +1362,7 @@ const TOUR=[
   {t:'#say',h:'Who needs you',p:'This line names the students who need you: left the test tab, idle, or lost signal. Click a name to see their answers.'},
   {t:'#laySeg',h:'Room or Grid',p:'Room gives each student a card, best for exit tickets. Grid shows every answer at once, best for long tests. Click any square to see the question.'},
   {t:'#pgNav',h:'Everything else',p:'Your sessions, roster and reports live here. The arrow at the top folds this bar into a slim strip when you want more room.'},
-  {t:'#mngBtn',h:'Make it yours',p:'Settings has dark mode and your side bar color. Your choices follow you to any computer you sign in on.'}];
+  {t:'#mngBtn',h:'Make it yours',p:'Settings has dark mode, your side bar color, and Customize Live: who counts as needing you, Room or Grid, and student order. Your choices follow you to any computer you sign in on.'}];
 let TR=null, tourReady=0;
 function tourVis(sel){ const e=$(sel); if(!e) return null; const r=e.getBoundingClientRect(); return r.width>4&&r.height>4&&getComputedStyle(e).visibility!=='hidden'?r:null; }
 function tourStart(){ if(innerWidth<760) return; tourEnd(true); const steps=TOUR.filter(x=>tourVis(x.t)); if(!steps.length) return;
@@ -3106,9 +3115,9 @@ function rgCustom(){ const ch=(k,v,l,cur)=>`<button class="ch" data-rgk="${k}" d
     <h4>Square size</h4><div class="row">${ch('size','s','Small',RG.size)}${ch('size','m','Medium',RG.size)}${ch('size','l','Large',RG.size)}</div>
     <h4>Count as "needs you"</h4>${cb('alerts','away','Left the test tab')}${cb('alerts','idle','No answer for 3+ minutes')}${cb('alerts','nosig','Lost connection')}${cb('alerts','paused','Paused or stopped by you')}
     <h4>Show</h4>${cb('cols','lvl','STAAR level (card colors in Room, a column in Grid)')}${cb('cols','pts','Points so far in Grid')}
-    <p class="hint" style="margin:14px 0 0">Saved on this computer. Light, dark and the top bar color are in Manage.</p>`;
+    <p class="hint" style="margin:14px 0 0">Saved to your account, so it follows you to any computer. Dark mode and the side bar color are in Settings.</p>`;
   $('#rgVeil').hidden=false; $('#rgClose').focus(); }
-$('#rgCust').onclick=rgCustom; $('#rgClose').onclick=()=>{ $('#rgVeil').hidden=true; };
+$('#rgClose').onclick=()=>{ $('#rgVeil').hidden=true; };
 $('#rgVeil').addEventListener('click',e=>{ if(e.target.id==='rgVeil'){ $('#rgVeil').hidden=true; return; }
   const b=e.target.closest('[data-rgk]'); if(!b) return; const k=b.dataset.rgk, v=b.dataset.v;
   b.parentElement.querySelectorAll('.ch').forEach(x=>x.setAttribute('aria-pressed',String(x===b)));
