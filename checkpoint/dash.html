@@ -636,6 +636,8 @@ table.grid,.tiles,.t,.bar em,.prog em{font-variant-numeric:tabular-nums}
 /* ---------- Room and Grid (11/5, Kody): the Live view as student cards or a full-width answer map, under a sentence that says who needs you ---------- */
 :root{--need:#d4237a;--needbg:rgba(212,35,122,.07);--tint:13%;--fd:'Bricolage Grotesque',Onest,"Segoe UI",sans-serif}
 [data-theme="dark"]{--need:#ff5aa8;--needbg:rgba(255,90,168,.09);--tint:18%;--mast:#46c97a;--meets:#5ab0f0;--app:#e9a93c;--dnm:#f0675a}
+/* with the Pink side bar, "needs you" turns violet so it never blends into the side bar (violet matches no level color) */
+[data-accent="pink"]{--need:#7c3aed;--needbg:rgba(124,58,237,.07)} [data-theme="dark"][data-accent="pink"]{--need:#a78bfa;--needbg:rgba(167,139,250,.1)}
 .wm,.say,.rgc .nmv,.rgr .nmv,.rgcall,.stl b{font-family:var(--fd)}
 .tiles.hero{display:block;padding:18px 20px 10px}
 .say{margin:0;font-size:clamp(20px,2.3vw,30px);font-weight:700;line-height:1.2;text-wrap:balance;letter-spacing:0;font-variation-settings:'opsz' 96;color:var(--ink)}
