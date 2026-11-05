@@ -903,6 +903,24 @@ html[data-nav="side"] .dbar{border-right-color:color-mix(in srgb,var(--tb) 25%,v
 .lksw button[aria-pressed="true"] i{box-shadow:0 0 0 2px var(--card,#fff),0 0 0 4px var(--sw)}
 .lksw button[aria-pressed="true"]::after{content:"✓";margin-left:auto;color:var(--sw);font-weight:800}
 html[data-theme="dark"] .lksw button[aria-pressed="true"]::after{color:var(--ink)}
+
+/* getting started + tour (11/5) */
+.gs{max-width:760px;margin:28px auto;padding:8px 20px}
+.gs h2{font:700 30px var(--fd);margin:0 0 6px;color:var(--ink)}
+.gs .gsp{color:var(--mut);font-size:15px;margin:0 0 22px}
+.gsl{list-style:none;margin:0;padding:0;display:grid;gap:12px}
+.gsl li{display:flex;gap:16px;align-items:flex-start;background:var(--card,#fff);border:1px solid var(--line);border-radius:14px;padding:18px 20px}
+.gsl li>b{flex:none;display:grid;place-items:center;width:34px;height:34px;border-radius:999px;background:color-mix(in srgb,var(--tb) 88%,#000);color:#fff;font:700 16px var(--fd)}
+.gsl h3{margin:4px 0 4px;font:700 18px var(--fd);color:var(--ink)} .gsl p{margin:0 0 10px;color:var(--mut);font-size:14px;line-height:1.45} .gsl p:last-child{margin-bottom:0}
+.tour{position:fixed;inset:0;z-index:300}
+.tspot{position:fixed;border-radius:12px;box-shadow:0 0 0 9999px rgba(12,14,18,.55),0 0 0 3px var(--tb);transition:all .25s ease;pointer-events:none}
+.tbub{position:fixed;background:var(--card,#fff);color:var(--ink);border-radius:14px;padding:16px 18px 14px;box-shadow:0 18px 40px rgba(0,0,0,.3);transition:left .25s ease,top .25s ease}
+.tbub .tn{font-size:12px;font-weight:600;color:color-mix(in srgb,var(--tb) 85%,#000)}
+.tbub h3{margin:4px 0 6px;font:700 19px var(--fd)} .tbub p{margin:0 0 14px;font-size:14px;line-height:1.45;color:var(--mut)}
+.tbtns{display:flex;gap:8px;align-items:center} .tbtns .tskip{margin-right:auto;border:0;background:none;color:var(--mut);padding:4px 0;font-size:13px}
+.tbtns .btn.pri,.gs .btn.pri{background:color-mix(in srgb,var(--tb) 88%,#000);border-color:transparent;color:#fff}
+html[data-theme="dark"] .tbtns .tskip{background:none}
+@media (prefers-reduced-motion:reduce){ .tspot,.tbub{transition:none} }
 </style>
 </head>
 <body>
@@ -928,6 +946,7 @@ html[data-theme="dark"] .lksw button[aria-pressed="true"]::after{color:var(--ink
   <div class="mng" id="mng"><button class="btn mngbtn" id="mngBtn" aria-haspopup="menu" aria-expanded="false"><svg viewBox="0 0 24 24" class="gear" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M12 2.8v2.4M12 18.8v2.4M2.8 12h2.4M18.8 12h2.4M5.5 5.5l1.7 1.7M16.8 16.8l1.7 1.7M5.5 18.5l1.7-1.7M16.8 7.2l1.7-1.7"/></svg><span class="mngt">Manage</span><span class="mngs">Settings</span> <span class="car" aria-hidden="true">&#9662;</span></button>
     <div class="mngpanel" id="mngPanel" role="menu" hidden>
   <div class="mwho" id="whoLbl"></div>
+  <button class="btn" id="tourBtn" role="menuitem">Take the tour</button>
   <label class="mauto" title="Auto-refresh every 15 seconds"><input type="checkbox" id="auto" checked> Auto-refresh every 15 seconds</label>
   <button class="btn" id="mySesBtn" role="menuitem">My sessions</button>
   <button class="btn" id="rosBtn" role="menuitem">My roster</button>
@@ -1263,7 +1282,7 @@ async function load1(quiet){ busy=true;
     await Promise.all(need.map(loadMeta));
     [...new Set(r.students.map(s=>s.test))].filter(t=>t&&!need.includes(t)).forEach(loadMeta);
     { const u=$('#upd'), tm=new Date().toLocaleTimeString([], {hour:'numeric',minute:'2-digit',second:'2-digit'}); u.textContent=arc?'Archive '+arc+' (read only)':'Live'; u.title='Updated '+tm+'. Click to refresh now.'; u.classList.remove('err'); u.classList.add('ok'); u.classList.remove('beat'); void u.offsetWidth; u.classList.add('beat'); }
-    render(); alCheck();
+    render(); alCheck(); if(!load.seen){ load.seen=1; tourMaybe(); }
   }catch(e){ const m=String(e&&e.message||e);
     if(/NOTOWNER/.test(m)){ $('#card').innerHTML='<div class="empty">This page is only for teachers on the Spitz Checkpoint list. Ask the Checkpoint admin to add your school email.</div>'; stop(); }
     else if(m==='offline'){ $('#card').innerHTML='<div class="empty">Open the dashboard from the web app link with <b>?view=dash</b> at the end (Sheet menu: Spitz Checkpoint &gt; Open the dashboard).</div>'; stop(); }
@@ -1294,7 +1313,7 @@ function startAuto(){ stop(); if($('#auto').checked) timer=setInterval(()=>{ if(
 /* settings follow the teacher (11/5): Look, Room/Grid, order, alerts and a few view choices are saved to the teacher's
    sign-in through stcPrefs in Code.gs, so they carry to any computer. This device keeps a copy so the page opens right away.
    Without stcPrefs in Code.gs it quietly stays on this device only. */
-const PF_KEYS=['look','rg','sort','alerts','qorder','subOnly','qbCourse','qbHideUsed'];
+const PF_KEYS=['look','rg','sort','alerts','qorder','subOnly','qbCourse','qbHideUsed','tour'];
 var pfT=null, pfOk=false;   // var: keep() can run before this line
 function pfLocal(){ const o={}; PF_KEYS.forEach(k=>{ try{ const v=localStorage.getItem('spitzDash:'+k); if(v!=null) o[k]=JSON.parse(v); }catch(e){} }); return o; }
 function pfDirty(k){ if(!pfOk||!PF_KEYS.includes(k)) return; clearTimeout(pfT); pfT=setTimeout(()=>{ call('stcPrefs',{set:pfLocal()},30000).catch(()=>{}); },1200); }
@@ -1306,8 +1325,43 @@ function pfApply(p){ PF_KEYS.forEach(k=>{ if(k in p) try{ localStorage.setItem('
   if(p.qorder) QV.order=p.qorder;
   if(DATA) render(); }
 (async()=>{ if(!APP) return; try{ const r=await call('stcPrefs',{},30000); pfOk=true;
-  if(r&&r.prefs&&Object.keys(r.prefs).length) pfApply(r.prefs); else if(Object.keys(pfLocal()).length) pfDirty('look'); }catch(e){} })();
+  if(r&&r.prefs&&Object.keys(r.prefs).length) pfApply(r.prefs); else if(Object.keys(pfLocal()).length) pfDirty('look'); }catch(e){} tourMaybe(); })();
+/* ---------- getting started (11/5): a brand-new teacher sees three steps instead of an empty screen ---------- */
+function gsShow(){ const me=DATA&&DATA.me||{}, nm=me.name?', '+esc(me.name):'';
+  $('#card').innerHTML=`<div class="gs"><h2>Welcome${nm}</h2><p class="gsp">Three steps and your class shows up live on this screen.</p><ol class="gsl">
+    <li><b>1</b><div><h3>Add your class</h3><p>Paste student emails, names and periods, or bring in a class list from Google Classroom. You can skip this: students not on a roster type their name and pick a period.</p><button class="btn" data-go="ros">Open My roster</button></div></li>
+    <li><b>2</b><div><h3>Make a session</h3><p>Pick a test and click <b>Make the session</b>. You get a short Session ID, like 3KG7.</p><button class="btn pri" data-go="ses">Open My sessions</button></div></li>
+    <li><b>3</b><div><h3>Students join</h3><p>They go to <b>spitzmath.com/checkpoint</b> and type the Session ID. This screen fills in as they work, and tells you who needs you.</p></div></li></ol></div>`;
+  $('#card').querySelectorAll('[data-go]').forEach(b=>b.onclick=()=>$('#pgNav [data-pg="'+b.dataset.go+'"]').click()); }
+
+/* ---------- first-visit tour (11/5): once per teacher (saved with their settings), again from Settings › Take the tour ---------- */
+const TOUR=[
+  {t:'.dbar .vgrp',h:'Your three views',p:'Live shows who is working right now. Standards and Questions show how the class did, by TEKS and by question.'},
+  {t:'#sesDD',h:'Pick a session',p:'Your sessions are here. Pick more than one to see several classes at once. The screen button under it shows the Session ID big for the projector.'},
+  {t:'#say',h:'Who needs you',p:'This line names the students who need you: left the test tab, idle, or lost signal. Click a name to see their answers.'},
+  {t:'#laySeg',h:'Room or Grid',p:'Room gives each student a card, best for exit tickets. Grid shows every answer at once, best for long tests. Click any square to see the question.'},
+  {t:'#pgNav',h:'Everything else',p:'Your sessions, roster and reports live here. The arrow at the top folds this bar into a slim strip when you want more room.'},
+  {t:'#mngBtn',h:'Make it yours',p:'Settings has dark mode and your side bar color. Your choices follow you to any computer you sign in on.'}];
+let TR=null, tourReady=0;
+function tourVis(sel){ const e=$(sel); if(!e) return null; const r=e.getBoundingClientRect(); return r.width>4&&r.height>4&&getComputedStyle(e).visibility!=='hidden'?r:null; }
+function tourStart(){ if(innerWidth<760) return; tourEnd(true); const steps=TOUR.filter(x=>tourVis(x.t)); if(!steps.length) return;
+  TR={steps,i:0,el:document.createElement('div')}; TR.el.className='tour'; TR.el.innerHTML='<div class="tspot"></div><div class="tbub" role="dialog" aria-live="polite"></div>'; document.body.appendChild(TR.el);
+  TR.el.addEventListener('click',e=>{ const a=e.target.closest('[data-t]'); if(!a) return; const k=a.dataset.t; if(k==='next'){ if(TR.i<TR.steps.length-1){ TR.i++; tourDraw(); } else tourEnd(); } else if(k==='back'){ if(TR.i>0){ TR.i--; tourDraw(); } } else tourEnd(); });
+  tourDraw(); }
+function tourDraw(){ if(!TR) return; const st=TR.steps[TR.i], r=tourVis(st.t); if(!r){ tourEnd(); return; }
+  const pad=6, sp=TR.el.querySelector('.tspot'), b=TR.el.querySelector('.tbub'), n=TR.steps.length;
+  Object.assign(sp.style,{left:(r.left-pad)+'px',top:(r.top-pad)+'px',width:(r.width+pad*2)+'px',height:(r.height+pad*2)+'px'});
+  b.innerHTML=`<div class="tn">${TR.i+1} of ${n}</div><h3>${st.h}</h3><p>${st.p}</p><div class="tbtns"><button class="tskip" data-t="skip">Skip tour</button>${TR.i?'<button class="btn" data-t="back">Back</button>':''}<button class="btn pri" data-t="next">${TR.i===n-1?'Done':'Next'}</button></div>`;
+  const W=300, bh=b.offsetHeight||170; let x, y;
+  if(r.right+16+W<innerWidth&&r.left<innerWidth/2){ x=r.right+16; y=Math.min(Math.max(12,r.top+r.height/2-bh/2),innerHeight-bh-12); }
+  else { x=Math.min(Math.max(12,r.left+r.width/2-W/2),innerWidth-W-12); y=r.bottom+14+bh<innerHeight?r.bottom+14:Math.max(12,r.top-14-bh); }
+  Object.assign(b.style,{left:x+'px',top:y+'px',width:W+'px'}); b.querySelector('[data-t="next"]').focus(); }
+function tourEnd(quiet){ if(!TR) return; TR.el.remove(); TR=null; if(!quiet) keep('tour',1); }
+addEventListener('keydown',e=>{ if(!TR) return; if(e.key==='Escape') tourEnd(); else if(e.key==='ArrowRight') TR.el.querySelector('[data-t="next"]').click(); else if(e.key==='ArrowLeft'){ const bk=TR.el.querySelector('[data-t="back"]'); if(bk) bk.click(); } });
+addEventListener('resize',()=>{ if(TR) tourDraw(); });
+function tourMaybe(){ if(++tourReady<2||store('tour')||TR) return; if(document.querySelector('.tpage:not([hidden]),.bkpage:not([hidden]),.veil:not([hidden])')) return; setTimeout(tourStart,600); }
 /* collapse the side bar to a slim rail (11/5); saved with the teacher's Look */
+$('#tourBtn').onclick=()=>{ $('#mngPanel').hidden=true; $('#mngBtn').setAttribute('aria-expanded',false); setTimeout(tourStart,50); };
 $('#railBtn').onclick=()=>{ const on=document.documentElement.dataset.rail!=='1'; if(window.lkSave) lkSave({rail:on}); };
 document.querySelector('.dbar').addEventListener('click',e=>{ if(document.documentElement.dataset.rail!=='1'||innerWidth<760) return;
   const t=e.target.closest('.qwrap,#sesBtn,.grp'); if(!t) return; e.preventDefault(); e.stopPropagation(); lkSave({rail:false}); if(t.classList.contains('qwrap')) setTimeout(()=>$('#q').focus(),260); },true);
@@ -1354,7 +1408,7 @@ function renderMe(){ const me0=DATA.me||{admin:true,owner:true,periods:['2','8',
     const h='<option value="">All teachers</option>'+TL.map(t=>`<option value="${esc(t.email)}">${esc(t.name)}</option>`).join('');
     if($('#teaSel').dataset.h!==h){ $('#teaSel').innerHTML=h; $('#teaSel').dataset.h=h; } $('#teaSel').value=teaF; }
   // period buttons: the teacher's own periods (the admin: the chosen teacher's, or every period seen), plus any period a student signed in with, plus Guest
-  let L=me.admin?(teaF?((DATA.teachers||[]).find(t=>t.email===teaF)||{periods:[]}).periods:[]):me.periods.slice();
+  let L=me.admin?(teaF?((DATA.teachers||[]).find(t=>t.email===teaF)||{periods:[]}).periods:[]):(me.periods||[]).slice();
   if(me.admin&&!teaF) TL.forEach(t=>t.periods.forEach(p=>{ if(!L.includes(p)) L.push(p); }));
   DATA.students.forEach(s=>{ if(s.period&&s.period!=='G'&&!L.includes(s.period)) L.push(s.period); });
   L=L.sort((a,b)=>(+a||99)-(+b||99)||String(a).localeCompare(String(b))).concat(['G']);
@@ -2774,9 +2828,10 @@ function render(){ if(!DATA) return; const card=$('#card'), sx=card.scrollLeft, 
   draw(); card.dataset.view=view; if(same){ card.scrollLeft=sx; card.scrollTop=sy; } }
 function draw(){ renderChips(); const L=shown(); renderTiles(L); $('#layGrp').style.display=view==='live'?'':'none'; $('#sortGrp').style.display=view==='live'&&rgLay(L)!=='table'?'none':'';
   [...sel].forEach(k=>{ if(!L.some(s=>s.key===k)) sel.delete(k); }); renderBulk();
-  if(!DATA.sessions.length){ $('#card').innerHTML='<div class="empty">No sessions yet. New here? Start with <b>My roster</b> (or skip it: students not on it type a name and pick a period). Then click <b>My sessions</b> to make a session.</div>'; return; }
-  if(!selSes.size){ $('#card').innerHTML='<div class="empty">Pick a session in the Session menu above.</div>'; return; }
-  if(DATA.tooMany){ $('#card').innerHTML='<div class="empty">That is '+DATA.tooMany.toLocaleString()+' students at once, too many for one screen. Pick fewer sessions in the Session menu above, or archive old ones in My sessions.</div>'; return; }
+  $('.herow').style.display=DATA.sessions.length?'':'none';
+  if(!DATA.sessions.length){ gsShow(); return; }
+  if(!selSes.size){ $('#card').innerHTML='<div class="empty">Pick a session in the side bar.</div>'; return; }
+  if(DATA.tooMany){ $('#card').innerHTML='<div class="empty">That is '+DATA.tooMany.toLocaleString()+' students at once, too many for one screen. Pick fewer sessions in the side bar, or archive old ones in My sessions.</div>'; return; }
   if(!L.length&&waiting()){ showLoading(selSes.size>1?'Getting students for these sessions…':'Getting students for this session…'); return; }
   if(!L.length){ $('#card').innerHTML='<div class="empty">No students '+(per||qtxt?'match these filters':'have signed in to '+(selSes.size>1?'these sessions':'this session'))+' yet.</div>'; return; }
   const tests=[...new Set(L.map(s=>s.test))];
