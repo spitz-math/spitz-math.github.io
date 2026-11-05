@@ -10,7 +10,7 @@ try{ const t=JSON.parse(localStorage.getItem('spitzDash:look')||'{}'), d=t.mode=
 <meta name="robots" content="noindex,nofollow">
 <link rel="icon" type="image/png" href="data:image/png;base64,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">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700;800&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500..800&family=Onest:wght@400;500;600;700;800&display=swap">
 <style>
 /* Spitz Checkpoint teacher dashboard. Teacher-only: opened from the web app link with ?view=dash. */
 :root{
@@ -20,7 +20,7 @@ try{ const t=JSON.parse(localStorage.getItem('spitzDash:look')||'{}'), d=t.mode=
 }
 *{box-sizing:border-box}
 html,body{margin:0;height:100%}
-body{font:14px/1.35 Figtree,"Segoe UI",Roboto,Arial,sans-serif;color:var(--ink);background:var(--bg);display:flex;flex-direction:column;overflow:hidden}
+body{font:14px/1.35 Onest,"Segoe UI",Roboto,Arial,sans-serif;color:var(--ink);background:var(--bg);display:flex;flex-direction:column;overflow:hidden}
 button,select,input{font:inherit;color:inherit}
 button{cursor:pointer}
 .topbar{display:flex;align-items:center;gap:12px;background:var(--top);padding:8px 16px;flex:0 0 auto;flex-wrap:wrap;row-gap:6px}
@@ -553,69 +553,69 @@ table.grid,.tiles,.t,.bar em,.prog em{font-variant-numeric:tabular-nums}
 .wm small{font-weight:500}
 /* ---------- dark mode (11/5): the live dashboard, menus and the student drawer. and the tool pages (My sessions, roster, reports, Tests, the editor, question bank) ---------- */
 [data-theme="dark"]{color-scheme:dark;
-  --bg:#0e131a; --card:#151c26; --ink:#e4e9f0; --mut:#95a3b4; --line:#2a3443; --blue:#9cbcff; --blue2:#3b7cf0; --top:#1b2330;
-  --ok:#4cc27a; --okbg:#173a26; --no:#f07167; --nobg:#4a1f1c; --part:#f0b43a; --partbg:#45370f; --blank:#262f3c; --unseen:#151c26;
-  --barok:#3d4959; --surf2:#1a222e; --hov:#1c2737; }
+  --bg:#121315; --card:#1c1d21; --ink:#f1f1f3; --mut:#9b9ea6; --line:#2e3035; --blue:#9cbcff; --blue2:#3b7cf0; --top:#1a1b1f;
+  --ok:#4cc27a; --okbg:#173a26; --no:#f07167; --nobg:#4a1f1c; --part:#f0b43a; --partbg:#45370f; --blank:#2a2c31; --unseen:#1c1d21;
+  --barok:#45474d; --surf2:#202125; --hov:#26282d; }
 [data-theme="dark"] body{background:var(--bg);color:var(--ink)}
 [data-theme="dark"] :is(.controls,.card,.sespanel,.mngpanel,.drawer,.bulk){background:var(--card);border-color:var(--line);color:var(--ink)}
-[data-theme="dark"] :is(.btn,.seg button,select,input[type=search],input[type=text]){background:#1c2532;border-color:#3a4758;color:var(--ink)}
-[data-theme="dark"] .btn:hover{background:#243042}
+[data-theme="dark"] :is(.btn,.seg button,select,input[type=search],input[type=text]){background:#232428;border-color:#3d4046;color:var(--ink)}
+[data-theme="dark"] .btn:hover{background:#2b2d32}
 [data-theme="dark"] .seg button[aria-pressed="true"]{background:var(--blue2);color:#fff}
 [data-theme="dark"] #viewSeg button{background:none}
 [data-theme="dark"] #viewSeg button[aria-pressed="true"]{color:var(--blue)}
-[data-theme="dark"] .tb-red .mngpanel .btn{background:none;border:0;color:var(--ink)} [data-theme="dark"] .tb-red .mngpanel .btn:hover{background:#243042}
-[data-theme="dark"] .tb-red .look .seg button{background:#1c2532;border-color:#3a4758;color:var(--ink)} [data-theme="dark"] .tb-red .look .seg button[aria-pressed="true"]{background:var(--blue2);color:#fff}
+[data-theme="dark"] .tb-red .mngpanel .btn{background:none;border:0;color:var(--ink)} [data-theme="dark"] .tb-red .mngpanel .btn:hover{background:#2b2d32}
+[data-theme="dark"] .tb-red .look .seg button{background:#232428;border-color:#3d4046;color:var(--ink)} [data-theme="dark"] .tb-red .look .seg button[aria-pressed="true"]{background:var(--blue2);color:#fff}
 [data-theme="dark"] .tb-red .btn{background:rgba(255,255,255,.12);border-color:rgba(255,255,255,.28);color:#fff}
 [data-theme="dark"] .grid :is(thead th,tfoot td){background:var(--surf2);border-color:var(--line)}
 [data-theme="dark"] .grid thead .fx,[data-theme="dark"] .grid tfoot .fx{background:var(--surf2)}
 [data-theme="dark"] .grid .fx{background:var(--card)}
-[data-theme="dark"] .grid :is(th,td){border-bottom-color:#212a37}
+[data-theme="dark"] .grid :is(th,td){border-bottom-color:#25262b}
 [data-theme="dark"] .grid tbody tr:hover td.fx{background:var(--hov)}
 [data-theme="dark"] .grid .nm{color:var(--blue)}
-[data-theme="dark"] .cell.un{background:transparent;border-color:#2a3443}
+[data-theme="dark"] .cell.un{background:transparent;border-color:#2e3035}
 [data-theme="dark"] .cell.ok{border-color:#2c6b44;color:#8fe0ad} [data-theme="dark"] .cell.no{border-color:#7a302a;color:#ffaaa3}
 [data-theme="dark"] .cell.part{border-color:#7a5f1c;color:#ffd67a} [data-theme="dark"] .cell.bl{color:#7f8b99}
 [data-theme="dark"] .cell.wr{background:#2c2346;border-color:#54449a;color:#c9b8ff}
 [data-theme="dark"] :is(.prog i,.bar i){background:#263040}
 [data-theme="dark"] .p-work{color:#6fd697} [data-theme="dark"] .p-end{color:#5fd0c0}
 [data-theme="dark"] .p-idle{background:#45370f;color:#ffd67a} [data-theme="dark"] .p-away{background:#4a2414;color:#ffb38a}
-[data-theme="dark"] .p-nosig{background:#2a323e;color:#c3ccd8} [data-theme="dark"] .p-paused{background:#272e5a;color:#b9c3ff}
-[data-theme="dark"] .ib{background:#1c2532;border-color:#3a4758;color:var(--ink)}
-[data-theme="dark"] .ib[aria-pressed="true"]{background:#272e5a;border-color:#6672d8}
+[data-theme="dark"] .p-nosig{background:#2e3035;color:#c3ccd8} [data-theme="dark"] .p-paused{background:#2c2d33;color:#b9c3ff}
+[data-theme="dark"] .ib{background:#232428;border-color:#3d4046;color:var(--ink)}
+[data-theme="dark"] .ib[aria-pressed="true"]{background:#2c2d33;border-color:#6672d8}
 [data-theme="dark"] .t th{background:var(--surf2);color:var(--mut);border-color:var(--line)}
-[data-theme="dark"] .t td{border-color:#212a37}
+[data-theme="dark"] .t td{border-color:#25262b}
 [data-theme="dark"] .tile.alert b{color:#ffc061} [data-theme="dark"] .tile.alert span{color:#e0a85a}
 [data-theme="dark"] .lvwait{color:#5d6b7a}
 [data-theme="dark"] tr.chg td.fx{animation-name:rowglowd} @keyframes rowglowd{from{background:#4a3d12}}
 [data-theme="dark"] .card::-webkit-scrollbar-track,[data-theme="dark"] .card::-webkit-scrollbar-corner{background:var(--card)}
 /* dark mode for the tool pages: My sessions, roster, reports, Tests, Write a test, question bank. Student previews (.pv, the bank frame) stay light like the real test */
 [data-theme="dark"] :is(.tcard,.dlg,.oebank,.oeside,.bkside,.bkcart,.oerich,.oesym button,.oeqh .mv button,.oeord .mv button,.bkci .mv button){background:var(--card);border-color:var(--line);color:var(--ink)}
-[data-theme="dark"] :is(.fl select,.fl input,.t input.rn,.t select.rp,.t select.rv,#rsPaste,.oeside input:not([type=checkbox]),.oeside select,.oeqh select,.oeqh input,.obopt select,.obf input,.obf select,.oenum input,.oeeq .ea,.oech input.dc,.oetab input:not([type]),.oeboxkey select,.oech select.tz,.oech input.zn,.oegw select,.oenl input:not([type]),.oenl select,.bkside select,.bkcart input,.tpage input:not([type=checkbox]):not([type=radio]):not([type=range]):not([type=color]),.tpage select,.tpage textarea){background:#1c2532;border-color:#3a4758;color:var(--ink)}
+[data-theme="dark"] :is(.fl select,.fl input,.t input.rn,.t select.rp,.t select.rv,#rsPaste,.oeside input:not([type=checkbox]),.oeside select,.oeqh select,.oeqh input,.obopt select,.obf input,.obf select,.oenum input,.oeeq .ea,.oech input.dc,.oetab input:not([type]),.oeboxkey select,.oech select.tz,.oech input.zn,.oegw select,.oenl input:not([type]),.oenl select,.bkside select,.bkcart input,.tpage input:not([type=checkbox]):not([type=radio]):not([type=range]):not([type=color]),.tpage select,.tpage textarea){background:#232428;border-color:#3d4046;color:var(--ink)}
 [data-theme="dark"] :is(.ghs,.oetools,.oesq,.oedd,.rpt tr.all td,.bktable tr.bkcat td){background:var(--surf2);border-color:var(--line);color:var(--ink)}
 [data-theme="dark"] .rpt th{background:var(--surf2)} [data-theme="dark"] .rpt :is(th,td){border-color:var(--line)}
-[data-theme="dark"] .oetools,[data-theme="dark"] .oesym{border-bottom-color:var(--line)} [data-theme="dark"] .oetools button:hover{background:#243042;border-color:#3a4758}
+[data-theme="dark"] .oetools,[data-theme="dark"] .oesym{border-bottom-color:var(--line)} [data-theme="dark"] .oetools button:hover{background:#2b2d32;border-color:#3d4046}
 [data-theme="dark"] .ghs.bad{background:#3a1d1a;border-color:#7a302a}
-[data-theme="dark"] .drop{background:var(--surf2);border-color:#3a4758} [data-theme="dark"] .drop.over{background:#1b2a45;border-color:var(--blue2);color:var(--blue)}
+[data-theme="dark"] .drop{background:var(--surf2);border-color:#3d4046} [data-theme="dark"] .drop.over{background:#26272c;border-color:var(--blue2);color:var(--blue)}
 [data-theme="dark"] :is(.bktable tr.on td,.bkci:hover,.obrow:hover){background:var(--hov)}
-[data-theme="dark"] :is(.bkci.on,.obrow.on,#oeBankBtn[aria-pressed="true"]){background:#1b2a45} [data-theme="dark"] .bkci.on{box-shadow:inset 3px 0 0 var(--blue2)}
-[data-theme="dark"] .bkci.bad{background:#3a1d1a} [data-theme="dark"] .oesys.on{background:#1b2a45}
+[data-theme="dark"] :is(.bkci.on,.obrow.on,#oeBankBtn[aria-pressed="true"]){background:#26272c} [data-theme="dark"] .bkci.on{box-shadow:inset 3px 0 0 var(--blue2)}
+[data-theme="dark"] .bkci.bad{background:#3a1d1a} [data-theme="dark"] .oesys.on{background:#26272c}
 [data-theme="dark"] .bkcat td,[data-theme="dark"] .obrow .obm{color:var(--mut)}
 [data-theme="dark"] :is(.bkci .t1 .stag,.oestaar .oetag){color:#c9b8ff} [data-theme="dark"] .oestaar .oetag{background:#2c2346}
 [data-theme="dark"] .bkci .t3{color:#ffc061} [data-theme="dark"] .chk .e{color:#ffaaa3} [data-theme="dark"] .oech2 li.ok{color:#8fe0ad}
 [data-theme="dark"] .oewarn{background:#45370f;border-color:#7a5f1c;color:#ffd67a}
 [data-theme="dark"] .oetab td.right{background:#173a26} [data-theme="dark"] .oeft td.fb{background:#45370f}
-[data-theme="dark"] .badge{background:#173a26;color:#8fe0ad} [data-theme="dark"] .badge.rep{background:#45370f;color:#ffd67a} [data-theme="dark"] .badge.hid{background:#2a323e;color:#c3ccd8}
+[data-theme="dark"] .badge{background:#173a26;color:#8fe0ad} [data-theme="dark"] .badge.rep{background:#45370f;color:#ffd67a} [data-theme="dark"] .badge.hid{background:#2e3035;color:#c3ccd8}
 [data-theme="dark"] .tile.alert{background:#2a2310;border-color:#7a5f1c}
 [data-theme="dark"] :is(.bkover,.bkmain iframe){background:var(--bg)}
-[data-theme="dark"] .chx :is(td,th){border-color:var(--line)} [data-theme="dark"] .dist .db i{background:#3d4959}
-[data-theme="dark"] .oeed:empty::before{color:#6b7888} [data-theme="dark"] .oerich:focus-within{box-shadow:0 0 0 2px #27406e}
+[data-theme="dark"] .chx :is(td,th){border-color:var(--line)} [data-theme="dark"] .dist .db i{background:#45474d}
+[data-theme="dark"] .oeed:empty::before{color:#80838b} [data-theme="dark"] .oerich:focus-within{box-shadow:0 0 0 2px #27406e}
 [data-theme="dark"] .tpage :is(h1,h2,h3){color:var(--ink)}
 /* dark hovers (11/5): no hover turns a button or row light */
 [data-theme="dark"] .tb-red .btn:hover,[data-theme="dark"] .tb-red .btn.pri:hover{background:rgba(255,255,255,.22);color:#fff}
 [data-theme="dark"] :is(.sesrow:hover,.sesgh:hover,.qv tr.qr:hover td){background:var(--hov)}
-[data-theme="dark"] .qv tr.qr.open td{background:#1b2a45}
+[data-theme="dark"] .qv tr.qr.open td{background:#26272c}
 [data-theme="dark"] .hm{--hcp:32%}
-[data-theme="dark"] .ib:hover{background:#243042}
+[data-theme="dark"] .ib:hover{background:#2b2d32}
 [data-theme="dark"] .btn.del:hover{background:var(--nobg);color:#ffaaa3}
 [data-theme="dark"] .pst :is(th,td){border-color:var(--line)} [data-theme="dark"] .pst tr.on td{outline-color:var(--ink)}
 /* loading (11/5): one slow sliding bar (transform only, so Chromebooks stay smooth), still gray rows, no blinking; reduce motion keeps the bar still */
@@ -632,6 +632,88 @@ table.grid,.tiles,.t,.bar em,.prog em{font-variant-numeric:tabular-nums}
 .ldr i,.ldr b{display:block;height:12px;border-radius:6px;background:var(--blank)}
 .ldr i{flex:0 0 120px} .ldr b{flex:1}
 .ldr:nth-child(2n) b{margin-right:16%} .ldr:nth-child(3n) b{margin-right:32%}
+
+/* ---------- Room and Grid (11/5, Kody): the Live view as student cards or a full-width answer map, under a sentence that says who needs you ---------- */
+:root{--need:#d4237a;--needbg:rgba(212,35,122,.07);--tint:13%;--fd:'Bricolage Grotesque',Onest,"Segoe UI",sans-serif}
+[data-theme="dark"]{--need:#ff5aa8;--needbg:rgba(255,90,168,.09);--tint:18%;--mast:#46c97a;--meets:#5ab0f0;--app:#e9a93c;--dnm:#f0675a}
+.wm,.say,.rgc .nmv,.rgr .nmv,.rgcall,.stl b{font-family:var(--fd)}
+.tiles.hero{display:block;padding:18px 20px 10px}
+.say{margin:0;font-size:clamp(20px,2.3vw,30px);font-weight:700;line-height:1.2;text-wrap:balance;letter-spacing:0;font-variation-settings:'opsz' 96;color:var(--ink)}
+.say .sayw{color:var(--need)} .say .sayok{color:var(--ok)}
+.say button.snm{all:unset;cursor:pointer;font-weight:700;text-decoration:underline;text-decoration-color:var(--need);text-decoration-thickness:3px;text-underline-offset:5px}
+.say button.snm:hover{color:var(--need)} .say button.snm:focus-visible{outline:2px solid var(--blue2);outline-offset:2px;border-radius:4px}
+.stl{display:flex;flex-wrap:wrap;gap:6px 22px;margin-top:10px;color:var(--mut);font-size:13.5px;align-items:baseline}
+.stl b{color:var(--ink);font-size:18px;font-weight:700;margin-right:4px;font-variant-numeric:tabular-nums}
+.stl i.sw{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:6px;vertical-align:0}
+.stl .ib0{font-size:13px}
+#layGrp .seg button{min-width:64px}
+.rg{padding:14px;position:relative}
+.rgroom{display:grid;grid-template-columns:repeat(auto-fill,minmax(232px,1fr));gap:12px}
+.rgc{position:relative;background:var(--card);border-radius:14px;padding:13px 15px;box-shadow:0 0 0 1px var(--line),0 4px 14px rgba(20,25,35,.04);display:flex;flex-direction:column;gap:9px;cursor:pointer;transition:box-shadow .2s,background-color .8s ease;min-width:0}
+.rgc:hover{box-shadow:0 0 0 2px var(--blue2)}
+.rgc:focus-visible{outline:2px solid var(--blue2);outline-offset:2px}
+.rgc.rglv{background-color:color-mix(in srgb,var(--lvc) var(--tint),var(--card))}
+.rgc.need{background-image:repeating-linear-gradient(135deg,var(--needbg) 0 9px,transparent 9px 18px);box-shadow:0 0 0 2.5px var(--need)}
+.rgc.ns{opacity:.6}
+.rgc .r1{display:flex;align-items:center;gap:10px}
+.rgc .who{flex:1;min-width:0}
+.rgc .nmv{font-size:19px;font-weight:700;line-height:1.1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.rgc .pd{font-size:12px;color:var(--mut);margin-top:2px}
+.rgc .st{font-size:13px;font-weight:600;color:var(--mut);min-height:18px}
+.rgc.need .st{color:var(--need);font-weight:700}
+.lvw{color:var(--lvc,var(--ink));font-weight:800}
+.rgring{flex:none} .rgring .bg{stroke:var(--blank)} .rgring .fg{transition:stroke-dasharray .8s cubic-bezier(.2,.8,.2,1)}
+.rgring text{fill:var(--ink);font:700 12.5px var(--fd)}
+.rgbox{display:flex;gap:5px;margin-top:auto}
+.rgbox .cell{flex:1;width:auto;height:30px;margin:0;border-radius:7px;font-size:13px;font-weight:800}
+.rgtk{display:flex;gap:1px;margin-top:auto;height:15px}
+.rgtk .cell{flex:1;width:auto;height:100%;margin:0;border-radius:1.5px;border:0}
+.rg .cell{cursor:pointer;font-style:normal;transition:background-color .35s}
+.rg .cell.ok{background:var(--ok);border-color:transparent;color:#fff}
+.rg .cell.no{background:var(--no);border-color:transparent;color:#fff}
+.rg .cell.part{background:var(--part);border-color:transparent;color:#fff}
+.rg .cell.wr{background:#8b6ad6;border-color:transparent;color:#fff}
+.rg .cell.bl{background:var(--blank);border-color:transparent}
+.rg .cell.un{background:var(--blank);border-color:transparent;color:var(--mut);font-weight:600}
+.rg .cell.cur{background:transparent;outline:0;box-shadow:0 0 0 2px var(--blue2) inset;color:var(--blue2)}
+.rgtk .cell.cur{box-shadow:none;background:var(--blue2)}
+.rg .cell.pop{animation:rgpop .5s cubic-bezier(.2,.9,.3,1.2)}
+@keyframes rgpop{from{transform:scale(.35);opacity:.2}to{transform:none;opacity:1}}
+.rggrid{display:grid;min-width:max-content;padding:4px 6px 10px;position:relative}
+.rgsky,.rgnum,.rgr{display:grid;column-gap:var(--gap);align-items:end}
+.rgsky{height:var(--skyh);position:relative}
+.rgbar{all:unset;cursor:pointer;height:100%;display:flex;align-items:flex-end;position:relative}
+.rgbar i{display:block;width:100%;border-radius:4px 4px 0 0;transition:height .7s cubic-bezier(.2,.8,.2,1)}
+.rgbar em{position:absolute;left:50%;transform:translateX(-50%);font-style:normal;font-size:12px;font-weight:800;color:var(--mut);white-space:nowrap}
+.rgbar:focus-visible i{outline:2px solid var(--blue2);outline-offset:2px}
+.rgcall{position:absolute;top:0;font-size:13px;font-weight:700;color:var(--no);white-space:nowrap;pointer-events:none}
+.rgnum{font-size:10.5px;color:var(--mut);height:20px;align-items:center} .rgnum span{text-align:center}
+.rgr{height:calc(var(--cs) + var(--gap));align-items:center;border-radius:6px}
+.rgr:hover{background:color-mix(in srgb,var(--blue2) 9%,transparent)}
+.rgr .who{all:unset;cursor:pointer;display:flex;align-items:baseline;gap:7px;white-space:nowrap;overflow:hidden;padding-left:6px}
+.rgr .nmv{font-weight:700;font-size:14.5px}
+.rgr .wd{font-size:11.5px;color:var(--mut);font-weight:600}
+.rgr.need .nmv,.rgr .wd.w{color:var(--need)} .rgr .wd.w{font-weight:800}
+.rgr.ns{opacity:.45}
+.rgr .cell{width:auto;height:var(--cs);margin:0;border-radius:calc(var(--cs)/5);font-size:calc(var(--cs)*.42)}
+.rgr .pts{text-align:right;font-weight:800;font-size:14px;padding-right:4px;font-variant-numeric:tabular-nums}
+.rgr .pts.so{color:var(--mut);font-weight:600}
+.rgr .lvc{font-size:12.5px;font-weight:800;white-space:nowrap;padding-left:8px}
+.rgkey{display:flex;gap:16px;flex-wrap:wrap;font-size:12.5px;color:var(--mut);padding:12px 6px 0}
+.rgkey i{display:inline-block;width:12px;height:12px;border-radius:3px;margin-right:6px;vertical-align:-1px;background:var(--blank)}
+.rgghost{position:fixed;z-index:95;pointer-events:none;font-family:var(--fd);font-weight:700;white-space:nowrap;transform-origin:0 0;color:var(--ink);line-height:1.1}
+.rgopt h4{margin:16px 0 8px;font-size:13px;color:var(--mut);font-weight:700}
+.rgopt h4:first-child{margin-top:0}
+.rgopt .row{display:flex;flex-wrap:wrap;gap:8px}
+.rgopt .ch{border:1px solid var(--line);background:var(--card);border-radius:6px;padding:7px 13px;font-weight:700}
+.rgopt .ch[aria-pressed="true"]{border-color:var(--blue2);background:color-mix(in srgb,var(--blue2) 12%,var(--card))}
+.rgopt label{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--line);font-weight:600;cursor:pointer}
+.rgopt input{width:17px;height:17px;accent-color:var(--blue2)}
+.rgbody{padding:16px 18px;overflow:auto}
+#rgVeil .qvbox{height:auto;max-height:92vh;width:min(560px,96vw)}
+@media (prefers-reduced-motion:reduce){.rgc,.rgring .fg,.rgbar i,.rg .cell{transition:none}.rg .cell.pop{animation:none}}
+@media (max-width:700px){.rgroom{grid-template-columns:1fr 1fr;gap:8px}.rgc{padding:11px}.rgc .nmv{font-size:16px}.rgbox .cell{height:26px}.tiles.hero{padding:12px 14px 6px}}
+@media (max-width:440px){.rgroom{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
@@ -661,11 +743,12 @@ table.grid,.tiles,.t,.bar em,.prog em{font-variant-numeric:tabular-nums}
       <div class="sesfoot"><button class="btn" id="sesNew" title="Make a new session without leaving the dashboard">+ New session</button><label><input type="checkbox" id="sesClosed"> Show closed</label><button class="btn" id="sesClear">Clear</button><button class="btn pri" id="sesDone">Show</button></div></div></div>
     <button class="btn" id="showIdBtn" title="Show the Session ID big, for the projector">Show Session ID</button></div>
   <div class="grp vgrp"><span class="lab">View</span><div class="seg" id="viewSeg"><button data-v="live">Live</button><button data-v="std">Standards</button><button data-v="ques">Questions</button><button data-v="wr" id="wrViewBtn" hidden>Written</button></div></div>
+  <div class="grp" id="layGrp"><div class="seg" id="laySeg" aria-label="Layout"><button data-v="room">Room</button><button data-v="grid">Grid</button></div><button class="btn" id="rgCust">Customize</button></div>
   <div class="csp"></div>
   <div class="grp" id="arcGrp" hidden><span class="lab">Results from</span><select id="arcSel" aria-label="Results from"></select></div>
   <div class="grp" id="teaGrp" hidden><span class="lab">Teacher</span><select id="teaSel" aria-label="Teacher"></select></div>
   <div class="grp"><span class="lab">Period</span><div class="seg" id="perSeg"><button data-v="">All</button></div></div>
-  <div class="grp"><span class="lab">Sort</span><select id="sort"><option value="name">First name</option><option value="last">Last name</option><option value="period">Period</option><option value="status">Status</option><option value="progress">Progress</option><option value="score">Score</option><option value="input">Last activity</option></select></div>
+  <div class="grp" id="sortGrp"><span class="lab">Sort</span><select id="sort"><option value="needs">Needs you first</option><option value="name">First name</option><option value="last">Last name</option><option value="period">Period</option><option value="status">Status</option><option value="progress">Progress</option><option value="score">Score</option><option value="input">Last activity</option></select></div>
   <div class="grp"><input id="q" type="search" placeholder="Find a name" aria-label="Find a name"></div>
 </div>
 <div class="tiles" id="tiles"></div>
@@ -675,6 +758,7 @@ table.grid,.tiles,.t,.bar em,.prog em{font-variant-numeric:tabular-nums}
 </div>
 <p class="legal">Spitz Checkpoint is an independent practice tool made by Mr. Spitz. It is not affiliated with or endorsed by the Texas Education Agency (TEA) or Cambium Assessment. STAAR&reg; is a registered trademark of TEA. Released STAAR questions and reference sheets are &copy; TEA and are used here for classroom practice.</p>
 <div class="veil" id="qvVeil" hidden><div class="qvbox" role="dialog" aria-modal="true" aria-labelledby="qvTitle"><div class="qvh"><h3 id="qvTitle">Question</h3><button class="btn" id="qvClose">Close</button></div><div class="qvmsg" id="qvMsg" hidden></div><iframe id="qvFrame" title="Question preview" sandbox="allow-scripts"></iframe></div></div>
+<div class="veil" id="rgVeil" hidden><div class="qvbox" role="dialog" aria-modal="true" aria-labelledby="rgTitle"><div class="qvh"><h3 id="rgTitle">Customize</h3><button class="btn" id="rgClose">Close</button></div><div class="rgbody rgopt" id="rgBody"></div></div></div>
 <div class="toasts" id="toasts" aria-live="polite"></div>
 <div class="showid" id="showId" hidden role="dialog" aria-modal="true" aria-label="Session ID"><button class="btn sx" id="showIdX">Close (Esc)</button><div class="go">Go to <b>spitzmath.com/checkpoint</b> and type the Session ID</div><div class="ids" id="showIdIds"></div></div>
 <aside class="drawer" id="drawer" hidden aria-label="Student details"><div class="dh"><h2 id="dName"></h2><button class="btn" id="dClose">Close</button></div><div class="db" id="dBody"></div></aside>
@@ -903,7 +987,7 @@ const toScore=s=>s.q.filter(q=>q&&q[9]).length;   // written answers still waiti
 const sLvl=s=>!s.submitted&&!(s.answered>0)?['','No answers yet','#c3ccd6']:staarLvl(s.test,s.score||0,s.max||0);   /* never started: no STAAR level */
 function lvPill(s){ const l=sLvl(s), w=toScore(s);
   if(!s.submitted&&!(s.answered>0)) return '<span class="rs" title="No answers yet">–</span>';   /* not started: no level yet */
-  if(!s.submitted) return '<span class="lvwait" title="The STAAR level shows once the test is submitted">–</span>';   /* still testing: a level from a few answers misleads (Kody 11/1) */
+  if(!s.submitted&&l[4]==='Did Not Meet') return '<span class="lvwait" title="No level reached yet. Levels count points out of the whole test, so they only go up">–</span>';   /* Kody 11/5: a level shows the moment points earned (out of the whole test) reach it */
   if(w) return `<span class="lvp lvw" title="${w} written answer${w>1?'s':''} to score first. Level so far: ${esc(l[1])}">✎ Score ${w} first</span>`;
   return `<span class="lvp${s.submitted?'':' lvs'}" style="background:${l[2]}" title="${esc(l[1])}${s.submitted?'':' so far'}${l[3]?' (estimate: this test has no row in the campus standards)':''}">${esc(l[1])}${l[3]?' <i>est.</i>':''}</span>`; }
 const IDLE_MS=3*60*1000, NOSIG_MS=100*1000, POLL_MS=15000;
@@ -943,7 +1027,7 @@ function loadMeta(id){ if(META[id]) return META[id].p;
   return META[id].p; }
 
 /* ---------- state ---------- */
-let DATA=null, view=store('view')||'live', per=store('per')||'', sortBy=store('sort')||'name', qtxt='', selSes=null, sel=new Set(), openKey=null, timer=null, busy=false, cellMode='score', arc='';
+let DATA=null, view=store('view')||'live', per=store('per')||'', sortBy=store('sort')||'needs', qtxt='', selSes=null, sel=new Set(), openKey=null, timer=null, busy=false, cellMode='score', arc='';
 $('#sort').value=sortBy;
 function setSeg(id,v){ document.querySelectorAll(id+' button').forEach(b=>b.setAttribute('aria-pressed',b.dataset.v===v)); }
 setSeg('#perSeg',per); setSeg('#viewSeg',view);
@@ -971,7 +1055,7 @@ function load(quiet){ if(loading){ if(quiet===true) return loading; return again
   loading=load1(quiet===true).finally(()=>{ loading=null; }); return loading; }
 async function load1(quiet){ busy=true;
   if(!quiet) $('#upd').textContent=DATA?'Refreshing…':'Loading…';
-  try{ const wantAns=view==='ques'||view==='wr'||(view==='live'&&cellMode==='ans'),
+  try{ const wantAns=view==='ques'||view==='wr'||(view==='live'&&(cellMode==='ans'||RG.ansWanted)),
       ask=selSes?[...selSes]:(arc?[]:(store('ses')||[]).filter(x=>typeof x==='string')),   // first load: ask for the saved sessions straight away
       r=await call('stcDash',{sessions:ask,answers:wantAns,archive:arc});
     DATA=r; DATA.skew=Date.now()-r.now; DATA.ansReq=wantAns;
@@ -2443,13 +2527,14 @@ function shown(){ if(!DATA) return [];
   const by={ name:(a,b)=>first(a.name).localeCompare(first(b.name),undefined,{sensitivity:'base'})||String(a.period).localeCompare(String(b.period)),
     last:(a,b)=>last(a.name).localeCompare(last(b.name),undefined,{sensitivity:'base'})||String(a.period).localeCompare(String(b.period)),
     period:(a,b)=>String(a.period).localeCompare(String(b.period))||by.name(a,b), status:(a,b)=>stat(b)[2]-stat(a)[2]||by.name(a,b),
+    needs:(a,b)=>rgOrd(a)-rgOrd(b)||(rgOrd(a)===0?(a.input||0)-(b.input||0):0)||by.name(a,b),
     progress:(a,b)=>(b.answered||0)-(a.answered||0)||by.name(a,b), score:(a,b)=>(b.pct||0)-(a.pct||0)||by.name(a,b), input:(a,b)=>(a.input||0)-(b.input||0)||by.name(a,b) };
   return L.sort(by[sortBy]||by.name); }
 
 /* ---------- render ---------- */
 function render(){ if(!DATA) return; const card=$('#card'), sx=card.scrollLeft, sy=card.scrollTop, same=card.dataset.view===view;
   draw(); card.dataset.view=view; if(same){ card.scrollLeft=sx; card.scrollTop=sy; } }
-function draw(){ renderChips(); const L=shown(); renderTiles(L);
+function draw(){ renderChips(); const L=shown(); renderTiles(L); $('#layGrp').style.display=view==='live'?'':'none'; $('#sortGrp').style.display=view==='live'&&rgLay(L)!=='table'?'none':'';
   [...sel].forEach(k=>{ if(!L.some(s=>s.key===k)) sel.delete(k); }); renderBulk();
   if(!DATA.sessions.length){ $('#card').innerHTML='<div class="empty">No sessions yet. New here? Start with <b>My roster</b> (or skip it: students not on it type a name and pick a period). Then click <b>My sessions</b> to make a session.</div>'; return; }
   if(!selSes.size){ $('#card').innerHTML='<div class="empty">Pick a session in the Session menu above.</div>'; return; }
@@ -2505,14 +2590,7 @@ function tickTiles(){ const rm=matchMedia('(prefers-reduced-motion: reduce)').ma
     if(rm||!m||was==null||was===+m[1]) return; const from=was, to=+m[1], t0=performance.now(), D=Math.min(900,300+60*Math.abs(to-from));
     const step=now=>{ if(!b.isConnected) return; const k2=Math.min(1,(now-t0)/D), e=1-Math.pow(1-k2,3); b.textContent=Math.round(from+(to-from)*e)+m[2]; if(k2<1) requestAnimationFrame(step); else b.textContent=txt; };
     b.textContent=from+m[2]; requestAnimationFrame(step); }); }
-function renderTiles(L){ const c={work:0,idle:0,away:0,nosig:0,paused:0,locked:0,sub:0,end:0,ns:0}; L.forEach(s=>c[stat(s)[0]]++);
-  const subs=L.filter(s=>s.submitted), avg=subs.length?Math.round(subs.reduce((a,s)=>a+(s.pct||0),0)/subs.length):null, lc=LEVELS.map(l=>subs.filter(s=>!toScore(s)&&sLvl(s)[4]===l[1]).length), leveled=lc.reduce((a,b)=>a+b,0), meets=lc[0]+lc[1];
-  const T=(v,l,cls,tip)=>`<div class="tile${cls?' '+cls:''}"${tip?` title="${esc(tip)}"`:''}><b>${v}</b><span>${l}</span></div>`;
-  /* the tiles a teacher needs at a glance; Idle, Away and Paused only show up when someone is (11/1: fewer zeros) */
-  $('#tiles').innerHTML=(c.ns?T((L.length-c.ns)+' / '+L.length,'Signed in'):T(L.length,'Students'))+T(c.work+c.end,'Working','',c.end?c.end+' at the end screen, not submitted yet':'')
-    +(c.idle?T(c.idle,'Idle 3m+','alert','No clicks or typing for 3 minutes or more'):'')+(c.away+c.nosig?T(c.away+c.nosig,'Away / no signal','alert','Left the test tab, or the Chromebook stopped saving'):'')+(c.paused+c.locked?T(c.paused+c.locked,'Paused / stopped','alert'):'')
-    +T(c.sub,'Submitted')+T(avg==null?'–':avg+'%','Avg score','','Average score of submitted tests')
-    +`<div class="tile lvt" title="Submitted tests by STAAR level${subs.length>leveled?'. '+(subs.length-leveled)+' still have written answers to score':''}"><b>${lc.map((n,i)=>`<i style="font-style:normal;color:${LEVELS[i][2]}">${n}</i>`).join(' · ')}${leveled?`<span class="lvbar">${lc.map((n,i)=>n?`<i style="flex:${n};background:${LEVELS[i][2]}"></i>`:'').join('')}</span>`:''}<small>${leveled?Math.round(100*meets/leveled)+'% Meets or above':'Levels show as tests are submitted'}</small></b><span>Masters · Meets · Approaches · Did Not Meet</span></div>`;  tickTiles(); }
+function renderTiles(L){ rgHero(L); }
 function renderBulk(){ $('#bulk').hidden=!sel.size; $('#bulkN').textContent=sel.size+' selected'; }
 const ICON={pause:'<svg viewBox="0 0 14 14"><rect x="3" y="2" width="3" height="10" rx="1" fill="currentColor"/><rect x="8" y="2" width="3" height="10" rx="1" fill="currentColor"/></svg>',
   lock:'<svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="2.5" y="6" width="9" height="6.5" rx="1.3" fill="currentColor" stroke="none"/><path d="M4.5 6V4.3a2.5 2.5 0 015 0V6"/></svg>'};
@@ -2537,7 +2615,7 @@ function cellAns(s,i,raw){ if(!raw){ const c=DANS[s.key]; raw=c&&c.a&&c.a[i]; if
 const CANS={};
 function cellAnsFetch(ses){ if(!ses||CANS[ses]) return; CANS[ses]=1;
   call('stcDash',{sessions:[ses],answers:true,archive:arc},60000).then(r=>{ (r&&r.students||[]).forEach(x=>{ DANS[x.key]={t:x.saved||0,a:x.q.map(q=>q&&q[8]||'')}; });
-    if(view==='live'&&cellMode==='ans') render(); }).catch(()=>{}).finally(()=>setTimeout(()=>{ delete CANS[ses]; },20000)); }
+    if(view==='live'&&(cellMode==='ans'||RG.ansWanted)) render(); }).catch(()=>{}).finally(()=>setTimeout(()=>{ delete CANS[ses]; },20000)); }
 /* ---------- supports at a glance (11/2): read aloud and calculator from the teachers' rosters (stcRoster) ---------- */
 const SUP={by:{}, at:{}, busy:{}};
 function supFor(s){ const sess=DATA&&DATA.sessions.find(x=>x.id===s.session), t=sess&&sess.teacher||'';
@@ -2553,6 +2631,7 @@ function heat(L,i){ const a=L.filter(s=>s.q[i]&&s.q[i][0]!=null); if(a.length<2)
   const p=Math.round(100*a.reduce((t,s)=>t+s.q[i][0],0)/a.reduce((t,s)=>t+s.q[i][1],0));
   return [p,p>=70?'var(--ok)':p>=40?'var(--part)':'var(--no)',a.length]; }
 function renderLive(L,tests){
+  const lay=rgLay(L); rgSegSync(lay); if(lay!=='table'){ rgRender(L,tests,lay); return; }
   const nq=Math.max(...L.map(s=>Math.max(s.q.length,(meta(s.test)||{items:[]}).items.length)),0);
   const mixed=tests.length>1;
   const head=`<tr><th class="fx c0"><input type="checkbox" id="allBox" aria-label="Select all shown"></th><th class="fx c1" style="text-align:left">Name</th><th class="fx c2">Per.</th><th class="fx c3" style="text-align:left">Status</th><th class="fx c4" style="text-align:left">Answered</th><th class="fx c5" style="text-align:left">Score</th><th class="fx cL" style="text-align:left">STAAR level <button class="ib0" data-ps="${esc(tests[0]||'')}" title="Performance standards" aria-label="Show the performance standards">ⓘ</button></th><th class="fx c6">Time</th><th class="fx c7">Pause / Stop</th>${Array.from({length:nq},(_,i)=>{ const h=heat(L,i); return `<th class="qh${h?' heat':''}"${h?` style="--h:${h[1]}" title="Question ${i+1}: ${h[0]}% correct (${h[2]} answered)"`:''}>${i+1}</th>`; }).join('')}</tr>`;
@@ -2586,6 +2665,136 @@ function renderLive(L,tests){
   $('#expBtn').onclick=e=>{ e.stopPropagation(); EXP.set(!EXP.open); };
   liveFx(L);
 }
+
+/* ---------- Room and Grid (11/5, Kody) ----------
+   Room: one card per student, tinted by the STAAR level they have reached, striped pink when they need you.
+   Grid: the answer map across the whole screen with a bar per question (class % correct) and the lowest one called out.
+   The sentence over both is plain rules on what the dashboard already tracks: left the tab, idle 3+ min, no signal, paused by you.
+   Customize (saved on this computer): layout, order, square size, what counts as "needs you", Grid columns. */
+const RG=(()=>{ const d={lay:'auto',size:'m',alerts:{away:true,idle:true,nosig:true,paused:false},cols:{pts:true,lvl:true}}, o=Object.assign({},d,store('rg')||{});
+  o.alerts=Object.assign({},d.alerts,o.alerts); o.cols=Object.assign({},d.cols,o.cols); o.ansWanted=false; return o; })();
+const rgSave=()=>keep('rg',{lay:RG.lay,size:RG.size,alerts:RG.alerts,cols:RG.cols});
+const nOf=s=>Math.max(s.q.length,(meta(s.test)||{items:[]}).items.length)||1;
+function rgLay(L){ if(RG.lay!=='auto') return RG.lay; const n=L.length?Math.max(...L.map(nOf)):0; return n&&n<=12?'room':'grid'; }
+function rgSegSync(lay){ setSeg('#laySeg',lay); }
+const firstOf=n=>{ n=String(n||'').trim(); return /,/.test(n)?(n.split(',')[1]||'').trim().split(/\s+/)[0]:n.split(/\s+/)[0]; };
+const LVC={'Masters':'var(--mast)','Meets':'var(--meets)','Approaches':'var(--app)','Did Not Meet':'var(--dnm)'};
+function lvLive(s){ if(!s.submitted&&!(s.answered>0)) return null; const l=sLvl(s), m=l[4]; if(!s.submitted&&m==='Did Not Meet') return null; return {n:m,c:LVC[m]||l[2],est:l[3]}; }
+function needOf(s){ const k=stat(s)[0], now=Date.now()-(DATA.skew||0), a=RG.alerts;
+  if(k==='away'&&a.away) return {k,w:'left the test tab',wp:'left the test tab',ws:'left tab'};
+  if(k==='idle'&&a.idle){ const m=Math.max(3,Math.round((now-(s.input||now))/60000)); return {k,w:`hasn't answered in ${m} minutes`,wp:"haven't answered in 3+ minutes",ws:'idle '+m+'m'}; }
+  if(k==='nosig'&&a.nosig) return {k,w:'lost connection',wp:'lost connection',ws:'no signal'};
+  if((k==='paused'||k==='locked')&&a.paused) return {k,w:k==='locked'?'is stopped':'is paused',wp:k==='locked'?'are stopped':'are paused',ws:k==='locked'?'stopped':'paused'};
+  return null; }
+function rgOrd(s){ if(!DATA) return 1; const k=stat(s)[0]; return needOf(s)?0:k==='sub'?3:k==='ns'?2:1; }
+const rgAnd=a=>a.length<2?a.join(''):a.length===2?a.join(' and '):a.slice(0,-1).join(', ')+', and '+a[a.length-1];
+
+/* the sentence and the line under it (replaces the number tiles) */
+let RGSAY='';
+function rgHero(L){ const t=$('#tiles'); t.classList.add('hero');
+  const c={t:0,d:0,ns:0}; L.forEach(s=>{ const k=stat(s)[0]; if(k==='sub') c.d++; else if(k==='ns') c.ns++; else c.t++; });
+  const nd=L.filter(needOf).sort((a,b)=>(a.input||0)-(b.input||0));
+  let say=`${c.t} testing, ${c.d} done${c.ns?`, ${c.ns} not started`:''}.`;
+  if(!L.length) say='No students yet.';
+  else if(!nd.length){ if(c.t) say+=' <span class="sayok">Everyone’s moving.</span>'; }
+  else { const G=[]; nd.forEach(s=>{ const n=needOf(s), g=G.find(g=>g.k===n.k); g?g.ss.push(s):G.push({k:n.k,ss:[s]}); });
+    let shown=0; const parts=[]; for(const g of G){ if(shown>=3) break; const take=g.ss.slice(0,3-shown); shown+=take.length;
+      parts.push(rgAnd(take.map(s=>`<button class="snm" data-open="${esc(s.key)}">${esc(firstOf(s.name))}</button>`))+' '+(take.length>1?needOf(take[0]).wp:needOf(take[0]).w)); }
+    say+=` <span class="sayw">${nd.length} need${nd.length===1?'s':''} you:</span> ${rgAnd(parts)}${nd.length>shown?`, plus ${nd.length-shown} more`:''}.`; }
+  const lc={}; L.forEach(s=>{ const l=lvLive(s); if(l) lc[l.n]=(lc[l.n]||0)+1; });
+  const subs=L.filter(s=>s.submitted), avg=subs.length?Math.round(subs.reduce((a,s)=>a+(s.pct||0),0)/subs.length):null, tests=[...new Set(L.map(s=>s.test))];
+  const stl=`<span><b>${L.length-c.ns} / ${L.length}</b>signed in</span>${avg!=null?`<span title="Average score of submitted tests"><b>${avg}%</b>average submitted</span>`:''}`
+    +['Masters','Meets','Approaches','Did Not Meet'].map(n=>`<span><i class="sw" style="background:${LVC[n]}"></i><b>${lc[n]||0}</b>${n}</span>`).join('')
+    +`<button class="ib0" data-ps="${esc(tests[0]||'')}" title="Levels count points out of the whole test, using the campus performance standards" aria-label="Show the performance standards">ⓘ</button>`;
+  const sayEl=$('#say');
+  if(!sayEl){ t.innerHTML=`<p class="say" id="say" aria-live="polite">${say}</p><div class="stl" id="stl">${stl}</div>`; RGSAY=say; return; }
+  $('#stl').innerHTML=stl;
+  if(say===RGSAY) return; RGSAY=say;
+  if(matchMedia('(prefers-reduced-motion: reduce)').matches){ sayEl.innerHTML=say; return; }
+  sayEl.animate([{opacity:1,transform:'none'},{opacity:0,transform:'translateY(-6px)'}],{duration:150,easing:'ease-in'}).onfinish=()=>{ sayEl.innerHTML=say;
+    sayEl.animate([{opacity:0,transform:'translateY(8px)'},{opacity:1,transform:'none'}],{duration:280,easing:'cubic-bezier(.2,.8,.2,1)'}); }; }
+
+function cCls(s,i){ const q=s.q[i]; if(!q) return 'un'; const [pts,mx,,vis]=q; return q[9]?'wr':pts==null?(vis?'bl':'un'):pts>=mx?'ok':pts>0?'part':'no'; }
+const RGP={};   // last ring fraction and level per student, so rings fill and cards change color smoothly
+function rgRing(s,n,col){ const r=20, C=2*Math.PI*r, f=Math.min(1,(s.answered||0)/n), was=RGP[s.key]?RGP[s.key].f:f;
+  return `<svg class="rgring" width="50" height="50" viewBox="0 0 50 50" aria-hidden="true"><circle class="bg" cx="25" cy="25" r="${r}" fill="none" stroke-width="5"/><circle class="fg" cx="25" cy="25" r="${r}" fill="none" stroke="${col}" stroke-width="5" stroke-linecap="round" stroke-dasharray="${(C*was).toFixed(1)} ${C.toFixed(1)}" data-to="${(C*f).toFixed(1)} ${C.toFixed(1)}" transform="rotate(-90 25 25)"/><text x="25" y="29.5" text-anchor="middle">${s.answered||0}${n<=12?'/'+n:''}</text></svg>`; }
+function rgStatus(s){ const [k,label]=stat(s), nd=needOf(s), lv=RG.cols.lvl?lvLive(s):null, lw=lv?` · <span class="lvw">${esc(lv.n)}</span>`:'';
+  if(nd) return esc(label);
+  if(k==='sub') return `Done · ${s.score||0}/${s.max||0}`+lw;
+  if(k==='ns') return 'Not started';
+  if(k==='work') return `On question ${esc(s.item||((s.answered||0)+1))}`+lw;
+  return esc(label)+lw; }
+function rgCard(s){ const n=nOf(s), k=stat(s)[0], nd=needOf(s), lv=RG.cols.lvl?lvLive(s):null, cur=i=>!s.submitted&&+s.item===i+1;
+  const col=nd?'var(--need)':lv?lv.c:'var(--blue2)';
+  const ans=n<=12?`<div class="rgbox">${Array.from({length:n},(_,i)=>{ const c=cCls(s,i), a=c==='un'||c==='bl'?'':(cellAns(s,i,s.q[i]&&s.q[i][8])||''), cu=cur(i)&&c==='un';
+      return `<i class="cell ${cu?'cur':c}" data-k="${esc(s.key)}" data-i="${i}" data-see="${i}">${c==='wr'?'✎':a||(c==='un'||c==='bl'?i+1:'')}</i>`; }).join('')}</div>`
+    :`<div class="rgtk">${Array.from({length:n},(_,i)=>`<i class="cell ${cur(i)&&cCls(s,i)==='un'?'cur':cCls(s,i)}" data-k="${esc(s.key)}" data-i="${i}" data-see="${i}"></i>`).join('')}</div>`;
+  return `<div class="rgc${nd?' need':''}${lv?' rglv':''}${k==='ns'?' ns':''}" role="button" tabindex="0" data-k="${esc(s.key)}" data-open="${esc(s.key)}" style="--lvc:${lv?lv.c:'var(--blue2)'}" aria-label="${esc(s.name)}"><div class="r1"><div class="who"><div class="nmv" data-nm="${esc(s.key)}">${esc(s.name)}</div><div class="pd">${s.period==='G'?'Guest':'Period '+esc(s.period)}${supTag(s)}</div></div>${rgRing(s,n,col)}</div><div class="st">${rgStatus(s)}</div>${ans}</div>`; }
+
+function rgDims(L){ const nq=Math.max(...L.map(nOf)), short=nq<=12, ex=190+(RG.cols.pts?76:0)+(RG.cols.lvl?110:0);
+  if(short){ const cs={s:36,m:46,l:58}[RG.size]; return {nq,cs,gap:10,skyh:140,letters:true,short,ex}; }
+  const avail=Math.max(320,($('#card').clientWidth||1200)-44), fit=Math.floor((avail-ex)/nq), k={s:.8,m:1,l:1.3}[RG.size];
+  const gap=Math.max(2,Math.round(fit*.16)), cs=Math.max(10,Math.floor(fit*k)-gap); return {nq,cs,gap,skyh:104,letters:cs>=22,short,ex}; }
+function rgCols(d){ return `190px repeat(${d.nq},${d.short?`minmax(${d.cs}px,1fr)`:d.cs+'px'})${RG.cols.pts?' 76px':''}${RG.cols.lvl?' 110px':''}`; }
+function rgGrid(L,tests){ const d=rgDims(L), gc=rgCols(d), h=d.skyh-(d.short?30:22), H=Array.from({length:d.nq},(_,i)=>heat(L,i));
+  const min=Math.max(3,Math.round(L.length*.35)); let lo=-1; H.forEach((x,i)=>{ if(x&&x[2]>=min&&x[0]<60&&(lo<0||x[0]<H[lo][0])) lo=i; });
+  const one=tests.length===1?tests[0]:'';
+  const sky=H.map((x,i)=>`<button class="rgbar" ${one?`data-see="${i}" data-t="${esc(one)}"`:''} title="Question ${i+1}${x?`: ${x[0]}% right (${x[2]} answered)`:''}" aria-label="Question ${i+1}${x?`, ${x[0]} percent right`:''}"><i style="height:${x?Math.max(4,x[0]/100*h):3}px;background:${x?x[1]:'var(--blank)'}"></i>${d.short&&x?`<em style="bottom:${Math.max(4,x[0]/100*h)+5}px">${x[0]}%</em>`:''}</button>`).join('');
+  const nums=Array.from({length:d.nq},(_,i)=>`<span>${d.short||i===0||(i+1)%5===0?i+1:''}</span>`).join('');
+  const rows=L.map(s=>{ const k=stat(s)[0], nd=needOf(s), lv=lvLive(s), n=nOf(s), cur=i=>!s.submitted&&+s.item===i+1;
+    const wd=nd?`<span class="wd w">${nd.ws}</span>`:k==='sub'?'<span class="wd">done</span>':k==='ns'?'<span class="wd">not started</span>':k==='work'?`<span class="wd">q${esc(s.item||((s.answered||0)+1))}</span>`:`<span class="wd">${esc(stat(s)[1].toLowerCase())}</span>`;
+    return `<div class="rgr${nd?' need':''}${k==='ns'?' ns':''}" data-k="${esc(s.key)}" style="grid-template-columns:${gc}"><button class="who" data-open="${esc(s.key)}" title="${esc(s.name)}"><span class="nmv" data-nm="${esc(s.key)}">${esc(s.name)}</span>${wd}</button>${Array.from({length:d.nq},(_,i)=>{ if(i>=n) return '<span></span>'; const c=cCls(s,i), cu=cur(i)&&c==='un', a=d.letters&&(c==='ok'||c==='no'||c==='part')?(cellAns(s,i,s.q[i]&&s.q[i][8])||''):c==='wr'?'✎':'';
+      return `<i class="cell ${cu?'cur':c}${s.q[i]&&s.q[i][5]?' fl':''}" data-k="${esc(s.key)}" data-i="${i}" data-see="${i}">${a}</i>`; }).join('')}${RG.cols.pts?`<span class="pts${s.submitted?'':' so'}">${s.answered>0||s.submitted?(s.score||0)+'/'+(s.max||0):'–'}</span>`:''}${RG.cols.lvl?`<span class="lvc" style="color:${lv?lv.c:'var(--mut)'}">${lv?esc(lv.n):''}</span>`:''}</div>`; }).join('');
+  return `<div class="rggrid" style="--cs:${d.cs}px;--gap:${d.gap}px;--skyh:${d.skyh}px"><div class="rgsky" id="rgSky" style="grid-template-columns:${gc}"><span></span>${sky}${lo>=0?`<span class="rgcall" id="rgCall" data-i="${lo}">Q${lo+1} · ${H[lo][0]}% · reteach</span>`:''}</div><div class="rgnum" style="grid-template-columns:${gc}"><span></span>${nums}</div><div id="rgRows">${rows}</div>
+    <div class="rgkey"><span><i style="background:var(--ok)"></i>Right</span><span><i style="background:var(--part)"></i>Partly</span><span><i style="background:var(--no)"></i>Wrong</span>${L.some(s=>s.q.some(q=>q&&q[9]))?'<span><i style="background:#8b6ad6"></i>To score</span>':''}<span><i></i>Not yet</span><span><i style="box-shadow:0 0 0 2px var(--blue2) inset;background:transparent"></i>On it now</span><span>Click a square or a bar to see the question</span></div></div>`; }
+
+/* draw Room or Grid: cards glide to new spots, new answers pop in, rings fill, a card that reaches a new level fades to its color */
+function rgRender(L,tests,lay){ const card=$('#card'), rm=matchMedia('(prefers-reduced-motion: reduce)').matches, same=card.dataset.lay===lay;
+  const n=L.length?Math.max(...L.map(nOf)):0, want=lay==='room'&&n<=12; if(want!==RG.ansWanted){ RG.ansWanted=want; if(want&&!DATA.ansReq) setTimeout(()=>load(true),0); }
+  const first=new Map(); if(same&&!rm) card.querySelectorAll('[data-k].rgc,[data-k].rgr').forEach(e=>first.set(e.dataset.k,e.getBoundingClientRect()));
+  card.innerHTML=`<div class="rg">${lay==='room'?`<div class="rgroom" id="rgRoom">${L.map(rgCard).join('')}</div>`:rgGrid(L,tests)}</div>`; card.dataset.lay=lay;
+  const call=$('#rgCall'); if(call){ const b=card.querySelectorAll('#rgSky .rgbar')[+call.dataset.i]; if(b) call.style.left=Math.max(0,b.offsetLeft+b.offsetWidth/2-12)+'px'; }
+  requestAnimationFrame(()=>card.querySelectorAll('.rgring .fg').forEach(c=>c.setAttribute('stroke-dasharray',c.dataset.to)));
+  L.forEach(s=>{ const el=card.querySelector(`[data-k="${CSS.escape(s.key)}"].rgc,[data-k="${CSS.escape(s.key)}"].rgr`); if(!el) return;
+    const ans=s.q.map(q=>q&&q[0]!=null?1:0).join(''), lv=(lvLive(s)||{}).n||'', was=RGP[s.key];
+    if(was&&same&&!rm){ for(let i=0;i<ans.length;i++) if(ans[i]==='1'&&was.ans[i]!=='1'){ const c=el.querySelector(`.cell[data-i="${i}"]`); if(c) c.classList.add('pop'); }
+      if(lv!==was.lv&&el.classList.contains('rgc')) el.animate([{backgroundColor:'var(--card)'},{}],{duration:900,easing:'ease-out'});
+      const f=first.get(s.key); if(f){ const r=el.getBoundingClientRect(), dx=f.left-r.left, dy=f.top-r.top; if(Math.abs(dx)+Math.abs(dy)>1) el.animate([{transform:`translate(${dx}px,${dy}px)`},{transform:'none'}],{duration:560,easing:'cubic-bezier(.2,.8,.2,1)'}); } }
+    RGP[s.key]={f:Math.min(1,(s.answered||0)/nOf(s)),ans,lv}; }); }
+
+/* switching Room and Grid: each name glides from where it was to where it lands */
+function rgMorph(fn){ if(matchMedia('(prefers-reduced-motion: reduce)').matches){ fn(); return; }
+  const old={}; document.querySelectorAll('#card [data-nm]').forEach(el=>{ const r=el.getBoundingClientRect(); if(r.bottom>0&&r.top<innerHeight) old[el.dataset.nm]={r,fs:parseFloat(getComputedStyle(el).fontSize)}; });
+  fn(); const items=[...document.querySelectorAll('#card .rgc,#card .rgr')];
+  items.forEach((el,i)=>el.animate([{opacity:0,transform:'translateY(10px)'},{opacity:1,transform:'none'}],{duration:360,delay:100+Math.min(i,16)*20,easing:'cubic-bezier(.2,.8,.2,1)',fill:'backwards'}));
+  document.querySelectorAll('#card [data-nm]').forEach(el=>{ const o=old[el.dataset.nm]; if(!o) return; const r=el.getBoundingClientRect(); if(r.bottom<0||r.top>innerHeight) return;
+    const fs=parseFloat(getComputedStyle(el).fontSize), g=document.createElement('div'); g.className='rgghost'; g.textContent=el.textContent; g.style.fontSize=fs+'px'; g.style.left=r.left+'px'; g.style.top=r.top+'px'; document.body.appendChild(g);
+    el.style.visibility='hidden'; g.animate([{transform:`translate(${o.r.left-r.left}px,${o.r.top-r.top}px) scale(${o.fs/fs})`},{transform:'none'}],{duration:600,easing:'cubic-bezier(.3,.7,.1,1)'}).onfinish=()=>{ el.style.visibility=''; g.remove(); }; }); }
+
+/* clicks: a square or a bar opens the question as students see it; Enter opens a card */
+document.addEventListener('click',e=>{ const c=e.target.closest('.rg [data-see]'); if(!c) return; e.stopPropagation(); tip.hidden=true;
+  const s=c.dataset.k&&DATA.students.find(x=>x.key===c.dataset.k), t=c.dataset.t||(s&&s.test); if(t) qvShow(t,+c.dataset.see); },true);
+document.addEventListener('keydown',e=>{ if((e.key==='Enter'||e.key===' ')&&e.target.classList&&e.target.classList.contains('rgc')){ e.preventDefault(); openDrawer(e.target.dataset.open); } });
+$('#laySeg').addEventListener('click',e=>{ const b=e.target.closest('button'); if(!b) return; RG.lay=b.dataset.v; rgSave(); rgMorph(render); });
+let rgRz; addEventListener('resize',()=>{ clearTimeout(rgRz); rgRz=setTimeout(()=>{ if(view==='live'&&$('#card').dataset.lay==='grid') render(); },200); });
+
+/* Customize */
+function rgCustom(){ const ch=(k,v,l,cur)=>`<button class="ch" data-rgk="${k}" data-v="${v}" aria-pressed="${cur===v}">${l}</button>`, cb=(g,k,l)=>`<label><input type="checkbox" data-rgg="${g}" data-k="${k}"${RG[g][k]?' checked':''}>${l}</label>`;
+  $('#rgBody').innerHTML=`<h4>Open Live in</h4><div class="row">${ch('lay','auto','Pick by test length',RG.lay)}${ch('lay','room','Room',RG.lay)}${ch('lay','grid','Grid',RG.lay)}${ch('lay','table','Classic table',RG.lay)}</div>
+    <h4>Order students</h4><div class="row">${ch('sort','needs','Needs you first',sortBy)}${ch('sort','name','A to Z by first name',sortBy)}${ch('sort','last','A to Z by last name',sortBy)}</div>
+    <h4>Square size</h4><div class="row">${ch('size','s','Small',RG.size)}${ch('size','m','Medium',RG.size)}${ch('size','l','Large',RG.size)}</div>
+    <h4>Count as "needs you"</h4>${cb('alerts','away','Left the test tab')}${cb('alerts','idle','No answer for 3+ minutes')}${cb('alerts','nosig','Lost connection')}${cb('alerts','paused','Paused or stopped by you')}
+    <h4>Show</h4>${cb('cols','lvl','STAAR level (card colors in Room, a column in Grid)')}${cb('cols','pts','Points so far in Grid')}
+    <p class="hint" style="margin:14px 0 0">Saved on this computer. Light, dark and the top bar color are in Manage.</p>`;
+  $('#rgVeil').hidden=false; $('#rgClose').focus(); }
+$('#rgCust').onclick=rgCustom; $('#rgClose').onclick=()=>{ $('#rgVeil').hidden=true; };
+$('#rgVeil').addEventListener('click',e=>{ if(e.target.id==='rgVeil'){ $('#rgVeil').hidden=true; return; }
+  const b=e.target.closest('[data-rgk]'); if(!b) return; const k=b.dataset.rgk, v=b.dataset.v;
+  b.parentElement.querySelectorAll('.ch').forEach(x=>x.setAttribute('aria-pressed',String(x===b)));
+  if(k==='sort'){ sortBy=v; $('#sort').value=v; keep('sort',v); render(); return; }
+  RG[k]=v; rgSave(); if(k==='lay') rgMorph(render); else render(); });
+$('#rgVeil').addEventListener('change',e=>{ const t=e.target; if(!t.dataset.rgg) return; RG[t.dataset.rgg][t.dataset.k]=t.checked; rgSave(); render(); });
+addEventListener('keydown',e=>{ if(e.key==='Escape'&&!$('#rgVeil').hidden) $('#rgVeil').hidden=true; });
 /* Export menu stays open across the 15-second refresh until a pick, a click outside or Esc (11/5) */
 const EXP={open:false,set(o){ EXP.open=o; const m=$('#expPanel'), b=$('#expBtn'); if(m) m.hidden=!o; if(b) b.setAttribute('aria-expanded',o); }};
 document.addEventListener('click',e=>{ if(EXP.open&&!e.target.closest('.exp')) EXP.set(false); });
@@ -2846,7 +3055,7 @@ function openDrawer(key,quiet){ const s=DATA&&DATA.students.find(x=>x.key===key)
   if(its===null) metaOf(s.test).then(()=>setTimeout(()=>{ if(openKey===key) openDrawer(key,true); },50)).catch(()=>{});
   $('#dBody').innerHTML=`<div class="dact">${s.submitted||!can||k==='ns'?'':`<button class="btn" data-act="${s.control==='paused'?'resume':'pause'}" data-k="${esc(s.key)}">${s.control==='paused'?'Resume':'Pause'}</button><button class="btn warn" data-act="${s.control==='locked'?'unlock':'lock'}" data-k="${esc(s.key)}">${s.control==='locked'?'Unlock':'Stop test'}</button>`}${s.submitted||s.answered>0?`<button class="btn" id="dReport" title="One page: score, standards to work on, and each missed question with how to solve it">Print report</button>`:''}${can&&s.submitted?`<button class="btn" data-reopen="reopen" data-k="${esc(s.key)}" title="Give the test back: their answers stay and they go on where they left off">Reopen test</button>`:''}${can&&(s.submitted||s.answered>0)?`<button class="btn warn" data-reopen="retake" data-k="${esc(s.key)}" title="Erase their answers so they can take the test again from the start">Retake</button>`:''}</div>
     <div class="kv"><b>Status</b><span><span class="pill p-${k}">${esc(label)}</span></span><b>Test</b><span>${esc(m?m.title:s.test)} · ${esc(s.session)}</span>
-    <b>Score</b><span><span class="lv" style="background:${s.submitted?l[2]:'#c3ccd6'}"></span>${s.score||0} of ${s.max||0} points (${s.pct||0}%)${s.submitted?` · ${esc(l[1])}${l[3]?' (estimate)':''}${w?' so far':''}`:' · STAAR level shows once submitted'}${w?` · ${w} written answer${w>1?'s':''} to score`:''}</span>
+    <b>Score</b><span><span class="lv" style="background:${s.submitted?l[2]:'#c3ccd6'}"></span>${s.score||0} of ${s.max||0} points (${s.pct||0}%)${s.submitted?` · ${esc(l[1])}${l[3]?' (estimate)':''}${w?' so far':''}`:(lvLive(s)?` · ${esc(lvLive(s).n)} reached so far`:' · no STAAR level reached yet')}${w?` · ${w} written answer${w>1?'s':''} to score`:''}</span>
     <b>Answered</b><span>${s.answered||0} · on question ${esc(s.item||'–')}</span><b>Started</b><span>${d(s.started)}</span><b>Submitted</b><span>${d(s.submitted)}</span>
     <b>Time</b><span>${s.minutes||0} min · left the tab ${s.away||0}× (${s.awayMin||0} min)${s.rclicks?` · tried to right-click ${s.rclicks}× (blocked)`:''}</span><b>Last input</b><span>${d(s.input)}</span><b>Last save</b><span>${d(s.saved)}</span><b>Student code</b><span>${esc(s.code)}</span></div>
     <table class="t"><tr><th>#</th><th>Result</th><th>Their answer</th><th>TEKS</th><th>Time</th><th title="Visits">Vis.</th><th title="Times they changed the answer">Chg.</th></tr>${s.q.map((q,i)=>{ const qi=qinfo(s,i), [pts,mx,ms,vis,ch,fl]=q;
