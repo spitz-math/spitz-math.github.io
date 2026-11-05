@@ -686,7 +686,7 @@ table.grid,.tiles,.t,.bar em,.prog em{font-variant-numeric:tabular-nums}
 .rgbar i{display:block;width:100%;border-radius:4px 4px 0 0;transition:height .7s cubic-bezier(.2,.8,.2,1)}
 .rgbar em{position:absolute;left:50%;transform:translateX(-50%);font-style:normal;font-size:12px;font-weight:800;color:var(--mut);white-space:nowrap}
 .rgbar:focus-visible i{outline:2px solid var(--blue2);outline-offset:2px}
-.rgcall{position:absolute;top:0;font-size:13px;font-weight:700;color:var(--no);white-space:nowrap;pointer-events:none}
+.rgcall{all:unset;position:absolute;top:0;font-size:13px;font-weight:700;color:var(--no);white-space:nowrap;cursor:pointer;font-family:var(--fd)} .rgcall[data-rt]:hover{text-decoration:underline} .rgcall:focus-visible{outline:2px solid var(--no);outline-offset:2px;border-radius:4px}
 .rgnum{font-size:10.5px;color:var(--mut);height:20px;align-items:center} .rgnum span{text-align:center}
 .rgr{height:max(calc(var(--cs) + var(--gap)),18px);align-items:center;border-radius:6px}
 .rgr:hover{background:color-mix(in srgb,var(--blue2) 9%,transparent)}
@@ -941,6 +941,90 @@ html[data-theme="dark"] .rgopt .ch[aria-pressed="true"]{background:color-mix(in 
 .rgopt .ch[aria-pressed="true"]{border-color:var(--tb);background:color-mix(in srgb,var(--tb) 14%,var(--card,#fff))}
 .rgopt input{accent-color:color-mix(in srgb,var(--tb) 88%,#000)}
 html[data-theme="dark"] .rgopt label,html[data-theme="dark"] .qvh h3{color:var(--ink)}
+/* ---------- tool pages in the dashboard look (11/5): My sessions, My roster, Reports, Tests, Make a test, Question bank.
+   Same page color, Bricolage headings, rounded cards, the school color on main buttons (no more blue), dark picked segments like Room/Grid. ---------- */
+:root{--acc:color-mix(in srgb,var(--tb) 88%,#000);--accbg:color-mix(in srgb,var(--tb) 10%,var(--card,#fff))}
+html[data-nav="side"] .topbar.tb-purple{--tb:inherit}
+html[data-nav="side"] :is(.tpage,.bkpage)>.topbar{background:var(--bg);border:0;padding:22px 28px 6px;align-items:center}
+html[data-nav="side"] :is(.tpage,.bkpage)>.topbar .wm small{font:700 clamp(24px,2.3vw,30px)/1.15 var(--fd);font-variation-settings:'opsz' 96;letter-spacing:0}
+:is(.tpage,.bkpage,.veil) .btn{border:1px solid var(--line);border-radius:10px;padding:7px 14px;font-weight:600;font-size:13.5px;background:var(--card,#fff);color:var(--ink);transition:background .15s,border-color .15s}
+:is(.tpage,.bkpage,.veil) .btn:hover{background:var(--surf2);border-color:#b9c4d2}
+:is(.tpage,.bkpage,.veil) .btn.pri,html[data-nav="side"] :is(.tpage,.bkpage)>.topbar .btn.pri{background:var(--acc);border-color:var(--acc);color:#fff}
+:is(.tpage,.bkpage,.veil) .btn.pri:hover,html[data-nav="side"] :is(.tpage,.bkpage)>.topbar .btn.pri:hover{background:color-mix(in srgb,var(--tb) 74%,#000);border-color:color-mix(in srgb,var(--tb) 74%,#000)}
+:is(.tpage,.bkpage,.veil) .btn.del{color:var(--no);border-color:color-mix(in srgb,var(--no) 35%,var(--line))}
+:is(.tpage,.bkpage,.veil) .btn.del:hover{background:var(--nobg)}
+:is(.tpage,.bkpage,.veil) .btn.delgo{background:var(--no);border-color:var(--no);color:#fff}
+:is(.tpage,.bkpage,.veil) .btn:disabled{opacity:.45} :is(.tpage,.bkpage,.veil) .btn:disabled:not(.pri):not(.delgo){background:var(--card,#fff)}
+#rpOut{display:grid;gap:16px} #rpOut:empty{display:none}
+.bkpage .bkside .seg button,.tpage #oeBankSide .seg button{padding:6px 4px;font-size:12.5px}
+.tpage .acts{gap:6px} .tpage .acts .btn,.tpage .t .btn{padding:5px 11px;font-size:13px}
+.tbody{padding:10px 28px 32px}
+.tcol{gap:16px}
+.tcard{border-radius:14px;padding:20px 22px;border-color:var(--line)}
+.tcard h2{font:700 19px/1.2 var(--fd);margin:0 0 6px;color:var(--ink)}
+.tcard h3{font:700 15px var(--fd)}
+.tcard>.hint,.tcard p.hint{font-size:13.5px;line-height:1.5;max-width:76ch}
+.tpage .row{gap:10px;margin-top:14px}
+.tpage .fl{font-size:12.5px;font-weight:600;color:var(--mut);gap:5px}
+:is(.tpage,.bkpage,.veil) :is(select,textarea,input:not([type=checkbox]):not([type=radio]):not([type=range]):not([type=color]):not([type=file])){border:1px solid var(--line);border-radius:10px;background:var(--card,#fff);color:var(--ink);font-size:14px}
+.tpage .fl :is(select,input),#rlFind{padding:8px 11px;min-height:38px}
+.tpage .t :is(input.rn,select.rp,select.rv){padding:5px 8px;border-radius:8px}
+#rsPaste{border-radius:12px;padding:12px 14px}
+:is(.tpage,.bkpage,.veil) :is(select,textarea,input):focus-visible{outline:2px solid var(--acc);outline-offset:1px;border-color:var(--acc)}
+:is(.tpage,.bkpage,.veil) :is(input[type=checkbox],input[type=radio]){accent-color:var(--acc)}
+.tpage input[type=file]{font-size:13px;color:var(--mut)}
+.tpage input[type=file]::file-selector-button{border:1px solid var(--line);border-radius:10px;padding:7px 14px;margin-right:10px;font:600 13.5px Onest,sans-serif;background:var(--card,#fff);color:var(--ink);cursor:pointer}
+:is(.tpage,.bkpage,.veil) .seg{border-radius:10px;border-color:var(--line)}
+:is(.tpage,.bkpage,.veil) .seg button{padding:6px 12px;font-weight:600;font-size:13px;background:var(--card,#fff);color:var(--mut)}
+:is(.tpage,.bkpage,.veil) .seg button[aria-pressed="true"]{background:var(--ink);color:var(--card,#fff)}
+html[data-theme="dark"] :is(.tpage,.bkpage,.veil) .seg button[aria-pressed="true"]{background:var(--ink);color:#121315}
+.tpage .t{border-collapse:collapse}
+.tpage .t th{background:var(--card,#fff);padding:8px 10px;font-size:11px;font-weight:700;border-bottom:1px solid var(--line)}
+.tpage .t td{padding:10px;border-bottom:1px solid var(--line)}
+.tpage .t tr:last-child td{border-bottom:0}
+.tpage .t tr:hover td{background:var(--surf2)}
+.tpage .t td b{font-weight:700}
+.tpage .op{display:inline-block;font-size:12px;font-weight:700;border-radius:999px;padding:2px 9px;background:var(--okbg);color:color-mix(in srgb,var(--ok) 70%,#000)}
+.tpage .op.cl{background:var(--blank);color:var(--mut)}
+html[data-theme="dark"] .tpage .op{color:#8fe0ad} html[data-theme="dark"] .tpage .op.cl{color:var(--mut)}
+.ghs{border-radius:12px;padding:12px 16px;font-size:13.5px}
+.drop{border-radius:14px;border-color:#b9c4d2;background:var(--surf2);padding:26px}
+.drop.over{border-color:var(--acc);background:var(--accbg);color:var(--ink)}
+.drop b{font:700 17px var(--fd)}
+.tpage .sid{color:var(--ink);font-family:var(--fd)}
+.tpage details summary{color:var(--acc);font-weight:600}
+.gcrow{padding:10px 4px}
+/* Reports tables: lines between rows only, like the Grid */
+.rpt th,.rpt td{border:0;border-bottom:1px solid var(--line);padding:8px 9px}
+.rpt th{background:var(--card,#fff);font-size:11px;text-transform:uppercase;letter-spacing:.04em;color:var(--mut)}
+.rpt tr.all td{background:var(--surf2)}
+/* Make a test + Question bank side panels */
+.oebank,.oeside,.bkside,.bkcart{background:var(--card,#fff)}
+.oeside label,.bkside .lab{font-size:12.5px;font-weight:600;color:var(--mut);text-transform:none;letter-spacing:0}
+.oeside :is(input:not([type=checkbox]),select),.bkside select,.bkcart input{border-radius:10px;min-height:38px;padding:7px 10px}
+.bkci.on{background:var(--accbg);box-shadow:inset 3px 0 0 var(--acc)} .bkci:hover{background:var(--surf2)}
+html[data-theme="dark"] .bkci.on{background:color-mix(in srgb,var(--tb) 14%,var(--card));box-shadow:inset 3px 0 0 var(--tb)}
+#oeBankBtn[aria-pressed="true"]{background:var(--accbg);border-color:var(--acc);color:var(--ink)}
+html[data-theme="dark"] #oeBankBtn[aria-pressed="true"]{background:color-mix(in srgb,var(--tb) 18%,var(--card));border-color:var(--tb)}
+.oetiles .btn{border-radius:12px;padding:12px 14px}
+.oetiles .btn:hover{border-color:var(--acc);background:var(--accbg)}
+.oetg h3{font:700 12px Onest,sans-serif}
+.oesq{border-radius:12px}
+.bkch h3{font:700 17px var(--fd)}
+/* reteach group dialog */
+.rtbox{width:min(560px,96vw)} .rtbox .psb{padding:16px 20px 6px}
+.rtsum{margin:0 0 14px;font-size:14px;color:var(--mut)} .rtsum b{color:var(--ink);font-family:var(--fd);font-size:16px}
+.rtg{margin:0 0 14px} .rtg h4{margin:0 0 7px;font:700 15px var(--fd);color:var(--ink);display:flex;align-items:center;gap:8px}
+.rtg h4 span{font:700 12px Onest,sans-serif;color:var(--mut);background:var(--blank);border-radius:999px;padding:1px 8px}
+.rtn{display:flex;flex-wrap:wrap;gap:6px}
+.rtp{border:1px solid var(--line);background:var(--card,#fff);color:var(--ink);border-radius:999px;padding:6px 13px;font:600 14px var(--fd);display:inline-flex;align-items:center;gap:6px}
+.rtp:hover{border-color:var(--acc);background:var(--accbg)} .rtp small{font:600 11px Onest,sans-serif;color:var(--mut)}
+.rtft{display:flex;align-items:center;gap:8px;padding:12px 20px 16px;border-top:1px solid var(--line)} .rtmsg{font-size:13px;color:var(--ok);font-weight:600}
+html[data-theme="dark"] .rtbox{background:var(--card);color:var(--ink)}
+/* the open dialogs over these pages */
+.dlg,.psbox{border-radius:16px}
+.dlg h3,.qvh h3{font:700 20px var(--fd)}
+@media (max-width:759px){ .tbody{padding:8px 12px 24px} .tcard{padding:16px 14px;border-radius:12px} html[data-nav="side"] :is(.tpage,.bkpage)>.topbar{padding:12px 14px 4px} }
 </style>
 </head>
 <body>
@@ -1161,6 +1245,7 @@ html[data-theme="dark"] .rgopt label,html[data-theme="dark"] .qvh h3{color:var(-
 </section>
 <div class="pv" id="pv" hidden><div class="pvbar"><b id="pvTitle"></b><span id="pvNote">Preview only: nothing is saved to your Sheet.</span><span class="sp"></span><label class="pvra" id="pvRA" title="See the test the way a read aloud student does: sound check first, then the speaker button on each question"><input type="checkbox" id="pvRAOn"> Read aloud</label><label class="pvra" id="pvCA" title="See the test the way a student with the basic calculator support does (tests with no calculator)"><input type="checkbox" id="pvCAOn"> Calculator</label><button class="btn pri" id="pvPrint" hidden>Print</button><button class="btn" id="pvClose">Close preview</button></div><iframe id="pvf" title="Test preview"></iframe></div>
 <div id="tip" hidden></div>
+<div class="veil" id="rtVeil" hidden><div class="psbox rtbox" role="dialog" aria-modal="true" aria-labelledby="rtTitle"><div class="qvh"><h3 id="rtTitle">Who missed it</h3><button class="btn" id="rtClose">Close</button></div><div class="psb" id="rtBody"></div><div class="rtft"><button class="btn pri" id="rtCopy">Copy the group</button><button class="btn" id="rtSee">See the question</button><span class="rtmsg" id="rtMsg" aria-live="polite"></span></div></div></div>
 <div class="veil" id="psVeil" hidden><div class="psbox" role="dialog" aria-modal="true" aria-labelledby="psTitle"><div class="qvh"><h3 id="psTitle">Performance standards</h3><button class="btn" id="psClose">Close</button></div><div class="psb" id="psBody"></div></div></div>
 <div class="veil" id="obVeil" hidden><div class="psbox obbox" role="dialog" aria-modal="true" aria-labelledby="obTitle"><div class="qvh"><h3 id="obTitle"></h3><button class="btn" id="obClose">Close</button></div><div class="psb" id="obBody"></div></div></div>
 <div class="veil" id="veil" hidden><div class="dlg" role="alertdialog" aria-modal="true" aria-labelledby="vTitle"><h3 id="vTitle"></h3><div id="vMsg"></div><div class="btns" id="vBtns"></div></div></div>
@@ -3064,13 +3149,13 @@ function rgCols(d){ return `190px repeat(${d.nq},${d.short?`minmax(${d.cs}px,1fr
 function rgGrid(L,tests){ const d=rgDims(L), gc=rgCols(d), h=d.skyh-(d.short?30:22), H=Array.from({length:d.nq},(_,i)=>heat(L,i));
   const min=Math.max(3,Math.round(L.length*.35)); let lo=-1; H.forEach((x,i)=>{ if(x&&x[2]>=min&&x[0]<60&&(lo<0||x[0]<H[lo][0])) lo=i; });
   const one=tests.length===1?tests[0]:'';
-  const sky=H.map((x,i)=>`<button class="rgbar" ${one?`data-see="${i}" data-t="${esc(one)}"`:''} title="Question ${i+1}${x?`: ${x[0]}% right (${x[2]} answered)`:''}" aria-label="Question ${i+1}${x?`, ${x[0]} percent right`:''}"><i style="height:${x?Math.max(4,x[0]/100*h):3}px;background:${x?x[1]:'var(--blank)'}"></i>${d.short&&x?`<em style="bottom:${Math.max(4,x[0]/100*h)+5}px">${x[0]}%</em>`:''}</button>`).join('');
+  const sky=H.map((x,i)=>`<button class="rgbar" ${one?`data-see="${i}" data-t="${esc(one)}"`:''} title="Question ${i+1}${x?`: ${x[0]}% right (${x[2]} answered)`:''}${one?'. Click to see who missed it':''}" aria-label="Question ${i+1}${x?`, ${x[0]} percent right`:''}${one?'. Who missed it':''}"><i style="height:${x?Math.max(4,x[0]/100*h):3}px;background:${x?x[1]:'var(--blank)'}"></i>${d.short&&x?`<em style="bottom:${Math.max(4,x[0]/100*h)+5}px">${x[0]}%</em>`:''}</button>`).join('');
   const nums=Array.from({length:d.nq},(_,i)=>`<span>${d.short||i===0||(i+1)%5===0?i+1:''}</span>`).join('');
   const rows=L.map(s=>{ const k=stat(s)[0], nd=needOf(s), lv=lvLive(s), n=nOf(s), cur=i=>!s.submitted&&+s.item===i+1;
     const wd=nd?`<span class="wd w">${nd.ws}</span>`:k==='sub'?'<span class="wd">done</span>':k==='ns'?'<span class="wd">not started</span>':k==='work'?`<span class="wd">q${esc(s.item||((s.answered||0)+1))}</span>`:`<span class="wd">${esc(stat(s)[1].toLowerCase())}</span>`;
     return `<div class="rgr${nd?' need':''}${k==='ns'?' ns':''}" data-k="${esc(s.key)}" style="grid-template-columns:${gc}"><button class="who" data-open="${esc(s.key)}" title="${esc(s.name)}"><span class="nmv" data-nm="${esc(s.key)}">${esc(s.name)}</span>${wd}</button>${Array.from({length:d.nq},(_,i)=>{ if(i>=n) return '<span></span>'; const c=cCls(s,i), cu=cur(i)&&c==='un', a=d.letters&&(c==='ok'||c==='no'||c==='part')?(cellAns(s,i,s.q[i]&&s.q[i][8])||''):c==='wr'?'✎':'';
       return `<i class="cell ${cu?'cur':c}${s.q[i]&&s.q[i][5]?' fl':''}" data-k="${esc(s.key)}" data-i="${i}" data-see="${i}">${a}</i>`; }).join('')}${RG.cols.pts?`<span class="pts${s.submitted?'':' so'}">${s.answered>0||s.submitted?(s.score||0)+'/'+(s.max||0):'–'}</span>`:''}${RG.cols.lvl?`<span class="lvc" style="color:${lv?lv.c:'var(--mut)'}">${lv?esc(lv.n):''}</span>`:''}</div>`; }).join('');
-  return `<div class="rggrid" style="--cs:${d.cs}px;--gap:${d.gap}px;--skyh:${d.skyh}px"><div class="rgsky" id="rgSky" style="grid-template-columns:${gc}"><span></span>${sky}${lo>=0?`<span class="rgcall" id="rgCall" data-i="${lo}">Q${lo+1} · ${H[lo][0]}% · reteach</span>`:''}</div><div class="rgnum" style="grid-template-columns:${gc}"><span></span>${nums}</div><div id="rgRows">${rows}</div>
+  return `<div class="rggrid" style="--cs:${d.cs}px;--gap:${d.gap}px;--skyh:${d.skyh}px"><div class="rgsky" id="rgSky" style="grid-template-columns:${gc}"><span></span>${sky}${lo>=0?`<button class="rgcall" id="rgCall" data-i="${lo}" ${one?`data-rt="${lo}" data-t="${esc(one)}"`:''} title="See who missed question ${lo+1}">Q${lo+1} · ${H[lo][0]}% · reteach</button>`:''}</div><div class="rgnum" style="grid-template-columns:${gc}"><span></span>${nums}</div><div id="rgRows">${rows}</div>
     <div class="rgkey"><span><i style="background:var(--ok)"></i>Right</span><span><i style="background:var(--part)"></i>Partly</span><span><i style="background:var(--no)"></i>Wrong</span>${L.some(s=>s.q.some(q=>q&&q[9]))?'<span><i style="background:#8b6ad6"></i>To score</span>':''}<span><i></i>Not yet</span><span><i style="box-shadow:0 0 0 2px var(--blue2) inset;background:transparent"></i>On it now</span><span>Click a square or a bar to see the question</span></div></div>`; }
 
 /* draw Room or Grid: cards glide to new spots, new answers pop in, rings fill, a card that reaches a new level fades to its color */
@@ -3101,9 +3186,41 @@ function rgMorph(fn){ if(matchMedia('(prefers-reduced-motion: reduce)').matches)
     el.style.visibility='hidden'; g.animate([{transform:`translate(${o.r.left-r.left}px,${o.r.top-r.top}px) scale(${o.fs/fs})`},{transform:'none'}],{duration:600,easing:'cubic-bezier(.3,.7,.1,1)'}).onfinish=()=>{ el.style.visibility=''; g.remove(); }; }); }
 
 /* clicks: a square or a bar opens the question as students see it; Enter opens a card */
+document.addEventListener('click',e=>{ const g=e.target.closest('.rg .rgbar[data-see],.rg .rgcall[data-rt]'); if(!g) return; e.stopImmediatePropagation(); tip.hidden=true; rtShow(g.dataset.t,+(g.dataset.rt||g.dataset.see)); },true);
 document.addEventListener('click',e=>{ const c=e.target.closest('.rg [data-see],.rg .rgtk[data-k]'); if(!c) return; e.stopPropagation(); tip.hidden=true;
   let i=+c.dataset.see; if(c.dataset.see==null){ const r=c.getBoundingClientRect(), n=+c.dataset.n||1; i=Math.max(0,Math.min(n-1,Math.floor((e.clientX-r.left)/r.width*n))); }
   const s=c.dataset.k&&DATA.students.find(x=>x.key===c.dataset.k), t=c.dataset.t||(s&&s.test); if(t) qvShow(t,i); },true);
+/* reteach groups (11/5): click a question's bar in Grid for everyone who missed it, grouped by the answer they picked, ready to copy or pull into a small group */
+const RT={t:'',i:0,tm:0};
+function rtGroups(t,i){ const L=shown().filter(s=>s.test===t), by=new Map(), part=[], blank=[], wr=[]; let ok=0, wait=0, need=false;
+  const nm=s=>({key:s.key,name:s.name,per:s.period});
+  L.forEach(s=>{ const c=cCls(s,i);
+    if(c==='ok') ok++; else if(c==='part') part.push(nm(s)); else if(c==='bl') blank.push(nm(s)); else if(c==='wr') wr.push(nm(s)); else if(c==='un') wait++;
+    else { const raw=s.q[i]&&s.q[i][8], a=cellAns(s,i,raw); if(!a&&!raw) need=true; const k=a?'Picked '+a.replace(/<[^>]*>/g,''):'Missed'; if(!by.has(k)) by.set(k,[]); by.get(k).push(nm(s)); } });
+  const srt=x=>x.sort((a,b)=>(+a.per||99)-(+b.per||99)||a.name.localeCompare(b.name));
+  const G=[...by.entries()].sort((a,b)=>b[1].length-a[1].length).map(([k,v])=>[k,srt(v)]);
+  if(part.length) G.push(['Partly right',srt(part)]); if(blank.length) G.push(['Left it blank',srt(blank)]);
+  return {G,ok,wait,wr:srt(wr),n:L.length,need}; }
+function rtShow(t,i){ if(!t) return; RT.t=t; RT.i=i; clearTimeout(RT.tm); const v=$('#rtVeil'), mt=meta(t), x=heat(shown().filter(s=>s.test===t),i), R=rtGroups(t,i);
+  const miss=R.G.reduce((a,g)=>a+g[1].length,0), it=mt&&mt.items&&mt.items[i];
+  $('#rtTitle').textContent=`Question ${i+1}: who missed it`;
+  const per=new Set(R.G.flatMap(g=>g[1].map(s=>s.per))).size>1;
+  $('#rtBody').innerHTML=`<p class="rtsum">${x?`<b>${x[0]}%</b> right · `:''}<b>${miss}</b> to reteach${R.ok?` · ${R.ok} got it`:''}${R.wait?` · ${R.wait} not there yet`:''}${it&&it.teks?` · <span class="rs">${esc(it.teks)}</span>`:''}</p>`
+    +(miss?R.G.map(([k,L])=>`<section class="rtg"><h4>${esc(k)} <span>${L.length}</span></h4><div class="rtn">${L.map(s=>`<button class="rtp" data-open="${esc(s.key)}" title="Open ${esc(s.name)}">${esc(s.name)}${per&&s.per?`<small>${esc(s.per)}</small>`:''}</button>`).join('')}</div></section>`).join('')
+      :`<p class="hint">${R.ok?'Nobody has missed it yet.':'Nobody has answered it yet.'}</p>`)
+    +(R.wr.length?`<p class="hint">${R.wr.length} written answer${R.wr.length===1?'':'s'} still to grade: ${R.wr.map(s=>esc(s.name)).join(', ')}.</p>`:'')
+    +(R.G.length>1&&R.G[0][0].startsWith('Picked')?`<p class="hint">Grouped by the answer they picked, so each group shares the same mix-up.</p>`:'');
+  $('#rtCopy').disabled=!miss; $('#rtMsg').textContent=''; v.hidden=false; if(document.activeElement===document.body||!v.contains(document.activeElement)) $('#rtClose').focus();
+  if(R.need) RT.tm=setTimeout(()=>{ if(!v.hidden&&RT.t===t&&RT.i===i) rtShow(t,i); },2500); }   /* answers arrive a moment later; then the groups split by answer */
+function rtHide(){ $('#rtVeil').hidden=true; clearTimeout(RT.tm); }
+$('#rtClose').onclick=rtHide; $('#rtVeil').addEventListener('click',e=>{ if(e.target.id==='rtVeil') rtHide(); });
+addEventListener('keydown',e=>{ if(e.key==='Escape'&&!$('#rtVeil').hidden) rtHide(); });
+$('#rtSee').onclick=()=>{ const t=RT.t, i=RT.i; rtHide(); qvShow(t,i); };
+$('#rtBody').addEventListener('click',e=>{ const b=e.target.closest('[data-open]'); if(!b) return; rtHide(); openDrawer(b.dataset.open); });
+$('#rtCopy').onclick=async()=>{ const R=rtGroups(RT.t,RT.i), mt=meta(RT.t), m=$('#rtMsg');
+  const txt=`${mt?mt.title+', q':'Q'}uestion ${RT.i+1} reteach\n`+R.G.map(([k,L])=>k+': '+L.map(s=>s.name+(s.per&&s.per!=='G'?' ('+s.per+')':'')).join(', ')).join('\n');
+  try{ await navigator.clipboard.writeText(txt); m.textContent='Copied. Paste it anywhere.'; }
+  catch(x){ const ta=document.createElement('textarea'); ta.value=txt; document.body.appendChild(ta); ta.select(); try{ document.execCommand('copy'); m.textContent='Copied. Paste it anywhere.'; }catch(z){ m.textContent='Could not copy here.'; } ta.remove(); } };
 document.addEventListener('keydown',e=>{ if((e.key==='Enter'||e.key===' ')&&e.target.classList&&e.target.classList.contains('rgc')){ e.preventDefault(); openDrawer(e.target.dataset.open); } });
 $('#laySeg').addEventListener('click',e=>{ const b=e.target.closest('button'); if(!b) return; RG.lay=b.dataset.v; rgSave(); rgMorph(render); });
 let rgRz; addEventListener('resize',()=>{ clearTimeout(rgRz); rgRz=setTimeout(()=>{ if(view==='live'&&$('#card').dataset.lay==='grid') render(); },200); });
