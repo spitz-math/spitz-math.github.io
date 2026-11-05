@@ -825,7 +825,7 @@ html[data-nav="side"].navopen .dbar{transform:none}
 html[data-nav="side"].navopen .navbg{display:block;position:fixed;inset:0;z-index:65;background:rgba(10,12,16,.4)}
 html[data-nav="side"] .dbar .mngpanel{position:absolute;left:0;right:0;bottom:calc(100% + 6px);top:auto}
 html[data-nav="side"] .dbar .mng{position:relative}
-html[data-nav="side"] .sespanel{left:0;top:calc(100% + 6px);width:min(320px,80vw)}
+html[data-nav="side"] .sespanel{left:0;right:0;top:calc(100% + 6px);width:auto}
 html[data-nav="side"] .dbar .grp .lab{display:block}
 }
 
@@ -1025,6 +1025,9 @@ html[data-theme="dark"] #oeBankBtn[aria-pressed="true"]{background:color-mix(in 
   html[data-nav="side"]:not([data-rail="1"]) .sbfoot>*{flex:1;min-width:0}
   html[data-nav="side"]:not([data-rail="1"]) .sbfoot :is(.ibl,.mngs,.car){display:none!important}
   html[data-nav="side"]:not([data-rail="1"]) .sbfoot :is(.ibtn,.mngbtn){justify-content:center!important;width:100%} }
+/* session picker (11/5 fix): the side bar scrolls, which cut off the panel that opens beside it. It is fixed to the window instead, just right of the bar */
+@media (min-width:760px){ html[data-nav="side"] .sespanel{position:fixed;left:248px;top:auto;max-height:min(70vh,520px)} html[data-rail="1"] .sespanel{left:80px} }
+.sespanel input[type=checkbox]{accent-color:var(--acc)}
 /* Support page + side bar button */
 html[data-nav="side"] #helpBtn{order:11} html[data-nav="side"] .dbar .mng{order:12}
 html[data-nav="side"] #alertBtn{order:10} html[data-nav="side"] .dbar .upd{order:9}
