@@ -209,6 +209,30 @@ function fitStart(){ var ov=document.querySelector('[id$="-start"]'), eb=ov&&ov.
 function fitWatch(){ fitStart(); if(document.fonts&&document.fonts.ready) document.fonts.ready.then(fitStart); var ov=document.querySelector('[id$="-start"]');
   if(ov) new MutationObserver(function(){ if(!ov.hidden) fitStart(); }).observe(ov,{attributes:true,attributeFilter:['hidden']}); addEventListener('resize',function(){ setTimeout(fitStart,60); }); }
 if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',fitWatch); else fitWatch();
+/* ---------- the end screen (2026-11-05): lines slide in one after another and the big score counts up to the real number.
+   It plays each time a run ends (that is a moment worth a little show). The score always lands on the game's exact text,
+   and if the game rewrites the score while it counts, the count stops and the game's text stays. */
+function endShow(){
+  var ov=document.querySelector('[id$="-end"]'), eb=ov&&ov.querySelector('.sz-eyebrow'); if(!eb||!eb.animate) return;
+  var box=eb.parentElement, RM=matchMedia('(prefers-reduced-motion: reduce)'), shown=false;
+  function count(el){ var tn=null, w=document.createTreeWalker(el,NodeFilter.SHOW_TEXT,null,false), n;
+    while((n=w.nextNode())){ if(/\d/.test(n.nodeValue)){ tn=n; break; } } if(!tn) return;
+    var full=tn.nodeValue, m=/(\d[\d,]*)/.exec(full); if(!m) return; var goal=parseInt(m[1].replace(/,/g,''),10); if(!(goal>9)) return;
+    var pre=full.slice(0,m.index), post=full.slice(m.index+m[1].length), comma=m[1].indexOf(',')>=0, t0=0, dur=Math.min(1400,600+goal/40), last=null;
+    function fmt(v){ return comma?v.toLocaleString('en-US'):String(v); }
+    function step(ts){ if(!t0) t0=ts; if(last!==null&&tn.nodeValue!==last) return;   // the game changed it: leave the game's text
+      var p=Math.min(1,(ts-t0)/dur), e=1-Math.pow(1-p,3); last=pre+fmt(Math.round(goal*e))+post; tn.nodeValue=last;
+      if(p<1) requestAnimationFrame(step); else tn.nodeValue=full; }
+    last=pre+'0'+post; tn.nodeValue=last; setTimeout(function(){ requestAnimationFrame(step); },260); }
+  function play(){ if(RM.matches) return; var i=0;
+    [].forEach.call(box.children,function(c){ var kids=/-stats\b/.test(c.className)&&c.children.length>1&&c.children.length<9?c.children:[c];
+      [].forEach.call(kids,function(el){ if(!el.offsetParent) return;
+        el.animate([{opacity:0,translate:'0 16px'},{opacity:1,translate:'0 0'}],{duration:380,delay:80+i*70,easing:'cubic-bezier(.22,1,.36,1)',fill:'backwards'}); i++; }); });
+    var sc=box.querySelector('[id$="-endscore"]'); if(sc) count(sc); }
+  function chk(){ var vis=!ov.hidden&&!!ov.offsetParent; if(vis&&!shown) requestAnimationFrame(play); shown=vis; }
+  chk(); new MutationObserver(chk).observe(ov,{attributes:true,attributeFilter:['hidden']});
+}
+if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',endShow); else endShow();
 
 /* ---------- offline cache (games/sw.js): a game opens from the Chromebook's cache, then refreshes in the background ---------- */
 if('serviceWorker' in navigator && location.protocol==='https:') addEventListener('load',function(){ try{ navigator.serviceWorker.register('sw.js',{scope:'./'}).catch(function(){}); }catch(e){} });
