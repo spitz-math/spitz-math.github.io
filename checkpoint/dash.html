@@ -1154,7 +1154,7 @@ html[data-theme="dark"] .rtbox{background:var(--card);color:var(--ink)}
       <div class="row"><button class="btn" id="rebuild">Rebuild single files</button></div><div class="msg2" id="rbMsg"></div>
     </section>
     <section class="tcard" id="ltCard"><h2>Benchmark day check</h2>
-      <p class="hint">Pretends hundreds of students are testing at the same moment, to see whether saving keeps up before a school-wide test. Each pretend student signs in during the first minute, then saves about every 30 seconds, just like a real test page. Their saves run the real save code but go to a separate <b>Load Test</b> sheet that is deleted at the end, so real sessions and results are never touched. Run it when no class is testing: it uses the same Google account as real tests.</p>
+      <p class="hint">Pretends hundreds of students are testing at the same moment, to see whether saving keeps up before a school-wide test. Each pretend student signs in during the first minute, then saves about every 50 seconds, just like a real test page. Their saves run the real save code but go to a separate <b>Load Test</b> sheet that is deleted at the end, so real sessions and results are never touched. Run it when no class is testing: it uses the same Google account as real tests.</p>
       <div class="row fr"><label class="fl">Students<select id="ltN"><option>100</option><option selected>300</option><option>600</option><option>900</option></select></label>
         <label class="fl">How long<select id="ltMin"><option value="2">2 minutes</option><option value="3" selected>3 minutes</option><option value="5">5 minutes</option></select></label>
         <label class="fl">Teachers watching Live<select id="ltT"><option value="0">None</option><option value="5">5</option><option value="25" selected>25</option></select></label>
@@ -2900,7 +2900,7 @@ function ltStats(R,need,el){ const ms=R.ms.slice().sort((a,b)=>a-b), q=f=>ms.len
     <div class="${R.busy?'bad':''}"><b>${R.busy}</b><span>had to try again</span></div><div class="${R.fail?'bad':''}"><b>${R.fail}</b><span>did not save</span></div>${R.dash?`<div><b>${R.dashMs.length?sec(R.dashMs.slice().sort((a,b)=>a-b)[Math.floor(R.dashMs.length/2)]):'–'}</b><span>typical Live refresh (${R.dash} done)</span></div>`:''}`;
   return {p50:q(.5),p95:q(.95),got}; }
 async function ltRun(){ const N=+$('#ltN').value, MIN=+$('#ltMin').value, TN=+$('#ltT').value, NQ=50, END=MIN*60000, run=String(Date.now()%1e8);
-  const R={sent:0,ok:0,busy:0,fail:0,ms:[],dash:0,dashMs:[],inflight:0,maxIn:0,bk:{}}, timers=[], need=N/30; let T0=Date.now();
+  const R={sent:0,ok:0,busy:0,fail:0,ms:[],dash:0,dashMs:[],inflight:0,maxIn:0,bk:{}}, timers=[], need=N/50; let T0=Date.now();
   R.n=N; LT.on=true; $('#ltGo').textContent='Stop'; $('#ltBox').hidden=false; $('#ltSay').innerHTML='Students are signing in…'; $('#ltSay').className='ltsay'; say($('#ltMsg'),'','');
   const tick=setInterval(()=>{ const el=Date.now()-T0; $('#ltBar').style.width=Math.min(100,100*el/END)+'%'; ltStats(R,need,el); },500);
   let stopped=false; LT.stop=()=>{ stopped=true; };
@@ -2912,7 +2912,7 @@ async function ltRun(){ const N=+$('#ltN').value, MIN=+$('#ltMin').value, TN=+$(
   catch(e){ clearInterval(tick); LT.on=false; $('#ltGo').textContent='Start the check'; $('#ltBox').hidden=true; $('#ltSay').innerHTML='';
     return say($('#ltMsg'),'The check needs the newest Code.gs (it now puts the pretend students on a roster first). Paste it, then Deploy › Manage deployments › Edit › New version.','err'); }
   T0=Date.now(); $('#ltSay').innerHTML='Students are signing in…';
-  for(let i=1;i<=N;i++){ let at=Math.random()*60000, k=0; while(at<END){ const kk=k; timers.push(setTimeout(()=>save(i,kk,0),at)); k=Math.min(NQ,k+1); at+=27000+Math.random()*6000; } }
+  for(let i=1;i<=N;i++){ let at=Math.random()*60000, k=0; while(at<END){ const kk=k; timers.push(setTimeout(()=>save(i,kk,0),at)); k=Math.min(NQ,k+1); at+=45000+Math.random()*10000; } }
   for(let t=0;t<TN;t++) for(let at=Math.random()*15000;at<END;at+=15000) timers.push(setTimeout(()=>{ if(stopped) return; const t0=Date.now(); call('stcLoadTest',{op:'dash'},60000).then(()=>{ R.dash++; R.dashMs.push(Date.now()-t0); }).catch(()=>{}); },at));
   await new Promise(res=>{ const w=setInterval(()=>{ if(stopped||(Date.now()-T0>END&&!R.inflight)||Date.now()-T0>END+90000){ clearInterval(w); res(); } },500); });
   timers.forEach(clearTimeout); clearInterval(tick); const el=Math.min(Date.now()-T0,END), S=ltStats(R,need,el); $('#ltBar').style.width='100%';
