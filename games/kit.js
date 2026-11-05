@@ -141,6 +141,30 @@ function ready(){
 }
 if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',ready); else ready();
 
+/* ---------- the start screen (2026-11-05, matches the hub): steps without boxes, parts rise in once, a Start button you can press down ----------
+   A game opts its three steps into the plain look with class="sz-steps" on the steps row (the themed ones, like Skate's stickers, keep their own).
+   This style goes in last, so it wins over the game's card styles. Only opacity and translate move, so a game's own skew or tilt stays. */
+var css2=[
+'.sz-steps{ gap:48px !important; }',
+'.sz-steps > *{ background:none !important; border:0 !important; border-radius:0 !important; box-shadow:none !important; transform:none !important; padding:0 !important; }',
+'.sz-steps > * > b:first-child{ padding-top:16px; border-top:4px solid; }',
+'[id$="-start"] [id$="-go"],[id$="-start"] [id$="-go-start"]{ transition:translate .08s ease-out; }',
+'[id$="-start"] [id$="-go"]:active:not(:disabled),[id$="-start"] [id$="-go-start"]:active:not(:disabled){ translate:0 5px; }'
+].join('\n');
+var st2=document.createElement('style'); st2.id='sz-kit-css2'; st2.textContent=css2; (document.head||document.documentElement).appendChild(st2);
+function startIntro(){
+  var ov=document.querySelector('[id$="-start"]'), eb=ov&&ov.querySelector('.sz-eyebrow'); if(!eb||!eb.animate) return;
+  var box=eb.parentElement, RM=matchMedia('(prefers-reduced-motion: reduce)');
+  function play(){ if(RM.matches) return; var parts=[], i=0;
+    [].forEach.call(box.children,function(c){ if(/-steps\b/.test(c.className)) [].push.apply(parts,c.children); else parts.push(c); });
+    parts.forEach(function(el){ if(el.hidden||!el.offsetParent) return;
+      el.animate([{opacity:0,translate:'0 18px'},{opacity:1,translate:'0 0'}],{duration:420,delay:60+i*55,easing:'cubic-bezier(.22,1,.36,1)',fill:'backwards'}); i++; }); }
+  /* Kody 2026-11-05: no animation on every visit. It plays the first time a game opens on a Chromebook, then the screen just shows */
+  var key='sz_intro_'+location.pathname.split('/').pop(); try{ if(localStorage.getItem(key)) return; localStorage.setItem(key,'1'); }catch(e){ return; }
+  if(!ov.hidden&&ov.offsetParent) play();
+}
+if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',startIntro); else startIntro();
+
 /* ---------- offline cache (games/sw.js): a game opens from the Chromebook's cache, then refreshes in the background ---------- */
 if('serviceWorker' in navigator && location.protocol==='https:') addEventListener('load',function(){ try{ navigator.serviceWorker.register('sw.js',{scope:'./'}).catch(function(){}); }catch(e){} });
 })();
