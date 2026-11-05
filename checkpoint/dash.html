@@ -470,6 +470,29 @@ details summary{cursor:pointer;color:var(--blue2);font-size:13px;margin-top:8px}
 .rtd h4{margin:2px 0 3px;font-size:12px;text-transform:uppercase;letter-spacing:.04em;color:var(--mut)}
 @media (max-width:1200px){ #whoLbl{display:none} .topbar .upd#upd{font-size:11px} }
 @media (max-width:1100px){ .topbar.tb-red > .btn{padding:5px 9px} label.upd span{display:none} .wm small{display:none} }
+
+/* ---------- calmer layout (2026-11-05, flow and feel pass): the session picker and the Live / Standards / Questions tabs lead,
+   the page tools sit in one Manage menu, and the numbers at the top are one strip instead of a row of boxes ---------- */
+.mng{position:relative}
+.mngpanel{position:absolute;right:0;top:calc(100% + 6px);z-index:60;display:flex;flex-direction:column;min-width:180px;padding:6px;background:#fff;border:1px solid var(--line);border-radius:8px;box-shadow:0 10px 28px rgba(16,30,54,.18)}
+.mngpanel[hidden]{display:none}
+.mngpanel .btn{border:0;text-align:left;padding:8px 12px;border-radius:6px}
+.mngpanel .btn:hover,.mngpanel .btn:focus-visible{background:#eef3fb;outline:none}
+.mngpanel .btn[hidden]{display:none}
+.controls .csp{flex:1}
+.controls .sesbtn{font-weight:700;font-size:15px;padding:7px 14px;border-color:var(--blue2)}
+.vgrp .lab{display:none}
+#viewSeg{border:0;border-radius:0;gap:4px;overflow:visible}
+#viewSeg button{border:0;background:none;padding:7px 12px 6px;font-size:15px;font-weight:600;color:var(--mut);border-bottom:3px solid transparent;border-radius:0}
+#viewSeg button:hover{color:var(--ink)}
+#viewSeg button[aria-pressed="true"]{background:none;color:var(--blue);border-bottom-color:var(--blue2)}
+.tiles{gap:0;padding:12px 16px 4px;align-items:stretch}
+.tile{background:none;border:0;border-left:1px solid var(--line);border-radius:0;padding:2px 18px;min-width:0}
+.tile:first-child{border-left:0;padding-left:2px}
+.tile b{font-size:22px}
+.tile.alert{background:none;border-color:var(--line)}
+.tile.alert b{color:#b0600c}
+.tile.alert span{color:#8a5a12}
 </style>
 </head>
 <body>
@@ -481,10 +504,13 @@ details summary{cursor:pointer;color:var(--blue2);font-size:13px;margin-top:8px}
   <button class="btn" id="alertBtn" aria-pressed="true" title="Alerts: a pop-up when a student leaves the test tab, goes idle or loses signal">🔔 Alerts on</button>
   <button class="btn" id="refresh">Refresh</button>
   <span class="upd" id="whoLbl"></span>
-  <button class="btn" id="mySesBtn">My sessions</button>
-  <button class="btn" id="rosBtn">My roster</button>
-  <button class="btn" id="rptBtn">Reports</button>
-  <button class="btn" id="testsBtn">Tests</button>
+  <div class="mng" id="mng"><button class="btn mngbtn" id="mngBtn" aria-haspopup="menu" aria-expanded="false">Manage <span aria-hidden="true">&#9662;</span></button>
+    <div class="mngpanel" id="mngPanel" role="menu" hidden>
+  <button class="btn" id="mySesBtn" role="menuitem">My sessions</button>
+  <button class="btn" id="rosBtn" role="menuitem">My roster</button>
+  <button class="btn" id="rptBtn" role="menuitem">Reports</button>
+  <button class="btn" id="testsBtn" role="menuitem">Tests</button>
+    </div></div>
 </header>
 <div class="controls">
   <div class="grp"><span class="lab">Session</span><div class="sesdd" id="sesDD"><button class="btn sesbtn" id="sesBtn" aria-haspopup="dialog" aria-expanded="false"><span class="sl" id="sesLabel">Loading…</span><span class="car" aria-hidden="true">&#9662;</span></button>
@@ -492,12 +518,13 @@ details summary{cursor:pointer;color:var(--blue2);font-size:13px;margin-top:8px}
       <div class="seslist" id="sesList"></div>
       <div class="sesfoot"><button class="btn" id="sesNew" title="Make a new session without leaving the dashboard">+ New session</button><label><input type="checkbox" id="sesClosed"> Show closed</label><button class="btn" id="sesClear">Clear</button><button class="btn pri" id="sesDone">Show</button></div></div></div>
     <button class="btn" id="showIdBtn" title="Show the Session ID big, for the projector">Show Session ID</button></div>
+  <div class="grp vgrp"><span class="lab">View</span><div class="seg" id="viewSeg"><button data-v="live">Live</button><button data-v="std">Standards</button><button data-v="ques">Questions</button><button data-v="wr" id="wrViewBtn" hidden>Written</button></div></div>
+  <div class="csp"></div>
   <div class="grp" id="arcGrp" hidden><span class="lab">Results from</span><select id="arcSel" aria-label="Results from"></select></div>
   <div class="grp" id="teaGrp" hidden><span class="lab">Teacher</span><select id="teaSel" aria-label="Teacher"></select></div>
   <div class="grp"><span class="lab">Period</span><div class="seg" id="perSeg"><button data-v="">All</button></div></div>
   <div class="grp"><span class="lab">Sort</span><select id="sort"><option value="name">First name</option><option value="last">Last name</option><option value="period">Period</option><option value="status">Status</option><option value="progress">Progress</option><option value="score">Score</option><option value="input">Last activity</option></select></div>
   <div class="grp"><input id="q" type="search" placeholder="Find a name" aria-label="Find a name"></div>
-  <div class="grp"><span class="lab">View</span><div class="seg" id="viewSeg"><button data-v="live">Live</button><button data-v="std">Standards</button><button data-v="ques">Questions</button><button data-v="wr" id="wrViewBtn" hidden>Written</button></div></div>
 </div>
 <div class="tiles" id="tiles"></div>
 <div class="main">
@@ -958,6 +985,12 @@ function rpRender(){ const out=$('#rpOut'), test=RP.test, m=meta(test), sub=$('#
   qi.forEach((q,i)=>{ const v=cols.map(([,S])=>pc(pts(S,j=>j===i))); h+=`<tr><td><b>${i+1}</b></td><td>${esc(q.teks)} <span class="sm">${esc(q.rs||'')}</span></td>${v.map(cell).join('')}</tr>`; csv.push([i+1,q.teks].concat(v.map(x=>x==null?'':x))); });
   h+='</table></div></section>';
   out.innerHTML=h; RP.csv=csv; ['#rpCsv','#rpPrint'].forEach(b=>$(b).disabled=false); }
+/* Manage menu (2026-11-05): opens under the button, closes on a pick, a click outside or Esc */
+(function(){ const b=$('#mngBtn'), m=$('#mngPanel'); const set=o=>{ m.hidden=!o; b.setAttribute('aria-expanded',o); };
+  b.onclick=e=>{ e.stopPropagation(); set(m.hidden); };
+  m.addEventListener('click',()=>set(false));
+  document.addEventListener('click',e=>{ if(!m.hidden&&!m.contains(e.target)) set(false); });
+  document.addEventListener('keydown',e=>{ if(e.key==='Escape'&&!m.hidden){ set(false); b.focus(); } }); })();
 $('#rptBtn').onclick=rpOpen; $('#rptBack').onclick=()=>closePage('#rppage');
 $('#rpTest').onchange=rpLoad; $('#rpSub').onchange=rpRender; $('#rpBy').onchange=()=>{ rpTeaVis(); rpRender(); }; $('#rpTea').onchange=rpRender;
 $('#rpCsv').onclick=()=>{ if(!RP.csv) return; const q=v=>{ v=String(v); return /[",\n]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v; };
