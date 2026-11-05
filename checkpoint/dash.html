@@ -657,7 +657,7 @@ table.grid,.tiles,.t,.bar em,.prog em{font-variant-numeric:tabular-nums}
 .rgc.ns{opacity:.6}
 .rgc .r1{display:flex;align-items:center;gap:10px}
 .rgc .who{flex:1;min-width:0}
-.rgc .nmv{font-size:19px;font-weight:700;line-height:1.1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.rgc .nmv{font-size:16px;font-weight:700;line-height:1.1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .rgc .pd{font-size:12px;color:var(--mut);margin-top:2px}
 .rgc .st{font-size:13px;font-weight:600;color:var(--mut);min-height:18px}
 .rgc.need .st{color:var(--need);font-weight:700}
@@ -666,7 +666,7 @@ table.grid,.tiles,.t,.bar em,.prog em{font-variant-numeric:tabular-nums}
 .rgring text{fill:var(--ink);font:700 12.5px var(--fd)}
 .rgbox{display:flex;gap:5px;margin-top:auto}
 .rgbox .cell{flex:1;width:auto;height:30px;margin:0;border-radius:7px;font-size:13px;font-weight:800}
-.rgtk{display:flex;gap:1px;margin-top:auto;height:15px}
+.rgtk{display:flex;gap:1px;margin-top:auto;height:15px;border-radius:2px;cursor:pointer}
 .rgtk .cell{flex:1;width:auto;height:100%;margin:0;border-radius:1.5px;border:0}
 .rg .cell{cursor:pointer;font-style:normal;transition:background-color .35s}
 .rg .cell.ok{background:var(--ok);border-color:transparent;color:#fff}
@@ -712,7 +712,7 @@ table.grid,.tiles,.t,.bar em,.prog em{font-variant-numeric:tabular-nums}
 .rgbody{padding:16px 18px;overflow:auto}
 #rgVeil .qvbox{height:auto;max-height:92vh;width:min(560px,96vw)}
 @media (prefers-reduced-motion:reduce){.rgc,.rgring .fg,.rgbar i,.rg .cell{transition:none}.rg .cell.pop{animation:none}}
-@media (max-width:700px){.rgroom{grid-template-columns:1fr 1fr;gap:8px}.rgc{padding:11px}.rgc .nmv{font-size:16px}.rgbox .cell{height:26px}.tiles.hero{padding:12px 14px 6px}}
+@media (max-width:700px){.rgroom{grid-template-columns:1fr 1fr;gap:8px}.rgc{padding:11px}.rgc .nmv{font-size:15px}.rgbox .cell{height:26px}.tiles.hero{padding:12px 14px 6px}}
 @media (max-width:440px){.rgroom{grid-template-columns:1fr}}
 
 /* ---------- one calm top bar (11/5): the red band is gone; the Look color is the accent ---------- */
@@ -921,6 +921,17 @@ html[data-theme="dark"] .lksw button[aria-pressed="true"]::after{color:var(--ink
 .tbtns .btn.pri,.gs .btn.pri{background:color-mix(in srgb,var(--tb) 88%,#000);border-color:transparent;color:#fff}
 html[data-theme="dark"] .tbtns .tskip{background:none}
 @media (prefers-reduced-motion:reduce){ .tspot,.tbub{transition:none} }
+
+/* the side bar slides open and shut (11/5): width glides, labels are revealed by the edge instead of popping in */
+@media (min-width:760px) and (prefers-reduced-motion:no-preference){
+  html[data-nav="side"] body{transition:padding-left .3s cubic-bezier(.2,.8,.2,1)}
+  html[data-nav="side"] .dbar{transition:width .3s cubic-bezier(.2,.8,.2,1),padding .3s cubic-bezier(.2,.8,.2,1);overflow-x:hidden}
+  html[data-nav="side"] :is(.tpage,.bkpage){transition:left .3s cubic-bezier(.2,.8,.2,1)}
+  html[data-nav="side"] .dbar :is(.vl,.ibl,.mngs,.wmt){white-space:nowrap}
+  html[data-nav="side"].sbslide:not([data-rail="1"]) .dbar :is(.vl,.ibl,.mngs,.wmt,.lab,#perSeg,.sesbtn .sl small,.qwrap #q){animation:sbin .32s cubic-bezier(.2,.8,.2,1) both}
+  @keyframes sbin{from{opacity:0;transform:translateX(-10px)}}
+}
+html[data-nav="side"] .dbar{overflow-x:hidden}
 </style>
 </head>
 <body>
@@ -946,6 +957,7 @@ html[data-theme="dark"] .tbtns .tskip{background:none}
   <div class="mng" id="mng"><button class="btn mngbtn" id="mngBtn" aria-haspopup="menu" aria-expanded="false"><svg viewBox="0 0 24 24" class="gear" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M12 2.8v2.4M12 18.8v2.4M2.8 12h2.4M18.8 12h2.4M5.5 5.5l1.7 1.7M16.8 16.8l1.7 1.7M5.5 18.5l1.7-1.7M16.8 7.2l1.7-1.7"/></svg><span class="mngt">Manage</span><span class="mngs">Settings</span> <span class="car" aria-hidden="true">&#9662;</span></button>
     <div class="mngpanel" id="mngPanel" role="menu" hidden>
   <div class="mwho" id="whoLbl"></div>
+  <button class="btn" id="needBtn" role="menuitem">Who needs you, Room and Grid…</button>
   <button class="btn" id="tourBtn" role="menuitem">Take the tour</button>
   <label class="mauto" title="Auto-refresh every 15 seconds"><input type="checkbox" id="auto" checked> Auto-refresh every 15 seconds</label>
   <button class="btn" id="mySesBtn" role="menuitem">My sessions</button>
@@ -1361,8 +1373,12 @@ addEventListener('keydown',e=>{ if(!TR) return; if(e.key==='Escape') tourEnd(); 
 addEventListener('resize',()=>{ if(TR) tourDraw(); });
 function tourMaybe(){ if(++tourReady<2||store('tour')||TR) return; if(document.querySelector('.tpage:not([hidden]),.bkpage:not([hidden]),.veil:not([hidden])')) return; setTimeout(tourStart,600); }
 /* collapse the side bar to a slim rail (11/5); saved with the teacher's Look */
+$('#needBtn').onclick=()=>{ $('#mngPanel').hidden=true; $('#mngBtn').setAttribute('aria-expanded',false); rgCustom(); };
 $('#tourBtn').onclick=()=>{ $('#mngPanel').hidden=true; $('#mngBtn').setAttribute('aria-expanded',false); setTimeout(tourStart,50); };
 $('#railBtn').onclick=()=>{ const on=document.documentElement.dataset.rail!=='1'; if(window.lkSave) lkSave({rail:on}); };
+/* when the side bar finishes sliding, Grid squares re-fit the new width */
+new MutationObserver(()=>{ const h=document.documentElement; h.classList.add('sbslide'); clearTimeout(h._sb); h._sb=setTimeout(()=>h.classList.remove('sbslide'),450); }).observe(document.documentElement,{attributes:true,attributeFilter:['data-rail']});
+document.querySelector('.dbar').addEventListener('transitionend',e=>{ if(e.target.classList.contains('dbar')&&e.propertyName==='width'&&DATA) render(); });
 document.querySelector('.dbar').addEventListener('click',e=>{ if(document.documentElement.dataset.rail!=='1'||innerWidth<760) return;
   const t=e.target.closest('.qwrap,#sesBtn,.grp'); if(!t) return; e.preventDefault(); e.stopPropagation(); lkSave({rail:false}); if(t.classList.contains('qwrap')) setTimeout(()=>$('#q').focus(),260); },true);
 /* side bar pages (11/5): My sessions, roster, Reports, Tests open beside the side bar; Live / Standards / Questions close them */
@@ -1370,11 +1386,14 @@ document.querySelector('.dbar').addEventListener('click',e=>{ if(document.docume
   const open=()=>{ if(!$('#oepage').hidden) return {sec:'#oepage',back:'#oeBack',k:'ses',sub:1}; if(!$('#bkpage').hidden) return {sec:'#bkpage',back:'#bkBack',k:(typeof QB!=='undefined'&&QB.mine)?'ses':'tst',sub:1};
     for(const [k,sec,,back] of PG) if(!$(sec).hidden) return {sec,back,k}; return null; };
   const wait=ms=>new Promise(r=>setTimeout(r,ms));
-  async function closeAll(){ for(let i=0;i<6;i++){ const o=open(); if(!o) return true; $(o.back).click(); await wait(150); if(!$(o.sec).hidden) return false; } return !open(); }
+  async function closeAll(toPage){ for(let i=0;i<6;i++){ const o=open(); if(!o) return true;
+      /* page to page: just hide this one (no trip through Live); Tests still asks if publishing is running */
+      if(toPage&&!o.sub){ if(o.k==='tst'&&typeof TP!=='undefined'&&TP.working&&!confirm('Publishing is still running. Leave this page anyway?')) return false; $(o.sec).hidden=true; continue; }
+      $(o.back).click(); await wait(150); if(!$(o.sec).hidden) return false; } return !open(); }
   function paint(){ const o=open(); document.querySelectorAll('#pgNav button').forEach(b=>b.setAttribute('aria-current',o&&o.k===b.dataset.pg?'page':'false'));
     document.documentElement.classList.toggle('pgopen',!!o); { const v=o?document.querySelector('#pgNav [data-pg="'+o.k+'"]'):document.querySelector('#viewSeg button[aria-pressed="true"]'); if(v) $('#mview').textContent=v.textContent; } $('#pgNav [data-pg="tst"]').hidden=$('#testsBtn').hidden; }
   document.querySelectorAll('#pgNav button').forEach(b=>b.onclick=async()=>{ const o=open(); if(o&&o.k===b.dataset.pg&&!o.sub) return;
-    if(!await closeAll()) return; $(PG.find(p=>p[0]===b.dataset.pg)[2]).click(); });
+    if(!await closeAll(true)) return; $(PG.find(p=>p[0]===b.dataset.pg)[2]).click(); });
   $('#viewSeg').addEventListener('click',e=>{ if(e.target.closest('button')&&open()) closeAll(); });
   const mo=new MutationObserver(paint); ['#mpage','#rpage','#rppage','#tpage','#oepage','#bkpage','#testsBtn'].forEach(q=>mo.observe($(q),{attributes:true,attributeFilter:['hidden']})); paint(); })();
 /* phone side bar: menu button slides it in; picking a view or period closes it */
@@ -3017,11 +3036,15 @@ function rgStatus(s){ const [k,label]=stat(s), nd=needOf(s), lv=RG.cols.lvl?lvLi
   if(k==='ns') return 'Not started';
   if(k==='work') return `On question ${esc(s.item||((s.answered||0)+1))}`+lw;
   return esc(label)+lw; }
+/* speed (11/5): a long test's ticks are one painted bar, not 54 elements per card (a 120-student Room was 6,000+ elements) */
+const TKC={ok:'var(--ok)',no:'var(--no)',part:'var(--part)',wr:'#8b6ad6',bl:'var(--blank)',un:'var(--blank)',cur:'var(--blue2)'};
+function rgTicks(s,n,cur){ const g=Math.min(0.6,30/n), st=[]; for(let i=0;i<n;i++){ const c=cCls(s,i), col=TKC[cur(i)&&c==='un'?'cur':c]||'var(--blank)', a=(i*100/n).toFixed(3), b=((i+1)*100/n-g).toFixed(3), e=((i+1)*100/n).toFixed(3);
+  st.push(`${col} ${a}% ${b}%`,`transparent ${b}% ${e}%`); } return `linear-gradient(90deg,${st.join(',')})`; }
 function rgCard(s){ const n=nOf(s), k=stat(s)[0], nd=needOf(s), lv=RG.cols.lvl?lvLive(s):null, cur=i=>!s.submitted&&+s.item===i+1;
   const col=nd?'var(--need)':lv?lv.c:'var(--blue2)';
   const ans=n<=12?`<div class="rgbox">${Array.from({length:n},(_,i)=>{ const c=cCls(s,i), a=c==='un'||c==='bl'?'':(cellAns(s,i,s.q[i]&&s.q[i][8])||''), cu=cur(i)&&c==='un';
       return `<i class="cell ${cu?'cur':c}" data-k="${esc(s.key)}" data-i="${i}" data-see="${i}">${c==='wr'?'✎':a||(c==='un'||c==='bl'?i+1:'')}</i>`; }).join('')}</div>`
-    :`<div class="rgtk">${Array.from({length:n},(_,i)=>`<i class="cell ${cur(i)&&cCls(s,i)==='un'?'cur':cCls(s,i)}" data-k="${esc(s.key)}" data-i="${i}" data-see="${i}"></i>`).join('')}</div>`;
+    :`<div class="rgtk" data-k="${esc(s.key)}" data-n="${n}" title="Click a spot to see that question" style="background:${rgTicks(s,n,cur)}"></div>`;
   return `<div class="rgc${nd?' need':''}${lv?' rglv':''}${k==='ns'?' ns':''}" role="button" tabindex="0" data-k="${esc(s.key)}" data-open="${esc(s.key)}" style="--lvc:${lv?lv.c:'var(--blue2)'}" aria-label="${esc(s.name)}"><div class="r1"><div class="who"><div class="nmv" data-nm="${esc(s.key)}">${esc(s.name)}</div><div class="pd">${s.period==='G'?'Guest':'Period '+esc(s.period)}${supTag(s)}</div></div>${rgRing(s,n,col)}</div><div class="st">${rgStatus(s)}</div>${ans}</div>`; }
 
 function rgDims(L){ const nq=Math.max(...L.map(nOf)), short=nq<=12, ex=190+(RG.cols.pts?76:0)+(RG.cols.lvl?110:0);
@@ -3048,25 +3071,30 @@ function rgRender(L,tests,lay){ const card=$('#card'), rm=matchMedia('(prefers-r
   card.innerHTML=`<div class="rg">${lay==='room'?`<div class="rgroom" id="rgRoom">${L.map(rgCard).join('')}</div>`:rgGrid(L,tests)}</div>`; card.dataset.lay=lay;
   const call=$('#rgCall'); if(call){ const b=card.querySelectorAll('#rgSky .rgbar')[+call.dataset.i]; if(b) call.style.left=Math.max(0,b.offsetLeft+b.offsetWidth/2-12)+'px'; }
   requestAnimationFrame(()=>card.querySelectorAll('.rgring .fg').forEach(c=>c.setAttribute('stroke-dasharray',c.dataset.to)));
-  L.forEach(s=>{ const el=card.querySelector(`[data-k="${CSS.escape(s.key)}"].rgc,[data-k="${CSS.escape(s.key)}"].rgr`); if(!el) return;
+  /* speed (11/5): one pass to find each student's element, all position reads before any animation starts (no layout thrash on 100+ students) */
+  const EL=new Map(); card.querySelectorAll('[data-k].rgc,[data-k].rgr').forEach(e=>EL.set(e.dataset.k,e));
+  const last=new Map(); if(same&&!rm&&first.size){ const vh=innerHeight; EL.forEach((e,k)=>{ const f=first.get(k); if(f&&f.bottom>-200&&f.top<vh+200) last.set(k,e.getBoundingClientRect()); }); }
+  L.forEach(s=>{ const el=EL.get(s.key); if(!el) return;
     const ans=s.q.map(q=>q&&q[0]!=null?1:0).join(''), lv=(lvLive(s)||{}).n||'', was=RGP[s.key];
-    if(was&&same&&!rm){ for(let i=0;i<ans.length;i++) if(ans[i]==='1'&&was.ans[i]!=='1'){ const c=el.querySelector(`.cell[data-i="${i}"]`); if(c) c.classList.add('pop'); }
+    if(was&&same&&!rm){ if(ans!==was.ans){ const cs=el.querySelectorAll('.cell'); for(let i=0;i<ans.length;i++) if(ans[i]==='1'&&was.ans[i]!=='1'){ const c=cs[i]; if(c) c.classList.add('pop'); } }
       if(lv!==was.lv&&el.classList.contains('rgc')) el.animate([{backgroundColor:'var(--card)'},{}],{duration:900,easing:'ease-out'});
-      const f=first.get(s.key); if(f){ const r=el.getBoundingClientRect(), dx=f.left-r.left, dy=f.top-r.top; if(Math.abs(dx)+Math.abs(dy)>1) el.animate([{transform:`translate(${dx}px,${dy}px)`},{transform:'none'}],{duration:560,easing:'cubic-bezier(.2,.8,.2,1)'}); } }
+      const f=first.get(s.key), r=last.get(s.key); if(f&&r){ const dx=f.left-r.left, dy=f.top-r.top; if(Math.abs(dx)+Math.abs(dy)>1) el.animate([{transform:`translate(${dx}px,${dy}px)`},{transform:'none'}],{duration:560,easing:'cubic-bezier(.2,.8,.2,1)'}); } }
     RGP[s.key]={f:Math.min(1,(s.answered||0)/nOf(s)),ans,lv}; }); }
 
 /* switching Room and Grid: each name glides from where it was to where it lands */
 function rgMorph(fn){ if(matchMedia('(prefers-reduced-motion: reduce)').matches){ fn(); return; }
   const old={}; document.querySelectorAll('#card [data-nm]').forEach(el=>{ const r=el.getBoundingClientRect(); if(r.bottom>0&&r.top<innerHeight) old[el.dataset.nm]={r,fs:parseFloat(getComputedStyle(el).fontSize)}; });
-  fn(); const items=[...document.querySelectorAll('#card .rgc,#card .rgr')];
-  items.forEach((el,i)=>el.animate([{opacity:0,transform:'translateY(10px)'},{opacity:1,transform:'none'}],{duration:360,delay:100+Math.min(i,16)*20,easing:'cubic-bezier(.2,.8,.2,1)',fill:'backwards'}));
-  document.querySelectorAll('#card [data-nm]').forEach(el=>{ const o=old[el.dataset.nm]; if(!o) return; const r=el.getBoundingClientRect(); if(r.bottom<0||r.top>innerHeight) return;
-    const fs=parseFloat(getComputedStyle(el).fontSize), g=document.createElement('div'); g.className='rgghost'; g.textContent=el.textContent; g.style.fontSize=fs+'px'; g.style.left=r.left+'px'; g.style.top=r.top+'px'; document.body.appendChild(g);
+  fn(); const items=[...document.querySelectorAll('#card .rgc,#card .rgr')], vh=innerHeight;
+  const tops=items.map(el=>el.getBoundingClientRect().top), land=[];
+  document.querySelectorAll('#card [data-nm]').forEach(el=>{ const o=old[el.dataset.nm]; if(!o) return; const r=el.getBoundingClientRect(); if(r.bottom<0||r.top>vh) return; land.push([el,o,r,parseFloat(getComputedStyle(el).fontSize)]); });
+  let k=0; items.forEach((el,i)=>{ if(tops[i]>vh) return; el.animate([{opacity:0,transform:'translateY(10px)'},{opacity:1,transform:'none'}],{duration:360,delay:100+Math.min(k++,16)*20,easing:'cubic-bezier(.2,.8,.2,1)',fill:'backwards'}); });
+  land.forEach(([el,o,r,fs])=>{ const g=document.createElement('div'); g.className='rgghost'; g.textContent=el.textContent; g.style.fontSize=fs+'px'; g.style.left=r.left+'px'; g.style.top=r.top+'px'; document.body.appendChild(g);
     el.style.visibility='hidden'; g.animate([{transform:`translate(${o.r.left-r.left}px,${o.r.top-r.top}px) scale(${o.fs/fs})`},{transform:'none'}],{duration:600,easing:'cubic-bezier(.3,.7,.1,1)'}).onfinish=()=>{ el.style.visibility=''; g.remove(); }; }); }
 
 /* clicks: a square or a bar opens the question as students see it; Enter opens a card */
-document.addEventListener('click',e=>{ const c=e.target.closest('.rg [data-see]'); if(!c) return; e.stopPropagation(); tip.hidden=true;
-  const s=c.dataset.k&&DATA.students.find(x=>x.key===c.dataset.k), t=c.dataset.t||(s&&s.test); if(t) qvShow(t,+c.dataset.see); },true);
+document.addEventListener('click',e=>{ const c=e.target.closest('.rg [data-see],.rg .rgtk[data-k]'); if(!c) return; e.stopPropagation(); tip.hidden=true;
+  let i=+c.dataset.see; if(c.dataset.see==null){ const r=c.getBoundingClientRect(), n=+c.dataset.n||1; i=Math.max(0,Math.min(n-1,Math.floor((e.clientX-r.left)/r.width*n))); }
+  const s=c.dataset.k&&DATA.students.find(x=>x.key===c.dataset.k), t=c.dataset.t||(s&&s.test); if(t) qvShow(t,i); },true);
 document.addEventListener('keydown',e=>{ if((e.key==='Enter'||e.key===' ')&&e.target.classList&&e.target.classList.contains('rgc')){ e.preventDefault(); openDrawer(e.target.dataset.open); } });
 $('#laySeg').addEventListener('click',e=>{ const b=e.target.closest('button'); if(!b) return; RG.lay=b.dataset.v; rgSave(); rgMorph(render); });
 let rgRz; addEventListener('resize',()=>{ clearTimeout(rgRz); rgRz=setTimeout(()=>{ if(view==='live'&&$('#card').dataset.lay==='grid') render(); },200); });
