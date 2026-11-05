@@ -502,7 +502,7 @@ details summary{cursor:pointer;color:var(--blue2);font-size:13px;margin-top:8px}
 /* ---------- dashboard polish (2026-11-05, round 2) ---------- */
 :root{ --barok:#a9b6c6; --tb:#e2660f; --surf2:#f6f8fb; --hov:#f4f8ff; }
 .topbar.tb-red{background:var(--tb)}
-[data-accent="red"]{--tb:#b3261e} [data-accent="navy"]{--tb:#1d3a7a} [data-accent="teal"]{--tb:#0f766e} [data-accent="purple"]{--tb:#5b3a9e} [data-accent="green"]{--tb:#2f6b2f} [data-accent="slate"]{--tb:#334155}
+[data-accent="red"]{--tb:#b3261e} [data-accent="navy"]{--tb:#1d3a7a} [data-accent="teal"]{--tb:#0f766e} [data-accent="purple"]{--tb:#5b3a9e} [data-accent="green"]{--tb:#2f6b2f} [data-accent="slate"]{--tb:#334155} [data-accent="pink"]{--tb:#d63384}
 .tb-red .btn.pri{color:var(--tb)}
 /* numbers line up */
 table.grid,.tiles,.t,.bar em,.prog em{font-variant-numeric:tabular-nums}
@@ -636,6 +636,8 @@ table.grid,.tiles,.t,.bar em,.prog em{font-variant-numeric:tabular-nums}
 /* ---------- Room and Grid (11/5, Kody): the Live view as student cards or a full-width answer map, under a sentence that says who needs you ---------- */
 :root{--need:#d4237a;--needbg:rgba(212,35,122,.07);--tint:13%;--fd:'Bricolage Grotesque',Onest,"Segoe UI",sans-serif}
 [data-theme="dark"]{--need:#ff5aa8;--needbg:rgba(255,90,168,.09);--tint:18%;--mast:#46c97a;--meets:#5ab0f0;--app:#e9a93c;--dnm:#f0675a}
+/* with the Pink side bar, "needs you" turns violet so it never blends into the side bar (violet matches no level color) */
+[data-accent="pink"]{--need:#7c3aed;--needbg:rgba(124,58,237,.07)} [data-theme="dark"][data-accent="pink"]{--need:#a78bfa;--needbg:rgba(167,139,250,.1)}
 .wm,.say,.rgc .nmv,.rgr .nmv,.rgcall,.stl b{font-family:var(--fd)}
 .tiles.hero{display:block;padding:18px 20px 10px}
 .say{margin:0;font-size:clamp(20px,2.3vw,30px);font-weight:700;line-height:1.2;text-wrap:balance;letter-spacing:0;font-variation-settings:'opsz' 96;color:var(--ink)}
@@ -1112,7 +1114,7 @@ html[data-theme="dark"] .rtbox{background:var(--card);color:var(--ink)}
   <button class="btn" id="hpOpen" role="menuitem" hidden>Support</button>
       <div class="look" id="look"><div class="lkh">Look</div>
         <div class="seg lkmode" id="lkMode"><button data-v="light">Light</button><button data-v="dark">Dark</button><button data-v="auto">Auto</button></div>
-        <div class="lkch">Side bar color</div><div class="lksw" id="lkSw"><button data-v="orange" style="--sw:#e2660f"><i></i>Orange</button><button data-v="red" style="--sw:#b3261e"><i></i>Red</button><button data-v="navy" style="--sw:#1d3a7a"><i></i>Navy</button><button data-v="teal" style="--sw:#0f766e"><i></i>Teal</button><button data-v="purple" style="--sw:#5b3a9e"><i></i>Purple</button><button data-v="green" style="--sw:#2f6b2f"><i></i>Green</button><button data-v="slate" style="--sw:#334155"><i></i>Slate</button></div></div>
+        <div class="lkch">Side bar color</div><div class="lksw" id="lkSw"><button data-v="orange" style="--sw:#e2660f"><i></i>Orange</button><button data-v="red" style="--sw:#b3261e"><i></i>Red</button><button data-v="navy" style="--sw:#1d3a7a"><i></i>Navy</button><button data-v="teal" style="--sw:#0f766e"><i></i>Teal</button><button data-v="purple" style="--sw:#5b3a9e"><i></i>Purple</button><button data-v="green" style="--sw:#2f6b2f"><i></i>Green</button><button data-v="slate" style="--sw:#334155"><i></i>Slate</button><button data-v="pink" style="--sw:#d63384"><i></i>Pink</button></div></div>
     </div></div></div>
 </header>
 <div class="herow">
