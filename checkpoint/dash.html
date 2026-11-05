@@ -1134,7 +1134,7 @@ function lvPill(s){ const l=sLvl(s), w=toScore(s);
   return `<span class="lvp${s.submitted?'':' lvs'}" style="background:${l[2]}" title="${esc(l[1])}${s.submitted?'':' so far'}${l[3]?' (estimate: this test has no row in the campus standards)':''}">${esc(l[1])}${l[3]?' <i>est.</i>':''}</span>`; }
 const IDLE_MS=3*60*1000, NOSIG_MS=100*1000, POLL_MS=15000;
 const store=k=>{ try{ return JSON.parse(localStorage.getItem('spitzDash:'+k)); }catch(e){ return null; } };
-const keep=(k,v)=>{ try{ localStorage.setItem('spitzDash:'+k,JSON.stringify(v)); }catch(e){} };
+const keep=(k,v)=>{ try{ localStorage.setItem('spitzDash:'+k,JSON.stringify(v)); }catch(e){} pfDirty(k); };
 
 /* ---------- talking to Apps Script (same bridge as the player: Google's objects must be made in Google's frame) ---------- */
 function gsHost(){ const w=[window]; try{ if(parent!==window) w.push(parent); }catch(e){}
@@ -1242,6 +1242,22 @@ document.addEventListener('visibilitychange',()=>{ if(!document.hidden){ AL.unse
 function stop(){ clearInterval(timer); timer=null; }
 let hidTick=0;   /* in another tab, keep checking every 30 s while alerts are on so they still come (11/2) */
 function startAuto(){ stop(); if($('#auto').checked) timer=setInterval(()=>{ if(!document.hidden||(AL.on&&(++hidTick%2===0))) load(true); },POLL_MS); }
+/* settings follow the teacher (11/5): Look, Room/Grid, order, alerts and a few view choices are saved to the teacher's
+   sign-in through stcPrefs in Code.gs, so they carry to any computer. This device keeps a copy so the page opens right away.
+   Without stcPrefs in Code.gs it quietly stays on this device only. */
+const PF_KEYS=['look','rg','sort','alerts','qorder','subOnly','qbCourse','qbHideUsed'];
+var pfT=null, pfOk=false;   // var: keep() can run before this line
+function pfLocal(){ const o={}; PF_KEYS.forEach(k=>{ try{ const v=localStorage.getItem('spitzDash:'+k); if(v!=null) o[k]=JSON.parse(v); }catch(e){} }); return o; }
+function pfDirty(k){ if(!pfOk||!PF_KEYS.includes(k)) return; clearTimeout(pfT); pfT=setTimeout(()=>{ call('stcPrefs',{set:pfLocal()},30000).catch(()=>{}); },1200); }
+function pfApply(p){ PF_KEYS.forEach(k=>{ if(k in p) try{ localStorage.setItem('spitzDash:'+k,JSON.stringify(p[k])); }catch(e){} });
+  if(p.look&&window.lkPaint) lkPaint();
+  if(p.rg){ Object.assign(RG,p.rg); }
+  if(p.sort){ sortBy=p.sort; $('#sort').value=sortBy; }
+  if('alerts' in p){ AL.on=p.alerts!==false; alSet(); }
+  if(p.qorder) QV.order=p.qorder;
+  if(DATA) render(); }
+(async()=>{ if(!APP) return; try{ const r=await call('stcPrefs',{},30000); pfOk=true;
+  if(r&&r.prefs&&Object.keys(r.prefs).length) pfApply(r.prefs); else if(Object.keys(pfLocal()).length) pfDirty('look'); }catch(e){} })();
 /* side bar pages (11/5): My sessions, roster, Reports, Tests open beside the side bar; Live / Standards / Questions close them */
 (function(){ const PG=[['ses','#mpage','#mySesBtn','#mpBack'],['ros','#rpage','#rosBtn','#rpBack'],['rpt','#rppage','#rptBtn','#rptBack'],['tst','#tpage','#testsBtn','#tpBack']];
   const open=()=>{ if(!$('#oepage').hidden) return {sec:'#oepage',back:'#oeBack',k:'ses',sub:1}; if(!$('#bkpage').hidden) return {sec:'#bkpage',back:'#bkBack',k:(typeof QB!=='undefined'&&QB.mine)?'ses':'tst',sub:1};
@@ -1426,7 +1442,7 @@ function rpRender(){ const out=$('#rpOut'), test=RP.test, m=meta(test), sub=$('#
     document.querySelectorAll('#lkMode button').forEach(b=>b.setAttribute('aria-pressed',b.dataset.v===mode));
     document.querySelectorAll('#lkSw button').forEach(b=>b.setAttribute('aria-pressed',b.dataset.v===(t.accent||'orange')));
     document.querySelectorAll('#lkNav button').forEach(b=>b.setAttribute('aria-pressed',b.dataset.v===(t.nav||'top'))); };
-  const lkSave=x=>{ try{ localStorage.setItem('spitzDash:look',JSON.stringify(Object.assign(LK(),x))); }catch(e){} lkPaint(); };
+  const lkSave=x=>{ try{ localStorage.setItem('spitzDash:look',JSON.stringify(Object.assign(LK(),x))); }catch(e){} lkPaint(); pfDirty('look'); }; window.lkPaint=lkPaint;
   document.querySelectorAll('#lkMode button').forEach(b=>b.onclick=()=>lkSave({mode:b.dataset.v}));
   document.querySelectorAll('#lkSw button').forEach(b=>b.onclick=()=>lkSave({accent:b.dataset.v}));
   document.querySelectorAll('#lkNav button').forEach(b=>b.onclick=()=>lkSave({nav:b.dataset.v}));
