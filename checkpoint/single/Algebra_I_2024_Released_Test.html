@@ -767,15 +767,16 @@ body.browse>*:not(#browse):not(svg){display:none!important}
 .bcard.used{border-left:4px solid #e07a1f}
 .btag{font-size:11px;background:#fff1cc;color:#7a5600;border-radius:8px;padding:1px 7px;font-weight:700}
 .noadd .badd{display:none!important}
-.badd{margin-top:6px;border:1px solid #1f5fd1;background:#1f5fd1;color:#fff;border-radius:6px;padding:7px 10px;font:600 13px "Segoe UI",Roboto,Arial,sans-serif;min-width:92px;min-height:36px}
+.badd{margin-top:6px;border:1px solid #1d2733;background:#1d2733;color:#fff;border-radius:10px;padding:7px 10px;font:600 13px "Segoe UI",Roboto,Arial,sans-serif;min-width:92px;min-height:36px}
 .badd[aria-pressed="true"]{background:#fff;color:#17663a;border-color:#2e9d55}
 .badd:disabled{background:#eef2f7;color:#5a6b85;border-color:#c7d2e0;font-size:12px;cursor:default}
-.bcopy{margin-top:6px;border:1px solid #1f5fd1;background:#fff;color:#1f5fd1;border-radius:6px;padding:6px 10px;font:600 13px "Segoe UI",Roboto,Arial,sans-serif;min-width:92px;min-height:34px} .noadd .bcopy{display:none!important}
+.bcopy{margin-top:6px;border:1px solid #c7d2e0;background:#fff;color:#1d2733;border-radius:10px;padding:6px 10px;font:600 13px "Segoe UI",Roboto,Arial,sans-serif;min-width:92px;min-height:34px} .noadd .bcopy{display:none!important}
 .bmain{min-width:0;padding:14px 16px 10px}
 .bmain .body{padding:0}
 .bwait{color:#888;font-size:13px;padding:30px 0}
 .bfoot{display:flex;flex-wrap:wrap;gap:8px 16px;align-items:center;justify-content:space-between;border-top:1px solid #e3e8ef;margin-top:14px;padding-top:8px;font:13px/1.35 "Segoe UI",Roboto,Arial,sans-serif;color:#1d2733}
 .bkey span{font-family:var(--font)}
+.bcard[data-mode="blank"] .bkey{visibility:hidden}   /* the key line waits for Check or Show the answer */
 .bbtns{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
 .bbtns button{border:1px solid #9fb0c8;background:#fff;border-radius:6px;padding:4px 10px;font-size:13px;min-height:30px}
 .bbtns button:hover{background:#f3f6fb}
@@ -3714,7 +3715,7 @@ $('#startForm').addEventListener('submit',async e=>{ e.preventDefault();
 });
 
 /* ---------- saving ---------- */
-let sentAt=0, sentStatus='', leaving=false, lastInput=Date.now(), localT=null, serverT=null, inflight=false, again=false, finalOK=false, beat=null, reviewPoll=null, holdPoll=null, holdBusy=false, fails=0, confirmed=false, rcSent=null;   // rcSent: right-click count the Sheet already has
+let sentAt=0, sentStatus='', leaving=false, lastInput=Date.now(), localT=null, serverT=null, inflight=false, again=false, finalOK=false, beat=null, reviewPoll=null, holdPoll=null, holdBusy=false, fails=0, confirmed=false, rcSent=null, busyUntil=0;   // rcSent: right-click count the Sheet already has
 /* when Google is busy, wait longer each time (3, 6, 12, 24, 30 s; a submitted test 3, 6, 12, 15 s), give or take a third, so a whole class never retries in step */
 const backoff=final=>Math.min(final?15000:30000,3000*Math.pow(2,Math.min(fails-1,4)))*(0.67+Math.random()*0.66);
 ['pointerdown','keydown'].forEach(t=>addEventListener(t,()=>{ lastInput=Date.now(); },true));
@@ -3731,15 +3732,20 @@ function payload(final){ const ss=window.SpitzSession, ex=ss.export(), st=ss.sta
 function saveServer(){ clearTimeout(serverT); serverT=null; if(leaving||!CTX||!CTX.sessionId||finalOK) return;
   if(inflight){ again=true; return; } inflight=true;
   const final=window.SpitzSession.submitted, body=payload(final); sentAt=Date.now(); sentStatus=body.status; if(body.sum.rclicks!==rcSent) body.rcNew=true;
-  call('stcSave',body).then(r=>{ if(!r||!r.ok){ fails++; again=true; return; } if(r.moved){ movedAway(); return; } fails=0; if(body.rcNew) rcSent=body.sum.rclicks;
+  const t0=Date.now();
+  call('stcSave',body).then(r=>{ if(Date.now()-t0>4000) busyUntil=Date.now()+120000; if(!r||!r.ok){ fails++; again=true; return; } if(r.moved){ movedAway(); return; } fails=0; if(body.rcNew) rcSent=body.sum.rclicks;
       if(r.review) applyReview(r.review); if(typeof r.control==='string'&&!final) window.SpitzSession.teacherHold(r.control);
       if(final){ finalOK=true; saveNote(false); if(r.own&&window.__spitzOwn) window.__spitzOwn(r.own);
         // one quiet repeat 20 s later puts "submitted" back if a late, older save from before Submit lands after it
         if(!confirmed){ confirmed=true; setTimeout(()=>{ if(!leaving) call('stcSave',payload(true)).catch(()=>{}); },20000); } } })
     .catch(()=>{ fails++; again=true; })
     .finally(()=>{ inflight=false; if(again||(final&&!finalOK)){ again=false; serverT=setTimeout(saveServer,fails?backoff(final):1000); } }); }
-/* after a change: save in 6–10 s (each Chromebook picks its own time, so a class clicking Next together doesn't save together) */
-function saveServerSoon(ms){ if(!serverT) serverT=setTimeout(saveServer,fails?Math.max(ms,backoff(false)):ms+Math.random()*4000); }
+/* after a change: save in 6–10 s (each Chromebook picks its own time, so a class clicking Next together doesn't save together).
+   When Google is busy (a save took over 4 s, as on a school-wide test day; benchmark check 11/5 topped out near 20 saves a second),
+   the page waits 20–30 s instead for the next 2 minutes, so a whole school saving at once doesn't jam. Leaving the tab, Submit and
+   the teacher's Pause still save right away. */
+const busy=()=>Date.now()<busyUntil;
+function saveServerSoon(ms){ if(!serverT) serverT=setTimeout(saveServer,fails?Math.max(ms,backoff(false)):ms+Math.random()*ms/2); }
 /* this test was opened again in another tab or on another Chromebook: this page stops saving and says so */
 function movedAway(){ if(leaving) return; leaving=true; again=false; clearTimeout(localT); clearTimeout(serverT); [beat,reviewPoll,holdPoll].forEach(t=>t&&clearInterval(t));
   const mine=LS.get(CTX.key); if(mine&&mine.tab===CTX.tab) LS.del(CTX.key);   /* this tab's copy is out of date now; signing in again here must start from the saved answers */
@@ -3750,7 +3756,7 @@ function movedAway(){ if(leaving) return; leaving=true; again=false; clearTimeou
 function saveNote(on){ let n=$('#saveNote'); if(on&&!n){ n=document.createElement('p'); n.id='saveNote'; n.className='savenote'; n.textContent='Saving your test… keep this page open.'; $('#logout').after(n); } if(!on&&n) n.remove(); }
 function applyReview(mode){ if(APP&&mode) $('#resultsScreen').dataset.review=mode; }
 function startSaving(){
-  window.__spitzChanged=()=>{ saveLocalSoon(); if(CTX.sessionId) saveServerSoon(6000); };
+  window.__spitzChanged=()=>{ saveLocalSoon(); if(CTX.sessionId) saveServerSoon(busy()?20000:6000); };
   window.__spitzSubmitted=()=>{ saveLocal(); if(CTX.sessionId){ saveNote(true); saveServer(); } };
   const now_=()=>{ if(fails) saveServerSoon(0); else saveServer(); };   // while Google is busy, wait the backoff instead of adding another call
   const watch=el=>new MutationObserver(()=>{ saveLocal(); now_(); }).observe(el,{attributes:true,attributeFilter:['hidden']});
@@ -3760,7 +3766,7 @@ function startSaving(){
   saveLocal();
   if(CTX.sessionId){ if(window.SpitzSession.submitted) saveNote(true); else if(CTX.control) window.SpitzSession.teacherHold(CTX.control); saveServer();
     // heartbeat for the dashboard (who is idle or away); skipped when a save just went out and nothing changed
-    beat=setInterval(()=>{ if(!finalOK&&!fails&&(Date.now()-sentAt>25000||screen()!==sentStatus)) saveServer(); },30000);
+    beat=setInterval(()=>{ if(!finalOK&&!fails&&(Date.now()-sentAt>(busy()?55000:25000)||screen()!==sentStatus)) saveServer(); },30000);
     reviewPoll=setInterval(()=>{ if(!$('#resultsScreen').hidden) call('stcReview',{sessionId:CTX.sessionId,own:CTX.ver?1:0}).then(r=>{ if(!r) return; applyReview(r.review); if(r.own&&window.__spitzOwn) window.__spitzOwn(r.own); }).catch(()=>{}); },30000);
     // while the teacher has paused or stopped this test, check every 10 s (reads one cell, writes nothing) so Resume shows up quickly
     holdPoll=setInterval(()=>{ const ss=window.SpitzSession; if(!ss.hold||ss.submitted||holdBusy) return; holdBusy=true;
