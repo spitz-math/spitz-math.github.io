@@ -761,6 +761,7 @@ table.grid,.tiles,.t,.bar em,.prog em{font-variant-numeric:tabular-nums}
 .herow .tiles{flex:1;min-width:0}
 .vctl{display:flex;align-items:center;gap:8px;padding-bottom:10px;flex:none}
 .vctl .lab{font-size:12.5px;text-transform:none;letter-spacing:0;font-weight:600}
+#expGrp{display:flex;gap:6px} #expGrp .btn{padding:6px 12px;font-size:13.5px}
 @media (max-width:1180px){ .dbar .wmt{display:none} .dbar .wm{margin-right:0} }
 @media (max-width:1000px){ .dbar{flex-wrap:wrap} .dbar .vgrp{order:9;flex-basis:100%;margin-left:0} .dbar #viewSeg button{margin-bottom:-9px} }
 @media (max-width:700px){ .herow{flex-direction:column;align-items:stretch;padding-right:0} .vctl{padding:0 14px 8px} .dbar .grp .lab{display:none} .dbar .sesbtn{max-width:52vw} }
@@ -1120,7 +1121,7 @@ html[data-theme="dark"] .rtbox{background:var(--card);color:var(--ink)}
 </header>
 <div class="herow">
 <div class="tiles" id="tiles"></div>
-  <div class="vctl" id="vctl"><div class="grp" id="layGrp"><div class="seg" id="laySeg" aria-label="Layout"><button data-v="room">Room</button><button data-v="grid">Grid</button></div></div>
+  <div class="vctl" id="vctl"><div class="grp" id="expGrp"><button class="btn" id="vRep" title="One page per student: score, standards to work on, and each missed question with how to solve it">Student reports</button><button class="btn" id="vCsv" title="Each student's score and STAAR level (the students shown now), for your gradebook">Download scores</button></div><div class="grp" id="layGrp"><div class="seg" id="laySeg" aria-label="Layout"><button data-v="room">Room</button><button data-v="grid">Grid</button></div></div>
     <div class="grp" id="sortGrp"><span class="lab">Sort</span><select id="sort"><option value="needs">Needs you first</option><option value="name">First name</option><option value="last">Last name</option><option value="period">Period</option><option value="status">Status</option><option value="progress">Progress</option><option value="score">Score</option><option value="input">Last activity</option></select></div></div>
 </div>
 <div class="main">
@@ -1755,7 +1756,7 @@ function rpRender(){ const out=$('#rpOut'), test=RP.test, m=meta(test), sub=$('#
   matchMedia('(prefers-color-scheme: dark)').addEventListener('change',lkPaint); lkPaint();
   document.addEventListener('click',e=>{ if(!m.hidden&&!m.contains(e.target)) set(false); });
   document.addEventListener('keydown',e=>{ if(e.key==='Escape'&&!m.hidden){ set(false); b.focus(); } }); })();
-$('#rptBtn').onclick=rpOpen; $('#rptBack').onclick=()=>closePage('#rppage');
+$('#vRep').onclick=()=>printReports(shown()); $('#vCsv').onclick=()=>gradebook(shown()); $('#rptBtn').onclick=rpOpen; $('#rptBack').onclick=()=>closePage('#rppage');
 $('#rpTest').onchange=rpLoad; $('#rpSub').onchange=rpRender; $('#rpBy').onchange=()=>{ rpTeaVis(); rpRender(); }; $('#rpTea').onchange=rpRender;
 $('#rpCsv').onclick=()=>{ if(!RP.csv) return; const q=v=>{ v=String(v); return /[",\n]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v; };
   const blob=new Blob(['\ufeff'+RP.csv.map(r=>r.map(q).join(',')).join('\r\n')],{type:'text/csv'}), a=document.createElement('a');
@@ -3084,12 +3085,13 @@ function shown(){ if(!DATA) return [];
     period:(a,b)=>String(a.period).localeCompare(String(b.period))||by.name(a,b), status:(a,b)=>stat(b)[2]-stat(a)[2]||by.name(a,b),
     needs:(a,b)=>rgOrd(a)-rgOrd(b)||(rgOrd(a)===0?(a.input||0)-(b.input||0):0)||by.name(a,b),
     progress:(a,b)=>(b.answered||0)-(a.answered||0)||by.name(a,b), score:(a,b)=>(b.pct||0)-(a.pct||0)||by.name(a,b), input:(a,b)=>(a.input||0)-(b.input||0)||by.name(a,b) };
-  return L.sort(by[sortBy]||by.name); }
+  const ns=s=>stat(s)[0]==='ns'?1:0, f=by[sortBy]||by.name;   /* Kody 11/5: students who haven't started always go to the end */
+  return L.sort((a,b)=>ns(a)-ns(b)||f(a,b)); }
 
 /* ---------- render ---------- */
 function render(){ if(!DATA) return; const card=$('#card'), sx=card.scrollLeft, sy=card.scrollTop, same=card.dataset.view===view;
   draw(); card.dataset.view=view; if(same){ card.scrollLeft=sx; card.scrollTop=sy; } }
-function draw(){ renderChips(); const L=shown(); renderTiles(L); $('#layGrp').style.display=view==='live'?'':'none'; $('#sortGrp').style.display=view==='live'&&rgLay(L)!=='table'?'none':'';
+function draw(){ renderChips(); const L=shown(); renderTiles(L); $('#layGrp').style.display=view==='live'?'':'none'; $('#sortGrp').style.display=view==='live'&&rgLay(L)!=='table'?'none':''; $('#expGrp').style.display=view==='live'&&rgLay(L)!=='table'&&L.length?'':'none';
   [...sel].forEach(k=>{ if(!L.some(s=>s.key===k)) sel.delete(k); }); renderBulk();
   $('.herow').style.display=DATA.sessions.length?'':'none';
   if(!DATA.sessions.length){ gsShow(); return; }
@@ -3242,7 +3244,7 @@ function needOf(s){ const k=stat(s)[0], now=Date.now()-(DATA.skew||0), a=RG.aler
   if(k==='nosig'&&a.nosig) return {k,w:'lost connection',wp:'lost connection',ws:'no signal'};
   if((k==='paused'||k==='locked')&&a.paused) return {k,w:k==='locked'?'is stopped':'is paused',wp:k==='locked'?'are stopped':'are paused',ws:k==='locked'?'stopped':'paused'};
   return null; }
-function rgOrd(s){ if(!DATA) return 1; const k=stat(s)[0]; return needOf(s)?0:k==='sub'?3:k==='ns'?2:1; }
+function rgOrd(s){ if(!DATA) return 1; const k=stat(s)[0]; return needOf(s)?0:k==='sub'?2:k==='ns'?3:1; }
 const rgAnd=a=>a.length<2?a.join(''):a.length===2?a.join(' and '):a.slice(0,-1).join(', ')+', and '+a[a.length-1];
 
 /* the sentence and the line under it (replaces the number tiles) */
