@@ -1508,7 +1508,9 @@ function alCheck(){ if(!DATA||arc||!selSes) return; const now={}, hits=[];
 document.addEventListener('visibilitychange',()=>{ if(!document.hidden){ AL.unseen=0; document.title=AL.title; } });
 function stop(){ clearInterval(timer); timer=null; }
 let hidTick=0;   /* in another tab, keep checking every 30 s while alerts are on so they still come (11/2) */
-function startAuto(){ stop(); if($('#auto').checked) timer=setInterval(()=>{ if(!document.hidden||(AL.on&&(++hidTick%2===0))) load(true); },POLL_MS); }
+function startAuto(){ stop(); if($('#auto').checked) timer=setInterval(()=>{ if(GB.on&&(++gbTick%2)) return;   /* Google busy: refresh every 30 s instead of 15, which frees room for students' saves */
+  if(!document.hidden||(AL.on&&(++hidTick%2===0))) load(true); },POLL_MS); }
+let gbTick=0;
 /* settings follow the teacher (11/5): Look, Room/Grid, order, alerts and a few view choices are saved to the teacher's
    sign-in through stcPrefs in Code.gs, so they carry to any computer. This device keeps a copy so the page opens right away.
    Without stcPrefs in Code.gs it quietly stays on this device only. */
