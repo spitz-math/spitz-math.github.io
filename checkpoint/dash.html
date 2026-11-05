@@ -1037,7 +1037,7 @@ html[data-nav="side"] #hpBack{display:none}
 .tpage .faq summary{list-style:none;cursor:pointer;padding:12px 28px 12px 0;margin:0;font:600 15px/1.35 Onest,sans-serif;color:var(--ink);position:relative}
 .faq summary::-webkit-details-marker{display:none}
 .faq summary::after{content:"";position:absolute;right:6px;top:17px;width:8px;height:8px;border-right:2px solid var(--mut);border-bottom:2px solid var(--mut);transform:rotate(45deg);transition:transform .2s}
-.faq[open] summary::after{transform:rotate(225deg);top:20px}
+.faq[open]:not(.closing) summary::after{transform:rotate(225deg);top:20px} .faq summary::after{transition:transform .25s,top .25s}
 .tpage .faq summary:hover{color:var(--acc)}
 .faq p{margin:0 0 14px;font-size:14px;line-height:1.55;color:var(--mut);max-width:70ch} .faq p b{color:var(--ink)}
 .hpask a.btn{text-decoration:none;display:inline-block} .hpask a.btn[hidden]{display:none}
@@ -1138,8 +1138,8 @@ html[data-theme="dark"] .rtbox{background:var(--card);color:var(--ink)}
   <div class="tbody"><div class="tcol hpcol">
     <section class="tcard hpask"><h2>Need help?</h2>
       <p class="hint" id="hpWho"></p>
-      <div class="row"><a class="btn pri" id="hpMail" href="#" target="_blank" rel="noopener">Email for help</a><button class="btn" id="hpCopy" title="Your email, the session you are looking at, and your browser, ready to paste into an email">Copy details for your email</button><span class="msg2" id="hpMsg" aria-live="polite"></span></div>
-      <p class="hint">Include the Session ID and a screenshot if you can. <b>Copy details</b> grabs the session and your browser for you.</p></section>
+      <div class="row"><button class="btn pri" id="hpMail">Email for help</button><span class="msg2" id="hpMsg" aria-live="polite"></span></div>
+      <p class="hint">It opens a new Gmail message to Mr. Spitz. Type what happened at the top and click Send. Your session is already filled in.</p></section>
     <section class="tcard"><h2>Getting started</h2>
       <ol class="hpsteps">
         <li><b>Add your class</b> in My roster: Google Classroom, a class list file, or paste emails.</li>
@@ -2833,15 +2833,24 @@ $('#arcGo').onclick=async()=>{ const d=$('#arcBefore').value; if(!d) return say(
 const SUPPORT={name:'Mr. Spitz', email:'kody.spitzlberger@misdtx.net'};   /* put the support email here; blank = the campus admin's email from the Teachers tab when there is one */
 function hpWhere(){ const t=(DATA&&DATA.teachers||[]).find(x=>x.admin&&x.email); return SUPPORT.email||(t&&t.email)||''; }
 function hpDetails(){ const ses=[...(selSes||[])].map(short).join(', '), me=DATA&&DATA.me||{};
-  return ['Checkpoint help','Teacher: '+(me.name?me.name+' ':'')+(me.email?'<'+me.email+'>':''),'Session: '+(ses||'none picked'),'Browser: '+navigator.userAgent,'Screen: '+innerWidth+'x'+innerHeight,'Time: '+new Date().toLocaleString(),'','What happened:',''].join('\n'); }
+  return ['What happened:','','','','----- for Mr. Spitz -----','Teacher: '+(me.name?me.name+' ':'')+(me.email?'<'+me.email+'>':''),'Session: '+(ses||'none picked'),'Time: '+new Date().toLocaleString(),'Screen: '+innerWidth+'x'+innerHeight,'Browser: '+navigator.userAgent].join('\n'); }
 function openSupport(){ openPage('#hpage'); const em=hpWhere(), a=$('#hpMail');
   $('#hpWho').innerHTML=em?`Email <b>${esc(SUPPORT.name)}</b> at <a href="mailto:${esc(em)}">${esc(em)}</a>. You usually hear back the same school day.`:`Ask <b>${esc(SUPPORT.name)}</b>, who runs Checkpoint for the campus.`;
-  a.hidden=!em; if(em) a.href='mailto:'+em+'?subject='+encodeURIComponent('Checkpoint help')+'&body='+encodeURIComponent(hpDetails()); $('#hpMsg').textContent=''; }
+  a.hidden=!em; $('#hpMsg').textContent=''; }
+/* a Gmail draft in a new tab: mailto links do nothing on Chromebooks with no mail app, and teachers are signed in to school Gmail already */
+$('#hpMail').onclick=()=>{ const em=hpWhere(); if(!em) return;
+  const u='https://mail.google.com/mail/?view=cm&fs=1&to='+encodeURIComponent(em)+'&su='+encodeURIComponent('Checkpoint help')+'&body='+encodeURIComponent(hpDetails());
+  const w=window.open(u,'_blank'); if(w){ try{ w.opener=null; }catch(x){} } else $('#hpMsg').innerHTML='Your browser blocked the new tab. <a href="'+esc(u)+'" target="_blank" rel="noopener">Open the email here</a>, or write to '+esc(em)+'.'; };
+/* common questions slide open and closed (reduce motion: they just open) */
+document.querySelectorAll('#hpage .faq').forEach(d=>{ const sm=d.querySelector('summary'), p=d.querySelector('p'); let an=null;
+  sm.addEventListener('click',e=>{ if(matchMedia('(prefers-reduced-motion: reduce)').matches) return; e.preventDefault(); if(an){ an.cancel(); an=null; }
+    const opening=!d.open||d.classList.contains('closing'); d.classList.remove('closing'); if(opening) d.open=true;
+    const h=p.offsetHeight+14, k=[{height:'0px',opacity:0,transform:'translateY(-6px)',marginBottom:'0px'},{height:h-14+'px',opacity:1,transform:'none',marginBottom:'14px'}];
+    if(!opening) d.classList.add('closing'); p.style.overflow='hidden';
+    an=p.animate(opening?k:k.slice().reverse(),{duration:opening?260:200,easing:opening?'cubic-bezier(.2,.7,.2,1)':'cubic-bezier(.4,0,.6,1)'});
+    an.onfinish=()=>{ an=null; p.style.overflow=''; if(!opening){ d.open=false; d.classList.remove('closing'); } }; }); });
 $('#hpOpen').onclick=openSupport; $('#hpBack').onclick=()=>closePage('#hpage');
 $('#hpTour').onclick=()=>{ closePage('#hpage'); setTimeout(tourStart,300); };
-$('#hpCopy').onclick=async()=>{ const txt=hpDetails(), m=$('#hpMsg');
-  try{ await navigator.clipboard.writeText(txt); m.textContent='Copied. Paste it into your email.'; m.className='msg2 ok'; }
-  catch(x){ const ta=document.createElement('textarea'); ta.value=txt; document.body.appendChild(ta); ta.select(); try{ document.execCommand('copy'); m.textContent='Copied. Paste it into your email.'; m.className='msg2 ok'; }catch(z){ m.textContent='Could not copy here.'; } ta.remove(); } };
 $('#mySesBtn').onclick=openMySessions; $('#mpBack').onclick=()=>closePage('#mpage');
 
 $('#rsFor').onchange=()=>{ RS.for=$('#rsFor').value; RS.edit=null; RS.per=''; $('#rlMsg').textContent=''; $('#rsMsg').textContent=''; openRoster(); };
