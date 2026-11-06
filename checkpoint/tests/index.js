@@ -14,6 +14,7 @@ window.SPITZ_TESTS=[
   {id:"math8-2026", title:"Grade 8 Math 2026 Released Test", v:"62b9455413"},
   {id:"math8-2023", title:"Grade 8 Math 2023 Released Test", v:"0538126100"},
   {id:"math8-2024", title:"Grade 8 Math 2024 Released Test", v:"cf4137f6d9"},
+  {id:"math8-redesign", title:"Grade 8 Math Redesign Practice Test", v:"24238cc53f"},
   {id:"math6-2025", title:"Grade 6 Math 2025 Released Test", v:"ef11707895"},
   {id:"exit-ticket-11-3", title:"Exit Ticket 11/3", v:"2e834945e9"},
   {id:"exit-ticket-11-4", title:"Exit Ticket 11/4", v:"0b01ae002a"}
