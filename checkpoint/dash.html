@@ -692,6 +692,8 @@ table.grid,.tiles,.t,.bar em,.prog em{font-variant-numeric:tabular-nums}
 .rgcall{all:unset;position:absolute;top:0;font-size:13px;font-weight:700;color:var(--no);white-space:nowrap;cursor:pointer;font-family:var(--fd)} .rgcall[data-rt]:hover{text-decoration:underline} .rgcall:focus-visible{outline:2px solid var(--no);outline-offset:2px;border-radius:4px}
 .rgnum{font-size:10.5px;color:var(--mut);height:20px;align-items:center} .rgnum span{text-align:center}
 .rgr{height:max(calc(var(--cs) + var(--gap)),18px);align-items:center;border-radius:6px}
+/* speed (11/6): rows off screen skip layout and paint (a 900-student Grid redrew in 4 s on a slow laptop) */
+#rgRows .rgr{content-visibility:auto;contain-intrinsic-size:auto 30px}
 .rgr:hover{background:color-mix(in srgb,var(--blue2) 9%,transparent)}
 .rgr .who{all:unset;cursor:pointer;display:flex;align-items:baseline;gap:7px;white-space:nowrap;overflow:hidden;padding-left:6px}
 .rgr .nmv{font-weight:700;font-size:14.5px}
@@ -1111,7 +1113,7 @@ html[data-theme="dark"] .rtbox{background:var(--card);color:var(--ink)}
   <div class="mwho" id="whoLbl"></div>
   <button class="btn" id="needBtn" role="menuitem">Customize Live…</button>
   <button class="btn" id="tourBtn" role="menuitem">Take the tour</button>
-  <label class="mauto" title="Auto-refresh every 15 seconds"><input type="checkbox" id="auto" checked> Auto-refresh every 15 seconds</label>
+  <label class="mauto" title="Every 30 seconds when 300 or more students are on screen, or when Google is busy"><input type="checkbox" id="auto" checked> Auto-refresh every 15 seconds</label>
   <button class="btn" id="mySesBtn" role="menuitem">My sessions</button>
   <button class="btn" id="rosBtn" role="menuitem">My roster</button>
   <button class="btn" id="rptBtn" role="menuitem">Reports</button>
@@ -1511,9 +1513,10 @@ function alCheck(){ if(!DATA||arc||!selSes) return; const now={}, hits=[];
 document.addEventListener('visibilitychange',()=>{ if(!document.hidden){ AL.unseen=0; document.title=AL.title; } });
 function stop(){ clearInterval(timer); timer=null; }
 let hidTick=0;   /* in another tab, keep checking every 30 s while alerts are on so they still come (11/2) */
-function startAuto(){ stop(); if($('#auto').checked) timer=setInterval(()=>{ if(GB.on&&(++gbTick%2)) return;   /* Google busy: refresh every 30 s instead of 15, which frees room for students' saves */
+function startAuto(){ stop(); if($('#auto').checked) timer=setInterval(()=>{ if((GB.on||BIG())&&(++gbTick%2)) return;   /* Google busy, or 300+ students on screen (Kody 11/6): refresh every 30 s instead of 15, which frees room for students' saves */
   if(!document.hidden||(AL.on&&(++hidTick%2===0))) load(true); },POLL_MS); }
 let gbTick=0;
+const BIG=()=>!!(DATA&&DATA.students&&DATA.students.length>=300);
 /* settings follow the teacher (11/5): Look, Room/Grid, order, alerts and a few view choices are saved to the teacher's
    sign-in through stcPrefs in Code.gs, so they carry to any computer. This device keeps a copy so the page opens right away.
    Without stcPrefs in Code.gs it quietly stays on this device only. */
@@ -3162,13 +3165,6 @@ $('#sesList').addEventListener('change',e=>{ const x=e.target; if(!sesDraft) ret
   renderSesList(); });
 document.addEventListener('pointerdown',e=>{ if(sesDraft&&!e.target.closest('#sesDD')) closeSes(true); });
 document.addEventListener('keydown',e=>{ if(e.key==='Escape'&&sesDraft){ closeSes(false); $('#sesBtn').focus(); } });
-const TPREV={};
-function tickTiles(){ const rm=matchMedia('(prefers-reduced-motion: reduce)').matches;
-  document.querySelectorAll('#tiles .tile:not(.lvt)').forEach(t=>{ const k=t.querySelector('span')&&t.querySelector('span').textContent, b=t.querySelector('b'); if(!k||!b) return;
-    const txt=b.textContent, m=txt.match(/^(\d+)(.*)$/), was=TPREV[k]; TPREV[k]=m?+m[1]:null;
-    if(rm||!m||was==null||was===+m[1]) return; const from=was, to=+m[1], t0=performance.now(), D=Math.min(900,300+60*Math.abs(to-from));
-    const step=now=>{ if(!b.isConnected) return; const k2=Math.min(1,(now-t0)/D), e=1-Math.pow(1-k2,3); b.textContent=Math.round(from+(to-from)*e)+m[2]; if(k2<1) requestAnimationFrame(step); else b.textContent=txt; };
-    b.textContent=from+m[2]; requestAnimationFrame(step); }); }
 function renderTiles(L){ rgHero(L); }
 function renderBulk(){ $('#bulk').hidden=!sel.size; $('#bulkN').textContent=sel.size+' selected'; }
 const ICON={pause:'<svg viewBox="0 0 14 14"><rect x="3" y="2" width="3" height="10" rx="1" fill="currentColor"/><rect x="8" y="2" width="3" height="10" rx="1" fill="currentColor"/></svg>',
