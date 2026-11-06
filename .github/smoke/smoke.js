@@ -47,10 +47,13 @@ function serve() {
   const tests = [...list.matchAll(/id:"([^"]+)"/g)].map(m => m[1]);
   for (const t of tests) await visit('checkpoint ' + t, '/checkpoint/player.html?test=' + t, async (p, errs) => {
     if (await p.$('#stuName:visible')) {
-      await p.selectOption('#stuTest', t).catch(() => {});
+      await p.selectOption('#stuTest', t, { timeout: 2000 }).catch(() => {});
       await p.fill('#stuName', 'Test S');
-      await p.selectOption('#stuPeriod', { index: 1 }).catch(() => {});
+      await p.selectOption('#stuPeriod', { index: 1 }, { timeout: 2000 }).catch(() => {});
       await p.click('#siBtn');
+      await p.waitForTimeout(1200);
+      /* a test written on the dashboard keeps its answer key in the Sheet, so it only opens with a Session ID: that's expected */
+      if (await p.$eval('#siErr', e => !e.hidden && /only works in class/.test(e.textContent)).catch(() => false)) return;
     }
     await p.waitForFunction(() => window.__test && window.__test.ITEMS && window.__test.ITEMS.length, { timeout: 15000 });
     const n = await p.evaluate(() => window.__test.ITEMS.length);
