@@ -162,7 +162,7 @@ button:disabled{ cursor:default; }
 .hc-name{ font:400 54px/1.1 var(--display); color:var(--text); margin:8px 0 2px; word-break:break-word; }
 .hc-final{ font:400 120px/1 var(--display); color:var(--gas); margin:6px 0 0; font-variant-numeric:tabular-nums; }
 .hc-final small{ display:block; font:800 24px/1 var(--body); letter-spacing:.16em; color:var(--muted); margin-top:10px; }
-.hc-stats{ display:grid; grid-template-columns:repeat(4,1fr); gap:14px; margin:22px 0 14px; }
+.hc-stats{ display:grid; grid-template-columns:repeat(5,1fr); gap:14px; margin:22px 0 14px; }
 .hc-stat{ border-radius:18px; background:var(--panel); border:3px solid var(--border); padding:14px; }
 .hc-stat .l{ font:800 22px/1.2 var(--body); letter-spacing:.1em; text-transform:uppercase; color:var(--muted); }
 .hc-stat .v{ font:400 42px/1.15 var(--display); }
@@ -190,6 +190,29 @@ button:disabled{ cursor:default; }
   background:radial-gradient(60% 100% at 20% 100%,#2B2010 70%,transparent 71%), radial-gradient(55% 90% at 75% 100%,#3A2A12 70%,transparent 71%), radial-gradient(40% 70% at 50% 100%,#4A3514 70%,transparent 71%); opacity:.9; }
 #hc-start::after{ left:0; right:0; bottom:46px; height:6px; background:repeating-linear-gradient(90deg,#F2B01E 0 70px,transparent 70px 130px); opacity:.5; }
 /* end start screen steps */
+/* points, challenges, All-Pro, trick combos, nitro cans and air stars (2026-11-06 more-fun pass) */
+.hc-chip{ position:relative; } #hc-scorechip{ min-width:210px; }
+#hc-scorechip.hot{ border-color:var(--gas); background:color-mix(in srgb,var(--gas) 14%,var(--panel)); } #hc-scorechip.hot .l{ color:var(--gas); }
+.hc-add{ position:absolute; right:12px; top:8px; z-index:20; font:400 22px/1 var(--display); color:var(--ok); opacity:0; pointer-events:none; }
+.hc-add.go{ animation:hcAdd 1.1s ease-out both; }
+@keyframes hcAdd{ 0%{ opacity:0; translate:0 10px; } 15%{ opacity:1; translate:0 0; } 70%{ opacity:1; } 100%{ opacity:0; translate:0 -8px; } }
+@media (prefers-reduced-motion:reduce){ .hc-add.go{ animation:hcAddR 1.1s step-end both; } @keyframes hcAddR{ 0%{ opacity:1; } 100%{ opacity:0; } } }
+.hc-chal{ display:grid; grid-template-columns:auto repeat(3,minmax(0,1fr)); gap:10px; align-items:stretch; }
+.hc-chal .h{ align-self:center; font:400 22px/1.1 var(--display); color:var(--gas); white-space:nowrap; }
+.hc-chal .h span{ display:block; font:800 16px/1.2 var(--body); color:var(--muted); }
+.hc-ci{ display:flex; align-items:center; gap:10px; min-width:0; padding:7px 12px; border-radius:12px; background:#0A0705; border:2px solid var(--border); font:700 19px/1.2 var(--body); color:var(--text); }
+.hc-ci .b{ flex:none; width:24px; height:24px; border-radius:7px; border:3px solid var(--border); display:grid; place-items:center; font:900 15px/1 var(--body); color:#120C06; }
+.hc-ci .t{ flex:1; min-width:0; } .hc-ci .p{ flex:none; font:800 17px/1 var(--body); color:var(--gas); }
+.hc-ci.done{ border-color:var(--ok); color:var(--ok); } .hc-ci.done .b{ background:var(--ok); border-color:var(--ok); }
+.hc-mode{ display:inline-flex; gap:10px; }
+.hc-len{ height:84px; padding:0 24px; border-radius:20px; background:var(--panel); border:3px solid var(--border); font:400 28px/1 var(--display); color:var(--muted); }
+.hc-len span{ font:800 20px/1 var(--body); margin-left:8px; }
+.hc-len[aria-pressed="true"]{ border-color:var(--gas); color:var(--gas); background:color-mix(in srgb,var(--gas) 12%,var(--panel)); }
+.hc-badges{ display:flex; justify-content:center; gap:12px; margin-top:12px; flex-wrap:wrap; }
+.hc-badge{ display:flex; align-items:center; gap:10px; padding:9px 18px; border-radius:999px; background:var(--panel); border:3px solid var(--border); font:700 22px/1.2 var(--body); color:var(--muted); }
+.hc-badge b{ font:900 22px/1 var(--body); } .hc-badge.done{ border-color:var(--ok); color:var(--text); } .hc-badge.done b{ color:var(--ok); }
+.hc-badge.pro{ border-color:var(--gas); color:var(--gas); }
+#hc-end .hc-final{ font-size:110px; }
 </style>
 <script src="kit.js"></script>
 </head>
@@ -202,7 +225,7 @@ button:disabled{ cursor:default; }
       <div class="hc-dist"><span class="l" id="hc-distl">Distance</span><span class="v"><span id="hc-dist">0</span><small>m</small></span></div>
     </div>
     <div class="hc-right">
-      <div class="hc-chip"><span class="l">Score</span><span class="v" id="hc-score">0</span></div>
+      <div class="hc-chip" id="hc-scorechip"><span class="l" id="hc-scorel">Points</span><span class="v" id="hc-score">0</span><span class="hc-add" id="hc-add"></span></div>
       <div class="hc-chip" id="hc-cashchip"><span class="l">Cash</span><span class="v" id="hc-cash">$0</span></div>
       <div class="hc-chip" id="hc-streakchip"><span class="l">Streak</span><span class="v" id="hc-streak">0</span></div>
     </div>
@@ -230,6 +253,7 @@ button:disabled{ cursor:default; }
         <div class="hc-qhead"><span class="hc-sttitle" id="hc-sttitle">GAS STATION</span><span class="hc-tag" id="hc-tag">Questions</span>
           <div class="hc-tank"><div class="hc-tankfill" id="hc-tankfill"></div><span id="hc-tanktxt">Gas 0 / 100</span></div>
           <span class="hc-cashline" id="hc-cashline">$0</span><button class="hc-garbtn" id="hc-garbtn" aria-label="Garage, key S">🔧 Garage <kbd>S</kbd></button></div>
+        <div class="hc-chal" id="hc-chal"></div>
         <div class="hc-prompt" id="hc-prompt"></div>
         <div id="hc-body"><div id="hc-visual"></div><div class="hc-choices" id="hc-choices"></div></div>
         <div class="hc-fb" id="hc-fb"></div>
@@ -248,13 +272,13 @@ button:disabled{ cursor:default; }
 
   <div class="hc-over" id="hc-start"><div class="hc-box">
     <div class="sz-eyebrow">Spitz <b>Arcade</b></div><h2 class="hc-big">HILL <b>CLIMB</b></h2>
-    <p class="hc-sub"><span class="sz-setname">Slope-intercept form.</span> Drive your monster truck as far as you can in 5 minutes. Right answers fill your gas tank.</p>
+    <p class="hc-sub"><span class="sz-setname">Slope-intercept form.</span> Drive your monster truck as far as you can in 5 minutes. Right answers fill your gas tank. Distance, tricks, stars and answers score points, plus 3 challenges every run.</p>
     <div class="hc-steps">
       <div class="hc-step"><b>Fill up</b><span id="hc-step1">Each right answer adds gas and cash. Wrong answers add nothing, so don’t guess.</span></div>
-      <div class="hc-step"><b>Drive</b>→ gas, ← brake. In the air, brake tips the nose up and gas tips it down. Land flat on both wheels for a speed boost!</div>
+      <div class="hc-step"><b>Drive</b>→ gas, ← brake. In the air, brake tips the nose up and gas tips it down. Chain flips and flat landings for a combo, and grab the blue nitro cans!</div>
       <div class="hc-step"><b>Upgrade</b>Spend cash in the Garage on a bigger engine, grippier tires and more gas per answer.</div>
     </div>
-    <div class="hc-row"><input class="hc-input" id="hc-nameinput" maxlength="24" placeholder="First name + last initial" autocomplete="off" aria-label="Your name"><button class="sz-mus" id="sz-mus" aria-label="Music on or off, key N">♪ Music on</button></div>
+    <div class="hc-row"><input class="hc-input" id="hc-nameinput" maxlength="24" placeholder="First name + last initial" autocomplete="off" aria-label="Your name"><button class="sz-mus" id="sz-mus" aria-label="Music on or off, key N">♪ Music on</button><span class="hc-mode" role="group" aria-label="Difficulty"><button class="hc-len" id="hc-rookie" aria-pressed="true">Rookie</button><button class="hc-len" id="hc-pro" aria-pressed="false" title="Gas burns faster, flips cost more gas, and a wrong answer spills 5 gas. Points ×1.5">★ All-Pro <span>×1.5</span></button></span></div>
     <button class="hc-start" id="hc-go-start" disabled>Start</button>
     <div class="hc-keys"><div class="sz-ctl" data-ctl="1234=Answer | →=Gas | ←=Brake | Enter=Gas station | S=Garage"></div>N music · M mute · Shift+R new game · F full screen</div>
   </div><span class="hc-credit sz-credit">Made by Spitz <i class="sz-burger" aria-hidden="true"></i></span></div>
@@ -263,6 +287,7 @@ button:disabled{ cursor:default; }
     <p class="hc-sub" style="margin:0">Time! Show this screen to your teacher.</p>
     <div class="hc-name" id="hc-endname"></div>
     <div class="hc-final" id="hc-endscore"></div>
+    <div class="hc-badges" id="hc-badges"></div>
     <div class="hc-stats" id="hc-endstats"></div>
     <div class="hc-topics" id="hc-endtopics"></div>
     <button class="hc-again" id="hc-again">Play again</button>
@@ -321,6 +346,7 @@ var SND={
   tick:function(){ tone(880,880,0,0.09,'triangle',0.1); },
   go:function(){ tone(E6,E6,0,0.26,'triangle',0.11); tone(659.25,659.25,0,0.26,'sine',0.08); },
   buy:function(){ [C6,E6,G6].forEach(function(f,i){ tone(f,f,i*0.06,0.18,'triangle',0.07); }); },
+  nitro:function(){ tone(440,880,0,0.18,'sine',0.07); tone(660,1320,0.08,0.2,'triangle',0.05); },
   star:function(){ tone(1568,1568,0,0.08,'triangle',0.05); tone(2093,2093,0.05,0.14,'sine',0.045); },
   land:function(v){ var k=Math.min(1,v/1200); tone(110,60,0,0.14,'sine',0.08+0.12*k); },
   bonus:function(){ [G5,B5,D6,G6].forEach(function(f,i){ tone(f,f,0.02+i*0.07,0.18,'triangle',0.08); }); },
@@ -531,24 +557,70 @@ var PU=[
 ];
 var FLIP_GAS=10, STAR_PTS=25, BIOME_PTS=1000;
 var S;
-function fresh(){ return { name:'', len:5, started:false, over:false, phase:'station', why:'start', clock:RUN, seed:1+Math.floor(Math.random()*1e6),
+function fresh(){ return { v:2, pro:proPick(), chal:dealChallenges(), full:0, cmb:0, cmbT:9, bestCmb:0, maxAir:0, cans:0, cansGot:{}, airStars:0, airGot:{}, rush:0, name:'', len:5, started:false, over:false, phase:'station', why:'start', clock:RUN, seed:1+Math.floor(Math.random()*1e6),
   gas:0, cash:0, score:0, bonus:0, maxX:0, streak:0, best:0, answered:0, correct:0, earned:0, flips:0, perfect:0, crashes:0, stars:0, starsGot:{}, biome:0,
   lv:{engine:0,tires:0,can:0,sponsor:0}, pu:{nitro:0,magnet:0,cage:0}, topics:QS?QS.topicTable():{},
   q:null, qDone:false, picked:-1, T:null, cd:0, crashT:0 }; }
 function save(){ try{ localStorage.setItem(KEY,JSON.stringify(S)); localStorage.setItem(KEY+'_mute',muted?'1':'0'); }catch(e){} }
-function load(){ try{ var v=JSON.parse(localStorage.getItem(KEY)||'null'); muted=localStorage.getItem(KEY+'_mute')==='1'; if(v&&v.lv&&v.topics&&v.T) return v; }catch(e){} return null; }
+function load(){ try{ var v=JSON.parse(localStorage.getItem(KEY)||'null'); muted=localStorage.getItem(KEY+'_mute')==='1'; if(v&&v.v===2&&v.chal&&v.lv&&v.topics&&v.T) return v; }catch(e){} return null; }
 function U(id){ var u=UPG.filter(function(x){ return x.id===id; })[0]; return u.vals[S.lv[id]]; }
 function meters(){ return Math.max(0,Math.floor((S.maxX-START_X)/PPM)); }
-function scoreNow(){ return meters()*10+S.bonus; }
+function scoreNow(){ return Math.round(meters()*10*(S.pro?PRO_X:1))+S.bonus; }
 function tune(){ var e=S.lv.engine; TUNE.top=[560,640,720,800][e]; TUNE.torque=[1,1.12,1.24,1.36][e]; TUNE.grip=[0,0.12,0.24,0.36][S.lv.tires]; TUNE.nitro=S.pu.nitro>0; }
 function streakBonus(st){ return FAST? Math.min(Math.floor(st/5),4) : Math.min(Math.max(st-1,0),5)*2; }
 var BEST=0; try{ BEST=+(localStorage.getItem('hill_climb_best')||0); }catch(e){}
+
+/* ================= POINTS, ALL-PRO, CHALLENGES, COMBOS (2026-11-06 more-fun pass, like the Buds games) =================
+   Distance, right answers (more on a streak), tricks, stars, nitro cans and new lands all score points; each finished challenge adds 1000.
+   Tricks landed close together (less than 2.5 s on the ground between them) make a combo: x2, x3, up to x4.
+   The last 30 seconds score double. All-Pro (picked on the start screen): gas burns faster, a flip costs more, a wrong answer
+   spills gas, and every point counts 1.5 times. */
+var PRO_X=1.5, CH_PTS=1000, PRO_SPILL=5, AIR_PTS=100, CAN_NITRO=4, CMB_GAP=2.5, RUSH=30;
+function proPick(){ try{ return localStorage.getItem('hill_climb_pro')==='1'; }catch(e){ return false; } }
+function rushOn(){ return S.started&&!S.over&&S.clock<=RUSH; }
+function ptsX(){ return (S.pro?PRO_X:1)*(rushOn()?2:1); }
+function flipGas(){ return S.pro?15:FLIP_GAS; }
+function chipAdd(n){ var a=$('hc-add'); if(!a) return; a.textContent='+'+n.toLocaleString(); a.classList.remove('go'); void a.offsetWidth; a.classList.add('go'); }
+function addPts(n){ if(!S||S.over||!(n>0)) return 0; n=Math.round(n*ptsX()); S.bonus+=n; chipAdd(n); return n; }
+function trick(n,label,x,y){ S.cmb=S.cmbT<CMB_GAP?S.cmb+1:1; S.cmbT=0; var k=Math.min(S.cmb,4); S.bestCmb=Math.max(S.bestCmb,S.cmb); addBonus(n*k,(k>1?'×'+k+' COMBO · ':'')+label,x,y); }
+function accPct(){ return S.answered?Math.round(100*S.correct/S.answered):0; }
+var ACCN=FAST?20:10;
+var CHAL={
+  streak:{ math:1, txt:'Get a '+(FAST?12:6)+'-answer streak', n:FAST?12:6, v:function(){ return S.best; } },
+  tank:{ math:1, txt:'Fill the gas tank to 100', n:1, v:function(){ return S.full; } },
+  right:{ math:1, txt:'Answer '+(FAST?30:15)+' right', n:FAST?30:15, v:function(){ return S.correct; } },
+  acc90:{ math:1, end:1, txt:'90% right, '+ACCN+'+ questions', n:90, v:function(){ return S.answered>=ACCN?accPct():0; }, p:function(){ return S.answered<ACCN?S.answered+'/'+ACCN:accPct()+'%'; } },
+  far:{ txt:'Drive 500 m', n:500, v:function(){ return meters(); }, p:function(){ return Math.min(meters(),500)+' m'; } },
+  flips3:{ txt:'Do 3 flips', n:3, v:function(){ return S.flips; } },
+  perf5:{ txt:'5 perfect landings', n:5, v:function(){ return S.perfect; } },
+  stars40:{ txt:'Grab 40 stars', n:40, v:function(){ return S.stars+S.airStars; } },
+  combo3:{ txt:'Land a ×3 trick combo', n:3, v:function(){ return S.bestCmb; } },
+  cans3:{ txt:'Grab 3 nitro cans', n:3, v:function(){ return S.cans; } } };
+function shuffle(a){ return a.map(function(x){ return [Math.random(),x]; }).sort(function(p,q){ return p[0]-q[0]; }).map(function(p){ return p[1]; }); }
+function dealChallenges(){ var ids=Object.keys(CHAL), m=shuffle(ids.filter(function(k){ return CHAL[k].math; })), p=shuffle(ids.filter(function(k){ return !CHAL[k].math; }));
+  var pk=[m[0],p[0]], rest=shuffle(m.slice(1).concat(p.slice(1))); pk.push(rest[0]); return pk.map(function(id){ return {id:id,done:false}; }); }
+function chalProg(c){ var d=CHAL[c.id]; if(c.done) return ''; if(d.p) return d.p(); return d.n>1?Math.min(Math.max(0,d.v()),d.n)+'/'+d.n:''; }
+function chalCheck(final){ if(!S||!S.started||S.over||SIM) return; S.chal.forEach(function(c){ var d=CHAL[c.id]; if(c.done||(d.end&&!final)||d.v()<d.n) return; c.done=true; var cp=Math.round(CH_PTS*(S.pro?PRO_X:1)); S.bonus+=cp; chipAdd(cp);
+    if(!final){ SND.biome(); toast('Challenge done! '+d.txt); } }); }
+var lastChal='';
+function chalDraw(){ var row='<div class="h">Challenges<span>+'+(CH_PTS*(S.pro?PRO_X:1)).toLocaleString()+' each</span></div>'+S.chal.map(function(c){ var d=CHAL[c.id], p=chalProg(c);
+    return '<div class="hc-ci'+(c.done?' done':'')+'"><span class="b">'+(c.done?'✓':'')+'</span><span class="t">'+d.txt+'</span><span class="p">'+p+'</span></div>'; }).join('');
+  if(row===lastChal) return; lastChal=row; $('hc-chal').innerHTML=row; }
+function modeDraw(){ $('hc-rookie').setAttribute('aria-pressed',String(!S.pro)); $('hc-pro').setAttribute('aria-pressed',String(!!S.pro)); }
+function setMode(pro){ if(S.started) return; S.pro=pro; try{ localStorage.setItem('hill_climb_pro',pro?'1':'0'); }catch(e){} lastChal=''; modeDraw(); hud(); save(); SND.tick(); }
+/* nitro cans sit on the road now and then: drive through one for a few seconds of nitro. Air stars hang past the lip of a jump. */
+function cansNear(x0,x1,fn){ var b0=Math.floor(x0/2400), b1=Math.floor(x1/2400);
+  for(var b=Math.max(1,b0);b<=b1;b++){ if(hash(b,S.seed+71)>0.4||S.cansGot[b]) continue; var x=b*2400+2060+hash(b,S.seed+72)*260; fn(b,x,groundY(x)-48); } }
+var AIRY=[115,160,150];
+function airNear(x0,x1,fn){ var s=ROAD.seed, q0=Math.floor(x0/1300)-1, q1=Math.floor(x1/1300);
+  for(var q=Math.max(1,q0);q<=q1;q++){ if(hash(q,s+31)>biomeMix(q*1300,'kick')) continue; var kw=700+hash(q,s+32)*220, kx=q*1300+hash(q,s+33)*(1300-kw), lip=kx+0.35*kw, gy0=groundY(lip);
+    for(var j=0;j<3;j++){ var id=q*10+j; if(S.airGot[id]) continue; fn(id,lip+150+j*140,gy0-AIRY[j]); } } }
 
 /* ================= HUD ================= */
 var lastT='', lastGas=-1, lastNext='';
 function nextLand(){ var m=meters(); for(var i=0;i<BIOMES.length;i++) if(BIOMES[i].at>m) return 'Distance · '+BIOMES[i].name.replace('the ','')+' at '+BIOMES[i].at+' m'; return 'Distance · on the Moon!'; }
 function distLabel(){ var t=nextLand(); if(t!==lastNext){ lastNext=t; $('hc-distl').textContent=t; } }
-function hud(){ var m=meters(); distLabel(); S.score=scoreNow(); $('hc-dist').textContent=m.toLocaleString(); $('hc-score').textContent=S.score.toLocaleString();
+function hud(){ chalCheck(false); chalDraw(); $('hc-scorel').textContent=rushOn()?'Double pts!':S.pro?'All-Pro pts':'Points'; $('hc-scorechip').classList.toggle('hot',rushOn()); var m=meters(); distLabel(); S.score=scoreNow(); $('hc-dist').textContent=m.toLocaleString(); $('hc-score').textContent=S.score.toLocaleString();
   $('hc-cash').textContent='$'+S.cash; $('hc-streak').textContent=S.streak; $('hc-streakchip').classList.toggle('hot',S.streak>=(FAST?10:5));
   clockDraw(); gauge(true); pups(); if(!$('hc-station').hidden) stHud(); if(!$('hc-garage').hidden) drawGarage(); }
 function clockDraw(){ var s=Math.ceil(Math.max(0,S.clock)), t=Math.floor(s/60)+':'+('0'+(s%60)).slice(-2);
@@ -581,17 +653,17 @@ function newQ(){ clearTimeout(nextT); if(!QS) return; S.q=QS.next(); S.qDone=fal
 function markAnswered(i,fresh0){ var q=S.q, btns=$('hc-choices').querySelectorAll('.hc-ch'), c=q.choices[i], fb=$('hc-fb');
   btns.forEach(function(b,j){ b.disabled=true; if(q.choices[j].ok) b.classList.add('right'); else if(j!==i&&!FAST) b.hidden=true; }); if(!c.ok) btns[i].classList.add('wrong');
   if(c.ok){ fb.className='hc-fb ok'; fb.innerHTML='<span class="h">Correct!'+(fresh0&&lastPay?' '+lastPay:'')+(fresh0&&S.streak>1?' Streak '+S.streak+'.':'')+'</span>'+q.explain; $('hc-next').disabled=false; }
-  else { fb.className='hc-fb bad'; fb.innerHTML='<span class="h">Not quite.'+(fresh0?' −$'+(FAST?3:5)+', no gas.':'')+'</span>'+c.why+(FAST?' ':'<br>')+q.explain;
+  else { fb.className='hc-fb bad'; fb.innerHTML='<span class="h">Not quite.'+(fresh0?(S.pro?' −$'+(FAST?3:5)+' and −'+PRO_SPILL+' gas (All-Pro).':' −$'+(FAST?3:5)+', no gas.'):'')+'</span>'+c.why+(FAST?' ':'<br>')+q.explain;
     $('hc-next').disabled=!!fresh0; if(fresh0&&!FAST){ clearTimeout(lockT); lockT=setTimeout(function(){ $('hc-next').disabled=false; },1800); } } }
 var lastPay='';
 function answer(i){ if(!S.started||S.over||S.phase!=='station'||!$('hc-garage').hidden||S.qDone||!S.q) return; var c=S.q.choices[i]; if(!c) return; S.qDone=true; S.picked=i; S.answered++;
   if(!S.topics[S.q.topic]) S.topics[S.q.topic]=[0,0]; S.topics[S.q.topic][1]++;
   if(c.ok){ S.correct++; S.topics[S.q.topic][0]++; S.streak++; S.best=Math.max(S.best,S.streak);
-    var add=Math.min(U('can'),TANK-S.gas), pay=U('sponsor')+streakBonus(S.streak); S.gas=Math.min(TANK,S.gas+U('can')); S.earned+=Math.round(add); S.cash+=pay;
+    var add=Math.min(U('can'),TANK-S.gas), pay=U('sponsor')+streakBonus(S.streak); S.gas=Math.min(TANK,S.gas+U('can')); S.earned+=Math.round(add); S.cash+=pay; if(add>0&&S.gas>=TANK) S.full++; addPts(FAST?20+4*Math.min(S.streak,10):50+10*Math.min(S.streak,10));
     lastPay=(add>0?'+'+Math.round(add)+' gas, ':'')+'+$'+pay+'.';
     SND.correct(); if(add>0) SND.fill();
     markAnswered(i,true); nextT=setTimeout(function(){ if(S.qDone&&S.phase==='station'&&$('hc-garage').hidden) newQ(); },FAST?150:1600); }
-  else { S.streak=0; S.cash=Math.max(0,S.cash-(FAST?3:5)); SND.miss(); markAnswered(i,true);
+  else { S.streak=0; S.cash=Math.max(0,S.cash-(FAST?3:5)); if(S.pro) S.gas=Math.max(0,S.gas-PRO_SPILL); SND.miss(); markAnswered(i,true);
     if(FAST) nextT=setTimeout(function(){ if(S.qDone&&S.phase==='station'&&$('hc-garage').hidden) newQ(); },1200); }
   save(); hud(); }
 $('hc-choices').addEventListener('click',function(e){ var b=e.target.closest('.hc-ch'); if(b) answer(+b.dataset.i); });
@@ -637,16 +709,17 @@ function starsNear(x0,x1,fn){ var b0=Math.floor(x0/2400), b1=Math.floor(x1/2400)
     for(var j=0;j<n;j++){ var id=b*10+j; if(S.starsGot[id]) continue; var x=st+j*80; fn(id,x,groundY(x)-78); } } }
 var pops=[], fx=[], shakeT=0, msg=null, crashLock=0, emptyT=0, emptyAll=0;
 function pop(t,x,y,col){ pops.push({t:t,x:x,y:y,col:col||'#FFB21E',life:0}); if(pops.length>8) pops.shift(); }
-function addBonus(n,label,x,y){ S.bonus+=n; pop('+'+n+' '+label,x,y); }
+function addBonus(n,label,x,y){ n=Math.round(n*ptsX()); S.bonus+=n; pop('+'+n.toLocaleString()+' '+label,x,y); return n; }
 function stepLive(dt){ var T=S.T, thr=S.gas>0?inputThr():0, park=S.gas<=0;
   var ev=physStep(T,{thr:thr,park:park},dt);
-  if(thr) S.gas=Math.max(0,S.gas-DRAIN*dt);
+  if(thr) S.gas=Math.max(0,S.gas-DRAIN*(S.pro?1.25:1)*dt);
+  if(T.wh[0].gt>0&&T.wh[1].gt>0) S.cmbT+=dt;
   if(S.pu.nitro>0&&thr>0){ S.pu.nitro=Math.max(0,S.pu.nitro-dt); if(S.pu.nitro<=0) TUNE.nitro=false; }
   if(T.x>S.maxX) S.maxX=T.x;
-  if(ev&&!SIM){ if(ev.land){ if(ev.turns>0){ var n=ev.turns; S.flips+=n; addBonus(300*n,(n>1?n+'× ':'')+(ev.back?'BACKFLIP':'FRONTFLIP'),T.x,T.y-120); SND.bonus(); }
-      else if(ev.land>=0.5&&ev.tilt<0.25){ S.perfect=(S.perfect||0)+1; addBonus(50+(ev.land>=1?Math.round(ev.land*2)*25:0),ev.land>=1?'BIG AIR · PERFECT LANDING':'PERFECT LANDING',T.x,T.y-120); SND.bonus();
+  if(ev&&!SIM){ if(ev.land){ if(ev.turns>0){ var n=ev.turns; S.flips+=n; trick(300*n,(n>1?n+'× ':'')+(ev.back?'BACKFLIP':'FRONTFLIP'),T.x,T.y-120); SND.bonus(); }
+      else if(ev.land>=0.5&&ev.tilt<0.25){ S.perfect=(S.perfect||0)+1; trick(50+(ev.land>=1?Math.round(ev.land*2)*25:0),ev.land>=1?'BIG AIR · PERFECT LANDING':'PERFECT LANDING',T.x,T.y-120); SND.bonus();
         var sa=Math.atan(groundSlope(T.x)), bx=70*Math.cos(sa), by=70*Math.sin(sa); T.vx+=bx; T.vy+=by; T.wh.forEach(function(w){ w.vx+=bx; w.vy+=by; }); }   // a flat landing keeps the speed and adds a little
-      else if(ev.land>=1.0){ addBonus(Math.round(ev.land*2)*25,'BIG AIR',T.x,T.y-120); SND.bonus(); } SND.land(400); }
+      else if(ev.land>=1.0){ trick(Math.round(ev.land*2)*25,'BIG AIR',T.x,T.y-120); SND.bonus(); } S.maxAir=Math.max(S.maxAir,ev.land); SND.land(400); }
     else if(ev.bump) SND.land(ev.bump); }
   if(ev&&ev.crash) return crash();
   /* stuck on its roof or side */
@@ -654,7 +727,9 @@ function stepLive(dt){ var T=S.T, thr=S.gas>0?inputThr():0, park=S.gas<=0;
   /* stars */
   var mag=S.pu.magnet>0; if(mag) S.pu.magnet=Math.max(0,S.pu.magnet-dt);
   starsNear(T.x-300,T.x+300,function(id,x,y){ var dx=x-T.x, dy=y-(T.y-20), d=Math.hypot(dx,dy);
-    if(d<70||(mag&&d<260)){ S.starsGot[id]=1; S.stars++; if(!SIM){ S.bonus+=STAR_PTS; SND.star(); sparkle(x,y); } } });
+    if(d<70||(mag&&d<260)){ S.starsGot[id]=1; S.stars++; if(!SIM){ S.bonus+=Math.round(STAR_PTS*ptsX()); SND.star(); sparkle(x,y); } } });
+  airNear(T.x-300,T.x+300,function(id,x,y){ var d=Math.hypot(x-T.x,y-(T.y-20)); if(d<80||(mag&&d<260)){ S.airGot[id]=1; S.airStars++; if(!SIM){ addBonus(AIR_PTS,'AIR STAR',x,y-40); SND.star(); SND.bonus(); sparkle(x,y); } } });
+  cansNear(T.x-200,T.x+200,function(id,x,y){ if(Math.hypot(x-T.x,y-(T.y-10))<95){ S.cansGot[id]=1; S.cans++; S.pu.nitro=Math.min(40,S.pu.nitro+CAN_NITRO); tune(); if(!SIM){ pop('NITRO!',x,y-60,'#5FC8FF'); SND.nitro(); toast('Nitro! Hold → for a boost'); } } });
   /* a new biome */
   var bi=biomeIndex(S.maxX); if(bi>S.biome){ S.biome=bi; if(!SIM){ addBonus(BIOME_PTS,'NEW LAND',T.x,T.y-160); SND.biome(); toast('Welcome to '+BIOMES[bi].name+'!'+(BIOMES[bi].id==='moon'?' Low gravity!':''));
       var p=toStage(T.x,T.y-120); confetti(p[0],p[1],140,2.6); } }
@@ -662,9 +737,9 @@ function stepLive(dt){ var T=S.T, thr=S.gas>0?inputThr():0, park=S.gas<=0;
   if(S.gas<=0){ var on=T.wh[0].gt>0||T.wh[1].gt>0; emptyAll+=dt; if(on&&truckSpeed(T)<25) emptyT+=dt; else emptyT=Math.max(0,emptyT-dt*0.5);
     if(emptyT>0.7||(on&&emptyAll>3)||emptyAll>6){ emptyT=0; emptyAll=0; if(!SIM){ SND.empty(); openStation('out'); } } }   /* still, or 3 s on the ground at most */
   else emptyAll=0; }
-function crash(){ var T=S.T; S.crashes++; S.phase='crash'; S.crashT=1.4; shakeT=0.4; engine(false,0,0);
+function crash(){ var T=S.T; S.crashes++; S.cmb=0; S.cmbT=9; S.phase='crash'; S.crashT=1.4; shakeT=0.4; engine(false,0,0);
   if(S.pu.cage>0){ S.pu.cage--; msg={t:'FLIPPED!',s:'Roll cage: no gas lost',col:'#5BE38A'}; }
-  else { S.gas=Math.max(0,S.gas-FLIP_GAS); msg={t:'FLIPPED!',s:'−'+FLIP_GAS+' gas · keep your wheels down',col:'#FF7A7A'}; }
+  else { S.gas=Math.max(0,S.gas-flipGas()); msg={t:'FLIPPED!',s:'−'+flipGas()+' gas · keep your wheels down',col:'#FF7A7A'}; }
   if(!SIM){ SND.crash(); var hp=rotp(T,TK.head[0],TK.head[1]); for(var i=0;i<14;i++){ var a=Math.random()*6.283, v=120+Math.random()*260; part(T.x+hp[0],T.y+hp[1],Math.cos(a)*v,Math.sin(a)*v-120,i%2?'#FFF04D':'#FFFFFF',7,0.7); } }
   save(); hud(); }
 function respawn(){ var x=Math.max(START_X,safeSpot(S.T.x)); S.T=truckAt(x); S.phase=S.gas>0?'count':'live'; S.cd=0.5; msg=null; if(S.gas<=0) openStation('out'); save(); hud(); }
@@ -751,6 +826,9 @@ function wheelSprite(){ return sprite('wheel',function(c){ c.scale(2,2); c.trans
   c.fillStyle='#FFB21E'; c.beginPath(); c.arc(0,0,15,0,6.283); c.fill();
   c.fillStyle='#8A5A08'; for(var k=0;k<5;k++){ c.beginPath(); c.arc(Math.cos(k*1.2566)*9,Math.sin(k*1.2566)*9,2.6,0,6.283); c.fill(); }
   c.fillStyle='#FFF6EA'; c.beginPath(); c.arc(0,0,4,0,6.283); c.fill(); },160,160); }
+function canSprite(){ return sprite('can',function(c){ c.scale(2,2); c.translate(24,24); c.fillStyle='rgba(95,200,255,.25)'; c.beginPath(); c.arc(0,0,22,0,6.283); c.fill();
+  c.fillStyle='#2F8FE0'; c.strokeStyle='#0B2E52'; c.lineWidth=2.5; rr(c,-10,-15,20,30,5); c.fill(); c.stroke(); c.fillStyle='#BFE8FF'; c.fillRect(-10,-4,20,7);
+  c.fillStyle='#0B2E52'; c.fillRect(-4,-19,8,4); c.fillStyle='#0B2E52'; c.font='900 9px Inter, sans-serif'; c.textAlign='center'; c.textBaseline='middle'; c.fillText('N',0,0); },96,96); }
 function starSprite(){ return sprite('star',function(c){ c.scale(2,2); c.translate(24,24); c.fillStyle='rgba(255,210,80,.25)'; c.beginPath(); c.arc(0,0,22,0,6.283); c.fill();
   c.fillStyle='#FFD23A'; c.strokeStyle='#A8700A'; c.lineWidth=2.5; c.beginPath(); for(var i=0;i<10;i++){ var a=-Math.PI/2+i*Math.PI/5, r=i%2?7.5:17; c.lineTo(Math.cos(a)*r,Math.sin(a)*r); } c.closePath(); c.fill(); c.stroke();
   c.fillStyle='rgba(255,255,255,.7)'; c.beginPath(); c.arc(-4,-5,3,0,6.283); c.fill(); },96,96); }
@@ -787,6 +865,8 @@ function draw(){ var T=S.T, id=biomeAt(T.x).id, L=LOOK[id]; if(bgFor!==id) drawB
   signs(x0,x1);
   /* stars */
   var ss=starSprite(), bob=Math.sin(performance.now()/300)*5; starsNear(x0,x1,function(id0,x,y){ p=w2s(x,y+bob); fg.drawImage(ss,p[0]-24*Z*1.2,p[1]-24*Z*1.2,48*Z*1.2,48*Z*1.2); });
+  airNear(x0,x1,function(id0,x,y){ p=w2s(x,y+bob); fg.drawImage(ss,p[0]-38*Z,p[1]-38*Z,76*Z,76*Z); });
+  var cs=canSprite(); cansNear(x0,x1,function(id0,x,y){ p=w2s(x,y); fg.drawImage(cs,p[0]-30*Z,p[1]-30*Z,60*Z,60*Z); });
   /* particles */
   for(i=0;i<fx.length;i++){ var q=fx[i], a=1-q.life/q.max; p=w2s(q.x,q.y); fg.globalAlpha=a*0.9; fg.fillStyle=q.c; var s=q.s*Z*(0.6+a*0.4); fg.beginPath(); fg.arc(p[0],p[1],s,0,6.283); fg.fill(); } fg.globalAlpha=1;
   drawTruck(T);
@@ -798,7 +878,8 @@ function draw(){ var T=S.T, id=biomeAt(T.x).id, L=LOOK[id]; if(bgFor!==id) drawB
   else if(goT>0) bigText('GO!','#7BD84A',300,150);
   if(S.phase==='crash'&&msg) bigText(msg.t,msg.col,280,130,msg.s);
   if(S.phase==='live'&&S.gas<=0) pill('Out of gas! The gas station opens when you stop.',tp[0],tp[1]-170,'#FF7A7A');
-  else if(S.phase==='live'&&S.gas<12&&S.gas>0) pill('Low gas! Press Enter for the gas station',tp[0],tp[1]-170,'#FFB21E'); }
+  else if(S.phase==='live'&&S.gas<12&&S.gas>0) pill('Low gas! Press Enter for the gas station',tp[0],tp[1]-170,'#FFB21E');
+  if(S.phase==='live'&&S.cmb>=2&&S.cmbT<CMB_GAP) pill('COMBO ×'+Math.min(S.cmb,4)+' · land another trick!',tp[0],tp[1]-250,'#FFB21E'); }
 function signs(x0,x1){ var p;
   if(x0<300){ p=w2s(-200,groundY(-200)); garage(p[0],p[1]); p=w2s(140,0); fg.save(); fg.fillStyle='#FFF6EA'; for(var k=0;k<8;k++){ fg.fillStyle=k%2?'#1A1410':'#FFF6EA'; fg.fillRect(p[0]-6*Z,p[1]-12*k*Z-12*Z,12*Z,12*Z); } fg.restore(); }
   for(var m=Math.max(100,Math.ceil(x0/PPM/100)*100);m*PPM<=x1;m+=100){ var x=m*PPM, gate=BIOMES.some(function(b){ return b.at===m; }); p=w2s(x,groundY(x));
@@ -826,7 +907,7 @@ var acc=0, lastF=performance.now(), goT=0, SIM=false;
 function frame(t){ var raw=(t-lastF)/1000, dt=Math.min(0.05,raw); lastF=t;
   if(S.phase==='live'&&!document.hidden&&raw<0.5){ slowT=raw>0.034?slowT+raw:Math.max(0,slowT-raw*0.5); if(slowT>1.5&&RESCAP>0.5){ RESCAP=Math.round((Math.min(RESCAP,RES)-0.1)*10)/10; slowT=0; sizeCanvases(); } }
   if(S.started&&!S.over){
-    S.clock-=dt; clockDraw(); if(S.clock<=0){ endRun(); }                                    /* the clock runs the whole time, gas station and garage too */
+    S.clock-=dt; clockDraw(); if(!S.rush&&S.clock<=RUSH&&S.clock>0){ S.rush=1; toast('Last 30 seconds: double points!'); SND.bonus(); hud(); } if(S.clock<=0){ endRun(); }                                    /* the clock runs the whole time, gas station and garage too */
     else if($('hc-garage').hidden){
       if(S.phase==='live'){ acc+=dt; while(acc>=STEP&&S.phase==='live'){ acc-=STEP; stepLive(STEP); }
         var T=S.T, thr=S.gas>0?inputThr():0, rpm=Math.min(1.4,Math.abs((T.wh[0].om+T.wh[1].om)/2)*TK.R/560); engine(true,rpm,thr); wheelDust(dt);
@@ -843,21 +924,23 @@ var lastHud=0; function hudLite(){ var n=performance.now(); if(n-lastHud<150) re
 /* ================= START / END ================= */
 $('hc-step1').textContent='Each right answer adds +'+UPG[2].vals[0]+' gas and $'+UPG[3].vals[0]+'. Wrong answers add nothing, so don’t guess.';
 $('hc-nameinput').addEventListener('input',function(){ $('hc-go-start').disabled=!this.value.trim(); });
+$('hc-rookie').addEventListener('click',function(){ ac(); setMode(false); }); $('hc-pro').addEventListener('click',function(){ ac(); setMode(true); });
 $('hc-nameinput').addEventListener('keydown',function(e){ if(e.key==='Enter'&&this.value.trim()){ e.preventDefault(); e.stopPropagation(); $('hc-go-start').click(); } });
 $('hc-go-start').addEventListener('click',function(){ var n=$('hc-nameinput').value.trim(); if(!n) return; ac(); jingle(); S.name=n; S.started=true; $('hc-start').hidden=true;
   $('hc-nameinput').blur(); openStation('start'); });
-function endRun(){ S.clock=0; S.over=true; S.phase='over'; clearTimeout(nextT); engine(false,0,0); $('hc-station').hidden=true; $('hc-garage').hidden=true; S.score=scoreNow();
+function endRun(){ S.clock=0; chalCheck(true); S.over=true; S.phase='over'; clearTimeout(nextT); engine(false,0,0); $('hc-station').hidden=true; $('hc-garage').hidden=true; S.score=scoreNow();
   var m=meters(); if(m>BEST){ BEST=m; try{ localStorage.setItem('hill_climb_best',String(m)); }catch(e){} } save(); hud(); showEnd(true); }
 function showEnd(celebrate){ $('hc-endname').textContent=S.name; $('hc-endscore').innerHTML=S.score.toLocaleString()+'<small>POINTS</small>';
+  $('hc-badges').innerHTML=(S.pro?'<div class="hc-badge pro"><b>★</b>All-Pro</div>':'')+S.chal.map(function(c){ return '<div class="hc-badge'+(c.done?' done':'')+'"><b>'+(c.done?'✓':'✗')+'</b>'+CHAL[c.id].txt+'</div>'; }).join('');
   var acc0=S.answered?Math.round(100*S.correct/S.answered):0;
-  $('hc-endstats').innerHTML=[['Correct',S.correct+' / '+S.answered],['Accuracy',acc0+'%'],['Best streak',S.best],['Distance',meters().toLocaleString()+' m']].map(function(a){ return '<div class="hc-stat"><div class="l">'+a[0]+'</div><div class="v">'+a[1]+'</div></div>'; }).join('');
+  $('hc-endstats').innerHTML=[['Correct',S.correct+' / '+S.answered],['Accuracy',acc0+'%'],['Best streak',S.best],['Distance',meters().toLocaleString()+' m'],['Best combo','×'+Math.min(4,Math.max(1,S.bestCmb))]].map(function(a){ return '<div class="hc-stat"><div class="l">'+a[0]+'</div><div class="v">'+a[1]+'</div></div>'; }).join('');
   $('hc-endtopics').innerHTML=Object.keys(S.topics).map(function(k){ var t=S.topics[k]; return '<div class="hc-stat"><div class="l">'+k+'</div><div class="v">'+t[0]+' / '+t[1]+'</div></div>'; }).join('');
   /* LEADERBOARD HOOK: the shared score code (scorecode.js) shows the student's code here */
   if(window.SpitzCode&&SpitzCode.show) try{ SpitzCode.show('hc','hill_climb',S); }catch(e){}
   $('hc-end').hidden=false;
   if(celebrate){ SND.win(); [0,350,700,1100].forEach(function(ms,i){ setTimeout(function(){ confetti(200+i*500,1070,90,1.3); confetti(1720-i*500,1070,90,1.3); },ms); }); } }
 var armT=0; $('hc-again').addEventListener('click',function(){ var b=this; if(!b.classList.contains('arm')){ b.classList.add('arm'); b.textContent='Tap again to start over'; clearTimeout(armT); armT=setTimeout(function(){ b.classList.remove('arm'); b.textContent='Play again'; },3000); return; }
-  b.classList.remove('arm'); b.textContent='Play again'; var keepName=S.name; S=fresh(); S.name=keepName; boot0(); fx.length=0; pops.length=0;
+  b.classList.remove('arm'); b.textContent='Play again'; var keepName=S.name; S=fresh(); S.name=keepName; boot0(); fx.length=0; pops.length=0; lastChal=''; modeDraw();
   $('hc-end').hidden=true; $('hc-start').hidden=false; $('hc-nameinput').value=keepName; $('hc-go-start').disabled=!keepName; save(); hud(); dirty=true;
   $('hc-choices').innerHTML=''; $('hc-prompt').innerHTML=''; $('hc-visual').innerHTML=''; });
 
@@ -900,7 +983,7 @@ $('sz-mus').addEventListener('click',function(e){ e.stopPropagation(); ac(); mus
 
 /* ================= BOOT ================= */
 function boot0(){ roadReset(S.seed); if(!S.T) S.T=truckAt(START_X); tune(); camStep(0,true); dirty=true; }
-S=load()||fresh(); boot0(); fit();
+S=load()||fresh(); boot0(); fit(); modeDraw();
 if(!QS){ $('hc-prompt').textContent='questions.js is missing: keep it in the same folder as this game.'; }
 if(S.started){ $('hc-start').hidden=true;
   if(S.over){ showEnd(false); }
@@ -915,6 +998,7 @@ window.__G={ state:function(){ return S; }, answer:answer, next:function(){ retu
   set:QS?QS.set:null, fast:FAST, U:U, end:function(){ endRun(); }, live:function(){ if(S.phase==='count') goLive(); }, crash:crash, res:function(){ return RES; },
   ground:groundY, slope:groundSlope, tune:function(){ return TUNE; }, biomes:BIOMES, ppm:PPM,
   press:function(keys,ms){ keys.forEach(function(k){ KD[k]=true; }); return new Promise(function(r){ setTimeout(function(){ keys.forEach(function(k){ KD[k]=false; }); r(); },ms); }); },
+  setMode:setMode, CHAL:CHAL, trick:trick, addPts:addPts, air:function(x0,x1){ var a=[]; airNear(x0,x1,function(id,x,y){ a.push([id,x,y]); }); return a; }, cans:function(x0,x1){ var a=[]; cansNear(x0,x1,function(id,x,y){ a.push([id,x,y]); }); return a; },
   teleport:function(m){ S.T=truckAt(START_X+m*PPM); camStep(0,true); dirty=true; } };
 window.__verify=function(n){ var bad=[], i; for(i=0;i<n;i++){ var q=QS.next(), ok=q.choices.filter(function(c){ return c.ok; });
     if(ok.length!==1) bad.push(['not one right',q.prompt]); if(new Set(q.choices.map(function(c){ return c.html; })).size!==4) bad.push(['repeat labels',q.prompt]);
