@@ -689,7 +689,7 @@ body.th-blue .endcard h1,body.th-black .endcard h1,body.th-maroon .endcard h1{co
 .ep:hover{background:#ffd400;color:#003298}
 .ep svg{width:14px;height:14px}
 .esub{display:flex;align-items:center;gap:18px;padding:20px 16px 22px;border-top:1px solid rgba(0,0,0,.12)}
-.esub button{flex:none;border:0;border-radius:18px;background:#0b7cc1;color:#fff;font-size:15px;padding:10px 28px;font-family:Arial,sans-serif}
+.esub button{flex:none;border:0;border-radius:18px;background:#0a76b8;color:#fff;font-size:15px;padding:10px 28px;font-family:Arial,sans-serif}
 .esub p{margin:0;font-size:21px;line-height:1.2}
 .resbar{background:#c7d3e6;display:flex;align-items:center;justify-content:space-between;padding:10px 20px}
 .resbar b{font-size:20px;color:#0b3da6;letter-spacing:.06em}
@@ -705,7 +705,7 @@ body.th-blue .rescard h1{color:#f8cc05}
 .rtab{border-collapse:collapse;margin:10px auto;font-size:12.5px}
 .rtab th,.rtab td{border:1px solid rgba(0,0,0,.35);padding:2px 10px;text-align:center}
 .rtab th{font-weight:700}
-.logout{display:block;margin:14px auto 4px;border:0;border-radius:18px;background:#0b7cc1;color:#fff;font-size:14px;padding:9px 36px}
+.logout{display:block;margin:14px auto 4px;border:0;border-radius:18px;background:#0a76b8;color:#fff;font-size:14px;padding:9px 36px}
 .screen{position:fixed;inset:0;z-index:200;background:var(--pg);color:var(--fg);overflow:auto}
 .sbar{background:#246d86;color:#fff;padding:14px 24px;font-size:20px;font-weight:700}
 .sbar span{display:block;font-size:13px;font-weight:400;opacity:.9}
@@ -749,6 +749,8 @@ body.th-maroon .clonebadge,body.th-black .clonebadge,body.th-blue .clonebadge{ba
 #resultsScreen[data-review="none"] .rvlock,#resultsScreen[data-review="score"] .rvlock{display:block}
 #resultsScreen.scoring .rx,#resultsScreen.scoring #rTable,#resultsScreen.nokey #rvOpen{display:none}#resultsScreen.nokey .rvlock{display:block}
 .savenote{font-size:13px;color:#8a5a00;text-align:center;margin-top:6px}
+/* Wi-Fi drop notice (2026-11-06): calm, bottom of the screen, never covers the question */
+#netNote{position:fixed;left:50%;bottom:14px;transform:translateX(-50%);z-index:60;max-width:min(560px,calc(100vw - 32px));padding:8px 14px;border-radius:6px;background:#fff6dd;color:#5c3d00;border:1px solid #e8c66a;font-size:14px;line-height:1.35;text-align:center;box-shadow:0 2px 8px rgba(0,0,0,.12)}
 /* question bank browse mode (teacher only) */
 body.browse>*:not(#browse):not(svg){display:none!important}
 #browse{position:fixed;inset:0;overflow:auto;background:#eef2f7;-webkit-overflow-scrolling:touch}
@@ -3503,13 +3505,13 @@ function saveServer(){ clearTimeout(serverT); serverT=null; if(leaving||!CTX||!C
   if(inflight){ again=true; return; } inflight=true;
   const final=window.SpitzSession.submitted, body=payload(final); sentAt=Date.now(); sentStatus=body.status; if(body.sum.rclicks!==rcSent) body.rcNew=true;
   const t0=Date.now();
-  call('stcSave',body).then(r=>{ if(Date.now()-t0>4000) busyUntil=Date.now()+120000; if(!r||!r.ok){ fails++; again=true; return; } if(r.moved){ movedAway(); return; } fails=0; if(body.rcNew) rcSent=body.sum.rclicks;
+  call('stcSave',body).then(r=>{ if(Date.now()-t0>4000) busyUntil=Date.now()+120000; if(!r||!r.ok){ fails++; again=true; return; } if(r.moved){ movedAway(); return; } fails=0; netNote(false); if(body.rcNew) rcSent=body.sum.rclicks;
       if(r.review) applyReview(r.review); if(typeof r.control==='string'&&!final) window.SpitzSession.teacherHold(r.control);
       if(final){ finalOK=true; saveNote(false); if(r.own&&window.__spitzOwn) window.__spitzOwn(r.own);
         // one quiet repeat 20 s later puts "submitted" back if a late, older save from before Submit lands after it
         if(!confirmed){ confirmed=true; setTimeout(()=>{ if(!leaving) call('stcSave',payload(true)).catch(()=>{}); },20000); } } })
     .catch(()=>{ fails++; again=true; })
-    .finally(()=>{ inflight=false; if(again||(final&&!finalOK)){ again=false; serverT=setTimeout(saveServer,fails?backoff(final):1000); } }); }
+    .finally(()=>{ inflight=false; if(fails>=2) netNote(true); if(again||(final&&!finalOK)){ again=false; serverT=setTimeout(saveServer,fails?backoff(final):1000); } }); }
 /* after a change: save in 6–10 s (each Chromebook picks its own time, so a class clicking Next together doesn't save together).
    When Google is busy (a save took over 4 s, as on a school-wide test day; benchmark check 11/5 topped out near 20 saves a second),
    the page waits 20–30 s instead for the next 2 minutes, so a whole school saving at once doesn't jam. Leaving the tab, Submit and
@@ -3517,12 +3519,19 @@ function saveServer(){ clearTimeout(serverT); serverT=null; if(leaving||!CTX||!C
 const busy=()=>Date.now()<busyUntil;
 function saveServerSoon(ms){ if(!serverT) serverT=setTimeout(saveServer,fails?Math.max(ms,backoff(false)):ms+Math.random()*ms/2); }
 /* this test was opened again in another tab or on another Chromebook: this page stops saving and says so */
-function movedAway(){ if(leaving) return; leaving=true; again=false; clearTimeout(localT); clearTimeout(serverT); [beat,reviewPoll,holdPoll].forEach(t=>t&&clearInterval(t));
+function movedAway(){ if(leaving) return; leaving=true; netNote(false); again=false; clearTimeout(localT); clearTimeout(serverT); [beat,reviewPoll,holdPoll].forEach(t=>t&&clearInterval(t));
   const mine=LS.get(CTX.key); if(mine&&mine.tab===CTX.tab) LS.del(CTX.key);   /* this tab's copy is out of date now; signing in again here must start from the saved answers */
   const d=document.createElement('div'); d.id='movedScreen'; d.setAttribute('role','alertdialog'); d.setAttribute('aria-modal','true');
   d.innerHTML='<div><h2>This test is open somewhere else</h2><p>You opened this test in another tab or on another Chromebook, so your answers are being saved there. Keep working there, and close this tab.</p><p>To use this one instead, sign in again here. Your answers come with you.</p><button type="button" class="pri">Sign in again here</button></div>';
   d.querySelector('button').onclick=()=>{ if(APP&&APP.url){ try{ window.open(APP.url,'_top'); return; }catch(e){} } location.reload(); };
   document.body.appendChild(d); d.querySelector('button').focus(); }
+/* Wi-Fi drop (2026-11-06): after two saves in a row don't reach Google, a calm note says the answers are safe on this Chromebook.
+   It goes away by itself on the next save that lands; when the Chromebook says Wi-Fi is back, the page saves right away. */
+function netNote(on){ let n=$('#netNote'); if(on&&!n&&!leaving){ n=document.createElement('div'); n.id='netNote'; n.setAttribute('role','status');
+    n.textContent='The Wi-Fi is slow right now. Your answers are saved on this Chromebook and will send when it is back. Keep working.'; document.body.appendChild(n); }
+  if(!on&&n) n.remove(); }
+window.__spitzNet=netNote;   /* test hook */
+addEventListener('online',()=>{ if(CTX&&CTX.sessionId&&!leaving&&!finalOK&&fails){ clearTimeout(serverT); serverT=null; saveServer(); } });
 function saveNote(on){ let n=$('#saveNote'); if(on&&!n){ n=document.createElement('p'); n.id='saveNote'; n.className='savenote'; n.textContent='Saving your test… keep this page open.'; $('#logout').after(n); } if(!on&&n) n.remove(); }
 function applyReview(mode){ if(APP&&mode) $('#resultsScreen').dataset.review=mode; }
 function startSaving(){

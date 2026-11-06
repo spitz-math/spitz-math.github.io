@@ -1,0 +1,26 @@
+name: Safety check
+# Opens every page, game and Checkpoint test in Chrome and fails on any script error, missing file or broken picture.
+# See .github/smoke/smoke.js. A red X on a pull request means: don't merge until it's fixed.
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Install Chrome for the check
+        run: |
+          npm init -y > /dev/null
+          npm install --no-save playwright@1.49.1
+          npx playwright install --with-deps chromium
+      - name: Open everything
+        run: node .github/smoke/smoke.js

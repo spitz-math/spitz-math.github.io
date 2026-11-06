@@ -391,7 +391,13 @@ function glide(c){ var from=c&&c.querySelector('.art'), to=$('g-art'); if(!from|
   var an=fly.animate([box(f),box(t)],{duration:420,easing:'cubic-bezier(.22,1,.36,1)',fill:'both'});
   function end(){ sheet.classList.remove('flying'); fly.remove(); }
   an.onfinish=end; an.oncancel=end; }
-function open(id){ var c=cardOf(id); st.game=id; save(); render(); sheet.classList.remove('coin','out');
+/* Instant Press Start (2026-11-06): while the sheet is open the browser quietly fetches the game and its shared files,
+   so the game is already on the Chromebook when Press Start is clicked. Once per address; skipped on Data Saver. */
+var warmed={};
+function warm(){ var h=$('play').href, c=navigator.connection; if(!h||/#$/.test(h)||(c&&c.saveData)) return;
+  ['../games/kit.js','../games/questions.js','../games/scorecode.js',h].forEach(function(u){ if(warmed[u]) return; warmed[u]=1;
+    var l=document.createElement('link'); l.rel='prefetch'; l.href=u; document.head.appendChild(l); }); }
+function open(id){ var c=cardOf(id); st.game=id; save(); render(); warm(); sheet.classList.remove('coin','out');
   if(!sheet.open){ if(sheet.showModal) sheet.showModal(); else sheet.setAttribute('open',''); glide(c); }
   var on=document.querySelector('.row.on'); if(on) on.scrollIntoView({block:'nearest'}); $('play').focus({preventScroll:true,focusVisible:false}); }
 function shut(){ var c=cardOf(st.game);
@@ -422,7 +428,7 @@ $('back').addEventListener('click',shut);
 sheet.addEventListener('cancel',function(e){ e.preventDefault(); shut(); });   /* Esc closes with the same glide */
 sheet.addEventListener('click',function(e){ if(e.target===sheet) shut(); });   /* a click on the dark backdrop closes it */
 $('qlist').addEventListener('click',function(e){ var h=e.target.closest('.rh'); if(!h) return; var r=h.parentNode;
-  if(r.dataset.k!=null){ var k=LEAD[+r.dataset.k]; st.set=k.s.id; st.t[k.s.id]=want(k); } else st.set=r.dataset.s; save(); render(); });
+  if(r.dataset.k!=null){ var k=LEAD[+r.dataset.k]; st.set=k.s.id; st.t[k.s.id]=want(k); } else st.set=r.dataset.s; save(); render(); if(sheet.open) warm(); });
 $('qlist').addEventListener('change',function(e){ var el=e.target;
   var a=st.t[el.dataset.s]; if(el.checked){ if(a.indexOf(el.value)<0) a.push(el.value); } else st.t[el.dataset.s]=a.filter(function(v){ return v!==el.value; }); st.set=el.dataset.s;
   save(); render(); });
@@ -466,5 +472,6 @@ addEventListener('pageshow',function(e){ if(e.persisted){ document.body.classLis
     b.style.setProperty('--my',near?Math.max(-M,Math.min(M,dy*.18)).toFixed(1)+'px':'0px'); },{passive:true});
 })();
 </script>
+<script>/* offline copy for slow Wi-Fi: /sw.js */if('serviceWorker' in navigator && location.protocol==='https:') addEventListener('load',function(){ try{ navigator.serviceWorker.register('/sw.js',{scope:'/'}).catch(function(){}); }catch(e){} });</script>
 </body>
 </html>
