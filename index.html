@@ -197,5 +197,6 @@ addEventListener('pageshow',function(e){ if(e.persisted){ document.body.classLis
     b.style.setProperty('--mx',near?Math.max(-6,Math.min(6,dx*.12)).toFixed(1)+'px':'0px'); b.style.setProperty('--my',near?Math.max(-6,Math.min(6,dy*.18)).toFixed(1)+'px':'0px'); }); },{passive:true});
 })();
 </script>
+<script>/* offline copy for slow Wi-Fi: /sw.js */if('serviceWorker' in navigator && location.protocol==='https:') addEventListener('load',function(){ try{ navigator.serviceWorker.register('/sw.js',{scope:'/'}).catch(function(){}); }catch(e){} });</script>
 </body>
 </html>

@@ -248,5 +248,6 @@ document.querySelectorAll('a.navbtn').forEach(function(a){ a.addEventListener('c
 addEventListener('pageshow',function(e){ if(e.persisted){ document.body.classList.remove('leaving'); document.querySelectorAll('.navbtn.sunk').forEach(function(a){ a.classList.remove('sunk'); }); } });
 })();
 </script>
+<script>/* offline copy for slow Wi-Fi: /sw.js */if('serviceWorker' in navigator && location.protocol==='https:') addEventListener('load',function(){ try{ navigator.serviceWorker.register('/sw.js',{scope:'/'}).catch(function(){}); }catch(e){} });</script>
 </body>
 </html>
