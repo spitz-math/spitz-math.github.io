@@ -201,6 +201,7 @@ table.data th{background:var(--surface-2)}
 table.grid{border-collapse:collapse;margin-top:6px}
 table.grid th,table.grid td{border:1.5px solid var(--line);padding:.5em 1.2em;text-align:center}
 table.grid th{background:var(--surface-2);font-size:.9em}
+@media (max-width:520px){table.grid th,table.grid td{padding:.45em .5em}}
 table.grid td:first-child{font-weight:700;text-align:left}
 td:has(>.gcell){cursor:pointer}
 .gcell{width:1.15em;height:1.15em;border-radius:2px;border:1.5px solid #8a8a8a;background:#fff;display:inline-grid;place-items:center;padding:0;cursor:pointer}
@@ -447,6 +448,10 @@ select.inl option{line-height:1.3;padding:4px 8px;color:#000;background:#fff}
 /* two columns, read down each column (A B | C D), as some released items show their graph or table choices */
 .choices.grid2.cols2{display:grid;grid-template-columns:repeat(2,max-content);grid-template-rows:repeat(2,auto);grid-auto-flow:column;gap:12px 16px}
 .choices.grid2.cols2 .choice{min-width:0;width:auto}
+.choices.grid2.placed{display:grid;gap:12px 14px;align-items:start;justify-content:start}
+.choices.grid2.placed .choice{min-width:0;width:auto;height:100%;box-sizing:border-box}
+.choices.grid2.placed .fig{max-width:100%}
+@media (max-width:760px){.choices.grid2.placed{display:flex}}
 .choices.grid2.cols2 .sgraph{width:220px!important}
 .rvclone .choices.grid2.cols2{grid-template-columns:repeat(2,minmax(0,1fr))}
 .rvclone .choices.grid2.cols2 .sgraph{width:100%!important;max-width:220px}
@@ -689,7 +694,7 @@ body.th-blue .endcard h1,body.th-black .endcard h1,body.th-maroon .endcard h1{co
 .ep:hover{background:#ffd400;color:#003298}
 .ep svg{width:14px;height:14px}
 .esub{display:flex;align-items:center;gap:18px;padding:20px 16px 22px;border-top:1px solid rgba(0,0,0,.12)}
-.esub button{flex:none;border:0;border-radius:18px;background:#0b7cc1;color:#fff;font-size:15px;padding:10px 28px;font-family:Arial,sans-serif}
+.esub button{flex:none;border:0;border-radius:18px;background:#0a76b8;color:#fff;font-size:15px;padding:10px 28px;font-family:Arial,sans-serif}
 .esub p{margin:0;font-size:21px;line-height:1.2}
 .resbar{background:#c7d3e6;display:flex;align-items:center;justify-content:space-between;padding:10px 20px}
 .resbar b{font-size:20px;color:#0b3da6;letter-spacing:.06em}
@@ -705,7 +710,7 @@ body.th-blue .rescard h1{color:#f8cc05}
 .rtab{border-collapse:collapse;margin:10px auto;font-size:12.5px}
 .rtab th,.rtab td{border:1px solid rgba(0,0,0,.35);padding:2px 10px;text-align:center}
 .rtab th{font-weight:700}
-.logout{display:block;margin:14px auto 4px;border:0;border-radius:18px;background:#0b7cc1;color:#fff;font-size:14px;padding:9px 36px}
+.logout{display:block;margin:14px auto 4px;border:0;border-radius:18px;background:#0a76b8;color:#fff;font-size:14px;padding:9px 36px}
 .screen{position:fixed;inset:0;z-index:200;background:var(--pg);color:var(--fg);overflow:auto}
 .sbar{background:#246d86;color:#fff;padding:14px 24px;font-size:20px;font-weight:700}
 .sbar span{display:block;font-size:13px;font-weight:400;opacity:.9}
@@ -749,6 +754,8 @@ body.th-maroon .clonebadge,body.th-black .clonebadge,body.th-blue .clonebadge{ba
 #resultsScreen[data-review="none"] .rvlock,#resultsScreen[data-review="score"] .rvlock{display:block}
 #resultsScreen.scoring .rx,#resultsScreen.scoring #rTable,#resultsScreen.nokey #rvOpen{display:none}#resultsScreen.nokey .rvlock{display:block}
 .savenote{font-size:13px;color:#8a5a00;text-align:center;margin-top:6px}
+/* Wi-Fi drop notice (2026-11-06): calm, bottom of the screen, never covers the question */
+#netNote{position:fixed;left:50%;bottom:14px;transform:translateX(-50%);z-index:60;max-width:min(560px,calc(100vw - 32px));padding:8px 14px;border-radius:6px;background:#fff6dd;color:#5c3d00;border:1px solid #e8c66a;font-size:14px;line-height:1.35;text-align:center;box-shadow:0 2px 8px rgba(0,0,0,.12)}
 /* question bank browse mode (teacher only) */
 body.browse>*:not(#browse):not(svg){display:none!important}
 #browse{position:fixed;inset:0;overflow:auto;background:#eef2f7;-webkit-overflow-scrolling:touch}
@@ -1219,11 +1226,13 @@ function build(it){
   const id=it.n;
   if(it.type==='mc'||it.type==='ms'){
     const wrap=document.createElement('div'); wrap.className='choices'; if(it.grid) wrap.classList.add('grid2'); if(it.grid&&it.cols2) wrap.classList.add('cols2');
+    if(it.grid&&it.place){ wrap.classList.add('placed'); wrap.style.gridTemplateColumns=it.place.cols; }   /* place: picture choices laid out like the online form (hot spot items) */
     wrap.setAttribute('role',it.type==='mc'?'radiogroup':'group');
     it.choices.forEach((c,k)=>{
       const d=document.createElement('div'); d.className='choice'+(it.type==='ms'?' ms':'');
       d.setAttribute('role',it.type==='mc'?'radio':'checkbox'); d.setAttribute('aria-checked','false'); d.tabIndex=0; d.dataset.k=k;
       d.innerHTML=`<span class="bubble"><span class="bl">${it.letters[k]}</span></span><span class="ctext">${c}</span>`;
+      if(it.grid&&it.place){ d.style.gridArea=it.place.at[k]; const im=d.querySelector('img.fig'); if(im&&it.place.w) im.style.setProperty('width',it.place.w[k]+'px','important'); }
       const act=()=>{
         if(consumeHL()) return;
         if(S.modes.hl) return;
@@ -1625,10 +1634,10 @@ function buildHotspot(it,root){
   pts.addEventListener('keydown',e=>{ if(e.key===' '||e.key==='Enter'){ e.preventDefault(); e.target.dispatchEvent(new MouseEvent('click',{bubbles:true})); } });
   root.appendChild(w); sync();
 }
-const hsPts=(it,a)=>[].concat(a).map(q=>it.img?'Spot '+'ABCDEFGHIJKL'[q]:`(${fmtN(it.spots[q][0])}, ${fmtN(it.spots[q][1])})`).join(', ');
+const hsPts=(it,a)=>[].concat(a).map(q=>it.img?(it.spotNames?it.spotNames[q]:'Spot '+'ABCDEFGHIJKL'[q]):`(${fmtN(it.spots[q][0])}, ${fmtN(it.spots[q][1])})`).join(', ');
 /* hot spot on a picture (teachers' own tests): spots are [left %, top %] on the picture */
 function buildHotImg(it,root,multi){ const id=it.n, w=document.createElement('div'); w.className='hsimg'; w.style.maxWidth=(it.imgw||400)+'px';
-  w.innerHTML=`<img src="${it.img}" alt="Picture with spots to choose">`+it.spots.map(([x,y],q)=>`<button type="button" class="hsdot" style="left:${x}%;top:${y}%" role="${multi?'checkbox':'radio'}" aria-checked="false" aria-label="Spot ${'ABCDEFGHIJKL'[q]}" data-k="${q}"></button>`).join('');
+  w.innerHTML=`<img src="${it.img}" alt="Picture with spots to choose">`+it.spots.map(([x,y],q)=>`<button type="button" class="hsdot" style="left:${x}%;top:${y}%" role="${multi?'checkbox':'radio'}" aria-checked="false" aria-label="${it.spotNames?'Point '+it.spotNames[q]:'Spot '+'ABCDEFGHIJKL'[q]}" data-k="${q}"></button>`).join('');
   const has=q=>multi?(S.answers[id]||[]).includes(q):S.answers[id]===q;
   const sync=()=>{ w.querySelectorAll('.hsdot').forEach(c=>c.setAttribute('aria-checked',has(+c.dataset.k))); refresh(); };
   w.addEventListener('click',e=>{ const c=e.target.closest('.hsdot'); if(!c) return; const q=+c.dataset.k;
@@ -1952,6 +1961,8 @@ const EQX={
     const flush=()=>{ if(num){ if(!/^\d*\.?\d+$|^\d+\.$/.test(num)) throw 0; push('('+num+')',true); num=''; } };
     for(const n of B){
       if(typeof n==='string'&&/[0-9.]/.test(n)){ if(num===''&&opd()) { flush(); } num+=n; continue; }
+      /* a whole number right before a number-only fraction is a mixed number: 11 1/2 = 11.5 */
+      if(n.t==='frac'&&/^\d+$/.test(num)&&[n.n,n.d].every(q=>q.length&&q.every(ch=>typeof ch==='string'&&/[0-9]/.test(ch)))){ push('('+num+'+'+EQX.ser(n.n)+'/'+EQX.ser(n.d)+')',true); num=''; continue; }
       flush();
       if(typeof n==='string'){
         if(n===v) push('X',true); else if(n==='π') push('Math.PI',true);
@@ -2242,7 +2253,8 @@ function score(it){ const a=S.answers[it.n]; if(a==null||NOKEY(it)) return null;
     case 'dnd': return it.answer.every((z,t)=>a[t]===z);
     case 'graph': return a[0]===it.answer[0]&&a[1]===it.answer[1];
     case 'graphline': return a.lines.length===1&&a.pts.length===0&&a.lines[0].every(P=>onLine(it,P));
-    case 'boxes': { if(a.some(q=>q==null)) return false; const A2=it.unordered?[...a].sort():a, K=it.unordered?[...it.answer].sort():it.answer; return K.every((q,i)=>A2[i]===q); }
+    case 'boxes': { if(a.some(q=>q==null)) return false; const A2=it.unordered?[...a].sort():a; /* alt: other accepted orders (x + 20 ≥ 75 or 20 + x ≥ 75) */
+      return [it.answer,...(it.alt||[])].some(K0=>{ const K=it.unordered?[...K0].sort():K0; return K.every((q,i)=>A2[i]===q); }); }
     case 'hotspot': return Array.isArray(it.answer)?a.length===it.answer.length&&it.answer.every(v=>a.includes(v)):a===it.answer;
     case 'cline': return a.pts.length===2&&a.pts.every(P=>onLine(it,P));
     case 'graphsys': { const r=sysParts(it,a); return r.lines&&r.region; }
@@ -2517,7 +2529,7 @@ ${PAPER_CSS}
         const parts=correct.length?wrong.map(k=>xw[k]?`<p><b>${LT[k]}:</b> ${xw[k]}</p>`:'').join(''):(a!=null&&X.miss?`<p>${X.miss}</p>`:'');
         if(parts) xh+=`<div class="rpx bad"><h4>Why that answer doesn't work</h4>${parts}</div>`;
         xh+=`<div class="rpx"><h4>How to solve it</h4><ol>${(X.how||[]).map(h=>`<li>${h}</li>`).join('')}</ol>${[['Check it',X.check],['Desmos',X.desmos],['NumWorks',X.numworks]].filter(x=>x[1]).map(([l,v])=>`<p><b>${l}:</b> ${v}</p>`).join('')}</div>`; }
-      else { const r=correct.length?correct.map(k=>rat(it.n,LT[k])).join('')+wrong.map(k=>rat(it.n,LT[k])).join(''):rat(it.n,'all');
+      else { const r=correct.length&&!(!it.rat&&TD.rationale&&String(TD.rationale[it.n])==='all')?correct.map(k=>rat(it.n,LT[k])).join('')+wrong.map(k=>rat(it.n,LT[k])).join(''):rat(it.n,'all');
         xh=r?`<div class="rpx"><h4>Explanation</h4>${r}</div>`:it.rubric?`<div class="rpx"><h4>How it is scored</h4>${it.rubric}</div>`:'<p class="rpnone">No written explanation for this question yet.</p>'; }
       q.insertAdjacentHTML('beforeend',xh); page.appendChild(q); });
     doc.appendChild(page); });
@@ -3239,7 +3251,8 @@ function render(){
   if(it.type==='mc'&&a!=null) chosen=[a]; if(it.type==='ms'&&a) chosen=a;
   const correct=it.type==='mc'?[it.answer]:it.type==='ms'?it.answer:[];
   let why='';
-  if(correct.length){
+  const onlyAll=!it.rat&&TD.rationale&&String(TD.rationale[it.n])==='all';   /* a select-several item whose TEA rationale is one block (2023 Grade 8 Q18) */
+  if(correct.length&&!onlyAll){
     why+=correct.map(k=>`<h4 class="ok">Why ${L[k]} is correct</h4>${rimg(it.n,L[k])}`).join('');
     const wrong=chosen.filter(k=>!correct.includes(k));
     why+=wrong.map(k=>`<h4 class="no">Why ${L[k]} is incorrect</h4>${rimg(it.n,L[k])}`).join('');
@@ -3510,13 +3523,13 @@ function saveServer(){ clearTimeout(serverT); serverT=null; if(leaving||!CTX||!C
   if(inflight){ again=true; return; } inflight=true;
   const final=window.SpitzSession.submitted, body=payload(final); sentAt=Date.now(); sentStatus=body.status; if(body.sum.rclicks!==rcSent) body.rcNew=true;
   const t0=Date.now();
-  call('stcSave',body).then(r=>{ if(Date.now()-t0>4000) busyUntil=Date.now()+120000; if(!r||!r.ok){ fails++; again=true; return; } if(r.moved){ movedAway(); return; } fails=0; if(body.rcNew) rcSent=body.sum.rclicks;
+  call('stcSave',body).then(r=>{ if(Date.now()-t0>4000) busyUntil=Date.now()+120000; if(!r||!r.ok){ fails++; again=true; return; } if(r.moved){ movedAway(); return; } fails=0; netNote(false); if(body.rcNew) rcSent=body.sum.rclicks;
       if(r.review) applyReview(r.review); if(typeof r.control==='string'&&!final) window.SpitzSession.teacherHold(r.control);
       if(final){ finalOK=true; saveNote(false); if(r.own&&window.__spitzOwn) window.__spitzOwn(r.own);
         // one quiet repeat 20 s later puts "submitted" back if a late, older save from before Submit lands after it
         if(!confirmed){ confirmed=true; setTimeout(()=>{ if(!leaving) call('stcSave',payload(true)).catch(()=>{}); },20000); } } })
     .catch(()=>{ fails++; again=true; })
-    .finally(()=>{ inflight=false; if(again||(final&&!finalOK)){ again=false; serverT=setTimeout(saveServer,fails?backoff(final):1000); } }); }
+    .finally(()=>{ inflight=false; if(fails>=2) netNote(true); if(again||(final&&!finalOK)){ again=false; serverT=setTimeout(saveServer,fails?backoff(final):1000); } }); }
 /* after a change: save in 6–10 s (each Chromebook picks its own time, so a class clicking Next together doesn't save together).
    When Google is busy (a save took over 4 s, as on a school-wide test day; benchmark check 11/5 topped out near 20 saves a second),
    the page waits 20–30 s instead for the next 2 minutes, so a whole school saving at once doesn't jam. Leaving the tab, Submit and
@@ -3524,12 +3537,19 @@ function saveServer(){ clearTimeout(serverT); serverT=null; if(leaving||!CTX||!C
 const busy=()=>Date.now()<busyUntil;
 function saveServerSoon(ms){ if(!serverT) serverT=setTimeout(saveServer,fails?Math.max(ms,backoff(false)):ms+Math.random()*ms/2); }
 /* this test was opened again in another tab or on another Chromebook: this page stops saving and says so */
-function movedAway(){ if(leaving) return; leaving=true; again=false; clearTimeout(localT); clearTimeout(serverT); [beat,reviewPoll,holdPoll].forEach(t=>t&&clearInterval(t));
+function movedAway(){ if(leaving) return; leaving=true; netNote(false); again=false; clearTimeout(localT); clearTimeout(serverT); [beat,reviewPoll,holdPoll].forEach(t=>t&&clearInterval(t));
   const mine=LS.get(CTX.key); if(mine&&mine.tab===CTX.tab) LS.del(CTX.key);   /* this tab's copy is out of date now; signing in again here must start from the saved answers */
   const d=document.createElement('div'); d.id='movedScreen'; d.setAttribute('role','alertdialog'); d.setAttribute('aria-modal','true');
   d.innerHTML='<div><h2>This test is open somewhere else</h2><p>You opened this test in another tab or on another Chromebook, so your answers are being saved there. Keep working there, and close this tab.</p><p>To use this one instead, sign in again here. Your answers come with you.</p><button type="button" class="pri">Sign in again here</button></div>';
   d.querySelector('button').onclick=()=>{ if(APP&&APP.url){ try{ window.open(APP.url,'_top'); return; }catch(e){} } location.reload(); };
   document.body.appendChild(d); d.querySelector('button').focus(); }
+/* Wi-Fi drop (2026-11-06): after two saves in a row don't reach Google, a calm note says the answers are safe on this Chromebook.
+   It goes away by itself on the next save that lands; when the Chromebook says Wi-Fi is back, the page saves right away. */
+function netNote(on){ let n=$('#netNote'); if(on&&!n&&!leaving){ n=document.createElement('div'); n.id='netNote'; n.setAttribute('role','status');
+    n.textContent='The Wi-Fi is slow right now. Your answers are saved on this Chromebook and will send when it is back. Keep working.'; document.body.appendChild(n); }
+  if(!on&&n) n.remove(); }
+window.__spitzNet=netNote;   /* test hook */
+addEventListener('online',()=>{ if(CTX&&CTX.sessionId&&!leaving&&!finalOK&&fails){ clearTimeout(serverT); serverT=null; saveServer(); } });
 function saveNote(on){ let n=$('#saveNote'); if(on&&!n){ n=document.createElement('p'); n.id='saveNote'; n.className='savenote'; n.textContent='Saving your test… keep this page open.'; $('#logout').after(n); } if(!on&&n) n.remove(); }
 function applyReview(mode){ if(APP&&mode) $('#resultsScreen').dataset.review=mode; }
 function startSaving(){
