@@ -2518,7 +2518,7 @@ ${PAPER_CSS}
         const parts=correct.length?wrong.map(k=>xw[k]?`<p><b>${LT[k]}:</b> ${xw[k]}</p>`:'').join(''):(a!=null&&X.miss?`<p>${X.miss}</p>`:'');
         if(parts) xh+=`<div class="rpx bad"><h4>Why that answer doesn't work</h4>${parts}</div>`;
         xh+=`<div class="rpx"><h4>How to solve it</h4><ol>${(X.how||[]).map(h=>`<li>${h}</li>`).join('')}</ol>${[['Check it',X.check],['Desmos',X.desmos],['NumWorks',X.numworks]].filter(x=>x[1]).map(([l,v])=>`<p><b>${l}:</b> ${v}</p>`).join('')}</div>`; }
-      else { const r=correct.length?correct.map(k=>rat(it.n,LT[k])).join('')+wrong.map(k=>rat(it.n,LT[k])).join(''):rat(it.n,'all');
+      else { const r=correct.length&&!(!it.rat&&TD.rationale&&String(TD.rationale[it.n])==='all')?correct.map(k=>rat(it.n,LT[k])).join('')+wrong.map(k=>rat(it.n,LT[k])).join(''):rat(it.n,'all');
         xh=r?`<div class="rpx"><h4>Explanation</h4>${r}</div>`:it.rubric?`<div class="rpx"><h4>How it is scored</h4>${it.rubric}</div>`:'<p class="rpnone">No written explanation for this question yet.</p>'; }
       q.insertAdjacentHTML('beforeend',xh); page.appendChild(q); });
     doc.appendChild(page); });
@@ -3240,7 +3240,8 @@ function render(){
   if(it.type==='mc'&&a!=null) chosen=[a]; if(it.type==='ms'&&a) chosen=a;
   const correct=it.type==='mc'?[it.answer]:it.type==='ms'?it.answer:[];
   let why='';
-  if(correct.length){
+  const onlyAll=!it.rat&&TD.rationale&&String(TD.rationale[it.n])==='all';   /* a select-several item whose TEA rationale is one block (2023 Grade 8 Q18) */
+  if(correct.length&&!onlyAll){
     why+=correct.map(k=>`<h4 class="ok">Why ${L[k]} is correct</h4>${rimg(it.n,L[k])}`).join('');
     const wrong=chosen.filter(k=>!correct.includes(k));
     why+=wrong.map(k=>`<h4 class="no">Why ${L[k]} is incorrect</h4>${rimg(it.n,L[k])}`).join('');
