@@ -52,6 +52,19 @@ button:disabled{ cursor:default; }
 .pb-pow b{ font:400 22px/1 var(--display); color:var(--amber); }
 .pb-shopbtn{ height:82px; border-radius:18px; background:var(--pink); color:#2A0A00; font:400 40px/1 var(--display); letter-spacing:.02em; box-shadow:0 7px 0 #A8301C; display:flex; align-items:center; justify-content:center; gap:16px; }
 .pb-shopbtn kbd{ padding:6px 11px; border-radius:9px; background:rgba(0,0,0,.2); font:800 22px/1 var(--body); }
+.pb-chal{ margin-top:auto; border-radius:16px; padding:12px 16px; background:var(--panel); border:2px solid var(--border); display:flex; flex-direction:column; gap:7px; }
+.pb-chal .h{ display:flex; justify-content:space-between; align-items:baseline; font:800 18px/1.2 var(--body); letter-spacing:.1em; text-transform:uppercase; color:var(--muted); }
+.pb-chal .h b{ font:400 22px/1 var(--display); letter-spacing:0; text-transform:none; color:var(--lamp); }
+.pb-ci{ display:flex; align-items:center; gap:10px; font:700 20px/1.2 var(--body); color:var(--text); min-width:0; }
+.pb-ci .b{ flex:none; width:24px; height:24px; border-radius:7px; border:3px solid var(--border); display:grid; place-items:center; font:900 15px/1 var(--body); color:#0F0805; }
+.pb-ci .t{ flex:1; min-width:0; } .pb-ci .p{ flex:none; font:800 18px/1 var(--body); color:var(--muted); white-space:nowrap; } .pb-ci .p.x{ color:var(--no); }
+.pb-ci.done{ color:var(--ok); } .pb-ci.done .b{ background:var(--ok); border-color:var(--ok); } .pb-ci.done .p{ color:var(--ok); }
+.pb-len{ height:84px; padding:0 24px; border-radius:20px; background:var(--panel); border:3px solid var(--border); font:400 32px/1 var(--display); color:var(--muted); }
+.pb-len span{ font:800 20px/1 var(--body); margin-left:8px; }
+.pb-len[aria-pressed="true"]{ border-color:var(--lamp); color:var(--lamp); background:color-mix(in srgb,var(--lamp) 12%,var(--panel)); }
+.pb-badges{ display:flex; justify-content:center; gap:14px; margin:0 0 18px; flex-wrap:wrap; }
+.pb-badge{ display:flex; align-items:center; gap:10px; padding:10px 18px; border-radius:999px; background:var(--panel); border:3px solid var(--border); font:700 22px/1.2 var(--body); color:var(--muted); }
+.pb-badge b{ font:900 22px/1 var(--body); } .pb-badge.done{ border-color:var(--ok); color:var(--text); } .pb-badge.done b{ color:var(--ok); } .pb-badge.pro{ border-color:var(--lamp); color:var(--lamp); }
 .pb-help{ margin-top:auto; border-radius:16px; padding:14px 18px; background:var(--panel); border:2px solid var(--border); font:600 22px/1.45 var(--body); color:var(--muted); }
 .pb-help b{ color:var(--text); font-weight:800; }
 .pb-help kbd{ display:inline-block; min-width:30px; padding:3px 7px; border-radius:7px; background:var(--panel-2); border:2px solid var(--border); color:var(--text); font:800 18px/1.1 var(--body); text-align:center; }
@@ -199,7 +212,7 @@ button:disabled{ cursor:default; }
 
 .pb-over .sz-eyebrow{ margin-bottom:12px; }
 :root{ --sz-fs-x:0.121; }
-.pb-help{ margin-bottom:46px; }
+.pb-chal{ margin-bottom:46px; }
 /* start screen steps and scene (2026-11-05) */
 #pb-start .pb-step{ background:none; border:0; border-radius:0; box-shadow:none; transform:none; padding:0; }
 #pb-start .pb-steps{ gap:34px; }
@@ -230,7 +243,7 @@ button:disabled{ cursor:default; }
     </div>
     <div class="pb-pows" id="pb-pows"></div>
     <button class="pb-shopbtn" id="pb-shopbtn" aria-label="Open the shop, key S">Shop <kbd>S</kbd></button>
-    <div class="pb-help"><b>Flippers:</b> <kbd>←</kbd> <kbd>→</kbd> or <kbd>Z</kbd> <kbd>/</kbd>, or tap each side of the table<br><b>Launch:</b> hold and let go of <kbd>Space</kbd></div>
+    <div class="pb-chal" id="pb-chal"></div>
   </div>
 
   <div class="pb-table" id="pb-table">
@@ -264,10 +277,10 @@ button:disabled{ cursor:default; }
     <p class="pb-sub"><span class="sz-setname">Slope-intercept form.</span> You have 5 minutes on the Burger Ball machine. Answer questions to light up your multiplier, then fill burger orders on the table.</p>
     <div class="pb-steps">
       <div class="pb-step"><b>Answer</b><span id="pb-step1">Every right answer lights the next multiplier lamp: 2X, 3X, 4X, 5X. Answer 2 questions to launch.</span></div>
-      <div class="pb-step"><b>Flip</b>Fill 4 orders to stack a burger, then cook Big Patty for a Burger Rush. The Order Up window asks a bonus question.</div>
+      <div class="pb-step"><b>Flip</b>Fill 4 orders to stack a burger, then cook Big Patty for a Burger Rush. Finish 3 challenges, and every point counts double in the last 30 seconds.</div>
       <div class="pb-step"><b>Upgrade</b>If the ball drains, your multiplier resets, so answer again. Spend cash on more lamps, kickbacks and power-ups.</div>
     </div>
-    <div class="pb-row"><input class="pb-input" id="pb-nameinput" maxlength="24" placeholder="First name + last initial" autocomplete="off" aria-label="Your name"><button class="sz-mus" id="sz-mus" aria-label="Music on or off, key N">♪ Music on</button></div>
+    <div class="pb-row"><input class="pb-input" id="pb-nameinput" maxlength="24" placeholder="First name + last initial" autocomplete="off" aria-label="Your name"><button class="sz-mus" id="sz-mus" aria-label="Music on or off, key N">♪ Music on</button><span class="pb-mode2" role="group" aria-label="Difficulty" style="display:inline-flex;gap:10px"><button class="pb-len" id="pb-rookie" aria-pressed="true">Rookie</button><button class="pb-len" id="pb-pro" aria-pressed="false" title="A wrong answer puts out a lamp and the ball saver is half as long. Points ×1.5">★ All-Pro <span>×1.5</span></button></span></div>
     <button class="pb-start" id="pb-go-start" disabled>Start</button>
     <div class="pb-keys"><div class="sz-ctl" data-ctl="1234=Answer | LR=Flippers | Space=Hold to launch | S=Shop"></div>N music · M mute · Shift+R new game · F full screen</div>
   </div><span class="pb-credit sz-credit">Made by Spitz <i class="sz-burger" aria-hidden="true"></i></span></div>
@@ -277,6 +290,7 @@ button:disabled{ cursor:default; }
     <div class="pb-name" id="pb-endname"></div>
     <div class="pb-final" id="pb-endscore">0</div>
     <div class="pb-stats" id="pb-endstats"></div>
+    <div class="pb-badges" id="pb-badges"></div>
     <div class="pb-topics" id="pb-endtopics"></div>
     <button class="pb-again" id="pb-again">Play again</button>
   </div><span class="pb-credit sz-credit">Made by Spitz <i class="sz-burger" aria-hidden="true"></i></span></div>
@@ -534,9 +548,9 @@ var S, W;
 function fresh(){ return { name:'', len:5, started:false, over:false, endAt:0, score:0, cash:0, streak:0, best:0, answered:0, correct:0,
   topics:QS?QS.topicTable():{}, lv:{lamps:0,cash:0,save:0,kick:0}, kick:0, buff:{net:0,hot:0}, lamp:0, bestMult:1, phase:'reload', rAns:[], skill:0, lanes:[0,0,0,0],
   pend:0, saveT:0, balls:0, multis:0, jackpots:0, scoops:0, q:null, qDone:false, picked:-1, world:newWorld(), resumeT:0, held:null,
-  ver:3, burger:0, orders:pickOrders(), oi:0, oc:0, burgers:0, ordersDone:0, rushT:0, combo:0, comboT:-9, bestCombo:0, hk:'order' }; }
+  ver:4, pro:proPick(), chal:dealChallenges(), skills:0, meals:0, maxBalls:0, finalOn:0, burger:0, orders:pickOrders(), oi:0, oc:0, burgers:0, ordersDone:0, rushT:0, combo:0, comboT:-9, bestCombo:0, hk:'order' }; }
 function save(){ try{ S.world=W; localStorage.setItem(KEY,JSON.stringify(S)); localStorage.setItem(KEY+'_mute',muted?'1':'0'); }catch(e){} }
-function load(){ try{ var v=JSON.parse(localStorage.getItem(KEY)||'null'); muted=localStorage.getItem(KEY+'_mute')==='1'; if(v&&v.ver===3&&v.topics&&v.lv&&v.world&&v.world.fl&&v.buff&&v.orders) return v; }catch(e){} return null; }
+function load(){ try{ var v=JSON.parse(localStorage.getItem(KEY)||'null'); muted=localStorage.getItem(KEY+'_mute')==='1'; if(v&&v.ver===4&&v.chal&&v.topics&&v.lv&&v.world&&v.world.fl&&v.buff&&v.orders) return v; }catch(e){} return null; }
 function U(id){ var u=UPG.filter(function(x){ return x.id===id; })[0]; return u.vals[S.lv[id]]; }
 function maxLamp(){ return LADDER.indexOf(U('lamps')); }
 function mult(){ return LADDER[S.lamp]; }
@@ -551,6 +565,38 @@ function addBalls(n){ var k=Math.max(0,Math.min(n,5-(S.phase==='reload'?1:0)-W.b
 function need(id){ return ORDERS[id].n(lvl()); }
 function bossHP(){ return 3+lvl(); }
 
+/* ================= ALL-PRO, CHALLENGES, FINAL 30 (2026-11-07 replay update) =================
+   All-Pro (picked on the start screen): a wrong answer puts out one lit lamp, the ball saver is half as long, and every point counts 1.5 times.
+   Each run deals 3 challenges (1 math, 1 table, 1 either), each worth CH_PTS. The last 30 seconds count every point double. */
+var PRO_X=1.5, CH_PTS=25000, ACCN=FAST?20:10;
+function proPick(){ try{ return localStorage.getItem('pinball_pro')==='1'; }catch(e){ return false; } }
+function finalT(){ return !!S&&S.started&&!S.over&&S.endAt-now()<=30000; }
+function bx(){ return (S.pro?PRO_X:1)*(finalT()?2:1); }
+function accPct(){ return S.answered?Math.round(100*S.correct/S.answered):0; }
+var CHAL={
+  streak:{ math:1, txt:'Get a '+(FAST?12:6)+'-answer streak', n:FAST?12:6, v:function(){ return S.best; } },
+  lamp5:{ math:1, txt:'Light the 5X lamp', n:1, v:function(){ return S.bestMult>=5?1:0; } },
+  jack3:{ math:1, txt:'Win 3 Order Up jackpots', n:3, v:function(){ return S.jackpots; } },
+  acc90:{ math:1, end:1, txt:'90% right, '+ACCN+'+ questions', n:90, v:function(){ return S.answered>=ACCN?accPct():0; }, p:function(){ return S.answered<ACCN?S.answered+'/'+ACCN:accPct()+'%'; } },
+  patty:{ txt:'Cook Big Patty', n:1, v:function(){ return S.burgers; } },
+  combo4:{ txt:'Hit a X4 combo', n:4, v:function(){ return S.bestCombo; }, p:function(){ return 'X'+S.bestCombo; } },
+  skill2:{ txt:'Make 2 skill shots', n:2, v:function(){ return S.skills; } },
+  meal2:{ txt:'Spell MEAL twice', n:2, v:function(){ return S.meals; } },
+  ord6:{ txt:'Fill 6 orders', n:6, v:function(){ return S.ordersDone; } },
+  multi3:{ txt:'3 balls on the table at once', n:3, v:function(){ return S.maxBalls; }, p:function(){ return ''; } } };
+function shuffle(a){ return a.map(function(x){ return [Math.random(),x]; }).sort(function(p,q){ return p[0]-q[0]; }).map(function(p){ return p[1]; }); }
+function dealChallenges(){ var ids=Object.keys(CHAL), m=shuffle(ids.filter(function(k){ return CHAL[k].math; })), p=shuffle(ids.filter(function(k){ return !CHAL[k].math; }));
+  var pick=[m[0],p[0]], rest=shuffle(m.slice(1).concat(p.slice(1))); pick.push(rest[0]); return pick.map(function(id){ return {id:id,done:false}; }); }
+function chalProg(c){ var d=CHAL[c.id]; if(c.done) return ''; if(d.p) return d.p(); return d.n>1?Math.min(Math.max(0,d.v()),d.n)+'/'+d.n:''; }
+function chalCheck(final){ if(!S||!S.started||S.over) return; S.chal.forEach(function(c){ var d=CHAL[c.id]; if(c.done||(d.end&&!final)||d.v()<d.n) return; c.done=true;
+    var v=Math.round(CH_PTS*(S.pro?PRO_X:1)); S.score+=v; if(!final){ SND.jackpot(); toast('Challenge done! +'+v.toLocaleString('en-US')); say('CHALLENGE','+'+v.toLocaleString('en-US'),2,true); } }); }
+var lastChal='';
+function chalDraw(){ var h='<div class="h">Challenges<b>+'+Math.round(CH_PTS*(S.pro?PRO_X:1)).toLocaleString('en-US')+' each</b></div>'+S.chal.map(function(c){ var d=CHAL[c.id], p=chalProg(c);
+    return '<div class="pb-ci'+(c.done?' done':'')+'"><span class="b">'+(c.done?'✓':'')+'</span><span class="t">'+d.txt+'</span><span class="p">'+p+'</span></div>'; }).join('');
+  if(h===lastChal) return; lastChal=h; $('pb-chal').innerHTML=h; }
+function modeDraw(){ $('pb-rookie').setAttribute('aria-pressed',String(!S.pro)); $('pb-pro').setAttribute('aria-pressed',String(!!S.pro)); }
+function setMode(pro){ if(S.started) return; S.pro=pro; try{ localStorage.setItem('pinball_pro',pro?'1':'0'); }catch(e){} lastChal=''; modeDraw(); hud(); save(); SND.tick(); }
+
 /* ================= HUD ================= */
 var lampsBuilt=false;
 function hud(){ $('pb-cash').textContent='$'+S.cash; $('pb-streak').textContent=S.streak; $('pb-correct').textContent=S.correct;
@@ -560,9 +606,10 @@ function hud(){ $('pb-cash').textContent='$'+S.cash; $('pb-streak').textContent=
   $('pb-mnote').textContent=S.lamp>=ml?'Top lamp lit! Buy More Lamps in the shop to go higher.':S.phase==='reload'?'Every right answer lights the next lamp.':'Drain every ball and the lamps go dark.';
   $('pb-mult').classList.toggle('need',S.started&&!S.over&&S.phase==='reload');
   $('pb-pows').innerHTML=(S.buff.net>0?'<span class="pb-pow">Pickle Guard <b>'+Math.ceil(S.buff.net)+'s</b></span>':'')+(S.buff.hot>0?'<span class="pb-pow">Hot Grill <b>'+Math.ceil(S.buff.hot)+'s</b></span>':'')+(S.pend>0&&S.phase==='reload'?'<span class="pb-pow">Multiball <b>+'+S.pend+'</b></span>':'')+(S.rushT>0?'<span class="pb-pow">Burger Rush <b>'+Math.ceil(S.rushT)+'s</b></span>':'')+(S.kick>0&&S.phase!=='reload'?'<span class="pb-pow">Kickbacks <b>'+S.kick+'</b></span>':'');
-  $('pb-shopcash').textContent='$'+S.cash; if(!$('pb-shop').hidden) drawShop(); panelHud(); dmdDirty=true; }
+  $('pb-shopcash').textContent='$'+S.cash; if(!$('pb-shop').hidden) drawShop(); chalCheck(false); chalDraw(); panelHud(); dmdDirty=true; }
 function timerDraw(){ var left=S.started? Math.max(0,S.endAt-now()) : S.len*60000, s=Math.ceil(left/1000), t=Math.floor(s/60)+':'+('0'+(s%60)).slice(-2);
   if($('pb-time').textContent!==t) $('pb-time').textContent=t; $('pb-timechip').classList.toggle('low',S.started&&s<=30);
+  if(S.started&&!S.over&&left>0&&left<=30000&&!S.finalOn){ S.finalOn=1; toast('FINAL 30 SECONDS! Double points'); say('FINAL\n30','2X POINTS',2.4,true); SND.rush(); hud(); }
   if(S.started&&!S.over&&left<=0) endRun(); }
 
 /* ================= THE DOT-MATRIX DISPLAY =================
@@ -609,7 +656,8 @@ function panelHud(){ var ph=S.phase, rest=S.started&&!S.over&&(ph==='play'||ph==
   $('pb-rest').hidden=!rest; var q=$('pb-q'); q.classList.toggle('need',S.started&&!S.over&&ph==='reload'); q.classList.toggle('scoop',ph==='scoop');
   if(rest){ if(ph==='paused'){ $('pb-resth').textContent='Paused'; $('pb-restp').innerHTML='Press <b>Space</b> (or tap Launch) to keep playing.'; }
     else if(ph==='drained'){ $('pb-resth').textContent='Drained!'; $('pb-restp').innerHTML='Your lamps went dark. Answer questions to light them up again.'; }
-    else if(S.rushT>0){ $('pb-resth').textContent='Burger Rush!'; $('pb-restp').innerHTML='Every point counts <b>'+(mult()*2)+'X</b> for <b id="pb-rusht">'+Math.ceil(S.rushT)+'</b> more seconds.'; }
+    else if(S.rushT>0){ $('pb-resth').textContent='Burger Rush!'; $('pb-restp').innerHTML='Every point counts <b>'+(mult()*2*(finalT()?2:1))+'X</b> for <b id="pb-rusht">'+Math.ceil(S.rushT)+'</b> more seconds.'; }
+    else if(finalT()){ $('pb-resth').textContent='Final 30 seconds!'; $('pb-restp').innerHTML='Double points: every point counts <b>'+(mult()*2)+'X</b>.'; }
     else { $('pb-resth').textContent='Ball in play!'; $('pb-restp').innerHTML='Every point counts <b>'+mult()+'X</b>.'; }
     $('pb-tip').innerHTML=S.oi>=4&&!(S.rushT>0)?'Big Patty slides across the grill. Hit him <b>'+(W.boss?W.boss.hp:0)+'</b> more times, then answer the final order.':'The <b>Order Up</b> window on the left asks a bonus question: a right answer wins a <b>jackpot</b> and an <b>extra ball</b>.';
     tkKey=''; ticket(); } 
@@ -630,7 +678,7 @@ function newQ(){ clearTimeout(nextT); if(!QS) return; S.q=QS.next(); S.qDone=fal
 function markAnswered(i,fresh,gain){ var q=S.q, btns=$('pb-choices').querySelectorAll('.pb-ch'), c=q.choices[i], fb=$('pb-fb');
   btns.forEach(function(b,j){ b.disabled=true; if(q.choices[j].ok) b.classList.add('right'); else if(j!==i&&!FAST) b.hidden=true; }); if(!c.ok) btns[i].classList.add('wrong');
   if(c.ok){ fb.className='pb-fb ok'; fb.innerHTML='<span class="h">Correct!'+(gain?' '+gain:'')+(fresh&&S.streak>1?' Streak '+S.streak+'.':'')+'</span>'+q.explain; $('pb-next').disabled=S.phase!=='reload'; }
-  else { fb.className='pb-fb bad'; fb.innerHTML='<span class="h">Not quite.'+(S.phase==='scoop'&&fresh?(S.hk==='boss'?' Big Patty heals up a little.':' No extra ball this time.'):'')+'</span>'+c.why+(FAST?' ':'<br>')+q.explain;
+  else { fb.className='pb-fb bad'; fb.innerHTML='<span class="h">Not quite.'+(S.phase==='scoop'&&fresh?(S.hk==='boss'?' Big Patty heals up a little.':' No extra ball this time.'):'')+(fresh&&S.pro&&S.phase==='reload'?' A lamp went out (All-Pro).':'')+'</span>'+c.why+(FAST?' ':'<br>')+q.explain;
     $('pb-next').disabled=!!fresh||S.phase!=='reload'; if(fresh&&!FAST&&S.phase==='reload'){ clearTimeout(lockT); lockT=setTimeout(function(){ if(S.phase==='reload') $('pb-next').disabled=false; },1800); } } }
 function answer(i){ if(!canAnswer()||S.qDone||!S.q) return; var c=S.q.choices[i]; if(!c) return; S.qDone=true; S.picked=i; S.answered++;
   if(!S.topics[S.q.topic]) S.topics[S.q.topic]=[0,0]; S.topics[S.q.topic][1]++;
@@ -640,12 +688,12 @@ function answer(i){ if(!canAnswer()||S.qDone||!S.q) return; var c=S.q.choices[i]
     S.cash+=ca; if(S.lamp<maxLamp()){ S.lamp++; lit=true; } S.bestMult=Math.max(S.bestMult,mult()); SND.correct(); if(lit) SND.lamp();
     gain=(lit?mult()+'X lit.':'')+' +$'+ca+'.';
     if(scoop&&S.hk==='boss'){ var bj=bossDone(); gain='Burger done! +'+bj.toLocaleString('en-US')+'. Burger Rush!'; var pb=stagePoint(btn,60,40); confetti(pb[0],pb[1],90,2.6); }
-    else if(scoop){ var jp=PTS.jackpot*mult()*(S.rushT>0?2:1); S.score+=jp; S.jackpots++; var xb=addBalls(1); gain='Jackpot +'+jp.toLocaleString('en-US')+(xb?' and an extra ball!':'!');
+    else if(scoop){ var jp=Math.round(PTS.jackpot*mult()*(S.rushT>0?2:1)*bx()); S.score+=jp; S.jackpots++; var xb=addBalls(1); gain='Jackpot +'+jp.toLocaleString('en-US')+(xb?' and an extra ball!':'!');
       setTimeout(function(){ SND.jackpot(); },250); say('JACKPOT!',jp.toLocaleString('en-US'),2.4,true); var p=stagePoint(btn,60,40); confetti(p[0],p[1],70,2.4); }
     markAnswered(i,true,gain);
     if(!scoop){ if(FAST) nextT=setTimeout(function(){ if(S.qDone&&S.phase==='reload') newQ(); },150);
       else { var p2=stagePoint(btn,60,40); confetti(p2[0],p2[1],36,2.2); toast((lit?mult()+'X lit':'Top lamp lit')+' · +$'+ca); nextT=setTimeout(function(){ if(S.qDone&&S.phase==='reload') newQ(); },1600); } } }
-  else { S.streak=0; S.cash=Math.max(0,S.cash-(FAST?3:5)); SND.miss(); if(scoop&&S.hk==='boss'&&W.boss){ W.boss.hp=Math.min(W.boss.max,2); tkKey=''; } markAnswered(i,true);
+  else { S.streak=0; S.cash=Math.max(0,S.cash-(FAST?3:5)); if(S.pro&&S.lamp>0) S.lamp--; SND.miss(); if(scoop&&S.hk==='boss'&&W.boss){ W.boss.hp=Math.min(W.boss.max,2); tkKey=''; } markAnswered(i,true);
     if(FAST&&!scoop) nextT=setTimeout(function(){ if(S.qDone&&S.phase==='reload') newQ(); },1200); }
   save(); hud(); }
 $('pb-choices').addEventListener('click',function(e){ var b=e.target.closest('.pb-ch'); if(b) answer(+b.dataset.i); });
@@ -672,7 +720,7 @@ $('pb-shop').addEventListener('click',function(e){ var b=e.target.closest('.pb-b
 var KD={}, touchL=false, touchR=false, pull=-1, lastIn={L:false,R:false}, pops=[], fx=[], bigTxt=null, shake=0;
 function inputs(){ return { L:!!(KD.l||touchL), R:!!(KD.r||touchR) }; }
 function opt(){ return { k:1, post:S.buff.net>0, gates:S.buff.net>0 }; }
-function pts(base,x,y,col){ var v=base*mult()*(S.rushT>0?2:1); S.score+=v; if(x!=null){ pops.push({x:x,y:y,t:0,txt:'+'+v.toLocaleString('en-US'),col:col||'#FFD23F'}); if(pops.length>14) pops.shift(); } return v; }
+function pts(base,x,y,col){ var v=Math.round(base*mult()*(S.rushT>0?2:1)*bx()); S.score+=v; if(x!=null){ pops.push({x:x,y:y,t:0,txt:'+'+v.toLocaleString('en-US'),col:col||'#FFD23F'}); if(pops.length>14) pops.shift(); } return v; }
 function burst(x,y,cols,n,sp){ for(var i=0;i<n;i++){ var a=Math.random()*6.283, v=(sp||300)*(0.4+Math.random()); if(fx.length>160) fx.shift(); fx.push({x:x,y:y,vx:Math.cos(a)*v,vy:Math.sin(a)*v,c:cols[i%cols.length],t:0,max:0.35+Math.random()*0.35,s:4+Math.random()*4}); } }
 var lit={};                                  /* when each part of the table last flashed */
 function flash(id){ lit[id]=performance.now(); }
@@ -681,9 +729,9 @@ function onEv(type,d,b){
   if(type==='bumper'){ var B=BUMPERS[d], hot=S.buff.hot>0; prog('bun'); pts(PTS.bumper*(hot?5:1),B.x,B.y-44,hot?'#FF9A1F':'#FFD23F'); SND.bumper(d); flash('b'+d); burst(B.x,B.y,hot?['#FF9A1F','#FFD23F','#fff']:['#FF4D3A','#FFD23F','#fff'],8,260); shakeIt(2.5); }
   else if(type==='sling'){ pts(PTS.sling*(S.buff.hot>0?5:1)); SND.sling(); flash('s'+d); prog('sling'); }
   else if(type==='lane'){ if(b&&b.id===S.skillBall&&W.t<S.skillUntil){ S.skillBall=null;
-      if(d===S.skill){ pts(PTS.skill,LANE_X[d],LANE_Y1+30,'#5CC8FF'); SND.skill(); say('SKILL\nSHOT','',2,true); combo(LANE_X[d],LANE_Y1+60); } }
+      if(d===S.skill){ S.skills++; pts(PTS.skill,LANE_X[d],LANE_Y1+30,'#5CC8FF'); SND.skill(); say('SKILL\nSHOT','',2,true); combo(LANE_X[d],LANE_Y1+60); } }
     if(!S.lanes[d]){ S.lanes[d]=1; pts(PTS.lane,LANE_X[d],LANE_Y1+30); SND.lane(); flash('l'+d);
-      if(S.lanes.every(function(v){ return v; })){ S.lanes=[0,0,0,0]; var v=pts(PTS.math,284,250,'#FF4D3A'); SND.math(); say('MEAL\nDEAL','',2,true); flash('math'); prog('meal'); } }
+      if(S.lanes.every(function(v){ return v; })){ S.lanes=[0,0,0,0]; var v=pts(PTS.math,284,250,'#FF4D3A'); SND.math(); say('MEAL\nDEAL','',2,true); flash('math'); S.meals++; prog('meal'); } }
     else { pts(25); } }
   else if(type==='drop'){ pts(PTS.drop,DROP_X-30,DROP_Y[d]+18); SND.drop(); flash('d'+d); combo(DROP_X-60,DROP_Y[d]-10); }
   else if(type==='bank'){ var bv=pts(PTS.bank,470,470,'#FF9A1F'); SND.bank(); say('FRIES!',bv.toLocaleString('en-US'),1.8); prog('fries'); }
@@ -703,7 +751,7 @@ function orderDone(){ var v=pts(PTS.order,284,440,'#4ADE80'); S.ordersDone++; S.
 function bossHit(b){ var P=W.boss; if(!P||P.hp<=0||S.phase!=='play') return; P.hp--; P.hitT=W.t; flash('boss'); pts(PTS.bossHit,P.x,BOSS.y-58,'#FF9A1F'); SND.bossHit(P.hp);
   burst(b.x,b.y,['#FF4D3A','#FF9A1F','#FFD23F'],12,320); combo(P.x,BOSS.y-90); shakeIt(8);
   if(P.hp<=0){ b.held='boss'; b.vx=0; b.vy=0; b.x=P.x; b.y=BOSS.y-BOSS.r-BR+6; P.v=0; enterScoop(b,'boss'); } else { say('BIG PATTY',P.hp+' TO GO',1.2); ticket(); } }
-function bossDone(){ var jp=PTS.boss*mult()*2; S.score+=jp; S.burgers++; W.boss=null; drawBg(); S.rushT=RUSH_S; addBalls(3); S.saveT=Math.max(S.saveT,10); S.combo=0;
+function bossDone(){ var jp=Math.round(PTS.boss*mult()*2*bx()); S.score+=jp; S.burgers++; W.boss=null; drawBg(); S.rushT=RUSH_S; addBalls(3); S.saveT=Math.max(S.saveT,10); S.combo=0;
   $('pb-table').classList.add('rush'); setTimeout(function(){ SND.rush(); },300); say('BURGER\nRUSH','2X POINTS',2.6,true); return jp; }
 function rushEnd(){ S.rushT=0; S.burger++; S.orders=pickOrders(); S.oi=0; S.oc=0; $('pb-table').classList.remove('rush'); say('NEW\nORDER','BURGER '+(S.burger+1),2); SND.lane(); ticket(); hud(); }
 /* combos: big shots within 3 seconds of each other chain up to X5 */
@@ -747,7 +795,7 @@ function go(power){ if(!S.started||S.over||!$('pb-shop').hidden) return;
   if(S.phase==='paused'){ S.phase='resume'; S.resumeT=0.8; hud(); return; }
   if(S.phase!=='reload') return;
   if(!canLaunch()){ nudgePanel(); return; }
-  clearTimeout(nextT); clearTimeout(lockT); var b=newBall(W,569,PLUNGE_Y); launch(W,power); S.skillBall=b.id; S.skillUntil=W.t+6; S.balls++; S.saveT=U('save'); S.kick=U('kick'); S.phase='play'; S.pendT=0.9; bigTxt=null;
+  clearTimeout(nextT); clearTimeout(lockT); var b=newBall(W,569,PLUNGE_Y); launch(W,power); S.skillBall=b.id; S.skillUntil=W.t+6; S.balls++; S.saveT=U('save')*(S.pro?0.5:1); S.kick=U('kick'); S.phase='play'; S.pendT=0.9; bigTxt=null;
   SND.launch(power); if(document.activeElement&&document.activeElement.blur) document.activeElement.blur(); save(); hud(); }
 function nudgePanel(){ var q=$('pb-q'); q.classList.remove('nudge'); void q.offsetWidth; q.classList.add('nudge'); SND.empty(); }
 function serveExtra(){ var inLane=W.balls.some(function(b){ return b.x>LANE_IN&&b.y>600; }); if(inLane) return false;
@@ -756,6 +804,7 @@ var acc=0;
 function update(dt){                                       /* one frame of play: runs the physics in small steps */
   if(S.phase==='play'){ var inp=inputs();
     if(inp.L&&!lastIn.L){ SND.flip(); S.lanes.push(S.lanes.shift()); } if(inp.R&&!lastIn.R){ SND.flip(); S.lanes.unshift(S.lanes.pop()); } lastIn=inp;
+    if(W.balls.length>S.maxBalls) S.maxBalls=W.balls.length;
     acc+=dt; var o=opt(), n=0; while(acc>=STEP&&n<40&&S.phase==='play'){ acc-=STEP; n++; stepWorld(W,inp,o,onEv); } if(n>=40) acc=0;
     if(S.rushT>0){ var rs=Math.ceil(S.rushT); S.rushT=Math.max(0,S.rushT-dt); if(!S.rushT) rushEnd(); else if(Math.ceil(S.rushT)!==rs) hud(); }
     if(S.saveT>0) S.saveT=Math.max(0,S.saveT-dt); ['net','hot'].forEach(function(k){ if(S.buff[k]>0){ S.buff[k]=Math.max(0,S.buff[k]-dt); if(!S.buff[k]) hud(); } });
@@ -938,20 +987,22 @@ function loop(t){ var dt=Math.min(0.05,Math.max(0,(t-lastF)/1000)); lastF=t;
 
 /* ================= START / END ================= */
 $('pb-step1').textContent='Every right answer lights the next multiplier lamp: 2X, 3X, 4X, 5X. Answer '+NEED+' questions to launch.';
+$('pb-rookie').addEventListener('click',function(){ setMode(false); }); $('pb-pro').addEventListener('click',function(){ setMode(true); });
 $('pb-nameinput').addEventListener('input',function(){ $('pb-go-start').disabled=!this.value.trim(); });
 $('pb-nameinput').addEventListener('keydown',function(e){ if(e.key==='Enter'&&this.value.trim()){ e.preventDefault(); e.stopPropagation(); $('pb-go-start').click(); } });
 $('pb-go-start').addEventListener('click',function(){ var n=$('pb-nameinput').value.trim(); if(!n) return; ac(); jingle(); S.name=n; S.started=true; S.endAt=now()+S.len*60000; $('pb-start').hidden=true; say('BURGER\nBALL','',2.4);
   $('pb-nameinput').blur(); toReload(); });
-function endRun(){ S.over=true; S.phase='over'; KD={}; touchL=touchR=false; pull=-1; clearTimeout(nextT); $('pb-shop').hidden=true; save(); hud(); showEnd(true); }
+function endRun(){ chalCheck(true); S.over=true; S.phase='over'; KD={}; touchL=touchR=false; pull=-1; clearTimeout(nextT); $('pb-shop').hidden=true; save(); hud(); showEnd(true); }
 function showEnd(celebrate){ $('pb-endname').textContent=S.name; $('pb-endscore').textContent=S.score.toLocaleString('en-US');
   var a=S.answered?Math.round(100*S.correct/S.answered):0;
   $('pb-endstats').innerHTML=[['Correct',S.correct+' / '+S.answered],['Accuracy',a+'%'],['Best streak',S.best],['Top multiplier',S.bestMult+'X'],['Burgers',S.burgers]].map(function(x){ return '<div class="pb-stat"><div class="l">'+x[0]+'</div><div class="v">'+x[1]+'</div></div>'; }).join('');
+  $('pb-badges').innerHTML=(S.pro?'<div class="pb-badge pro"><b>★</b>All-Pro</div>':'')+S.chal.map(function(c){ return '<div class="pb-badge'+(c.done?' done':'')+'"><b>'+(c.done?'✓':'✗')+'</b>'+CHAL[c.id].txt+'</div>'; }).join('');
   $('pb-endtopics').innerHTML=Object.keys(S.topics).map(function(k){ var t=S.topics[k]; return '<div class="pb-stat"><div class="l">'+k+'</div><div class="v">'+t[0]+' / '+t[1]+'</div></div>'; }).join('');
   /* LEADERBOARD HOOK: the shared score code (scorecode.js) shows the student's code here */
   if(window.SpitzCode&&SpitzCode.show) try{ SpitzCode.show('pb','pinball',S); }catch(e){}
   $('pb-end').hidden=false; if(celebrate){ SND.win(); [0,350,700,1100].forEach(function(ms,i){ setTimeout(function(){ confetti(200+i*500,1070,90,1.3); confetti(1720-i*500,1070,90,1.3); },ms); }); } }
 var armT=0; $('pb-again').addEventListener('click',function(){ var b=this; if(!b.classList.contains('arm')){ b.classList.add('arm'); b.textContent='Tap again to start over'; clearTimeout(armT); armT=setTimeout(function(){ b.classList.remove('arm'); b.textContent='Play again'; },3000); return; }
-  b.classList.remove('arm'); b.textContent='Play again'; var keepName=S.name; S=fresh(); S.name=keepName; W=S.world; pops=[]; fx=[]; bigTxt=null; drawBg(); $('pb-table').classList.remove('rush'); tkKey='';
+  b.classList.remove('arm'); b.textContent='Play again'; var keepName=S.name; S=fresh(); S.name=keepName; W=S.world; lastChal=''; modeDraw(); pops=[]; fx=[]; bigTxt=null; drawBg(); $('pb-table').classList.remove('rush'); tkKey='';
   $('pb-end').hidden=true; $('pb-start').hidden=false; $('pb-nameinput').value=keepName; $('pb-go-start').disabled=!keepName; save(); hud(); timerDraw();
   $('pb-choices').innerHTML=''; $('pb-prompt').innerHTML=''; $('pb-visual').innerHTML=''; });
 
@@ -1009,14 +1060,14 @@ if(S.started){ $('pb-start').hidden=true;
     else if(S.phase==='play'||S.phase==='resume') S.phase='paused';                                          /* a reload mid-ball waits, so nothing happens unseen */
     if(S.phase==='reload'||S.phase==='scoop'){ if(S.q&&!(FAST&&S.qDone&&S.phase==='reload')) showQ(); else newQ(); } } }
 else { $('pb-nameinput').value=S.name||''; $('pb-go-start').disabled=!S.name; }
-$('pb-table').classList.toggle('rush',S.rushT>0); hud(); timerDraw(); setInterval(timerDraw,250); setInterval(function(){ if(S.started&&!S.over) save(); },1000); requestAnimationFrame(loop);
+$('pb-table').classList.toggle('rush',S.rushT>0); modeDraw(); hud(); timerDraw(); setInterval(timerDraw,250); setInterval(function(){ if(S.started&&!S.over) save(); },1000); requestAnimationFrame(loop);
 if(document.fonts&&document.fonts.ready) document.fonts.ready.then(function(){ SPR={}; drawBg(); DMD.key=''; });
 
 /* test hooks */
 window.__G={ state:function(){ return S; }, world:function(){ return W; }, answer:answer, go:go, hud:hud, update:update, mult:mult, maxLamp:maxLamp, U:U, canLaunch:canLaunch,
   keys:function(l,r){ KD.l=!!l; KD.r=!!r; }, newBall:function(x,y,vx,vy){ return newBall(W,x,y,vx,vy); }, step:function(sec){ var n=Math.round(sec/0.01); for(var i=0;i<n;i++) update(0.01); },
   end:function(){ S.endAt=now()-1; timerDraw(); }, next:function(){ return QS.next(); }, set:QS?QS.set:null, fast:FAST, need:NEED, showQ:showQ, newQ:newQ, pause:pause, res:function(){ return RES; },
-  prog:prog, orderDone:orderDone, ticket:ticket, need:need, bossHP:bossHP, newBoss:function(hp,v){ return newBoss(W,hp,v); }, rushEnd:rushEnd, onEv:onEv,
+  prog:prog, orderDone:orderDone, chalCheck:chalCheck, CHAL:CHAL, setMode:setMode, bx:bx, ticket:ticket, need:need, bossHP:bossHP, newBoss:function(hp,v){ return newBoss(W,hp,v); }, rushEnd:rushEnd, onEv:onEv,
   TABLE:{ BOSS:BOSS, BUMPERS:BUMPERS, SCOOP:SCOOP, PIV:PIV, FLIP:FLIP, LANE_X:LANE_X, DROP_Y:DROP_Y, DROP_X:DROP_X, PLUNGE_Y:PLUNGE_Y } };
 window.__verify=function(n){ var bad=[], i; for(i=0;i<n;i++){ var q=QS.next(), ok=q.choices.filter(function(c){ return c.ok; });
     if(ok.length!==1) bad.push(['not one right',q.prompt]); if(new Set(q.choices.map(function(c){ return c.html; })).size!==4) bad.push(['repeat labels',q.prompt]);
