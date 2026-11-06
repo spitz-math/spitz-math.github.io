@@ -201,6 +201,7 @@ table.data th{background:var(--surface-2)}
 table.grid{border-collapse:collapse;margin-top:6px}
 table.grid th,table.grid td{border:1.5px solid var(--line);padding:.5em 1.2em;text-align:center}
 table.grid th{background:var(--surface-2);font-size:.9em}
+@media (max-width:520px){table.grid th,table.grid td{padding:.45em .5em}}
 table.grid td:first-child{font-weight:700;text-align:left}
 td:has(>.gcell){cursor:pointer}
 .gcell{width:1.15em;height:1.15em;border-radius:2px;border:1.5px solid #8a8a8a;background:#fff;display:inline-grid;place-items:center;padding:0;cursor:pointer}
@@ -1626,10 +1627,10 @@ function buildHotspot(it,root){
   pts.addEventListener('keydown',e=>{ if(e.key===' '||e.key==='Enter'){ e.preventDefault(); e.target.dispatchEvent(new MouseEvent('click',{bubbles:true})); } });
   root.appendChild(w); sync();
 }
-const hsPts=(it,a)=>[].concat(a).map(q=>it.img?'Spot '+'ABCDEFGHIJKL'[q]:`(${fmtN(it.spots[q][0])}, ${fmtN(it.spots[q][1])})`).join(', ');
+const hsPts=(it,a)=>[].concat(a).map(q=>it.img?(it.spotNames?it.spotNames[q]:'Spot '+'ABCDEFGHIJKL'[q]):`(${fmtN(it.spots[q][0])}, ${fmtN(it.spots[q][1])})`).join(', ');
 /* hot spot on a picture (teachers' own tests): spots are [left %, top %] on the picture */
 function buildHotImg(it,root,multi){ const id=it.n, w=document.createElement('div'); w.className='hsimg'; w.style.maxWidth=(it.imgw||400)+'px';
-  w.innerHTML=`<img src="${it.img}" alt="Picture with spots to choose">`+it.spots.map(([x,y],q)=>`<button type="button" class="hsdot" style="left:${x}%;top:${y}%" role="${multi?'checkbox':'radio'}" aria-checked="false" aria-label="Spot ${'ABCDEFGHIJKL'[q]}" data-k="${q}"></button>`).join('');
+  w.innerHTML=`<img src="${it.img}" alt="Picture with spots to choose">`+it.spots.map(([x,y],q)=>`<button type="button" class="hsdot" style="left:${x}%;top:${y}%" role="${multi?'checkbox':'radio'}" aria-checked="false" aria-label="${it.spotNames?'Point '+it.spotNames[q]:'Spot '+'ABCDEFGHIJKL'[q]}" data-k="${q}"></button>`).join('');
   const has=q=>multi?(S.answers[id]||[]).includes(q):S.answers[id]===q;
   const sync=()=>{ w.querySelectorAll('.hsdot').forEach(c=>c.setAttribute('aria-checked',has(+c.dataset.k))); refresh(); };
   w.addEventListener('click',e=>{ const c=e.target.closest('.hsdot'); if(!c) return; const q=+c.dataset.k;
