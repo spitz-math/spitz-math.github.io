@@ -463,6 +463,8 @@ details summary{cursor:pointer;color:var(--blue2);font-size:13px;margin-top:8px}
 .showid.many .big{font-size:clamp(60px,11vw,150px)}
 .showid .tt{font-size:clamp(16px,2.2vw,26px);margin-top:1.4vh;opacity:.85}
 .dans{max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+tr.dcalc td{padding-top:0;border-top:0}tr.dcalc td+td{max-width:0}.dcw{display:flex;flex-wrap:wrap;gap:4px 6px;align-items:baseline;font-size:12.5px;margin:0 0 4px}
+.dcw b{font-size:11.5px;font-weight:600;color:var(--mut,#5b6675);margin-right:2px}.dcw code{font:12.5px/1.35 ui-monospace,Consolas,monospace;background:var(--surf2,#f1f4f8);border:1px solid var(--line,#dde3ea);border-radius:4px;padding:1px 6px;white-space:nowrap}
 .dact .btn{margin-right:6px}
 .rtg{margin-top:4px;font-size:12.5px;line-height:1.45}
 .rtg .nm{font-size:12.5px}
@@ -3658,6 +3660,13 @@ addEventListener('keydown',e=>{ if(e.key==='Escape'&&!$('#qvVeil').hidden) qvClo
 /* ---------- student drawer ---------- */
 /* the student's own answers for the drawer: the live view doesn't fetch answers (they're the big column), so the drawer asks for this student's session once */
 const DANS={}, DANS_BUSY={};
+/* the student's basic calculator work, per question: its own column, read only for the student whose drawer is open */
+const DCALC={}, DCALC_BUSY={};
+function drawerCalc(s){ const c=DCALC[s.key]; if(c&&c.t>=(s.saved||0)) return c.c;
+  if(!DCALC_BUSY[s.key]&&!(c&&c.old)){ DCALC_BUSY[s.key]=1;
+    call('stcCalc',{key:s.key,archive:arc},60000).then(r=>{ DCALC[s.key]={t:s.saved||0,c:r&&r.calc||{}}; if(openKey===s.key) openDrawer(s.key,true); })
+      .catch(()=>{ DCALC[s.key]={t:s.saved||0,c:{},old:1}; }).finally(()=>{ delete DCALC_BUSY[s.key]; }); }   /* old: the Code.gs without stcCalc */
+  return c?c.c:null; }
 function drawerAns(s){ const have=s.q.some(q=>q&&q[8]); if(have) return s.q.map(q=>q&&q[8]||'');
   const c=DANS[s.key]; if(c&&c.t>=(s.saved||0)) return c.a;
   if(!DANS_BUSY[s.session]){ DANS_BUSY[s.session]=1;
@@ -3670,7 +3679,7 @@ function drawerAnsText(it,raw){ if(!raw) return ''; let a; try{ a=JSON.parse(raw
 function openDrawer(key,quiet){ const s=DATA&&DATA.students.find(x=>x.key===key); if(!s){ closeDrawer(); return; } openKey=key;
   const [k,label]=stat(s), m=meta(s.test), l=sLvl(s), w=toScore(s), d=v=>v?new Date(v).toLocaleString([], {month:'short',day:'numeric',hour:'numeric',minute:'2-digit'}):'–';
   $('#dName').textContent=s.name+' · '+(s.period==='G'?'Guest':'Period '+s.period);
-  const its=qvItems(s.test), ans=drawerAns(s), can=canAct(s.session)&&!arc;
+  const its=qvItems(s.test), ans=drawerAns(s), cw=drawerCalc(s)||{}, can=canAct(s.session)&&!arc;
   if(its===null) metaOf(s.test).then(()=>setTimeout(()=>{ if(openKey===key) openDrawer(key,true); },50)).catch(()=>{});
   $('#dBody').innerHTML=`<div class="dact">${s.submitted||!can||k==='ns'?'':`<button class="btn" data-act="${s.control==='paused'?'resume':'pause'}" data-k="${esc(s.key)}">${s.control==='paused'?'Resume':'Pause'}</button><button class="btn warn" data-act="${s.control==='locked'?'unlock':'lock'}" data-k="${esc(s.key)}">${s.control==='locked'?'Unlock':'Stop test'}</button>`}${s.submitted||s.answered>0?`<button class="btn" id="dReport" title="One page: score, standards to work on, and each missed question with how to solve it">Print report</button>`:''}${can&&s.submitted?`<button class="btn" data-reopen="reopen" data-k="${esc(s.key)}" title="Give the test back: their answers stay and they go on where they left off">Reopen test</button>`:''}${can&&(s.submitted||s.answered>0)?`<button class="btn warn" data-reopen="retake" data-k="${esc(s.key)}" title="Erase their answers so they can take the test again from the start">Retake</button>`:''}</div>
     <div class="kv"><b>Status</b><span><span class="pill p-${k}">${esc(label)}</span></span><b>Test</b><span>${esc(m?m.title:s.test)} · ${esc(s.session)}</span>
@@ -3680,7 +3689,7 @@ function openDrawer(key,quiet){ const s=DATA&&DATA.students.find(x=>x.key===key)
     <table class="t"><tr><th>#</th><th>Result</th><th>Their answer</th><th>TEKS</th><th>Time</th><th title="Visits">Vis.</th><th title="Times they changed the answer">Chg.</th></tr>${s.q.map((q,i)=>{ const qi=qinfo(s,i), [pts,mx,ms,vis,ch,fl]=q;
       const r=q[9]?'To score':pts==null?(vis?'Blank':'Not seen'):pts>=mx?'Correct':pts>0?`Partly (${pts}/${mx})`:'Incorrect';
       const at=ans&&ans[i]?drawerAnsText(its&&its[i],ans[i]):'', aCell=at?`<td class="dans" title="${esc(at)}">${esc(at)}</td>`:`<td class="rs">${pts==null&&!q[9]?'':ans===null&&!arc?'…':'–'}</td>`;
-      return `<tr><td><button class="nm" data-dsee="${i}" title="See question ${i+1}">${i+1}</button>${fl?' ⚑':''}</td><td style="white-space:nowrap"><span class="cell ${q[9]?'wr':pts==null?(vis?'bl':'un'):pts>=mx?'ok':pts>0?'part':'no'}" style="display:inline-grid;width:14px;height:12px;vertical-align:-2px;margin-right:4px"></span>${r}</td>${aCell}<td class="rs">${esc(qi.teks)}</td><td class="n">${ms?fmtMs(ms):'–'}</td><td class="n">${vis}</td><td class="n">${ch}</td></tr>`; }).join('')}</table>`;
+      return `<tr><td><button class="nm" data-dsee="${i}" title="See question ${i+1}">${i+1}</button>${fl?' ⚑':''}</td><td style="white-space:nowrap"><span class="cell ${q[9]?'wr':pts==null?(vis?'bl':'un'):pts>=mx?'ok':pts>0?'part':'no'}" style="display:inline-grid;width:14px;height:12px;vertical-align:-2px;margin-right:4px"></span>${r}</td>${aCell}<td class="rs">${esc(qi.teks)}</td><td class="n">${ms?fmtMs(ms):'–'}</td><td class="n">${vis}</td><td class="n">${ch}</td></tr>${(L=>L&&L.length?`<tr class="dcalc"><td></td><td colspan="6"><div class="dcw" title="What they worked out on the basic calculator on this question"><b>Calculator</b>${L.map(t=>`<code>${esc(t)}</code>`).join('')}</div></td></tr>`:'')(cw[i+1])}`; }).join('')}</table>`;
   if($('#dReport')) $('#dReport').onclick=()=>printReports([s]);
   $('#dBody').querySelectorAll('[data-dsee]').forEach(b=>b.onclick=()=>qvShow(s.test,+b.dataset.dsee));
   $('#drawer').hidden=false; if(!quiet) $('#dClose').focus(); }
