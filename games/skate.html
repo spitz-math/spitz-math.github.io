@@ -606,7 +606,7 @@ $('sk-choices').addEventListener('click',function(e){ var b=e.target.closest('.s
 var cv=$('sk-canvas'), cx=cv.getContext('2d'), W=1054, H=936, DF="'Permanent Marker', Inter, sans-serif";
 var GY=760, SX=300, GRAV=2000, JV=800, KICKV=950, POPV=380, V0=430, VMAX=780, PUSH=520, DRAG=140, SLOPEG=900,
     RAILH=52, LEDGEH=120, GRINDPS=240, MANPS=120, CLEAR=50, CLEANB=300, WORDB=1000, GOALB=500, SKETCH=0.75,
-    ROT=8, EASE=2.4, HOLDT=0.15, COYOTE=0.12, WIN=1.1, MANMAX=2.5, FLIPP=500, NMAX=10, BREAK=0.45;
+    ROT=8, EASE=2.4, HOLDT=0.15, COYOTE=0.12, WIN=1.1, MANMAX=4, FLIPP=500, NMAX=10, BREAK=0.45;
 var TR={ flip:{n:'KICKFLIP',d:0.28,p:100}, grab:{n:'GRAB',d:0.34,p:150}, spin:{n:'360 SPIN',d:0.44,p:200} };
 var OB={ cone:{w:40,h:50}, hydrant:{w:40,h:60}, can:{w:50,h:66}, barrier:{w:84,h:62}, bench:{w:128,h:50} };
 var WORD='SKATE', TAGS=['SK8','OLLIE','RAD','FLIP IT','GRIND','SHRED'], PINK='#FF4FA3', LIME='#C8FF3D', CYAN='#2DE2E6';
@@ -703,6 +703,7 @@ function goalCheck(){ if(PL.goalDone||!PL.live) return; if(!GOALS[PL.goal].ok(PL
   var q=stagePoint(cv,W-220,90); confetti(q[0],q[1],50,2.4); }
 /* a flip trick must be done before the wheels touch. Nearly done counts as sketchy, for half points. */
 function resolveTrick(){ var T=PL.trick; if(!T) return true; var d=TR[T.k]; PL.trick=null; PL.buf='';
+  if(T.k==='grab'&&T.t/d.d<SKETCH) return true;   /* 2026-11-09 (Kody: manuals very hard): ↓ pressed just before landing to set up a manual started a grab and bailed; now it just lands into the manual */
   if(T.t/d.d>=SKETCH){ PL.jt.push(add(spN(T.k),spP(d.p)/2)); floats.push({x:SX+160,y:GY-PL.h-70,a:'SKETCHY!',col:'#FFC82E',size:26,t:0}); return true; }
   return false; }
 function bank(){ var n=PL.combo.length; PL.mi=null; PL.gi=null; if(!n) return; var pts=comboPts(); PL.pts+=pts; PL.g.maxN=Math.max(PL.g.maxN,n); S.bestN=Math.max(S.bestN,n); spFill(pts/2500); PL.g.bestCombo=Math.max(PL.g.bestCombo,pts); S.bestCombo=Math.max(S.bestCombo||0,pts);
@@ -921,7 +922,7 @@ function render(){ var live=S.started&&!S.over, i, f, sx, MX=W/2, L=PL.letter, o
     if(PL.trick) nm+=(nm?' + ':'')+TR[PL.trick.k].n; if(PL.rot&&!PL.trick) nm+=(nm?' + ':'')+'BACKFLIP?';
     label(nm,MX,304,PL.trick||PL.rot?'#FFF04D':'#fff',30,'center','',W-120);
     if(PL.combo.length){ label(fmt(cs)+(n>1?'  ×  '+Math.min(NMAX,PL.combo.length):''),MX,358,n>=5?'#FF8A1F':n>1?LIME:'#fff',46);
-      if(!PL.air&&!PL.grind){ var bw=280*Math.max(0,PL.cw)/WIN; cx.fillStyle='rgba(8,9,13,.7)'; rr(cx,MX-144,374,288,16,8); cx.fill(); cx.fillStyle=PL.man?CYAN:'#FFF04D'; rr(cx,MX-140,378,Math.max(8,bw),8,4); cx.fill(); } } }
+      if(!PL.air&&!PL.grind){ var bw=280*Math.max(0,PL.cw)/WIN; cx.fillStyle='rgba(8,9,13,.7)'; rr(cx,MX-144,374,288,16,8); cx.fill(); cx.fillStyle=PL.man?CYAN:'#FFF04D'; rr(cx,MX-140,378,Math.max(8,bw),8,4); cx.fill(); if(!PL.man) label('HOLD ↓ = MANUAL',MX,420,CYAN,24,'center','800 24px Inter, sans-serif'); } } }
   floats.forEach(function(q){ var yy=Math.max(150,q.y-q.t*46); cx.globalAlpha=Math.min(1,(1.3-q.t)*3); label(q.a,q.x,yy,q.col,q.size,q.left?'left':'center','',q.left?W-q.x-30:0); if(q.b) label(q.b,q.x,yy+44,'#FFF04D',40,q.left?'left':'center'); cx.globalAlpha=1; });
   // S-K-A-T-E letters (top left)
   for(i=0;i<WORD.length;i++){ var got=PL.word||i<S.letters; cx.fillStyle='rgba(8,9,13,.8)'; rr(cx,16+i*56,16,48,58,10); cx.fill(); if(got){ cx.lineWidth=3; cx.strokeStyle=i%2?LIME:PINK; cx.stroke(); }
