@@ -464,7 +464,7 @@ details summary{cursor:pointer;color:var(--blue2);font-size:13px;margin-top:8px}
 .showid .tt{font-size:clamp(16px,2.2vw,26px);margin-top:1.4vh;opacity:.85}
 .dans{max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 tr.dcalc td{padding-top:0;border-top:0}tr.dcalc td+td{max-width:0}.dcw{display:flex;flex-wrap:wrap;gap:4px 6px;align-items:baseline;font-size:12.5px;margin:0 0 4px}
-.dcw b{font-size:11.5px;font-weight:600;color:var(--mut,#5b6675);margin-right:2px}.dcw code{font:12.5px/1.35 ui-monospace,Consolas,monospace;background:var(--surf2,#f1f4f8);border:1px solid var(--line,#dde3ea);border-radius:4px;padding:1px 6px;white-space:nowrap}
+.dcw code.old{opacity:.55}.dcw b{font-size:11.5px;font-weight:600;color:var(--mut,#5b6675);margin-right:2px}.dcw code{font:12.5px/1.35 ui-monospace,Consolas,monospace;background:var(--surf2,#f1f4f8);border:1px solid var(--line,#dde3ea);border-radius:4px;padding:1px 6px;white-space:nowrap}
 .dact .btn{margin-right:6px}
 .rtg{margin-top:4px;font-size:12.5px;line-height:1.45}
 .rtg .nm{font-size:12.5px}
@@ -3662,6 +3662,16 @@ addEventListener('keydown',e=>{ if(e.key==='Escape'&&!$('#qvVeil').hidden) qvClo
 const DANS={}, DANS_BUSY={};
 /* the student's basic calculator work, per question: its own column, read only for the student whose drawer is open */
 const DCALC={}, DCALC_BUSY={};
+/* Desmos keeps expressions as LaTeX: show them the way a student reads them (y = 2x + 3, (3)/(4), √(x), x²) */
+function dzText(t){ let s=String(t||''); const sup={'0':'⁰','1':'¹','2':'²','3':'³','4':'⁴','5':'⁵','6':'⁶','7':'⁷','8':'⁸','9':'⁹'};
+  s=s.replace(/\\left|\\right/g,'').replace(/\\operatorname\{([^{}]*)\}/g,'$1');
+  s=s.replace(/_\{([^{}]*)\}/g,'$1').replace(/_(\w)/g,'$1');
+  const pq=x=>/^[\w.]+$/.test(x)?x:'('+x+')';
+  for(let k=0;k<6;k++) s=s.replace(/\\frac\{([^{}]*)\}\{([^{}]*)\}/g,(m,a,b)=>{ const f=pq(a)+'/'+pq(b); return /^[\w.]+\/[\w.]+$/.test(f)?'('+f+')':f; }).replace(/\\sqrt\{([^{}]*)\}/g,'√($1)').replace(/\\sqrt\[([^\]]*)\]\{([^{}]*)\}/g,'$1√($2)');
+  s=s.replace(/\^\{(\d)\}|\^(\d)/g,(m,a,b)=>sup[a||b]).replace(/\^\{([^{}]*)\}/g,(m,a)=>'^'+pq(a));
+  const W={cdot:'·',times:'×',div:'÷',le:'≤',ge:'≥',ne:'≠',pi:'π',theta:'θ',sim:'~',infty:'∞',pm:'±',degree:'°',lt:'<',gt:'>'};
+  s=s.replace(/\\([a-zA-Z]+)/g,(m,w)=>W[w]||w).replace(/\\ /g,' ').replace(/[{}]/g,'');
+  return s.replace(/\s*([=<>≤≥+~])\s*/g,' $1 ').replace(/\s+/g,' ').trim(); }
 function drawerCalc(s){ const c=DCALC[s.key]; if(c&&c.t>=(s.saved||0)) return c.c;
   if(!DCALC_BUSY[s.key]&&!(c&&c.old)){ DCALC_BUSY[s.key]=1;
     call('stcCalc',{key:s.key,archive:arc},60000).then(r=>{ DCALC[s.key]={t:s.saved||0,c:r&&r.calc||{}}; if(openKey===s.key) openDrawer(s.key,true); })
@@ -3689,7 +3699,7 @@ function openDrawer(key,quiet){ const s=DATA&&DATA.students.find(x=>x.key===key)
     <table class="t"><tr><th>#</th><th>Result</th><th>Their answer</th><th>TEKS</th><th>Time</th><th title="Visits">Vis.</th><th title="Times they changed the answer">Chg.</th></tr>${s.q.map((q,i)=>{ const qi=qinfo(s,i), [pts,mx,ms,vis,ch,fl]=q;
       const r=q[9]?'To score':pts==null?(vis?'Blank':'Not seen'):pts>=mx?'Correct':pts>0?`Partly (${pts}/${mx})`:'Incorrect';
       const at=ans&&ans[i]?drawerAnsText(its&&its[i],ans[i]):'', aCell=at?`<td class="dans" title="${esc(at)}">${esc(at)}</td>`:`<td class="rs">${pts==null&&!q[9]?'':ans===null&&!arc?'…':'–'}</td>`;
-      return `<tr><td><button class="nm" data-dsee="${i}" title="See question ${i+1}">${i+1}</button>${fl?' ⚑':''}</td><td style="white-space:nowrap"><span class="cell ${q[9]?'wr':pts==null?(vis?'bl':'un'):pts>=mx?'ok':pts>0?'part':'no'}" style="display:inline-grid;width:14px;height:12px;vertical-align:-2px;margin-right:4px"></span>${r}</td>${aCell}<td class="rs">${esc(qi.teks)}</td><td class="n">${ms?fmtMs(ms):'–'}</td><td class="n">${vis}</td><td class="n">${ch}</td></tr>${(L=>L&&L.length?`<tr class="dcalc"><td></td><td colspan="6"><div class="dcw" title="What they worked out on the basic calculator on this question"><b>Calculator</b>${L.map(t=>`<code>${esc(t)}</code>`).join('')}</div></td></tr>`:'')(cw[i+1])}`; }).join('')}</table>`;
+      return `<tr><td><button class="nm" data-dsee="${i}" title="See question ${i+1}">${i+1}</button>${fl?' ⚑':''}</td><td style="white-space:nowrap"><span class="cell ${q[9]?'wr':pts==null?(vis?'bl':'un'):pts>=mx?'ok':pts>0?'part':'no'}" style="display:inline-grid;width:14px;height:12px;vertical-align:-2px;margin-right:4px"></span>${r}</td>${aCell}<td class="rs">${esc(qi.teks)}</td><td class="n">${ms?fmtMs(ms):'–'}</td><td class="n">${vis}</td><td class="n">${ch}</td></tr>${(L=>L&&L.length?`<tr class="dcalc"><td></td><td colspan="6"><div class="dcw" title="What they worked out on the basic calculator on this question"><b>Calculator</b>${L.map(t=>`<code>${esc(t)}</code>`).join('')}</div></td></tr>`:'')(cw[i+1])}${(L=>L&&L.length?`<tr class="dcalc"><td></td><td colspan="6"><div class="dcw" title="What was on their Desmos calculator while they were on this question (faded = already there from an earlier question)"><b>Desmos</b>${L.map(t=>t[0]==='~'?`<code class="old">${esc(dzText(t.slice(1)))}</code>`:`<code>${esc(dzText(t))}</code>`).join('')}</div></td></tr>`:'')(cw.d&&cw.d[i+1])}`; }).join('')}</table>`;
   if($('#dReport')) $('#dReport').onclick=()=>printReports([s]);
   $('#dBody').querySelectorAll('[data-dsee]').forEach(b=>b.onclick=()=>qvShow(s.test,+b.dataset.dsee));
   $('#drawer').hidden=false; if(!quiet) $('#dClose').focus(); }

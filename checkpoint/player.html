@@ -2555,7 +2555,7 @@ function clockStop(){ if(ACT.cur!=null&&ACT.since!=null){ ACT.items[ACT.cur].ms+
 function clockStart(){ if(ACT.cur!=null&&!ACT.paused&&!document.hidden&&ACT.since==null) ACT.since=Date.now(); }
 /* calculator work: every calculation on the basic calculator, kept per question so the teacher can see it (dashboard › student).
    CW.by = {question n: ["12 × 3 = 36", ...]}; CW.tok = the calculation being typed now, CW.n = the question it was started on */
-var CW={by:{}, tok:[], n:null, entry:false, rev:0};
+var CW={by:{}, dz:{}, tok:[], n:null, entry:false, rev:0};   // dz = {question n: Desmos expressions}; '~' in front = it was already there from an earlier question
 const cwIsNum=t=>/^[-√0-9.E]/.test(t);
 function cwTok(t,num){ if(CW.n==null) CW.n=ACT.cur; const L=CW.tok, last=L[L.length-1];
   if(num&&L.length&&(CW.entry||cwIsNum(last))) L[L.length-1]=t; else L.push(t); CW.entry=!!num; }
@@ -2572,7 +2572,7 @@ function cwAfter(k,pre){ if(pre.err&&k!=='ON/C') return; const L=CW.tok, hasOp=L
   else if(k==='MRC'){ if(pre.last!=='MRC'){ cwTok(BC.d,true); CW.entry=false; } }
   else if(k==='ON/C'){ if(pre.last==='ON/C'||pre.fresh||pre.err){ if(L.length>1) cwEnd('(cleared)'); else { CW.tok=[]; CW.n=null; CW.entry=false; } }
     else if(L.length&&cwIsNum(L[L.length-1])){ L.pop(); CW.entry=false; } } }
-function actEnter(n){ clockStop(); if(CW.tok.length&&CW.n!==n) cwEnd('…'); if(ACT.cur!=null&&ACT.cur!==n) logEv('leave'); ACT.cur=n; if(n!=null){ ACT.items[n].visits++; logEv('enter'); } clockStart(); }
+function actEnter(n){ clockStop(); if(CW.tok.length&&CW.n!==n) cwEnd('…'); if(window.dzLeave) dzLeave(n); if(ACT.cur!=null&&ACT.cur!==n) logEv('leave'); ACT.cur=n; if(n!=null){ ACT.items[n].visits++; logEv('enter'); } clockStart(); }
 function actLeaveAll(){ clockStop(); if(ACT.cur!=null) logEv('leave'); ACT.cur=null; }
 function actTool(name){ logEv('tool',name); if(ACT.cur!=null){ const t=ACT.items[ACT.cur].tools; t[name]=(t[name]||0)+1; } }
 function actAnswerCheck(it){ const s=JSON.stringify(S.answers[it.n]??null); if(s===ACT.lastAns[it.n]) return;
@@ -2596,11 +2596,11 @@ function sessionExport(){ clockStop(); const out={
   clockStart(); return out; }
 /* everything needed to put a student back where they were (refresh, sleep, sign in again) */
 function sessionState(){ clockStop(); const st={v:1, rev:Date.now(), i:S.i, answers:S.answers, flags:S.flags, sticky:S.sticky, notes:S.notes, gd:S.gd,
-  submitted:!!S.submitted, submittedAt:S.submittedAt||null, calc:CW.by,
+  submitted:!!S.submitted, submittedAt:S.submittedAt||null, calc:Object.assign({},CW.by,{d:CW.dz}),
   act:{elapsedMs:now(), away:ACT.away, rc:ACT.rc, awayMs:ACT.awayMs+(ACT.awaySince?Date.now()-ACT.awaySince:0), items:ACT.items}}; clockStart(); return st; }
 function sessionRestore(st,events){ if(!st) return;
   S.answers=st.answers||{}; S.flags=st.flags||{}; S.sticky=st.sticky||{}; S.notes=st.notes||{}; S.gd=st.gd||{};
-  CW.by=st.calc&&typeof st.calc==='object'?st.calc:{}; CW.tok=[]; CW.n=null; CW.rev++;
+  { const c=st.calc&&typeof st.calc==='object'?Object.assign({},st.calc):{}; CW.dz=c.d&&typeof c.d==='object'?c.d:{}; delete c.d; CW.by=c; } CW.tok=[]; CW.n=null; CW.rev++;
   if(st.act){ ACT.t0=Date.now()-(st.act.elapsedMs||0); ACT.away=st.act.away||0; ACT.rc=st.act.rc||0; ACT.awayMs=st.act.awayMs||0;
     ITEMS.forEach(it=>{ const r=st.act.items&&st.act.items[it.n]; if(r) Object.assign(ACT.items[it.n],r); }); }
   ITEMS.forEach(it=>{ ACT.lastAns[it.n]=JSON.stringify(S.answers[it.n]??null); });
@@ -2609,7 +2609,7 @@ function sessionRestore(st,events){ if(!st) return;
   S.i=Math.max(0,Math.min(ITEMS.length-1,st.i|0)); }
 window.SpitzSession={export:sessionExport, state:sessionState, dialog:(o)=>dialog(o), toast:(t)=>toast(t), teacherHold:k=>teacherHold(k), get hold(){ return hold; },
   get submitted(){ return !!S.submitted; }, get started(){ return !!S.started; }, get item(){ return S.i+1; },
-  answeredCount:()=>ITEMS.filter(answered).length, calcWork:()=>CW.by, get calcRev(){ return CW.rev; }, calcEnd:()=>{ if(CW.tok.length) cwEnd('…'); }};
+  answeredCount:()=>ITEMS.filter(answered).length, calcWork:()=>Object.assign({},CW.by,{d:CW.dz}), get calcRev(){ return CW.rev; }, calcEnd:()=>{ if(CW.tok.length) cwEnd('…'); if(DZ.t) dzSnap(); }};
 
 /* ================= testing-site chrome ================= */
 const host=$('#itemHost'), page=$('#page'), wrap=$('#itemwrap'), app=$('#app');
@@ -2829,7 +2829,7 @@ Object.keys(panels).forEach(k=>{
 });
 
 /* calculator: chooser, then Desmos through the Desmos API set up like the Texas STAAR version (no green banner) */
-const USE_DESMOS_API=false;  // true = Desmos API (needs a production key; a trial key shows a watermark). false = Texas testing page with the banner cropped off.
+const USE_DESMOS_API=true;   // true = Desmos API (the key below is on Desmos's free "personal or school projects" plan since 11/9; this also lets the teacher see each question's expressions). false = Texas testing page with the banner cropped off.
 const DESMOS_KEY='8f04c5aafb7b4926872111685875396b';   // Mr. Spitz's Desmos API key
 let DESMOS_BANNER_PX=50;     // height of the green "Texas Version" banner to crop off (teacher fine-tune: click the calculator title bar, then Ctrl+Alt+Up/Down)
 try{ const v=localStorage.getItem('spitzDesmosCrop'); if(v!==null&&!isNaN(+v)) DESMOS_BANNER_PX=+v; }catch(e){}
@@ -2850,7 +2850,7 @@ document.addEventListener('keydown',e=>{ if(!(e.ctrlKey&&e.altKey)||$('#calcPane
 function startDesmos(){
   if(!USE_DESMOS_API){ useFrameFallback(); return; }
   if(desmosCalc||desmosFailed){ return; }
-  const make=()=>{ try{ desmosCalc=Desmos.GraphingCalculator($('#desmosHost'),DESMOS_TX); window.__desmos=desmosCalc; }catch(e){ useFrameFallback(); } };
+  const make=()=>{ try{ desmosCalc=Desmos.GraphingCalculator($('#desmosHost'),DESMOS_TX); window.__desmos=desmosCalc; dzWatch(); }catch(e){ useFrameFallback(); } };
   if(window.Desmos){ make(); return; }
   if(desmosLoading) return; desmosLoading=true;
   const s=document.createElement('script'); s.src='https://www.desmos.com/api/v1.12/calculator.js?apiKey='+DESMOS_KEY;
@@ -2859,6 +2859,23 @@ function startDesmos(){
   document.head.appendChild(s);
   setTimeout(()=>{ if(!desmosCalc&&!desmosFailed) useFrameFallback(); },12000);
 }
+/* the teacher's copy of the Desmos work: what is on the graphing calculator while the student is on a question (one calculator for the
+   whole test, like STAAR). Each change is noted on the question showing then; expressions already there when they came to the question get '~'. */
+const DZ={base:{}, n:null, t:null, last:''};
+function dzList(){ let st; try{ st=desmosCalc.getState(); }catch(e){ return []; } const out=[];
+  ((st&&st.expressions&&st.expressions.list)||[]).forEach(e=>{
+    if(e.type==='expression'&&e.latex&&String(e.latex).trim()) out.push(String(e.latex).slice(0,300));
+    else if(e.type==='table'&&Array.isArray(e.columns)){ const t=e.columns.filter(c=>c&&c.latex).map(c=>c.latex+': '+(c.values||[]).filter(v=>v!=='').slice(0,15).join(', ')).join(' | '); if(t) out.push(('table '+t).slice(0,300)); } });
+  return out.slice(0,30); }
+function dzSnap(){ clearTimeout(DZ.t); DZ.t=null; const n=DZ.n; if(n==null||!desmosCalc) return; const L=dzList(), base=DZ.base;
+  const v=L.map(l=>base[l]?'~'+l:l), key=JSON.stringify(v); if(key===DZ.last) return; DZ.last=key;
+  if(v.some(x=>x[0]!=='~')) CW.dz[n]=v; else delete CW.dz[n];   // nothing new on this question: nothing to show
+  CW.rev++; if(window.__spitzChanged) window.__spitzChanged(); }
+function dzBase(n){ DZ.n=n; DZ.base={}; DZ.last=CW.dz[n]?JSON.stringify(CW.dz[n]):''; if(!desmosCalc) return;
+  const prev=CW.dz[n]?new Set(CW.dz[n].filter(x=>x[0]==='~').map(x=>x.slice(1))):null;   // back on a question: keep what was 'already there' the first time
+  dzList().forEach(l=>{ if(!prev||prev.has(l)||!CW.dz[n].includes(l)) DZ.base[l]=1; }); }
+function dzWatch(){ dzBase(ACT.cur); try{ desmosCalc.observeEvent('change',()=>{ if(DZ.n!==ACT.cur) dzBase(ACT.cur); clearTimeout(DZ.t); DZ.t=setTimeout(dzSnap,1200); }); }catch(e){} }
+window.dzLeave=n=>{ if(!desmosCalc) return; if(DZ.t) dzSnap(); dzBase(n); };
 function desmosResize(){ if(desmosCalc&&desmosCalc.resize) try{ desmosCalc.resize(); }catch(e){} }
 if(window.ResizeObserver) new ResizeObserver(desmosResize).observe($('#desmosHost'));
 function showChooser(){ $('#chooser').hidden=false; $('#desmosFrame').hidden=true; $('#sciFrame').hidden=true; $('#desmosHost').hidden=true; $('#calcTtl').textContent='Choose A Calculator'; $('#calcSwitch').hidden=true; $('#calcExpand').hidden=true; $('#tiNote').hidden=true; }
