@@ -14,7 +14,7 @@
 (function(){
 'use strict';
 
-var GAMES={                     /* id: [number in the code, display name, how it is ranked] — never renumber */
+var GAMES={                     /* id: [number in the code, display name, how it is ranked, optional score unit] — never renumber */
   splat_range:[1,'Splat Range','points'],
   star_swarm:[2,'Star Swarm','points'],
   shift_racer:[3,'Shift Racer','points'],
@@ -32,13 +32,14 @@ var GAMES={                     /* id: [number in the code, display name, how it
   paint_royale:[15,'Paint Royale','points'],
   snake_arena:[16,'Snake Arena','points'],
   brawl_buds_v1:[17,'Brawl Buds (classic)','versus'],   /* codes from before 2026-11-02, when Brawl Buds scored Buds vs Rivals */
-  pinball:[18,'Pinball','points'],
+  pinball_v1:[18,'Pinball (classic)','points'],   /* codes from before 2026-11-07: points capped at 1,048,575 and top runs hit it */
   hill_climb:[19,'Hill Climb','points'],
   fit_check:[20,'Fit Check','points'],
   football_buds:[21,'Football Buds','points'],   /* points since 2026-10-30 (id 5 was the Buds vs Rivals score) */
   hoop_buds:[22,'Hoop Buds','points'],   /* points since 2026-10-30 (id 6 was the Buds vs Rivals score) */
   rocket_buds:[23,'Rocket Buds','points'],   /* points since 2026-11-02 (id 14 was the Buds vs Rivals score) */
-  brawl_buds:[24,'Brawl Buds','points']   /* points since 2026-11-02 (id 17 was the Buds vs Rivals score) */
+  brawl_buds:[24,'Brawl Buds','points'],   /* points since 2026-11-02 (id 17 was the Buds vs Rivals score) */
+  pinball:[25,'Pinball','points',10]   /* since 2026-11-07 the code holds the score in tens (a 4th entry = score unit), so runs up to 10,485,750 fit (id 18 capped at 1,048,575) */
 };
 /* question sets in the order questions.js lists them; 0 means the game's own questions. Add new sets at the end.
    New codes (layout C, since Oct 21 2026) have 6 bits for the set and 5 for topics, so up to 63 sets with up to 5 topics each fit. */
@@ -128,7 +129,7 @@ function boost(v,pct,up){ v=+v||0; return v>0&&pct? (up?Math.ceil:Math.round)(v*
 var RUDE=/FUCK|FUK|FCK|CUNT|SHT|ASS|FAG|CUM|DCK|DICK|PUSS|PNS|PENS|TWAT|SLUT|WHR|NGA|NGR|NAZ|KKK|RAPE|SEX|SXY|XXX|TTS|TTY|CLT|DYKE|GAY|HTLR|PUTA|CRAP|DAMN|HELL|BUTT|PEE|POOP/;
 /* salts 12–15 (4–7 in layout B) mark a code that earned the Suggested skill bonus (the score in it is already boosted) */
 function make(gameId,S){ var g=GAMES[gameId]; if(!g) throw new Error('Unknown game '+gameId); var L=linkSet(), score, pct=g[2]==='strokes'?0:bonusPct(), b=pct?12:8;
-  if(g[2]==='versus') score=(clamp(boost(S.buds,pct,true),10)<<10)|clamp(S.rivals,10); else if(g[2]==='strokes') score=S.strokes; else score=boost(S.score,pct);
+  if(g[2]==='versus') score=(clamp(boost(S.buds,pct,true),10)<<10)|clamp(S.rivals,10); else if(g[2]==='strokes') score=S.strokes; else score=Math.round(boost(S.score,pct)/(g[3]||1));
   var f={ game:g[0], set:L.set, topics:L.topics, len:S.len||0, day:today()%(1<<LAYOUT_C.day), score:score, correct:S.correct, answered:S.answered }, code;
   for(var salt=b;salt<b+4;salt++){ code=encode(f,S.name,salt); if(!RUDE.test(code.replace(/-/g,''))) break; }
   return code; }
@@ -153,7 +154,7 @@ function read(code,name,any){ var c=String(code||'').toUpperCase().replace(/[^A-
   var d=f.day, wrap=1<<W.day, now=today(); while(d+wrap<=now) d+=wrap; r.date=new Date(BASE+d*864e5); r.day=d;
   var old=set&&TOPIC_BEFORE[set]; if(old&&r.date<new Date(old.until+'T00:00:00Z')) r.topics=f.topics? old.names.filter(function(n,i){ return f.topics&(1<<i); }) : old.names.filter(function(n,i){ return !!old.topics[i]; });
   if(g[2]==='versus'){ r.buds=f.score>>10; r.rivals=f.score&1023; r.score=r.buds-r.rivals; r.display=r.buds+' – '+r.rivals; }
-  else { r.score=f.score; r.display=f.score.toLocaleString(); }
+  else { r.score=f.score*(g[3]||1); r.display=r.score.toLocaleString(); }
   return r; }
 
 /* ---------- end screen ---------- */
