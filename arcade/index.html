@@ -399,7 +399,8 @@ function warm(){ var h=$('play').href, c=navigator.connection; if(!h||/#$/.test(
     var l=document.createElement('link'); l.rel='prefetch'; l.href=u; document.head.appendChild(l); }); }
 function open(id){ var c=cardOf(id); st.game=id; save(); render(); warm(); sheet.classList.remove('coin','out');
   if(!sheet.open){ if(sheet.showModal) sheet.showModal(); else sheet.setAttribute('open',''); glide(c); }
-  var on=document.querySelector('.row.on'); if(on) on.scrollIntoView({block:'nearest'}); $('play').focus({preventScroll:true,focusVisible:false}); }
+  /* the list always opens at the top so the suggested sets show first (the picked set is named beside Press Start) */
+  $('qlist').scrollTop=0; $('play').focus({preventScroll:true,focusVisible:false}); }
 function shut(){ var c=cardOf(st.game);
   function done(){ sheet.classList.remove('out'); if(sheet.close) sheet.close(); else sheet.removeAttribute('open'); if(c) c.focus({preventScroll:true,focusVisible:false}); }
   if(RM.matches||!sheet.animate){ done(); return; }
