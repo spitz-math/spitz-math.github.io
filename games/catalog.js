@@ -172,9 +172,9 @@ window.SpitzGames=[
      for NEW_DAYS days, and the game sorts up with the new ones. at = when it went live (UTC). */
   var UPDATED={ football_buds:{ at:'2026-10-30T15:00', what:'New: points & All-Pro', more:'Now with a real points score, All-Pro mode and 3 challenges every game' },
     hoop_buds:{ at:'2026-10-30T16:00', what:'New: points & All-Pro', more:'Now with a real points score, All-Pro mode and 3 challenges every game' },
-    pinball:{ at:'2026-11-07T00:00', what:'New: All-Pro & challenges', more:'All-Pro mode, 3 challenges every game and double points in the last 30 seconds' },
-    shift_racer:{ at:'2026-11-07T00:00', what:'New: police chases', more:'Outrun the police, plus All-Pro mode, 3 challenges and double points in the last 30 seconds' },
-    skate:{ at:'2026-11-07T00:00', what:'New: special tricks', more:'Fill the Special meter for triple-point tricks, plus All-Pro mode, 3 challenges and a double-points finish' } };
+    pinball:{ at:'2026-11-09T18:15', what:'New: All-Pro & challenges', more:'All-Pro mode, 3 challenges every game and double points in the last 30 seconds' },
+    shift_racer:{ at:'2026-11-09T18:15', what:'New: police chases', more:'Outrun the police, plus All-Pro mode, 3 challenges and double points in the last 30 seconds' },
+    skate:{ at:'2026-11-09T18:15', what:'New: special tricks', more:'Fill the Special meter for triple-point tricks, plus All-Pro mode, 3 challenges and a double-points finish' } };
   var now=Date.now(), G=window.SpitzGames;
   window.SpitzLocked=Object.keys(UNLOCK).filter(function(id){ return !UNLOCK[id]||Date.parse(UNLOCK[id]+'Z')>now; });
   Object.keys(UNLOCK).forEach(function(id){ if(UNLOCK[id]) ADDED[id]=UNLOCK[id]; });
