@@ -10,17 +10,14 @@
  "suggest": {
   "sets": [
    {
-    "id": "hoy"
+    "id": "slide"
    },
    {
-    "id": "evalf"
-   },
-   {
-    "id": "shift"
+    "id": "solve"
    }
   ],
   "note": ""
  },
  "bonus": 25,
- "updated": "2026-11-04T19:33:47.381Z"
+ "updated": "2026-11-09T18:13:10.287Z"
 }

@@ -1,9 +1,17 @@
 {
- "updated": "2026-11-04T19:19:40.868Z",
+ "updated": "2026-11-09T18:12:30.822Z",
  "games": {
   "splat_range": {
    "name": "Splat Range",
    "top": [
+    {
+     "name": "Izael F",
+     "score": "89,543",
+     "acc": 96,
+     "set": "HOY & VUX · Find the slope",
+     "date": "2026-11-06",
+     "bonus": 1
+    },
     {
      "name": "Sebastian E",
      "score": "65,480",
@@ -61,10 +69,10 @@
    "top": [
     {
      "name": "Saulo G",
-     "score": "879,475",
-     "acc": 100,
-     "set": "Slide and Slice · Slide",
-     "date": "2026-10-26",
+     "score": "1,048,575",
+     "acc": 96,
+     "set": "HOY & VUX · Find the slope",
+     "date": "2026-11-06",
      "bonus": 1
     },
     {
@@ -137,11 +145,11 @@
    "name": "Shift Racer",
    "top": [
     {
-     "name": "Tanix.b",
-     "score": "35,392",
-     "acc": 97,
+     "name": "tanix.b",
+     "score": "35,460",
+     "acc": 96,
      "set": "Multiplication facts",
-     "date": "2026-10-24"
+     "date": "2026-11-05"
     },
     {
      "name": "Juan M",
@@ -366,6 +374,14 @@
    "name": "Dash",
    "top": [
     {
+     "name": "Saulo G",
+     "score": "29,175",
+     "acc": 100,
+     "set": "HOY & VUX · Find the slope",
+     "date": "2026-11-06",
+     "bonus": 1
+    },
+    {
      "name": "Saul G",
      "score": "27,825",
      "acc": 100,
@@ -387,6 +403,14 @@
      "acc": 95,
      "set": "Slide and Slice · Slide",
      "date": "2026-10-26",
+     "bonus": 1
+    },
+    {
+     "name": "Izael F",
+     "score": "19,525",
+     "acc": 100,
+     "set": "HOY & VUX · Find the slope",
+     "date": "2026-11-06",
      "bonus": 1
     },
     {
@@ -425,26 +449,20 @@
      "acc": 88,
      "set": "Standard form",
      "date": "2026-10-16"
-    },
-    {
-     "name": "Ann A",
-     "score": "4,870",
-     "acc": 71,
-     "set": "Standard form",
-     "date": "2026-10-16"
-    },
-    {
-     "name": "David.V",
-     "score": "4,740",
-     "acc": 79,
-     "set": "Slope-intercept form",
-     "date": "2026-10-23"
     }
    ]
   },
   "skate": {
    "name": "Skate",
    "top": [
+    {
+     "name": "Izael F",
+     "score": "277,155",
+     "acc": 100,
+     "set": "HOY & VUX · Find the slope",
+     "date": "2026-11-06",
+     "bonus": 1
+    },
     {
      "name": "Sylvestre Cantu",
      "score": "121,068",
@@ -474,19 +492,19 @@
    "name": "Mini Golf",
    "top": [
     {
+     "name": "Saulo G",
+     "score": "40,406",
+     "acc": 99,
+     "set": "HOY & VUX · Find the slope",
+     "date": "2026-11-06",
+     "bonus": 1
+    },
+    {
      "name": "Saul G",
      "score": "15,181",
      "acc": 83,
      "set": "HOY & VUX",
      "date": "2026-10-30",
-     "bonus": 1
-    },
-    {
-     "name": "Saulo G",
-     "score": "11,475",
-     "acc": 100,
-     "set": "Slide and Slice · Slide",
-     "date": "2026-10-28",
      "bonus": 1
     },
     {
@@ -593,19 +611,19 @@
    "name": "Brick Breaker",
    "top": [
     {
+     "name": "Saulo G",
+     "score": "460,925",
+     "acc": 98,
+     "set": "HOY & VUX · Find the slope",
+     "date": "2026-11-05",
+     "bonus": 1
+    },
+    {
      "name": "Izael F",
      "score": "388,569",
      "acc": 100,
      "set": "Parallel & perpendicular · Parallel slopes",
      "date": "2026-11-04",
-     "bonus": 1
-    },
-    {
-     "name": "Saulo G",
-     "score": "342,246",
-     "acc": 100,
-     "set": "Parallel & perpendicular · Parallel slopes",
-     "date": "2026-10-30",
      "bonus": 1
     },
     {
@@ -742,11 +760,27 @@
      "bonus": 1
     },
     {
+     "name": "Izael F",
+     "score": "467,188",
+     "acc": 97,
+     "set": "HOY & VUX · Find the slope",
+     "date": "2026-11-06",
+     "bonus": 1
+    },
+    {
      "name": "David.V",
      "score": "401,018",
      "acc": 100,
      "set": "HOY & VUX · Find the slope",
      "date": "2026-10-30",
+     "bonus": 1
+    },
+    {
+     "name": "RAMON CASTILLO",
+     "score": "189,598",
+     "acc": 89,
+     "set": "HOY & VUX · Describe the line",
+     "date": "2026-11-06",
      "bonus": 1
     },
     {
@@ -768,6 +802,14 @@
   "snake_arena": {
    "name": "Snake Arena",
    "top": [
+    {
+     "name": "Saulo G",
+     "score": "71,445",
+     "acc": 95,
+     "set": "HOY & VUX · Find the slope",
+     "date": "2026-11-06",
+     "bonus": 1
+    },
     {
      "name": "Izael F",
      "score": "65,271",
