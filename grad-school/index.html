@@ -219,14 +219,14 @@ function updateEditorStatusControl(){
  $('#task-status').disabled=hasSteps;
  $('#task-submission-field').hidden=!$('#task-submission-required').checked;
 }
-$('#add-step').onclick=()=>{if($('#task-step-editor .step-editor-row').length>=32){alert('Limit of 32 steps per assignment.');return}const row=addEditorStep();row.querySelector('[data-editor-text]').focus();};
+$('#add-step').onclick=()=>{if($$('#task-step-editor .step-editor-row').length>=32){alert('Limit of 32 steps per assignment.');return}const row=addEditorStep();row.querySelector('[data-editor-text]').focus();};
 $('#task-step-editor').addEventListener('click',e=>{
  const button=e.target.closest('[data-remove-step]');if(!button)return;
  button.closest('.step-editor-row').remove();updateEditorStatusControl();
 });
-$('[data-step-template]').forEach(button=>button.addEventListener('click',()=>{
+$$('[data-step-template]').forEach(button=>button.addEventListener('click',()=>{
  const labels=taskTemplates[button.dataset.stepTemplate]||[];
- const existing=$('#task-step-editor .step-editor-row');
+ const existing=$$('#task-step-editor .step-editor-row');
  if(existing.length&& !confirm('Add these steps to your existing checklist?'))return;
  labels.slice(0,Math.max(0,32-existing.length)).forEach(text=>addEditorStep({text,done:false}));
  updateEditorStatusControl();
@@ -292,11 +292,11 @@ function handleStepToggle(e){
  }
  makeChange();
 }
-$('#mission-list,#task-list,#week-list').forEach(el=>{el.addEventListener('click',handleTaskClick);el.addEventListener('change',handleStepToggle)});$('#mission-list').addEventListener('click',e=>{if(e.target.closest('#empty-new'))openTask()});
+$$('#mission-list,#task-list,#week-list').forEach(el=>{el.addEventListener('click',handleTaskClick);el.addEventListener('change',handleStepToggle)});$('#mission-list').addEventListener('click',e=>{if(e.target.closest('#empty-new'))openTask()});
 $('#task-form').addEventListener('submit',e=>{
  e.preventDefault();
  const id=$('#task-id').value||uniqueId(),old=app.tasks.find(x=>x.id===id);
- const checklist=$('#task-step-editor .step-editor-row').map(row=>({id:row.dataset.stepId||uniqueId(),text:row.querySelector('[data-editor-text]').value.trim().slice(0,180),done:row.querySelector('[data-editor-done]').checked})).filter(s=>s.text);
+ const checklist=$$('#task-step-editor .step-editor-row').map(row=>({id:row.dataset.stepId||uniqueId(),text:row.querySelector('[data-editor-text]').value.trim().slice(0,180),done:row.querySelector('[data-editor-done]').checked})).filter(s=>s.text);
  const t={id,course:$('#task-course').value,title:$('#task-title').value.trim(),due:$('#task-due').value,target:$('#task-target').value,status:$('#task-status').value,submission:$('#task-submission').value,notes:$('#task-notes').value.trim(),checklist,submissionRequired:$('#task-submission-required').checked};
  if(!t.title)return;
  if(!t.submissionRequired)t.submission='unconfirmed';
