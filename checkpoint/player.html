@@ -2555,7 +2555,7 @@ function clockStop(){ if(ACT.cur!=null&&ACT.since!=null){ ACT.items[ACT.cur].ms+
 function clockStart(){ if(ACT.cur!=null&&!ACT.paused&&!document.hidden&&ACT.since==null) ACT.since=Date.now(); }
 /* calculator work: every calculation on the basic calculator, kept per question so the teacher can see it (dashboard › student).
    CW.by = {question n: ["12 × 3 = 36", ...]}; CW.tok = the calculation being typed now, CW.n = the question it was started on */
-var CW={by:{}, dz:{}, tok:[], n:null, entry:false, rev:0};   // dz = {question n: what the student put on Desmos on that question}
+var CW={by:{}, dz:{}, dv:{}, tok:[], n:null, entry:false, rev:0};   // dz = {question n: what the student put on Desmos on that question (LaTeX; a table is 'T:'+JSON)}, dv = {n: [xmin,ymin,xmax,ymax] of their graph}
 const cwIsNum=t=>/^[-√0-9.E]/.test(t);
 function cwTok(t,num){ if(CW.n==null) CW.n=ACT.cur; const L=CW.tok, last=L[L.length-1];
   if(num&&L.length&&(CW.entry||cwIsNum(last))) L[L.length-1]=t; else L.push(t); CW.entry=!!num; }
@@ -2596,11 +2596,11 @@ function sessionExport(){ clockStop(); const out={
   clockStart(); return out; }
 /* everything needed to put a student back where they were (refresh, sleep, sign in again) */
 function sessionState(){ clockStop(); const st={v:1, rev:Date.now(), i:S.i, answers:S.answers, flags:S.flags, sticky:S.sticky, notes:S.notes, gd:S.gd,
-  submitted:!!S.submitted, submittedAt:S.submittedAt||null, calc:Object.assign({},CW.by,{d:CW.dz}),
+  submitted:!!S.submitted, submittedAt:S.submittedAt||null, calc:Object.assign({},CW.by,{d:CW.dz,v:CW.dv}),
   act:{elapsedMs:now(), away:ACT.away, rc:ACT.rc, awayMs:ACT.awayMs+(ACT.awaySince?Date.now()-ACT.awaySince:0), items:ACT.items}}; clockStart(); return st; }
 function sessionRestore(st,events){ if(!st) return;
   S.answers=st.answers||{}; S.flags=st.flags||{}; S.sticky=st.sticky||{}; S.notes=st.notes||{}; S.gd=st.gd||{};
-  { const c=st.calc&&typeof st.calc==='object'?Object.assign({},st.calc):{}; CW.dz=c.d&&typeof c.d==='object'?c.d:{}; delete c.d; CW.by=c; } CW.tok=[]; CW.n=null; CW.rev++;
+  { const c=st.calc&&typeof st.calc==='object'?Object.assign({},st.calc):{}; CW.dz=c.d&&typeof c.d==='object'?c.d:{}; CW.dv=c.v&&typeof c.v==='object'?c.v:{}; delete c.d; delete c.v; CW.by=c; } CW.tok=[]; CW.n=null; CW.rev++;
   if(st.act){ ACT.t0=Date.now()-(st.act.elapsedMs||0); ACT.away=st.act.away||0; ACT.rc=st.act.rc||0; ACT.awayMs=st.act.awayMs||0;
     ITEMS.forEach(it=>{ const r=st.act.items&&st.act.items[it.n]; if(r) Object.assign(ACT.items[it.n],r); }); }
   ITEMS.forEach(it=>{ ACT.lastAns[it.n]=JSON.stringify(S.answers[it.n]??null); });
@@ -2609,7 +2609,7 @@ function sessionRestore(st,events){ if(!st) return;
   S.i=Math.max(0,Math.min(ITEMS.length-1,st.i|0)); }
 window.SpitzSession={export:sessionExport, state:sessionState, dialog:(o)=>dialog(o), toast:(t)=>toast(t), teacherHold:k=>teacherHold(k), get hold(){ return hold; },
   get submitted(){ return !!S.submitted; }, get started(){ return !!S.started; }, get item(){ return S.i+1; },
-  answeredCount:()=>ITEMS.filter(answered).length, calcWork:()=>Object.assign({},CW.by,{d:CW.dz}), get calcRev(){ return CW.rev; }, calcEnd:()=>{ if(CW.tok.length) cwEnd('…'); if(DZ.t) dzSnap(); }};
+  answeredCount:()=>ITEMS.filter(answered).length, calcWork:()=>Object.assign({},CW.by,{d:CW.dz,v:CW.dv}), get calcRev(){ return CW.rev; }, calcEnd:()=>{ if(CW.tok.length) cwEnd('…'); if(DZ.t) dzSnap(); }};
 
 /* ================= testing-site chrome ================= */
 const host=$('#itemHost'), page=$('#page'), wrap=$('#itemwrap'), app=$('#app');
@@ -2863,14 +2863,17 @@ function startDesmos(){
    goes back to one. The teacher's copy: what the student puts on the calculator on a question is kept for that question (CW.dz);
    coming back to a question adds to what was kept there before. */
 const DZ={n:null, t:null, prev:[], last:''};
-function dzList(){ let st; try{ st=desmosCalc.getState(); }catch(e){ return []; } const out=[];
+function dzList(){ let st; try{ st=desmosCalc.getState(); }catch(e){ return []; } const out=[], vp=st&&st.graph&&st.graph.viewport;
   ((st&&st.expressions&&st.expressions.list)||[]).forEach(e=>{
     if(e.type==='expression'&&e.latex&&String(e.latex).trim()) out.push(String(e.latex).slice(0,300));
-    else if(e.type==='table'&&Array.isArray(e.columns)){ const t=e.columns.filter(c=>c&&c.latex).map(c=>c.latex+': '+(c.values||[]).filter(v=>v!=='').slice(0,15).join(', ')).join(' | '); if(t) out.push(('table '+t).slice(0,300)); } });
+    else if(e.type==='table'&&Array.isArray(e.columns)){ const c=e.columns.filter(c=>c&&c.latex).slice(0,6).map(c=>({l:String(c.latex).slice(0,40),v:(c.values||[]).slice(0,25).map(v=>String(v).slice(0,20))}));
+      while(c.length&&c.every(x=>x.v.length&&x.v[x.v.length-1]==='')) c.forEach(x=>x.v.pop());   // the empty row Desmos keeps at the bottom
+      if(c.length) out.push('T:'+JSON.stringify(c)); } });
+  DZ.vp=vp&&[vp.xmin,vp.ymin,vp.xmax,vp.ymax].every(isFinite)?[vp.xmin,vp.ymin,vp.xmax,vp.ymax].map(x=>+(+x).toPrecision(5)):null;
   return out.slice(0,30); }
 function dzSnap(){ clearTimeout(DZ.t); DZ.t=null; const n=DZ.n; if(n==null||!desmosCalc) return;
   const v=[...new Set([...DZ.prev,...dzList()])].slice(-30), key=JSON.stringify(v); if(key===DZ.last||!v.length) return; DZ.last=key;
-  CW.dz[n]=v; CW.rev++; if(window.__spitzChanged) window.__spitzChanged(); }
+  CW.dz[n]=v; if(DZ.vp) CW.dv[n]=DZ.vp; CW.rev++; if(window.__spitzChanged) window.__spitzChanged(); }
 function dzBase(n){ DZ.n=n; DZ.prev=(CW.dz[n]||[]).map(x=>x[0]==='~'?x.slice(1):x); DZ.last=JSON.stringify(CW.dz[n]||null); }
 function dzWatch(){ dzBase(ACT.cur); try{ desmosCalc.observeEvent('change',()=>{ if(DZ.n!==ACT.cur) return; clearTimeout(DZ.t); DZ.t=setTimeout(dzSnap,1200); }); }catch(e){} }
 window.dzLeave=n=>{ if(n===ACT.cur) return;
