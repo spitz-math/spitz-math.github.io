@@ -12,6 +12,12 @@ The client reads `data,revision` for the signed-in user. On first save it **inse
 
 Task data shape: `{ version:4, courses:[{id,name,description,instructor}], tasks:[{id,course,title,due,target,status,submission,notes,checklist,submissionRequired}] }`. `due` is a verified Brightspace date or empty; `target` is a personal work target. Values for `status`: `todo|inprogress|done`; for `submission`: `unconfirmed|submitted`. Never equate `done` with `submitted`. Empty due date is **unverified** for a Brightspace assignment; preparation tasks with `submissionRequired:false` can have no official deadline.
 
+### Academic week schedule
+- The **academic week is Wednesday–Tuesday**, not a rolling seven-day span. Both the current-week progress ring and calendar strip use these boundaries. The Week view supports previous/current/next week navigation, including planning the next course week before it starts.
+- Optional `weekCalendar:{anchorStart:"YYYY-MM-DD",anchorNumber:integer}` in private `grad_profiles.data` maps a dated Wednesday onto an academic week number. For this user's fall 2026 module, private settings anchor **Week 4 to Wednesday 2026-11-11**, which makes **Week 3 = 2026-11-04–10**, **Week 4 = 2026-11-11–17**, **Week 5 = 2026-11-18–24**. This anchor must never be hardcoded into the public site.
+- Date math is calendar-day based to avoid DST time-of-day drift. Legacy data without `weekCalendar` still displays Wednesday–Tuesday and generic "COURSE WEEK" labels. This new field is normalized on load and preserved in backups.
+- Do not shift individual assignment deadlines: terms/week boundaries and verified Brightspace dates are independent.
+
 ### Checklists
 - `checklist`: optional ordered array of up to 32 objects `{id:string,text:string,done:boolean}` (labels capped at 180 characters). Existing version 4 records and backups without the field normalize to `[]`; import/export round-trips checklists.
 - Users can add/edit/delete steps in the private assignment editor, apply a paper/video/discussion/reading template, and tick steps directly within expandable rows on the Mission, Assignments, and Week views. Toggling a step saves using the existing optimistic `revision` guard.
