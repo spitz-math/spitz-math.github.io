@@ -2555,7 +2555,7 @@ function clockStop(){ if(ACT.cur!=null&&ACT.since!=null){ ACT.items[ACT.cur].ms+
 function clockStart(){ if(ACT.cur!=null&&!ACT.paused&&!document.hidden&&ACT.since==null) ACT.since=Date.now(); }
 /* calculator work: every calculation on the basic calculator, kept per question so the teacher can see it (dashboard › student).
    CW.by = {question n: ["12 × 3 = 36", ...]}; CW.tok = the calculation being typed now, CW.n = the question it was started on */
-var CW={by:{}, dz:{}, tok:[], n:null, entry:false, rev:0};   // dz = {question n: Desmos expressions}; '~' in front = it was already there from an earlier question
+var CW={by:{}, dz:{}, tok:[], n:null, entry:false, rev:0};   // dz = {question n: what the student put on Desmos on that question}
 const cwIsNum=t=>/^[-√0-9.E]/.test(t);
 function cwTok(t,num){ if(CW.n==null) CW.n=ACT.cur; const L=CW.tok, last=L[L.length-1];
   if(num&&L.length&&(CW.entry||cwIsNum(last))) L[L.length-1]=t; else L.push(t); CW.entry=!!num; }
@@ -2859,23 +2859,23 @@ function startDesmos(){
   document.head.appendChild(s);
   setTimeout(()=>{ if(!desmosCalc&&!desmosFailed) useFrameFallback(); },12000);
 }
-/* the teacher's copy of the Desmos work: what is on the graphing calculator while the student is on a question (one calculator for the
-   whole test, like STAAR). Each change is noted on the question showing then; expressions already there when they came to the question get '~'. */
-const DZ={base:{}, n:null, t:null, last:''};
+/* Desmos on each question, like STAAR (Kody checked Cambium 11/9): every question starts with a blank calculator, also when the student
+   goes back to one. The teacher's copy: what the student puts on the calculator on a question is kept for that question (CW.dz);
+   coming back to a question adds to what was kept there before. */
+const DZ={n:null, t:null, prev:[], last:''};
 function dzList(){ let st; try{ st=desmosCalc.getState(); }catch(e){ return []; } const out=[];
   ((st&&st.expressions&&st.expressions.list)||[]).forEach(e=>{
     if(e.type==='expression'&&e.latex&&String(e.latex).trim()) out.push(String(e.latex).slice(0,300));
     else if(e.type==='table'&&Array.isArray(e.columns)){ const t=e.columns.filter(c=>c&&c.latex).map(c=>c.latex+': '+(c.values||[]).filter(v=>v!=='').slice(0,15).join(', ')).join(' | '); if(t) out.push(('table '+t).slice(0,300)); } });
   return out.slice(0,30); }
-function dzSnap(){ clearTimeout(DZ.t); DZ.t=null; const n=DZ.n; if(n==null||!desmosCalc) return; const L=dzList(), base=DZ.base;
-  const v=L.map(l=>base[l]?'~'+l:l), key=JSON.stringify(v); if(key===DZ.last) return; DZ.last=key;
-  if(v.some(x=>x[0]!=='~')) CW.dz[n]=v; else delete CW.dz[n];   // nothing new on this question: nothing to show
-  CW.rev++; if(window.__spitzChanged) window.__spitzChanged(); }
-function dzBase(n){ DZ.n=n; DZ.base={}; DZ.last=CW.dz[n]?JSON.stringify(CW.dz[n]):''; if(!desmosCalc) return;
-  const prev=CW.dz[n]?new Set(CW.dz[n].filter(x=>x[0]==='~').map(x=>x.slice(1))):null;   // back on a question: keep what was 'already there' the first time
-  dzList().forEach(l=>{ if(!prev||prev.has(l)||!CW.dz[n].includes(l)) DZ.base[l]=1; }); }
-function dzWatch(){ dzBase(ACT.cur); try{ desmosCalc.observeEvent('change',()=>{ if(DZ.n!==ACT.cur) dzBase(ACT.cur); clearTimeout(DZ.t); DZ.t=setTimeout(dzSnap,1200); }); }catch(e){} }
-window.dzLeave=n=>{ if(!desmosCalc) return; if(DZ.t) dzSnap(); dzBase(n); };
+function dzSnap(){ clearTimeout(DZ.t); DZ.t=null; const n=DZ.n; if(n==null||!desmosCalc) return;
+  const v=[...new Set([...DZ.prev,...dzList()])].slice(-30), key=JSON.stringify(v); if(key===DZ.last||!v.length) return; DZ.last=key;
+  CW.dz[n]=v; CW.rev++; if(window.__spitzChanged) window.__spitzChanged(); }
+function dzBase(n){ DZ.n=n; DZ.prev=(CW.dz[n]||[]).map(x=>x[0]==='~'?x.slice(1):x); DZ.last=JSON.stringify(CW.dz[n]||null); }
+function dzWatch(){ dzBase(ACT.cur); try{ desmosCalc.observeEvent('change',()=>{ if(DZ.n!==ACT.cur) return; clearTimeout(DZ.t); DZ.t=setTimeout(dzSnap,1200); }); }catch(e){} }
+window.dzLeave=n=>{ if(n===ACT.cur) return;
+  if(desmosCalc){ if(DZ.t) dzSnap(); DZ.n=null; try{ desmosCalc.setBlank(); }catch(e){} dzBase(n); }
+  ['desmosFrame','sciFrame'].forEach(id=>{ const f=document.getElementById(id); if(f&&f.src) f.src=f.src; }); };   /* the testing page in a frame (fallback, Science): load it fresh */
 function desmosResize(){ if(desmosCalc&&desmosCalc.resize) try{ desmosCalc.resize(); }catch(e){} }
 if(window.ResizeObserver) new ResizeObserver(desmosResize).observe($('#desmosHost'));
 function showChooser(){ $('#chooser').hidden=false; $('#desmosFrame').hidden=true; $('#sciFrame').hidden=true; $('#desmosHost').hidden=true; $('#calcTtl').textContent='Choose A Calculator'; $('#calcSwitch').hidden=true; $('#calcExpand').hidden=true; $('#tiNote').hidden=true; }
