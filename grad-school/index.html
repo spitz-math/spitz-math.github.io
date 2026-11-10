@@ -21,6 +21,7 @@
 @media(max-width:1000px){.grid-main{grid-template-columns:1fr}.rail{grid-template-columns:1fr 1fr}.hero-disc{width:190px}.hero{grid-template-columns:1fr auto}#gate{grid-template-columns:1fr 400px;gap:22px}.wrap{padding-inline:24px}}@media(max-width:750px){.wrap{padding-inline:16px;padding-bottom:50px}.top{padding:16px 0}.brand-copy b{font-size:13px}.brand-copy small{font-size:6px}.top-actions{gap:8px}.top-actions .tinybtn{font-size:7px;padding:10px 7px}.online{font-size:7px}.navigation{padding:10px 0;align-items:flex-start;gap:8px}.navbtn{font-size:8px;padding:10px 8px}.date-label{display:none}.hero{min-height:270px;grid-template-columns:1fr;padding:24px 21px;gap:9px}.hero h1{font-size:clamp(35px,10vw,55px);margin:13px 0 9px}.hero p{font-size:12px;max-width:400px}.hero-disc{position:absolute;right:-47px;bottom:-95px;width:177px;opacity:.26}.disc-core{display:none}.hero-tail{margin-top:22px}.section-head{margin-top:28px}.section-head h2{font-size:24px}.rail{grid-template-columns:1fr}.week-strip{gap:4px}.day{padding:11px 1px}.day .dow{font-size:6px}.day .dom{font-size:20px}.day .count{font-size:5px}.mission-row{grid-template-columns:22px minmax(0,1fr) auto;padding:15px 12px;gap:8px}.mission-title{font-size:13px}.meta{gap:6px}.actions{gap:5px}.round{width:31px;height:32px;font-size:15px}.mission-row .micro{font-size:7px}.filterbar{align-items:stretch}.search{max-width:none;min-width:100%}#gate{min-height:0;grid-template-columns:1fr;padding:45px 0 75px;gap:29px}.gate-intro h1{font-size:clamp(54px,16vw,94px)}.gate-intro p{font-size:15px}.login{padding:20px}.fieldrow{grid-template-columns:1fr}.footer{font-size:7px}}
 @media(max-width:400px){.brand-mark{width:34px;height:34px}.brand-copy b{font-size:11px}.brand-copy small{font-size:5px}.online{font-size:6px}.navbtn{font-size:7px;padding:9px 6px}.hero{padding:21px 15px}.hero h1{font-size:35px}.mission-row{grid-template-columns:20px minmax(0,1fr) auto}.module-head{padding:15px 12px}.round{width:28px;height:30px}.actions{gap:3px}.nav-right{gap:4px}}
 @media(prefers-reduced-motion:reduce){*,*:before,*:after{animation:none!important;transition:none!important;scroll-behavior:auto!important}}
+.paste-link{margin:18px 0 10px;padding:12px;border:1px solid #4b4b83;border-radius:8px;background:#080d2a}.paste-link summary{cursor:pointer;color:var(--cyan);font:400 8px/1.6 var(--pixel)}.paste-link p{color:var(--dim);font-size:12px;line-height:1.5;margin:13px 0}.paste-link input{display:block;width:100%;min-width:0;padding:12px;margin:8px 0 11px}.paste-link .btn{width:100%}.paste-link label{font:400 8px/1.6 var(--pixel);color:var(--violet)}
 </style>
 <link rel="stylesheet" href="ui.css">
 <script src="config.js"></script>
@@ -35,7 +36,7 @@
 </header>
 <section id="gate">
 <div class="gate-intro"><div class="gate-eyebrow">✦ YOUR WORK HAS A PLACE. YOUR LIFE HAS THE REST.</div><h1>TAKE YOUR<br><span>BRAIN BACK.</span></h1><p>Two courses. A dozen moving parts. One place to know what's done, what's next, and when you're officially off the clock.</p><div class="gate-deco"><i></i>PRIVATE ACCESS // NOTHING PUBLIC</div></div>
-<div class="login"><div class="login-top"><b>ACCESS TERMINAL</b><small>01 / PERSONAL</small></div><div id="login-step-email"><h2>Identify yourself.</h2><p>We'll email you a secure sign-in link. No password or permanent PIN required.</p><form id="email-form"><label for="login-email">YOUR EMAIL</label><input id="login-email" name="email" type="email" placeholder="you@example.com" autocomplete="email" required><button type="submit" class="btn primary" id="send-btn">EMAIL ME A SIGN-IN LINK ↗</button></form></div><div id="login-step-code" hidden><h2>Check your inbox.</h2><p>Open the sign-in link sent to <strong id="email-destination"></strong>. If your email contains a code instead, enter it below.</p><form id="code-form"><label for="login-code">ONE-TIME CODE</label><input id="login-code" class="code" inputmode="numeric" pattern="[0-9]{6,8}" autocomplete="one-time-code" placeholder="••••••" required><button class="btn primary" type="submit" id="verify-btn">UNLOCK DASHBOARD ↗</button></form><button class="text-link" id="back-email">USE ANOTHER EMAIL</button></div><div id="login-feedback" hidden role="status" class="notice"></div><div id="preview-option" hidden><p style="margin:22px 0 12px">Backend isn't configured yet. You can explore the interface with fictional tasks.</p><button id="preview-btn" class="btn secondary">OPEN DESIGN PREVIEW →</button></div></div>
+<div class="login"><div class="login-top"><b>ACCESS TERMINAL</b><small>01 / PERSONAL</small></div><div id="login-step-email"><h2>Identify yourself.</h2><p>We'll email you a secure sign-in link. No password or permanent PIN required.</p><form id="email-form"><label for="login-email">YOUR EMAIL</label><input id="login-email" name="email" type="email" placeholder="you@example.com" autocomplete="email" required><button type="submit" class="btn primary" id="send-btn">EMAIL ME A SIGN-IN LINK ↗</button></form></div><div id="login-step-code" hidden><h2>Check your inbox.</h2><p>Open the sign-in link sent to <strong id="email-destination"></strong>. If your email contains a code instead, enter it below.</p><form id="code-form"><label for="login-code">ONE-TIME CODE</label><input id="login-code" class="code" inputmode="numeric" pattern="[0-9]{6,8}" autocomplete="one-time-code" placeholder="••••••" required><button class="btn primary" type="submit" id="verify-btn">UNLOCK DASHBOARD ↗</button></form><details class="paste-link"><summary>EMAIL LINK STUCK? PASTE IT HERE</summary><p>In Gmail, right-click <b>Sign in</b> and choose <b>Copy link address</b>. Paste it below instead of clicking it. The link stays in this tab and is sent only to Supabase for verification.</p><form id="link-form"><label for="link-input">ONE-TIME EMAIL LINK</label><input id="link-input" type="url" placeholder="Paste full link from your email" autocomplete="off" spellcheck="false" required><button class="btn secondary" id="link-verify-btn" type="submit">VERIFY PASTED LINK ↗</button></form></details><button class="text-link" id="back-email">USE ANOTHER EMAIL</button></div><div id="login-feedback" hidden role="status" class="notice"></div><div id="preview-option" hidden><p style="margin:22px 0 12px">Backend isn't configured yet. You can explore the interface with fictional tasks.</p><button id="preview-btn" class="btn secondary">OPEN DESIGN PREVIEW →</button></div></div>
 </section>
 <div id="workspace" hidden>
 <div class="dashboard-shell"><aside class="workbench-side"><div class="side-mark"><span>WORKSPACE</span><small>PRIVATE // GRADUATE WORK</small></div><div class="side-group">NAVIGATION</div><nav class="navigation" aria-label="Dashboard sections"><div class="navitems"><button class="navbtn active" data-view="mission" type="button">01 / MISSION</button><button class="navbtn" data-view="tasks" type="button">02 / ASSIGNMENTS</button><button class="navbtn" data-view="week" type="button">03 / THE WEEK</button></div></nav><div class="side-foot"><strong>OFF THE CLOCK</strong><div>YOU'RE ALLOWED TO STOP.</div></div></aside><main class="workbench-main"><div class="workbench-toolbar"><div class="nav-right"><span id="today-label" class="date-label"></span><button type="button" id="new-task-top" class="btn small primary">+ ADD TASK</button></div></div>
@@ -214,6 +215,47 @@ async function boot(){
 }
 $('#email-form').addEventListener('submit',async e=>{e.preventDefault();if(!supabaseClient)return;email=$('#login-email').value.trim();$('#send-btn').disabled=true;setFeedback('Sending your secure sign-in link…');try{const {error}=await supabaseClient.auth.signInWithOtp({email,options:{emailRedirectTo:location.origin+location.pathname}});if(error)throw error;$('#login-step-email').hidden=true;$('#login-step-code').hidden=false;$('#email-destination').textContent=email;$('#login-code').focus();setFeedback('Open the link in your email to sign in. If your email contains a numeric code instead, enter it below.','success')}catch(err){setFeedback(err.message,'error')}finally{$('#send-btn').disabled=false}});
 $('#code-form').addEventListener('submit',async e=>{e.preventDefault();if(!supabaseClient)return;$('#verify-btn').disabled=true;try{const token=$('#login-code').value.trim();const {data,error}=await supabaseClient.auth.verifyOtp({email,token,type:'email'});if(error)throw error;setFeedback('Access granted. Loading your dashboard…','success');if(data.session&&!user)await signedIn(data.session)}catch(err){setFeedback(err.message,'error')}finally{$('#verify-btn').disabled=false}});
+
+function extractEmailMagicLink(input){
+  let value=String(input||'').trim();
+  const expected=new URL(CONFIG.supabaseUrl).host;
+  for(let hop=0;hop<4;hop++){
+    let url;try{url=new URL(value)}catch(e){throw new Error('Paste the full link address copied from your email.')}
+    if(url.protocol!=='https:')throw new Error('Only HTTPS sign-in links are supported.');
+    if((url.hostname==='google.com'||url.hostname.endsWith('.google.com'))&&url.pathname==='/url'){
+      const inner=url.searchParams.get('q')||url.searchParams.get('url');
+      if(!inner)throw new Error('Could not find the destination inside the Google email link.');
+      value=inner;continue;
+    }
+    if(url.host!==expected||url.pathname!=='/auth/v1/verify')throw new Error('The link does not belong to your Off the Clock sign-in.');
+    const token_hash=url.searchParams.get('token')||url.searchParams.get('token_hash');
+    const type=url.searchParams.get('type');
+    if(!token_hash||!['signup','magiclink','email'].includes(type))throw new Error('This email link is incomplete or not a sign-in link.');
+    return {token_hash,type};
+  }
+  throw new Error('Could not read the nested email link.');
+}
+$('#link-form').addEventListener('submit',async event=>{
+  event.preventDefault();
+  if(!supabaseClient)return;
+  const button=$('#link-verify-btn'),input=$('#link-input');
+  button.disabled=true;
+  setFeedback('Verifying your email link with Supabase…');
+  try{
+    const credentials=extractEmailMagicLink(input.value);
+    const {data,error}=await supabaseClient.auth.verifyOtp(credentials);
+    input.value='';
+    if(error)throw error;
+    if(data.session){await signedIn(data.session);if(user)setFeedback('Email link verified. You are signed in.','success')}
+    else{
+      const s=await supabaseClient.auth.getSession();
+      if(s.error)throw s.error;
+      if(!s.data.session)throw new Error('The link verified but no session was returned. Request a new email and copy the link before opening it.');
+      await signedIn(s.data.session);
+    }
+  }catch(err){input.value='';setFeedback('Link sign-in failed: '+err.message,'error')}
+  finally{button.disabled=false}
+});
 $('#back-email').onclick=()=>{$('#login-step-email').hidden=false;$('#login-step-code').hidden=true;setFeedback('Enter your email address to request a new code.')};
 window.addEventListener('focus',()=>{if(!preview&&user&&!saving&&!dirty&&!conflict)loadRemote()});document.addEventListener('visibilitychange',()=>{if(!document.hidden&&!preview&&user&&!saving&&!dirty&&!conflict)loadRemote()});
 boot();
