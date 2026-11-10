@@ -165,8 +165,53 @@ window.addEventListener('beforeunload',e=>{if(!preview&&(dirty||saving)){e.preve
 function exportData(){const blob=new Blob([JSON.stringify({...app,exportedAt:new Date().toISOString()},null,2)],{type:'application/json'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='off-the-clock-private-backup-'+dayISO()+'.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),3000)}$('#export-data').onclick=exportData;
 $('#import-data').onclick=()=>$('#import-file').click();$('#import-file').addEventListener('change',async e=>{const f=e.target.files?.[0];e.target.value='';if(!f)return;try{const data=JSON.parse(await f.text());if(!Array.isArray(data.tasks))throw new Error('No tasks array in the file');if(app.tasks.length&&!confirm('Import will replace your existing task list on this account. Continue?'))return;app=normalized(data);makeChange();alert(`Imported ${app.tasks.length} tasks. ${preview?'This is a preview; nothing was synced.':'Saving them to your private cloud account.'}`)}catch(err){alert('Could not import backup: '+err.message)}});
 async function signedIn(session){if(!session?.user)return;user=session.user;preview=false;const loaded=await loadRemote();if(loaded)showApp();else setWorkspace(false)}
-async function boot(){if(!IS_CONFIGURED){$('#preview-option').hidden=false;setFeedback('Preview mode only: no cloud database is connected. A public demo is available.', '');setSync('CLOUD NOT CONFIGURED');return}if(!window.supabase?.createClient){setFeedback('Could not load the sign-in library. Check your internet connection and reload.','error');setSync('SIGN-IN UNAVAILABLE','bad');return}
-try{supabaseClient=window.supabase.createClient(CONFIG.supabaseUrl,CONFIG.supabaseKey,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});const {data,error}=await supabaseClient.auth.getSession();if(error)throw error;if(data.session)await signedIn(data.session);else setSync('READY FOR SIGN-IN');supabaseClient.auth.onAuthStateChange((event,session)=>{if(event==='SIGNED_OUT'){user=null;app=emptyData();dirty=false;remoteRevision=null;conflict=false;syncControls();setWorkspace(false);setSync('SIGNED OUT')}else if(event==='SIGNED_IN'&&session&&!user)setTimeout(()=>signedIn(session),0)})}catch(e){setFeedback('Sign-in setup error: '+e.message,'error');setSync('SIGN-IN ERROR','bad')}}
+// Remember the callback before the SDK has a chance to clear the one-time URL fragment.
+const authArrivalHash = new URLSearchParams(location.hash.replace(/^#/, ''));
+const authArrivalQuery = new URLSearchParams(location.search);
+async function recoverRedirectSession(){
+  const access_token=authArrivalHash.get('access_token'),refresh_token=authArrivalHash.get('refresh_token');
+  if(access_token&&refresh_token){
+    const {data,error}=await supabaseClient.auth.setSession({access_token,refresh_token});
+    if(error)throw error;
+    return data?.session||null;
+  }
+  const code=authArrivalQuery.get('code');
+  if(code){
+    const {data,error}=await supabaseClient.auth.exchangeCodeForSession(code);
+    if(error)throw error;
+    return data?.session||null;
+  }
+  return null;
+}
+function callbackFailureMessage(){
+  const message=authArrivalHash.get('error_description')||authArrivalQuery.get('error_description');
+  const code=authArrivalHash.get('error_code')||authArrivalQuery.get('error_code');
+  return message|| (code?'Sign-in link error: '+code:'');
+}
+async function boot(){
+  if(!IS_CONFIGURED){$('#preview-option').hidden=false;setFeedback('Preview mode only: no cloud database is connected.','');setSync('CLOUD NOT CONFIGURED');return}
+  if(!window.supabase?.createClient){setFeedback('Could not load the sign-in library. Check your internet connection and reload.','error');setSync('SIGN-IN UNAVAILABLE','bad');return}
+  try{
+    supabaseClient=window.supabase.createClient(CONFIG.supabaseUrl,CONFIG.supabaseKey,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});
+    let {data,error}=await supabaseClient.auth.getSession();
+    if(error)throw error;
+    let session=data?.session||null;
+    if(!session)session=await recoverRedirectSession();
+    if(session){
+      await signedIn(session);
+      if($('#workspace').hidden)setFeedback('Your link signed you in, but your private assignments could not be loaded. Refresh or contact support.','error');
+    }else{
+      const failure=callbackFailureMessage();
+      if(failure){setFeedback('This sign-in link could not be used: '+failure+'. Request a fresh link.','error');setSync('SIGN-IN LINK ERROR','bad')}
+      else if(authArrivalHash.has('access_token')||authArrivalQuery.has('code')){setFeedback('Returned from Supabase, but no session was established. Check your redirect settings and request a new link.','error');setSync('SESSION NOT ESTABLISHED','bad')}
+      else setSync('READY FOR SIGN-IN');
+    }
+    supabaseClient.auth.onAuthStateChange((event,session)=>{
+      if(event==='SIGNED_OUT'){user=null;app=emptyData();dirty=false;remoteRevision=null;conflict=false;syncControls();setWorkspace(false);setSync('SIGNED OUT')}
+      else if(event==='SIGNED_IN'&&session&&!user)setTimeout(()=>signedIn(session),0);
+    });
+  }catch(e){setFeedback('Sign-in setup error: '+e.message+'. If you just followed an email link, verify that the Supabase Site URL and Redirect URLs point to https://spitzmath.com/grad-school/','error');setSync('SIGN-IN ERROR','bad')}
+}
 $('#email-form').addEventListener('submit',async e=>{e.preventDefault();if(!supabaseClient)return;email=$('#login-email').value.trim();$('#send-btn').disabled=true;setFeedback('Sending your secure sign-in link…');try{const {error}=await supabaseClient.auth.signInWithOtp({email,options:{emailRedirectTo:location.origin+location.pathname}});if(error)throw error;$('#login-step-email').hidden=true;$('#login-step-code').hidden=false;$('#email-destination').textContent=email;$('#login-code').focus();setFeedback('Open the link in your email to sign in. If your email contains a numeric code instead, enter it below.','success')}catch(err){setFeedback(err.message,'error')}finally{$('#send-btn').disabled=false}});
 $('#code-form').addEventListener('submit',async e=>{e.preventDefault();if(!supabaseClient)return;$('#verify-btn').disabled=true;try{const token=$('#login-code').value.trim();const {data,error}=await supabaseClient.auth.verifyOtp({email,token,type:'email'});if(error)throw error;setFeedback('Access granted. Loading your dashboard…','success');if(data.session&&!user)await signedIn(data.session)}catch(err){setFeedback(err.message,'error')}finally{$('#verify-btn').disabled=false}});
 $('#back-email').onclick=()=>{$('#login-step-email').hidden=false;$('#login-step-code').hidden=true;setFeedback('Enter your email address to request a new code.')};
