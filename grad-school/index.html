@@ -24,6 +24,40 @@
 .paste-link{margin:18px 0 10px;padding:12px;border:1px solid #4b4b83;border-radius:8px;background:#080d2a}.paste-link summary{cursor:pointer;color:var(--cyan);font:400 8px/1.6 var(--pixel)}.paste-link p{color:var(--dim);font-size:12px;line-height:1.5;margin:13px 0}.paste-link input{display:block;width:100%;min-width:0;padding:12px;margin:8px 0 11px}.paste-link .btn{width:100%}.paste-link label{font:400 8px/1.6 var(--pixel);color:var(--violet)}
 .alt-auth{display:grid;gap:10px;margin-top:20px;padding-top:18px;border-top:1px solid #474376}.alt-auth span{font:400 8px/1.5 var(--pixel);letter-spacing:.05em;color:var(--dim)}.alt-auth .btn{width:100%}
 .course-professor{margin-top:4px;color:var(--cyan);font-size:10px;font-weight:800;letter-spacing:.025em}
+
+/* Expandable per-assignment checklists — no new public data, same private JSONB document. */
+#workspace .mission-body{min-width:0}
+#workspace .step-progress{display:flex;align-items:center;flex-wrap:wrap;gap:8px;margin-top:9px;font-size:11px;color:var(--dim)}
+#workspace .step-progress strong{font-size:10px;letter-spacing:.04em;color:var(--cyan)}
+#workspace .step-progress .step-next{max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#workspace .step-track{margin-top:5px;width:min(320px,100%);height:5px;border-radius:99px;background:#283359;overflow:hidden}
+#workspace .step-track span{display:block;height:100%;border-radius:99px;background:var(--cyan);transition:width .16s}
+#workspace .task-checklist{margin-top:9px;border-top:1px solid #36416c;padding-top:8px;max-width:100%}
+#workspace .task-checklist summary{font:400 8px/1.65 var(--pixel);color:var(--violet);cursor:pointer;min-height:25px;list-style-position:inside}
+#workspace .task-checklist summary:hover{color:var(--cyan)}
+#workspace .task-checklist .step-items{display:grid;gap:5px;padding:10px 0 5px}
+#workspace .step-entry{display:flex;align-items:flex-start;gap:10px;padding:6px 8px;border-radius:6px;font-size:12px;font-weight:700;color:var(--ink);cursor:pointer;line-height:1.45}
+#workspace .step-entry:hover{background:#22325b80}
+#workspace .step-entry input{flex:none;appearance:auto;width:16px;height:16px;margin:1px 0;accent-color:var(--cyan);cursor:pointer}
+#workspace .step-entry input:checked+span{text-decoration:line-through;color:var(--muted)}
+#workspace .step-entry.submit-entry{border-top:1px dashed #444c78;margin-top:6px;padding-top:12px;color:var(--success)}
+#workspace .step-entry.submit-entry input{accent-color:var(--success)}
+.checklist-editor{border:1px solid #414c7e;border-radius:10px;padding:15px;margin:14px 0 18px;background:#090e29}
+.checklist-editor-head{display:grid;gap:6px;margin-bottom:12px}
+.checklist-editor-head strong{font:400 9px/1.6 var(--pixel);color:var(--cyan)}
+.checklist-editor-head small{font-size:12px;color:var(--dim)}
+#task-step-editor{display:grid;gap:8px}
+.step-editor-row{display:grid;grid-template-columns:19px minmax(0,1fr) 32px;align-items:center;gap:8px}
+.step-editor-row input[type=checkbox]{appearance:auto;accent-color:var(--cyan);width:17px;height:17px}
+.step-editor-row input[type=text]{min-width:0;width:100%;padding:8px 10px;font-size:13px}
+.step-editor-row button{height:32px;border:1px solid #553b68;border-radius:5px;background:#24192e;color:var(--danger);font-size:18px}
+.step-editor-actions{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin-top:12px}
+.step-editor-actions span{font:400 7px/1.5 var(--pixel);color:var(--dim);margin-left:4px}
+.step-editor-actions [data-step-template]{background:#171d41;color:#cfc3ff;border:1px solid #4c517c;border-radius:5px;padding:7px;font:400 7px/1.3 var(--pixel);cursor:pointer}
+.step-editor-actions [data-step-template]:hover{border-color:var(--cyan)}
+.submission-requirement{display:flex;align-items:center;gap:9px;color:var(--dim);font-size:12px;margin-top:15px;cursor:pointer}
+.submission-requirement input{appearance:auto;accent-color:var(--cyan);width:16px;height:16px}
+@media(max-width:500px){.checklist-editor{padding:11px}.step-editor-actions{gap:5px}.step-editor-actions .btn{width:100%}.step-editor-actions span{width:100%}}
 </style>
 <link rel="stylesheet" href="ui.css">
 <script src="config.js"></script>
@@ -54,7 +88,12 @@
 </main></div>
 </div>
 </div>
-<dialog id="task-dialog"><div class="modal-top"><h2 id="form-title">NEW MISSION</h2><button class="x" id="close-task" aria-label="Close">×</button></div><form id="task-form" class="formbody"><input id="task-id" type="hidden"><div class="field"><label for="task-title">ASSIGNMENT</label><input id="task-title" maxlength="250" required placeholder="Name the thing you need to do"></div><div class="fieldrow"><div class="field"><label for="task-course">COURSE</label><select id="task-course" required></select></div><div class="field"><label for="task-status">PROGRESS</label><select id="task-status"><option value="todo">NOT STARTED</option><option value="inprogress">IN PROGRESS</option><option value="done">COMPLETED</option></select></div></div><div class="fieldrow"><div class="field"><label for="task-due">BRIGHTSPACE DUE DATE</label><input type="date" id="task-due"></div><div class="field"><label for="task-target">PERSONAL TARGET DATE</label><input type="date" id="task-target"></div></div><div class="field"><label for="task-submission">SUBMISSION</label><select id="task-submission"><option value="unconfirmed">NOT CONFIRMED SUBMITTED</option><option value="submitted">SUBMITTED IN BRIGHTSPACE</option></select></div><div class="field"><label for="task-notes">NOTES / WHAT'S LEFT</label><textarea id="task-notes" maxlength="2500" placeholder="Anything you want future-you to know"></textarea></div><div class="form-actions"><button type="button" class="btn small danger" id="delete-task" hidden>DELETE</button><div class="right"><button type="button" class="btn small secondary" id="cancel-task">CANCEL</button><button type="submit" class="btn small primary">SAVE CHANGES →</button></div></div></form></dialog>
+<dialog id="task-dialog"><div class="modal-top"><h2 id="form-title">NEW MISSION</h2><button class="x" id="close-task" aria-label="Close">×</button></div><form id="task-form" class="formbody"><input id="task-id" type="hidden"><div class="field"><label for="task-title">ASSIGNMENT</label><input id="task-title" maxlength="250" required placeholder="Name the thing you need to do"></div><div class="fieldrow"><div class="field"><label for="task-course">COURSE</label><select id="task-course" required></select></div><div class="field"><label for="task-status">PROGRESS</label><select id="task-status"><option value="todo">NOT STARTED</option><option value="inprogress">IN PROGRESS</option><option value="done">COMPLETED</option></select></div></div><div class="fieldrow"><div class="field"><label for="task-due">BRIGHTSPACE DUE DATE</label><input type="date" id="task-due"></div><div class="field"><label for="task-target">PERSONAL TARGET DATE</label><input type="date" id="task-target"></div></div><div class="field" id="task-submission-field"><label for="task-submission">SUBMISSION</label><select id="task-submission"><option value="unconfirmed">NOT CONFIRMED SUBMITTED</option><option value="submitted">SUBMITTED IN BRIGHTSPACE</option></select></div><div class="field"><label for="task-notes">NOTES / WHAT'S LEFT</label><textarea id="task-notes" maxlength="2500" placeholder="Anything you want future-you to know"></textarea></div><section class="checklist-editor" aria-label="Assignment checklist">
+<div class="checklist-editor-head"><strong>CHECKLIST / WORK STEPS</strong><small>Track each reading and milestone separately. Finishing work never marks it submitted.</small></div>
+<div id="task-step-editor"></div>
+<div class="step-editor-actions"><button type="button" class="btn small secondary" id="add-step">+ ADD STEP</button><span>QUICK START:</span><button type="button" data-step-template="paper">PAPER</button><button type="button" data-step-template="video">VIDEO</button><button type="button" data-step-template="discussion">DISCUSSION</button><button type="button" data-step-template="reading">READING</button></div>
+<label class="submission-requirement"><input type="checkbox" id="task-submission-required" checked> This assignment must be submitted in Brightspace</label>
+</section><div class="form-actions"><button type="button" class="btn small danger" id="delete-task" hidden>DELETE</button><div class="right"><button type="button" class="btn small secondary" id="cancel-task">CANCEL</button><button type="submit" class="btn small primary">SAVE CHANGES →</button></div></div></form></dialog>
 <dialog id="course-dialog"><div class="modal-top"><h2>COURSE DETAILS</h2><button class="x" id="close-courses" aria-label="Close">×</button></div><form class="formbody" id="course-form"><p class="importnote">These names live in your private synced data, not your site's public source code.</p><div class="field"><label for="course-a">COURSE 01 · NAME / CODE</label><input id="course-a" required maxlength="100" placeholder="EDFR 6388"></div><div class="field"><label for="course-a-description">FULL COURSE TITLE</label><input id="course-a-description" maxlength="250" placeholder="Introduction to Historical and Sociocultural Foundations of Education"></div><div class="field"><label for="course-a-instructor">PROFESSOR / TEACHER</label><input id="course-a-instructor" maxlength="150" placeholder="Professor name"></div><div class="field"><label for="course-b">COURSE 02 · NAME / CODE</label><input id="course-b" required maxlength="100" placeholder="EDCI 7355"></div><div class="field"><label for="course-b-description">FULL COURSE TITLE</label><input id="course-b-description" maxlength="250" placeholder="Current Issues and Research in Mathematics Education"></div><div class="field"><label for="course-b-instructor">PROFESSOR / TEACHER</label><input id="course-b-instructor" maxlength="150" placeholder="Professor name"></div><div class="form-actions"><span></span><button class="btn primary small">SAVE COURSES →</button></div></form></dialog>
 <input id="import-file" type="file" accept=".json,application/json" hidden>
 <script>
@@ -64,6 +103,7 @@ const CONFIG=window.OFF_CLOCK_CONFIG||{};const IS_CONFIGURED=!!(CONFIG.supabaseU
 const emptyData=()=>({version:4,courses:[{id:'one',name:'Course 01',description:'',instructor:''},{id:'two',name:'Course 02',description:'',instructor:''}],tasks:[]});
 const demoData=()=>({version:4,courses:[{id:'one',name:'COURSE 01',description:'Foundations'},{id:'two',name:'COURSE 02',description:'Mathematics Education'}],tasks:[{id:'demo-1',course:'one',title:'Respond to discussion prompts',due:dayISO(1),target:dayISO(0),status:'inprogress',submission:'unconfirmed',notes:'Demo assignment — not actual coursework.'},{id:'demo-2',course:'two',title:'Read next assigned chapter',due:dayISO(3),target:dayISO(1),status:'todo',submission:'unconfirmed',notes:'Demo assignment — not actual coursework.'},{id:'demo-3',course:'one',title:'Submit weekly reflection',due:dayISO(5),target:dayISO(3),status:'done',submission:'submitted',notes:'Demo assignment — not actual coursework.'}]});
 let app=emptyData(),supabaseClient=null,user=null,preview=false,currentView='mission',filter='all',email='',remoteRevision=null,saving=false,dirty=false,saveLoop=null,conflict=false;
+const openChecklistIds=new Set();
 function uniqueId(){return (globalThis.crypto&&crypto.randomUUID)?crypto.randomUUID():'task-'+Date.now().toString(36)+'-'+Math.random().toString(36).slice(2,11)}
 function dayISO(n=0){const d=new Date();d.setHours(12,0,0,0);d.setDate(d.getDate()+n);return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`}
 function dateObj(s){return s?new Date(s+'T12:00:00'):null}
@@ -73,7 +113,29 @@ function dueLabel(t){if(!t.due)return {text:t.target?'TARGET '+showDate(t.target
 function escapeHTML(v){return String(v??'').replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]))}
 function course(t){return app.courses.find(c=>c.id===t.course)||app.courses[0]}
 function isDone(t){return t.status==='done'||t.submission==='submitted'}
-function normalized(data){const o=emptyData();if(!data||!Array.isArray(data.tasks))return o;if(Array.isArray(data.courses)&&data.courses.length>=2){o.courses=data.courses.slice(0,2).map((x,i)=>({id:typeof x.id==='string'&&x.id?x.id:(i?'two':'one'),name:String(x.name||`Course 0${i+1}`).slice(0,100),description:String(x.description||'').slice(0,250),instructor:String(x.instructor||'').slice(0,150)}));}o.tasks=data.tasks.slice(0,300).filter(t=>t&&t.title).map(t=>({id:String(t.id||uniqueId()),course:o.courses.some(c=>c.id===t.course)?t.course:o.courses[0].id,title:String(t.title).slice(0,250),due:/^\d{4}-\d{2}-\d{2}$/.test(t.due||'')?t.due:'',target:/^\d{4}-\d{2}-\d{2}$/.test(t.target||'')?t.target:'',status:['todo','inprogress','done'].includes(t.status)?t.status:'todo',submission:t.submission==='submitted'?'submitted':'unconfirmed',notes:String(t.notes||'').slice(0,2500)}));return o}
+function normalizedChecklist(raw){
+ if(!Array.isArray(raw))return [];
+ const used=new Set();
+ return raw.slice(0,32).filter(step=>step&&typeof step.text==='string'&&step.text.trim()).map(step=>{
+   let id=String(step.id||uniqueId()).slice(0,100);
+   if(used.has(id))id=uniqueId();
+   used.add(id);
+   return {id,text:step.text.trim().slice(0,180),done:step.done===true};
+ });
+}
+function prepProgress(t){const items=t.checklist||[];return {total:items.length,done:items.filter(step=>step.done).length};}
+function updateStatusFromSteps(t){
+ const {total,done}=prepProgress(t);
+ if(t.submission==='submitted')t.status='done';
+ else if(total)t.status=done===total?'done':done?'inprogress':'todo';
+}
+const taskTemplates={
+ paper:['Read assigned materials','Outline main points','Write first draft','Revise and proofread'],
+ video:['Read or watch assigned sources','Plan outline / script','Record video','Upload video or share link'],
+ discussion:['Read prompt and relevant materials','Draft response','Revise response','Post discussion response'],
+ reading:['Read assigned material','Write notes / key takeaways']
+};
+function normalized(data){const o=emptyData();if(!data||!Array.isArray(data.tasks))return o;if(Array.isArray(data.courses)&&data.courses.length>=2){o.courses=data.courses.slice(0,2).map((x,i)=>({id:typeof x.id==='string'&&x.id?x.id:(i?'two':'one'),name:String(x.name||`Course 0${i+1}`).slice(0,100),description:String(x.description||'').slice(0,250),instructor:String(x.instructor||'').slice(0,150)}));}o.tasks=data.tasks.slice(0,300).filter(t=>t&&t.title).map(t=>({id:String(t.id||uniqueId()),course:o.courses.some(c=>c.id===t.course)?t.course:o.courses[0].id,title:String(t.title).slice(0,250),due:/^\d{4}-\d{2}-\d{2}$/.test(t.due||'')?t.due:'',target:/^\d{4}-\d{2}-\d{2}$/.test(t.target||'')?t.target:'',status:['todo','inprogress','done'].includes(t.status)?t.status:'todo',submission:t.submission==='submitted'?'submitted':'unconfirmed',notes:String(t.notes||'').slice(0,2500),checklist:normalizedChecklist(t.checklist),submissionRequired:t.submissionRequired!==false}));return o}
 function setSync(text,kind=''){const el=$('#sync-indicator');el.className='online '+(kind||'');$('#sync-label').textContent=text}
 function syncControls(mode=''){ $('#retry-save').hidden=mode!=='retry'; $('#reload-cloud').hidden=mode!=='conflict'; }
 
@@ -81,8 +143,20 @@ function setFeedback(text,type=''){const el=$('#login-feedback');el.hidden=false
 function setWorkspace(open){$('#gate').hidden=open;$('#workspace').hidden=!open;$('#account-btn').hidden=!open}
 function showView(v){currentView=v;$$('.view').forEach(x=>x.classList.toggle('active',x.id==='view-'+v));$$('.navbtn').forEach(x=>x.classList.toggle('active',x.dataset.view===v));render();window.scrollTo({top:0,behavior:'smooth'})}
 function sortedTasks(rows){return rows.slice().sort((a,b)=>{const ax=(a.due||a.target||'9999'),bx=(b.due||b.target||'9999');return ax.localeCompare(bx)||a.title.localeCompare(b.title)})}
-function statusButtons(t){return `<div class="actions"><button class="round ${isDone(t)?'checked':''}" title="${isDone(t)?'Mark unfinished':'Mark completed'}" aria-label="${isDone(t)?'Mark unfinished':'Mark completed'}" data-complete="${escapeHTML(t.id)}">${isDone(t)?'✓':'○'}</button><button class="round ${t.submission==='submitted'?'submitted':''}" title="${t.submission==='submitted'?'Remove submitted confirmation':'Mark submitted in Brightspace'}" aria-label="${t.submission==='submitted'?'Remove submitted confirmation':'Mark submitted in Brightspace'}" data-submit="${escapeHTML(t.id)}">${t.submission==='submitted'?'↗':'↑'}</button></div>`}
-function taskHTML(t,i,clickTitle=false){const d=dueLabel(t),c=course(t),name=escapeHTML(c?.name||'COURSE');return `<div class="mission-row"><span class="m-index">${String(i+1).padStart(2,'0')}</span><div class="mission-body">${clickTitle?`<button data-edit="${escapeHTML(t.id)}" class="mission-title ${isDone(t)?'done':''}">${escapeHTML(t.title)}</button>`:`<div class="mission-title ${isDone(t)?'done':''}">${escapeHTML(t.title)}</div>`}<div class="meta"><span class="tag ${t.course===app.courses[0].id?'edfr':'edci'}">${name}</span><span class="${d.cl}">${escapeHTML(d.text)}</span>${t.target?`<span>PLAN ${showDate(t.target).toUpperCase()}</span>`:''}${t.submission==='submitted'?`<span style="color:var(--success)">SUBMITTED ✓</span>`:''}</div></div>${statusButtons(t)}</div>`}
+function statusButtons(t){
+ const id=escapeHTML(t.id);
+ const hasChecklist=(t.checklist||[]).length>0;
+ const complete=hasChecklist?'<button class="round" title="Edit work steps" aria-label="Edit work steps" data-edit="'+id+'">✎</button>':`<button class="round ${isDone(t)?'checked':''}" title="${isDone(t)?'Mark unfinished':'Mark completed'}" aria-label="${isDone(t)?'Mark unfinished':'Mark completed'}" data-complete="${id}">${isDone(t)?'✓':'○'}</button>`;
+ const submit=t.submissionRequired===false?'':`<button class="round ${t.submission==='submitted'?'submitted':''}" title="${t.submission==='submitted'?'Remove submitted confirmation':'Mark submitted in Brightspace'}" aria-label="${t.submission==='submitted'?'Remove submitted confirmation':'Mark submitted in Brightspace'}" data-submit="${id}">${t.submission==='submitted'?'↗':'↑'}</button>`;
+ return '<div class="actions">'+complete+submit+'</div>';
+}
+function taskHTML(t,i,clickTitle=false){
+ const d=dueLabel(t),c=course(t),name=escapeHTML(c?.name||'COURSE'),id=escapeHTML(t.id);
+ const items=t.checklist||[],{total,done}=prepProgress(t),percentage=total?Math.round(100*done/total):0;
+ const next=items.find(step=>!step.done)?.text;
+ const steps=total?`<div class="step-progress"><strong>${done}/${total} WORK STEPS</strong><span class="step-next">${next?'NEXT: '+escapeHTML(next):'ALL PREPARATION COMPLETE'}</span></div><div class="step-track"><span style="width:${percentage}%"></span></div><details class="task-checklist" data-checklist="${id}" ${openChecklistIds.has(t.id)?'open':''}><summary>${openChecklistIds.has(t.id)?'HIDE':'OPEN'} CHECKLIST · ${done}/${total}</summary><div class="step-items">${items.map(step=>`<label class="step-entry"><input type="checkbox" data-step-task="${id}" data-step-id="${escapeHTML(step.id)}" ${step.done?'checked':''}><span>${escapeHTML(step.text)}</span></label>`).join('')}${t.submissionRequired===false?'':`<label class="step-entry submit-entry"><input type="checkbox" data-submit-check="${id}" ${t.submission==='submitted'?'checked':''}><span>Confirmed submitted in Brightspace</span></label>`}</div></details>`:'';
+ return `<div class="mission-row"><span class="m-index">${String(i+1).padStart(2,'0')}</span><div class="mission-body">${clickTitle?`<button data-edit="${id}" class="mission-title ${isDone(t)?'done':''}">${escapeHTML(t.title)}</button>`:`<div class="mission-title ${isDone(t)?'done':''}">${escapeHTML(t.title)}</div>`}<div class="meta"><span class="tag ${t.course===app.courses[0].id?'edfr':'edci'}">${name}</span><span class="${d.cl}">${escapeHTML(d.text)}</span>${t.target?`<span>PLAN ${showDate(t.target).toUpperCase()}</span>`:''}${t.submission==='submitted'?`<span style="color:var(--success)">SUBMITTED ✓</span>`:''}</div>${steps}</div>${statusButtons(t)}</div>`;
+}
 function render(){if($('#workspace').hidden)return;$('#today-label').textContent=new Date().toLocaleDateString(undefined,{weekday:'short',month:'short',day:'numeric',year:'numeric'}).toUpperCase();let all=app.tasks,active=sortedTasks(all.filter(t=>t.submission!=='submitted')),targets=active.filter(t=>(t.target&&diffDays(t.target)<=0&&!isDone(t))||(t.due&&diffDays(t.due)<=3)),focus=targets.length?targets.slice(0,5):active.slice(0,4);const todayRemaining=active.filter(t=>(t.target&&diffDays(t.target)<=0&&!isDone(t))||(t.due&&diffDays(t.due)<=0));const unknown=active.filter(t=>!t.due).length;const nextSeven=all.filter(t=>t.due&&diffDays(t.due)>=0&&diffDays(t.due)<=6);const totalWeek=nextSeven.length,doneWeek=nextSeven.filter(isDone).length,pct=totalWeek?Math.round(100*doneWeek/totalWeek):0;
 const clear=all.length>0&&todayRemaining.length===0&&unknown===0;
 $('#hero-kicker').textContent=preview?'// DESIGN PREVIEW / NO CLOUD SYNC':clear?'// NO URGENT MISSIONS / CLEAR':unknown?'// SOME DATES UNVERIFIED':'// CURRENT STATUS / IN PROGRESS';
@@ -99,11 +173,106 @@ $('#week-list').innerHTML=sortedTasks(all.filter(t=>(t.due&&diffDays(t.due)>=0&&
 const q=$('#search-tasks').value.toLowerCase().trim();let filtered=sortedTasks(all.filter(t=>!q||t.title.toLowerCase().includes(q)||course(t)?.name.toLowerCase().includes(q)||t.notes.toLowerCase().includes(q)));if(filter==='active')filtered=filtered.filter(t=>!isDone(t));else if(filter==='done')filtered=filtered.filter(t=>isDone(t));else if(filter==='submitted')filtered=filtered.filter(t=>t.submission==='submitted');
 $('#task-list').innerHTML=filtered.map((t,i)=>taskHTML(t,i,true)).join('')||`<div class="empty"><div class="empty-icon">Ø</div><h3>NO MATCHES</h3><p>Try a different filter, import your starter data, or create a new assignment.</p></div>`;
 }
-function openTask(id){const t=id?app.tasks.find(x=>x.id===id):null;$('#form-title').textContent=t?'EDIT MISSION':'NEW MISSION';$('#task-id').value=t?.id||'';$('#task-title').value=t?.title||'';$('#task-course').innerHTML=app.courses.map(c=>`<option value="${escapeHTML(c.id)}">${escapeHTML(c.name)}</option>`).join('');$('#task-course').value=t?.course||app.courses[0].id;$('#task-due').value=t?.due||'';$('#task-target').value=t?.target||'';$('#task-status').value=t?.status||'todo';$('#task-submission').value=t?.submission||'unconfirmed';$('#task-notes').value=t?.notes||'';$('#delete-task').hidden=!t;$('#task-dialog').showModal();$('#task-title').focus()}
+function addEditorStep(step={}){
+ const id=String(step.id||uniqueId()).slice(0,100);
+ const row=document.createElement('div');
+ row.className='step-editor-row';row.dataset.stepId=id;
+ row.innerHTML=`<input type="checkbox" data-editor-done aria-label="Step completed" ${step.done?'checked':''}><input type="text" data-editor-text maxlength="180" placeholder="What needs to be done?" value="${escapeHTML(step.text||'')}" aria-label="Step description"><button type="button" data-remove-step aria-label="Remove step" title="Remove step">×</button>`;
+ $('#task-step-editor').appendChild(row);
+ $('#task-status').disabled=true;
+ return row;
+}
+function updateEditorStatusControl(){
+ const hasSteps=!!$('#task-step-editor .step-editor-row');
+ $('#task-status').disabled=hasSteps;
+ $('#task-submission-field').hidden=!$('#task-submission-required').checked;
+}
+$('#add-step').onclick=()=>{if($('#task-step-editor .step-editor-row').length>=32){alert('Limit of 32 steps per assignment.');return}const row=addEditorStep();row.querySelector('[data-editor-text]').focus();};
+$('#task-step-editor').addEventListener('click',e=>{
+ const button=e.target.closest('[data-remove-step]');if(!button)return;
+ button.closest('.step-editor-row').remove();updateEditorStatusControl();
+});
+$('[data-step-template]').forEach(button=>button.addEventListener('click',()=>{
+ const labels=taskTemplates[button.dataset.stepTemplate]||[];
+ const existing=$('#task-step-editor .step-editor-row');
+ if(existing.length&& !confirm('Add these steps to your existing checklist?'))return;
+ labels.slice(0,Math.max(0,32-existing.length)).forEach(text=>addEditorStep({text,done:false}));
+ updateEditorStatusControl();
+}));
+$('#task-submission-required').onchange=updateEditorStatusControl;
+function openTask(id){
+ const t=id?app.tasks.find(x=>x.id===id):null;
+ $('#form-title').textContent=t?'EDIT MISSION':'NEW MISSION';
+ $('#task-id').value=t?.id||'';
+ $('#task-title').value=t?.title||'';
+ $('#task-course').innerHTML=app.courses.map(c=>`<option value="${escapeHTML(c.id)}">${escapeHTML(c.name)}</option>`).join('');
+ $('#task-course').value=t?.course||app.courses[0].id;
+ $('#task-due').value=t?.due||'';
+ $('#task-target').value=t?.target||'';
+ $('#task-status').value=t?.status||'todo';
+ $('#task-submission').value=t?.submission||'unconfirmed';
+ $('#task-notes').value=t?.notes||'';
+ $('#task-submission-required').checked=t?.submissionRequired!==false;
+ $('#task-step-editor').replaceChildren();
+ (t?.checklist||[]).forEach(addEditorStep);
+ updateEditorStatusControl();
+ $('#delete-task').hidden=!t;
+ $('#task-dialog').showModal();$('#task-title').focus();
+}
 function makeChange(){render();persist()}
-function handleTaskClick(e){const el=e.target.closest('[data-complete],[data-submit],[data-edit]');if(!el)return;const id=el.dataset.complete||el.dataset.submit||el.dataset.edit;if(el.dataset.edit){openTask(id);return}const t=app.tasks.find(x=>x.id===id);if(!t)return;if(el.dataset.complete){if(isDone(t)){t.status='todo';t.submission='unconfirmed'}else t.status='done'}else if(el.dataset.submit){if(t.submission==='submitted')t.submission='unconfirmed';else{t.submission='submitted';t.status='done'}}makeChange()}
-$$('#mission-list,#task-list,#week-list').forEach(el=>el.addEventListener('click',handleTaskClick));$('#mission-list').addEventListener('click',e=>{if(e.target.closest('#empty-new'))openTask()});
-$('#task-form').addEventListener('submit',e=>{e.preventDefault();const id=$('#task-id').value||uniqueId(),old=app.tasks.find(x=>x.id===id);const t={id,course:$('#task-course').value,title:$('#task-title').value.trim(),due:$('#task-due').value,target:$('#task-target').value,status:$('#task-status').value,submission:$('#task-submission').value,notes:$('#task-notes').value.trim()};if(!t.title)return;if(t.submission==='submitted')t.status='done';if(old)Object.assign(old,t);else app.tasks.push(t);$('#task-dialog').close();makeChange()});
+function handleTaskClick(e){
+ const el=e.target.closest('[data-complete],[data-submit],[data-edit]');
+ if(!el)return;
+ const id=el.dataset.complete||el.dataset.submit||el.dataset.edit;
+ if(el.dataset.edit){openTask(id);return}
+ const t=app.tasks.find(x=>x.id===id);if(!t)return;
+ if(el.dataset.complete){
+   if(isDone(t)){t.status='todo';t.submission='unconfirmed'}
+   else t.status='done';
+ } else if(el.dataset.submit){
+   t.submission=t.submission==='submitted'?'unconfirmed':'submitted';
+   if(t.submission==='submitted')t.status='done';
+   else if((t.checklist||[]).length)updateStatusFromSteps(t);
+ }
+ makeChange();
+}
+document.addEventListener('toggle',e=>{
+ if(e.target?.matches?.('details[data-checklist]')){
+   const id=e.target.dataset.checklist;
+   if(e.target.open)openChecklistIds.add(id);else openChecklistIds.delete(id);
+ }
+},true);
+function handleStepToggle(e){
+ const input=e.target;
+ if(!input.matches('[data-step-task],[data-submit-check]'))return;
+ const taskId=input.dataset.stepTask||input.dataset.submitCheck;
+ const t=app.tasks.find(x=>x.id===taskId);if(!t)return;
+ openChecklistIds.add(t.id);
+ if(input.dataset.stepId){
+   const step=(t.checklist||[]).find(x=>x.id===input.dataset.stepId);
+   if(!step)return;
+   step.done=input.checked;
+   updateStatusFromSteps(t);
+ }else{
+   if(t.submissionRequired===false)return;
+   t.submission=input.checked?'submitted':'unconfirmed';
+   updateStatusFromSteps(t);
+ }
+ makeChange();
+}
+$('#mission-list,#task-list,#week-list').forEach(el=>{el.addEventListener('click',handleTaskClick);el.addEventListener('change',handleStepToggle)});$('#mission-list').addEventListener('click',e=>{if(e.target.closest('#empty-new'))openTask()});
+$('#task-form').addEventListener('submit',e=>{
+ e.preventDefault();
+ const id=$('#task-id').value||uniqueId(),old=app.tasks.find(x=>x.id===id);
+ const checklist=$('#task-step-editor .step-editor-row').map(row=>({id:row.dataset.stepId||uniqueId(),text:row.querySelector('[data-editor-text]').value.trim().slice(0,180),done:row.querySelector('[data-editor-done]').checked})).filter(s=>s.text);
+ const t={id,course:$('#task-course').value,title:$('#task-title').value.trim(),due:$('#task-due').value,target:$('#task-target').value,status:$('#task-status').value,submission:$('#task-submission').value,notes:$('#task-notes').value.trim(),checklist,submissionRequired:$('#task-submission-required').checked};
+ if(!t.title)return;
+ if(!t.submissionRequired)t.submission='unconfirmed';
+ updateStatusFromSteps(t);
+ if(t.submission==='submitted')t.status='done';
+ if(old)Object.assign(old,t);else app.tasks.push(t);
+ $('#task-dialog').close();makeChange();
+});
 $('#delete-task').addEventListener('click',()=>{const id=$('#task-id').value;if(!id)return;if(!confirm('Delete this assignment? This also deletes it from your synced dashboard.'))return;app.tasks=app.tasks.filter(t=>t.id!==id);$('#task-dialog').close();makeChange()});
 $('#cancel-task').onclick=$('#close-task').onclick=()=>$('#task-dialog').close();
 $('#edit-courses').onclick=()=>{$('#course-a').value=app.courses[0]?.name||'';$('#course-a-description').value=app.courses[0]?.description||'';$('#course-a-instructor').value=app.courses[0]?.instructor||'';$('#course-b').value=app.courses[1]?.name||'';$('#course-b-description').value=app.courses[1]?.description||'';$('#course-b-instructor').value=app.courses[1]?.instructor||'';$('#course-dialog').showModal()};$('#close-courses').onclick=()=>$('#course-dialog').close();
