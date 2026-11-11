@@ -1,7 +1,7 @@
 /* Off the Clock: the Spitz Math look for Kody's private grad-school tracker.
    Same family as the Checkpoint dashboard (Bricolage Grotesque + Onest, calm side bar,
-   light rules instead of boxes) with violet as this area's one accent.
-   Arcade = pink, Checkpoint = cyan, Off the Clock = violet.
+   light rules instead of boxes) with burger orange as this area's one accent.
+   Arcade = pink, Checkpoint = cyan, Off the Clock = orange.
    Radii 6 / 14 / 999. Spacing 4-8-12-16-24-32-48-80. Motion: transform/opacity only. */
 
 :root{
@@ -12,20 +12,20 @@
   --bg:#080a18; --panel:#0f1226; --panel2:#161a33; --field:#0b0e20;
   --line:#21264a; --line2:#2f355c;
   --ink:#eef0fb; --muted:#a3a9c8; --faint:#6f7699;
-  --accent:#a78bfa; --accent-hi:#bba5ff; --accent-ink:#120b2e; --accent-soft:rgba(167,139,250,.15);
+  --accent:#ff8a3d; --accent-hi:#ffa463; --accent-ink:#1f0c00; --accent-soft:rgba(255,138,61,.15);
   --c2:#7dd3fc;
   --ok:#4cc27a; --ok-soft:rgba(76,194,122,.14); --warn:#f0b43a; --bad:#f07167;
-  --hover:rgba(255,255,255,.05); --grid:rgba(167,139,250,.38); --shadow:rgba(0,0,0,.5);
+  --hover:rgba(255,255,255,.05); --grid:rgba(255,138,61,.34); --shadow:rgba(0,0,0,.5);
 }
 :root[data-theme="light"]{
   color-scheme:light;
-  --bg:#f5f4fb; --panel:#ffffff; --panel2:#ebe8f6; --field:#ffffff;
-  --line:#e2def0; --line2:#cfc9e4;
-  --ink:#1b1830; --muted:#5d587a; --faint:#8a85a5;
-  --accent:#6d4ae0; --accent-hi:#5b38d4; --accent-ink:#ffffff; --accent-soft:rgba(109,74,224,.10);
+  --bg:#f6f6f8; --panel:#ffffff; --panel2:#ececf0; --field:#ffffff;
+  --line:#e3e3e9; --line2:#cfcfd8;
+  --ink:#1a1b24; --muted:#5b5d6b; --faint:#8a8c99;
+  --accent:#d9600b; --accent-hi:#c2540a; --accent-ink:#ffffff; --accent-soft:rgba(217,96,11,.10);
   --c2:#0b7fb3;
   --ok:#1f8f52; --ok-soft:rgba(31,143,82,.10); --warn:#a8670f; --bad:#c9382e;
-  --hover:rgba(27,24,48,.05); --grid:rgba(109,74,224,.22); --shadow:rgba(27,24,48,.18);
+  --hover:rgba(27,24,48,.05); --grid:rgba(217,96,11,.20); --shadow:rgba(27,24,48,.18);
 }
 
 *{box-sizing:border-box}
