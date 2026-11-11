@@ -2,32 +2,30 @@
    Same family as the Checkpoint dashboard (Bricolage Grotesque + Onest, calm side bar,
    light rules instead of boxes) with burger orange as this area's one accent.
    Arcade = pink, Checkpoint = cyan, Off the Clock = orange.
-   Light by default, charcoal dark mode (moon button).
+   Charcoal by default (same dark as the Checkpoint dashboard), light mode behind the sun button.
    Radii 6 / 14 / 999. Spacing 4-8-12-16-24-32-48-80. Motion: transform/opacity only. */
 
 :root{
   --fd:'Bricolage Grotesque',Onest,"Segoe UI",sans-serif;
   --fb:Onest,"Segoe UI",Roboto,Arial,sans-serif;
   --display:'Bungee',Impact,sans-serif;
-  color-scheme:light;
-  --bg:#f6f6f8; --panel:#ffffff; --panel2:#ececf0; --field:#ffffff;
-  --line:#e3e3e9; --line2:#cfcfd8;
-  --ink:#1a1b24; --muted:#5b5d6b; --faint:#8a8c99;
-  --accent:#d9600b; --accent-hi:#c2540a; --accent-ink:#ffffff; --accent-soft:rgba(217,96,11,.10);
-  --c2:#0b7fb3;
-  --ok:#1f8f52; --ok-soft:rgba(31,143,82,.10); --warn:#a8670f; --bad:#c9382e;
-  --hover:rgba(26,27,36,.05); --grid:rgba(217,96,11,.20); --shadow:rgba(26,27,36,.16);
-}
-/* Dark mode: neutral charcoal, the same dark as the Checkpoint dashboard (no navy or purple tint) */
-:root[data-theme="dark"]{
   color-scheme:dark;
   --bg:#121315; --panel:#1c1d21; --panel2:#25262b; --field:#17181b;
   --line:#2a2c31; --line2:#3d4046;
   --ink:#f1f1f3; --muted:#a2a5ad; --faint:#70737c;
   --accent:#ff8a3d; --accent-hi:#ffa463; --accent-ink:#1f0c00; --accent-soft:rgba(255,138,61,.15);
-  --c2:#7dd3fc;
   --ok:#4cc27a; --ok-soft:rgba(76,194,122,.14); --warn:#f0b43a; --bad:#f07167;
   --hover:rgba(255,255,255,.05); --grid:rgba(255,138,61,.30); --shadow:rgba(0,0,0,.5);
+}
+/* Light mode (sun button): neutral off-white */
+:root[data-theme="light"]{
+  color-scheme:light;
+  --bg:#f6f6f8; --panel:#ffffff; --panel2:#ececf0; --field:#ffffff;
+  --line:#e3e3e9; --line2:#cfcfd8;
+  --ink:#1a1b24; --muted:#5b5d6b; --faint:#8a8c99;
+  --accent:#d9600b; --accent-hi:#c2540a; --accent-ink:#ffffff; --accent-soft:rgba(217,96,11,.10);
+  --ok:#1f8f52; --ok-soft:rgba(31,143,82,.10); --warn:#a8670f; --bad:#c9382e;
+  --hover:rgba(26,27,36,.05); --grid:rgba(217,96,11,.20); --shadow:rgba(26,27,36,.16);
 }
 
 *{box-sizing:border-box}
@@ -164,7 +162,6 @@ button.mission-title:hover{color:var(--accent)}
 .meta{display:flex;flex-wrap:wrap;align-items:center;gap:4px 16px;margin-top:4px;font-size:13px;color:var(--muted)}
 .tag,.day-group-course{display:inline-flex;align-items:center;gap:6px;font-size:13px;font-weight:600;color:var(--ink);white-space:nowrap}
 .tag::before,.day-group-course::before{content:"";width:8px;height:8px;border-radius:999px;background:var(--accent)}
-.tag.edci::before,.day-group-course.edci::before{background:var(--c2)}
 .late,.soon,.unverified{color:var(--warn);font-weight:600}
 .late{color:var(--bad)}
 .is-submitted{color:var(--ok);font-weight:600}
@@ -199,14 +196,12 @@ button.mission-title:hover{color:var(--accent)}
 .course-top{display:flex;justify-content:space-between;align-items:flex-start;gap:8px}
 .course-name{display:flex;align-items:center;gap:8px;font-weight:700}
 .course-name::before{content:"";flex:none;width:8px;height:8px;border-radius:999px;background:var(--accent)}
-.course-entry+.course-entry .course-name::before{background:var(--c2)}
 .course-desc{font-size:13px;color:var(--muted);margin-top:2px}
 .course-desc:empty{display:none}
 .course-professor{font-size:13px;color:var(--faint)}
 .course-count{font-size:13px;color:var(--muted);font-variant-numeric:tabular-nums;white-space:nowrap}
 .track{height:4px;border-radius:999px;background:var(--line);margin-top:8px;overflow:hidden}
 .fill{height:100%;border-radius:999px;background:var(--accent)}
-.fill.cyan{background:var(--c2)}
 .note{margin:24px 0 0;font-size:13px;color:var(--muted);line-height:1.55}
 .note b{color:var(--ink)}
 
@@ -309,6 +304,34 @@ dialog[open]{animation:dialog-in .2s ease-out}
 .course-group{margin:0 0 8px;padding-top:4px;font:700 16px/1.3 var(--fd)}
 .course-group+.field{margin-top:8px}
 #course-form .course-group:not(:first-of-type){margin-top:24px;padding-top:16px;border-top:1px solid var(--line)}
+
+
+/* Class colors: each course has one. Dots and bars always use it; with "Color by class" on, the whole row does. */
+.by-class .cc-orange,.tag.cc-orange,.day-group-course.cc-orange,.course-entry.cc-orange,.swatches .cc-orange{--accent:#ff8a3d;--accent-soft:rgba(255,138,61,0.15)}
+.by-class .cc-blue,.tag.cc-blue,.day-group-course.cc-blue,.course-entry.cc-blue,.swatches .cc-blue{--accent:#6ea8ff;--accent-soft:rgba(110,168,255,0.15)}
+.by-class .cc-teal,.tag.cc-teal,.day-group-course.cc-teal,.course-entry.cc-teal,.swatches .cc-teal{--accent:#2dd4bf;--accent-soft:rgba(45,212,191,0.15)}
+.by-class .cc-pink,.tag.cc-pink,.day-group-course.cc-pink,.course-entry.cc-pink,.swatches .cc-pink{--accent:#f472b6;--accent-soft:rgba(244,114,182,0.15)}
+.by-class .cc-violet,.tag.cc-violet,.day-group-course.cc-violet,.course-entry.cc-violet,.swatches .cc-violet{--accent:#a78bfa;--accent-soft:rgba(167,139,250,0.15)}
+.by-class .cc-gold,.tag.cc-gold,.day-group-course.cc-gold,.course-entry.cc-gold,.swatches .cc-gold{--accent:#f7c948;--accent-soft:rgba(247,201,72,0.15)}
+:root[data-theme="light"] .by-class .cc-orange,:root[data-theme="light"] .tag.cc-orange,:root[data-theme="light"] .day-group-course.cc-orange,:root[data-theme="light"] .course-entry.cc-orange,:root[data-theme="light"] .swatches .cc-orange{--accent:#d9600b;--accent-soft:rgba(217,96,11,0.1)}
+:root[data-theme="light"] .by-class .cc-blue,:root[data-theme="light"] .tag.cc-blue,:root[data-theme="light"] .day-group-course.cc-blue,:root[data-theme="light"] .course-entry.cc-blue,:root[data-theme="light"] .swatches .cc-blue{--accent:#2f6fdb;--accent-soft:rgba(47,111,219,0.1)}
+:root[data-theme="light"] .by-class .cc-teal,:root[data-theme="light"] .tag.cc-teal,:root[data-theme="light"] .day-group-course.cc-teal,:root[data-theme="light"] .course-entry.cc-teal,:root[data-theme="light"] .swatches .cc-teal{--accent:#0d8a7a;--accent-soft:rgba(13,138,122,0.1)}
+:root[data-theme="light"] .by-class .cc-pink,:root[data-theme="light"] .tag.cc-pink,:root[data-theme="light"] .day-group-course.cc-pink,:root[data-theme="light"] .course-entry.cc-pink,:root[data-theme="light"] .swatches .cc-pink{--accent:#c4307f;--accent-soft:rgba(196,48,127,0.1)}
+:root[data-theme="light"] .by-class .cc-violet,:root[data-theme="light"] .tag.cc-violet,:root[data-theme="light"] .day-group-course.cc-violet,:root[data-theme="light"] .course-entry.cc-violet,:root[data-theme="light"] .swatches .cc-violet{--accent:#6d4ae0;--accent-soft:rgba(109,74,224,0.1)}
+:root[data-theme="light"] .by-class .cc-gold,:root[data-theme="light"] .tag.cc-gold,:root[data-theme="light"] .day-group-course.cc-gold,:root[data-theme="light"] .course-entry.cc-gold,:root[data-theme="light"] .swatches .cc-gold{--accent:#9a7000;--accent-soft:rgba(154,112,0,0.1)}
+.by-class .mission-row{box-shadow:inset 3px 0 0 var(--accent);padding-left:16px}
+.by-class .day-group{box-shadow:inset 3px 0 0 var(--accent);padding-left:12px}
+.by-class .day-group+.day-group{padding-top:8px}
+.by-class .tag,.by-class .day-group-course{color:var(--accent)}
+.swatches{display:flex;flex-wrap:wrap;gap:8px}
+.swatches label{position:relative;display:block;width:32px;height:32px;cursor:pointer}
+.swatches input{position:absolute;inset:0;z-index:1;width:100%;height:100%;margin:0;opacity:0;cursor:pointer}
+.swatches span{display:block;width:32px;height:32px;border-radius:999px;background:var(--accent);box-shadow:inset 0 0 0 2px var(--panel);border:2px solid transparent;transition:transform .12s}
+.swatches input:checked+span{border-color:var(--ink)}
+.swatches input:focus-visible+span{outline:2px solid var(--ink);outline-offset:2px}
+.swatches label:hover span{transform:scale(1.08)}
+.byclass-toggle{display:flex;align-items:flex-start;gap:10px;margin:8px 0 24px;padding:12px 16px;border-radius:6px;background:var(--panel2);font-size:14px;font-weight:400;color:var(--ink);cursor:pointer}
+.byclass-toggle small{display:block;color:var(--muted);font-size:13px}
 
 /* Phones: the side bar becomes a tab bar at the bottom */
 @media (max-width:760px){

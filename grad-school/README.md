@@ -1,6 +1,6 @@
 # Off the Clock — graduate-school workspace
 
-Static single-page client for GitHub Pages at `/grad-school/`. The look follows the Spitz Math site (same fonts and calm side bar as the Checkpoint dashboard, burger orange as this area's accent, light by default with a charcoal dark mode). All styling lives in `ui.css`; `index.html` keeps every element id the script uses. Backend contracts must be preserved when the look changes.
+Static single-page client for GitHub Pages at `/grad-school/`. The look follows the Spitz Math site (same fonts and calm side bar as the Checkpoint dashboard, burger orange as this area's accent, charcoal by default with a light mode). All styling lives in `ui.css`; `index.html` keeps every element id the script uses. Backend contracts must be preserved when the look changes.
 
 ## Backend contract
 
@@ -10,7 +10,7 @@ Private Postgres table: `public.grad_profiles` with `user_id` (PK, auth user FK)
 
 The client reads `data,revision` for the signed-in user. On first save it **inserts**. Subsequent saves **update only when revision matches** the last loaded revision. A zero-row update is a conflict, not a successful save. The user must export local edits and explicitly reload the remote copy or resolve the conflict before retrying. Focus/visibility reloads never discard unsaved changes.
 
-Task data shape: `{ version:4, courses:[{id,name,description,instructor}], tasks:[{id,course,title,due,target,status,submission,notes,checklist,submissionRequired}] }`. `due` is a verified Brightspace date or empty; `target` is a personal work target. Values for `status`: `todo|inprogress|done`; for `submission`: `unconfirmed|submitted`. Never equate `done` with `submitted`. Empty due date is **unverified** for a Brightspace assignment; preparation tasks with `submissionRequired:false` can have no official deadline.
+Task data shape: `{ version:4, prefs:{colorByClass}, courses:[{id,name,description,instructor,color}], tasks:[{id,course,title,due,target,status,submission,notes,checklist,submissionRequired}] }`. `due` is a verified Brightspace date or empty; `target` is a personal work target. Values for `status`: `todo|inprogress|done`; for `submission`: `unconfirmed|submitted`. Never equate `done` with `submitted`. `courses[].color` is one of orange|blue|teal|pink|violet|gold (defaults orange, blue) and `prefs.colorByClass` (default false) colors every row by its class; both are optional, display-only, and normalized on load. Empty due date is **unverified** for a Brightspace assignment; preparation tasks with `submissionRequired:false` can have no official deadline.
 
 ### Academic week schedule
 - The **academic week is Wednesday–Tuesday**, not a rolling seven-day span. Both the current-week progress ring and calendar strip use these boundaries. The Week view supports previous/current/next week navigation, including planning the next course week before it starts.
