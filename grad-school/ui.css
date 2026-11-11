@@ -1,6 +1,6 @@
 /* Off the Clock: the Spitz Math look for Kody's private grad-school tracker.
    Same family as the Checkpoint dashboard (Bricolage Grotesque + Onest, calm side bar,
-   light rules instead of boxes) with burger orange as this area's one accent.
+   light rules instead of boxes) with the inverted burger blue as this area's one accent.
    Arcade = pink, Checkpoint = cyan, Off the Clock = orange.
    Charcoal only: the inverse of Checkpoint's light dashboard. Active states are solid orange with charcoal text.
    Radii 6 / 14 / 999. Spacing 4-8-12-16-24-32-48-80. Motion: transform/opacity only. */
@@ -13,9 +13,9 @@
   --bg:#121315; --panel:#1c1d21; --panel2:#25262b; --field:#17181b;
   --line:#2a2c31; --line2:#3d4046;
   --ink:#f1f1f3; --muted:#a2a5ad; --faint:#70737c;
-  --accent:#ff8a3d; --accent-hi:#ffa463; --accent-ink:#1f0c00; --accent-soft:rgba(255,138,61,.15);
+  --accent:#038cfe; --accent-hi:#16aafe; --accent-ink:#121315; --accent-soft:rgba(3,140,254,.15);
   --ok:#4cc27a; --ok-soft:rgba(76,194,122,.14); --warn:#f0b43a; --bad:#f07167;
-  --hover:rgba(255,255,255,.05); --grid:rgba(255,138,61,.30); --shadow:rgba(0,0,0,.5);
+  --hover:rgba(255,255,255,.05); --grid:rgba(3,140,254,.30); --shadow:rgba(0,0,0,.5);
 }
 
 *{box-sizing:border-box}
@@ -54,7 +54,7 @@ label{font-size:13px;font-weight:600;color:var(--muted)}
 /* Top bar */
 .top{position:sticky;top:0;z-index:5;height:56px;display:flex;align-items:center;justify-content:space-between;gap:16px;padding:0 24px;background:var(--bg);border-bottom:1px solid var(--line)}
 .brand{display:flex;align-items:center;gap:10px;text-decoration:none;min-width:0}
-.brand-mark{flex:none;width:32px;height:32px;border-radius:6px;background:#0b0b0c;box-shadow:inset 0 0 0 1.5px var(--accent);display:grid;place-items:center}
+.brand-mark{flex:none;width:32px;height:32px;border-radius:6px;background:var(--panel2);box-shadow:none;display:grid;place-items:center}
 .brand-mark img{width:26px;height:auto;display:block}
 .brand-copy b{font:800 18px/1 var(--fd);white-space:nowrap}
 .top-actions{display:flex;align-items:center;gap:8px;min-width:0}
@@ -75,7 +75,7 @@ label{font-size:13px;font-weight:600;color:var(--muted)}
   background:repeating-linear-gradient(90deg,var(--grid) 0 1px,transparent 1px 72px),repeating-linear-gradient(0deg,var(--grid) 0 1px,transparent 1px 48px);
   transform:perspective(420px) rotateX(62deg);transform-origin:bottom;-webkit-mask-image:linear-gradient(transparent,#000 75%);mask-image:linear-gradient(transparent,#000 75%)}
 .gate-card{position:relative;z-index:1;width:min(400px,100%);display:grid;gap:16px}
-.gate-burger{width:56px;height:56px;border-radius:14px;background:#0b0b0c;box-shadow:inset 0 0 0 2px var(--accent);display:grid;place-items:center}
+.gate-burger{width:56px;height:56px;border-radius:14px;background:var(--panel2);box-shadow:none;display:grid;place-items:center}
 .gate-burger img{width:44px;height:auto}
 .gate-title{font:400 clamp(32px,9vw,44px)/1.05 var(--display);margin:8px 0 0;letter-spacing:.02em}
 .gate-card .lede{margin:0 0 8px;color:var(--muted);max-width:40ch}
@@ -298,7 +298,7 @@ dialog[open]{animation:dialog-in .2s ease-out}
 
 /* Class colors: each course has one. Dots and bars always use it; with "Color by class" on, the whole row does. */
 .by-class .cc-orange,.tag.cc-orange,.day-group-course.cc-orange,.course-entry.cc-orange,.swatches .cc-orange{--accent:#ff8a3d;--accent-soft:rgba(255,138,61,0.15)}
-.by-class .cc-blue,.tag.cc-blue,.day-group-course.cc-blue,.course-entry.cc-blue,.swatches .cc-blue{--accent:#6ea8ff;--accent-soft:rgba(110,168,255,0.15)}
+.by-class .cc-blue,.tag.cc-blue,.day-group-course.cc-blue,.course-entry.cc-blue,.swatches .cc-blue{--accent:#038cfe;--accent-soft:rgba(3,140,254,0.15)}
 .by-class .cc-teal,.tag.cc-teal,.day-group-course.cc-teal,.course-entry.cc-teal,.swatches .cc-teal{--accent:#2dd4bf;--accent-soft:rgba(45,212,191,0.15)}
 .by-class .cc-pink,.tag.cc-pink,.day-group-course.cc-pink,.course-entry.cc-pink,.swatches .cc-pink{--accent:#f472b6;--accent-soft:rgba(244,114,182,0.15)}
 .by-class .cc-violet,.tag.cc-violet,.day-group-course.cc-violet,.course-entry.cc-violet,.swatches .cc-violet{--accent:#a78bfa;--accent-soft:rgba(167,139,250,0.15)}
@@ -366,39 +366,4 @@ dialog[open]{animation:dialog-in .2s ease-out}
 }
 @media (prefers-reduced-motion:reduce){
   *,*::before,*::after{animation:none!important;transition:none!important;scroll-behavior:auto!important}
-}
-
-/* Inverted frame (Kody 11/11): the opposite of Checkpoint's light page.
-   Solid orange top bar, side bar and Today block with charcoal type; content stays on charcoal. */
-:root{--frame:#ff8a3d;--frame-ink:#121315;--frame-dim:#4a2208}
-.top{background:var(--frame);border-bottom-color:var(--frame);color:var(--frame-ink)}
-.brand-copy b{color:var(--frame-ink)}
-.brand-mark{background:var(--frame-ink);box-shadow:none}
-.online,.online.bad{color:var(--frame-ink);font-weight:600}
-.online i{background:var(--frame-ink)}
-.online.bad i{background:#b3261e}
-.top .tinybtn{border-color:var(--frame-ink);color:var(--frame-ink)}
-.top .tinybtn:hover{background:rgba(0,0,0,.1)}
-.top #retry-save,.top #reload-cloud{background:var(--frame-ink);border-color:var(--frame-ink);color:#ffb4a8}
-.shell{background:linear-gradient(var(--frame),var(--frame)) 0 0/220px 100% no-repeat}
-.side{background:var(--frame)}
-.navbtn{color:var(--frame-dim)}
-.navbtn:hover{background:rgba(0,0,0,.08);color:var(--frame-ink)}
-.navbtn.active{background:var(--frame-ink);color:var(--frame)}
-.navbtn.active svg{color:var(--frame)}
-.side-foot{color:var(--frame-dim)}
-.today-head{background:var(--frame);color:var(--frame-ink);padding:32px;border-radius:14px}
-.today-head .lede,#progress-caption,.today-head .disc-core small{color:var(--frame-dim)}
-.today-head .foot,.today-head .status-line{color:var(--frame-ink)}
-.ring-dial{background:conic-gradient(var(--frame-ink) var(--progress,0%),rgba(0,0,0,.18) 0)}
-.ring-dial::before{background:var(--frame)}
-#today-checklist .compact-day{border:2px solid var(--frame)}
-.week-strip{border:2px solid var(--frame)}
-.day{border-left-color:rgba(255,138,61,.3)}
-.gate-burger{background:var(--frame);box-shadow:none}
-@media (max-width:760px){
-  .shell{background:none}
-  .side{border-top:0}
-  .today-head{padding:20px}
-  .ring-dial::before{background:var(--frame)}
 }

@@ -17,12 +17,12 @@
 </head>
 <body>
 <header class="top">
-  <a class="brand" href="./" aria-label="Off the Clock home"><span class="brand-mark"><img src="../burger_mark.png" alt="" width="26" height="21"></span><span class="brand-copy"><b>Off the Clock</b></span></a>
+  <a class="brand" href="./" aria-label="Off the Clock home"><span class="brand-mark"><img src="burger_inverted.png" alt="" width="26" height="21"></span><span class="brand-copy"><b>Off the Clock</b></span></a>
   <div class="top-actions"><span class="online" id="sync-indicator" role="status" aria-live="polite"><i></i><span id="sync-label">Not signed in</span></span><button id="retry-save" class="tinybtn" type="button" hidden>Try again</button><button id="reload-cloud" class="tinybtn" type="button" hidden>Load saved copy</button><button id="account-btn" class="tinybtn" type="button" hidden>Sign out</button></div>
 </header>
 <section id="gate">
 <div class="gate-card">
-  <span class="gate-burger"><img src="../burger_mark.png" alt="" width="44" height="36"></span>
+  <span class="gate-burger"><img src="burger_inverted.png" alt="" width="44" height="36"></span>
   <h1 class="gate-title">Off the Clock</h1>
   <p class="lede">Grad school work in one private place: what's due, what's done, and when you can stop for the day.</p>
   <div id="login-step-email">
@@ -108,8 +108,8 @@
 const $=s=>document.querySelector(s), $$=s=>Array.from(document.querySelectorAll(s));
 const CONFIG=window.OFF_CLOCK_CONFIG||{};const IS_CONFIGURED=!!(CONFIG.supabaseUrl&&CONFIG.supabaseKey&& !CONFIG.supabaseUrl.includes('YOUR_')&&!CONFIG.supabaseKey.includes('YOUR_'));
 const COURSE_COLORS=['orange','blue','teal','pink','violet','gold'];
-const emptyData=()=>({version:4,courses:[{id:'one',name:'Course 01',description:'',instructor:'',color:'orange'},{id:'two',name:'Course 02',description:'',instructor:'',color:'blue'}],tasks:[],weekCalendar:{anchorStart:'',anchorNumber:null},prefs:{colorByClass:false}});
-function courseColor(c){const j=Math.max(0,app.courses.indexOf(c));return COURSE_COLORS.includes(c&&c.color)?c.color:(j?'blue':'orange')}
+const emptyData=()=>({version:4,courses:[{id:'one',name:'Course 01',description:'',instructor:'',color:'blue'},{id:'two',name:'Course 02',description:'',instructor:'',color:'teal'}],tasks:[],weekCalendar:{anchorStart:'',anchorNumber:null},prefs:{colorByClass:false}});
+function courseColor(c){const j=Math.max(0,app.courses.indexOf(c));return COURSE_COLORS.includes(c&&c.color)?c.color:(j?'teal':'blue')}
 const demoData=()=>({version:4,courses:[{id:'one',name:'Course 1',description:'Foundations'},{id:'two',name:'Course 2',description:'Mathematics Education'}],tasks:[{id:'demo-1',course:'one',title:'Respond to discussion prompts',due:dayISO(1),target:dayISO(0),status:'inprogress',submission:'unconfirmed',notes:'Demo assignment — not actual coursework.'},{id:'demo-2',course:'two',title:'Read next assigned chapter',due:dayISO(3),target:dayISO(1),status:'todo',submission:'unconfirmed',notes:'Demo assignment — not actual coursework.'},{id:'demo-3',course:'one',title:'Submit weekly reflection',due:dayISO(5),target:dayISO(3),status:'done',submission:'submitted',notes:'Demo assignment — not actual coursework.'}]});
 let app=emptyData(),supabaseClient=null,user=null,preview=false,currentView='mission',filter='all',email='',remoteRevision=null,saving=false,dirty=false,saveLoop=null,conflict=false,weekOffset=0;
 const openChecklistIds=new Set();
@@ -159,7 +159,7 @@ const taskTemplates={
  discussion:['Read prompt and relevant materials','Draft response','Revise response','Post discussion response'],
  reading:['Read assigned material','Write notes / key takeaways']
 };
-function normalized(data){const o=emptyData();if(!data||!Array.isArray(data.tasks))return o;if(Array.isArray(data.courses)&&data.courses.length>=2){o.courses=data.courses.slice(0,2).map((x,i)=>({id:typeof x.id==='string'&&x.id?x.id:(i?'two':'one'),name:String(x.name||`Course 0${i+1}`).slice(0,100),description:String(x.description||'').slice(0,250),instructor:String(x.instructor||'').slice(0,150),color:COURSE_COLORS.includes(x.color)?x.color:(i?'blue':'orange')}));}o.tasks=data.tasks.slice(0,300).filter(t=>t&&t.title).map(t=>({id:String(t.id||uniqueId()),course:o.courses.some(c=>c.id===t.course)?t.course:o.courses[0].id,title:String(t.title).slice(0,250),due:/^\d{4}-\d{2}-\d{2}$/.test(t.due||'')?t.due:'',target:/^\d{4}-\d{2}-\d{2}$/.test(t.target||'')?t.target:'',status:['todo','inprogress','done'].includes(t.status)?t.status:'todo',submission:t.submission==='submitted'?'submitted':'unconfirmed',notes:String(t.notes||'').slice(0,2500),checklist:normalizedChecklist(t.checklist),submissionRequired:t.submissionRequired!==false}));o.prefs={colorByClass:data.prefs?.colorByClass===true};const wc=data.weekCalendar||{};if(/^\d{4}-\d{2}-\d{2}$/.test(wc.anchorStart||'')&&Number.isInteger(wc.anchorNumber)&&wc.anchorNumber>0){o.weekCalendar={anchorStart:wc.anchorStart,anchorNumber:wc.anchorNumber}}return o}
+function normalized(data){const o=emptyData();if(!data||!Array.isArray(data.tasks))return o;if(Array.isArray(data.courses)&&data.courses.length>=2){o.courses=data.courses.slice(0,2).map((x,i)=>({id:typeof x.id==='string'&&x.id?x.id:(i?'two':'one'),name:String(x.name||`Course 0${i+1}`).slice(0,100),description:String(x.description||'').slice(0,250),instructor:String(x.instructor||'').slice(0,150),color:COURSE_COLORS.includes(x.color)?x.color:(i?'teal':'blue')}));}o.tasks=data.tasks.slice(0,300).filter(t=>t&&t.title).map(t=>({id:String(t.id||uniqueId()),course:o.courses.some(c=>c.id===t.course)?t.course:o.courses[0].id,title:String(t.title).slice(0,250),due:/^\d{4}-\d{2}-\d{2}$/.test(t.due||'')?t.due:'',target:/^\d{4}-\d{2}-\d{2}$/.test(t.target||'')?t.target:'',status:['todo','inprogress','done'].includes(t.status)?t.status:'todo',submission:t.submission==='submitted'?'submitted':'unconfirmed',notes:String(t.notes||'').slice(0,2500),checklist:normalizedChecklist(t.checklist),submissionRequired:t.submissionRequired!==false}));o.prefs={colorByClass:data.prefs?.colorByClass===true};const wc=data.weekCalendar||{};if(/^\d{4}-\d{2}-\d{2}$/.test(wc.anchorStart||'')&&Number.isInteger(wc.anchorNumber)&&wc.anchorNumber>0){o.weekCalendar={anchorStart:wc.anchorStart,anchorNumber:wc.anchorNumber}}return o}
 function setSync(text,kind=''){const el=$('#sync-indicator');el.className='online '+(kind||'');$('#sync-label').textContent=text}
 function syncControls(mode=''){ $('#retry-save').hidden=mode!=='retry'; $('#reload-cloud').hidden=mode!=='conflict'; }
 
