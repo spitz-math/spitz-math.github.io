@@ -2,22 +2,13 @@
    Same family as the Checkpoint dashboard (Bricolage Grotesque + Onest, calm side bar,
    light rules instead of boxes) with burger orange as this area's one accent.
    Arcade = pink, Checkpoint = cyan, Off the Clock = orange.
+   Light by default, charcoal dark mode (moon button).
    Radii 6 / 14 / 999. Spacing 4-8-12-16-24-32-48-80. Motion: transform/opacity only. */
 
 :root{
   --fd:'Bricolage Grotesque',Onest,"Segoe UI",sans-serif;
   --fb:Onest,"Segoe UI",Roboto,Arial,sans-serif;
   --display:'Bungee',Impact,sans-serif;
-  color-scheme:dark;
-  --bg:#080a18; --panel:#0f1226; --panel2:#161a33; --field:#0b0e20;
-  --line:#21264a; --line2:#2f355c;
-  --ink:#eef0fb; --muted:#a3a9c8; --faint:#6f7699;
-  --accent:#ff8a3d; --accent-hi:#ffa463; --accent-ink:#1f0c00; --accent-soft:rgba(255,138,61,.15);
-  --c2:#7dd3fc;
-  --ok:#4cc27a; --ok-soft:rgba(76,194,122,.14); --warn:#f0b43a; --bad:#f07167;
-  --hover:rgba(255,255,255,.05); --grid:rgba(255,138,61,.34); --shadow:rgba(0,0,0,.5);
-}
-:root[data-theme="light"]{
   color-scheme:light;
   --bg:#f6f6f8; --panel:#ffffff; --panel2:#ececf0; --field:#ffffff;
   --line:#e3e3e9; --line2:#cfcfd8;
@@ -25,7 +16,18 @@
   --accent:#d9600b; --accent-hi:#c2540a; --accent-ink:#ffffff; --accent-soft:rgba(217,96,11,.10);
   --c2:#0b7fb3;
   --ok:#1f8f52; --ok-soft:rgba(31,143,82,.10); --warn:#a8670f; --bad:#c9382e;
-  --hover:rgba(27,24,48,.05); --grid:rgba(217,96,11,.20); --shadow:rgba(27,24,48,.18);
+  --hover:rgba(26,27,36,.05); --grid:rgba(217,96,11,.20); --shadow:rgba(26,27,36,.16);
+}
+/* Dark mode: neutral charcoal, the same dark as the Checkpoint dashboard (no navy or purple tint) */
+:root[data-theme="dark"]{
+  color-scheme:dark;
+  --bg:#121315; --panel:#1c1d21; --panel2:#25262b; --field:#17181b;
+  --line:#2a2c31; --line2:#3d4046;
+  --ink:#f1f1f3; --muted:#a2a5ad; --faint:#70737c;
+  --accent:#ff8a3d; --accent-hi:#ffa463; --accent-ink:#1f0c00; --accent-soft:rgba(255,138,61,.15);
+  --c2:#7dd3fc;
+  --ok:#4cc27a; --ok-soft:rgba(76,194,122,.14); --warn:#f0b43a; --bad:#f07167;
+  --hover:rgba(255,255,255,.05); --grid:rgba(255,138,61,.30); --shadow:rgba(0,0,0,.5);
 }
 
 *{box-sizing:border-box}
@@ -87,7 +89,7 @@ label{font-size:13px;font-weight:600;color:var(--muted)}
 .gate-card{position:relative;z-index:1;width:min(400px,100%);display:grid;gap:16px}
 .gate-burger{width:56px;height:56px;border-radius:14px;background:#fff;display:grid;place-items:center}
 .gate-burger img{width:44px;height:auto}
-.gate-title{font:400 clamp(32px,9vw,44px)/1.05 var(--display);margin:8px 0 0;letter-spacing:.02em;text-shadow:0 0 28px var(--grid)}
+.gate-title{font:400 clamp(32px,9vw,44px)/1.05 var(--display);margin:8px 0 0;letter-spacing:.02em}
 .gate-card .lede{margin:0 0 8px;color:var(--muted);max-width:40ch}
 #login-step-email,#login-step-code{display:grid;gap:12px}
 .gate-card form{display:grid;gap:8px}
@@ -274,7 +276,7 @@ select.day-move{width:auto;max-width:40%;height:30px;padding:0 8px;font-size:12p
 
 /* Dialogs */
 dialog{width:min(560px,calc(100vw - 32px));max-height:min(90vh,820px);overflow:auto;padding:0;border:1px solid var(--line2);border-radius:14px;background:var(--panel);color:var(--ink);box-shadow:0 24px 64px var(--shadow)}
-dialog::backdrop{background:rgba(4,5,14,.7)}
+dialog::backdrop{background:rgba(10,10,12,.6)}
 dialog[open]{animation:dialog-in .2s ease-out}
 @keyframes dialog-in{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
 .modal-top{position:sticky;top:0;z-index:1;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:16px 24px;background:var(--panel);border-bottom:1px solid var(--line)}
