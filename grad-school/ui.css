@@ -56,10 +56,10 @@ label{font-size:13px;font-weight:600;color:var(--muted)}
 .text-link:hover{text-decoration:underline;text-underline-offset:3px}
 
 /* Top bar */
-.top{position:sticky;top:0;z-index:5;height:56px;display:flex;align-items:center;justify-content:space-between;gap:16px;padding:0 24px;background:var(--bg);border-bottom:1px solid var(--line)}
+.top{position:sticky;top:0;z-index:5;height:68px;display:flex;align-items:center;justify-content:space-between;gap:16px;padding:0 24px;background:var(--bg);border-bottom:1px solid var(--line)}
 .brand{display:flex;align-items:center;gap:10px;text-decoration:none;min-width:0}
-.brand-mark{flex:none;width:32px;height:32px;border-radius:6px;background:var(--panel2);box-shadow:none;display:grid;place-items:center}
-.brand-mark img{width:26px;height:auto;display:block}
+.brand-mark{flex:none;display:grid;place-items:center}
+.brand-mark img{width:56px;height:auto;display:block;filter:drop-shadow(0 2px 6px rgba(0,0,0,.5))}
 .brand-copy b{font:800 18px/1 var(--fd);white-space:nowrap}
 .top-actions{display:flex;align-items:center;gap:8px;min-width:0}
 .online{display:flex;align-items:center;gap:8px;margin-right:8px;font-size:13px;color:var(--muted);white-space:nowrap;min-width:0}
@@ -74,13 +74,13 @@ label{font-size:13px;font-weight:600;color:var(--muted)}
 #retry-save,#reload-cloud{border-color:var(--bad);color:var(--bad)}
 
 /* Sign-in */
-#gate{position:relative;overflow:hidden;min-height:calc(100vh - 56px);display:grid;place-items:center;padding:48px 16px 120px}
+#gate{position:relative;overflow:hidden;min-height:calc(100vh - 68px);display:grid;place-items:center;padding:48px 16px 120px}
 #gate::after{content:"";position:absolute;left:-30%;right:-30%;bottom:-6%;height:46%;pointer-events:none;
   background:repeating-linear-gradient(90deg,var(--grid) 0 1px,transparent 1px 72px),repeating-linear-gradient(0deg,var(--grid) 0 1px,transparent 1px 48px);
   transform:perspective(420px) rotateX(62deg);transform-origin:bottom;-webkit-mask-image:linear-gradient(transparent,#000 75%);mask-image:linear-gradient(transparent,#000 75%)}
 .gate-card{position:relative;z-index:1;width:min(400px,100%);display:grid;gap:16px}
-.gate-burger{width:56px;height:56px;border-radius:14px;background:var(--panel2);box-shadow:none;display:grid;place-items:center}
-.gate-burger img{width:44px;height:auto}
+.gate-burger{display:block;width:max-content}
+.gate-burger img{width:180px;height:auto;display:block;filter:drop-shadow(0 6px 18px rgba(4,138,254,.25))}
 .gate-title{font:400 clamp(32px,9vw,44px)/1.05 var(--display);margin:8px 0 0;letter-spacing:.02em;text-shadow:3px 3px 0 var(--cobalt)}
 .gate-card .lede{margin:0 0 8px;color:var(--muted);max-width:40ch}
 #login-step-email,#login-step-code{display:grid;gap:12px}
@@ -101,8 +101,8 @@ input.code{font:600 22px/1.2 var(--fb);letter-spacing:.3em;text-align:center;fon
 .fine{margin:8px 0 0;font-size:13px;color:var(--faint)}
 
 /* Workspace shell */
-.shell{display:grid;grid-template-columns:220px minmax(0,1fr);min-height:calc(100vh - 56px);background:linear-gradient(var(--line),var(--line)) 220px 0/1px 100% no-repeat}
-.side{position:sticky;top:56px;align-self:start;height:calc(100vh - 56px);display:flex;flex-direction:column;gap:24px;padding:24px 12px}
+.shell{display:grid;grid-template-columns:220px minmax(0,1fr);min-height:calc(100vh - 68px);background:linear-gradient(var(--line),var(--line)) 220px 0/1px 100% no-repeat}
+.side{position:sticky;top:68px;align-self:start;height:calc(100vh - 68px);display:flex;flex-direction:column;gap:24px;padding:24px 12px}
 .navigation{display:grid;gap:4px}
 .navbtn{display:flex;align-items:center;gap:12px;height:40px;padding:0 12px;border:0;border-radius:6px;background:none;color:var(--muted);font-size:15px;font-weight:600;text-align:left;transition:background .15s,color .15s}
 .navbtn svg{width:18px;height:18px;flex:none}
@@ -325,7 +325,9 @@ dialog[open]{animation:dialog-in .2s ease-out}
 
 /* Phones: the side bar becomes a tab bar at the bottom */
 @media (max-width:760px){
-  .top{padding:0 16px;gap:8px}
+  .top{padding:0 16px;gap:8px;height:60px}
+  .brand-mark img{width:46px}
+  .gate-burger img{width:140px}
   .online{margin-right:0}
   .shell{display:block;background:none}
   .side{position:fixed;inset:auto 0 0 0;z-index:6;height:auto;flex-direction:row;padding:6px 8px calc(6px + env(safe-area-inset-bottom));border-right:0;border-top:1px solid var(--line);background:var(--bg)}
