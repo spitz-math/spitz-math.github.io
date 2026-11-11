@@ -367,3 +367,38 @@ dialog[open]{animation:dialog-in .2s ease-out}
 @media (prefers-reduced-motion:reduce){
   *,*::before,*::after{animation:none!important;transition:none!important;scroll-behavior:auto!important}
 }
+
+/* Inverted frame (Kody 11/11): the opposite of Checkpoint's light page.
+   Solid orange top bar, side bar and Today block with charcoal type; content stays on charcoal. */
+:root{--frame:#ff8a3d;--frame-ink:#121315;--frame-dim:#4a2208}
+.top{background:var(--frame);border-bottom-color:var(--frame);color:var(--frame-ink)}
+.brand-copy b{color:var(--frame-ink)}
+.brand-mark{background:var(--frame-ink);box-shadow:none}
+.online,.online.bad{color:var(--frame-ink);font-weight:600}
+.online i{background:var(--frame-ink)}
+.online.bad i{background:#b3261e}
+.top .tinybtn{border-color:var(--frame-ink);color:var(--frame-ink)}
+.top .tinybtn:hover{background:rgba(0,0,0,.1)}
+.top #retry-save,.top #reload-cloud{background:var(--frame-ink);border-color:var(--frame-ink);color:#ffb4a8}
+.shell{background:linear-gradient(var(--frame),var(--frame)) 0 0/220px 100% no-repeat}
+.side{background:var(--frame)}
+.navbtn{color:var(--frame-dim)}
+.navbtn:hover{background:rgba(0,0,0,.08);color:var(--frame-ink)}
+.navbtn.active{background:var(--frame-ink);color:var(--frame)}
+.navbtn.active svg{color:var(--frame)}
+.side-foot{color:var(--frame-dim)}
+.today-head{background:var(--frame);color:var(--frame-ink);padding:32px;border-radius:14px}
+.today-head .lede,#progress-caption,.today-head .disc-core small{color:var(--frame-dim)}
+.today-head .foot,.today-head .status-line{color:var(--frame-ink)}
+.ring-dial{background:conic-gradient(var(--frame-ink) var(--progress,0%),rgba(0,0,0,.18) 0)}
+.ring-dial::before{background:var(--frame)}
+#today-checklist .compact-day{border:2px solid var(--frame)}
+.week-strip{border:2px solid var(--frame)}
+.day{border-left-color:rgba(255,138,61,.3)}
+.gate-burger{background:var(--frame);box-shadow:none}
+@media (max-width:760px){
+  .shell{background:none}
+  .side{border-top:0}
+  .today-head{padding:20px}
+  .ring-dial::before{background:var(--frame)}
+}
