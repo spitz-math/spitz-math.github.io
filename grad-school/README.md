@@ -1,6 +1,6 @@
 # Off the Clock — graduate-school workspace
 
-Static single-page client for GitHub Pages at `/grad-school/`. The look follows the Spitz Math site (same fonts and calm side bar as the Checkpoint dashboard, burger orange as this area's accent, charcoal by default with a light mode). All styling lives in `ui.css`; `index.html` keeps every element id the script uses. Backend contracts must be preserved when the look changes.
+Static single-page client for GitHub Pages at `/grad-school/`. The look follows the Spitz Math site (same fonts and calm side bar as the Checkpoint dashboard, burger orange as this area's accent, charcoal only, the inverse of the light Checkpoint dashboard). All styling lives in `ui.css`; `index.html` keeps every element id the script uses. Backend contracts must be preserved when the look changes.
 
 ## Backend contract
 

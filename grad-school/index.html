@@ -9,7 +9,6 @@
 <meta name="description" content="Grad school work in one private place.">
 <link rel="icon" type="image/png" href="../favicon-192.png">
 <link rel="apple-touch-icon" href="../apple-touch-icon.png">
-<script>try{if(localStorage.getItem('otc:theme')==='light')document.documentElement.dataset.theme='light'}catch(e){}</script>
 <link href="../fonts/bricolagegrotesque-onest-c24d53.css" rel="stylesheet">
 <link href="../fonts/bungee-pressstart2p-nunito-5675ec.css" rel="stylesheet">
 <link rel="stylesheet" href="ui.css">
@@ -19,7 +18,7 @@
 <body>
 <header class="top">
   <a class="brand" href="./" aria-label="Off the Clock home"><span class="brand-mark"><img src="../burger_mark.png" alt="" width="26" height="21"></span><span class="brand-copy"><b>Off the Clock</b></span></a>
-  <div class="top-actions"><span class="online" id="sync-indicator" role="status" aria-live="polite"><i></i><span id="sync-label">Not signed in</span></span><button id="retry-save" class="tinybtn" type="button" hidden>Try again</button><button id="reload-cloud" class="tinybtn" type="button" hidden>Load saved copy</button><button id="theme-btn" class="tinybtn icon" type="button" aria-label="Switch to light mode" title="Light or dark"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path class="moon" d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z"/></svg></button><button id="account-btn" class="tinybtn" type="button" hidden>Sign out</button></div>
+  <div class="top-actions"><span class="online" id="sync-indicator" role="status" aria-live="polite"><i></i><span id="sync-label">Not signed in</span></span><button id="retry-save" class="tinybtn" type="button" hidden>Try again</button><button id="reload-cloud" class="tinybtn" type="button" hidden>Load saved copy</button><button id="account-btn" class="tinybtn" type="button" hidden>Sign out</button></div>
 </header>
 <section id="gate">
 <div class="gate-card">
@@ -104,16 +103,6 @@
 <div class="field"><label for="course-b">Name or code</label><input id="course-b" required maxlength="100" placeholder="EDCI 7355"></div><div class="field"><label for="course-b-description">Full title</label><input id="course-b-description" maxlength="250" placeholder="Course title"></div><div class="field"><label for="course-b-instructor">Professor</label><input id="course-b-instructor" maxlength="150" placeholder="Professor name"></div><div class="field"><label id="course-b-color-label">Color</label><div class="swatches" role="radiogroup" aria-labelledby="course-b-color-label"><label class="cc-orange" title="Orange"><input type="radio" name="course-b-color" value="orange" aria-label="Orange"><span></span></label><label class="cc-blue" title="Blue"><input type="radio" name="course-b-color" value="blue" aria-label="Blue"><span></span></label><label class="cc-teal" title="Teal"><input type="radio" name="course-b-color" value="teal" aria-label="Teal"><span></span></label><label class="cc-pink" title="Pink"><input type="radio" name="course-b-color" value="pink" aria-label="Pink"><span></span></label><label class="cc-violet" title="Violet"><input type="radio" name="course-b-color" value="violet" aria-label="Violet"><span></span></label><label class="cc-gold" title="Gold"><input type="radio" name="course-b-color" value="gold" aria-label="Gold"><span></span></label></div></div>
 <div class="form-actions"><div class="right"><button class="btn primary" type="submit">Save courses</button></div></div></form></dialog>
 <input id="import-file" type="file" accept=".json,application/json" hidden>
-<script>
-(function(){
- const root=document.documentElement,btn=document.getElementById('theme-btn'),meta=document.querySelector('meta[name="theme-color"]');
- const sun='<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/>';
- const moon='<path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z"/>';
- function paint(){const light=root.dataset.theme==='light';btn.querySelector('svg').innerHTML=light?moon:sun;btn.setAttribute('aria-label',light?'Switch to dark mode':'Switch to light mode');meta.content=light?'#f6f6f8':'#121315'}
- btn.addEventListener('click',()=>{if(root.dataset.theme==='light')delete root.dataset.theme;else root.dataset.theme='light';try{localStorage.setItem('otc:theme',root.dataset.theme||'dark')}catch(e){}paint()});
- paint();
-})();
-</script>
 <script>
 (function(){'use strict';
 const $=s=>document.querySelector(s), $$=s=>Array.from(document.querySelectorAll(s));

@@ -2,7 +2,7 @@
    Same family as the Checkpoint dashboard (Bricolage Grotesque + Onest, calm side bar,
    light rules instead of boxes) with burger orange as this area's one accent.
    Arcade = pink, Checkpoint = cyan, Off the Clock = orange.
-   Charcoal by default (same dark as the Checkpoint dashboard), light mode behind the sun button.
+   Charcoal only: the inverse of Checkpoint's light dashboard. Active states are solid orange with charcoal text.
    Radii 6 / 14 / 999. Spacing 4-8-12-16-24-32-48-80. Motion: transform/opacity only. */
 
 :root{
@@ -16,16 +16,6 @@
   --accent:#ff8a3d; --accent-hi:#ffa463; --accent-ink:#1f0c00; --accent-soft:rgba(255,138,61,.15);
   --ok:#4cc27a; --ok-soft:rgba(76,194,122,.14); --warn:#f0b43a; --bad:#f07167;
   --hover:rgba(255,255,255,.05); --grid:rgba(255,138,61,.30); --shadow:rgba(0,0,0,.5);
-}
-/* Light mode (sun button): neutral off-white */
-:root[data-theme="light"]{
-  color-scheme:light;
-  --bg:#f6f6f8; --panel:#ffffff; --panel2:#ececf0; --field:#ffffff;
-  --line:#e3e3e9; --line2:#cfcfd8;
-  --ink:#1a1b24; --muted:#5b5d6b; --faint:#8a8c99;
-  --accent:#d9600b; --accent-hi:#c2540a; --accent-ink:#ffffff; --accent-soft:rgba(217,96,11,.10);
-  --ok:#1f8f52; --ok-soft:rgba(31,143,82,.10); --warn:#a8670f; --bad:#c9382e;
-  --hover:rgba(26,27,36,.05); --grid:rgba(217,96,11,.20); --shadow:rgba(26,27,36,.16);
 }
 
 *{box-sizing:border-box}
@@ -64,7 +54,7 @@ label{font-size:13px;font-weight:600;color:var(--muted)}
 /* Top bar */
 .top{position:sticky;top:0;z-index:5;height:56px;display:flex;align-items:center;justify-content:space-between;gap:16px;padding:0 24px;background:var(--bg);border-bottom:1px solid var(--line)}
 .brand{display:flex;align-items:center;gap:10px;text-decoration:none;min-width:0}
-.brand-mark{flex:none;width:32px;height:32px;border-radius:6px;background:#fff;display:grid;place-items:center}
+.brand-mark{flex:none;width:32px;height:32px;border-radius:6px;background:#0b0b0c;box-shadow:inset 0 0 0 1.5px var(--accent);display:grid;place-items:center}
 .brand-mark img{width:26px;height:auto;display:block}
 .brand-copy b{font:800 18px/1 var(--fd);white-space:nowrap}
 .top-actions{display:flex;align-items:center;gap:8px;min-width:0}
@@ -85,7 +75,7 @@ label{font-size:13px;font-weight:600;color:var(--muted)}
   background:repeating-linear-gradient(90deg,var(--grid) 0 1px,transparent 1px 72px),repeating-linear-gradient(0deg,var(--grid) 0 1px,transparent 1px 48px);
   transform:perspective(420px) rotateX(62deg);transform-origin:bottom;-webkit-mask-image:linear-gradient(transparent,#000 75%);mask-image:linear-gradient(transparent,#000 75%)}
 .gate-card{position:relative;z-index:1;width:min(400px,100%);display:grid;gap:16px}
-.gate-burger{width:56px;height:56px;border-radius:14px;background:#fff;display:grid;place-items:center}
+.gate-burger{width:56px;height:56px;border-radius:14px;background:#0b0b0c;box-shadow:inset 0 0 0 2px var(--accent);display:grid;place-items:center}
 .gate-burger img{width:44px;height:auto}
 .gate-title{font:400 clamp(32px,9vw,44px)/1.05 var(--display);margin:8px 0 0;letter-spacing:.02em}
 .gate-card .lede{margin:0 0 8px;color:var(--muted);max-width:40ch}
@@ -113,8 +103,8 @@ input.code{font:600 22px/1.2 var(--fb);letter-spacing:.3em;text-align:center;fon
 .navbtn{display:flex;align-items:center;gap:12px;height:40px;padding:0 12px;border:0;border-radius:6px;background:none;color:var(--muted);font-size:15px;font-weight:600;text-align:left;transition:background .15s,color .15s}
 .navbtn svg{width:18px;height:18px;flex:none}
 .navbtn:hover{background:var(--hover);color:var(--ink)}
-.navbtn.active{background:var(--accent-soft);color:var(--ink)}
-.navbtn.active svg{color:var(--accent)}
+.navbtn.active{background:var(--accent);color:var(--accent-ink)}
+.navbtn.active svg{color:var(--accent-ink)}
 .side-foot{margin-top:auto;padding:0 12px;font-size:13px;color:var(--faint)}
 .main{width:100%;max-width:1120px;padding:24px 48px 80px}
 .toolbar{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:32px}
@@ -169,8 +159,8 @@ button.mission-title:hover{color:var(--accent)}
 .toggle{display:inline-flex;align-items:center;gap:6px;height:32px;padding:0 10px;border:1px solid var(--line2);border-radius:6px;background:none;color:var(--muted);font-size:13px;font-weight:600;white-space:nowrap;transition:background .15s,border-color .15s,color .15s}
 .toggle svg{width:14px;height:14px}
 .toggle:hover{color:var(--ink);border-color:var(--faint)}
-.toggle.on{background:var(--accent-soft);border-color:var(--accent);color:var(--ink)}
-.toggle.sub.on{background:var(--ok-soft);border-color:var(--ok)}
+.toggle.on{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.toggle.sub.on{background:var(--ok);border-color:var(--ok);color:#06210f}
 .step-progress{display:flex;align-items:center;gap:12px;margin-top:8px;font-size:13px;color:var(--muted);min-width:0}
 .step-progress strong{flex:none;font-weight:600;color:var(--ink)}
 .step-next{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
@@ -214,8 +204,8 @@ button.mission-title:hover{color:var(--accent)}
 .day .count{min-height:18px;font-size:12px;font-weight:600;color:var(--accent)}
 .day .count.none{color:var(--faint);font-weight:400}
 .day .dot{display:none}
-.day.today{background:var(--accent-soft)}
-.day.today .dow{color:var(--ink);font-weight:600}
+.day.today{background:var(--accent);color:var(--accent-ink)}
+.day.today .dow,.day.today .count{color:var(--accent-ink);font-weight:600}
 
 /* Day plan: the Week view lists days as rows; today's steps on Today get a panel */
 .day-planner{margin-top:24px;border-top:1px solid var(--line)}
@@ -262,7 +252,7 @@ select.day-move{width:auto;max-width:40%;height:30px;padding:0 8px;font-size:12p
 .seg{display:inline-flex;gap:2px;padding:3px;border-radius:6px;background:var(--panel2)}
 .filter{height:32px;padding:0 12px;border:0;border-radius:6px;background:none;color:var(--muted);font-size:13px;font-weight:600}
 .filter:hover{color:var(--ink)}
-.filter.active{background:var(--panel);color:var(--ink);box-shadow:0 1px 2px var(--shadow)}
+.filter.active{background:var(--accent);color:var(--accent-ink)}
 .search{flex:1;max-width:320px;height:38px}
 .week-toolbar{display:flex;gap:8px}
 
@@ -313,12 +303,6 @@ dialog[open]{animation:dialog-in .2s ease-out}
 .by-class .cc-pink,.tag.cc-pink,.day-group-course.cc-pink,.course-entry.cc-pink,.swatches .cc-pink{--accent:#f472b6;--accent-soft:rgba(244,114,182,0.15)}
 .by-class .cc-violet,.tag.cc-violet,.day-group-course.cc-violet,.course-entry.cc-violet,.swatches .cc-violet{--accent:#a78bfa;--accent-soft:rgba(167,139,250,0.15)}
 .by-class .cc-gold,.tag.cc-gold,.day-group-course.cc-gold,.course-entry.cc-gold,.swatches .cc-gold{--accent:#f7c948;--accent-soft:rgba(247,201,72,0.15)}
-:root[data-theme="light"] .by-class .cc-orange,:root[data-theme="light"] .tag.cc-orange,:root[data-theme="light"] .day-group-course.cc-orange,:root[data-theme="light"] .course-entry.cc-orange,:root[data-theme="light"] .swatches .cc-orange{--accent:#d9600b;--accent-soft:rgba(217,96,11,0.1)}
-:root[data-theme="light"] .by-class .cc-blue,:root[data-theme="light"] .tag.cc-blue,:root[data-theme="light"] .day-group-course.cc-blue,:root[data-theme="light"] .course-entry.cc-blue,:root[data-theme="light"] .swatches .cc-blue{--accent:#2f6fdb;--accent-soft:rgba(47,111,219,0.1)}
-:root[data-theme="light"] .by-class .cc-teal,:root[data-theme="light"] .tag.cc-teal,:root[data-theme="light"] .day-group-course.cc-teal,:root[data-theme="light"] .course-entry.cc-teal,:root[data-theme="light"] .swatches .cc-teal{--accent:#0d8a7a;--accent-soft:rgba(13,138,122,0.1)}
-:root[data-theme="light"] .by-class .cc-pink,:root[data-theme="light"] .tag.cc-pink,:root[data-theme="light"] .day-group-course.cc-pink,:root[data-theme="light"] .course-entry.cc-pink,:root[data-theme="light"] .swatches .cc-pink{--accent:#c4307f;--accent-soft:rgba(196,48,127,0.1)}
-:root[data-theme="light"] .by-class .cc-violet,:root[data-theme="light"] .tag.cc-violet,:root[data-theme="light"] .day-group-course.cc-violet,:root[data-theme="light"] .course-entry.cc-violet,:root[data-theme="light"] .swatches .cc-violet{--accent:#6d4ae0;--accent-soft:rgba(109,74,224,0.1)}
-:root[data-theme="light"] .by-class .cc-gold,:root[data-theme="light"] .tag.cc-gold,:root[data-theme="light"] .day-group-course.cc-gold,:root[data-theme="light"] .course-entry.cc-gold,:root[data-theme="light"] .swatches .cc-gold{--accent:#9a7000;--accent-soft:rgba(154,112,0,0.1)}
 .by-class .mission-row{box-shadow:inset 3px 0 0 var(--accent);padding-left:16px}
 .by-class .day-group{box-shadow:inset 3px 0 0 var(--accent);padding-left:12px}
 .by-class .day-group+.day-group{padding-top:8px}
