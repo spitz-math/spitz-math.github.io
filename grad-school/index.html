@@ -177,6 +177,48 @@ function taskHTML(t,i,clickTitle=false){
  const steps=total?`<div class="step-progress"><strong>${done}/${total} WORK STEPS</strong><span class="step-next">${next?'NEXT: '+escapeHTML(next):'ALL PREPARATION COMPLETE'}</span></div><div class="step-track"><span style="width:${percentage}%"></span></div><details class="task-checklist" data-checklist="${id}" ${openChecklistIds.has(t.id)?'open':''}><summary>${openChecklistIds.has(t.id)?'HIDE':'OPEN'} CHECKLIST · ${done}/${total}</summary><div class="step-items">${items.map(step=>`<label class="step-entry"><input type="checkbox" data-step-task="${id}" data-step-id="${escapeHTML(step.id)}" ${step.done?'checked':''}><span>${escapeHTML(step.text)}</span></label>`).join('')}${t.submissionRequired===false?'':`<label class="step-entry submit-entry"><input type="checkbox" data-submit-check="${id}" ${t.submission==='submitted'?'checked':''}><span>Confirmed submitted in Brightspace</span></label>`}</div></details>`:'';
  return `<div class="mission-row"><span class="m-index">${String(i+1).padStart(2,'0')}</span><div class="mission-body">${clickTitle?`<button data-edit="${id}" class="mission-title ${isDone(t)?'done':''}">${escapeHTML(t.title)}</button>`:`<div class="mission-title ${isDone(t)?'done':''}">${escapeHTML(t.title)}</div>`}<div class="meta"><span class="tag ${t.course===app.courses[0].id?'edfr':'edci'}">${name}</span><span class="${d.cl}">${escapeHTML(d.text)}</span>${t.target?`<span>PLAN ${showDate(t.target).toUpperCase()}</span>`:''}${t.submission==='submitted'?`<span style="color:var(--success)">SUBMITTED ✓</span>`:''}</div>${steps}</div>${statusButtons(t)}</div>`;
 }
+
+function plannedDayEntries(date){
+ const rows=[];
+ for(const t of app.tasks){
+  for(const step of t.checklist||[])if(step.planDate===date)rows.push({t,step,type:'step'});
+  if(t.submissionRequired!==false&&(t.target||t.due)===date)rows.push({t,type:'submit'});
+ }
+ return rows;
+}
+function isEntryDone(entry){return entry.type==='submit'?entry.t.submission==='submitted':entry.step.done}
+function displayStepLabel(label){return String(label).replace(/^(?:MON|TUE|WED|THU|FRI|SAT|SUN)\s+\d{1,2}\/\d{1,2}\s*[—–-]\s*/i,'')}
+function moveStepOptions(current,week){
+ return '<option value="">UNSCHEDULE</option>'+Array.from({length:7},(_,i)=>{
+  const day=shiftISO(week.start,i),d=dateObj(day),label=d.toLocaleDateString(undefined,{weekday:'short',month:'short',day:'numeric'}).toUpperCase();
+  return '<option value="'+day+'" '+(day===current?'selected':'')+'>'+label+'</option>';
+ }).join('');
+}
+function plannedDayCard(date,week,compact=false){
+ const rows=plannedDayEntries(date),done=rows.filter(isEntryDone).length,remaining=rows.length-done;
+ const d=dateObj(date),weekday=d.toLocaleDateString(undefined,{weekday:'long'}).toUpperCase(),isToday=date===dayISO();
+ const due=app.tasks.filter(t=>t.due===date),dueOpen=due.filter(t=>t.submissionRequired!==false&&t.submission!=='submitted').length;
+ const groups=new Map();
+ for(const r of rows){if(!groups.has(r.t.id))groups.set(r.t.id,{task:r.t,entries:[]});groups.get(r.t.id).entries.push(r);}
+ const groupHtml=Array.from(groups.values()).map(({task,entries})=>{
+  const id=escapeHTML(task.id),c=course(task),cn=escapeHTML(c?.name||'COURSE');
+  const work=entries.map(r=>{
+   const submit=r.type==='submit',attr=submit?'data-submit-check="'+id+'"':'data-step-task="'+id+'" data-step-id="'+escapeHTML(r.step.id)+'"';
+   const label=submit?'Confirm submitted in Brightspace':displayStepLabel(r.step.text);
+   const move=submit||compact?'':'<select class="day-move" data-replan-task="'+id+'" data-replan-step="'+escapeHTML(r.step.id)+'" aria-label="Reschedule '+escapeHTML(r.step.text)+'" title="Move this step to another day">'+moveStepOptions(date,week)+'</select>';
+   return '<div class="day-action"><label class="day-action-check '+(submit?'day-action-submit':'')+'"><input type="checkbox" '+attr+' '+(isEntryDone(r)?'checked':'')+'><span>'+escapeHTML(label)+'</span></label>'+move+'</div>';
+  }).join('');
+  return '<div class="day-group"><div class="day-group-title"><span class="day-group-course '+(task.course===app.courses[0].id?'edfr':'edci')+'">'+cn+'</span><button type="button" data-edit="'+id+'" title="Edit assignment and its work steps">'+escapeHTML(task.title)+'</button></div><div class="day-actions">'+work+'</div></div>';
+ }).join('');
+ const dueHtml=due.length?'<details class="day-deadlines"><summary>'+due.length+' OFFICIAL DEADLINE'+(due.length===1?'':'S')+(dueOpen?' · '+dueOpen+' TO CONFIRM':'')+'</summary><div class="day-deadline-list">'+due.map(t=>'<div><span>'+escapeHTML(t.title)+'</span><b class="'+(t.submission==='submitted'?'submitted':'')+'">'+(t.submission==='submitted'?'SUBMITTED':t.submissionRequired===false?'PREP ONLY':'DUE')+'</b></div>').join('')+'</div></details>':'';
+ return '<section class="day-plan-card '+(isToday?'current-day ':'')+(compact?'compact-day':'')+'" data-plan-day="'+date+'"><div class="day-plan-head"><div><span class="day-plan-kicker">'+(compact?"TODAY'S CHECKLIST":weekday)+(isToday&&!compact?' · TODAY':'')+'</span><h3>'+escapeHTML(showDate(date))+'</h3></div><div class="day-count"><strong>'+done+'/'+rows.length+'</strong><small>'+(remaining?remaining+' LEFT':'CLEAR')+'</small></div></div><div class="day-plan-body">'+(groupHtml||'<div class="day-empty">No work steps scheduled for this day.</div>')+dueHtml+'</div></section>';
+}
+function unscheduledStepsCard(){
+ const pending=app.tasks.flatMap(t=>(t.checklist||[]).filter(step=>!step.planDate&&!step.done).map(step=>({t,step})));
+ if(!pending.length)return '';
+ return '<section class="day-plan-card unscheduled-plan"><div class="day-plan-head"><div><span class="day-plan-kicker">SCHEDULE NEXT</span><h3>Unscheduled steps</h3></div><span class="day-count"><strong>'+pending.length+'</strong><small>NEED DATES</small></span></div><div class="day-plan-body">'+pending.map(({t,step})=>'<div class="unscheduled-entry"><span>'+escapeHTML(step.text)+'</span><button type="button" data-edit="'+escapeHTML(t.id)+'">SET DATE · '+escapeHTML(t.title)+'</button></div>').join('')+'</div></section>';
+}
+
 function render(){if($('#workspace').hidden)return;$('#today-label').textContent=new Date().toLocaleDateString(undefined,{weekday:'short',month:'short',day:'numeric',year:'numeric'}).toUpperCase();let all=app.tasks,active=sortedTasks(all.filter(t=>t.submission!=='submitted')),targets=active.filter(t=>(t.target&&diffDays(t.target)<=0&&!isDone(t))||(t.due&&diffDays(t.due)<=3)),focus=targets.length?targets.slice(0,5):active.slice(0,4);const todayRemaining=active.filter(t=>(t.target&&diffDays(t.target)<=0&&!isDone(t))||(t.due&&diffDays(t.due)<=0));const unknown=active.filter(t=>!t.due&&t.submissionRequired!==false).length;const currentWeek=courseWeek(),selectedWeek=courseWeek(weekOffset);const dueThisWeek=all.filter(t=>inCourseWeek(t.due,currentWeek));const totalWeek=dueThisWeek.length,doneWeek=dueThisWeek.filter(isDone).length,pct=totalWeek?Math.round(100*doneWeek/totalWeek):0;
 const clear=all.length>0&&todayRemaining.length===0&&unknown===0;
 $('#hero-kicker').textContent=preview?'// DESIGN PREVIEW / NO CLOUD SYNC':clear?'// NO URGENT MISSIONS / CLEAR':unknown?'// SOME DATES UNVERIFIED':'// CURRENT STATUS / IN PROGRESS';
@@ -191,17 +233,18 @@ $('#today-label').textContent+=` · ${currentWeek.label}`;
 $('#mission-week-heading').textContent=currentWeek.label+' / WED–TUE';
 $('#mission-week-subheading').textContent=currentWeek.dates+' · Official course week. Use the Week tab to browse upcoming weeks.';
 $('#week-heading').textContent=selectedWeek.label+' / WED–TUE';
-$('#week-subheading').textContent=selectedWeek.dates+' · Brightspace due dates and your personal targets';
+$('#week-subheading').textContent=selectedWeek.dates+' · Day-by-day checklists and official deadlines';
 $('#week-current').disabled=weekOffset===0;
 function weekGrid(node,w){
  node.innerHTML=Array.from({length:7},(_,i)=>{
-  const date=shiftISO(w.start,i),d=dateObj(date),due=all.filter(t=>t.due===date),pending=due.filter(t=>!isDone(t)).length;
-  return `<div class="day ${date===dayISO()?'today':''}"><div class="dow">${d.toLocaleDateString(undefined,{weekday:'short'}).toUpperCase()}</div><div class="dom">${d.getDate()}</div><div class="count ${pending?'':'none'}">${due.length?pending+' OPEN':'CLEAR'}</div><div class="dot ${due.length?'':'none'}"></div></div>`;
+  const date=shiftISO(w.start,i),d=dateObj(date),due=all.filter(t=>t.due===date),rows=plannedDayEntries(date),open=rows.filter(r=>!isEntryDone(r)).length;
+  return '<div class="day '+(date===dayISO()?'today':'')+'"><div class="dow">'+d.toLocaleDateString(undefined,{weekday:'short'}).toUpperCase()+'</div><div class="dom">'+d.getDate()+'</div><div class="count '+(open?'':'none')+'">'+(rows.length?open+' LEFT':due.length?due.length+' DUE':'CLEAR')+'</div><div class="dot '+(rows.length||due.length?'':'none')+'"></div></div>';
  }).join('');
 }
 weekGrid($('#week-strip'),currentWeek);
 weekGrid($('#week-strip-full'),selectedWeek);
-$('#week-list').innerHTML=sortedTasks(all.filter(t=>inCourseWeek(t.due,selectedWeek)||inCourseWeek(t.target,selectedWeek))).map((t,i)=>taskHTML(t,i,true)).join('')||`<div class="empty"><h3>NOTHING ON THE RADAR</h3><p>No dated tasks in ${selectedWeek.label.toLowerCase()}. Verify Brightspace deadlines before assuming you're clear.</p></div>`;
+$('#today-checklist').innerHTML=plannedDayCard(dayISO(),currentWeek,true);
+$('#week-list').innerHTML=Array.from({length:7},(_,i)=>plannedDayCard(shiftISO(selectedWeek.start,i),selectedWeek)).join('')+unscheduledStepsCard();
 const q=$('#search-tasks').value.toLowerCase().trim();let filtered=sortedTasks(all.filter(t=>!q||t.title.toLowerCase().includes(q)||course(t)?.name.toLowerCase().includes(q)||t.notes.toLowerCase().includes(q)));if(filter==='active')filtered=filtered.filter(t=>!isDone(t));else if(filter==='done')filtered=filtered.filter(t=>isDone(t));else if(filter==='submitted')filtered=filtered.filter(t=>t.submission==='submitted');
 $('#task-list').innerHTML=filtered.map((t,i)=>taskHTML(t,i,true)).join('')||`<div class="empty"><div class="empty-icon">Ø</div><h3>NO MATCHES</h3><p>Try a different filter, import your starter data, or create a new assignment.</p></div>`;
 }
@@ -292,7 +335,16 @@ function handleStepToggle(e){
  }
  makeChange();
 }
-$$('#mission-list,#task-list,#week-list').forEach(el=>{el.addEventListener('click',handleTaskClick);el.addEventListener('change',handleStepToggle)});$('#mission-list').addEventListener('click',e=>{if(e.target.closest('#empty-new'))openTask()});
+$$('#mission-list,#task-list,#week-list,#today-checklist').forEach(el=>{
+ el.addEventListener('click',handleTaskClick);
+ el.addEventListener('change',e=>{
+  if(e.target.matches('[data-replan-task]')){
+   const t=app.tasks.find(x=>x.id===e.target.dataset.replanTask);
+   const step=(t?.checklist||[]).find(x=>x.id===e.target.dataset.replanStep);
+   if(step){step.planDate=e.target.value||'';makeChange()}
+  }else handleStepToggle(e);
+ });
+});$('#mission-list').addEventListener('click',e=>{if(e.target.closest('#empty-new'))openTask()});
 $('#task-form').addEventListener('submit',e=>{
  e.preventDefault();
  const id=$('#task-id').value||uniqueId(),old=app.tasks.find(x=>x.id===id);
