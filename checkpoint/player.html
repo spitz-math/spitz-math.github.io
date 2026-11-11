@@ -2553,7 +2553,26 @@ const now=()=>Date.now()-ACT.t0;
 function logEv(type,detail){ if(ACT.events.length<6000) ACT.events.push(detail===undefined?{t:now(),type,n:ACT.cur}:{t:now(),type,n:ACT.cur,detail}); }
 function clockStop(){ if(ACT.cur!=null&&ACT.since!=null){ ACT.items[ACT.cur].ms+=Date.now()-ACT.since; } ACT.since=null; }
 function clockStart(){ if(ACT.cur!=null&&!ACT.paused&&!document.hidden&&ACT.since==null) ACT.since=Date.now(); }
-function actEnter(n){ clockStop(); if(ACT.cur!=null&&ACT.cur!==n) logEv('leave'); ACT.cur=n; if(n!=null){ ACT.items[n].visits++; logEv('enter'); } clockStart(); }
+/* calculator work: every calculation on the basic calculator, kept per question so the teacher can see it (dashboard › student).
+   CW.by = {question n: ["12 × 3 = 36", ...]}; CW.tok = the calculation being typed now, CW.n = the question it was started on */
+var CW={by:{}, dz:{}, dv:{}, tok:[], n:null, entry:false, rev:0};   // dz = {question n: what the student put on Desmos on that question (LaTeX; a table is 'T:'+JSON)}, dv = {n: [xmin,ymin,xmax,ymax] of their graph}
+const cwIsNum=t=>/^[-√0-9.E]/.test(t);
+function cwTok(t,num){ if(CW.n==null) CW.n=ACT.cur; const L=CW.tok, last=L[L.length-1];
+  if(num&&L.length&&(CW.entry||cwIsNum(last))) L[L.length-1]=t; else L.push(t); CW.entry=!!num; }
+function cwEnd(tail){ const n=CW.n!=null?CW.n:ACT.cur, line=CW.tok.join(' ')+(tail?' '+tail:''); CW.tok=[]; CW.entry=false; CW.n=null;
+  if(n==null||!line.trim()) return; const L=CW.by[n]||(CW.by[n]=[]); L.push(line.slice(0,120)); if(L.length>60) L.shift();
+  CW.rev++; if(window.__spitzChanged) window.__spitzChanged(); }
+function cwAfter(k,pre){ if(pre.err&&k!=='ON/C') return; const L=CW.tok, hasOp=L.some(t=>'+−×÷'.includes(t));
+  if(/^[0-9.]$/.test(k)||k==='+/−') cwTok(BC.d,true);
+  else if('+−×÷'.includes(k)){ if(!L.length) cwTok(pre.d,false); if('+−×÷'.includes(L[L.length-1])) L[L.length-1]=k; else L.push(k); CW.entry=false; }
+  else if(k==='='){ if(L.length>1){ L.push('=',BC.d); cwEnd(); } }
+  else if(k==='%'){ if(!L.length) cwTok(pre.d,false); L.push('%','=',BC.d); cwEnd(); }
+  else if(k==='√'){ if(!L.length||L.length===1){ CW.n=CW.n!=null?CW.n:ACT.cur; CW.tok=['√'+pre.d,'=',BC.d]; cwEnd(); } else { L[L.length-1]=cwIsNum(L[L.length-1])?'√'+pre.d:L[L.length-1]; if(!cwIsNum(L[L.length-1])) L.push('√'+pre.d); CW.entry=false; } }
+  else if(k==='M+'||k==='M−'){ if(!L.length) cwTok(pre.d,false); else if(hasOp) L.push('=',BC.d); L.push(k); cwEnd(); }
+  else if(k==='MRC'){ if(pre.last!=='MRC'){ cwTok(BC.d,true); CW.entry=false; } }
+  else if(k==='ON/C'){ if(pre.last==='ON/C'||pre.fresh||pre.err){ if(L.length>1) cwEnd('(cleared)'); else { CW.tok=[]; CW.n=null; CW.entry=false; } }
+    else if(L.length&&cwIsNum(L[L.length-1])){ L.pop(); CW.entry=false; } } }
+function actEnter(n){ clockStop(); if(CW.tok.length&&CW.n!==n) cwEnd('…'); if(window.dzLeave) dzLeave(n); if(ACT.cur!=null&&ACT.cur!==n) logEv('leave'); ACT.cur=n; if(n!=null){ ACT.items[n].visits++; logEv('enter'); } clockStart(); }
 function actLeaveAll(){ clockStop(); if(ACT.cur!=null) logEv('leave'); ACT.cur=null; }
 function actTool(name){ logEv('tool',name); if(ACT.cur!=null){ const t=ACT.items[ACT.cur].tools; t[name]=(t[name]||0)+1; } }
 function actAnswerCheck(it){ const s=JSON.stringify(S.answers[it.n]??null); if(s===ACT.lastAns[it.n]) return;
@@ -2577,10 +2596,11 @@ function sessionExport(){ clockStop(); const out={
   clockStart(); return out; }
 /* everything needed to put a student back where they were (refresh, sleep, sign in again) */
 function sessionState(){ clockStop(); const st={v:1, rev:Date.now(), i:S.i, answers:S.answers, flags:S.flags, sticky:S.sticky, notes:S.notes, gd:S.gd,
-  submitted:!!S.submitted, submittedAt:S.submittedAt||null,
+  submitted:!!S.submitted, submittedAt:S.submittedAt||null, calc:Object.assign({},CW.by,{d:CW.dz,v:CW.dv}),
   act:{elapsedMs:now(), away:ACT.away, rc:ACT.rc, awayMs:ACT.awayMs+(ACT.awaySince?Date.now()-ACT.awaySince:0), items:ACT.items}}; clockStart(); return st; }
 function sessionRestore(st,events){ if(!st) return;
   S.answers=st.answers||{}; S.flags=st.flags||{}; S.sticky=st.sticky||{}; S.notes=st.notes||{}; S.gd=st.gd||{};
+  { const c=st.calc&&typeof st.calc==='object'?Object.assign({},st.calc):{}; CW.dz=c.d&&typeof c.d==='object'?c.d:{}; CW.dv=c.v&&typeof c.v==='object'?c.v:{}; delete c.d; delete c.v; CW.by=c; } CW.tok=[]; CW.n=null; CW.rev++;
   if(st.act){ ACT.t0=Date.now()-(st.act.elapsedMs||0); ACT.away=st.act.away||0; ACT.rc=st.act.rc||0; ACT.awayMs=st.act.awayMs||0;
     ITEMS.forEach(it=>{ const r=st.act.items&&st.act.items[it.n]; if(r) Object.assign(ACT.items[it.n],r); }); }
   ITEMS.forEach(it=>{ ACT.lastAns[it.n]=JSON.stringify(S.answers[it.n]??null); });
@@ -2589,7 +2609,7 @@ function sessionRestore(st,events){ if(!st) return;
   S.i=Math.max(0,Math.min(ITEMS.length-1,st.i|0)); }
 window.SpitzSession={export:sessionExport, state:sessionState, dialog:(o)=>dialog(o), toast:(t)=>toast(t), teacherHold:k=>teacherHold(k), get hold(){ return hold; },
   get submitted(){ return !!S.submitted; }, get started(){ return !!S.started; }, get item(){ return S.i+1; },
-  answeredCount:()=>ITEMS.filter(answered).length};
+  answeredCount:()=>ITEMS.filter(answered).length, calcWork:()=>Object.assign({},CW.by,{d:CW.dz,v:CW.dv}), get calcRev(){ return CW.rev; }, calcEnd:()=>{ if(CW.tok.length) cwEnd('…'); if(DZ.t) dzSnap(); }};
 
 /* ================= testing-site chrome ================= */
 const host=$('#itemHost'), page=$('#page'), wrap=$('#itemwrap'), app=$('#app');
@@ -2809,7 +2829,7 @@ Object.keys(panels).forEach(k=>{
 });
 
 /* calculator: chooser, then Desmos through the Desmos API set up like the Texas STAAR version (no green banner) */
-const USE_DESMOS_API=false;  // true = Desmos API (needs a production key; a trial key shows a watermark). false = Texas testing page with the banner cropped off.
+const USE_DESMOS_API=true;   // true = Desmos API (the key below is on Desmos's free "personal or school projects" plan since 11/9; this also lets the teacher see each question's expressions). false = Texas testing page with the banner cropped off.
 const DESMOS_KEY='8f04c5aafb7b4926872111685875396b';   // Mr. Spitz's Desmos API key
 let DESMOS_BANNER_PX=50;     // height of the green "Texas Version" banner to crop off (teacher fine-tune: click the calculator title bar, then Ctrl+Alt+Up/Down)
 try{ const v=localStorage.getItem('spitzDesmosCrop'); if(v!==null&&!isNaN(+v)) DESMOS_BANNER_PX=+v; }catch(e){}
@@ -2830,7 +2850,7 @@ document.addEventListener('keydown',e=>{ if(!(e.ctrlKey&&e.altKey)||$('#calcPane
 function startDesmos(){
   if(!USE_DESMOS_API){ useFrameFallback(); return; }
   if(desmosCalc||desmosFailed){ return; }
-  const make=()=>{ try{ desmosCalc=Desmos.GraphingCalculator($('#desmosHost'),DESMOS_TX); window.__desmos=desmosCalc; }catch(e){ useFrameFallback(); } };
+  const make=()=>{ try{ desmosCalc=Desmos.GraphingCalculator($('#desmosHost'),DESMOS_TX); window.__desmos=desmosCalc; dzWatch(); }catch(e){ useFrameFallback(); } };
   if(window.Desmos){ make(); return; }
   if(desmosLoading) return; desmosLoading=true;
   const s=document.createElement('script'); s.src='https://www.desmos.com/api/v1.12/calculator.js?apiKey='+DESMOS_KEY;
@@ -2839,6 +2859,26 @@ function startDesmos(){
   document.head.appendChild(s);
   setTimeout(()=>{ if(!desmosCalc&&!desmosFailed) useFrameFallback(); },12000);
 }
+/* Desmos on each question, like STAAR (Kody checked Cambium 11/9): every question starts with a blank calculator, also when the student
+   goes back to one. The teacher's copy: what the student puts on the calculator on a question is kept for that question (CW.dz);
+   coming back to a question adds to what was kept there before. */
+const DZ={n:null, t:null, prev:[], last:''};
+function dzList(){ let st; try{ st=desmosCalc.getState(); }catch(e){ return []; } const out=[], vp=st&&st.graph&&st.graph.viewport;
+  ((st&&st.expressions&&st.expressions.list)||[]).forEach(e=>{
+    if(e.type==='expression'&&e.latex&&String(e.latex).trim()) out.push(String(e.latex).slice(0,300));
+    else if(e.type==='table'&&Array.isArray(e.columns)){ const c=e.columns.filter(c=>c&&c.latex).slice(0,6).map(c=>({l:String(c.latex).slice(0,40),v:(c.values||[]).slice(0,25).map(v=>String(v).slice(0,20))}));
+      while(c.length&&c.every(x=>x.v.length&&x.v[x.v.length-1]==='')) c.forEach(x=>x.v.pop());   // the empty row Desmos keeps at the bottom
+      if(c.length) out.push('T:'+JSON.stringify(c)); } });
+  DZ.vp=vp&&[vp.xmin,vp.ymin,vp.xmax,vp.ymax].every(isFinite)?[vp.xmin,vp.ymin,vp.xmax,vp.ymax].map(x=>+(+x).toPrecision(5)):null;
+  return out.slice(0,30); }
+function dzSnap(){ clearTimeout(DZ.t); DZ.t=null; const n=DZ.n; if(n==null||!desmosCalc) return;
+  const v=[...new Set([...DZ.prev,...dzList()])].slice(-30), key=JSON.stringify(v); if(key===DZ.last||!v.length) return; DZ.last=key;
+  CW.dz[n]=v; if(DZ.vp) CW.dv[n]=DZ.vp; CW.rev++; if(window.__spitzChanged) window.__spitzChanged(); }
+function dzBase(n){ DZ.n=n; DZ.prev=(CW.dz[n]||[]).map(x=>x[0]==='~'?x.slice(1):x); DZ.last=JSON.stringify(CW.dz[n]||null); }
+function dzWatch(){ dzBase(ACT.cur); try{ desmosCalc.observeEvent('change',()=>{ if(DZ.n!==ACT.cur) return; clearTimeout(DZ.t); DZ.t=setTimeout(dzSnap,1200); }); }catch(e){} }
+window.dzLeave=n=>{ if(n===ACT.cur) return;
+  if(desmosCalc){ if(DZ.t) dzSnap(); DZ.n=null; try{ desmosCalc.setBlank(); }catch(e){} dzBase(n); }
+  ['desmosFrame','sciFrame'].forEach(id=>{ const f=document.getElementById(id); if(f&&f.src) f.src=f.src; }); };   /* the testing page in a frame (fallback, Science): load it fresh */
 function desmosResize(){ if(desmosCalc&&desmosCalc.resize) try{ desmosCalc.resize(); }catch(e){} }
 if(window.ResizeObserver) new ResizeObserver(desmosResize).observe($('#desmosHost'));
 function showChooser(){ $('#chooser').hidden=false; $('#desmosFrame').hidden=true; $('#sciFrame').hidden=true; $('#desmosHost').hidden=true; $('#calcTtl').textContent='Choose A Calculator'; $('#calcSwitch').hidden=true; $('#calcExpand').hidden=true; $('#tiNote').hidden=true; }
@@ -2861,7 +2901,8 @@ function bcNum(){ return parseFloat(BC.d)||0; }
 function bcFmt(v){ if(!isFinite(v)||Math.abs(v)>=1e8){ BC.err=true; return 'E'; } if(v===0) return '0';
   const ip=String(Math.trunc(Math.abs(v))).length; let t=v.toFixed(Math.max(0,8-ip)); if(t.includes('.')) t=t.replace(/0+$/,'').replace(/\.$/,''); return t==='-0'?'0':t; }
 function bcCalc(a,op,b){ return op==='+'?a+b:op==='−'?a-b:op==='×'?a*b:b===0?NaN:a/b; }
-function bcKey(k){ const was=BC.last; BC.last=k;
+function bcKey(k){ const pre={d:BC.d,fresh:BC.fresh,err:BC.err,last:BC.last}; bcKey0(k); try{ cwAfter(k,pre); }catch(e){} }   // cwAfter: the teacher's copy of the work
+function bcKey0(k){ const was=BC.last; BC.last=k;
   if(k==='ON/C'){ if(was==='ON/C'||BC.fresh||BC.err) Object.assign(BC,{d:'0',acc:null,op:null,fresh:true,err:false}); else { BC.d='0'; BC.fresh=true; } return bcShow(); }
   if(BC.err) return;
   if(/^[0-9]$/.test(k)){ if(BC.fresh){ BC.d=k; BC.fresh=false; } else if(BC.d.replace(/[-.]/g,'').length<8) BC.d=BC.d==='0'?k:BC.d+k; }
@@ -3489,7 +3530,7 @@ $('#startForm').addEventListener('submit',async e=>{ e.preventDefault();
 });
 
 /* ---------- saving ---------- */
-let sentAt=0, sentStatus='', leaving=false, lastInput=Date.now(), localT=null, serverT=null, inflight=false, again=false, finalOK=false, beat=null, reviewPoll=null, holdPoll=null, holdBusy=false, fails=0, confirmed=false, rcSent=null, busyUntil=0;   // rcSent: right-click count the Sheet already has
+let sentAt=0, sentStatus='', leaving=false, lastInput=Date.now(), localT=null, serverT=null, inflight=false, again=false, finalOK=false, beat=null, reviewPoll=null, holdPoll=null, holdBusy=false, fails=0, confirmed=false, rcSent=null, cwSent=0, busyUntil=0;   // rcSent: right-click count the Sheet already has
 /* when Google is busy, wait longer each time (3, 6, 12, 24, 30 s; a submitted test 3, 6, 12, 15 s), give or take a third, so a whole class never retries in step */
 const backoff=final=>Math.min(final?15000:30000,3000*Math.pow(2,Math.min(fails-1,4)))*(0.67+Math.random()*0.66);
 ['pointerdown','keydown'].forEach(t=>addEventListener(t,()=>{ lastInput=Date.now(); },true));
@@ -3499,15 +3540,16 @@ function trimEvents(ev,limit){ let s=JSON.stringify(ev); while(s.length>limit&&e
 function saveLocal(){ clearTimeout(localT); localT=null; if(leaving||!CTX||!window.SpitzSession) return;
   const ss=window.SpitzSession, ex=ss.export(); LS.set(CTX.key,{state:ss.state(),events:ex.events,savedAt:Date.now(),tab:CTX.tab}); }
 function saveLocalSoon(){ if(!localT) localT=setTimeout(saveLocal,400); }
-function payload(final){ const ss=window.SpitzSession, ex=ss.export(), st=ss.state();
-  return {sessionId:CTX.sessionId, tab:CTX.tab, name:CTX.name, period:CTX.period, test:CTX.test, final:!!final, status:screen(), lastInputAt:lastInput, state:st,
+function payload(final){ const ss=window.SpitzSession; if(final) ss.calcEnd();
+  const ex=ss.export(), {calc,...st}=ss.state();   // the calculator work has its own column (sent only when it changed), not the State
+  return {sessionId:CTX.sessionId, tab:CTX.tab, name:CTX.name, period:CTX.period, test:CTX.test, final:!!final, status:screen(), lastInputAt:lastInput, state:st, calcRev:ss.calcRev, ...(ss.calcRev!==cwSent?{calc}:{}),
     sum:{item:ss.item, answered:ss.answeredCount(), score:ex.score, max:ex.maxScore, elapsedMs:ex.elapsedMs, awayCount:ex.awayCount, awayMs:ex.awayMs, startedAt:ex.startedAt, submittedAt:ex.submittedAt, rclicks:ex.rclicks||0},
     items:ex.items.map(({answer,...r})=>r), events:trimEvents(ex.events,40000)}; }
 function saveServer(){ clearTimeout(serverT); serverT=null; if(leaving||!CTX||!CTX.sessionId||finalOK) return;
   if(inflight){ again=true; return; } inflight=true;
   const final=window.SpitzSession.submitted, body=payload(final); sentAt=Date.now(); sentStatus=body.status; if(body.sum.rclicks!==rcSent) body.rcNew=true;
   const t0=Date.now();
-  call('stcSave',body).then(r=>{ if(Date.now()-t0>4000) busyUntil=Date.now()+120000; if(!r||!r.ok){ fails++; again=true; return; } if(r.moved){ movedAway(); return; } fails=0; netNote(false); if(body.rcNew) rcSent=body.sum.rclicks;
+  call('stcSave',body).then(r=>{ if(Date.now()-t0>4000) busyUntil=Date.now()+120000; if(!r||!r.ok){ fails++; again=true; return; } if(r.moved){ movedAway(); return; } fails=0; netNote(false); if(body.rcNew) rcSent=body.sum.rclicks; if(r.calc) cwSent=body.calcRev;
       if(r.review) applyReview(r.review); if(typeof r.control==='string'&&!final) window.SpitzSession.teacherHold(r.control);
       if(final){ finalOK=true; saveNote(false); if(r.own&&window.__spitzOwn) window.__spitzOwn(r.own);
         // one quiet repeat 20 s later puts "submitted" back if a late, older save from before Submit lands after it

@@ -463,6 +463,20 @@ details summary{cursor:pointer;color:var(--blue2);font-size:13px;margin-top:8px}
 .showid.many .big{font-size:clamp(60px,11vw,150px)}
 .showid .tt{font-size:clamp(16px,2.2vw,26px);margin-top:1.4vh;opacity:.85}
 .dans{max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+tr.dcalc td{padding-top:0;border-top:0}tr.dcalc td+td{max-width:0}
+.dcwrap{display:flex;flex-wrap:wrap;gap:8px 12px;align-items:flex-start;margin:0 0 8px}
+/* basic calculator work as a printing-calculator paper tape */
+.tape{background:#fffdf3;border:1px solid #e8e1c4;border-top:0;border-radius:0 0 3px 3px;padding:4px 12px 8px;min-width:150px;max-width:100%;font:13px/1.45 ui-monospace,Consolas,"Courier New",monospace;color:#2a2a2a;text-align:right;box-shadow:0 1px 2px rgba(0,0,0,.08);
+  -webkit-mask:linear-gradient(-45deg,transparent 4px,#000 0) 0 0/8px 6px repeat-x,linear-gradient(#000,#000) 0 6px/100% calc(100% - 6px) no-repeat;mask:linear-gradient(-45deg,transparent 4px,#000 0) 0 0/8px 6px repeat-x,linear-gradient(#000,#000) 0 6px/100% calc(100% - 6px) no-repeat;padding-top:10px}
+.tape .tph{font:600 10.5px Arial,sans-serif;letter-spacing:.06em;text-transform:uppercase;color:#8a8166;text-align:left;margin-bottom:2px}
+.tape .tc{padding:2px 0;border-bottom:1px dashed #d9d0ad}.tape .tc:last-child{border-bottom:0}
+.tape .tq{white-space:pre-wrap;word-break:break-word}.tape .tr{font-weight:700}.tape .tr i{font-style:normal;font-weight:400;color:#8a8166;margin-left:6px}
+.tape .tc.cl{color:#a39c86;text-decoration:line-through}.tape .tc.un{color:#8a8166;font-style:italic}
+.dzbtn{display:inline-flex;align-items:center;gap:6px}.dzbtn svg{width:16px;height:16px}
+.dzbox{height:340px;border:1px solid var(--line);border-radius:6px;overflow:hidden;margin:0 0 10px;position:relative;background:#fff}
+.dzbox .dzmsg{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:var(--mut);font-size:13px;padding:12px;text-align:center}
+.dzlist{display:flex;flex-wrap:wrap;gap:4px 6px;padding:10px}.dzlist code{font:12.5px/1.35 ui-monospace,Consolas,monospace;background:var(--surf2,#f1f4f8);border:1px solid var(--line);border-radius:4px;padding:1px 6px}
+[data-theme="dark"] .tape{background:#2b2a24;border-color:#4a4636;color:#ece6cf}[data-theme="dark"] .tape .tc{border-color:#4a4636}
 .dact .btn{margin-right:6px}
 .rtg{margin-top:4px;font-size:12.5px;line-height:1.45}
 .rtg .nm{font-size:12.5px}
@@ -3658,6 +3672,49 @@ addEventListener('keydown',e=>{ if(e.key==='Escape'&&!$('#qvVeil').hidden) qvClo
 /* ---------- student drawer ---------- */
 /* the student's own answers for the drawer: the live view doesn't fetch answers (they're the big column), so the drawer asks for this student's session once */
 const DANS={}, DANS_BUSY={};
+/* the student's basic calculator work, per question: its own column, read only for the student whose drawer is open */
+const DCALC={}, DCALC_BUSY={};
+/* the basic calculator's lines as a paper tape: "12 × 3 = 36" -> 12 × 3 / = 36 */
+function tapeHtml(L){ return `<div class="tape" title="What they worked out on the basic calculator on this question"><div class="tph">Calculator</div>${L.map(t=>{ t=String(t);
+  if(/\(cleared\)$/.test(t)) return `<div class="tc cl"><div class="tq">${esc(t.replace(/\s*\(cleared\)$/,''))}</div></div>`;
+  if(/…$/.test(t)) return `<div class="tc un" title="Not finished"><div class="tq">${esc(t)}</div></div>`;
+  const m=t.match(/^(.*?)\s*=\s*(-?[\d.E]+)\s*(M[+−])?$/);
+  return m?`<div class="tc"><div class="tq">${esc(m[1])}</div><div class="tr">= ${esc(m[2])}${m[3]?`<i>${esc(m[3])}</i>`:''}</div></div>`:`<div class="tc"><div class="tq">${esc(t)}</div></div>`; }).join('')}</div>`; }
+/* their Desmos, read only: one calculator for the drawer, moved under the question the teacher opens. Same Texas limits as the test. */
+const DZ_KEY='8f04c5aafb7b4926872111685875396b';
+const DZ_OPTS={ images:false, folders:false, notes:false, degreeMode:true, plotImplicits:false, plotSingleVariableImplicitEquations:false, plotInequalities:false, forceLogModeRegressions:true,
+  sliders:false, restrictedFunctions:true, links:false, pasteGraphLink:false, actions:false, border:false, keypad:false, settingsMenu:false, expressionsTopbar:false, readonly:true };
+const DZV={el:null, calc:null, p:null, key:null, q:null, failed:false};
+function dzLoad(){ if(DZV.p) return DZV.p; DZV.p=new Promise((ok,no)=>{ if(window.Desmos) return ok();
+  const sc=document.createElement('script'); sc.src='https://www.desmos.com/api/v1.12/calculator.js?apiKey='+DZ_KEY; sc.onload=()=>window.Desmos?ok():no(); sc.onerror=no; document.head.appendChild(sc); setTimeout(no,15000); })
+  .then(()=>{ DZV.el=document.createElement('div'); DZV.el.style.cssText='position:absolute;inset:0'; DZV.calc=Desmos.GraphingCalculator(DZV.el,DZ_OPTS); })
+  .catch(()=>{ DZV.failed=true; }); return DZV.p; }
+function dzShow(box,L,vp){ if(DZV.failed||!DZV.calc){ box.innerHTML=`<div class="dzlist" title="Desmos could not load here, so this is the list of what they typed">${L.map(t=>`<code>${esc(dzText(t))}</code>`).join('')}</div>`; box.style.height='auto'; return; }
+  box.innerHTML=''; box.appendChild(DZV.el); const c=DZV.calc; c.setBlank();
+  c.setExpressions(L.map((t,k)=>{ if(t.slice(0,2)==='T:'){ let cols=[]; try{ cols=JSON.parse(t.slice(2)); }catch(e){} return {type:'table',id:'t'+k,columns:cols.map(x=>({latex:x.l,values:x.v}))}; } return {type:'expression',id:'e'+k,latex:t}; }));
+  if(Array.isArray(vp)&&vp.length===4) try{ c.setMathBounds({left:vp[0],bottom:vp[1],right:vp[2],top:vp[3]}); }catch(e){}
+  setTimeout(()=>{ try{ c.resize(); }catch(e){} },30); }
+async function dzOpen(btn,cw,again){ const q=+btn.dataset.dz, key=openKey, box=btn.closest('td').querySelector('.dzbox');
+  if(!again&&DZV.key===key&&DZV.q===q){ DZV.key=DZV.q=null; box.hidden=true; btn.setAttribute('aria-expanded','false'); return; }
+  $('#dBody').querySelectorAll('.dzbox').forEach(b=>{ if(b!==box) b.hidden=true; }); $('#dBody').querySelectorAll('[data-dz]').forEach(b=>b.setAttribute('aria-expanded',b===btn?'true':'false'));
+  DZV.key=key; DZV.q=q; box.hidden=false; box.style.height=''; if(!DZV.calc&&!DZV.failed) box.innerHTML='<div class="dzmsg">Loading Desmos…</div>';
+  await dzLoad(); if(DZV.key!==key||DZV.q!==q) return; dzShow(box,cw.d[q]||[],cw.v&&cw.v[q]); }
+/* Desmos keeps expressions as LaTeX: show them the way a student reads them (y = 2x + 3, (3)/(4), √(x), x²) */
+function dzText(t){ if(String(t).slice(0,2)==='T:'){ try{ return 'table '+JSON.parse(String(t).slice(2)).map(c=>dzText(c.l)+': '+c.v.filter(v=>v!=='').join(', ')).join(' | '); }catch(e){ return 'table'; } }
+  let s=String(t||''); const sup={'0':'⁰','1':'¹','2':'²','3':'³','4':'⁴','5':'⁵','6':'⁶','7':'⁷','8':'⁸','9':'⁹'};
+  s=s.replace(/\\left|\\right/g,'').replace(/\\operatorname\{([^{}]*)\}/g,'$1');
+  s=s.replace(/_\{([^{}]*)\}/g,'$1').replace(/_(\w)/g,'$1');
+  const pq=x=>/^[\w.]+$/.test(x)?x:'('+x+')';
+  for(let k=0;k<6;k++) s=s.replace(/\\frac\{([^{}]*)\}\{([^{}]*)\}/g,(m,a,b)=>{ const f=pq(a)+'/'+pq(b); return /^[\w.]+\/[\w.]+$/.test(f)?'('+f+')':f; }).replace(/\\sqrt\{([^{}]*)\}/g,'√($1)').replace(/\\sqrt\[([^\]]*)\]\{([^{}]*)\}/g,'$1√($2)');
+  s=s.replace(/\^\{(\d)\}|\^(\d)/g,(m,a,b)=>sup[a||b]).replace(/\^\{([^{}]*)\}/g,(m,a)=>'^'+pq(a));
+  const W={cdot:'·',times:'×',div:'÷',le:'≤',ge:'≥',ne:'≠',pi:'π',theta:'θ',sim:'~',infty:'∞',pm:'±',degree:'°',lt:'<',gt:'>'};
+  s=s.replace(/\\([a-zA-Z]+)/g,(m,w)=>W[w]||w).replace(/\\ /g,' ').replace(/[{}]/g,'');
+  return s.replace(/\s*([=<>≤≥+~])\s*/g,' $1 ').replace(/\s+/g,' ').trim(); }
+function drawerCalc(s){ const c=DCALC[s.key]; if(c&&c.t>=(s.saved||0)) return c.c;
+  if(!DCALC_BUSY[s.key]&&!(c&&c.old)){ DCALC_BUSY[s.key]=1;
+    call('stcCalc',{key:s.key,archive:arc},60000).then(r=>{ DCALC[s.key]={t:s.saved||0,c:r&&r.calc||{}}; if(openKey===s.key) openDrawer(s.key,true); })
+      .catch(()=>{ DCALC[s.key]={t:s.saved||0,c:{},old:1}; }).finally(()=>{ delete DCALC_BUSY[s.key]; }); }   /* old: the Code.gs without stcCalc */
+  return c?c.c:null; }
 function drawerAns(s){ const have=s.q.some(q=>q&&q[8]); if(have) return s.q.map(q=>q&&q[8]||'');
   const c=DANS[s.key]; if(c&&c.t>=(s.saved||0)) return c.a;
   if(!DANS_BUSY[s.session]){ DANS_BUSY[s.session]=1;
@@ -3670,7 +3727,7 @@ function drawerAnsText(it,raw){ if(!raw) return ''; let a; try{ a=JSON.parse(raw
 function openDrawer(key,quiet){ const s=DATA&&DATA.students.find(x=>x.key===key); if(!s){ closeDrawer(); return; } openKey=key;
   const [k,label]=stat(s), m=meta(s.test), l=sLvl(s), w=toScore(s), d=v=>v?new Date(v).toLocaleString([], {month:'short',day:'numeric',hour:'numeric',minute:'2-digit'}):'–';
   $('#dName').textContent=s.name+' · '+(s.period==='G'?'Guest':'Period '+s.period);
-  const its=qvItems(s.test), ans=drawerAns(s), can=canAct(s.session)&&!arc;
+  const its=qvItems(s.test), ans=drawerAns(s), cw=drawerCalc(s)||{}, can=canAct(s.session)&&!arc;
   if(its===null) metaOf(s.test).then(()=>setTimeout(()=>{ if(openKey===key) openDrawer(key,true); },50)).catch(()=>{});
   $('#dBody').innerHTML=`<div class="dact">${s.submitted||!can||k==='ns'?'':`<button class="btn" data-act="${s.control==='paused'?'resume':'pause'}" data-k="${esc(s.key)}">${s.control==='paused'?'Resume':'Pause'}</button><button class="btn warn" data-act="${s.control==='locked'?'unlock':'lock'}" data-k="${esc(s.key)}">${s.control==='locked'?'Unlock':'Stop test'}</button>`}${s.submitted||s.answered>0?`<button class="btn" id="dReport" title="One page: score, standards to work on, and each missed question with how to solve it">Print report</button>`:''}${can&&s.submitted?`<button class="btn" data-reopen="reopen" data-k="${esc(s.key)}" title="Give the test back: their answers stay and they go on where they left off">Reopen test</button>`:''}${can&&(s.submitted||s.answered>0)?`<button class="btn warn" data-reopen="retake" data-k="${esc(s.key)}" title="Erase their answers so they can take the test again from the start">Retake</button>`:''}</div>
     <div class="kv"><b>Status</b><span><span class="pill p-${k}">${esc(label)}</span></span><b>Test</b><span>${esc(m?m.title:s.test)} · ${esc(s.session)}</span>
@@ -3680,9 +3737,11 @@ function openDrawer(key,quiet){ const s=DATA&&DATA.students.find(x=>x.key===key)
     <table class="t"><tr><th>#</th><th>Result</th><th>Their answer</th><th>TEKS</th><th>Time</th><th title="Visits">Vis.</th><th title="Times they changed the answer">Chg.</th></tr>${s.q.map((q,i)=>{ const qi=qinfo(s,i), [pts,mx,ms,vis,ch,fl]=q;
       const r=q[9]?'To score':pts==null?(vis?'Blank':'Not seen'):pts>=mx?'Correct':pts>0?`Partly (${pts}/${mx})`:'Incorrect';
       const at=ans&&ans[i]?drawerAnsText(its&&its[i],ans[i]):'', aCell=at?`<td class="dans" title="${esc(at)}">${esc(at)}</td>`:`<td class="rs">${pts==null&&!q[9]?'':ans===null&&!arc?'…':'–'}</td>`;
-      return `<tr><td><button class="nm" data-dsee="${i}" title="See question ${i+1}">${i+1}</button>${fl?' ⚑':''}</td><td style="white-space:nowrap"><span class="cell ${q[9]?'wr':pts==null?(vis?'bl':'un'):pts>=mx?'ok':pts>0?'part':'no'}" style="display:inline-grid;width:14px;height:12px;vertical-align:-2px;margin-right:4px"></span>${r}</td>${aCell}<td class="rs">${esc(qi.teks)}</td><td class="n">${ms?fmtMs(ms):'–'}</td><td class="n">${vis}</td><td class="n">${ch}</td></tr>`; }).join('')}</table>`;
+      return `<tr><td><button class="nm" data-dsee="${i}" title="See question ${i+1}">${i+1}</button>${fl?' ⚑':''}</td><td style="white-space:nowrap"><span class="cell ${q[9]?'wr':pts==null?(vis?'bl':'un'):pts>=mx?'ok':pts>0?'part':'no'}" style="display:inline-grid;width:14px;height:12px;vertical-align:-2px;margin-right:4px"></span>${r}</td>${aCell}<td class="rs">${esc(qi.teks)}</td><td class="n">${ms?fmtMs(ms):'–'}</td><td class="n">${vis}</td><td class="n">${ch}</td></tr>${((B,D)=>(B&&B.length)||(D&&D.length)?`<tr class="dcalc"><td></td><td colspan="6"><div class="dcwrap">${B&&B.length?tapeHtml(B):''}${D&&D.length?`<button class="btn dzbtn" data-dz="${i+1}" aria-expanded="false" title="Open a read-only copy of their Desmos calculator on this question"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10.5" stroke-width="1.4"/><path d="M5.5 9c2.5 0 4.5 6 7 6s3-6 5.5-6M5.5 15c2.5 0 4.5-6 7-6"/></svg>See their Desmos · ${D.length} ${D.length===1?'entry':'entries'}</button>`:''}</div>${D&&D.length?'<div class="dzbox" hidden></div>':''}</td></tr>`:'')(cw[i+1],cw.d&&cw.d[i+1])}`; }).join('')}</table>`;
   if($('#dReport')) $('#dReport').onclick=()=>printReports([s]);
   $('#dBody').querySelectorAll('[data-dsee]').forEach(b=>b.onclick=()=>qvShow(s.test,+b.dataset.dsee));
+  $('#dBody').querySelectorAll('[data-dz]').forEach(b=>b.onclick=()=>dzOpen(b,cw));
+  if(DZV.key===key){ const b=$('#dBody').querySelector(`[data-dz="${DZV.q}"]`); if(b) dzOpen(b,cw,true); else DZV.key=DZV.q=null; }   /* the live refresh redraws the drawer: keep their Desmos open */
   $('#drawer').hidden=false; if(!quiet) $('#dClose').focus(); }
 function closeDrawer(){ openKey=null; $('#drawer').hidden=true; }
 $('#dClose').onclick=closeDrawer;
