@@ -1,35 +1,30 @@
 # Off the Clock — shared project brief
 
 ## Purpose
-Build a private, synced, mobile-first graduate-school tracker at `https://spitzmath.com/grad-school/`. The goal is trustworthy answers to **what is due, what is submitted, and whether work is done for today**—not another generic analytics dashboard.
+A private graduate-school workspace at https://spitzmath.com/grad-school/ that gives trustworthy answers to what needs work, what is due, what is submitted, and whether today's work is finished.
 
-## Existing environment
-- Public static GitHub Pages repository: `spitz-math/spitz-math.github.io` on `main`.
-- Design references: `arcade/index.html`, `checkpoint/dash.html`, `checkpoint/teacher/`, and `teacher.css`. Preserve these pages.
-- Supabase project `pkonclmfrpozizmmtnrv` (`us-east-2`).
-- Private table: `public.grad_profiles(user_id uuid primary key, data jsonb not null, updated_at timestamptz)`. Owner-scoped RLS is enabled; verify policies before implementation.
-- Supabase email OTP is the intended authentication method. Configure the email template with `{{ .Token }}` and site/redirect URLs before live sign-in testing.
+## Current architecture
+- Public source: `spitz-math/spitz-math.github.io`; production branch: `main`; static GitHub Pages client in `grad-school/`.
+- Client: `index.html`, `ui.css`, and browser-safe `config.js`. No framework migration is part of this bridge.
+- Supabase project: `pkonclmfrpozizmmtnrv`.
+- Primary login: GitHub OAuth; optional email Magic Link fallback. Preserve the working flow.
+- Private storage: `public.grad_profiles(user_id, data, revision, updated_at)`. Owner RLS and optimistic revision matching protect updates.
+- For exact current data shape and behavior, read `grad-school/README.md`, `schema.sql`, and the client. Repository schema describes intended configuration; it is not proof of live database state.
 
-## Product requirements
-- Add and edit assignments, course, due date, work target, type, notes and status.
-- Separate **finished** from **submitted**; a completed draft is not a submitted assignment.
-- Make unverified deadlines obvious; unknown dates must not silently imply that nothing is due.
-- Today's focus, upcoming deadlines, week view and a truthful end-of-day state.
-- Search/filter, import and export backups, mobile accessibility, deliberate interaction details.
-- Authenticated browser-to-cloud sync across devices; handle failed writes, stale state and concurrent changes without silently dropping edits.
-- No actual coursework, passwords, OTPs, private student data or secret keys in public source.
+## Existing behavior to preserve
+- Assignment editing, course settings, notes, search/filter, and JSON backup import/export.
+- Independent preparation status and confirmed Brightspace submission.
+- Independent verified due dates, personal work targets, and per-step planned dates.
+- Linked assignment checklists, daily planner cards, Mission preview, and Wednesday–Tuesday course weeks.
+- Private week-number anchors; no personal schedule hardcoded into public source.
+- Cloud persistence, explicit save failures, and conflict handling that protects unsaved work.
 
-## Acceptance tests
-1. An anonymous visitor sees only the sign-in experience and cannot query private assignments.
-2. Authorized user can receive and verify OTP; invalid/expired code fails clearly.
-3. Saving an assignment on one device persists after refresh on another.
-4. Separate finished, submitted, overdue and unverified states behave correctly.
-5. At 375px mobile width no horizontal overflow or unreachable controls.
-6. Existing Arcade/Checkpoint pages remain unchanged; existing PR smoke check passes.
-7. Owner approves final visual design and merges the PR to `main`.
+## Collaboration
+Both assistants use the same source, task PR, and handoff format. Claude normally leads frontend/design; ChatGPT/Codex normally leads integration and review. The owner can assign either assistant any task.
 
-## Agent handoff
-- **Claude Code:** own visual design/frontend. Study existing source first, submit a PR with desktop and mobile previews and a documented auth/data integration contract.
-- **ChatGPT / Codex:** own Supabase integration, authentication, sync and technical/security review. Preserve owner-approved UI, review Claude PRs, contribute scoped fixes.
-- **Owner:** design acceptance, required secrets/configuration and approval before publishing.
-- Communicate through GitHub issues, PRs and branch commits. Agents do not have shared private chat histories and may not auto-merge.
+Read `WORKFLOW.md` for operating steps and `STATUS.md` for the latest recorded checkpoint. Neither file synchronizes private chat histories or grants access to either account.
+
+## Acceptance
+Changes preserve owner-only data access, independent finished/submitted states, truthful unknown deadlines, revision-protected writes, and backup round-tripping. UI changes need desktop and phone evidence. Code changes need relevant checks and the existing Safety check. Owner authorization governs merging and production changes.
+
+No coursework, personal completion records, private account details, or secrets belong in this public repo.

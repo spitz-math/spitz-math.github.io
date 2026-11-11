@@ -1,19 +1,31 @@
-# Codex / ChatGPT — SpitzMath Engineering Guide
+# SpitzMath — shared engineering instructions
 
-Read `docs/off-the-clock/PROJECT_BRIEF.md` and `CLAUDE.md` before modifying `grad-school/`. Work in branches and PRs; never merge without the owner's approval.
+These instructions apply across the repository. The Off the Clock-specific guidance below applies only when working on `grad-school/`; do not redirect unrelated Arcade or Checkpoint work into that project.
 
-## Assignment
-Own technical integration: Supabase email OTP, signed-in data access, sync between devices, error handling, backup/restore, and tests. Preserve Claude's owner-approved visual interface; don't redraw it as a generic dashboard.
+## Start an Off the Clock session
+1. Read `docs/off-the-clock/PROJECT_BRIEF.md`, `docs/off-the-clock/WORKFLOW.md`, `docs/off-the-clock/STATUS.md`, and `grad-school/README.md`.
+2. Inspect the current remote main branch, open PRs, and the task's branch/commit before making changes. Treat STATUS as a dated snapshot; verify it against source and GitHub.
+3. Use the issue or PR as the task's handoff record. Never assume access to another assistant's private conversation.
+4. Keep one active implementation branch per task. Continue an existing branch only when explicitly handed that task; use a separate branch for independent work.
 
-## Backend contract
-- Project ref: `pkonclmfrpozizmmtnrv`
-- Table: `public.grad_profiles` with `user_id` referencing `auth.users`, `data jsonb` and `updated_at`.
-- Enforce per-user row-level security. Test that anonymous requests fail and other users cannot read or write someone else's record.
-- Use only a **publishable** Supabase key in public JavaScript; never use a service-role/secret key in frontend code.
-- A PIN or hidden URL is not access control. Avoid placing real coursework or personal emails in GitHub.
-- Never silently overwrite newer cloud updates. Explicitly handle concurrent writes, stale caches, expiry, offline mode and failed saves.
-- Finished versus submitted is distinct. Unverified dates must not lead to false "all done" status.
-- Keep any database migration non-destructive and reviewed.
+## Responsibilities
+Claude normally leads interface design; ChatGPT/Codex normally leads integration, persistence, and technical review. These are defaults, not restrictions on the owner's requests. Preserve approved design and coordinate overlapping edits in the PR.
 
-## Delivery
-Review Claude's PRs for functionality and security with specific actionable comments. Implement backend changes in scoped branches, preserve existing pages, and run the current `.github/workflows/smoke.yml` safety check. Describe what was and was not tested. No automatic merging or production changes.
+## Preserve the live contract
+- GitHub OAuth is the current primary login. Email Magic Link is an optional fallback. Older OTP references in starter guidance are not instructions to replace working authentication.
+- `public.grad_profiles` stores owner-scoped JSONB with optimistic `revision` checks. Preserve ownership enforcement and conflict handling.
+- Read the actual schema and client before changing data shape. Preserve unknown/optional fields through normalization and backups.
+- Finished preparation and confirmed submission are independent. Verified deadlines, personal targets, and checklist plan dates are independent.
+- Course weeks run Wednesday–Tuesday; personal week anchors stay in private data.
+- Keep coursework, private records, tokens, and secret keys out of this public repository. Public client keys must be browser-safe.
+
+## Delivery and review
+Work through scoped branches and PRs. Do not merge, enable auto-merge, change production settings, or deploy database migrations without owner authorization for that action. Do not change unrelated student-facing pages as part of Off the Clock work.
+
+Record the exact tested commit, verification performed, limitations, and next action using WORKFLOW. Run the existing Safety check for code changes and relevant targeted checks; do not claim authenticated testing without doing it.
+
+## Code Review Rules
+- Flag any save path that bypasses the revision condition or treats a zero-row update as success.
+- Flag regressions that expose private data or infer submission from checklist completion.
+- Flag import/export or normalization changes that drop checklist dates, submissionRequired, or weekCalendar.
+- Distinguish source review, synthetic tests, authenticated live checks, and owner approval.

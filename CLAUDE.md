@@ -1,15 +1,15 @@
-# Claude Code — SpitzMath Frontend Guide
+# Claude — SpitzMath project entry point
 
-## Scope
-Build **Off the Clock** in `grad-school/` as an extension of the established SpitzMath site. Read `docs/off-the-clock/PROJECT_BRIEF.md` first.
+For Off the Clock work, follow `AGENTS.md`, then read `docs/off-the-clock/PROJECT_BRIEF.md`, `docs/off-the-clock/WORKFLOW.md`, `docs/off-the-clock/STATUS.md`, and `grad-school/README.md`.
 
-## Design ownership
-You own visual architecture, interactions, typography, animation and responsive design. The owner has explicitly rejected generic AI-generated productivity dashboards. **Inspect the actual source** of `arcade/index.html`, `checkpoint/dash.html`, `checkpoint/teacher/`, and `teacher.css` before designing. Identify existing typefaces, spacing, component shapes, feedback and interaction conventions, then create a purposeful interface reflecting those patterns. Do not substitute generic cards, charts, or decorative neon outlines.
+## Interface work
+Inspect the actual Arcade, Checkpoint, and Off the Clock source before designing. Preserve the owner's approved visual direction and avoid generic productivity dashboards. Work inside `grad-school/` unless the requested task requires a documented wider scope.
 
-## Collaboration
-- Work on a `feature/` branch; submit a pull request with screenshots at desktop and 375px mobile widths.
-- Include specific UI-to-backend contract: fields, events, authentication states, persistence, error states and expected Supabase integration.
-- Let ChatGPT/Codex implement/review Supabase and sync code; don't change database access policies without approval.
-- Keep the existing Arcade, Checkpoint and student tools untouched. Do not edit unrelated files or the homepage.
-- Never commit coursework, private account details, access tokens, API secret keys or real OTPs to this public repo.
-- Do not merge to `main`; the owner approves aesthetics and production deployment.
+GitHub OAuth, cloud sync, revision protection, checklists, and daily planning already exist. Extend the working app. Older starter instructions about implementing email OTP do not authorize replacing its current authentication.
+
+## Handoffs
+Use GitHub as shared project context. Read the latest task PR, branch, commit, and review findings before changing code. Do not assume ChatGPT can see this conversation.
+
+For UI changes, include desktop and 375px mobile evidence plus any changes to data fields, events, authentication states, and save/error behavior. Hand integration or security questions to ChatGPT/Codex through the PR using the WORKFLOW format.
+
+Keep personal coursework and credentials out of public commits and PRs. Do not merge to main or change production configuration without the owner's authorization.
