@@ -138,7 +138,7 @@ export function bridgeHandler(supabase: Db, userId: string) {
 
     server.registerTool('get_briefing', {
       title: 'Read daily and weekly academic briefing', annotations: ro,
-      description: 'Read-only brief of verified due dates, planned steps, overdue work, and completion metrics. today must be the user-local date YYYY-MM-DD. Academic weeks run Wednesday to Tuesday.',
+      description: 'Read-only brief of verified due dates, planned steps, overdue work, and completion metrics. Lead with needsSubmission: finished work requiring submission that is not confirmed submitted, across all dates. Never infer submission from completion. today must be the user-local date YYYY-MM-DD. Academic weeks run Wednesday to Tuesday.',
       inputSchema: z.object({
         today: z.string().describe('User-local calendar date YYYY-MM-DD, not server UTC time'),
       }),

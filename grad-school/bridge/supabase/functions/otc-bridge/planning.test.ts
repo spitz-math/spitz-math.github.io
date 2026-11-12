@@ -39,6 +39,31 @@ test('catch-up suggestions never mutate original or verified due date', () => {
   assert.equal(JSON.stringify(original), before)
   assert.equal(original.tasks[0].due, '2026-11-17')
 })
+test('needsSubmission includes only finished required unsubmitted work across all dates', () => {
+  const original = doc()
+  const finished = { ...original.tasks[1], submission: 'unconfirmed' as const }
+  original.tasks.push(
+    { ...finished, id: 'unknown', title: 'Unverified', due: '', target: '2026-11-01' },
+    { ...finished, id: 'future', title: 'Future', due: '2026-12-01' },
+    { ...finished, id: 'weekly', title: 'Weekly', due: '2026-11-17' },
+    { ...finished, id: 'late', title: 'Late', due: '2026-11-09' },
+    { ...finished, id: 'prep', submissionRequired: false },
+  )
+  const before = structuredClone(original)
+  const b = buildBriefing(original, '2026-11-12')
+  assert.deepEqual(b.needsSubmission.map(x => x.taskId), ['late', 'weekly', 'future', 'unknown'])
+  assert.deepEqual(b.needsSubmission[3], {
+    taskId: 'unknown', course: 'Course A', title: 'Unverified', due: '',
+    target: '2026-11-01', status: 'done', submitted: false,
+  })
+  assert.deepEqual(b.dueThisWeek.map(x => x.taskId), ['one', 'weekly'])
+  assert.deepEqual(b.overdueAssignments.map(x => x.taskId), ['late', 'three'])
+  assert.deepEqual(original, before)
+})
+test('needsSubmission is empty when nothing is ready to submit', () => {
+  assert.deepEqual(buildBriefing(doc(), '2026-11-12').needsSubmission, [])
+  assert.deepEqual(buildBriefing({ version: 4, courses: [], tasks: [] }, '2026-11-12').needsSubmission, [])
+})
 test('no room before due date reports manual review instead of silently missing deadline', () => {
   const original = doc()
   original.tasks[0].due = '2026-11-11'
