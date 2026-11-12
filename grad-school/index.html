@@ -64,6 +64,8 @@
       <div class="rows" id="mission-list"></div>
     </div>
     <aside class="rail">
+      <div class="block-head"><h2>Due this week</h2><span class="count" id="due-week-count"></span></div>
+      <div id="due-week"></div>
       <div class="block-head"><h2>Courses</h2><button class="text-link" id="edit-courses" type="button">Edit and colors</button></div>
       <div id="course-list"></div>
       <p class="note"><b>Finished isn't submitted.</b> Checking off every step doesn't turn anything in. Submit in Brightspace, then mark it submitted here.</p>
@@ -226,10 +228,53 @@ function unscheduledStepsCard(){
  return '<section class="day-plan-card unscheduled-plan"><div class="day-plan-head"><div><span class="day-plan-kicker">No day yet</span><h3>Steps to plan</h3></div><span class="day-count"><strong>'+pending.length+'</strong><small>'+(pending.length===1?'step':'steps')+'</small></span></div><div class="day-plan-body">'+pending.map(({t,step})=>'<div class="unscheduled-entry"><span>'+escapeHTML(step.text)+'</span><button type="button" data-edit="'+escapeHTML(t.id)+'">Pick a day · '+escapeHTML(t.title)+'</button></div>').join('')+'</div></section>';
 }
 
+// Briefing: the same rules as the bridge's planning.ts (get_briefing / suggest_catch_up),
+// computed here from the data already loaded. Suggestions only move a step when Kody clicks.
+function outstandingTask(t){return !(t.status==='done'&&(t.submission==='submitted'||t.submissionRequired===false))}
+function missedSteps(today=dayISO()){
+ return app.tasks.filter(outstandingTask).flatMap(t=>(t.checklist||[]).filter(s=>!s.done&&s.planDate&&s.planDate<today).map(step=>({t,step}))).sort((a,b)=>a.step.planDate.localeCompare(b.step.planDate)||a.t.title.localeCompare(b.t.title));
+}
+function catchUpPlan(today=dayISO(),perDay=3){
+ const busy=new Map();
+ for(const t of app.tasks.filter(outstandingTask))for(const s of t.checklist||[])if(!s.done&&s.planDate>=today)busy.set(s.planDate,(busy.get(s.planDate)||0)+1);
+ return missedSteps(today).map(({t,step})=>{
+  let day=today;
+  for(let i=0;i<28;i++,day=shiftISO(day,1)){
+   if(t.due&&day>t.due)break;
+   if((busy.get(day)||0)<perDay){busy.set(day,(busy.get(day)||0)+1);return {t,step,to:day}}
+  }
+  return {t,step,to:''};
+ });
+}
+function dayName(s){if(s===dayISO())return 'today';if(s===dayISO(1))return 'tomorrow';return dateObj(s).toLocaleDateString(undefined,{weekday:'short',month:'short',day:'numeric'})}
+function catchUpCard(){
+ const plan=catchUpPlan();if(!plan.length)return '';
+ const movable=plan.filter(p=>p.to).length;
+ const rows=plan.map(({t,step,to})=>{
+  const id=escapeHTML(t.id),sid=escapeHTML(step.id),c=course(t),cc='cc-'+courseColor(c),late=-diffDays(step.planDate);
+  const when='Planned '+(late===1?'yesterday':dayName(step.planDate))+(t.due?' · Due '+(t.due===dayISO()?'today':showDate(t.due)):'');
+  const act=to?'<button type="button" class="catch-move" data-catchup-task="'+id+'" data-catchup-step="'+sid+'" data-catchup-to="'+to+'">Move to '+escapeHTML(dayName(to))+'</button>':'<button type="button" class="catch-move none" data-edit="'+id+'" title="No open day before it’s due">Pick a day</button>';
+  return '<div class="catch-row '+cc+'"><label class="day-action-check"><input type="checkbox" data-step-task="'+id+'" data-step-id="'+sid+'"><span>'+escapeHTML(displayStepLabel(step.text))+'<small><span class="tag '+cc+'">'+escapeHTML(c?.name||'Course')+'</span> '+escapeHTML(t.title)+'</small><small class="catch-when">'+escapeHTML(when)+'</small></span></label>'+act+'</div>';
+ }).join('');
+ return '<section class="catch-card" aria-label="Missed steps"><div class="catch-head"><div><h3>Catch up</h3><p>'+(plan.length===1?'1 step slipped past its day.':plan.length+' steps slipped past their day.')+' Check it off if you did it, or move it. Nothing moves until you say so.</p></div>'+(movable>1?'<button type="button" class="btn" data-catchup-all>Move all</button>':'')+'</div><div class="catch-rows">'+rows+'</div></section>';
+}
+function dueWeekHTML(week){
+ const today=dayISO();
+ const late=app.tasks.filter(t=>t.due&&t.due<week.start&&t.submissionRequired!==false&&t.submission!=='submitted');
+ const rows=sortedTasks(late).concat(app.tasks.filter(t=>inCourseWeek(t.due,week)).sort((a,b)=>a.due.localeCompare(b.due)||a.title.localeCompare(b.title)));
+ if(!rows.length)return '<p class="due-empty">Nothing with a verified due date this week.</p>';
+ return '<div class="due-list">'+rows.map(t=>{
+  const c=course(t),cc='cc-'+courseColor(c),d=dateObj(t.due),sub=t.submission==='submitted';
+  const past=!sub&&t.submissionRequired!==false&&t.due<today;
+  const state=sub?['Submitted','ok']:t.submissionRequired===false?(t.status==='done'?['Done','ok']:['Prep only','']):past?['Past due','bad']:t.status==='done'?['Finished, not submitted','warn']:t.status==='inprogress'?['In progress','']:['Not started',''];
+  return '<button type="button" class="due-item '+cc+(sub?' is-sub':'')+(t.due===today?' is-today':'')+'" data-edit="'+escapeHTML(t.id)+'"><span class="due-date"><small>'+d.toLocaleDateString(undefined,{weekday:'short'})+'</small><b>'+d.getDate()+'</b></span><span class="due-text"><span class="due-title">'+escapeHTML(t.title)+'</span><span class="due-meta"><span class="tag '+cc+'">'+escapeHTML(c?.name||'Course')+'</span><span class="due-state '+state[1]+'">'+state[0]+'</span></span></span></button>';
+ }).join('')+'</div>';
+}
+
 function render(){if($('#workspace').hidden)return;document.body.classList.toggle('by-class',app.prefs?.colorByClass===true);$('#today-label').textContent=new Date().toLocaleDateString(undefined,{weekday:'short',month:'short',day:'numeric',year:'numeric'});let all=app.tasks,active=sortedTasks(all.filter(t=>t.submission!=='submitted')),targets=active.filter(t=>(t.target&&diffDays(t.target)<=0&&!isDone(t))||(t.due&&diffDays(t.due)<=3)),focus=targets.length?targets.slice(0,5):active.slice(0,4);const todayRemaining=active.filter(t=>(t.target&&diffDays(t.target)<=0&&!isDone(t))||(t.due&&diffDays(t.due)<=0));const unknown=active.filter(t=>!t.due&&t.submissionRequired!==false).length;const currentWeek=courseWeek(),selectedWeek=courseWeek(weekOffset);const dueThisWeek=all.filter(t=>inCourseWeek(t.due,currentWeek));const totalWeek=dueThisWeek.length,doneWeek=dueThisWeek.filter(isDone).length,pct=totalWeek?Math.round(100*doneWeek/totalWeek):0;
-const clear=all.length>0&&todayRemaining.length===0&&unknown===0;
+const missed=missedSteps().length;const clear=all.length>0&&todayRemaining.length===0&&unknown===0&&missed===0;
 $('#hero-kicker').textContent=preview?'Preview with sample assignments. Nothing here is saved.':'';
-const nToday=todayRemaining.length;$('#hero-title').textContent=clear?'You\u2019re off the clock':nToday?(nToday===1?'1 thing needs you today':nToday+' things need you today'):unknown?'Check the unverified dates':focus.length?'One thing at a time':'Start with one thing';
+const nToday=todayRemaining.length;$('#hero-title').textContent=clear?'You\u2019re off the clock':nToday?(nToday===1?'1 thing needs you today':nToday+' things need you today'):missed?(missed===1?'1 step to catch up on':missed+' steps to catch up on'):unknown?'Check the unverified dates':focus.length?'One thing at a time':'Start with one thing';
 $('#hero-caption').textContent=clear?'Nothing is overdue, nothing planned for today is left, and every assignment has a date. You can close this.':unknown&&!nToday?`${unknown} unsubmitted assignment${unknown===1?' has':'s have'} no verified due date. Check Brightspace before you call it a day.`:all.length?'You only need the next few, not the whole semester.':'Add your first assignment to get started.';
 $('#hero-foot').textContent=unknown&&nToday?`${unknown} assignment${unknown===1?' still needs':'s still need'} a verified due date.`:'';
 $('#hero-disc').style.setProperty('--progress',pct+'%');$('#week-progress-label').textContent=currentWeek.label;$('#progress-number').textContent=pct+'%';$('#progress-caption').textContent=totalWeek?`${doneWeek} of ${totalWeek} due this week finished`:'Nothing due this week';
@@ -250,7 +295,8 @@ function weekGrid(node,w){
 }
 weekGrid($('#week-strip'),currentWeek);
 weekGrid($('#week-strip-full'),selectedWeek);
-$('#today-checklist').innerHTML=plannedDayCard(dayISO(),currentWeek,true);
+$('#today-checklist').innerHTML=catchUpCard()+plannedDayCard(dayISO(),currentWeek,true);
+$('#due-week').innerHTML=dueWeekHTML(currentWeek);{const open=dueThisWeek.filter(t=>t.submissionRequired!==false&&t.submission!=='submitted').length;$('#due-week-count').textContent=dueThisWeek.length?(open?open+' to submit':'all submitted'):''}
 $('#week-list').innerHTML=Array.from({length:7},(_,i)=>plannedDayCard(shiftISO(selectedWeek.start,i),selectedWeek)).join('')+unscheduledStepsCard();
 const q=$('#search-tasks').value.toLowerCase().trim();let filtered=sortedTasks(all.filter(t=>!q||t.title.toLowerCase().includes(q)||course(t)?.name.toLowerCase().includes(q)||t.notes.toLowerCase().includes(q)));if(filter==='active')filtered=filtered.filter(t=>!isDone(t));else if(filter==='done')filtered=filtered.filter(t=>isDone(t));else if(filter==='submitted')filtered=filtered.filter(t=>t.submission==='submitted');
 $('#task-list').innerHTML=filtered.map((t,i)=>taskHTML(t,i,true)).join('')||`<div class="empty"><h3>Nothing matches</h3><p>Try another filter or search.</p></div>`;
@@ -352,6 +398,14 @@ $$('#mission-list,#task-list,#week-list,#today-checklist').forEach(el=>{
   }else handleStepToggle(e);
  });
 });$('#mission-list').addEventListener('click',e=>{if(e.target.closest('#empty-new'))openTask()});
+$('#due-week').addEventListener('click',handleTaskClick);
+$('#today-checklist').addEventListener('click',e=>{
+ const one=e.target.closest('[data-catchup-to]'),all=e.target.closest('[data-catchup-all]');
+ if(!one&&!all)return;
+ const moves=all?catchUpPlan().filter(p=>p.to).map(p=>({t:p.t,step:p.step,to:p.to})):[{t:app.tasks.find(x=>x.id===one.dataset.catchupTask),to:one.dataset.catchupTo,stepId:one.dataset.catchupStep}];
+ let n=0;for(const m of moves){const step=m.step||(m.t?.checklist||[]).find(x=>x.id===m.stepId);if(step&&!step.done&&/^\d{4}-\d{2}-\d{2}$/.test(m.to)){step.planDate=m.to;n++}}
+ if(n)makeChange();
+});
 $('#task-form').addEventListener('submit',e=>{
  e.preventDefault();
  const id=$('#task-id').value||uniqueId(),old=app.tasks.find(x=>x.id===id);
