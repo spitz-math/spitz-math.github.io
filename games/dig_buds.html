@@ -353,27 +353,29 @@ var SND={
 };
 
 /* ================= SONG: "Quiet Stone" (calm, sparse felt piano, 60 bpm, G major) =================
-   Our own tune, kept in the background on purpose: no drums at all, slow soft pads, a round held bass note, and a felt piano that plays a few
-   notes and then leaves a lot of quiet. 16 bars (about a minute), a new chord every two bars: Cmaj7 / G over B / Am7 / Dsus2 / Cmaj7 / Em7 / Am7 / D.
-   Every other time through, the piano plays even less. The melody backs off while a menu is open. */
+   Our own tune, kept in the background on purpose: no drums at all, slow soft pads, a round held bass note, and a felt piano: a steady gentle rolling pattern
+   with a slow tune on top (Kody 2026-11-12: no moments of silence). 16 bars (about a minute), a new chord every two bars: Cmaj7 / G over B / Am7 / Dsus2 / Cmaj7 / Em7 / Am7 / D.
+   Every other time through, the tune drops an octave and a light answer plays above it. The piano backs off while a menu is open. */
 var DG_PAD=[[130.81,196.00,246.94,329.63],[123.47,196.00,293.66,392.00],[110.00,164.81,261.63,329.63],[146.83,220.00,293.66,329.63],
             [130.81,196.00,246.94,329.63],[164.81,196.00,246.94,293.66],[110.00,196.00,261.63,329.63],[146.83,220.00,293.66,369.99]];
 var DG_BASS=[65.41,61.74,55.00,73.42,65.41,82.41,55.00,73.42];
 var DG_MEL=[[0,8,7,12],[0,12,4,12],[1,2,2,20],[3,4,4,10],[3,8,7,10],[3,14,9,18],[4,4,7,22],[6,0,12,12],[6,6,9,12],[6,10,7,14],[7,2,4,22],
             [8,8,2,10],[8,12,4,12],[9,2,7,22],[11,6,9,10],[11,10,7,10],[11,14,4,18],[12,4,2,22],[13,8,0,10],[13,12,2,14],[14,2,4,12],[14,8,2,24]];
+var DG_FILL=[[1,10,7,12],[2,4,9,12],[2,10,7,12],[5,2,4,12],[5,8,2,14],[7,10,7,12],[9,10,9,12],[10,2,7,12],[10,8,4,14],[12,12,7,12],[15,2,4,12],[15,8,7,14]];
 function dgKeys(ctx,g,f,t,dur,vol){ [['triangle',1,1300],['sine',0.8,2000]].forEach(function(v){ var o=ctx.createOscillator(), fl=ctx.createBiquadFilter(), e=ctx.createGain(); o.type=v[0]; o.frequency.value=f; fl.type='lowpass'; fl.frequency.value=v[2];
     e.gain.setValueAtTime(0.0001,t); e.gain.exponentialRampToValueAtTime(vol*v[1],t+0.014); e.gain.exponentialRampToValueAtTime(vol*v[1]*0.28,t+dur*0.3); e.gain.exponentialRampToValueAtTime(0.0001,t+dur);
     o.connect(fl); fl.connect(e); e.connect(g.act); e.connect(g.echo); o.start(t); o.stop(t+dur+0.03); }); }
-var SONG={ level:0.095, echo:0.5,
+var SONG={ level:0.085, echo:0.5,
   want:function(){ return !!S&&S.started&&!S.over; },
   busy:function(){ return !MODAL; },
   sd:function(){ return 60/60/4; },
   voice:function(f,t0,dur){ tone(f,f,t0,dur,'triangle',0.1); tone(f*2,f*2,t0,dur*0.4,'sine',0.02); },
   step:function(ctx,g,i,t,sd){ var bar=Math.floor(i/16)%16, loop=Math.floor(i/256), ch=Math.floor(bar/2), k=i%16;
-    if(bar%2===0&&k===0){ DG_PAD[ch].forEach(function(f,n){ mNote(ctx,g.out,'sine',f,t,sd*36,0.034,800,null,2.6); if(n>1) mNote(ctx,g.out,'triangle',f*2,t,sd*34,0.006,600,null,3.2); });   // slow pads that swell in and out
-      mNote(ctx,g.out,'sine',DG_BASS[ch],t,sd*30,0.11,220,null,0.5); }                                                                              // one round bass note per chord
-    if(bar%2===1&&(k===0||k===3||k===6)&&(ch+loop)%2===0) dgKeys(ctx,g,DG_PAD[ch][1+k/3]*(k===6?1:1),t+0.01*k,sd*14,0.03);                           // a soft rolled chord now and then
-    DG_MEL.forEach(function(m){ if(m[0]!==bar||m[1]!==k) return; if(loop%2===1&&bar%4<2) return; dgKeys(ctx,g,392*Math.pow(2,m[2]/12)/(loop%2?2:1),t,sd*m[3],0.085); });
+    if(bar%2===0&&k===0){ DG_PAD[ch].forEach(function(f,n){ mNote(ctx,g.out,'sine',f,t,sd*52,0.034,800,null,1.6); if(n>1) mNote(ctx,g.out,'triangle',f*2,t,sd*50,0.006,600,null,2.2); });   // slow pads; each one rings well into the next chord, so the sound never drops out
+      mNote(ctx,g.out,'sine',DG_BASS[ch],t,sd*40,0.11,220,null,0.4); }                                                                              // one round bass note per chord
+    if(k%2===0){ var ar=[0,1,2,3,2,1,2,3][k/2], af=DG_PAD[ch][ar]*(ar===0?2:1); dgKeys(ctx,g,af,t,sd*9,k===0?0.034:0.024); }                              // a steady, gentle rolling piano under everything (no gaps)
+    DG_MEL.forEach(function(m){ if(m[0]!==bar||m[1]!==k) return; dgKeys(ctx,g,392*Math.pow(2,m[2]/12)/(loop%2?2:1),t,sd*m[3],0.08); });
+    if(loop%2===1) DG_FILL.forEach(function(m){ if(m[0]===bar&&m[1]===k) dgKeys(ctx,g,392*Math.pow(2,m[2]/12),t,sd*m[3],0.05); });                    // second time through: the tune drops an octave and a light answer plays on top
   } };
 
 /* ================= SPITZ KIT (games/kit.js, shared by every game: music switch, jingle, music engine, confetti, toast) =================
