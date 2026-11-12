@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#121315">
+<meta name="robots" content="noindex,nofollow,noarchive">
+<title>Connect to Off the Clock</title>
+<link rel="icon" type="image/png" href="../../../favicon-192.png">
+<link href="../../../fonts/bricolagegrotesque-onest-c24d53.css" rel="stylesheet">
+<link href="../../../fonts/bungee-pressstart2p-nunito-5675ec.css" rel="stylesheet">
+<link rel="stylesheet" href="../../ui.css">
+<style>
+.ask{margin:0;font:700 22px/1.3 var(--fd)}
+.ask b{color:var(--accent)}
+.can{margin:0;padding:16px 20px;border-radius:14px;background:var(--panel);text-align:left;font-size:14px;color:var(--muted)}
+.can li{margin:4px 0}
+.can ul{margin:8px 0 0;padding-left:18px}
+.who{font-size:13px;color:var(--faint)}
+.choices{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.gate-burger img{width:160px;min-width:0}
+</style>
+<script src="../../config.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.119.0/dist/umd/supabase.js"></script>
+</head>
+<body>
+<header class="top"><a class="brand" href="../../" aria-label="Off the Clock home"><span class="brand-mark"><img src="../../burger_inverted.webp" alt="" width="56" height="45"></span><span class="brand-copy"><b>Off the Clock</b></span></a></header>
+<section id="gate">
+<div class="gate-card" id="card">
+  <div class="gate-lockup"><span class="gate-burger"><img src="../../burger_inverted.webp" alt="" width="440" height="355"></span></div>
+  <p class="lede" id="msg">Checking the request…</p>
+</div>
+</section>
+<script>
+// Approval page for the Off the Clock bridge (Supabase OAuth 2.1 server).
+// Supabase sends here with ?authorization_id=… when ChatGPT or Claude asks to connect.
+(function () {
+  const card = document.getElementById('card'), msg = document.getElementById('msg')
+  const id = new URLSearchParams(location.search).get('authorization_id')
+  const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c])
+  const say = (html) => { msg.innerHTML = html }
+  if (!id) { say('This page opens when ChatGPT or Claude asks to connect to Off the Clock. There is nothing to approve right now.'); return }
+  if (!window.supabase || !window.OFF_CLOCK_CONFIG) { say('Could not load sign-in. Check your connection and reload.'); return }
+  const CONFIG = window.OFF_CLOCK_CONFIG
+  const sb = window.supabase.createClient(CONFIG.supabaseUrl, CONFIG.supabaseKey, { auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true } })
+
+  function signInButton() {
+    say('Sign in first, with the same GitHub account you use for Off the Clock.')
+    const b = document.createElement('button'); b.className = 'btn primary wide'; b.type = 'button'; b.textContent = 'Sign in with GitHub'
+    b.onclick = () => sb.auth.signInWithOAuth({ provider: 'github', options: { redirectTo: location.href } })
+    card.appendChild(b)
+  }
+
+  async function decide(approve, buttons) {
+    buttons.forEach((b) => (b.disabled = true))
+    const { data, error } = approve ? await sb.auth.oauth.approveAuthorization(id) : await sb.auth.oauth.denyAuthorization(id)
+    if (error || !data?.redirect_url) { say('That did not go through: ' + esc(error?.message || 'no redirect') + '. Start the connection again from ChatGPT or Claude.'); return }
+    say(approve ? 'Connected. Taking you back…' : 'Denied. Taking you back…')
+    location.href = data.redirect_url
+  }
+
+  async function show() {
+    const { data: { session } } = await sb.auth.getSession()
+    if (!session) { signInButton(); return }
+    const { data, error } = await sb.auth.oauth.getAuthorizationDetails(id)
+    if (error) { say('This request has expired or is not valid (' + esc(error.message) + '). Start the connection again from ChatGPT or Claude.'); return }
+    if (data.redirect_url) { say('Already approved. Taking you back…'); location.replace(data.redirect_url); return }
+    msg.remove()
+    const name = data.client?.name || 'An app'
+    card.insertAdjacentHTML('beforeend',
+      '<p class="ask"><b>' + esc(name) + '</b> wants to connect to Off the Clock</p>' +
+      '<div class="can">If you approve, it can:<ul>' +
+      '<li>See your courses and assignments</li>' +
+      '<li>Add and update assignments and steps</li>' +
+      '<li>Read and post on the Claude and ChatGPT handoff board</li></ul></div>' +
+      '<p class="who">Signed in as ' + esc(data.user?.email || session.user?.email) + '. You can remove this connection any time in ChatGPT or Claude settings.</p>' +
+      '<div class="choices"><button class="btn" type="button" id="deny">Deny</button><button class="btn primary" type="button" id="approve">Approve</button></div>')
+    const a = document.getElementById('approve'), d = document.getElementById('deny')
+    a.onclick = () => decide(true, [a, d]); d.onclick = () => decide(false, [a, d])
+  }
+  show().catch((e) => say('Something went wrong: ' + esc(e.message)))
+})()
+</script>
+</body>
+</html>

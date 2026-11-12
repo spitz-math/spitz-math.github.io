@@ -1,0 +1,9 @@
+# Only what the bridge needs. There is deliberately no [auth] block here, so
+# `supabase config push` can never overwrite the live sign-in settings.
+# Turn on the OAuth server in the dashboard instead (see ../README.md).
+project_id = "pkonclmfrpozizmmtnrv"
+
+[functions.otc-bridge]
+# The function checks the OAuth token itself (withOAuthProtectedResource +
+# withSupabase), so the gateway's legacy JWT check stays off.
+verify_jwt = false
