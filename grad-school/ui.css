@@ -89,7 +89,7 @@ label{font-size:13px;font-weight:600;color:var(--muted)}
 .gate-burger img{display:block;width:0;min-width:100%;height:auto;filter:drop-shadow(0 6px 18px rgba(4,138,254,.25))}
 /* Main page: the burger fills the side bar's width, so the top bar doesn't repeat it */
 .side-burger{margin-top:auto}
-.side-burger img{display:block;width:100%;height:auto;filter:drop-shadow(0 6px 18px rgba(4,138,254,.2))}
+.side-burger img{display:block;width:120px;max-width:100%;height:auto;margin:0 auto;filter:drop-shadow(0 4px 12px rgba(4,138,254,.15))}
 
 .gate-title{font:400 clamp(32px,9vw,44px)/1.05 var(--display);margin:8px 0 0;letter-spacing:.02em;text-shadow:3px 3px 0 var(--cobalt)}
 .gate-card .lede{margin:0 0 8px;color:var(--muted);max-width:40ch}
