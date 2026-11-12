@@ -3,6 +3,7 @@
 import { createMcpHandler, McpServer } from 'npm:@modelcontextprotocol/server@^2.4.0'
 import { z } from 'npm:zod@^4.3.6'
 import { addAssignment, type Doc, emptyDoc, trackerView, updateAssignment } from './logic.ts'
+import { buildBriefing, suggestCatchUp } from './planning.ts'
 
 // Minimal shape of the user-scoped supabase-js client this file uses.
 // deno-lint-ignore no-explicit-any
@@ -133,6 +134,27 @@ export function bridgeHandler(supabase: Db, userId: string) {
       }),
     }, async (q) => {
       try { const { doc } = await load(); return text(trackerView(doc, q)) } catch (e) { return fail(e) }
+    })
+
+    server.registerTool('get_briefing', {
+      title: 'Read daily and weekly academic briefing', annotations: ro,
+      description: 'Read-only brief of verified due dates, planned steps, overdue work, and completion metrics. today must be the user-local date YYYY-MM-DD. Academic weeks run Wednesday to Tuesday.',
+      inputSchema: z.object({
+        today: z.string().describe('User-local calendar date YYYY-MM-DD, not server UTC time'),
+      }),
+    }, async ({ today }) => {
+      try { const { doc } = await load(); return text(buildBriefing(doc, today)) } catch (e) { return fail(e) }
+    })
+
+    server.registerTool('suggest_catch_up', {
+      title: 'Preview non-destructive catch-up dates', annotations: ro,
+      description: 'Proposes new planned step dates for missed work without saving or changing official due dates. Empty to means manual review is needed. Requires explicit update_assignment calls to apply proposals.',
+      inputSchema: z.object({
+        today: z.string().describe('User-local calendar date YYYY-MM-DD'),
+        maxStepsPerDay: z.number().int().min(1).max(20).default(3),
+      }),
+    }, async ({ today, maxStepsPerDay }) => {
+      try { const { doc } = await load(); return text({ suggestions: suggestCatchUp(doc, today, maxStepsPerDay), saved: false }) } catch (e) { return fail(e) }
     })
 
     server.registerTool('add_assignment', {
