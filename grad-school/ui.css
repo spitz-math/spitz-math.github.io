@@ -346,6 +346,32 @@ dialog[open]{animation:dialog-in .2s ease-out}
 .byclass-toggle small{display:block;color:var(--muted);font-size:13px}
 
 /* Wide screens: today's steps and Up next sit side by side, Courses stays on the right */
+/* At a glance: plan vs official dates vs waiting to submit */
+.glance{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin:0 0 32px}
+.glance-tile{display:grid;gap:4px;align-content:start;padding:14px 16px;background:var(--panel);border:1px solid var(--line);border-top:3px solid var(--accent);border-radius:14px;color:var(--ink);text-align:left;transition:background .15s,border-color .15s}
+.glance-tile:hover{background:var(--panel2)}
+.glance-label{font-size:13px;font-weight:600;color:var(--muted)}
+.glance-tile b{font:800 22px/1.15 var(--fd)}
+.glance-tile small{font-size:13px;color:var(--muted)}
+.glance-tile.warn{border-top-color:var(--warn)}
+.glance-tile.warn b{color:var(--warn)}
+.glance-tile.bad{border-top-color:var(--bad)}
+.glance-tile.bad small{color:var(--bad);font-weight:600}
+.glance-tile.calm{border-top-color:var(--line2)}
+.glance-tile.calm b{color:var(--muted)}
+#today-checklist>section,#due-week{scroll-margin-top:84px}
+
+/* Finished, not submitted */
+.submit-card{margin-bottom:16px;padding:16px 20px;background:var(--panel);border:1px solid var(--line);border-left:3px solid var(--warn);border-radius:14px}
+.submit-row{padding:8px}
+.submit-text{display:grid;gap:4px;min-width:0}
+.submit-title{background:none;border:0;padding:0;color:var(--ink);font:600 15px/1.35 var(--fb);text-align:left}
+.submit-title:hover{color:var(--accent)}
+.submit-row small{display:flex;flex-wrap:wrap;align-items:center;gap:4px 12px;font-size:13px;color:var(--muted)}
+.catch-move.sub-move{color:var(--ok)}
+.catch-move.sub-move:hover{background:var(--ok-soft);border-color:var(--ok)}
+.due-item.is-past .due-date small,.due-item.is-past .due-date b{color:var(--bad)}
+
 /* Catch up (missed planned steps) */
 .catch-card{margin-bottom:16px;padding:16px 20px;background:var(--panel);border:1px solid var(--line);border-left:3px solid var(--warn);border-radius:14px}
 .catch-head{display:flex;align-items:flex-start;gap:16px;margin-bottom:8px}
@@ -395,6 +421,20 @@ dialog[open]{animation:dialog-in .2s ease-out}
 
 /* Phones: the side bar becomes a tab bar at the bottom */
 @media (max-width:760px){
+  .glance{grid-template-columns:1fr;gap:8px;margin-bottom:24px}
+  .glance-tile{grid-template-columns:minmax(0,1fr) auto;align-items:baseline;padding:12px 14px}
+  .glance-label{grid-column:1/-1}
+  .glance-tile b{font-size:18px}
+  .glance-tile small{text-align:right}
+  .today-grid{display:flex;flex-direction:column;align-items:stretch}
+  .rail>.block-head.due-head{margin-top:32px}
+  .today-main,.rail{display:contents}
+  #today-checklist{order:1}
+  .rail>*{order:4}
+  .rail>.due-head,#due-week{order:2}
+  .today-main>.block-head,#mission-list{order:3}
+  .submit-row{flex-wrap:wrap}
+  .submit-row .sub-move{margin:8px 0 0}
   .catch-row{flex-wrap:wrap;gap:0 12px}
   .catch-row .day-action-check{flex-basis:100%}
   .catch-move{margin:0 0 8px 34px}
