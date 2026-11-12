@@ -39,6 +39,7 @@ var GAMES={                     /* id: [number in the code, display name, how it
   hoop_buds:[22,'Hoop Buds','points'],   /* points since 2026-10-30 (id 6 was the Buds vs Rivals score) */
   rocket_buds:[23,'Rocket Buds','points'],   /* points since 2026-11-02 (id 14 was the Buds vs Rivals score) */
   brawl_buds:[24,'Brawl Buds','points'],   /* points since 2026-11-02 (id 17 was the Buds vs Rivals score) */
+  dig_buds:[26,'Dig Buds','points'],
   pinball:[25,'Pinball','points',10]   /* since 2026-11-07 the code holds the score in tens (a 4th entry = score unit), so runs up to 10,485,750 fit (id 18 capped at 1,048,575) */
 };
 /* question sets in the order questions.js lists them; 0 means the game's own questions. Add new sets at the end.
@@ -177,7 +178,7 @@ function button(link,code){ return '<a href="'+link+'" target="_blank" rel="noop
   var K={ splat_range:'splat_range_v5', star_swarm:'star_swarm_v1', shift_racer:'shift_racer_v1', jump_man_multiplication:'jump_man_facts_v1',
     football_buds:'football_buds_game_v2', hoop_buds:'hoop_buds_game_v1', dash:'dash_facts_game_v3', skate:'skate_game_v1', mini_golf:'mini_golf_v1',
     fishing:'go_fish_v1', brick_breaker:'brick_breaker_v1', burger_shop:'burger_shop_v1', burger_blaster:'burger_blaster_v1', rocket_buds:'rocket_buds_v1',
-    paint_royale:'paint_royale_v1', snake_arena:'snake_arena_v1', brawl_buds:'brawl_buds_v1', pinball:'pinball_v1', hill_climb:'hill_climb_v1', fit_check:'fit_check_v1' };
+    paint_royale:'paint_royale_v1', snake_arena:'snake_arena_v1', brawl_buds:'brawl_buds_v1', pinball:'pinball_v1', hill_climb:'hill_climb_v1', fit_check:'fit_check_v1', dig_buds:'dig_buds_v10' };
   var f=(location.pathname.split('/').pop()||'').replace(/\.html?$/,'').replace(/_(mult|v\d|test)$/,''), key=K[f]; if(!key) return;
   var run=function(k){ return k.indexOf(key)===0&&!/_(mute|t)$/.test(k); };   /* KEY may carry the set and topics after it */
   try{ var ls=window.localStorage;
@@ -228,7 +229,7 @@ function button(link,code){ return '<a href="'+link+'" target="_blank" rel="noop
 /* tab icon: each game has its own emoji icon (Kody, 2026-10-11), picked from the file name; unknown pages get the Spitz burger */
 (function(){ if(document.querySelector('link[rel~="icon"]')) return;
   var E={ splat_range:'🎯', star_swarm:'👾', shift_racer:'🏎️', jump_man_multiplication:'👟', football_buds:'🏈', hoop_buds:'🏀', dash:'⚡', skate:'🛹', mini_golf:'⛳',
-    fishing:'🎣', brick_breaker:'🧱', burger_shop:'🍟', burger_blaster:'💥', rocket_buds:'🚗', paint_royale:'🎨', snake_arena:'🐍', brawl_buds:'🥊', pinball:'🎱', hill_climb:'🚚', fit_check:'👗' };
+    fishing:'🎣', brick_breaker:'🧱', burger_shop:'🍟', burger_blaster:'💥', rocket_buds:'🚗', paint_royale:'🎨', snake_arena:'🐍', brawl_buds:'🥊', pinball:'🎱', hill_climb:'🚚', fit_check:'👗', dig_buds:'⛏️' };
   var f=(location.pathname.split('/').pop()||'').replace(/\.html?$/,'').replace(/_(mult|v\d|test)$/,''), e=E[f], l=document.createElement('link'); l.rel='icon'; l.type='image/svg+xml';
   l.href=e?'data:image/svg+xml,'+encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect width="64" height="64" rx="14" fill="#17121F"/><text x="32" y="46" font-size="40" text-anchor="middle">'+e+'</text></svg>')
     :"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%2317121F'/%3E%3Cpath d='M10 29q0-17 22-17t22 17z' fill='%23F2A541'/%3E%3Cg fill='%23FFF3D6'%3E%3Cellipse cx='22' cy='21' rx='2.4' ry='1.4'/%3E%3Cellipse cx='32' cy='17' rx='2.4' ry='1.4'/%3E%3Cellipse cx='42' cy='21' rx='2.4' ry='1.4'/%3E%3Cellipse cx='28' cy='25' rx='2.4' ry='1.4'/%3E%3Cellipse cx='37' cy='25' rx='2.4' ry='1.4'/%3E%3C/g%3E%3Cpath d='M8 31h48l-4 5-5-3-5 3-5-3-5 3-5-3-5 3-5-3-5 3z' fill='%236FD34A'/%3E%3Crect x='9' y='35' width='46' height='8' rx='4' fill='%237A3B1E'/%3E%3Cpath d='M8 43h48l-3 3H11z' fill='%23FFC72C'/%3E%3Cpath d='M10 46h44q0 7-7 7H17q-7 0-7-7z' fill='%23F2A541'/%3E%3C/svg%3E";
