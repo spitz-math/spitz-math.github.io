@@ -31,6 +31,7 @@ export type Deadline = {
 }
 export type Briefing = {
   today: string; week: { start: string; end: string };
+  needsSubmission: Deadline[];
   dueThisWeek: Deadline[]; overdueAssignments: Deadline[];
   todaySteps: PlannedStep[]; overdueSteps: PlannedStep[];
   upcomingSteps: PlannedStep[];
@@ -54,6 +55,11 @@ export function buildBriefing(doc: Doc, today: string): Briefing {
   const courses = Object.fromEntries(doc.courses.map(c => [c.id, c.name]))
   const active = doc.tasks.filter(outstanding)
   const named = (t: Task) => courses[t.course] ?? t.course
+  // All dates, including unverified deadlines: finished work still needs turning in.
+  const needsSubmission = doc.tasks.filter(t =>
+    t.status === 'done' && t.submissionRequired && t.submission !== 'submitted')
+    .map(t => deadline(t, named(t))).sort((a, b) =>
+      (a.due || '9999').localeCompare(b.due || '9999') || a.title.localeCompare(b.title))
   const dueThisWeek = active.filter(t => t.due && t.due >= week.start && t.due <= week.end)
     .map(t => deadline(t, named(t))).sort((a, b) => a.due.localeCompare(b.due))
   const overdueAssignments = active.filter(t => t.due && t.due < today)
@@ -63,7 +69,7 @@ export function buildBriefing(doc: Doc, today: string): Briefing {
   const sorted = (items: PlannedStep[]) => items.sort((a, b) =>
     a.planDate.localeCompare(b.planDate) || a.title.localeCompare(b.title))
   return {
-    today, week, dueThisWeek, overdueAssignments,
+    today, week, needsSubmission, dueThisWeek, overdueAssignments,
     todaySteps: sorted(steps.filter(s => s.planDate === today)),
     overdueSteps: sorted(steps.filter(s => s.planDate < today)),
     upcomingSteps: sorted(steps.filter(s => s.planDate > today && s.planDate <= week.end)),

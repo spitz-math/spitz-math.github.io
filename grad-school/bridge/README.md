@@ -13,10 +13,14 @@ URL once deployed: `https://pkonclmfrpozizmmtnrv.supabase.co/functions/v1/otc-br
 | `post_note` | Leave a handoff after a change, a task for the other AI, or a question for Kody. |
 | `update_note` | Claim a task, reply, or mark it done. |
 | `get_tracker` | Courses and assignments with ids, dates, steps, and finished/submitted state. |
+| `get_briefing` | Read-only daily/weekly snapshot. Lead with `needsSubmission`: finished, submission-required work not yet confirmed submitted, regardless of due date. |
+| `suggest_catch_up` | Read-only proposals for missed step plan dates; does not save changes. |
 | `add_assignment` | Add an assignment. It is never added as submitted. |
 | `update_assignment` | Change dates, notes and steps, or mark it submitted when Kody says it's turned in. |
 
 Tracker writes use the same revision guard as the site. If the site saved in between, the bridge reloads and re-applies that one change, up to 3 tries. If the site is open with unsaved edits, the site shows its normal conflict message.
+
+`get_briefing` requires the user's local `today` (`YYYY-MM-DD`). Its `needsSubmission` entries use the same fields as `dueThisWeek` and `overdueAssignments`, sorted by verified due date (earliest first, unverified dates last), then title. Empty `due` stays empty; `target` is never used as an official deadline. Entries remain in the existing deadline lists when applicable. The projection never changes completion or submission state. After merging bridge changes, redeploy the Edge Function (or rebuild and deploy the dashboard bundle) before expecting them in connected tools.
 
 Files:
 - `supabase/functions/otc-bridge/index.ts`: sign-in wiring.
