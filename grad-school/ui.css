@@ -356,12 +356,16 @@ dialog[open]{animation:dialog-in .2s ease-out}
 .course-panel .note{margin-top:16px}
 .today-grid{gap:32px;align-items:stretch}
 .today-main,.rail{position:relative;min-width:0}
-:root{--divider:linear-gradient(to bottom,rgba(2,97,254,0),rgba(2,97,254,.55) 48px,rgba(2,97,254,.55) calc(100% - 48px),rgba(2,97,254,0))}
-.rail::before{content:"";position:absolute;top:0;bottom:0;left:-16px;width:1px;background:var(--divider)}
+:root{--line-c:rgba(2,97,254,.55);--line-z:rgba(2,97,254,0);
+  --divider:linear-gradient(to bottom,var(--line-c),var(--line-c) calc(100% - 48px),var(--line-z));
+  --divider-in:linear-gradient(to bottom,var(--line-z),var(--line-c) 40px);
+  --divider-x:linear-gradient(to right,var(--line-z),var(--line-c) 64px,var(--line-c) calc(100% - 64px),var(--line-z))}
+.rail::before{content:"";position:absolute;top:-16px;bottom:0;left:-16px;width:1px;background:var(--divider)}
 #today-checklist>section:last-child{margin-bottom:0}
 
 /* At a glance: plan vs official dates vs waiting to submit */
-.glance{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin:0 0 32px}
+.glance{position:relative;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin:0 0 32px}
+.glance::after{content:"";position:absolute;left:0;right:0;bottom:-16px;height:1px;background:var(--divider-x)}
 .glance-tile{display:grid;gap:4px;align-content:start;padding:14px 16px;background:var(--panel);border:1px solid var(--line);border-top:3px solid var(--accent);border-radius:14px;color:var(--ink);text-align:left;transition:background .15s,border-color .15s}
 .glance-tile:hover{background:var(--panel2)}
 .glance-label{font-size:13px;font-weight:600;color:var(--muted)}
@@ -425,7 +429,9 @@ dialog[open]{animation:dialog-in .2s ease-out}
   .today-grid{grid-template-columns:minmax(0,1fr) 320px;gap:32px}
   .glance{grid-template-columns:minmax(0,1fr) minmax(0,1fr) 320px;gap:32px}
   .today-main{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);column-gap:32px;align-items:start}
-  .today-main::before{content:"";position:absolute;top:0;bottom:0;left:50%;width:1px;background:var(--divider)}
+  .glance-tile{position:relative}
+  .glance-tile+.glance-tile::before{content:"";position:absolute;top:-24px;bottom:-17px;left:-17px;width:1px;background:var(--divider-in)}
+  .today-main::before{content:"";position:absolute;top:-16px;bottom:0;left:50%;width:1px;background:var(--divider)}
   .today-main #today-checklist{grid-column:1}
   .today-main .next-panel{grid-column:2;grid-row:1;margin-top:0}
 }
@@ -439,7 +445,7 @@ dialog[open]{animation:dialog-in .2s ease-out}
   .glance-tile small{text-align:right}
   .today-grid{display:flex;flex-direction:column;align-items:stretch}
   .today-main,.rail{display:contents}
-  .rail::before,.today-main::before{display:none}
+  .rail::before,.today-main::before,.glance::after{display:none}
   #today-checklist{order:1}
   .due-panel{order:2}
   .next-panel{order:3}
