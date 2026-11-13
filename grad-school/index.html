@@ -281,7 +281,7 @@ function dueWeekHTML(week){
 const READING_BUCKET='otc-readings';
 function normalizedReadings(raw){
  if(!Array.isArray(raw))return [];
- return raw.slice(0,20).filter(r=>r&&typeof r.path==='string'&&r.path&&!r.path.includes('..')).map(r=>({id:String(r.id||uniqueId()).slice(0,100),title:String(r.title||'Reading').slice(0,180),path:r.path.slice(0,300),size:Number.isFinite(r.size)?r.size:0}));
+ return raw.slice(0,20).filter(r=>r&&typeof r.path==='string'&&r.path&&!r.path.includes('..')).map(r=>({id:String(r.id||uniqueId()).slice(0,100),title:String(r.title||'Reading').slice(0,180),path:r.path.slice(0,300),size:Number.isFinite(r.size)?r.size:0,...(/^[0-9a-f]{64}$/.test(r.sha256||'')?{sha256:r.sha256}:{})}));
 }
 const pdfIcon='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5"/></svg>';
 function readingsHTML(t){
@@ -313,13 +313,17 @@ async function uploadReadings(files){
   if(draftReadings.length>=20){renderDraftReadings('An assignment holds at most 20 readings.');break}
   if(f.type!=='application/pdf'&&!/\.pdf$/i.test(f.name)){renderDraftReadings(f.name+' is not a PDF.');continue}
   if(f.size>50*1024*1024){renderDraftReadings(f.name+' is over 50 MB.');continue}
+  let sha256='';
+  try{sha256=[...new Uint8Array(await crypto.subtle.digest('SHA-256',await f.arrayBuffer()))].map(b=>b.toString(16).padStart(2,'0')).join('')}catch(e){}
+  const dup=sha256&&draftReadings.find(r=>r.sha256===sha256);
+  if(dup){renderDraftReadings(f.name+' is already attached as \u201c'+dup.title+'\u201d.');continue}
   renderDraftReadings('Uploading '+f.name+'…');
   const safe=f.name.replace(/\.pdf$/i,'').replace(/[^A-Za-z0-9._-]+/g,'-').slice(0,80)||'reading';
   const path=user.id+'/'+taskId+'/'+uniqueId().slice(0,8)+'-'+safe+'.pdf';
   const {error}=await supabaseClient.storage.from(READING_BUCKET).upload(path,f,{contentType:'application/pdf',upsert:false});
   if(error){renderDraftReadings(/bucket/i.test(error.message)?'Readings storage isn\u2019t set up yet. Run the readings SQL in Supabase first.':'Upload failed: '+error.message);return}
   draftNew.add(path);
-  draftReadings.push({id:uniqueId(),title:f.name.replace(/\.pdf$/i,'').slice(0,180),path,size:f.size});
+  draftReadings.push({id:uniqueId(),title:f.name.replace(/\.pdf$/i,'').slice(0,180),path,size:f.size,...(sha256?{sha256}:{})});
  }
  renderDraftReadings();
 }

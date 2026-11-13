@@ -48,3 +48,46 @@ export function pageSlice(pages: string[], fromPage = 1, toPage?: number, maxCha
       : nextPage ? `More pages remain. Call read_reading again with fromPage ${nextPage}.` : '',
   }
 }
+
+// ---------- attach_reading ----------
+export const MAX_READINGS = 20
+export const MAX_PDF_BYTES = 50 * 1024 * 1024
+
+/** True when the bytes look like a PDF (the %PDF- header within the first 1 KB). */
+export function isPdf(bytes: Uint8Array): boolean {
+  const head = new TextDecoder('latin1').decode(bytes.subarray(0, 1024))
+  return head.includes('%PDF-')
+}
+
+/** Storage path under the owner's folder, same layout the site uses. */
+export function readingPath(userId: string, assignmentId: string, readingId: string, fileName: string): string {
+  const safe = fileName.replace(/\.pdf$/i, '').replace(/[^A-Za-z0-9._-]+/g, '-').replace(/^[-.]+/, '').slice(0, 80) || 'reading'
+  const folder = assignmentId.replace(/[^A-Za-z0-9_-]+/g, '-').slice(0, 100) || 'assignment'
+  return `${userId}/${folder}/${readingId.slice(0, 8)}-${safe}.pdf`
+}
+
+/** Checks the assignment can take this PDF before anything is uploaded. Returns the reading already attached with the same content, if any. */
+export function checkAttach(doc: Doc, assignmentId: string, sha256: string): { taskTitle: string; existing: Reading | null } {
+  const task = doc.tasks.find((t) => t.id === assignmentId)
+  if (!task) throw new Error(`No assignment with id ${assignmentId}. Use get_tracker for ids.`)
+  const list = (task.readings ?? []) as (Reading & { sha256?: string })[]
+  const existing = list.find((r) => r.sha256 && r.sha256 === sha256) ?? null
+  if (!existing && list.length >= MAX_READINGS) throw new Error(`"${task.title}" already has ${MAX_READINGS} readings, the most an assignment holds.`)
+  return { taskTitle: task.title, existing }
+}
+
+/** Adds the uploaded reading to the assignment, keeping everything else. A second title clash gets " (2)", " (3)"… */
+export function addReading(doc: Doc, assignmentId: string, r: { id: string; title: string; path: string; size: number; sha256: string }) {
+  const { existing } = checkAttach(doc, assignmentId, r.sha256)
+  if (existing) throw new Error(`Already attached as "${existing.title}".`)
+  const tasks = doc.tasks.map((t) => {
+    if (t.id !== assignmentId) return t
+    const list = t.readings ?? []
+    const base = (r.title.trim() || 'Reading').slice(0, 170)
+    let title = base
+    for (let n = 2; list.some((x) => x.title.toLowerCase() === title.toLowerCase()); n++) title = `${base} (${n})`
+    return { ...t, readings: [...list, { id: r.id, title, path: r.path, size: r.size, sha256: r.sha256 }] }
+  })
+  const task = tasks.find((t) => t.id === assignmentId)!
+  return { doc: { ...doc, tasks }, task: { id: task.id, title: task.title, reading: task.readings!.at(-1)!, readings: task.readings!.length } }
+}

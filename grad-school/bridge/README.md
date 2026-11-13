@@ -16,6 +16,7 @@ URL once deployed: `https://pkonclmfrpozizmmtnrv.supabase.co/functions/v1/otc-br
 | `get_briefing` | Read-only daily/weekly snapshot. Lead with `needsSubmission`: finished, submission-required work not yet confirmed submitted, regardless of due date. |
 | `suggest_catch_up` | Read-only proposals for missed step plan dates; does not save changes. |
 | `read_reading` | Read-only. Text of a reading PDF Kody attached to an assignment, from the private `otc-readings` bucket, about 60k characters per call (`nextPage` continues). Scanned PDFs have no text. |
+| `attach_reading` | Attach a PDF to an assignment. In ChatGPT (web), the PDF uploaded in the conversation is passed as `file` (`openai/fileParams`); anywhere else, `url` is an https link that downloads the PDF. Stored in `otc-readings` under the user's folder, duplicates (same SHA-256) refused, at most 20 per assignment, saved with the revision guard. A failed save removes the uploaded file. |
 | `add_assignment` | Add an assignment. It is never added as submitted. |
 | `update_assignment` | Change dates, notes and steps, or mark it submitted when Kody says it's turned in. |
 
