@@ -161,7 +161,7 @@ function courseWeek(offset=0,referenceDate=dayISO()){
 }
 function inCourseWeek(s,w){return !!s&&s>=w.start&&s<=w.end}
 
-function dueLabel(t){if(!t.due)return t.submissionRequired===false?{text:t.target?'Prep by '+showDate(t.target):'No deadline',cl:''}:{text:'Due date not verified',cl:'unverified'};const dd=diffDays(t.due);return dd<0?{text:Math.abs(dd)===1?'1 day overdue':`${Math.abs(dd)} days overdue`,cl:'late'}:dd===0?{text:'Due today',cl:'soon'}:dd===1?{text:'Due tomorrow',cl:'soon'}:{text:'Due '+showDate(t.due),cl:''}}
+function dueLabel(t){if(!t.due)return t.submissionRequired===false?{text:t.target?'Prep by '+showDate(t.target):'No deadline',cl:''}:{text:'Due date not verified',cl:'unverified'};if(isHandled(t))return {text:'Due '+showDate(t.due),cl:''};const dd=diffDays(t.due);return dd<0?{text:Math.abs(dd)===1?'1 day overdue':`${Math.abs(dd)} days overdue`,cl:'late'}:dd===0?{text:'Due today',cl:'soon'}:dd===1?{text:'Due tomorrow',cl:'soon'}:{text:'Due '+showDate(t.due),cl:''}}
 function escapeHTML(v){return String(v??'').replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]))}
 function course(t){return app.courses.find(c=>c.id===t.course)||app.courses[0]}
 function isDone(t){return t.status==='done'||t.submission==='submitted'}
@@ -486,7 +486,7 @@ $('#glance').innerHTML=glanceHTML(currentWeek,toSubmit);
 $('#today-checklist').innerHTML=toSubmitCard(toSubmit)+catchUpCard()+plannedDayCard(dayISO(),currentWeek,true);
 $('#due-week').innerHTML=dueWeekHTML(currentWeek);{const open=dueThisWeek.filter(t=>t.submissionRequired!==false&&t.submission!=='submitted').length;$('#due-week-count').textContent=currentWeek.number?currentWeek.label:'This week'}
 $('#week-list').innerHTML=Array.from({length:7},(_,i)=>plannedDayCard(shiftISO(selectedWeek.start,i),selectedWeek)).join('')+unscheduledStepsCard();
-const q=$('#search-tasks').value.toLowerCase().trim();let filtered=sortedTasks(all.filter(t=>!q||t.title.toLowerCase().includes(q)||course(t)?.name.toLowerCase().includes(q)||t.notes.toLowerCase().includes(q)));if(filter==='active')filtered=filtered.filter(t=>!isDone(t));else if(filter==='done')filtered=filtered.filter(t=>isDone(t));else if(filter==='submitted')filtered=filtered.filter(t=>t.submission==='submitted');
+const q=$('#search-tasks').value.toLowerCase().trim();let filtered=sortedTasks(all.filter(t=>!q||t.title.toLowerCase().includes(q)||course(t)?.name.toLowerCase().includes(q)||t.notes.toLowerCase().includes(q)));filtered=filtered.filter(t=>!isHandled(t)).concat(filtered.filter(isHandled));if(filter==='active')filtered=filtered.filter(t=>!isDone(t));else if(filter==='done')filtered=filtered.filter(t=>isDone(t));else if(filter==='submitted')filtered=filtered.filter(t=>t.submission==='submitted');
 $('#task-list').innerHTML=filtered.map((t,i)=>taskHTML(t,i,true)).join('')||`<div class="empty"><h3>Nothing matches</h3><p>Try another filter or search.</p></div>`;
 }
 function addEditorStep(step={}){
