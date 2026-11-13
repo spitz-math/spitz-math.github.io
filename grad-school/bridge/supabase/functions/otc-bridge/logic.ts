@@ -140,7 +140,7 @@ export function trackerView(doc: Doc, q: TrackerQuery = {}) {
       due: t.due || (t.submissionRequired ? 'not verified' : 'none'), target: t.target,
       finished: t.status, submitted: t.submission === 'submitted', submissionRequired: t.submissionRequired,
       notes: t.notes, steps: t.checklist.map((s) => ({ id: s.id, text: s.text, done: s.done, planDate: s.planDate })),
-      readings: (t.readings ?? []).map((r) => r.title),
+      readings: (t.readings ?? []).map((r) => ({ id: r.id, title: r.title })),
     })),
   };
 }

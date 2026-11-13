@@ -4,10 +4,12 @@ import { createMcpHandler, McpServer } from 'npm:@modelcontextprotocol/server@^2
 import { z } from 'npm:zod@^4.3.6'
 import { addAssignment, type Doc, emptyDoc, trackerView, updateAssignment } from './logic.ts'
 import { buildBriefing, suggestCatchUp } from './planning.ts'
+import { findReading, MAX_CHARS, pageSlice, READING_BUCKET } from './readings.ts'
+import { extractText, getDocumentProxy } from 'npm:unpdf@^1.0.0'
 
 // Minimal shape of the user-scoped supabase-js client this file uses.
 // deno-lint-ignore no-explicit-any
-type Db = { from: (table: string) => any }
+type Db = { from: (table: string) => any; storage: { from: (bucket: string) => any } }
 
 export const RULES = `Off the Clock bridge: rules for every AI that connects (Claude and ChatGPT).
 
@@ -158,6 +160,27 @@ export function bridgeHandler(supabase: Db, userId: string) {
       }),
     }, async ({ today, maxStepsPerDay }) => {
       try { const { doc } = await load(); return text({ suggestions: suggestCatchUp(doc, today, maxStepsPerDay), saved: false }) } catch (e) { return fail(e) }
+    })
+
+    server.registerTool('read_reading', {
+      title: 'Read a reading PDF', annotations: ro,
+      description: `Get the text of a reading PDF Kody attached to an assignment (get_tracker lists each assignment's readings). Returns up to about ${MAX_CHARS} characters at a time; if nextPage is set, call again with fromPage. Scanned PDFs have no text.`,
+      inputSchema: z.object({
+        assignmentId: z.string().describe('Assignment id from get_tracker'),
+        reading: z.string().optional().describe('Reading id or title; can be left out when the assignment has one reading'),
+        fromPage: z.number().int().min(1).default(1),
+        toPage: z.number().int().min(1).optional(),
+      }),
+    }, async ({ assignmentId, reading, fromPage, toPage }) => {
+      try {
+        const { doc } = await load()
+        const found = findReading(doc, userId, assignmentId, reading)
+        const { data, error } = await supabase.storage.from(READING_BUCKET).download(found.reading.path)
+        if (error || !data) throw new Error('Could not open the PDF: ' + (error?.message ?? 'file missing'))
+        const pdf = await getDocumentProxy(new Uint8Array(await data.arrayBuffer()))
+        const { text: pages } = await extractText(pdf, { mergePages: false })
+        return text({ assignment: found.task.title, reading: found.reading.title, ...pageSlice(pages as string[], fromPage, toPage) })
+      } catch (e) { return fail(e) }
     })
 
     server.registerTool('add_assignment', {
