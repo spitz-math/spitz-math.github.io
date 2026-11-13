@@ -159,7 +159,7 @@ h1{font:800 32px/1.15 var(--fd);margin:0;text-wrap:balance}
 .disc-core small{font-size:12px;color:var(--muted)}
 #progress-caption{font-style:normal;font-size:13px;color:var(--muted);max-width:170px}
 
-.today-grid{display:grid;grid-template-columns:minmax(0,1fr) 280px;gap:48px;align-items:start}
+.today-grid{display:grid;grid-template-columns:minmax(0,1fr) 320px;gap:20px;align-items:start}
 .block-head{display:flex;align-items:baseline;gap:12px;margin:32px 0 8px}
 .block-head h2{font:700 18px/1.3 var(--fd);margin:0}
 .block-head .count{font-size:13px;color:var(--faint)}
@@ -346,6 +346,17 @@ dialog[open]{animation:dialog-in .2s ease-out}
 .byclass-toggle small{display:block;color:var(--muted);font-size:13px}
 
 /* Wide screens: today's steps and Up next sit side by side, Courses stays on the right */
+/* Today columns: every column is a card so the edges line up */
+.panel{padding:16px 20px;background:var(--panel);border:1px solid var(--line);border-radius:14px}
+.panel>.block-head{margin:0 0 8px}
+.panel .rows>:last-child,.panel .due-list>:last-child{border-bottom:0}
+.panel .rows>.mission-row:last-child{padding-bottom:4px}
+.next-panel{margin-top:16px}
+.rail .panel+.panel{margin-top:16px}
+.course-panel .note{margin-top:16px}
+.today-grid{gap:20px}
+#today-checklist>section:last-child{margin-bottom:0}
+
 /* At a glance: plan vs official dates vs waiting to submit */
 .glance{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin:0 0 32px}
 .glance-tile{display:grid;gap:4px;align-content:start;padding:14px 16px;background:var(--panel);border:1px solid var(--line);border-top:3px solid var(--accent);border-radius:14px;color:var(--ink);text-align:left;transition:background .15s,border-color .15s}
@@ -390,7 +401,6 @@ dialog[open]{animation:dialog-in .2s ease-out}
 .catch-move.none{color:var(--muted)}
 
 /* Due this week (rail) */
-#due-week{margin-bottom:8px}
 .due-list{display:grid;border-top:1px solid var(--line)}
 .due-item{display:grid;grid-template-columns:40px minmax(0,1fr);gap:12px;align-items:center;padding:10px 4px;background:none;border:0;border-bottom:1px solid var(--line);color:var(--ink);text-align:left;border-radius:0}
 .due-item:hover{background:var(--hover)}
@@ -407,16 +417,13 @@ dialog[open]{animation:dialog-in .2s ease-out}
 .due-state.bad{color:var(--bad);font-weight:600}
 .due-item.is-sub .due-title{color:var(--faint);text-decoration:line-through}
 .due-empty{margin:0;font-size:13px;color:var(--faint)}
-.rail #due-week+.block-head{margin-top:32px}
 
 @media (min-width:1600px){
-  .today-grid{grid-template-columns:minmax(0,1fr) 300px;gap:56px}
-  .today-main{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);grid-template-rows:auto 1fr;column-gap:40px;align-items:start}
-  .today-main #today-checklist{grid-column:1;grid-row:1 / span 2}
-  .today-main .block-head{grid-column:2;grid-row:1;margin-top:0}
-  .today-main #mission-list{grid-column:2;grid-row:2}
-  .today-main:has(#today-checklist:empty){display:block}
-  .today-main:has(#today-checklist:empty) .block-head{margin-top:0}
+  .today-grid{grid-template-columns:minmax(0,1fr) 320px;gap:20px}
+  .glance{grid-template-columns:minmax(0,1fr) minmax(0,1fr) 320px;gap:20px}
+  .today-main{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);column-gap:20px;align-items:start}
+  .today-main #today-checklist{grid-column:1}
+  .today-main .next-panel{grid-column:2;grid-row:1;margin-top:0}
 }
 
 /* Phones: the side bar becomes a tab bar at the bottom */
@@ -427,12 +434,12 @@ dialog[open]{animation:dialog-in .2s ease-out}
   .glance-tile b{font-size:18px}
   .glance-tile small{text-align:right}
   .today-grid{display:flex;flex-direction:column;align-items:stretch}
-  .rail>.block-head.due-head{margin-top:32px}
   .today-main,.rail{display:contents}
   #today-checklist{order:1}
-  .rail>*{order:4}
-  .rail>.due-head,#due-week{order:2}
-  .today-main>.block-head,#mission-list{order:3}
+  .due-panel{order:2}
+  .next-panel{order:3}
+  .course-panel{order:4}
+  .panel{margin-top:16px}
   .submit-row{flex-wrap:wrap}
   .submit-row .sub-move{margin:8px 0 0}
   .catch-row{flex-wrap:wrap;gap:0 12px}
