@@ -4,7 +4,7 @@ import { createMcpHandler, McpServer } from 'npm:@modelcontextprotocol/server@^2
 import { z } from 'npm:zod@^4.3.6'
 import { addAssignment, type Doc, emptyDoc, newId, trackerView, updateAssignment } from './logic.ts'
 import { buildBriefing, suggestCatchUp } from './planning.ts'
-import { addReading, checkAttach, findReading, isPdf, MAX_CHARS, MAX_PDF_BYTES, pageSlice, READING_BUCKET, readingPath } from './readings.ts'
+import { addReading, checkAttach, findFinalFile, findReading, isPdf, setFinalWork, MAX_CHARS, MAX_PDF_BYTES, pageSlice, READING_BUCKET, readingPath } from './readings.ts'
 import { extractText, getDocumentProxy } from 'npm:unpdf@^1.0.0'
 
 // Minimal shape of the user-scoped supabase-js client this file uses.
@@ -94,6 +94,15 @@ export function bridgeHandler(supabase: Db, userId: string) {
       // zero rows = someone saved in between; reload and re-apply this one change
     }
     throw new Error('The tracker kept changing while saving. Nothing was saved; try again.')
+  }
+
+  // Text of each page of a PDF in the private readings bucket (downloaded as the user, so storage RLS applies).
+  async function pdfPages(path: string): Promise<string[]> {
+    const { data, error } = await supabase.storage.from(READING_BUCKET).download(path)
+    if (error || !data) throw new Error('Could not open the PDF: ' + (error?.message ?? 'file missing'))
+    const pdf = await getDocumentProxy(new Uint8Array(await data.arrayBuffer()))
+    const { text: pages } = await extractText(pdf, { mergePages: false })
+    return pages as string[]
   }
 
   const handler = createMcpHandler(() => {
@@ -201,11 +210,8 @@ export function bridgeHandler(supabase: Db, userId: string) {
       try {
         const { doc } = await load()
         const found = findReading(doc, userId, assignmentId, reading)
-        const { data, error } = await supabase.storage.from(READING_BUCKET).download(found.reading.path)
-        if (error || !data) throw new Error('Could not open the PDF: ' + (error?.message ?? 'file missing'))
-        const pdf = await getDocumentProxy(new Uint8Array(await data.arrayBuffer()))
-        const { text: pages } = await extractText(pdf, { mergePages: false })
-        return text({ assignment: found.task.title, reading: found.reading.title, ...pageSlice(pages as string[], fromPage, toPage) })
+        const pages = await pdfPages(found.reading.path)
+        return text({ assignment: found.task.title, reading: found.reading.title, ...pageSlice(pages, fromPage, toPage) })
       } catch (e) { return fail(e) }
     })
 
@@ -249,6 +255,169 @@ export function bridgeHandler(supabase: Db, userId: string) {
         if (uploaded) await supabase.storage.from(READING_BUCKET).remove([uploaded]).catch(() => {})
         return fail(e)
       }
+    })
+
+    // ---------- final work: what Kody turned in ----------
+    const fileSchema = z.object({
+      download_url: z.string(),
+      file_id: z.string(),
+      mime_type: z.string().optional(),
+      file_name: z.string().optional(),
+    })
+
+    server.registerTool('attach_final_work', {
+      title: 'Save final work',
+      description: 'Save what Kody turned in for an assignment (id from get_tracker): the finished PDF (file = the PDF uploaded in this ChatGPT conversation, or fileUrl = an https link that downloads a PDF), a link (e.g. the video), and/or a short note (e.g. a quiz score). A new file replaces the old one. Empty string clears link or note; clearFile removes the file. This NEVER marks the assignment submitted; use update_assignment markSubmitted only when Kody says it is turned in on Brightspace.',
+      inputSchema: z.object({
+        assignmentId: z.string().describe('Assignment id from get_tracker'),
+        title: z.string().max(170).optional().describe('Name for the file. Defaults to the file name.'),
+        file: fileSchema.optional().describe('The finished PDF uploaded in this conversation'),
+        fileUrl: z.string().optional().describe('https link that downloads the finished PDF, when there is no uploaded file'),
+        link: z.string().max(500).optional().describe('http(s) link to the finished work, e.g. the video. Empty string clears it.'),
+        note: z.string().max(500).optional().describe('Short note, e.g. "Quiz 3: 18/20". Empty string clears it.'),
+        clearFile: z.boolean().optional(),
+      }),
+      _meta: { 'openai/fileParams': ['file'] },
+    }, async ({ assignmentId, title, file, fileUrl, link, note, clearFile }) => {
+      let uploaded: string | null = null
+      try {
+        const src = file?.download_url || fileUrl
+        if (!src && link === undefined && note === undefined && !clearFile) throw new Error('Pass file (the uploaded PDF), fileUrl, link, note, or clearFile.')
+        let newFile: { title: string; path: string; size: number; sha256: string } | undefined
+        if (src) {
+          const bytes = await fetchPdf(src)
+          if (!isPdf(bytes)) throw new Error('That file is not a PDF. Save it as a PDF first.')
+          const sha256 = await sha256Hex(bytes)
+          const { doc } = await load()
+          const cur = doc.tasks.find((t) => t.id === assignmentId)
+          if (!cur) throw new Error(`No assignment with id ${assignmentId}. Use get_tracker for ids.`)
+          if (cur.finalWork?.file?.sha256 === sha256) return text({ saved: false, note: `This PDF is already the final work for "${cur.title}".` })
+          const name = (file?.file_name || decodeURIComponent(new URL(src).pathname.split('/').pop() || '') || 'final').replace(/\.pdf$/i, '')
+          const path = readingPath(userId, assignmentId, newId(), 'final-' + name)
+          const { error } = await supabase.storage.from(READING_BUCKET).upload(path, bytes, { contentType: 'application/pdf', upsert: false })
+          if (error) throw new Error('Upload failed: ' + error.message)
+          uploaded = path
+          newFile = { title: title?.trim() || name, path, size: bytes.length, sha256 }
+        }
+        const out = await change((d) => setFinalWork(d, assignmentId, { file: newFile, clearFile: clearFile && !newFile, link, note }))
+        uploaded = null
+        if (out.replaced) await supabase.storage.from(READING_BUCKET).remove([out.replaced]).catch(() => {})
+        return text({ saved: true, assignment: out.title, finalWork: out.finalWork, submitted: 'unchanged' })
+      } catch (e) {
+        if (uploaded) await supabase.storage.from(READING_BUCKET).remove([uploaded]).catch(() => {})
+        return fail(e)
+      }
+    })
+
+    server.registerTool('read_final_work', {
+      title: 'Read final work', annotations: ro,
+      description: `What Kody turned in for an assignment: the link, the note, and the text of the finished PDF (about ${MAX_CHARS} characters per call; if nextPage is set, call again with fromPage). Useful for matching Kody's voice in new writing.`,
+      inputSchema: z.object({
+        assignmentId: z.string().describe('Assignment id from get_tracker'),
+        fromPage: z.number().int().min(1).default(1),
+        toPage: z.number().int().min(1).optional(),
+      }),
+    }, async ({ assignmentId, fromPage, toPage }) => {
+      try {
+        const { doc } = await load()
+        const f = findFinalFile(doc, userId, assignmentId)
+        const base = { assignment: f.task.title, link: f.link, note: f.note, file: f.file?.title ?? null }
+        if (!f.file) return text({ ...base, text: '', message: f.link || f.note ? 'No finished PDF saved, only the link or note.' : 'No final work saved for this assignment.' })
+        const pages = await pdfPages(f.file.path)
+        return text({ ...base, ...pageSlice(pages, fromPage, toPage) })
+      } catch (e) { return fail(e) }
+    })
+
+    // ---------- outlines, video scripts and notes (table otc_docs, owner-only RLS) ----------
+    const kinds = z.enum(['outline', 'script', 'notes', 'draft', 'other'])
+    const DOC_CHUNK = 60000
+
+    server.registerTool('save_doc', {
+      title: 'Save an outline or script',
+      description: 'Save a paper outline, video script, notes or draft onto an assignment (id from get_tracker), as text (body), a PDF (file = the PDF Kody uploaded in this ChatGPT conversation, or fileUrl = an https link that downloads a PDF), or both. Kody sees it on the site; a PDF opens when clicked. Leave id out to create a new one; pass id (from list_docs) to update that one (fields left out stay as they are).',
+      inputSchema: z.object({
+        assignmentId: z.string().describe('Assignment id from get_tracker'),
+        kind: kinds.describe('outline, script (video script), notes, draft or other'),
+        title: z.string().min(1).max(200),
+        body: z.string().max(200000).optional().describe('The full text (Markdown is fine)'),
+        file: fileSchema.optional().describe('The PDF version uploaded in this conversation'),
+        fileUrl: z.string().optional().describe('https link that downloads the PDF, when there is no uploaded file'),
+        author: z.enum(['chatgpt', 'claude']).describe('Who saved it: ChatGPT writes chatgpt, Claude writes claude'),
+        id: z.string().optional().describe('Existing doc id to update'),
+      }),
+      _meta: { 'openai/fileParams': ['file'] },
+    }, async ({ assignmentId, kind, title, body, file, fileUrl, author, id }) => {
+      let uploaded: string | null = null
+      try {
+        const { doc } = await load()
+        const task = doc.tasks.find((t) => t.id === assignmentId)
+        if (!task) throw new Error(`No assignment with id ${assignmentId}. Use get_tracker for ids.`)
+        let old: { file_path: string | null; file_sha256: string | null } | null = null
+        if (id) {
+          const { data: cur, error: e0 } = await supabase.from('otc_docs').select('file_path,file_sha256').eq('id', id).eq('assignment_id', assignmentId).maybeSingle()
+          if (e0 || !cur) throw new Error(e0?.message ?? `No doc ${id} on "${task.title}". Use list_docs for ids.`)
+          old = { file_path: cur.file_path ?? null, file_sha256: cur.file_sha256 ?? null }
+        } else if (body === undefined && !file && !fileUrl) throw new Error('Pass body (text), file (the uploaded PDF), or fileUrl.')
+        const row: Record<string, unknown> = { kind, title: title.trim(), author }
+        if (body !== undefined) row.body = body
+        const src = file?.download_url || fileUrl
+        if (src) {
+          const bytes = await fetchPdf(src)
+          if (!isPdf(bytes)) throw new Error('That file is not a PDF.')
+          const sha256 = await sha256Hex(bytes)
+          if (old?.file_sha256 !== sha256) {
+            const name = (file?.file_name || decodeURIComponent(new URL(src).pathname.split('/').pop() || '') || title).replace(/\.pdf$/i, '')
+            const path = readingPath(userId, assignmentId, newId(), 'doc-' + name)
+            const { error } = await supabase.storage.from(READING_BUCKET).upload(path, bytes, { contentType: 'application/pdf', upsert: false })
+            if (error) throw new Error('Upload failed: ' + error.message)
+            uploaded = path
+            Object.assign(row, { file_path: path, file_size: bytes.length, file_sha256: sha256 })
+          }
+        }
+        const q = id
+          ? supabase.from('otc_docs').update(row).eq('id', id).eq('assignment_id', assignmentId).select('id,kind,title,file_path,updated_at')
+          : supabase.from('otc_docs').insert({ ...row, assignment_id: assignmentId, user_id: userId }).select('id,kind,title,file_path,updated_at')
+        const { data, error } = await q
+        if (error) throw new Error('Save failed: ' + error.message)
+        if (!data?.length) throw new Error(`No doc ${id} on "${task.title}". Use list_docs for ids.`)
+        if (uploaded && old?.file_path) await supabase.storage.from(READING_BUCKET).remove([old.file_path]).catch(() => {})
+        uploaded = null
+        return text({ saved: true, assignment: task.title, doc: data[0], pdf: Boolean(row.file_path ?? old?.file_path), chars: body?.length ?? null })
+      } catch (e) {
+        if (uploaded) await supabase.storage.from(READING_BUCKET).remove([uploaded]).catch(() => {})
+        return fail(e)
+      }
+    })
+
+    server.registerTool('list_docs', {
+      title: 'List outlines and scripts', annotations: ro,
+      description: 'Outlines, video scripts, notes and drafts saved on assignments (all, or one assignment). Returns ids for read_doc and save_doc.',
+      inputSchema: z.object({ assignmentId: z.string().optional() }),
+    }, async ({ assignmentId }) => {
+      let q = supabase.from('otc_docs').select('id,assignment_id,kind,title,author,file_path,updated_at').order('updated_at', { ascending: false }).limit(200)
+      if (assignmentId) q = q.eq('assignment_id', assignmentId)
+      const { data, error } = await q
+      if (error) return fail(error.message)
+      const { doc } = await load().catch(() => ({ doc: emptyDoc() }))
+      const titles = new Map(doc.tasks.map((t) => [t.id, t.title]))
+      return text((data ?? []).map((d: { assignment_id: string }) => ({ ...d, assignment: titles.get(d.assignment_id) ?? '(deleted assignment)' })))
+    })
+
+    server.registerTool('read_doc', {
+      title: 'Read an outline or script', annotations: ro,
+      description: `Full text of one saved outline, script, notes or draft (id from list_docs); if it is only a PDF, the PDF's text. Returned ${DOC_CHUNK} characters at a time; if nextChar is set, call again with fromChar.`,
+      inputSchema: z.object({ id: z.string(), fromChar: z.number().int().min(0).default(0) }),
+    }, async ({ id, fromChar }) => {
+      const { data, error } = await supabase.from('otc_docs').select('*').eq('id', id).maybeSingle()
+      if (error || !data) return fail(error?.message ?? `No doc ${id}. Use list_docs for ids.`)
+      let body: string = data.body ?? ''
+      let source = 'text'
+      if (!body.trim() && data.file_path) {
+        if (!String(data.file_path).startsWith(userId + '/')) return fail('That PDF points outside your storage folder.')
+        try { body = (await pdfPages(data.file_path)).map((p, i) => `--- Page ${i + 1} ---\n${p.trim()}`).join('\n\n'); source = 'pdf' } catch (e) { return fail(e) }
+      }
+      const end = Math.min(body.length, fromChar + DOC_CHUNK)
+      return text({ id: data.id, assignmentId: data.assignment_id, kind: data.kind, title: data.title, author: data.author, updatedAt: data.updated_at, hasPdf: Boolean(data.file_path), source, totalChars: body.length, fromChar, text: body.slice(fromChar, end), nextChar: end < body.length ? end : null })
     })
 
     server.registerTool('add_assignment', {

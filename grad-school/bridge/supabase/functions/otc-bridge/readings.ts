@@ -91,3 +91,45 @@ export function addReading(doc: Doc, assignmentId: string, r: { id: string; titl
   const task = tasks.find((t) => t.id === assignmentId)!
   return { doc: { ...doc, tasks }, task: { id: task.id, title: task.title, reading: task.readings!.at(-1)!, readings: task.readings!.length } }
 }
+
+// ---------- final work (what Kody turned in) ----------
+export type FinalFile = { title: string; path: string; size: number; sha256: string }
+export type FinalPatch = { file?: FinalFile; clearFile?: boolean; link?: string; note?: string }
+
+/** Cleans a link: http(s) only, 500 chars. Empty string clears. */
+export function cleanLink(v: string): string {
+  const u = v.trim().slice(0, 500)
+  if (!u) return ''
+  if (!/^https?:\/\/[^\s"'<>]+$/i.test(u)) throw new Error('link must be an http(s) URL.')
+  return u
+}
+
+/** Sets parts of an assignment's final work. Never touches submission, status, steps or dates. Returns the replaced file path to delete after saving. */
+export function setFinalWork(doc: Doc, assignmentId: string, p: FinalPatch) {
+  const old = doc.tasks.find((t) => t.id === assignmentId)
+  if (!old) throw new Error(`No assignment with id ${assignmentId}. Use get_tracker for ids.`)
+  const cur = old.finalWork ?? {}
+  if (p.file && cur.file?.sha256 && cur.file.sha256 === p.file.sha256) throw new Error(`Already attached as "${cur.file.title}".`)
+  const next: NonNullable<typeof old.finalWork> = { ...cur }
+  let replaced: string | null = null
+  if (p.file || p.clearFile) { replaced = cur.file?.path ?? null; delete next.file }
+  if (p.file) next.file = { title: (p.file.title.trim() || 'Final work').slice(0, 180), path: p.file.path, size: p.file.size, sha256: p.file.sha256 }
+  if (p.link !== undefined) { const l = cleanLink(p.link); if (l) next.link = l; else delete next.link }
+  if (p.note !== undefined) { const n = p.note.trim().slice(0, 500); if (n) next.note = n; else delete next.note }
+  const empty = !next.file && !next.link && !next.note
+  const tasks = doc.tasks.map((t) => {
+    if (t.id !== assignmentId) return t
+    const { finalWork: _drop, ...rest } = t
+    return empty ? rest : { ...rest, finalWork: next }
+  })
+  return { doc: { ...doc, tasks }, task: { id: old.id, title: old.title, finalWork: empty ? null : { file: next.file?.title ?? null, link: next.link ?? null, note: next.note ?? null }, replaced } }
+}
+
+/** The final-work PDF for reading, checked to be inside the owner's folder. */
+export function findFinalFile(doc: Doc, userId: string, assignmentId: string) {
+  const task = doc.tasks.find((t) => t.id === assignmentId)
+  if (!task) throw new Error(`No assignment with id ${assignmentId}. Use get_tracker for ids.`)
+  const f = task.finalWork
+  const file = f?.file && f.file.path.startsWith(userId + '/') && !f.file.path.includes('..') ? f.file : null
+  return { task: { id: task.id, title: task.title }, file, link: f?.link ?? null, note: f?.note ?? null }
+}

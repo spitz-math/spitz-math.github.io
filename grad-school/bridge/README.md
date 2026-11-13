@@ -17,6 +17,10 @@ URL once deployed: `https://pkonclmfrpozizmmtnrv.supabase.co/functions/v1/otc-br
 | `suggest_catch_up` | Read-only proposals for missed step plan dates; does not save changes. |
 | `read_reading` | Read-only. Text of a reading PDF Kody attached to an assignment, from the private `otc-readings` bucket, about 60k characters per call (`nextPage` continues). Scanned PDFs have no text. |
 | `attach_reading` | Attach a PDF to an assignment. In ChatGPT (web), the PDF uploaded in the conversation is passed as `file` (`openai/fileParams`); anywhere else, `url` is an https link that downloads the PDF. Stored in `otc-readings` under the user's folder, duplicates (same SHA-256) refused, at most 20 per assignment, saved with the revision guard. A failed save removes the uploaded file. |
+| `attach_final_work` | Save what Kody turned in: the finished PDF (`file` upload or `fileUrl`), a link (e.g. the video) and/or a short note (e.g. a quiz score). Never marks it submitted. |
+| `read_final_work` | Read-only. The link, note and text of the finished PDF. |
+| `save_doc` | Save a paper outline, video script, notes or draft on an assignment as text, a PDF (`file` upload or `fileUrl`), or both. Stored in the `otc_docs` table (owner-only RLS); PDFs in `otc-readings`. |
+| `list_docs` / `read_doc` | Read-only. List saved outlines and scripts; read one's text (or its PDF's text). |
 | `add_assignment` | Add an assignment. It is never added as submitted. |
 | `update_assignment` | Change dates, notes and steps, or mark it submitted when Kody says it's turned in. |
 
@@ -29,6 +33,7 @@ Files:
 - `tools.ts`: the tools.
 - `logic.ts`: pure data rules, tested by `logic.test.ts`. `readings.ts` (reading lookup and page slicing) is tested by `readings.test.ts`. Run it with `node --experimental-strip-types --test grad-school/bridge/supabase/functions/otc-bridge/logic.test.ts`.
 - `supabase/migrations/…_bridge_notes.sql`: the handoff board table, owner-only RLS. It does not touch `grad_profiles`.
+- `supabase/migrations/…_readings_bucket.sql`: private PDF storage. `…_otc_docs.sql`: outlines and scripts table, owner-only RLS.
 - `../oauth/consent/`: the approval page that opens when an AI asks to connect.
 
 ## One-time setup (Kody, in the Supabase dashboard)

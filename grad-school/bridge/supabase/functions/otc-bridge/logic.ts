@@ -9,6 +9,7 @@ export type Task = {
   status: 'todo' | 'inprogress' | 'done'; submission: 'unconfirmed' | 'submitted';
   notes: string; checklist: Step[]; submissionRequired: boolean;
   readings?: { id: string; title: string; path: string; size?: number; sha256?: string }[];
+  finalWork?: { file?: { title: string; path: string; size?: number; sha256?: string }; link?: string; note?: string };
 };
 export type Course = { id: string; name: string; description?: string; instructor?: string; color?: string };
 export type Doc = { version: number; courses: Course[]; tasks: Task[]; [k: string]: unknown };
@@ -141,6 +142,7 @@ export function trackerView(doc: Doc, q: TrackerQuery = {}) {
       finished: t.status, submitted: t.submission === 'submitted', submissionRequired: t.submissionRequired,
       notes: t.notes, steps: t.checklist.map((s) => ({ id: s.id, text: s.text, done: s.done, planDate: s.planDate })),
       readings: (t.readings ?? []).map((r) => ({ id: r.id, title: r.title })),
+      finalWork: t.finalWork ? { file: t.finalWork.file?.title ?? null, link: t.finalWork.link ?? null, note: t.finalWork.note ?? null } : null,
     })),
   };
 }

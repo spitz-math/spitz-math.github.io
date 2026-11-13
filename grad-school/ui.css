@@ -407,6 +407,25 @@ dialog[open]{animation:dialog-in .2s ease-out}
 .reading-status{font-size:13px;color:var(--muted)}
 #reading-add{cursor:pointer}
 #reading-add.disabled{opacity:.5;pointer-events:none}
+/* Outlines and scripts */
+.doc-chip{color:var(--azure)}
+.doc-chip:hover{border-color:var(--azure);background:rgba(4,138,254,.12)}
+.doc-chip b{font-weight:700;color:var(--ink);opacity:.8}
+.doc-dialog{width:min(860px,calc(100vw - 32px))}
+.doc-body{min-height:min(52vh,520px);font:14px/1.55 var(--fb);white-space:pre-wrap}
+#doc-file-add{cursor:pointer}
+.reading-row .btn.small{margin-left:auto;height:28px;padding:0 10px;font-size:12px}
+.muted-note{font-weight:400;color:var(--faint)}
+/* Final work */
+.final-chip{color:var(--cyan);text-decoration:none}
+.final-chip:hover{border-color:var(--cyan);background:rgba(7,236,232,.1)}
+.final-label{align-self:center;font-size:12px;font-weight:600;color:var(--muted)}
+.final-note{align-self:center;font-size:12px;color:var(--ink)}
+#final-add{cursor:pointer}
+#final-add.disabled{opacity:.5;pointer-events:none}
+.final-fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:8px}
+.final-fields label{display:grid;gap:4px;font-size:13px;color:var(--muted)}
+@media (max-width:640px){.final-fields{grid-template-columns:1fr}}
 
 /* At a glance: plan vs official dates vs waiting to submit */
 .glance{position:relative;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin:0 0 32px}
