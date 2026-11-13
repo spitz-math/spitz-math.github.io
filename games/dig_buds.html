@@ -266,7 +266,7 @@ button:disabled{ cursor:default; }
     <p class="dg-nogl" id="dg-nogl" hidden>This Chromebook can't draw the 3D world right now. Close your other tabs and reload the page, or pick another game.</p>
     <div class="dg-row dg-mode" role="group" aria-label="Difficulty"><button class="dg-md" id="dg-rookie" aria-pressed="true">Rookie</button><button class="dg-md" id="dg-pro" aria-pressed="false">★ All-Pro <span>wrong answers cost energy · points ×1.5</span></button></div>
     <button class="dg-go" id="dg-go" disabled><span>Start</span></button>
-    <div class="dg-keys">Keys: 1–4 answer · Enter next question · mouse looks · arrows or WASD walk · Space jumps and climbs walls · hold click digs · hold X digs straight down · right-click or E throws dynamite<br>Q questions · B shop · H back to camp · N music · M mute · Shift+R new game · F full screen</div>
+    <div class="dg-keys">Keys: 1–4 answer · Enter next question · mouse looks · arrows or WASD walk · Space jumps and climbs walls · hold click digs · hold X digs straight down · right-click or E throws dynamite<br>Q questions · B shop · R hop back up after a fall · H back to camp · N music · M mute · Shift+R new game · F full screen</div>
   </div><span class="dg-credit sz-credit">Made by Spitz <i class="sz-burger" aria-hidden="true"></i></span></div>
 
   <div class="dg-over" id="dg-end" hidden><div class="dg-box"><div class="sz-eyebrow">Spitz <b>Arcade</b></div>
@@ -697,7 +697,12 @@ function boom(f){ if(get(f.x,f.y,f.z)!==21) return; var R2=2.6, got=0, chunks={}
   SND.boom(); if(!document.documentElement.classList.contains('sz-reduce')) SHAKE=0.35;
   pops.push({t:0,txt:got?'BOOM! +'+got:'BOOM!',col:'#FF8A5B'}); if(f.y<S.deep) S.deep=f.y; save(); hud(); }
 var homeT=0;
-function goHome(){ if(now()-homeT<3000) return; homeT=now(); PL.mine=null; spawn(); PL.kx=PL.kz=0; say('Back at camp'); SND.poof(); }
+/* R after a long fall: hop back up to where you were standing (a plank appears under you if that spot was dug away), so a cave is never a trap */
+function hopBack(){ var f=PL.fell; if(!f){ say('R hops you back up after a fall. H takes you to camp.'); return; }
+  var x=Math.floor(f[0]), z=Math.floor(f[2]), y=Math.floor(f[1]+0.2); PL.mine=null;
+  if(!solidAt(x,y-1,z)&&y-1>0) setBlock(x,y-1,z,7); for(var d=0;d<2;d++){ var b=get(x,y+d,z); if(b&&b!==12&&b!==18) setBlock(x,y+d,z,0); }
+  PL.x=x+.5; PL.z=z+.5; PL.y=y+0.01; PL.vy=0; PL.peak=PL.y; PL.kx=PL.kz=0; PL.ground=true; PL.fell=null; PL.s0=PL.s1=[PL.x,PL.y,PL.z]; burst(PL.x,PL.y+.5,PL.z,7,12,3); say('Back up top!'); SND.poof(); }
+function goHome(){ PL.fell=null; if(now()-homeT<3000) return; homeT=now(); PL.mine=null; spawn(); PL.kx=PL.kz=0; say('Back at camp'); SND.poof(); }
 function cycleSel(dir){ dir=dir||1; for(var k=1;k<=PLACE.length;k++){ var s=(S.sel+dir*k+PLACE.length*9)%PLACE.length; if((S.inv[PLACE[s]]||0)>0||k===PLACE.length){ S.sel=s; break; } } SND.tick(); }
 function pickSlot(i){ if(i>=0&&i<PLACE.length){ S.sel=i; SND.tick(); } }
 function update(dt){
@@ -706,6 +711,8 @@ function update(dt){
   if(PL.kx){ mx+=PL.kx*dt; mz+=PL.kz*dt; PL.kx*=Math.pow(0.01,dt); PL.kz*=Math.pow(0.01,dt); if(Math.abs(PL.kx)+Math.abs(PL.kz)<0.2) PL.kx=PL.kz=0; }
   if(fw||st) PL.bob+=dt*9;
   if((fw||st)&&PL.ground&&!wet){ PL.stepT=(PL.stepT||0)+dt; if(PL.stepT>0.36){ PL.stepT=0; SND.step(); } }
+  if(PL.ground){ PL.sT=(PL.sT||0)+dt; if(PL.sT>0.3||!PL.s1){ PL.sT=0; PL.s0=PL.s1||[PL.x,PL.y,PL.z]; PL.s1=[PL.x,PL.y,PL.z]; } }   // where you stood a moment ago
+  if(PL.fell&&PL.y>PL.fell[1]-3) PL.fell=null;
   var jv=S.boots?9.6:7.4;
   if(HELD.jump&&PL.ground&&!wet){ PL.vy=jv; PL.ground=false; }
   if(wet&&HELD.jump) PL.vy=Math.min(3.4,PL.vy+26*dt);   // swim up
@@ -715,9 +722,10 @@ function update(dt){
   if(mx&&!hits(PL.x+mx,PL.y,PL.z)) PL.x+=mx; else if(mx) blocked=true;
   if(mz&&!hits(PL.x,PL.y,PL.z+mz)) PL.z+=mz; else if(mz) blocked=true;
   PL.x=Math.max(RAD,Math.min(SX-RAD,PL.x)); PL.z=Math.max(RAD,Math.min(SZ-RAD,PL.z));
-  if(blocked&&PL.ground&&!hits(PL.x+Math.sin(PL.yaw)*.4,PL.y+1.05,PL.z-Math.cos(PL.yaw)*.4)&&!hits(PL.x,PL.y+1.05,PL.z)) PL.vy=7.4;   // auto hop up one block
+  if(blocked&&PL.ground&&(fw||st)){ var hx=(sy*fw+cy*st)/nn*0.45, hz=(-cy*fw+sy*st)/nn*0.45;                                                         // auto hop up one block: only a real step in the direction you are walking
+    if(hits(PL.x+hx,PL.y,PL.z+hz)&&!hits(PL.x+hx,PL.y+1.05,PL.z+hz)&&!hits(PL.x,PL.y+1.05,PL.z)) PL.vy=7.4; }
   if(wet){ PL.vy-=9*dt; PL.vy=Math.max(PL.vy,-2.6); } else PL.vy-=24*dt; var ny=PL.y+PL.vy*dt;
-  if(hits(PL.x,ny,PL.z)){ if(PL.vy<0){ PL.y=Math.floor(ny)+1; if(!PL.ground){ var drop=(PL.peak||PL.y)-PL.y; } PL.ground=true; } PL.vy=0; } else { PL.y=ny; PL.ground=false; }
+  if(hits(PL.x,ny,PL.z)){ if(PL.vy<0){ PL.y=Math.floor(ny)+1; if(!PL.ground){ var drop=(PL.peak||PL.y)-PL.y; if(drop>=4&&PL.s0&&!PL.fell){ PL.fell=PL.s0.slice(); say('You fell into a cave: press R to hop back up'); } } PL.ground=true; } PL.vy=0; } else { PL.y=ny; PL.ground=false; }
   if(PL.ground||wet) PL.peak=PL.y; else PL.peak=Math.max(PL.peak||PL.y,PL.y);   // falls of 5+ blocks hurt
   if(PL.y<-4) spawn();
   if(PL.ground&&!(PL.inv>0)){ var fy=Math.floor(PL.y-0.2), hot=false; [[-RAD,-RAD],[RAD,-RAD],[-RAD,RAD],[RAD,RAD]].forEach(function(o){ if(get(Math.floor(PL.x+o[0]),fy,Math.floor(PL.z+o[1]))===23) hot=true; });
@@ -955,7 +963,7 @@ function drawHud(){ var c=hx; c.clearRect(0,0,W,H); c.textAlign='center';
       c.fillStyle='rgba(12,9,25,.72)'; rr(c,24,gy,c.measureText(bt).width+96,52,14); c.fill();
       c.save(); c.translate(52,gy+26); c.rotate(Math.atan2(nb.b.x-PL.x,-(nb.b.z-PL.z))-PL.yaw); c.fillStyle=binfo(nb.b).c; c.beginPath(); c.moveTo(0,-17); c.lineTo(12,12); c.lineTo(0,5); c.lineTo(-12,12); c.closePath(); c.fill(); c.restore();
       c.fillStyle='#FFE29A'; c.fillText(bt,84,gy+36); gy+=60; }
-    if(dep>4){ var ht='Hold Space by a wall to climb · H: back to camp'; c.font=FONT(24); c.fillStyle='rgba(12,9,25,.72)'; rr(c,24,gy,c.measureText(ht).width+40,48,14); c.fill(); c.fillStyle='#B3A6C4'; c.fillText(ht,44,gy+33); } }
+    if(dep>4){ var ht=PL.fell?'R: hop back up where you fell · H: back to camp':'Hold Space by a wall to climb · H: back to camp'; c.font=FONT(24); c.fillStyle='rgba(12,9,25,.72)'; rr(c,24,gy,c.measureText(ht).width+40,48,14); c.fill(); c.fillStyle=PL.fell?'#FFE0A3':'#B3A6C4'; c.fillText(ht,44,gy+33); } }
   c.textAlign='center';
   if((S.inv[21]||0)>0){ var dt2='Dynamite × '+S.inv[21]+' · right-click or E throws it'; c.font=FONT(28); var dw=c.measureText(dt2).width; c.fillStyle='rgba(12,9,25,.78)'; rr(c,W/2-dw/2-24,H-92,dw+48,60,16); c.fill(); c.fillStyle='#FF9A7A'; c.fillText(dt2,W/2,H-52); }
   pops.forEach(function(p,i){ if(p.t<0) return; c.globalAlpha=Math.min(1,(1.4-p.t)*2); c.font=FONT(46); c.lineWidth=7; c.strokeStyle='rgba(12,9,25,.85)'; var y=H/2-70-p.t*40-i*54; c.strokeText(p.txt,W/2,y); c.fillStyle=p.col; c.fillText(p.txt,W/2,y); }); c.globalAlpha=1;
@@ -1124,6 +1132,7 @@ document.addEventListener('keydown',function(e){ if(e.metaKey||e.ctrlKey||e.altK
   if(k==='b'){ e.preventDefault(); openModal('shop'); return; }      // never put actions on W, A, S or D: many students move with them
   if(k==='q'){ e.preventDefault(); openModal('q'); return; }
   if(k==='h'){ e.preventDefault(); if(canPlay()) goHome(); return; }
+  if(k==='r'&&!e.shiftKey){ e.preventDefault(); if(canPlay()) hopBack(); return; }
   if(MODAL==='q'&&/^[1-4]$/.test(e.key)){ answer(+e.key-1); return; }
   if(MODAL!=='q') return;
   if(e.key==='Enter'){ if(S.qDone&&!$('dg-next').disabled&&!FAST){ e.preventDefault(); newQ(); } return; } });
