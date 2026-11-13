@@ -477,7 +477,6 @@ dialog[open]{animation:dialog-in .2s ease-out}
   .glance-tile{position:relative}
   .glance-tile+.glance-tile::before{content:"";position:absolute;top:-1px;bottom:-17px;left:-17px;width:1px;background:var(--line-c)}
   .today-head{position:relative}
-  .today-head::after{content:"";position:absolute;left:0;right:0;bottom:-16px;height:1px;background:var(--divider-x);pointer-events:none}
   .today-main::before{content:"";position:absolute;top:-16px;bottom:0;left:50%;width:1px;background:var(--divider)}
   .today-main #today-checklist{grid-column:1}
   .today-main .next-panel{grid-column:2;grid-row:1;margin-top:0}
