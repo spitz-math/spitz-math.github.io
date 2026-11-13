@@ -9,7 +9,7 @@ export type Task = {
   status: 'todo' | 'inprogress' | 'done'; submission: 'unconfirmed' | 'submitted';
   notes: string; checklist: Step[]; submissionRequired: boolean;
   readings?: { id: string; title: string; path: string; size?: number; sha256?: string }[];
-  lms?: { uid: string };
+  lms?: { uid: string; keepDue?: string };
   finalWork?: { file?: { title: string; path: string; size?: number; sha256?: string }; link?: string; note?: string };
 };
 export type Course = { id: string; name: string; description?: string; instructor?: string; color?: string };

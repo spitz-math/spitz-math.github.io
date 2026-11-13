@@ -2,7 +2,7 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
 import type { Doc } from './logic.ts'
-import { applySync, eventKind, localDate, parseIcs, planSync, similarity } from './calendar.ts'
+import { applySync, eventKind, isPageItem, localDate, parseIcs, planSync, similarity } from './calendar.ts'
 
 const ICS = [
   'BEGIN:VCALENDAR', 'VERSION:2.0',
@@ -68,7 +68,7 @@ test('apply: links + fills always; changes and adds only when asked; keeps every
   assert.equal(b.doc.tasks.find((t) => t.id === 'v')!.due, '2026-11-17')
   const added = b.doc.tasks.at(-1)!
   assert.equal(added.title, 'Week 5 Discussion Forum'); assert.equal(added.course, 'two'); assert.equal(added.submission, 'unconfirmed'); assert.equal(added.due, '2026-11-24')
-  assert.deepEqual(b.task, { linked: 3, filled: 1, changed: 1, added: 1 })
+  assert.deepEqual(b.task, { linked: 3, filled: 1, changed: 1, added: 1, kept: 0 })
   // Second sync: linked by uid now, nothing new to link.
   const again = planSync(b.doc, parseIcs(ICS), '2026-11-12', 'America/Chicago')
   assert.equal(again.linked.length, 0); assert.equal(again.newItems.length, 0); assert.equal(again.changed.length, 0)
@@ -78,4 +78,21 @@ test('week and module numbers must agree when both titles have them', () => {
   assert.equal(similarity('Week 4 Discussion Forum — disability', 'Week 5 Discussion Forum'), 0)
   assert.ok(similarity('Week 4 Discussion Forum — disability, minority students and mathematics', 'Week 4 Discussion Forum') >= 0.6)
   assert.ok(similarity('Module 4 DF4 — record and post video', 'Discussion Forum 4 (DF4) Video') >= 0.6)
+})
+
+test('real-feed cleanup: chapter abbreviations, module pages, old new items, kept dates', () => {
+  assert.ok(similarity('Chapter 6 critical summary', '2-page summary: "Reading and Writing the World with Mathematics" ch. 6') >= 0.6)
+  assert.equal(similarity('Chapter 6 critical summary', '2-page summary: ch. 5'), 0)
+  for (const t of ['MODULE 4 - Overview', 'MODULE 4 Instructions & Expectations', 'Overview', 'Module Instructions & Expectations']) assert.ok(isPageItem(t), t)
+  assert.ok(!isPageItem('Quiz 4')); assert.ok(!isPageItem('Written Report - Multimedia Project'))
+  const ics = ICS.replace('END:VCALENDAR', ['BEGIN:VEVENT', 'UID:pg@d2l', 'SUMMARY:MODULE 4 - Overview - Due', 'DTSTART:20261119T055900Z', 'LOCATION:EDFR 6388', 'END:VEVENT',
+    'BEGIN:VEVENT', 'UID:past@d2l', 'SUMMARY:Quiz # 2 - Due', 'DTSTART:20261110T055900Z', 'LOCATION:EDFR 6388', 'END:VEVENT', 'END:VCALENDAR'].join('\r\n'))
+  const d = doc()
+  const plan = planSync(d, parseIcs(ics), '2026-11-12', 'America/Chicago')
+  assert.deepEqual(plan.newItems.map((n) => n.title), ['Week 5 Discussion Forum'])
+  const k = applySync(d, plan, { keep: ['df4@d2l'] })
+  assert.equal(k.task.kept, 1)
+  const v = k.doc.tasks.find((t) => t.id === 'v')!
+  assert.equal(v.due, '2026-11-16'); assert.deepEqual(v.lms, { uid: 'df4@d2l', keepDue: '2026-11-17' })
+  assert.equal(planSync(k.doc, parseIcs(ics), '2026-11-12', 'America/Chicago').changed.length, 0)
 })

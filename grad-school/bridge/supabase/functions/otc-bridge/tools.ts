@@ -481,13 +481,14 @@ export function bridgeHandler(supabase: Db, userId: string) {
     // ---------- Brightspace calendar sync ----------
     server.registerTool('sync_brightspace', {
       title: 'Sync with the Brightspace calendar',
-      description: 'Read Kody\'s private Brightspace calendar feed (saved on the site under Courses > Brightspace calendar) and compare it with the tracker. Always: links matching assignments and fills EMPTY due dates from Brightspace. Only when asked: applyChanges (uids from changed, or "all") replaces Kody\'s due dates with Brightspace\'s; addNew (uids from newItems, or "all") adds new assignments. Never changes steps, targets, finished or submitted. Ask Kody before applying changes or adding items.',
+      description: 'Read Kody\'s private Brightspace calendar feed (saved on the site under Courses > Brightspace calendar) and compare it with the tracker. Always: links matching assignments and fills EMPTY due dates from Brightspace. Only when asked: applyChanges (uids from changed, or "all") replaces Kody\'s due dates with Brightspace\'s; addNew (uids from newItems, or "all") adds new assignments; keep (uids from changed, or "all") keeps Kody\'s date and stops reporting that change. New items already past due are not listed. Never changes steps, targets, finished or submitted. Ask Kody before applying changes or adding items.',
       inputSchema: z.object({
         today: z.string().describe('User-local date YYYY-MM-DD'),
         applyChanges: z.union([z.literal('all'), z.array(z.string())]).optional(),
         addNew: z.union([z.literal('all'), z.array(z.string())]).optional(),
+        keep: z.union([z.literal('all'), z.array(z.string())]).optional(),
       }),
-    }, async ({ today, applyChanges, addNew }) => {
+    }, async ({ today, applyChanges, addNew, keep }) => {
       try {
         if (!/^\d{4}-\d{2}-\d{2}$/.test(today)) throw new Error('today must be YYYY-MM-DD')
         const { data: st, error: e0 } = await supabase.from('otc_settings').select('brightspace_feed,time_zone').maybeSingle()
@@ -500,15 +501,15 @@ export function bridgeHandler(supabase: Db, userId: string) {
         const tz = st.time_zone || 'America/Chicago'
         const out = await change((d) => {
           const plan = planSync(d, parseIcs(ics), today, tz)
-          const applied = applySync(d, plan, { applyChanges, addNew })
+          const applied = applySync(d, plan, { applyChanges, addNew, keep })
           return { doc: applied.doc, task: { plan, applied: applied.task } }
         })
         const { plan, applied } = out
-        const pendingChanges = plan.changed.filter((c) => !(applyChanges === 'all' || applyChanges?.includes(c.uid)))
+        const pendingChanges = plan.changed.filter((c) => !(applyChanges === 'all' || applyChanges?.includes(c.uid) || keep === 'all' || keep?.includes(c.uid)))
         const pendingNew = plan.newItems.filter((n) => !(addNew === 'all' || addNew?.includes(n.uid)))
         const summary = { at: new Date().toISOString(), today, filled: plan.filled, applied, changed: pendingChanges, newItems: pendingNew, same: plan.same }
         await Promise.resolve(supabase.from('otc_settings').update({ last_sync: summary }).eq('user_id', userId)).catch(() => {})
-        return text({ ...summary, howTo: pendingChanges.length || pendingNew.length ? 'Show Kody the changed dates and new items. Apply only what Kody approves: call again with applyChanges / addNew uids.' : 'Everything matches Brightspace.' })
+        return text({ ...summary, howTo: pendingChanges.length || pendingNew.length ? 'Show Kody the changed dates and new items. Apply only what Kody approves: call again with applyChanges / addNew uids, or keep for a date Kody wants to keep.' : 'Everything matches Brightspace.' })
       } catch (e) { return fail(e) }
     })
 
