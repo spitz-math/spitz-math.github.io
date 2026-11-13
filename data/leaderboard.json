@@ -1,5 +1,5 @@
 {
- "updated": "2026-11-09T18:12:30.822Z",
+ "updated": "2026-11-13T13:45:49.820Z",
  "games": {
   "splat_range": {
    "name": "Splat Range",
@@ -144,6 +144,14 @@
   "shift_racer": {
    "name": "Shift Racer",
    "top": [
+    {
+     "name": "Saulo G",
+     "score": "131,694",
+     "acc": 100,
+     "set": "Slide and Slice · Slide",
+     "date": "2026-11-09",
+     "bonus": 1
+    },
     {
      "name": "tanix.b",
      "score": "35,460",
@@ -799,6 +807,26 @@
     }
    ]
   },
+  "paint_royale": {
+   "name": "Paint Royale",
+   "top": [
+    {
+     "name": "Saulo G",
+     "score": "119,100",
+     "acc": 95,
+     "set": "Slide and Slice · Slide",
+     "date": "2026-11-09",
+     "bonus": 1
+    },
+    {
+     "name": "tanix.b",
+     "score": "41,166",
+     "acc": 96,
+     "set": "Multiplication facts",
+     "date": "2026-11-09"
+    }
+   ]
+  },
   "snake_arena": {
    "name": "Snake Arena",
    "top": [
@@ -877,8 +905,8 @@
     }
    ]
   },
-  "pinball": {
-   "name": "Pinball",
+  "pinball_v1": {
+   "name": "Pinball (classic)",
    "top": [
     {
      "name": "Saulo G",
@@ -955,6 +983,19 @@
      "acc": 46,
      "set": "HOY & VUX",
      "date": "2026-10-30"
+    }
+   ]
+  },
+  "hill_climb": {
+   "name": "Hill Climb",
+   "top": [
+    {
+     "name": "Saulo G",
+     "score": "73,245",
+     "acc": 100,
+     "set": "Slide and Slice · Slide",
+     "date": "2026-11-09",
+     "bonus": 1
     }
    ]
   },
