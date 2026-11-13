@@ -62,15 +62,15 @@
   <div class="today-grid">
     <div class="today-main">
       <div id="today-checklist" aria-live="polite"></div>
-      <div class="block-head"><h2>Up next</h2><span class="count" id="mission-count"></span><button class="text-link" id="see-all" type="button">All assignments</button></div>
-      <div class="rows" id="mission-list"></div>
+      <section class="panel next-panel"><div class="block-head"><h2>Up next</h2><span class="count" id="mission-count"></span><button class="text-link" id="see-all" type="button">All assignments</button></div>
+      <div class="rows" id="mission-list"></div></section>
     </div>
     <aside class="rail">
-      <div class="block-head due-head"><h2>Due in Brightspace</h2><span class="count" id="due-week-count"></span></div>
-      <div id="due-week"></div>
-      <div class="block-head"><h2>Courses</h2><button class="text-link" id="edit-courses" type="button">Edit and colors</button></div>
+      <section class="panel due-panel" id="due-panel"><div class="block-head due-head"><h2>Due in Brightspace</h2><span class="count" id="due-week-count"></span></div>
+      <div id="due-week"></div></section>
+      <section class="panel course-panel"><div class="block-head"><h2>Courses</h2><button class="text-link" id="edit-courses" type="button">Edit and colors</button></div>
       <div id="course-list"></div>
-      <p class="note"><b>Finished isn't submitted.</b> Checking off every step doesn't turn anything in. Submit in Brightspace, then mark it submitted here.</p>
+      <p class="note"><b>Finished isn't submitted.</b> Checking off every step doesn't turn anything in. Submit in Brightspace, then mark it submitted here.</p></section>
     </aside>
   </div>
   <div class="block-head week-head"><div><h2 id="mission-week-heading">This week</h2><p class="sub" id="mission-week-subheading"></p></div><button class="text-link" id="see-week" type="button">Open the week</button></div>
