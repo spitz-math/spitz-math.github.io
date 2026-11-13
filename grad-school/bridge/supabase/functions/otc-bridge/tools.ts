@@ -2,9 +2,9 @@
 // index.ts wires sign-in; this file is everything the tools do.
 import { createMcpHandler, McpServer } from 'npm:@modelcontextprotocol/server@^2.4.0'
 import { z } from 'npm:zod@^4.3.6'
-import { addAssignment, type Doc, emptyDoc, trackerView, updateAssignment } from './logic.ts'
+import { addAssignment, type Doc, emptyDoc, newId, trackerView, updateAssignment } from './logic.ts'
 import { buildBriefing, suggestCatchUp } from './planning.ts'
-import { findReading, MAX_CHARS, pageSlice, READING_BUCKET } from './readings.ts'
+import { addReading, checkAttach, findReading, isPdf, MAX_CHARS, MAX_PDF_BYTES, pageSlice, READING_BUCKET, readingPath } from './readings.ts'
 import { extractText, getDocumentProxy } from 'npm:unpdf@^1.0.0'
 
 // Minimal shape of the user-scoped supabase-js client this file uses.
@@ -41,6 +41,32 @@ type Note = {
 
 const text = (v: unknown) => ({ content: [{ type: 'text' as const, text: typeof v === 'string' ? v : JSON.stringify(v, null, 2) }] })
 const fail = (e: unknown) => ({ isError: true, ...text(e instanceof Error ? e.message : String(e)) })
+
+// Downloads a PDF from a ChatGPT file link or an https link, capped at 50 MB.
+async function fetchPdf(url: string): Promise<Uint8Array> {
+  let u: URL
+  try { u = new URL(url) } catch { throw new Error('That file link is not a valid URL.') }
+  if (u.protocol !== 'https:') throw new Error('Only https file links are supported.')
+  const res = await fetch(u, { redirect: 'follow' })
+  if (!res.ok || !res.body) throw new Error(`Could not download the file (HTTP ${res.status}). ChatGPT file links expire; attach it again in a new message.`)
+  const declared = Number(res.headers.get('content-length') || 0)
+  if (declared > MAX_PDF_BYTES) throw new Error('That PDF is over 50 MB.')
+  const reader = res.body.getReader()
+  const parts: Uint8Array[] = []
+  let total = 0
+  for (;;) {
+    const { done, value } = await reader.read()
+    if (done) break
+    total += value.length
+    if (total > MAX_PDF_BYTES) { await reader.cancel(); throw new Error('That PDF is over 50 MB.') }
+    parts.push(value)
+  }
+  const bytes = new Uint8Array(total)
+  let at = 0
+  for (const p of parts) { bytes.set(p, at); at += p.length }
+  return bytes
+}
+const sha256Hex = async (b: Uint8Array) => [...new Uint8Array(await crypto.subtle.digest('SHA-256', b as BufferSource))].map((x) => x.toString(16).padStart(2, '0')).join('')
 
 export function bridgeHandler(supabase: Db, userId: string) {
   // ---------- tracker document with the same optimistic revision guard as the site ----------
@@ -181,6 +207,48 @@ export function bridgeHandler(supabase: Db, userId: string) {
         const { text: pages } = await extractText(pdf, { mergePages: false })
         return text({ assignment: found.task.title, reading: found.reading.title, ...pageSlice(pages as string[], fromPage, toPage) })
       } catch (e) { return fail(e) }
+    })
+
+    server.registerTool('attach_reading', {
+      title: 'Attach a reading PDF',
+      description: 'Attach a PDF to an assignment (id from get_tracker). In ChatGPT, pass the PDF Kody uploaded in the conversation as file. Otherwise pass url, an https link that downloads the PDF directly. The same PDF is never attached twice. Afterwards it shows in get_tracker and read_reading.',
+      inputSchema: z.object({
+        assignmentId: z.string().describe('Assignment id from get_tracker'),
+        title: z.string().max(170).optional().describe('Reading title, e.g. "Chapter 7 - Motivation". Defaults to the file name.'),
+        file: z.object({
+          download_url: z.string(),
+          file_id: z.string(),
+          mime_type: z.string().optional(),
+          file_name: z.string().optional(),
+        }).optional().describe('The PDF uploaded in this conversation'),
+        url: z.string().optional().describe('https link that downloads the PDF, when there is no uploaded file'),
+      }),
+      _meta: { 'openai/fileParams': ['file'] },
+    }, async ({ assignmentId, title, file, url }) => {
+      let uploaded: string | null = null
+      try {
+        const link = file?.download_url || url
+        if (!link) throw new Error('Pass the uploaded PDF as file, or an https link as url. (ChatGPT on phones does not pass uploads yet; use the web app or attach it on the site.)')
+        const bytes = await fetchPdf(link)
+        if (!isPdf(bytes)) throw new Error('That file is not a PDF.')
+        const sha256 = await sha256Hex(bytes)
+        const { doc } = await load()
+        const { taskTitle, existing } = checkAttach(doc, assignmentId, sha256)
+        if (existing) return text({ attached: false, note: `Already attached to "${taskTitle}" as "${existing.title}".`, reading: { id: existing.id, title: existing.title } })
+        const name = (file?.file_name || decodeURIComponent(new URL(link).pathname.split('/').pop() || '') || 'reading').replace(/\.pdf$/i, '')
+        const id = newId()
+        const path = readingPath(userId, assignmentId, id, name)
+        const { error } = await supabase.storage.from(READING_BUCKET).upload(path, bytes, { contentType: 'application/pdf', upsert: false })
+        if (error) throw new Error('Upload failed: ' + error.message)
+        uploaded = path
+        const out = await change((d) => addReading(d, assignmentId, { id, title: title?.trim() || name, path, size: bytes.length, sha256 }))
+        uploaded = null
+        return text({ attached: true, assignment: out.title, reading: { id: out.reading.id, title: out.reading.title, size: out.reading.size }, readingsOnAssignment: out.readings })
+      } catch (e) {
+        // Nothing half-done: remove a file that never made it into the tracker.
+        if (uploaded) await supabase.storage.from(READING_BUCKET).remove([uploaded]).catch(() => {})
+        return fail(e)
+      }
     })
 
     server.registerTool('add_assignment', {

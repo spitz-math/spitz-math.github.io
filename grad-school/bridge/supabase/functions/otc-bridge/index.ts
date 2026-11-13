@@ -4,7 +4,7 @@
 //
 // Tools (in tools.ts)
 //   Handoff board: project_rules, read_board, post_note, update_note
-//   Tracker:       get_tracker, get_briefing, suggest_catch_up, read_reading,
+//   Tracker:       get_tracker, get_briefing, suggest_catch_up, read_reading, attach_reading,
 //                  add_assignment, update_assignment
 import 'jsr:@supabase/functions-js/edge-runtime.d.ts'
 import { pipeline } from 'npm:@supabase/middleware@1'

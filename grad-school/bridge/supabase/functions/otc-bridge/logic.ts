@@ -8,7 +8,7 @@ export type Task = {
   id: string; course: string; title: string; due: string; target: string;
   status: 'todo' | 'inprogress' | 'done'; submission: 'unconfirmed' | 'submitted';
   notes: string; checklist: Step[]; submissionRequired: boolean;
-  readings?: { id: string; title: string; path: string; size?: number }[];
+  readings?: { id: string; title: string; path: string; size?: number; sha256?: string }[];
 };
 export type Course = { id: string; name: string; description?: string; instructor?: string; color?: string };
 export type Doc = { version: number; courses: Course[]; tasks: Task[]; [k: string]: unknown };
