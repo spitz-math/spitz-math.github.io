@@ -185,6 +185,9 @@ button:disabled{ cursor:default; }
 .dg-mbtn .t{ display:flex; flex-direction:column; font:800 34px/1 var(--display); letter-spacing:.02em; }
 .dg-mbtn small{ font:700 19px/1.2 var(--body); color:var(--muted); letter-spacing:0; margin-top:4px; }
 .dg-mbtn:hover{ border-color:var(--teal); }
+.dg-mbtn.sm{ height:66px; padding:0 20px 0 10px; gap:12px; border-radius:16px; } .dg-mbtn.sm .key{ width:44px; height:44px; border-radius:11px; font-size:27px; background:#C9B3FF; } .dg-mbtn.sm .t{ font-size:26px; } .dg-mbtn.sm small{ font-size:16px; margin-top:2px; }
+.dg-mbtn.sm.r .key{ background:var(--gold); } .dg-mbtn.sm.r{ border-color:var(--gold); } .dg-mbtn.sm.r::after{ background:var(--gold); } .dg-mbtn.sm.r small{ color:var(--gold); }
+.dg-mbtn[hidden]{ display:none; }
 .dg-mbtn.need{ border-color:var(--teal); isolation:isolate; }
 .dg-mbtn.need::after{ content:''; position:absolute; inset:-3px; border-radius:inherit; background:var(--teal); opacity:0; z-index:-1; animation:dgPulseO 1.1s infinite; pointer-events:none; }
 .dg-mbtn.need small{ color:var(--teal); }
@@ -233,6 +236,9 @@ button:disabled{ cursor:default; }
     <div class="dg-chip" id="dg-streakchip"><span class="l">Streak</span><span class="v" id="dg-streak">0</span></div>
   </div>
   <div class="dg-dock">
+    <button class="dg-mbtn sm r need" id="dg-rbtn" hidden aria-label="Hop back up where you fell, key R"><span class="key">R</span><span class="t">Hop back up<small>You fell into a cave</small></span></button>
+    <div class="dg-mbtn sm x" aria-hidden="true"><span class="key">X</span><span class="t">Dig down<small>Hold it</small></span></div>
+    <button class="dg-mbtn sm h" id="dg-hbtn" aria-label="Back to camp, key H"><span class="key">H</span><span class="t">Back to camp</span></button>
     <button class="dg-mbtn q" id="dg-qbtn" aria-label="Answer questions, key Q"><span class="key">Q</span><span class="t">Questions<small id="dg-qsub">+8 energy</small></span></button>
     <button class="dg-mbtn b" id="dg-shopbtn" aria-label="Shop, key B"><span class="key">B</span><span class="t">Shop<small>Spend cash</small></span></button>
   </div>
@@ -946,7 +952,7 @@ function draw(){ if(!gl) return drawHud(); var w=Math.round(W*RS), h=Math.round(
 
   drawHud(); }
 function rr(c,x,y,w,h,r){ c.beginPath(); c.moveTo(x+r,y); c.arcTo(x+w,y,x+w,y+h,r); c.arcTo(x+w,y+h,x,y+h,r); c.arcTo(x,y+h,x,y,r); c.arcTo(x,y,x+w,y,r); c.closePath(); }
-function drawHud(){ var c=hx; c.clearRect(0,0,W,H); c.textAlign='center';
+function drawHud(){ var c=hx; c.clearRect(0,0,W,H); c.textAlign='center'; var rb=$('dg-rbtn'); if(rb.hidden!==!PL.fell) rb.hidden=!PL.fell;
   if(PL.hurtT>0){ var vg=c.createRadialGradient(W/2,H/2,H*0.35,W/2,H/2,H*0.85); vg.addColorStop(0,'rgba(255,60,80,0)'); vg.addColorStop(1,'rgba(255,60,80,'+(0.45*PL.hurtT/0.7)+')'); c.fillStyle=vg; c.fillRect(0,0,W,H); }   // one soft fade, never a flash
 
   c.strokeStyle='rgba(255,255,255,.9)'; c.lineWidth=4; c.beginPath(); c.moveTo(W/2-14,H/2); c.lineTo(W/2+14,H/2); c.moveTo(W/2,H/2-14); c.lineTo(W/2,H/2+14); c.stroke();
@@ -963,7 +969,7 @@ function drawHud(){ var c=hx; c.clearRect(0,0,W,H); c.textAlign='center';
       c.fillStyle='rgba(12,9,25,.72)'; rr(c,24,gy,c.measureText(bt).width+96,52,14); c.fill();
       c.save(); c.translate(52,gy+26); c.rotate(Math.atan2(nb.b.x-PL.x,-(nb.b.z-PL.z))-PL.yaw); c.fillStyle=binfo(nb.b).c; c.beginPath(); c.moveTo(0,-17); c.lineTo(12,12); c.lineTo(0,5); c.lineTo(-12,12); c.closePath(); c.fill(); c.restore();
       c.fillStyle='#FFE29A'; c.fillText(bt,84,gy+36); gy+=60; }
-    if(dep>4){ var ht=PL.fell?'R: hop back up where you fell · H: back to camp':'Hold Space by a wall to climb · H: back to camp'; c.font=FONT(24); c.fillStyle='rgba(12,9,25,.72)'; rr(c,24,gy,c.measureText(ht).width+40,48,14); c.fill(); c.fillStyle=PL.fell?'#FFE0A3':'#B3A6C4'; c.fillText(ht,44,gy+33); } }
+    if(dep>4){ var ht='Hold Space by a wall to climb'; c.font=FONT(24); c.fillStyle='rgba(12,9,25,.72)'; rr(c,24,gy,c.measureText(ht).width+40,48,14); c.fill(); c.fillStyle=PL.fell?'#FFE0A3':'#B3A6C4'; c.fillText(ht,44,gy+33); } }
   c.textAlign='center';
   if((S.inv[21]||0)>0){ var dt2='Dynamite × '+S.inv[21]+' · right-click or E throws it'; c.font=FONT(28); var dw=c.measureText(dt2).width; c.fillStyle='rgba(12,9,25,.78)'; rr(c,W/2-dw/2-24,H-92,dw+48,60,16); c.fill(); c.fillStyle='#FF9A7A'; c.fillText(dt2,W/2,H-52); }
   pops.forEach(function(p,i){ if(p.t<0) return; c.globalAlpha=Math.min(1,(1.4-p.t)*2); c.font=FONT(46); c.lineWidth=7; c.strokeStyle='rgba(12,9,25,.85)'; var y=H/2-70-p.t*40-i*54; c.strokeText(p.txt,W/2,y); c.fillStyle=p.col; c.fillText(p.txt,W/2,y); }); c.globalAlpha=1;
@@ -1091,6 +1097,7 @@ function drawShop(){ $('dg-shopcash').textContent='$'+S.cash;
     return '<div class="dg-sc"><div class="n">'+p.name+'</div><div class="d">'+p.d+(p.secs?' ('+p.secs+'s)':'')+'</div><button class="dg-buy" data-p="'+p.id+'"'+(on||S.cash<p.cost?' disabled':'')+'>'+(on?'Active':'Buy $'+p.cost)+'</button></div>'; }).join(''); }
 function openShop(o){ if(o) openModal('shop'); else if(MODAL==='shop') openModal(null); }
 $('dg-shopbtn').addEventListener('click',function(){ openModal('shop'); });
+$('dg-hbtn').addEventListener('click',function(){ if(canPlay()) goHome(); this.blur(); }); $('dg-rbtn').addEventListener('click',function(){ if(canPlay()) hopBack(); this.blur(); });
 $('dg-shopx').addEventListener('click',function(){ openShop(false); });
 $('dg-shop').addEventListener('click',function(e){ var b=e.target.closest('.dg-buy'); if(!b||b.disabled) return;
   if(b.dataset.u){ var u=UPG.filter(function(x){ return x.id===b.dataset.u; })[0], pr=u.cost[S.lv[u.id]]; if(S.cash<pr) return; S.cash-=pr; S.lv[u.id]++; toast(u.name+' upgraded!'); }
