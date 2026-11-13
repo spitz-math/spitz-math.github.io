@@ -12,9 +12,10 @@ URL once deployed: `https://pkonclmfrpozizmmtnrv.supabase.co/functions/v1/otc-br
 | `read_board` | Handoff notes, tasks and questions between the two AIs. |
 | `post_note` | Leave a handoff after a change, a task for the other AI, or a question for Kody. |
 | `update_note` | Claim a task, reply, or mark it done. |
-| `get_tracker` | Courses and assignments with ids, dates, steps, and finished/submitted state. |
+| `get_tracker` | Courses and assignments with ids, dates, steps, finished/submitted state, and attached readings (id and title). |
 | `get_briefing` | Read-only daily/weekly snapshot. Lead with `needsSubmission`: finished, submission-required work not yet confirmed submitted, regardless of due date. |
 | `suggest_catch_up` | Read-only proposals for missed step plan dates; does not save changes. |
+| `read_reading` | Read-only. Text of a reading PDF Kody attached to an assignment, from the private `otc-readings` bucket, about 60k characters per call (`nextPage` continues). Scanned PDFs have no text. |
 | `add_assignment` | Add an assignment. It is never added as submitted. |
 | `update_assignment` | Change dates, notes and steps, or mark it submitted when Kody says it's turned in. |
 
@@ -25,7 +26,7 @@ Tracker writes use the same revision guard as the site. If the site saved in bet
 Files:
 - `supabase/functions/otc-bridge/index.ts`: sign-in wiring.
 - `tools.ts`: the tools.
-- `logic.ts`: pure data rules, tested by `logic.test.ts`. Run it with `node --experimental-strip-types --test grad-school/bridge/supabase/functions/otc-bridge/logic.test.ts`.
+- `logic.ts`: pure data rules, tested by `logic.test.ts`. `readings.ts` (reading lookup and page slicing) is tested by `readings.test.ts`. Run it with `node --experimental-strip-types --test grad-school/bridge/supabase/functions/otc-bridge/logic.test.ts`.
 - `supabase/migrations/…_bridge_notes.sql`: the handoff board table, owner-only RLS. It does not touch `grad_profiles`.
 - `../oauth/consent/`: the approval page that opens when an AI asks to connect.
 
