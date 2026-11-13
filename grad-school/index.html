@@ -78,8 +78,9 @@
 </section>
 <section class="view" id="view-tasks">
   <div class="page-head"><div><h1>Assignments</h1><p class="sub">Finished and submitted are tracked separately.</p></div></div>
-  <div class="filterbar"><div class="seg" id="status-filters"><button class="filter active" data-filter="all" type="button">All</button><button class="filter" data-filter="active" type="button">Open</button><button class="filter" data-filter="done" type="button">Finished</button><button class="filter" data-filter="submitted" type="button">Submitted</button></div><input id="search-tasks" class="search" type="search" placeholder="Search" aria-label="Search assignments"></div>
+  <div class="filterbar"><div class="seg" id="status-filters"><button class="filter active" data-filter="all" type="button">All</button><button class="filter" data-filter="active" type="button">Open</button><button class="filter" data-filter="done" type="button">Finished</button><button class="filter" data-filter="submitted" type="button">Submitted</button></div><input id="search-tasks" class="search" type="search" placeholder="Search assignments, readings, outlines" aria-label="Search assignments and your materials"></div>
   <div class="rows" id="task-list"></div>
+  <section id="material-results" class="material-results" hidden aria-label="Found in your materials"></section>
 </section>
 <section class="view" id="view-week">
   <div class="page-head"><div><h1 id="week-heading">This week</h1><p class="sub" id="week-subheading"></p></div><div class="week-toolbar"><button class="btn icon" id="week-prev" type="button" aria-label="Previous week">‹</button><button class="btn" id="week-current" type="button">This week</button><button class="btn icon" id="week-next" type="button" aria-label="Next week">›</button></div></div>
@@ -129,6 +130,10 @@
 <div class="field"><label for="course-a">Name or code</label><input id="course-a" required maxlength="100" placeholder="EDFR 6388"></div><div class="field"><label for="course-a-description">Full title</label><input id="course-a-description" maxlength="250" placeholder="Course title"></div><div class="field"><label for="course-a-instructor">Professor</label><input id="course-a-instructor" maxlength="150" placeholder="Professor name"></div><div class="field"><label id="course-a-color-label">Color</label><div class="swatches" role="radiogroup" aria-labelledby="course-a-color-label"><label class="cc-blue" title="Azure"><input type="radio" name="course-a-color" value="blue" aria-label="Azure"><span></span></label><label class="cc-teal" title="Seafoam"><input type="radio" name="course-a-color" value="teal" aria-label="Seafoam"><span></span></label><label class="cc-pink" title="Pink"><input type="radio" name="course-a-color" value="pink" aria-label="Pink"><span></span></label><label class="cc-orchid" title="Orchid"><input type="radio" name="course-a-color" value="orchid" aria-label="Orchid"><span></span></label><label class="cc-cobalt" title="Cobalt"><input type="radio" name="course-a-color" value="cobalt" aria-label="Cobalt"><span></span></label><label class="cc-orange" title="Orange (the original)"><input type="radio" name="course-a-color" value="orange" aria-label="Orange (the original)"><span></span></label></div></div>
 <h3 class="course-group">Second course</h3>
 <div class="field"><label for="course-b">Name or code</label><input id="course-b" required maxlength="100" placeholder="EDCI 7355"></div><div class="field"><label for="course-b-description">Full title</label><input id="course-b-description" maxlength="250" placeholder="Course title"></div><div class="field"><label for="course-b-instructor">Professor</label><input id="course-b-instructor" maxlength="150" placeholder="Professor name"></div><div class="field"><label id="course-b-color-label">Color</label><div class="swatches" role="radiogroup" aria-labelledby="course-b-color-label"><label class="cc-blue" title="Azure"><input type="radio" name="course-b-color" value="blue" aria-label="Azure"><span></span></label><label class="cc-teal" title="Seafoam"><input type="radio" name="course-b-color" value="teal" aria-label="Seafoam"><span></span></label><label class="cc-pink" title="Pink"><input type="radio" name="course-b-color" value="pink" aria-label="Pink"><span></span></label><label class="cc-orchid" title="Orchid"><input type="radio" name="course-b-color" value="orchid" aria-label="Orchid"><span></span></label><label class="cc-cobalt" title="Cobalt"><input type="radio" name="course-b-color" value="cobalt" aria-label="Cobalt"><span></span></label><label class="cc-orange" title="Orange (the original)"><input type="radio" name="course-b-color" value="orange" aria-label="Orange (the original)"><span></span></label></div></div>
+<h3 class="course-group">Brightspace calendar</h3>
+<p class="importnote">In Brightspace, open Calendar, choose Subscribe, and copy the link. ChatGPT and Claude use it to check official due dates every morning. The link is private, so it is saved only in your account.</p>
+<div class="field"><label for="bs-feed">Calendar link</label><input id="bs-feed" type="url" maxlength="1000" placeholder="https://…brightspace.com/d2l/le/calendar/feed/…"></div>
+<div class="step-editor-actions"><button type="button" class="btn" id="bs-save">Save link</button><span id="bs-status" class="reading-status" role="status" aria-live="polite"></span></div>
 <div class="form-actions"><div class="right"><button class="btn primary" type="submit">Save courses</button></div></div></form></dialog>
 <input id="import-file" type="file" accept=".json,application/json" hidden>
 <script>
@@ -187,7 +192,7 @@ const taskTemplates={
  discussion:['Read prompt and relevant materials','Draft response','Revise response','Post discussion response'],
  reading:['Read assigned material','Write notes / key takeaways']
 };
-function normalized(data){const o=emptyData();if(!data||!Array.isArray(data.tasks))return o;if(Array.isArray(data.courses)&&data.courses.length>=2){o.courses=data.courses.slice(0,2).map((x,i)=>({id:typeof x.id==='string'&&x.id?x.id:(i?'two':'one'),name:String(x.name||`Course 0${i+1}`).slice(0,100),description:String(x.description||'').slice(0,250),instructor:String(x.instructor||'').slice(0,150),color:COURSE_COLORS.includes(x.color)?x.color:(i?'teal':'blue')}));}o.tasks=data.tasks.slice(0,300).filter(t=>t&&t.title).map(t=>({id:String(t.id||uniqueId()),course:o.courses.some(c=>c.id===t.course)?t.course:o.courses[0].id,title:String(t.title).slice(0,250),due:/^\d{4}-\d{2}-\d{2}$/.test(t.due||'')?t.due:'',target:/^\d{4}-\d{2}-\d{2}$/.test(t.target||'')?t.target:'',status:['todo','inprogress','done'].includes(t.status)?t.status:'todo',submission:t.submission==='submitted'?'submitted':'unconfirmed',notes:String(t.notes||'').slice(0,2500),checklist:normalizedChecklist(t.checklist),submissionRequired:t.submissionRequired!==false,readings:normalizedReadings(t.readings),finalWork:normalizedFinal(t.finalWork)}));o.prefs={colorByClass:data.prefs?.colorByClass===true};const wc=data.weekCalendar||{};if(/^\d{4}-\d{2}-\d{2}$/.test(wc.anchorStart||'')&&Number.isInteger(wc.anchorNumber)&&wc.anchorNumber>0){o.weekCalendar={anchorStart:wc.anchorStart,anchorNumber:wc.anchorNumber}}return o}
+function normalized(data){const o=emptyData();if(!data||!Array.isArray(data.tasks))return o;if(Array.isArray(data.courses)&&data.courses.length>=2){o.courses=data.courses.slice(0,2).map((x,i)=>({id:typeof x.id==='string'&&x.id?x.id:(i?'two':'one'),name:String(x.name||`Course 0${i+1}`).slice(0,100),description:String(x.description||'').slice(0,250),instructor:String(x.instructor||'').slice(0,150),color:COURSE_COLORS.includes(x.color)?x.color:(i?'teal':'blue')}));}o.tasks=data.tasks.slice(0,300).filter(t=>t&&t.title).map(t=>({id:String(t.id||uniqueId()),course:o.courses.some(c=>c.id===t.course)?t.course:o.courses[0].id,title:String(t.title).slice(0,250),due:/^\d{4}-\d{2}-\d{2}$/.test(t.due||'')?t.due:'',target:/^\d{4}-\d{2}-\d{2}$/.test(t.target||'')?t.target:'',status:['todo','inprogress','done'].includes(t.status)?t.status:'todo',submission:t.submission==='submitted'?'submitted':'unconfirmed',notes:String(t.notes||'').slice(0,2500),checklist:normalizedChecklist(t.checklist),submissionRequired:t.submissionRequired!==false,readings:normalizedReadings(t.readings),finalWork:normalizedFinal(t.finalWork),...(t.lms&&typeof t.lms.uid==='string'&&t.lms.uid?{lms:{uid:t.lms.uid.slice(0,300)}}:{})}));o.prefs={colorByClass:data.prefs?.colorByClass===true};const wc=data.weekCalendar||{};if(/^\d{4}-\d{2}-\d{2}$/.test(wc.anchorStart||'')&&Number.isInteger(wc.anchorNumber)&&wc.anchorNumber>0){o.weekCalendar={anchorStart:wc.anchorStart,anchorNumber:wc.anchorNumber}}return o}
 function setSync(text,kind=''){const el=$('#sync-indicator');el.className='online '+(kind||'');$('#sync-label').textContent=text}
 function syncControls(mode=''){ $('#retry-save').hidden=mode!=='retry'; $('#reload-cloud').hidden=mode!=='conflict'; }
 
@@ -340,7 +345,45 @@ async function loadDocs(){
  if(!supabaseClient||!user){docIndex=[];docsReady=false;return}
  const {data,error}=await supabaseClient.from('otc_docs').select('id,assignment_id,kind,title,author,updated_at,file_path').order('updated_at',{ascending:false});
  if(error){docIndex=[];docsReady=false;return}
- docIndex=data||[];docsReady=true;render();if($('#task-dialog').open)renderDocList();
+ docIndex=data||[];docsReady=true;await loadSettings();render();if($('#task-dialog').open)renderDocList();
+}
+// ---------- Brightspace calendar (table otc_settings, owner-only) ----------
+let bsSettings=null;
+async function loadSettings(){
+ if(!supabaseClient||!user){bsSettings=null;return}
+ const {data,error}=await supabaseClient.from('otc_settings').select('brightspace_feed,last_sync').maybeSingle();
+ bsSettings=error?null:(data||{brightspace_feed:null,last_sync:null});
+}
+function bsBannerHTML(){
+ const s=bsSettings?.last_sync;if(!s)return '';
+ const ch=Array.isArray(s.changed)?s.changed:[],nw=Array.isArray(s.newItems)?s.newItems:[];
+ if(!ch.length&&!nw.length)return '';
+ const rows=ch.map(c=>'<li><b>'+escapeHTML(c.title)+'</b>: yours '+escapeHTML(showDate(c.trackerDue))+', Brightspace '+escapeHTML(showDate(c.brightspaceDue))+'</li>').concat(nw.map(n=>'<li><b>'+escapeHTML(n.title)+'</b>: new in Brightspace, due '+escapeHTML(showDate(n.brightspaceDue))+'</li>')).join('');
+ const when=s.at?new Date(s.at).toLocaleDateString(undefined,{month:'short',day:'numeric'}):'';
+ return '<div class="bs-banner" role="note"><strong>Brightspace check'+(when?' · '+escapeHTML(when):'')+'</strong><ul>'+rows+'</ul><small>Ask ChatGPT or Claude to sync Brightspace and apply the ones you want.</small></div>';
+}
+// ---------- search inside readings, outlines and final work ----------
+let matTimer=0,matSeq=0;
+function materialRefs(){
+ const m=new Map();
+ for(const t of app.tasks){for(const r of t.readings||[])m.set(r.path,{task:t,source:'Reading',title:r.title});if(t.finalWork?.file)m.set(t.finalWork.file.path,{task:t,source:'Final work',title:t.finalWork.file.title})}
+ for(const d of docIndex)if(d.file_path)m.set(d.file_path,{task:app.tasks.find(t=>t.id===d.assignment_id),source:DOC_KINDS[d.kind]||'Doc',title:d.title,docId:d.id});
+ return m;
+}
+function excerpt(body,q){const i=body.toLowerCase().indexOf(q.toLowerCase());if(i<0)return '';const a=Math.max(0,i-70),b=Math.min(body.length,i+q.length+90);const before=body.lastIndexOf('--- Page ',i);const pg=before<0?'':(body.slice(before+9).match(/^\d+/)||[''])[0];return {page:pg,text:(a?'…':'')+body.slice(a,b).replace(/--- Page \d+ ---/g,' ').replace(/\s+/g,' ').trim()+(b<body.length?'…':'')}}
+async function searchMaterials(){
+ const box=$('#material-results'),q=$('#search-tasks').value.trim().replace(/[%,()*\\]/g,' ').trim();
+ if(!supabaseClient||!user||q.length<3){box.hidden=true;box.innerHTML='';return}
+ const seq=++matSeq;
+ const [d,t]=await Promise.all([
+  supabaseClient.from('otc_docs').select('id,assignment_id,kind,title,body').or('title.ilike.%'+q+'%,body.ilike.%'+q+'%').limit(20),
+  supabaseClient.from('otc_text').select('path,body').ilike('body','%'+q+'%').limit(20)]);
+ if(seq!==matSeq)return;
+ const refs=materialRefs(),out=[];
+ for(const x of d.data||[]){const task=app.tasks.find(k=>k.id===x.assignment_id);out.push({open:'data-open-doc="'+escapeHTML(x.id)+'"',source:DOC_KINDS[x.kind]||'Doc',title:x.title,task,ex:excerpt(x.body||'',q)})}
+ for(const x of t.data||[]){const r=refs.get(x.path);if(!r)continue;out.push({open:r.docId?'data-open-doc="'+escapeHTML(r.docId)+'"':'data-open-reading="'+escapeHTML(x.path)+'"',source:r.source,title:r.title,task:r.task,ex:excerpt(x.body,q)})}
+ box.hidden=!out.length;
+ box.innerHTML=out.length?'<h3>Found in your materials <small>'+out.length+'</small></h3>'+out.map(o=>'<button type="button" class="material-hit" '+o.open+'><span class="material-src">'+escapeHTML(o.source)+(o.ex&&o.ex.page?' · p. '+escapeHTML(o.ex.page):'')+'</span><b>'+escapeHTML(o.title)+'</b>'+(o.task?'<small>'+escapeHTML(o.task.title)+'</small>':'')+(o.ex?'<span class="material-ex">'+escapeHTML(o.ex.text)+'</span>':'')+'</button>').join(''):'';
 }
 function docsFor(id){return docIndex.filter(d=>d.assignment_id===id)}
 function docsHTML(t){
@@ -484,7 +527,7 @@ weekGrid($('#week-strip'),currentWeek);
 weekGrid($('#week-strip-full'),selectedWeek);
 $('#glance').innerHTML=glanceHTML(currentWeek,toSubmit);
 $('#today-checklist').innerHTML=toSubmitCard(toSubmit)+catchUpCard()+plannedDayCard(dayISO(),currentWeek,true);
-$('#due-week').innerHTML=dueWeekHTML(currentWeek);{const open=dueThisWeek.filter(t=>t.submissionRequired!==false&&t.submission!=='submitted').length;$('#due-week-count').textContent=currentWeek.number?currentWeek.label:'This week'}
+$('#due-week').innerHTML=bsBannerHTML()+dueWeekHTML(currentWeek);{const open=dueThisWeek.filter(t=>t.submissionRequired!==false&&t.submission!=='submitted').length;$('#due-week-count').textContent=currentWeek.number?currentWeek.label:'This week'}
 $('#week-list').innerHTML=Array.from({length:7},(_,i)=>plannedDayCard(shiftISO(selectedWeek.start,i),selectedWeek)).join('')+unscheduledStepsCard();
 const q=$('#search-tasks').value.toLowerCase().trim();let filtered=sortedTasks(all.filter(t=>!q||t.title.toLowerCase().includes(q)||course(t)?.name.toLowerCase().includes(q)||t.notes.toLowerCase().includes(q)));filtered=filtered.filter(t=>!isHandled(t)).concat(filtered.filter(isHandled));if(filter==='active')filtered=filtered.filter(t=>!isDone(t));else if(filter==='done')filtered=filtered.filter(t=>isDone(t));else if(filter==='submitted')filtered=filtered.filter(t=>t.submission==='submitted');
 $('#task-list').innerHTML=filtered.map((t,i)=>taskHTML(t,i,true)).join('')||`<div class="empty"><h3>Nothing matches</h3><p>Try another filter or search.</p></div>`;
@@ -636,7 +679,15 @@ $('#doc-form').addEventListener('submit',async e=>{e.preventDefault();
 });
 $('#doc-delete').onclick=async()=>{const id=$('#doc-id').value;if(!id||!confirm('Delete this for good?'))return;const {error}=await supabaseClient.from('otc_docs').delete().eq('id',id);if(error){$('#doc-meta').textContent='Could not delete: '+error.message;return}removeStoredReadings([docFileOld,...docUploads].filter(Boolean));docUploads=new Set();docSaved=true;$('#doc-dialog').close();await loadDocs();renderDocList('Deleted.')};
 document.addEventListener('click',e=>{const b=e.target.closest('[data-open-reading]');if(!b)return;e.preventDefault();e.stopPropagation();openReading(b.dataset.openReading)},true);
-$('#edit-courses').onclick=()=>{$('#course-a').value=app.courses[0]?.name||'';$('#course-a-description').value=app.courses[0]?.description||'';$('#course-a-instructor').value=app.courses[0]?.instructor||'';$('#course-b').value=app.courses[1]?.name||'';$('#course-b-description').value=app.courses[1]?.description||'';$('#course-b-instructor').value=app.courses[1]?.instructor||'';['a','b'].forEach((k,j)=>{const v=courseColor(app.courses[j]);$$('[name="course-'+k+'-color"]').forEach(x=>x.checked=x.value===v)});$('#color-by-class').checked=app.prefs?.colorByClass===true;$('#course-dialog').showModal()};$('#close-courses').onclick=()=>$('#course-dialog').close();
+$('#edit-courses').onclick=()=>{$('#bs-feed').value=bsSettings?.brightspace_feed||'';$('#bs-status').textContent=!supabaseClient||!user?'Sign in to connect Brightspace.':bsSettings?.last_sync?.at?'Last checked '+new Date(bsSettings.last_sync.at).toLocaleString():'';$('#course-a').value=app.courses[0]?.name||'';$('#course-a-description').value=app.courses[0]?.description||'';$('#course-a-instructor').value=app.courses[0]?.instructor||'';$('#course-b').value=app.courses[1]?.name||'';$('#course-b-description').value=app.courses[1]?.description||'';$('#course-b-instructor').value=app.courses[1]?.instructor||'';['a','b'].forEach((k,j)=>{const v=courseColor(app.courses[j]);$$('[name="course-'+k+'-color"]').forEach(x=>x.checked=x.value===v)});$('#color-by-class').checked=app.prefs?.colorByClass===true;$('#course-dialog').showModal()};$('#close-courses').onclick=()=>$('#course-dialog').close();
+$('#bs-save').onclick=async()=>{
+ if(!supabaseClient||!user){$('#bs-status').textContent='Sign in first.';return}
+ const v=$('#bs-feed').value.trim().replace(/^webcal:/i,'https:');
+ if(v&&!/^https:\/\/\S+$/i.test(v)){$('#bs-status').textContent='That doesn\u2019t look like a link.';return}
+ const {error}=await supabaseClient.from('otc_settings').upsert({user_id:user.id,brightspace_feed:v||null});
+ $('#bs-status').textContent=error?(/otc_settings|relation|schema cache/i.test(error.message)?'Run the Brightspace SQL in Supabase first.':'Could not save: '+error.message):v?'Saved. It will be checked tomorrow morning, or ask ChatGPT or Claude to sync Brightspace now.':'Link removed.';
+ if(!error)await loadSettings();
+};
 $('#course-form').addEventListener('submit',e=>{e.preventDefault();app.courses[0].name=$('#course-a').value.trim();app.courses[0].description=$('#course-a-description').value.trim();app.courses[0].instructor=$('#course-a-instructor').value.trim();app.courses[1].name=$('#course-b').value.trim();app.courses[1].description=$('#course-b-description').value.trim();app.courses[1].instructor=$('#course-b-instructor').value.trim();['a','b'].forEach((k,j)=>{const v=$('[name="course-'+k+'-color"]:checked')?.value;if(COURSE_COLORS.includes(v))app.courses[j].color=v});app.prefs={...(app.prefs||{}),colorByClass:$('#color-by-class').checked};$('#course-dialog').close();makeChange()});
 $$('.navbtn').forEach(x=>x.addEventListener('click',()=>showView(x.dataset.view)));
 $$('#new-task-top,#new-task-list,#week-new').forEach(x=>x.onclick=()=>openTask());
@@ -645,7 +696,7 @@ $('#see-week').onclick=()=>{weekOffset=0;showView('week')};
 $('#week-prev').onclick=()=>{weekOffset=Math.max(-52,weekOffset-1);render()};
 $('#week-next').onclick=()=>{weekOffset=Math.min(52,weekOffset+1);render()};
 $('#week-current').onclick=()=>{weekOffset=0;render()};
-$('#status-filters').onclick=e=>{const btn=e.target.closest('[data-filter]');if(!btn)return;filter=btn.dataset.filter;$$('#status-filters .filter').forEach(x=>x.classList.toggle('active',x===btn));render()};$('#search-tasks').oninput=render;$('#search-tasks').addEventListener('search',render);
+$('#status-filters').onclick=e=>{const btn=e.target.closest('[data-filter]');if(!btn)return;filter=btn.dataset.filter;$$('#status-filters .filter').forEach(x=>x.classList.toggle('active',x===btn));render()};$('#search-tasks').oninput=()=>{render();clearTimeout(matTimer);matTimer=setTimeout(searchMaterials,300)};$('#search-tasks').addEventListener('search',render);
 function showApp(){setWorkspace(true);window.scrollTo({top:0,behavior:'instant'});$('#account-btn').textContent=preview?'Close preview':'Sign out';render()}
 $('#account-btn').onclick=async()=>{if(preview){preview=false;app=emptyData();setWorkspace(false);setSync('Not signed in');return}if(supabaseClient){if((dirty||saving)&&!confirm('Unsaved edits exist. Export a backup before signing out. Sign out anyway?'))return;await supabaseClient.auth.signOut();user=null;app=emptyData();dirty=false;remoteRevision=null;conflict=false;syncControls();setWorkspace(false);setSync('Signed out')} };
 $('#preview-btn').onclick=()=>{preview=true;app=demoData();setSync('Preview, not saved');showApp()};

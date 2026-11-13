@@ -21,6 +21,8 @@ URL once deployed: `https://pkonclmfrpozizmmtnrv.supabase.co/functions/v1/otc-br
 | `read_final_work` | Read-only. The link, note and text of the finished PDF. |
 | `save_doc` | Save a paper outline, video script, notes or draft on an assignment as text, a PDF (`file` upload or `fileUrl`), or both. Stored in the `otc_docs` table (owner-only RLS); PDFs in `otc-readings`. |
 | `list_docs` / `read_doc` | Read-only. List saved outlines and scripts; read one's text (or its PDF's text). |
+| `search_materials` | Read-only. Search notes, steps, outlines, scripts and the text of reading, final-work and outline PDFs. PDF text is cached in `otc_text` (up to 3 new PDFs indexed per call). |
+| `sync_brightspace` | Reads the private Brightspace calendar feed saved in `otc_settings`. Always links tasks and fills empty due dates. Changes a date or adds a new item only when asked (`applyChanges`/`addNew` with the item uids, or `'all'`). Pending ones show as a banner on the dashboard. |
 | `add_assignment` | Add an assignment. It is never added as submitted. |
 | `update_assignment` | Change dates, notes and steps, or mark it submitted when Kody says it's turned in. |
 
@@ -33,7 +35,7 @@ Files:
 - `tools.ts`: the tools.
 - `logic.ts`: pure data rules, tested by `logic.test.ts`. `readings.ts` (reading lookup and page slicing) is tested by `readings.test.ts`. Run it with `node --experimental-strip-types --test grad-school/bridge/supabase/functions/otc-bridge/logic.test.ts`.
 - `supabase/migrations/…_bridge_notes.sql`: the handoff board table, owner-only RLS. It does not touch `grad_profiles`.
-- `supabase/migrations/…_readings_bucket.sql`: private PDF storage. `…_otc_docs.sql`: outlines and scripts table, owner-only RLS.
+- `supabase/migrations/…_readings_bucket.sql`: private PDF storage. `…_otc_docs.sql`: outlines and scripts table, owner-only RLS. `…_otc_settings_and_text.sql`: Brightspace feed link + PDF text cache, owner-only RLS.
 - `../oauth/consent/`: the approval page that opens when an AI asks to connect.
 
 ## One-time setup (Kody, in the Supabase dashboard)
