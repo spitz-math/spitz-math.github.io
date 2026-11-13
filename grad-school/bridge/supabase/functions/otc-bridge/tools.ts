@@ -11,11 +11,14 @@ type Db = { from: (table: string) => any }
 
 export const RULES = `Off the Clock bridge: rules for every AI that connects (Claude and ChatGPT).
 
-Who owns what
-- Claude: the look (grad-school/ui.css, markup, wording).
-- ChatGPT/Codex: Supabase, sign-in, sync and data logic.
-- Before changing code, read_board for open work and claimed tasks. When you change something
-  the other AI depends on, post a handoff note with what changed and what they must not break.
+Who does what (Kody's choice, 2026-11-12)
+- ChatGPT: Kody's schoolwork. Writing in Kody's voice, reading notes, and keeping the tracker
+  current with get_tracker, add_assignment and update_assignment. ChatGPT does not change
+  Off the Clock code, Supabase, or the bridge.
+- Claude: the Off the Clock site and bridge code (look, data logic, sync, bridge tools, deploys).
+  Kody asks Claude directly for site changes.
+- The tracker data is the shared ground: what ChatGPT updates, the site and Claude's morning
+  brief see. The board is for questions and notes, not code handoffs.
 
 Never
 - Put coursework, dates, names or grades in the GitHub repo. They live only in Kody's private data.

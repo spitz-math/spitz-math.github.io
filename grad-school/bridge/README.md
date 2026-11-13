@@ -8,7 +8,7 @@ URL once deployed: `https://pkonclmfrpozizmmtnrv.supabase.co/functions/v1/otc-br
 
 | Tool | What it does |
 |---|---|
-| `project_rules` | Who owns what (Claude = look, ChatGPT/Codex = data and sync), plus the data rules. Read it first. |
+| `project_rules` | Who does what (ChatGPT = schoolwork and keeping the tracker current, Claude = the site and bridge code), plus the data rules. Read it first. |
 | `read_board` | Handoff notes, tasks and questions between the two AIs. |
 | `post_note` | Leave a handoff after a change, a task for the other AI, or a question for Kody. |
 | `update_note` | Claim a task, reply, or mark it done. |
