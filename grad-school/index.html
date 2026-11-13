@@ -284,7 +284,8 @@ function catchUpCard(){
 function dueWeekHTML(week){
  const today=dayISO();
  const late=app.tasks.filter(t=>t.due&&t.due<week.start&&t.submissionRequired!==false&&t.submission!=='submitted');
- const rows=sortedTasks(late).concat(app.tasks.filter(t=>inCourseWeek(t.due,week)).sort((a,b)=>a.due.localeCompare(b.due)||a.title.localeCompare(b.title)));
+ const all=sortedTasks(late).concat(app.tasks.filter(t=>inCourseWeek(t.due,week)).sort((a,b)=>a.due.localeCompare(b.due)||a.title.localeCompare(b.title)));
+ const rows=all.filter(t=>!isHandled(t)).concat(all.filter(isHandled)); // submitted (and finished prep) sink to the bottom
  if(!rows.length)return '<p class="due-empty">Nothing with a verified due date this week.</p>';
  return '<div class="due-list">'+rows.map(t=>{
   const c=course(t),cc='cc-'+courseColor(c),d=dateObj(t.due),sub=t.submission==='submitted';
