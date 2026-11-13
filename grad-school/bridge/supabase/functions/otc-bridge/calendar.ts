@@ -66,10 +66,11 @@ export function eventKind(summary: string): { title: string; kind: 'due' | 'end'
   return { title: m[1].trim(), kind: k.startsWith('due') ? 'due' : /end/.test(k) ? 'end' : 'start' }
 }
 
+const ALIAS: Record<string, string> = { ch: 'chapter', chs: 'chapter', chap: 'chapter', chapters: 'chapter' }
 const STOP = new Set(['the', 'and', 'of', 'to', 'a', 'in', 'for', 'on', 'due', 'module', 'week', 'with', 'your', 'post'])
 /** Words plus "word+number" ids such as quiz3, df4, module4, so Quiz 3 never matches Quiz 4. */
 function tokens(s: string): { words: Set<string>; ids: Map<string, string> } {
-  const raw = s.toLowerCase().replace(/([a-z])(\d)/g, '$1 $2').replace(/[^a-z0-9 ]+/g, ' ').split(/\s+/).filter(Boolean)
+  const raw = s.toLowerCase().replace(/([a-z])(\d)/g, '$1 $2').replace(/[^a-z0-9 ]+/g, ' ').split(/\s+/).filter(Boolean).map((w) => ALIAS[w] ?? w)
   const words = new Set<string>(), ids = new Map<string, string>()
   raw.forEach((w, i) => {
     if (/^\d+$/.test(w)) { const prev = raw[i - 1]; if (prev && /^[a-z]+$/.test(prev)) ids.set(prev, w); return }
@@ -99,6 +100,11 @@ export function courseFor(doc: Doc, ev: CalEvent): string | null {
   return null
 }
 
+/** Brightspace module pages ("MODULE 4 - Overview", "Instructions & Expectations") are not assignments. */
+export function isPageItem(title: string): boolean {
+  return /^(module\s*\d*\s*[-–—:]?\s*)?(overview|(module\s+)?instructions?\s*(&|and)\s*expectations)$/i.test(title.trim())
+}
+
 export type SyncItem = { uid: string; title: string; course: string | null; brightspaceDue: string }
 export type SyncPlan = {
   linked: { taskId: string; title: string; uid: string }[]
@@ -108,13 +114,13 @@ export type SyncPlan = {
   same: number
 }
 
-/** Matches calendar items to assignments and lists what would change. Only items from 7 days ago to 60 days ahead count. */
+/** Matches calendar items to assignments and lists what would change. Items from 7 days ago to 60 days ahead are matched; only new items due today or later are listed. A date Kody chose to keep (lms.keepDue) is not reported again. */
 export function planSync(doc: Doc, events: CalEvent[], today: string, timeZone: string): SyncPlan {
   // One item per uid-less title: prefer the "Due" event, then "Ends"; ignore "Starts".
   const items = new Map<string, SyncItem & { rank: number }>()
   for (const ev of events) {
     const { title, kind } = eventKind(ev.summary)
-    if (kind === 'start' || !title) continue
+    if (kind === 'start' || !title || isPageItem(title)) continue
     const due = localDate(ev.start, timeZone)
     if (!due || due < shift(today, -7) || due > shift(today, 60)) continue
     const course = courseFor(doc, ev)
@@ -138,24 +144,30 @@ export function planSync(doc: Doc, events: CalEvent[], today: string, timeZone: 
       if (best < 0.6) task = undefined
       if (task) plan.linked.push({ taskId: task.id, title: task.title, uid: it.uid })
     }
+    // New items already past due are almost always old work done before the tracker existed.
+    if (!task && it.brightspaceDue < today) continue
     if (!task) { plan.newItems.push({ uid: it.uid, title: it.title, course: it.course, brightspaceDue: it.brightspaceDue }); continue }
     used.add(task.id)
     if (!task.due) plan.filled.push({ taskId: task.id, title: task.title, due: it.brightspaceDue })
-    else if (task.due !== it.brightspaceDue) plan.changed.push({ taskId: task.id, title: task.title, trackerDue: task.due, brightspaceDue: it.brightspaceDue, uid: it.uid })
+    else if (task.due !== it.brightspaceDue && task.lms?.keepDue !== it.brightspaceDue) plan.changed.push({ taskId: task.id, title: task.title, trackerDue: task.due, brightspaceDue: it.brightspaceDue, uid: it.uid })
     else plan.same++
   }
   return plan
 }
 
 /** Applies a plan: always links and fills empty due dates; changes dates only for applyChanges uids; adds only addNew uids. */
-export function applySync(doc: Doc, plan: SyncPlan, opts: { applyChanges?: string[] | 'all'; addNew?: string[] | 'all' } = {}) {
+export function applySync(doc: Doc, plan: SyncPlan, opts: { applyChanges?: string[] | 'all'; addNew?: string[] | 'all'; keep?: string[] | 'all' } = {}) {
   const want = (list: string[] | 'all' | undefined, uid: string) => list === 'all' || (Array.isArray(list) && list.includes(uid))
   const tasks = doc.tasks.map((t) => ({ ...t }))
   const byId = new Map(tasks.map((t) => [t.id, t]))
-  const done = { linked: 0, filled: 0, changed: 0, added: 0 }
+  const done = { linked: 0, filled: 0, changed: 0, added: 0, kept: 0 }
   for (const l of plan.linked) { const t = byId.get(l.taskId); if (t) { t.lms = { uid: l.uid.slice(0, 300) }; done.linked++ } }
   for (const f of plan.filled) { const t = byId.get(f.taskId); if (t && !t.due) { t.due = f.due; done.filled++ } }
-  for (const c of plan.changed) { const t = byId.get(c.taskId); if (t && want(opts.applyChanges, c.uid)) { t.due = c.brightspaceDue; done.changed++ } }
+  for (const c of plan.changed) {
+    const t = byId.get(c.taskId); if (!t) continue
+    if (want(opts.applyChanges, c.uid)) { t.due = c.brightspaceDue; done.changed++ }
+    else if (want(opts.keep, c.uid)) { t.lms = { uid: (t.lms?.uid ?? c.uid).slice(0, 300), keepDue: c.brightspaceDue }; done.kept++ }
+  }
   for (const n of plan.newItems) {
     if (!want(opts.addNew, n.uid) || !n.course || tasks.length >= 300) continue
     tasks.push({ id: newId(), course: n.course, title: n.title.slice(0, 250), due: n.brightspaceDue, target: '', status: 'todo', submission: 'unconfirmed', notes: 'Added from the Brightspace calendar.', checklist: [], submissionRequired: true, lms: { uid: n.uid.slice(0, 300) } })
