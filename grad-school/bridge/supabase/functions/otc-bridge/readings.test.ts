@@ -91,3 +91,28 @@ test('attach refuses unknown assignments and full lists', () => {
   full.tasks[2].readings = Array.from({ length: 20 }, (_, i) => ({ id: 'r' + i, title: 'R' + i, path: `${U}/c/${i}.pdf` }))
   assert.throws(() => checkAttach(full, 'c', H('a')), /20 readings/)
 })
+
+import { cleanLink, findFinalFile, setFinalWork } from './readings.ts'
+
+test('final work: file, link and note, never touching submission or steps', () => {
+  const d = doc(); d.tasks[0].checklist = [{ id: 's', text: 'Write', done: true, planDate: '' }]
+  const a = setFinalWork(d, 'a', { file: { title: 'My paper', path: `${U}/a/final-1.pdf`, size: 5, sha256: H('d') }, link: 'https://youtu.be/x', note: 'Quiz 18/20' })
+  const t = a.doc.tasks[0]
+  assert.deepEqual(t.finalWork, { file: { title: 'My paper', path: `${U}/a/final-1.pdf`, size: 5, sha256: H('d') }, link: 'https://youtu.be/x', note: 'Quiz 18/20' })
+  assert.equal(t.submission, 'unconfirmed'); assert.equal(t.status, 'todo'); assert.deepEqual(t.checklist, d.tasks[0].checklist)
+  assert.equal(t.readings!.length, 2)
+  assert.equal(a.task.replaced, null)
+  const b = setFinalWork(a.doc, 'a', { file: { title: 'v2', path: `${U}/a/final-2.pdf`, size: 6, sha256: H('e') } })
+  assert.equal(b.task.replaced, `${U}/a/final-1.pdf`); assert.equal(b.doc.tasks[0].finalWork!.link, 'https://youtu.be/x')
+  assert.throws(() => setFinalWork(b.doc, 'a', { file: { title: 'same', path: `${U}/a/final-3.pdf`, size: 6, sha256: H('e') } }), /Already attached/)
+  const c = setFinalWork(b.doc, 'a', { clearFile: true, link: '', note: '' })
+  assert.equal(c.doc.tasks[0].finalWork, undefined); assert.equal(c.task.replaced, `${U}/a/final-2.pdf`); assert.equal(c.task.finalWork, null)
+})
+
+test('final work links must be http(s); lookups stay in the owner folder', () => {
+  assert.throws(() => cleanLink('javascript:alert(1)'), /http/)
+  assert.equal(cleanLink(' https://a.b/c '), 'https://a.b/c')
+  assert.throws(() => setFinalWork(doc(), 'zzz', { note: 'x' }), /No assignment/)
+  const d = doc(); d.tasks[0].finalWork = { file: { title: 'x', path: 'other/a/f.pdf' }, note: 'n' }
+  const f = findFinalFile(d, U, 'a'); assert.equal(f.file, null); assert.equal(f.note, 'n')
+})

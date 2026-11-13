@@ -107,7 +107,23 @@
 <div id="reading-list"></div>
 <div class="step-editor-actions"><label class="btn" id="reading-add"><input type="file" id="reading-file" accept="application/pdf,.pdf" multiple hidden>+ Attach PDF</label><span id="reading-status" class="reading-status" role="status" aria-live="polite"></span></div>
 </section>
+<section class="checklist-editor readings-editor docs-editor" aria-label="Outlines and scripts">
+<div class="checklist-editor-head"><strong>Outlines and scripts</strong><small>Paper outlines, video scripts and notes. ChatGPT can save these here for you.</small></div>
+<div id="doc-list"></div>
+<div class="step-editor-actions"><button type="button" class="btn" id="doc-new">+ New</button><span id="doc-status" class="reading-status" role="status" aria-live="polite"></span></div>
+</section>
+<section class="checklist-editor readings-editor final-editor" aria-label="Final work">
+<div class="checklist-editor-head"><strong>Final work</strong><small>What you turned in: the paper, a video link, or a quiz result. Adding it here does not mark it submitted.</small></div>
+<div id="final-file"></div>
+<div class="final-fields"><label>Link<input type="url" id="final-link" maxlength="500" placeholder="https:// video or document link"></label><label>Note<input type="text" id="final-note" maxlength="500" placeholder="e.g. Quiz 3: 18/20"></label></div>
+</section>
 <div class="form-actions"><button type="button" class="btn danger" id="delete-task" hidden>Delete</button><div class="right"><button type="button" class="btn" id="cancel-task">Cancel</button><button type="submit" class="btn primary">Save</button></div></div></form></dialog>
+<dialog id="doc-dialog" class="doc-dialog"><div class="modal-top"><h2 id="doc-heading">Outline</h2><button class="x" id="close-doc" type="button" aria-label="Close">×</button></div><form id="doc-form" class="formbody"><input type="hidden" id="doc-id"><input type="hidden" id="doc-task">
+<div class="fieldrow"><div class="field"><label for="doc-title">Title</label><input id="doc-title" maxlength="200" required placeholder="e.g. Chapter 7 paper outline"></div><div class="field"><label for="doc-kind">Type</label><select id="doc-kind"><option value="outline">Outline</option><option value="script">Video script</option><option value="notes">Notes</option><option value="draft">Draft</option><option value="other">Other</option></select></div></div>
+<div class="field"><label>PDF</label><div id="doc-file"></div></div>
+<div class="field"><label for="doc-body">Text <small class="muted-note">(optional if you attach a PDF)</small></label><textarea id="doc-body" class="doc-body" maxlength="200000" placeholder="Paste or write here"></textarea></div>
+<p class="reading-status" id="doc-meta"></p>
+<div class="form-actions"><button type="button" class="btn danger" id="doc-delete" hidden>Delete</button><div class="right"><button type="button" class="btn" id="doc-copy">Copy text</button><button type="button" class="btn" id="doc-cancel">Cancel</button><button type="submit" class="btn primary">Save</button></div></div></form></dialog>
 <dialog id="course-dialog"><div class="modal-top"><h2>Courses</h2><button class="x" id="close-courses" type="button" aria-label="Close">×</button></div><form class="formbody" id="course-form"><p class="importnote">These are saved in your private data, not in the site's code.</p><label class="byclass-toggle"><input type="checkbox" id="color-by-class"><span>Color everything by class<small>Each assignment, step, checkbox and progress bar takes its class's color.</small></span></label>
 <h3 class="course-group">First course</h3>
 <div class="field"><label for="course-a">Name or code</label><input id="course-a" required maxlength="100" placeholder="EDFR 6388"></div><div class="field"><label for="course-a-description">Full title</label><input id="course-a-description" maxlength="250" placeholder="Course title"></div><div class="field"><label for="course-a-instructor">Professor</label><input id="course-a-instructor" maxlength="150" placeholder="Professor name"></div><div class="field"><label id="course-a-color-label">Color</label><div class="swatches" role="radiogroup" aria-labelledby="course-a-color-label"><label class="cc-blue" title="Azure"><input type="radio" name="course-a-color" value="blue" aria-label="Azure"><span></span></label><label class="cc-teal" title="Seafoam"><input type="radio" name="course-a-color" value="teal" aria-label="Seafoam"><span></span></label><label class="cc-pink" title="Pink"><input type="radio" name="course-a-color" value="pink" aria-label="Pink"><span></span></label><label class="cc-orchid" title="Orchid"><input type="radio" name="course-a-color" value="orchid" aria-label="Orchid"><span></span></label><label class="cc-cobalt" title="Cobalt"><input type="radio" name="course-a-color" value="cobalt" aria-label="Cobalt"><span></span></label><label class="cc-orange" title="Orange (the original)"><input type="radio" name="course-a-color" value="orange" aria-label="Orange (the original)"><span></span></label></div></div>
@@ -171,7 +187,7 @@ const taskTemplates={
  discussion:['Read prompt and relevant materials','Draft response','Revise response','Post discussion response'],
  reading:['Read assigned material','Write notes / key takeaways']
 };
-function normalized(data){const o=emptyData();if(!data||!Array.isArray(data.tasks))return o;if(Array.isArray(data.courses)&&data.courses.length>=2){o.courses=data.courses.slice(0,2).map((x,i)=>({id:typeof x.id==='string'&&x.id?x.id:(i?'two':'one'),name:String(x.name||`Course 0${i+1}`).slice(0,100),description:String(x.description||'').slice(0,250),instructor:String(x.instructor||'').slice(0,150),color:COURSE_COLORS.includes(x.color)?x.color:(i?'teal':'blue')}));}o.tasks=data.tasks.slice(0,300).filter(t=>t&&t.title).map(t=>({id:String(t.id||uniqueId()),course:o.courses.some(c=>c.id===t.course)?t.course:o.courses[0].id,title:String(t.title).slice(0,250),due:/^\d{4}-\d{2}-\d{2}$/.test(t.due||'')?t.due:'',target:/^\d{4}-\d{2}-\d{2}$/.test(t.target||'')?t.target:'',status:['todo','inprogress','done'].includes(t.status)?t.status:'todo',submission:t.submission==='submitted'?'submitted':'unconfirmed',notes:String(t.notes||'').slice(0,2500),checklist:normalizedChecklist(t.checklist),submissionRequired:t.submissionRequired!==false,readings:normalizedReadings(t.readings)}));o.prefs={colorByClass:data.prefs?.colorByClass===true};const wc=data.weekCalendar||{};if(/^\d{4}-\d{2}-\d{2}$/.test(wc.anchorStart||'')&&Number.isInteger(wc.anchorNumber)&&wc.anchorNumber>0){o.weekCalendar={anchorStart:wc.anchorStart,anchorNumber:wc.anchorNumber}}return o}
+function normalized(data){const o=emptyData();if(!data||!Array.isArray(data.tasks))return o;if(Array.isArray(data.courses)&&data.courses.length>=2){o.courses=data.courses.slice(0,2).map((x,i)=>({id:typeof x.id==='string'&&x.id?x.id:(i?'two':'one'),name:String(x.name||`Course 0${i+1}`).slice(0,100),description:String(x.description||'').slice(0,250),instructor:String(x.instructor||'').slice(0,150),color:COURSE_COLORS.includes(x.color)?x.color:(i?'teal':'blue')}));}o.tasks=data.tasks.slice(0,300).filter(t=>t&&t.title).map(t=>({id:String(t.id||uniqueId()),course:o.courses.some(c=>c.id===t.course)?t.course:o.courses[0].id,title:String(t.title).slice(0,250),due:/^\d{4}-\d{2}-\d{2}$/.test(t.due||'')?t.due:'',target:/^\d{4}-\d{2}-\d{2}$/.test(t.target||'')?t.target:'',status:['todo','inprogress','done'].includes(t.status)?t.status:'todo',submission:t.submission==='submitted'?'submitted':'unconfirmed',notes:String(t.notes||'').slice(0,2500),checklist:normalizedChecklist(t.checklist),submissionRequired:t.submissionRequired!==false,readings:normalizedReadings(t.readings),finalWork:normalizedFinal(t.finalWork)}));o.prefs={colorByClass:data.prefs?.colorByClass===true};const wc=data.weekCalendar||{};if(/^\d{4}-\d{2}-\d{2}$/.test(wc.anchorStart||'')&&Number.isInteger(wc.anchorNumber)&&wc.anchorNumber>0){o.weekCalendar={anchorStart:wc.anchorStart,anchorNumber:wc.anchorNumber}}return o}
 function setSync(text,kind=''){const el=$('#sync-indicator');el.className='online '+(kind||'');$('#sync-label').textContent=text}
 function syncControls(mode=''){ $('#retry-save').hidden=mode!=='retry'; $('#reload-cloud').hidden=mode!=='conflict'; }
 
@@ -191,7 +207,7 @@ function taskHTML(t,i,clickTitle=false){
  const items=t.checklist||[],{total,done}=prepProgress(t),percentage=total?Math.round(100*done/total):0;
  const next=items.find(step=>!step.done)?.text;
  const steps=total?`<div class="step-progress"><strong>${done} of ${total} steps</strong><span class="step-next">${next?'Next: '+escapeHTML(next):'Every step done'}</span></div><div class="step-track"><span style="width:${percentage}%"></span></div><details class="task-checklist" data-checklist="${id}" ${openChecklistIds.has(t.id)?'open':''}><summary>${openChecklistIds.has(t.id)?'Hide steps':'Show steps'}</summary><div class="step-items">${items.map(step=>`<label class="step-entry"><input type="checkbox" data-step-task="${id}" data-step-id="${escapeHTML(step.id)}" ${step.done?'checked':''}><span>${escapeHTML(step.text)}</span></label>`).join('')}${t.submissionRequired===false?'':`<label class="step-entry submit-entry"><input type="checkbox" data-submit-check="${id}" ${t.submission==='submitted'?'checked':''}><span>Submitted in Brightspace</span></label>`}</div></details>`:'';
- const cc='cc-'+courseColor(c);return `<div class="mission-row ${cc}"><div class="mission-body">${clickTitle?`<button data-edit="${id}" class="mission-title ${isHandled(t)?'done':''}">${escapeHTML(t.title)}</button>`:`<div class="mission-title ${isHandled(t)?'done':''}">${escapeHTML(t.title)}</div>`}<div class="meta"><span class="tag ${cc}">${name}</span><span class="${d.cl}">${escapeHTML(d.text)}</span>${t.target?`<span>Aim for ${showDate(t.target)}</span>`:''}${t.submission==='submitted'?`<span class="is-submitted">Submitted</span>`:''}</div>${readingsHTML(t)}${steps}</div>${statusButtons(t)}</div>`;
+ const cc='cc-'+courseColor(c);return `<div class="mission-row ${cc}"><div class="mission-body">${clickTitle?`<button data-edit="${id}" class="mission-title ${isHandled(t)?'done':''}">${escapeHTML(t.title)}</button>`:`<div class="mission-title ${isHandled(t)?'done':''}">${escapeHTML(t.title)}</div>`}<div class="meta"><span class="tag ${cc}">${name}</span><span class="${d.cl}">${escapeHTML(d.text)}</span>${t.target?`<span>Aim for ${showDate(t.target)}</span>`:''}${t.submission==='submitted'?`<span class="is-submitted">Submitted</span>`:''}</div>${readingsHTML(t)}${docsHTML(t)}${finalWorkHTML(t)}${steps}</div>${statusButtons(t)}</div>`;
 }
 
 function plannedDayEntries(date){
@@ -283,6 +299,23 @@ function normalizedReadings(raw){
  if(!Array.isArray(raw))return [];
  return raw.slice(0,20).filter(r=>r&&typeof r.path==='string'&&r.path&&!r.path.includes('..')).map(r=>({id:String(r.id||uniqueId()).slice(0,100),title:String(r.title||'Reading').slice(0,180),path:r.path.slice(0,300),size:Number.isFinite(r.size)?r.size:0,...(/^[0-9a-f]{64}$/.test(r.sha256||'')?{sha256:r.sha256}:{})}));
 }
+function safeLink(v){const u=String(v||'').trim().slice(0,500);return /^https?:\/\/[^\s"'<>]+$/i.test(u)?u:''}
+function normalizedFinal(raw){
+ if(!raw||typeof raw!=='object')return undefined;
+ const f=raw.file&&typeof raw.file.path==='string'&&raw.file.path&&!raw.file.path.includes('..')?{title:String(raw.file.title||'Final work').slice(0,180),path:raw.file.path.slice(0,300),size:Number.isFinite(raw.file.size)?raw.file.size:0,...(/^[0-9a-f]{64}$/.test(raw.file.sha256||'')?{sha256:raw.file.sha256}:{})}:null;
+ const link=safeLink(raw.link),note=String(raw.note||'').trim().slice(0,500);
+ if(!f&&!link&&!note)return undefined;
+ return {...(f?{file:f}:{}),...(link?{link}:{}),...(note?{note}:{})};
+}
+const checkIcon='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>';
+function finalWorkHTML(t){
+ const f=t.finalWork;if(!f)return '';
+ const parts=[];
+ if(f.file)parts.push('<button type="button" class="reading-chip final-chip" data-open-reading="'+escapeHTML(f.file.path)+'" title="Open '+escapeHTML(f.file.title)+'">'+checkIcon+'<span>'+escapeHTML(f.file.title)+'</span></button>');
+ if(f.link)parts.push('<a class="reading-chip final-chip" href="'+escapeHTML(f.link)+'" target="_blank" rel="noopener noreferrer" title="'+escapeHTML(f.link)+'">'+checkIcon+'<span>Link</span></a>');
+ if(f.note)parts.push('<span class="final-note">'+escapeHTML(f.note)+'</span>');
+ return '<div class="reading-chips final-chips"><span class="final-label">Final work</span>'+parts.join('')+'</div>';
+}
 const pdfIcon='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5"/></svg>';
 function readingsHTML(t){
  const r=t.readings||[];if(!r.length)return '';
@@ -299,7 +332,80 @@ function removeStoredReadings(paths){
  if(!paths.length||!supabaseClient||!user)return;
  supabaseClient.storage.from(READING_BUCKET).remove(paths).catch(()=>{});
 }
-let draftReadings=[],draftNew=new Set(),draftRemoved=[],dialogSaved=false;
+// ---------- outlines and scripts (table otc_docs, owner-only) ----------
+const DOC_KINDS={outline:'Outline',script:'Video script',notes:'Notes',draft:'Draft',other:'Doc'};
+let docIndex=[],docsReady=false;
+async function loadDocs(){
+ if(!supabaseClient||!user){docIndex=[];docsReady=false;return}
+ const {data,error}=await supabaseClient.from('otc_docs').select('id,assignment_id,kind,title,author,updated_at,file_path').order('updated_at',{ascending:false});
+ if(error){docIndex=[];docsReady=false;return}
+ docIndex=data||[];docsReady=true;render();if($('#task-dialog').open)renderDocList();
+}
+function docsFor(id){return docIndex.filter(d=>d.assignment_id===id)}
+function docsHTML(t){
+ const d=docsFor(t.id);if(!d.length)return '';
+ return '<div class="reading-chips doc-chips">'+d.map(x=>'<button type="button" class="reading-chip doc-chip" data-open-doc="'+escapeHTML(x.id)+'" title="Open '+escapeHTML(x.title)+'"><b>'+escapeHTML(DOC_KINDS[x.kind]||'Doc')+'</b><span>'+escapeHTML(x.title)+'</span></button>').join('')+'</div>';
+}
+function renderDocList(msg){
+ const id=$('#task-id').value,off=!supabaseClient||!user;
+ const list=id?docsFor(id):[];
+ $('#doc-list').innerHTML=list.map(x=>'<div class="reading-row"><button type="button" class="reading-chip doc-chip" data-open-doc="'+escapeHTML(x.id)+'"><b>'+escapeHTML(DOC_KINDS[x.kind]||'Doc')+'</b><span>'+escapeHTML(x.title)+'</span></button><small>'+escapeHTML(x.author==='kody'?'':'by '+(x.author==='chatgpt'?'ChatGPT':'Claude')+' · ')+escapeHTML(showDate(String(x.updated_at).slice(0,10)))+'</small><button type="button" class="btn small" data-edit-doc="'+escapeHTML(x.id)+'">Edit</button></div>').join('')||'<p class="reading-empty">None yet.</p>';
+ $('#doc-new').disabled=off||!id;
+ $('#doc-status').textContent=msg!==undefined?msg:off?'Sign in to save outlines and scripts.':!id?'Save the assignment first.':!docsReady?'Run the outlines SQL in Supabase to turn this on.':'';
+}
+let docFile=null,docFileOld=null,docUploads=new Set(),docSaved=false;
+function renderDocFile(msg){
+ $('#doc-file').innerHTML=docFile?'<div class="reading-row"><button type="button" class="reading-chip" data-open-reading="'+escapeHTML(docFile.path)+'">'+pdfIcon+'<span>'+escapeHTML(docFile.name||'PDF')+'</span></button><small>'+(docFile.size?Math.max(1,Math.round(docFile.size/1024))+' KB':'')+'</small><button type="button" class="x" id="doc-file-remove" aria-label="Remove PDF" title="Remove">×</button></div>'
+  :'<div class="step-editor-actions"><label class="btn" id="doc-file-add"><input type="file" id="doc-file-input" accept="application/pdf,.pdf" hidden>+ Attach PDF</label><span class="reading-status" role="status" aria-live="polite">'+escapeHTML(msg||'')+'</span></div>';
+}
+async function uploadDocFile(f){
+ const taskId=$('#doc-task').value;if(!f||!supabaseClient||!user||!taskId)return;
+ if(f.type!=='application/pdf'&&!/\.pdf$/i.test(f.name)){renderDocFile(f.name+' is not a PDF.');return}
+ if(f.size>50*1024*1024){renderDocFile(f.name+' is over 50 MB.');return}
+ renderDocFile('Uploading '+f.name+'…');
+ let sha256='';try{sha256=[...new Uint8Array(await crypto.subtle.digest('SHA-256',await f.arrayBuffer()))].map(b=>b.toString(16).padStart(2,'0')).join('')}catch(e){}
+ const safe=f.name.replace(/\.pdf$/i,'').replace(/[^A-Za-z0-9._-]+/g,'-').slice(0,80)||'doc';
+ const path=user.id+'/'+taskId+'/doc-'+uniqueId().slice(0,8)+'-'+safe+'.pdf';
+ const {error}=await supabaseClient.storage.from(READING_BUCKET).upload(path,f,{contentType:'application/pdf',upsert:false});
+ if(error){renderDocFile('Upload failed: '+error.message);return}
+ docUploads.add(path);docFile={path,size:f.size,sha256,name:f.name.replace(/\.pdf$/i,'')};
+ if(!$('#doc-title').value.trim())$('#doc-title').value=docFile.name.slice(0,200);
+ renderDocFile();
+}
+async function openDoc(docId,taskId){
+ if(!supabaseClient||!user){alert('Sign in to open outlines and scripts.');return}
+ $('#doc-form').reset();docFile=null;docFileOld=null;docUploads=new Set();docSaved=false;$('#doc-id').value=docId||'';$('#doc-task').value=taskId||'';$('#doc-delete').hidden=!docId;$('#doc-meta').textContent='';
+ if(docId){
+  const {data,error}=await supabaseClient.from('otc_docs').select('*').eq('id',docId).maybeSingle();
+  if(error||!data){alert('Could not open it: '+(error?.message||'not found'));return}
+  $('#doc-task').value=data.assignment_id;$('#doc-title').value=data.title;if(data.file_path){docFile={path:data.file_path,size:data.file_size||0,sha256:data.file_sha256||'',name:data.title};docFileOld=data.file_path}$('#doc-kind').value=data.kind;$('#doc-body').value=data.body;
+  $('#doc-meta').textContent='Last saved '+new Date(data.updated_at).toLocaleString()+(data.author==='kody'?'':' by '+(data.author==='chatgpt'?'ChatGPT':'Claude'));
+ }
+ renderDocFile();$('#doc-heading').textContent=docId?(DOC_KINDS[$('#doc-kind').value]||'Doc'):'New outline or script';
+ $('#doc-dialog').showModal();
+}
+let draftReadings=[],draftNew=new Set(),draftRemoved=[],dialogSaved=false,draftFinal=null;
+function renderDraftFinal(msg){
+ const off=!supabaseClient||!user;
+ $('#final-file').innerHTML=draftFinal?'<div class="reading-row"><button type="button" class="reading-chip final-chip" data-open-reading="'+escapeHTML(draftFinal.path)+'">'+checkIcon+'<span>'+escapeHTML(draftFinal.title)+'</span></button><small>'+(draftFinal.size?Math.max(1,Math.round(draftFinal.size/1024))+' KB':'')+'</small><button type="button" class="x" id="final-remove" aria-label="Remove final work file" title="Remove">×</button></div>'
+  :'<div class="step-editor-actions"><label class="btn'+(off?' disabled':'')+'" id="final-add"><input type="file" id="final-input" accept="application/pdf,.pdf" hidden'+(off?' disabled':'')+'>+ Attach finished PDF</label><span class="reading-status" role="status" aria-live="polite">'+escapeHTML(msg!==undefined?msg:off?'Sign in to attach PDFs.':'')+'</span></div>';
+}
+async function uploadFinal(f){
+ const taskId=$('#task-id').value||$('#task-form').dataset.newId;
+ if(!f||!supabaseClient||!user||!taskId)return;
+ if(f.type!=='application/pdf'&&!/\.pdf$/i.test(f.name)){renderDraftFinal(f.name+' is not a PDF. Save it as a PDF first.');return}
+ if(f.size>50*1024*1024){renderDraftFinal(f.name+' is over 50 MB.');return}
+ renderDraftFinal('Uploading '+f.name+'…');
+ let sha256='';
+ try{sha256=[...new Uint8Array(await crypto.subtle.digest('SHA-256',await f.arrayBuffer()))].map(b=>b.toString(16).padStart(2,'0')).join('')}catch(e){}
+ const safe=f.name.replace(/\.pdf$/i,'').replace(/[^A-Za-z0-9._-]+/g,'-').slice(0,80)||'final';
+ const path=user.id+'/'+taskId+'/final-'+uniqueId().slice(0,8)+'-'+safe+'.pdf';
+ const {error}=await supabaseClient.storage.from(READING_BUCKET).upload(path,f,{contentType:'application/pdf',upsert:false});
+ if(error){renderDraftFinal('Upload failed: '+error.message);return}
+ draftNew.add(path);
+ draftFinal={title:f.name.replace(/\.pdf$/i,'').slice(0,180),path,size:f.size,...(sha256?{sha256}:{})};
+ renderDraftFinal();
+}
 function renderDraftReadings(msg){
  $('#reading-list').innerHTML=draftReadings.map(r=>'<div class="reading-row"><button type="button" class="reading-chip" data-open-reading="'+escapeHTML(r.path)+'">'+pdfIcon+'<span>'+escapeHTML(r.title)+'</span></button><small>'+(r.size?Math.max(1,Math.round(r.size/1024))+' KB':'')+'</small><button type="button" class="x" data-remove-reading="'+escapeHTML(r.id)+'" aria-label="Remove '+escapeHTML(r.title)+'" title="Remove">×</button></div>').join('')||'<p class="reading-empty">No readings attached.</p>';
  const off=!supabaseClient||!user;
@@ -415,6 +521,7 @@ function openTask(id){
  $('#task-id').value=t?.id||'';
  $('#task-form').dataset.newId=t?'':uniqueId();
  draftReadings=(t?.readings||[]).map(r=>({...r}));draftNew=new Set();draftRemoved=[];dialogSaved=false;renderDraftReadings();
+ draftFinal=t?.finalWork?.file?{...t.finalWork.file}:null;renderDraftFinal();renderDocList();$('#final-link').value=t?.finalWork?.link||'';$('#final-note').value=t?.finalWork?.note||'';
  $('#task-title').value=t?.title||'';
  $('#task-course').innerHTML=app.courses.map(c=>`<option value="${escapeHTML(c.id)}">${escapeHTML(c.name)}</option>`).join('');
  $('#task-course').value=t?.course||app.courses[0].id;
@@ -494,7 +601,7 @@ $('#task-form').addEventListener('submit',e=>{
  e.preventDefault();
  const id=$('#task-id').value||$('#task-form').dataset.newId||uniqueId(),old=app.tasks.find(x=>x.id===id);
  const checklist=$$('#task-step-editor .step-editor-row').map(row=>({id:row.dataset.stepId||uniqueId(),text:row.querySelector('[data-editor-text]').value.trim().slice(0,180),done:row.querySelector('[data-editor-done]').checked,planDate:row.querySelector('[data-editor-date]').value||''})).filter(s=>s.text);
- const t={id,course:$('#task-course').value,title:$('#task-title').value.trim(),due:$('#task-due').value,target:$('#task-target').value,status:$('#task-status').value,submission:$('#task-submission').value,notes:$('#task-notes').value.trim(),checklist,submissionRequired:$('#task-submission-required').checked,readings:draftReadings.map(r=>({...r}))};
+ const t={id,course:$('#task-course').value,title:$('#task-title').value.trim(),due:$('#task-due').value,target:$('#task-target').value,status:$('#task-status').value,submission:$('#task-submission').value,notes:$('#task-notes').value.trim(),checklist,submissionRequired:$('#task-submission-required').checked,readings:draftReadings.map(r=>({...r})),finalWork:normalizedFinal({file:draftFinal,link:$('#final-link').value,note:$('#final-note').value})};
  if(!t.title)return;
  if(!t.submissionRequired)t.submission='unconfirmed';
  updateStatusFromSteps(t);
@@ -503,11 +610,30 @@ $('#task-form').addEventListener('submit',e=>{
  dialogSaved=true;removeStoredReadings(draftRemoved);draftNew=new Set();draftRemoved=[];
  $('#task-dialog').close();makeChange();
 });
-$('#delete-task').addEventListener('click',()=>{const id=$('#task-id').value;if(!id)return;if(!confirm('Delete this assignment? This also deletes it from your synced dashboard.'))return;const gone=app.tasks.find(t=>t.id===id);dialogSaved=true;removeStoredReadings([...(gone?.readings||[]).map(r=>r.path),...draftNew]);draftNew=new Set();app.tasks=app.tasks.filter(t=>t.id!==id);$('#task-dialog').close();makeChange()});
+$('#delete-task').addEventListener('click',()=>{const id=$('#task-id').value;if(!id)return;if(!confirm('Delete this assignment? This also deletes it from your synced dashboard.'))return;const gone=app.tasks.find(t=>t.id===id);dialogSaved=true;removeStoredReadings([...(gone?.readings||[]).map(r=>r.path),...(gone?.finalWork?.file?[gone.finalWork.file.path]:[]),...draftNew]);draftNew=new Set();if(supabaseClient&&user&&docsFor(id).length){removeStoredReadings(docsFor(id).map(d=>d.file_path).filter(Boolean));supabaseClient.from('otc_docs').delete().eq('assignment_id',id).then(()=>loadDocs())}app.tasks=app.tasks.filter(t=>t.id!==id);$('#task-dialog').close();makeChange()});
 $('#cancel-task').onclick=$('#close-task').onclick=()=>$('#task-dialog').close();
 $('#task-dialog').addEventListener('close',()=>{if(!dialogSaved&&draftNew.size)removeStoredReadings([...draftNew]);draftNew=new Set();draftRemoved=[]});
+$('#final-file').addEventListener('change',e=>{if(e.target.id!=='final-input')return;const f=e.target.files?.[0];e.target.value='';uploadFinal(f)});
+$('#final-file').addEventListener('click',e=>{if(!e.target.closest('#final-remove')||!draftFinal)return;const p=draftFinal.path;draftFinal=null;if(draftNew.has(p)){draftNew.delete(p);removeStoredReadings([p])}else draftRemoved.push(p);renderDraftFinal('Removed. Save to keep this change.')});
 $('#reading-file').addEventListener('change',e=>{const files=Array.from(e.target.files||[]);e.target.value='';uploadReadings(files)});
 $('#reading-list').addEventListener('click',e=>{const b=e.target.closest('[data-remove-reading]');if(!b)return;const r=draftReadings.find(x=>x.id===b.dataset.removeReading);if(!r)return;draftReadings=draftReadings.filter(x=>x!==r);if(draftNew.has(r.path)){draftNew.delete(r.path);removeStoredReadings([r.path])}else draftRemoved.push(r.path);renderDraftReadings('Removed. Save to keep this change.')});
+document.addEventListener('click',e=>{const b=e.target.closest('[data-open-doc],[data-edit-doc]');if(!b)return;e.preventDefault();e.stopPropagation();if(b.dataset.editDoc){openDoc(b.dataset.editDoc);return}const d=docIndex.find(x=>x.id===b.dataset.openDoc);if(d?.file_path)openReading(d.file_path);else openDoc(b.dataset.openDoc)},true);
+$('#doc-file').addEventListener('change',e=>{if(e.target.id!=='doc-file-input')return;const f=e.target.files?.[0];e.target.value='';uploadDocFile(f)});
+$('#doc-file').addEventListener('click',e=>{if(!e.target.closest('#doc-file-remove')||!docFile)return;if(docUploads.has(docFile.path)){docUploads.delete(docFile.path);removeStoredReadings([docFile.path])}docFile=null;renderDocFile('Removed. Save to keep this change.')});
+$('#doc-dialog').addEventListener('close',()=>{if(!docSaved&&docUploads.size)removeStoredReadings([...docUploads]);docUploads=new Set()});
+$('#doc-new').onclick=()=>openDoc('',$('#task-id').value);
+$('#doc-cancel').onclick=$('#close-doc').onclick=()=>$('#doc-dialog').close();
+$('#doc-copy').onclick=async()=>{try{await navigator.clipboard.writeText($('#doc-body').value);$('#doc-meta').textContent='Copied.'}catch(e){$('#doc-body').select()}};
+$('#doc-kind').onchange=()=>{if($('#doc-id').value)$('#doc-heading').textContent=DOC_KINDS[$('#doc-kind').value]||'Doc'};
+$('#doc-form').addEventListener('submit',async e=>{e.preventDefault();
+ const id=$('#doc-id').value,row={title:$('#doc-title').value.trim().slice(0,200),kind:$('#doc-kind').value,body:$('#doc-body').value.slice(0,200000),file_path:docFile?.path||null,file_size:docFile?.size||null,file_sha256:/^[0-9a-f]{64}$/.test(docFile?.sha256||'')?docFile.sha256:null};
+ if(!row.title)return;
+ if(!row.body.trim()&&!row.file_path){$('#doc-meta').textContent='Attach a PDF or add some text.';return}
+ const q=id?supabaseClient.from('otc_docs').update(row).eq('id',id):supabaseClient.from('otc_docs').insert({...row,assignment_id:$('#doc-task').value,author:'kody'});
+ const {error}=await q;if(error){$('#doc-meta').textContent='Could not save: '+(/otc_docs|relation|schema cache/i.test(error.message)?'run the outlines SQL in Supabase first.':error.message);return}
+ docSaved=true;if(docFileOld&&docFileOld!==row.file_path)removeStoredReadings([docFileOld]);$('#doc-dialog').close();await loadDocs();renderDocList('Saved.');
+});
+$('#doc-delete').onclick=async()=>{const id=$('#doc-id').value;if(!id||!confirm('Delete this for good?'))return;const {error}=await supabaseClient.from('otc_docs').delete().eq('id',id);if(error){$('#doc-meta').textContent='Could not delete: '+error.message;return}removeStoredReadings([docFileOld,...docUploads].filter(Boolean));docUploads=new Set();docSaved=true;$('#doc-dialog').close();await loadDocs();renderDocList('Deleted.')};
 document.addEventListener('click',e=>{const b=e.target.closest('[data-open-reading]');if(!b)return;e.preventDefault();e.stopPropagation();openReading(b.dataset.openReading)},true);
 $('#edit-courses').onclick=()=>{$('#course-a').value=app.courses[0]?.name||'';$('#course-a-description').value=app.courses[0]?.description||'';$('#course-a-instructor').value=app.courses[0]?.instructor||'';$('#course-b').value=app.courses[1]?.name||'';$('#course-b-description').value=app.courses[1]?.description||'';$('#course-b-instructor').value=app.courses[1]?.instructor||'';['a','b'].forEach((k,j)=>{const v=courseColor(app.courses[j]);$$('[name="course-'+k+'-color"]').forEach(x=>x.checked=x.value===v)});$('#color-by-class').checked=app.prefs?.colorByClass===true;$('#course-dialog').showModal()};$('#close-courses').onclick=()=>$('#course-dialog').close();
 $('#course-form').addEventListener('submit',e=>{e.preventDefault();app.courses[0].name=$('#course-a').value.trim();app.courses[0].description=$('#course-a-description').value.trim();app.courses[0].instructor=$('#course-a-instructor').value.trim();app.courses[1].name=$('#course-b').value.trim();app.courses[1].description=$('#course-b-description').value.trim();app.courses[1].instructor=$('#course-b-instructor').value.trim();['a','b'].forEach((k,j)=>{const v=$('[name="course-'+k+'-color"]:checked')?.value;if(COURSE_COLORS.includes(v))app.courses[j].color=v});app.prefs={...(app.prefs||{}),colorByClass:$('#color-by-class').checked};$('#course-dialog').close();makeChange()});
@@ -529,7 +655,7 @@ async function loadRemote(force=false){
   const {data,error}=await supabaseClient.from('grad_profiles').select('data,revision,updated_at').eq('user_id',user.id).maybeSingle();
   if(error){setSync("Couldn't load",'bad');alert('Could not load your synced tasks: '+error.message);return false}
   app=normalized(data?.data||emptyData());remoteRevision=data?.revision??null;
-  dirty=false;conflict=false;syncControls();setSync('Saved','good');render();return true;
+  dirty=false;conflict=false;syncControls();setSync('Saved','good');render();loadDocs();return true;
 }
 async function persist(){
   if(preview){setSync('Preview, not saved');return}
