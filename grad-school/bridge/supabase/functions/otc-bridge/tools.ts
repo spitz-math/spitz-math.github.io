@@ -6,6 +6,8 @@ import { addAssignment, type Doc, emptyDoc, newId, trackerView, updateAssignment
 import { buildBriefing, suggestCatchUp } from './planning.ts'
 import { addReading, checkAttach, findFinalFile, findReading, isPdf, setFinalWork, MAX_CHARS, MAX_PDF_BYTES, pageSlice, READING_BUCKET, readingPath } from './readings.ts'
 import { extractText, getDocumentProxy } from 'npm:unpdf@^1.0.0'
+import { applySync, parseIcs, planSync } from './calendar.ts'
+import { queryTerms, score, snippets } from './search.ts'
 
 // Minimal shape of the user-scoped supabase-js client this file uses.
 // deno-lint-ignore no-explicit-any
@@ -97,12 +99,20 @@ export function bridgeHandler(supabase: Db, userId: string) {
   }
 
   // Text of each page of a PDF in the private readings bucket (downloaded as the user, so storage RLS applies).
+  // Text of each page of a PDF in the private readings bucket (downloaded as the user, so storage RLS applies).
+  // Extracted text is cached in otc_text (owner-only) so search and repeat reads are fast.
+  const joinPages = (pages: string[]) => pages.map((p, i) => `--- Page ${i + 1} ---\n${p.trim()}`).join('\n\n')
+  const splitPages = (body: string) => body.split(/\n*--- Page \d+ ---\n/).slice(1)
   async function pdfPages(path: string): Promise<string[]> {
+    const cached = await Promise.resolve(supabase.from('otc_text').select('body').eq('path', path).maybeSingle()).catch(() => ({ data: null }))
+    if (cached?.data?.body) return splitPages(cached.data.body)
     const { data, error } = await supabase.storage.from(READING_BUCKET).download(path)
     if (error || !data) throw new Error('Could not open the PDF: ' + (error?.message ?? 'file missing'))
     const pdf = await getDocumentProxy(new Uint8Array(await data.arrayBuffer()))
-    const { text: pages } = await extractText(pdf, { mergePages: false })
-    return pages as string[]
+    const { text } = await extractText(pdf, { mergePages: false })
+    const pages = text as string[]
+    await Promise.resolve(supabase.from('otc_text').upsert({ user_id: userId, path, body: joinPages(pages).slice(0, 600000), pages: pages.length })).catch(() => {})
+    return pages
   }
 
   const handler = createMcpHandler(() => {
@@ -418,6 +428,88 @@ export function bridgeHandler(supabase: Db, userId: string) {
       }
       const end = Math.min(body.length, fromChar + DOC_CHUNK)
       return text({ id: data.id, assignmentId: data.assignment_id, kind: data.kind, title: data.title, author: data.author, updatedAt: data.updated_at, hasPdf: Boolean(data.file_path), source, totalChars: body.length, fromChar, text: body.slice(fromChar, end), nextChar: end < body.length ? end : null })
+    })
+
+    // ---------- search across everything Kody saved ----------
+    server.registerTool('search_materials', {
+      title: 'Search readings, outlines and final work', annotations: ro,
+      description: 'Find where something appears across Kody\'s assignments (titles, notes, steps), reading PDFs, outlines/scripts/notes, and final work. Every word must match; use "quotes" for a phrase. Returns the assignment, where it was found, and short excerpts with page numbers. Follow up with read_reading, read_doc or read_final_work for the full text.',
+      inputSchema: z.object({
+        query: z.string().min(2).max(200),
+        limit: z.number().int().min(1).max(25).default(10),
+      }),
+    }, async ({ query, limit }) => {
+      try {
+        const terms = queryTerms(query)
+        if (!terms.length) throw new Error('Search for at least one word of 2+ letters.')
+        const { doc } = await load()
+        const titleOf = new Map(doc.tasks.map((t) => [t.id, t.title]))
+        type Hit = { assignment: string; assignmentId: string; source: string; title: string; ref: string; score: number; excerpts: { page: number | null; text: string }[] }
+        const hits: Hit[] = []
+        const add = (assignmentId: string, source: string, title: string, ref: string, text: string) => {
+          const sc = score(`${title}\n${text}`, terms)
+          if (sc) hits.push({ assignment: titleOf.get(assignmentId) ?? '(deleted assignment)', assignmentId, source, title, ref, score: sc, excerpts: snippets(text, terms) })
+        }
+        const pdfs: { path: string; assignmentId: string; source: string; title: string; ref: string }[] = []
+        for (const t of doc.tasks) {
+          add(t.id, 'assignment', t.title, t.id, [t.notes, ...t.checklist.map((x) => x.text), t.finalWork?.note ?? '', t.finalWork?.link ?? ''].join('\n'))
+          for (const r of t.readings ?? []) pdfs.push({ path: r.path, assignmentId: t.id, source: 'reading', title: r.title, ref: r.id })
+          if (t.finalWork?.file) pdfs.push({ path: t.finalWork.file.path, assignmentId: t.id, source: 'final work', title: t.finalWork.file.title, ref: t.id })
+        }
+        const { data: docs } = await supabase.from('otc_docs').select('id,assignment_id,kind,title,body,file_path')
+        for (const d of docs ?? []) {
+          if (d.body) add(d.assignment_id, d.kind, d.title, d.id, d.body)
+          if (d.file_path) pdfs.push({ path: d.file_path, assignmentId: d.assignment_id, source: d.kind + ' (PDF)', title: d.title, ref: d.id })
+        }
+        const { data: cache } = await supabase.from('otc_text').select('path,body')
+        const cached = new Map<string, string>((cache ?? []).map((c: { path: string; body: string }) => [c.path, c.body]))
+        let indexedNow = 0
+        for (const p of pdfs) {
+          if (!cached.has(p.path) && indexedNow < 3 && p.path.startsWith(userId + '/')) {
+            indexedNow++
+            try { cached.set(p.path, joinPages(await pdfPages(p.path))) } catch { cached.set(p.path, '') /* missing or unreadable file: skip it */ }
+          }
+          const body = cached.get(p.path)
+          if (body) add(p.assignmentId, p.source, p.title, p.ref, body)
+        }
+        const notIndexed = pdfs.filter((p) => !cached.has(p.path)).length
+        hits.sort((a, b) => b.score - a.score)
+        return text({ query, results: hits.slice(0, limit).map(({ score: _s, ...h }) => h), total: hits.length, ...(notIndexed ? { note: `${notIndexed} PDF(s) not searched yet; run the search again to include them.` } : {}) })
+      } catch (e) { return fail(e) }
+    })
+
+    // ---------- Brightspace calendar sync ----------
+    server.registerTool('sync_brightspace', {
+      title: 'Sync with the Brightspace calendar',
+      description: 'Read Kody\'s private Brightspace calendar feed (saved on the site under Courses > Brightspace calendar) and compare it with the tracker. Always: links matching assignments and fills EMPTY due dates from Brightspace. Only when asked: applyChanges (uids from changed, or "all") replaces Kody\'s due dates with Brightspace\'s; addNew (uids from newItems, or "all") adds new assignments. Never changes steps, targets, finished or submitted. Ask Kody before applying changes or adding items.',
+      inputSchema: z.object({
+        today: z.string().describe('User-local date YYYY-MM-DD'),
+        applyChanges: z.union([z.literal('all'), z.array(z.string())]).optional(),
+        addNew: z.union([z.literal('all'), z.array(z.string())]).optional(),
+      }),
+    }, async ({ today, applyChanges, addNew }) => {
+      try {
+        if (!/^\d{4}-\d{2}-\d{2}$/.test(today)) throw new Error('today must be YYYY-MM-DD')
+        const { data: st, error: e0 } = await supabase.from('otc_settings').select('brightspace_feed,time_zone').maybeSingle()
+        if (e0) throw new Error('Could not read settings: ' + e0.message)
+        if (!st?.brightspace_feed) throw new Error('No Brightspace calendar link saved yet. On the site: Courses > Brightspace calendar.')
+        const res = await fetch(st.brightspace_feed.replace(/^webcal:/i, 'https:'), { redirect: 'follow' })
+        if (!res.ok) throw new Error(`Brightspace calendar returned HTTP ${res.status}. The link may have been reset; copy a new one from Brightspace.`)
+        const ics = (await res.text()).slice(0, 5_000_000)
+        if (!ics.includes('BEGIN:VCALENDAR')) throw new Error('That link did not return a calendar.')
+        const tz = st.time_zone || 'America/Chicago'
+        const out = await change((d) => {
+          const plan = planSync(d, parseIcs(ics), today, tz)
+          const applied = applySync(d, plan, { applyChanges, addNew })
+          return { doc: applied.doc, task: { plan, applied: applied.task } }
+        })
+        const { plan, applied } = out
+        const pendingChanges = plan.changed.filter((c) => !(applyChanges === 'all' || applyChanges?.includes(c.uid)))
+        const pendingNew = plan.newItems.filter((n) => !(addNew === 'all' || addNew?.includes(n.uid)))
+        const summary = { at: new Date().toISOString(), today, filled: plan.filled, applied, changed: pendingChanges, newItems: pendingNew, same: plan.same }
+        await Promise.resolve(supabase.from('otc_settings').update({ last_sync: summary }).eq('user_id', userId)).catch(() => {})
+        return text({ ...summary, howTo: pendingChanges.length || pendingNew.length ? 'Show Kody the changed dates and new items. Apply only what Kody approves: call again with applyChanges / addNew uids.' : 'Everything matches Brightspace.' })
+      } catch (e) { return fail(e) }
     })
 
     server.registerTool('add_assignment', {
