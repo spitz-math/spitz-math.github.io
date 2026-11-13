@@ -4,6 +4,10 @@
   "shift": [
    "gr",
    "ne"
+  ],
+  "evalf": [
+   "graph",
+   "table"
   ]
  },
  "assign": [],
@@ -14,10 +18,13 @@
    },
    {
     "id": "solve"
+   },
+   {
+    "id": "evalf"
    }
   ],
   "note": ""
  },
  "bonus": 25,
- "updated": "2026-11-09T18:13:10.287Z"
+ "updated": "2026-11-13T13:44:39.275Z"
 }
