@@ -354,7 +354,9 @@ dialog[open]{animation:dialog-in .2s ease-out}
 .next-panel{margin-top:16px}
 .rail .panel+.panel{margin-top:16px}
 .course-panel .note{margin-top:16px}
-.today-grid{gap:20px}
+.today-grid{gap:32px;align-items:stretch}
+.today-main,.rail{position:relative;min-width:0}
+.rail::before{content:"";position:absolute;top:0;bottom:0;left:-16px;width:1px;background:var(--divider,rgba(255,255,255,.06))}
 #today-checklist>section:last-child{margin-bottom:0}
 
 /* At a glance: plan vs official dates vs waiting to submit */
@@ -419,9 +421,10 @@ dialog[open]{animation:dialog-in .2s ease-out}
 .due-empty{margin:0;font-size:13px;color:var(--faint)}
 
 @media (min-width:1600px){
-  .today-grid{grid-template-columns:minmax(0,1fr) 320px;gap:20px}
-  .glance{grid-template-columns:minmax(0,1fr) minmax(0,1fr) 320px;gap:20px}
-  .today-main{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);column-gap:20px;align-items:start}
+  .today-grid{grid-template-columns:minmax(0,1fr) 320px;gap:32px}
+  .glance{grid-template-columns:minmax(0,1fr) minmax(0,1fr) 320px;gap:32px}
+  .today-main{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);column-gap:32px;align-items:start}
+  .today-main::before{content:"";position:absolute;top:0;bottom:0;left:50%;width:1px;background:var(--divider,rgba(255,255,255,.06))}
   .today-main #today-checklist{grid-column:1}
   .today-main .next-panel{grid-column:2;grid-row:1;margin-top:0}
 }
@@ -435,6 +438,7 @@ dialog[open]{animation:dialog-in .2s ease-out}
   .glance-tile small{text-align:right}
   .today-grid{display:flex;flex-direction:column;align-items:stretch}
   .today-main,.rail{display:contents}
+  .rail::before,.today-main::before{display:none}
   #today-checklist{order:1}
   .due-panel{order:2}
   .next-panel{order:3}
