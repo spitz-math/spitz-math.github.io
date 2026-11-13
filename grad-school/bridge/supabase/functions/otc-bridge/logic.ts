@@ -8,6 +8,7 @@ export type Task = {
   id: string; course: string; title: string; due: string; target: string;
   status: 'todo' | 'inprogress' | 'done'; submission: 'unconfirmed' | 'submitted';
   notes: string; checklist: Step[]; submissionRequired: boolean;
+  readings?: { id: string; title: string; path: string; size?: number }[];
 };
 export type Course = { id: string; name: string; description?: string; instructor?: string; color?: string };
 export type Doc = { version: number; courses: Course[]; tasks: Task[]; [k: string]: unknown };
@@ -139,6 +140,7 @@ export function trackerView(doc: Doc, q: TrackerQuery = {}) {
       due: t.due || (t.submissionRequired ? 'not verified' : 'none'), target: t.target,
       finished: t.status, submitted: t.submission === 'submitted', submissionRequired: t.submissionRequired,
       notes: t.notes, steps: t.checklist.map((s) => ({ id: s.id, text: s.text, done: s.done, planDate: s.planDate })),
+      readings: (t.readings ?? []).map((r) => r.title),
     })),
   };
 }
