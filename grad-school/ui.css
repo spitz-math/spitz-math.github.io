@@ -158,6 +158,13 @@ h1{font:800 32px/1.15 var(--fd);margin:0;text-wrap:balance}
 .disc-core strong{font:800 26px/1 var(--fd);font-variant-numeric:tabular-nums}
 .disc-core small{font-size:12px;color:var(--muted)}
 #progress-caption{font-style:normal;font-size:13px;color:var(--muted);max-width:170px}
+@media (min-width:900px){
+  .ring{grid-auto-flow:column;align-items:center;justify-items:start;gap:14px;text-align:left}
+  .ring-dial{width:84px;height:84px}
+  .ring-dial::before{inset:7px}
+  .disc-core strong{font-size:22px}
+  #progress-caption{max-width:140px}
+}
 
 .today-grid{display:grid;grid-template-columns:minmax(0,1fr) 320px;gap:20px;align-items:start}
 .block-head{display:flex;align-items:baseline;gap:12px;margin:32px 0 8px}
@@ -470,10 +477,6 @@ dialog[open]{animation:dialog-in .2s ease-out}
   .glance-tile{position:relative}
   .glance-tile+.glance-tile::before{content:"";position:absolute;top:-1px;bottom:-17px;left:-17px;width:1px;background:var(--line-c)}
   .today-head{position:relative}
-  .today-copy{max-width:calc((100% - 384px) / 2)}
-  .today-head::before,.today-head::after{content:"";position:absolute;top:-32px;bottom:-32px;width:1px;background:var(--divider-in);pointer-events:none}
-  .today-head::before{left:calc((100% - 384px) / 2 + 16px)}
-  .today-head::after{left:calc(100% - 336px)}
   .today-main::before{content:"";position:absolute;top:-16px;bottom:0;left:50%;width:1px;background:var(--divider)}
   .today-main #today-checklist{grid-column:1}
   .today-main .next-panel{grid-column:2;grid-row:1;margin-top:0}
