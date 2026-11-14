@@ -146,6 +146,7 @@ body.dn-big .dn-arena, body.dn-shrink .dn-arena{ z-index:41; }
 .dn-cp.have{ opacity:1; background:color-mix(in srgb,var(--pc) 30%,#0F1324); }
 .dn-co.big{ justify-content:center; gap:12px; } .dn-co.big .dn-cp{ width:52px; height:52px; font-size:30px; border-width:4px; }
 .dn-lv2{ font:800 15px/1 var(--body); color:var(--muted); }
+.dn-card .ic, .dn-bi .ic{ position:relative; } .dn-ic2{ position:absolute; right:-.12em; bottom:-.06em; font-size:.55em; font-style:normal; line-height:1; filter:drop-shadow(0 0 2px #0A0B16) drop-shadow(0 0 2px #0A0B16); }
 .dn-card .cb{ font:700 19px/1.25 var(--body); color:#C9B2FF; margin-top:auto; padding-top:6px; text-align:center; }
 .dn-card.evo{ border-color:#B56BFF; background:linear-gradient(180deg,#3A2466,#1B1530); box-shadow:0 10px 0 #4A2A80, 0 0 44px rgba(181,107,255,.35); }
 .dn-card.evo .k{ background:#B56BFF; color:#fff; } .dn-card.evo .lv{ color:#E0C8FF; }
@@ -1505,7 +1506,7 @@ var SYN=[
   {id:'overcharge',ic:'🌩️', n:'Overcharge',      need:[['volatile',1],['spark',1]], d:'Explosions sometimes send out lightning that jumps to 2 enemies'},
   {id:'tempest',   ic:'🌀', n:'Tempest',         need:[['orbit',1],['spark',1]], d:'+1 orbit blade, and blades zap a second enemy'},
   {id:'shrapnel',  ic:'☄️', n:'Shrapnel',        need:[['volatile',1],['ricochet',1]], d:'Explosions throw 2 bouncing shards'},
-  {id:'tcharge',   ic:'🐂', n:'Thunder Charge',  need:[['bash',1],['spark',1]],  d:'Every enemy you bash sends lightning to 3 more'},
+  {id:'tcharge',   ic:'🛡️', ic2:'⚡', n:'Thunder Charge',  need:[['bash',1],['spark',1]],  d:'Every enemy you bash sends lightning to 3 more'},
   {id:'spite',     ic:'💢', n:'Spite Blast',     need:[['thorns',1],['volatile',1]], d:'Enemies that hit you explode'},
   {id:'thunder',   ic:'⛈️', n:'Thunder Guard',   need:[['aegis',1],['spark',1]], d:'Dodging or blocking strikes 4 nearby enemies with lightning'},
   {id:'stormcall', ic:'⚔️', n:'Storm Blade',     need:[['wave',1],['spark',1]],  d:'Sword waves call lightning down on the first enemy they hit'},
@@ -1708,7 +1709,8 @@ function update(dt){ var w=S.w, p=w.p, s=stat(), i, e;
     if(cd<p.r+8){ w.coinsF.splice(i,1); w.coins++; SND.coin(); } }
   for(i=w.hearts.length-1;i>=0;i--){ var h=w.hearts[i]; h.t+=dt; if(Math.hypot(p.x-h.x,p.y-h.y)<p.r+12&&p.hp<p.max){ p.hp++; w.hearts.splice(i,1); SND.chest(); w.fx.push({k:'txt',x:p.x,y:p.y-30,t:0,v:'+1 ♥',c:'#FF6B86'}); } else if(h.t>14) w.hearts.splice(i,1); }
   /* chests */
-  if(w.chest&&!w.chest.open&&Math.hypot(p.x-w.chest.x,p.y-w.chest.y)<p.r+18){ w.chest.open=true; SND.chest(); var gold=w.chest.type==='gold'; w.coins+=gold?10:6; toast('+'+(gold?10:6)+' coins'); openPick(gold?'gold':'chest',3,gold?1:0.3); return; }
+  if(w.chest&&!w.chest.arm&&Math.hypot(p.x-w.chest.x,p.y-w.chest.y)>p.r+34) w.chest.arm=1;
+  if(w.chest&&!w.chest.open&&w.chest.arm&&w.pend<=0&&Math.hypot(p.x-w.chest.x,p.y-w.chest.y)<p.r+18){ w.chest.open=true; SND.chest(); var gold=w.chest.type==='gold'; w.coins+=gold?10:6; toast('+'+(gold?10:6)+' coins'); openPick(gold?'gold':'chest',3,gold?1:0.3); return; }
   var sc=w.secretChest; if(sc&&w.secretOpen&&!sc.open&&Math.hypot(p.x-sc.x,p.y-sc.y)<p.r+18){ sc.open=true; SND.chest(); w.coins+=10; p.hp=p.max; toast('Secret treasure! +10 coins, full hearts'); openPick('secret',3,0.5); return; }
   stepFx(dt);
   /* banked level-ups get answered at the end of the fight, never in the middle of it */
@@ -1923,11 +1925,12 @@ var PATHN={blade:'Blade',storm:'Storm',bulwark:'Bulwark',any:'Extra'};
 /* every family has one color everywhere: cards, combo chips and the build list */
 var PATHC={blade:'#FF5A5A',storm:'#4FB4FF',bulwark:'#5BE88A',any:'#FF8AC8'};
 function pc(id){ return PATHC[UPI[id].path]; }
+function ICON(u){ return u.ic+(u.ic2?'<i class="dn-ic2">'+u.ic2+'</i>':''); }
 function chip(id,have){ return '<span class="dn-cp'+(have?' have':'')+'" style="--pc:'+pc(id)+'">'+UPI[id].ic+'</span>'; }
 function famTag(path){ return '<span class="dn-fam" style="--pc:'+PATHC[path]+'">'+PATHN[path]+'</span>'; }
 /* the combos a power can make: partner chip -> synergy, owned partners first */
 function comboHTML(id){ var rows=synFor(id).filter(function(u){ return !HAS(u.id); }).map(function(s){ var others=s.need.filter(function(q){ return q[0]!==id; }), have=others.length&&others.every(function(q){ return L(q[0])>=q[1]; });
-    return {have:have, h:'<div class="dn-co'+(have?' have':'')+'">'+(others.length?others.map(function(q){ return chip(q[0],L(q[0])>=q[1]); }).join(''):'<span class="dn-lv2">Lv '+s.need[0][1]+'</span>')+'<span class="ar">→</span><span class="sn">'+s.ic+' '+s.n+'</span>'+(have?'<b>READY</b>':'')+'</div>'}; });
+    return {have:have, h:'<div class="dn-co'+(have?' have':'')+'">'+(others.length?others.map(function(q){ return chip(q[0],L(q[0])>=q[1]); }).join(''):'<span class="dn-lv2">Lv '+s.need[0][1]+'</span>')+'<span class="ar">→</span><span class="sn">'+s.ic+(s.ic2||'')+' '+s.n+'</span>'+(have?'<b>READY</b>':'')+'</div>'}; });
   if(!rows.length) return ''; rows.sort(function(a,b){ return b.have-a.have; });
   return '<div class="dn-combos"><div class="t">Combos with</div>'+rows.slice(0,3).map(function(r){ return r.h; }).join('')+'</div>'; }
 function showPick(){ var why=S.pickWhy;
@@ -1935,7 +1938,7 @@ function showPick(){ var why=S.pickWhy;
   $('dn-picknote').textContent=(!S.w.picks?'No choosing this one. Build around it, or fight against it. ':S.cards.some(function(c){ return c.syn; })?'A synergy is ready! ':why==='level'&&S.cards.length<3?'Two misses give fewer cards. ':'')+'Press '+(S.cards.length>1?'1'+(S.cards.length>2?', 2 or 3':' or 2'):'1')+', or click a card.';
   $('dn-cards').innerHTML=S.cards.map(function(c,i){ if(c.id==='snack') return '<button class="dn-card" data-i="'+i+'"><span class="k">'+(i+1)+'</span><span class="ic">🍎</span><span class="n">Snack</span><span class="lv">Everything maxed</span><span class="d">Heal to full</span></button>';
     var u=UPI[c.id];
-    if(u.syn) return '<button class="dn-card evo" data-i="'+i+'" style="--pc:'+pc(u.need[0][0])+';--pc2:'+pc(u.need[u.need.length-1][0])+'"><span class="k">'+(i+1)+'</span><span class="ic">'+u.ic+'</span><span class="n">'+u.n+'</span><span class="lv">Synergy</span><span class="dn-co big">'+u.need.map(function(q){ return chip(q[0],1); }).join('<span class="ar">+</span>')+'</span><span class="d">'+u.d+'</span></button>';
+    if(u.syn) return '<button class="dn-card evo" data-i="'+i+'" style="--pc:'+pc(u.need[0][0])+';--pc2:'+pc(u.need[u.need.length-1][0])+'"><span class="k">'+(i+1)+'</span><span class="ic">'+ICON(u)+'</span><span class="n">'+u.n+'</span><span class="lv">Synergy</span><span class="dn-co big">'+u.need.map(function(q){ return chip(q[0],1); }).join('<span class="ar">+</span>')+'</span><span class="d">'+u.d+'</span></button>';
     var l=L(c.id), to=Math.min(3,l+(c.gold?2:1)), cn=comboHTML(c.id);
     return '<button class="dn-card fam'+(c.gold?' gold':'')+'" data-i="'+i+'" style="--pc:'+PATHC[u.path]+'"><span class="k">'+(i+1)+'</span>'+famTag(u.path)+'<span class="ic">'+u.ic+'</span><span class="n">'+u.n+'</span><span class="lv">'+(c.gold?'Gold · ':'')+(l?'Lv '+l+' → '+(to>=3?'MAX':to):'New'+(to>1?' · Lv '+to:''))+'</span><span class="d">'+u.d(to)+'</span>'+cn+'</button>'; }).join('');
   $('dn-pick').hidden=false; }
@@ -2180,7 +2183,7 @@ var hudAt=0, hudSc=-1, hudStr='';
 function hud(force){ var w=S.w, n=0, t=performance.now(); if(!force&&t-hudAt<160) return; hudAt=t; if(w) for(var k in w.seen) n++; if(S.score!==hudSc){ hudSc=S.score; hudStr=S.score.toLocaleString(); } hset('dn-score',hudStr); hset('dn-coins',w?w.coins:0); hset('dn-roomc',n+' / 8'); hset('dn-streak',S.streak); }
 function renderBuild(){ var w=S.w, held=w?UP.concat(SYN).filter(function(u){ return L(u.id)>0; }):[];
   function row(u){ var l=w.b[u.id];
-    return '<div class="dn-bi'+(u.syn||l>=3?' max':'')+(u.syn?' evo':'')+'" style="--pc:'+(u.syn?pc(u.need[0][0]):PATHC[u.path])+';--pc2:'+(u.syn?pc(u.need[u.need.length-1][0]):PATHC[u.path])+'"><span class="ic">'+u.ic+'</span><span class="nm">'+u.n+'</span><span class="dn-pips">'+(u.syn?'<b>SYNERGY</b>':[1,2,3].map(function(k){ return '<span class="'+(k<=l?'on':'')+'"></span>'; }).join('')+(synFor(u.id).some(synReady)?'<b>✦</b>':''))+'</span></div>'; }
+    return '<div class="dn-bi'+(u.syn||l>=3?' max':'')+(u.syn?' evo':'')+'" style="--pc:'+(u.syn?pc(u.need[0][0]):PATHC[u.path])+';--pc2:'+(u.syn?pc(u.need[u.need.length-1][0]):PATHC[u.path])+'"><span class="ic">'+ICON(u)+'</span><span class="nm">'+u.n+'</span><span class="dn-pips">'+(u.syn?'<b>SYNERGY</b>':[1,2,3].map(function(k){ return '<span class="'+(k<=l?'on':'')+'"></span>'; }).join('')+(synFor(u.id).some(synReady)?'<b>✦</b>':''))+'</span></div>'; }
   if(!held.length){ $('dn-buildlist').innerHTML='<div class="dn-empty">Clear the Entry Hall and the keep deals your first power. Build around it or fight it. Mix two powers to unlock a synergy.</div>'; return; }
   var groups={blade:[],storm:[],bulwark:[],any:[],syn:[]}; held.forEach(function(u){ groups[u.syn?'syn':u.path].push(u); });
   $('dn-buildlist').innerHTML=[['blade','Blade'],['storm','Storm'],['bulwark','Bulwark'],['any','Extras'],['syn','Synergies']].filter(function(g){ return groups[g[0]].length; }).map(function(g){ return '<div class="dn-bh" style="color:'+(PATHC[g[0]]||'#C9B2FF')+'">'+g[1]+'</div>'+groups[g[0]].map(row).join(''); }).join(''); }
@@ -2197,7 +2200,7 @@ function endRun(win){ S.over=true; S.win=!!win; HELD={}; clearTimeout(nextT); if
 function showEnd(celebrate){ var w=S.w; endShownAt=performance.now();
   $('dn-endtitle').textContent=S.win?(w&&w.lastDone?'Victory! You beat the Warden AND escaped the Last Stand!':'Victory! The Warden is beaten. You fell in the Last Stand at '+clock(w?w.lastT:0)+'.'):'Defeated in the '+(w?ROOMS[w.rid].name:'castle')+'.';
   $('dn-endname').textContent=S.name; $('dn-endscore').innerHTML=S.score.toLocaleString()+'<small>points</small>';
-  var acc=S.answered?Math.round(100*S.correct/S.answered):0, bl=w?UP.concat(SYN).filter(function(u){ return L(u.id)>0; }):[], build=bl.map(function(u){ return u.ic; }).join(bl.length>18?'':' ');
+  var acc=S.answered?Math.round(100*S.correct/S.answered):0, bl=w?UP.concat(SYN).filter(function(u){ return L(u.id)>0; }):[], build=bl.map(function(u){ return u.ic+(u.ic2||''); }).join(bl.length>18?'':' ');
   var ls=w&&w.won?(w.lastDone?'2:00 ✓':clock(w.lastT||0)):'—';
   $('dn-endstats').innerHTML=[['Enemies',w?w.kills:0],['Best combo',w?w.bestCombo||0:0],['Flawless',w?w.flawless||0:0],['Last Stand',ls],['Correct',S.correct+' / '+S.answered],['Accuracy',acc+'%'],['Time',w?clock(w.runT):'0:00']].map(function(a){ return '<div class="dn-stat"><div class="l">'+a[0]+'</div><div class="v">'+a[1]+'</div></div>'; }).join('')
     +'<div class="dn-stat dn-buildrow"><div class="l">Build</div><div class="v"'+(bl.length>18?' style="font-size:'+Math.max(17,Math.round(30*18/bl.length))+'px;letter-spacing:1px"':'')+'>'+(build||'—')+'</div></div>';
