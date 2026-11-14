@@ -166,18 +166,22 @@ body.dn-big .dn-arena, body.dn-shrink .dn-arena{ z-index:41; }
 .dn-box{ width:1300px; }
 /* title screen: the art is the backdrop (it carries the logo), the menu sits in the open middle */
 .dn-title{ background:#0A0816 center/cover no-repeat; place-items:start center; }
-.dn-title .dn-box{ width:900px; margin-top:392px; padding:20px 30px 18px; border-radius:22px; background:rgba(12,9,26,.82); border:3px solid rgba(156,123,255,.45); box-shadow:0 18px 50px rgba(0,0,0,.5); }
+.dn-title .dn-box{ width:900px; margin-top:376px; padding:18px 30px 16px; border-radius:22px; background:rgba(12,9,26,.82); border:3px solid rgba(156,123,255,.45); box-shadow:0 18px 50px rgba(0,0,0,.5); }
 .dn-title .sz-eyebrow{ margin-bottom:6px; }
 .dn-title .dn-sub{ font-size:23px; margin:4px 0 14px; color:#D9DEF7; }
-.dn-title .dn-steps{ gap:12px; margin-bottom:14px; }
-.dn-title .dn-step{ font-size:17px; padding:12px 12px 12px 14px; background:rgba(21,26,46,.92); border-width:2px; }
+.dn-title .dn-steps{ gap:12px; margin-bottom:12px; }
+.dn-title .dn-step{ font-size:17px; padding:10px 12px 10px 14px; background:rgba(21,26,46,.92); border-width:2px; }
 .dn-title .dn-step b{ font-size:26px; margin-bottom:4px; }
-.dn-title .dn-row{ margin-bottom:16px; }
+.dn-title .dn-row{ margin-bottom:12px; }
 .dn-title .dn-input{ height:70px; width:480px; font-size:28px; padding:0 22px; }
 .dn-title .sz-mus{ height:70px; }
 .dn-title .dn-go{ height:80px; }
 .dn-title .dn-go:focus-visible, .dn-title .dn-input:focus-visible, .dn-title .sz-mus:focus-visible, .dn-skip:focus-visible{ outline:5px solid var(--gold); outline-offset:4px; }
-.dn-title .dn-keyline{ margin-top:12px; font-size:18px; color:#C3C9E6; }
+.dn-title .dn-keyline{ margin-top:10px; font-size:18px; color:#C3C9E6; }
+/* the shared keys card (kit.js), a little smaller so it fits under the logo art */
+.dn-title .sz-ctl{ gap:10px 34px; margin:0 0 12px; } .dn-title .sz-ctl kbd{ min-width:48px; height:48px; font-size:23px; } .dn-title .sz-ctl kbd.wide{ min-width:150px; } .dn-title .sz-ctl kbd.mid{ min-width:92px; font-size:20px; }
+.dn-title .sz-ctl .t{ grid-template-columns:repeat(3,34px); grid-auto-rows:34px; } .dn-title .sz-ctl .t kbd{ min-width:34px; height:34px; font-size:18px; } .dn-title .sz-ctl .l{ font:800 21px/1.1 var(--body); }
+.dn-title .sz-meta{ font-size:17px; padding:6px 16px; } .dn-title .sz-meta kbd{ height:26px; min-width:26px; font-size:14px; }
 .dn-title > .dn-credit{ background:rgba(12,9,26,.8); padding:10px 16px; border-radius:12px; color:#D9DEF7; }
 #dn-rotate{ display:none; }
 @media (orientation:portrait) and (max-width:760px){ #dn-rotate{ display:block; position:fixed; left:16px; right:16px; bottom:24px; z-index:50; padding:14px 16px; border-radius:14px; background:#151A2E; border:2px solid #2E3760; color:#F3F5FF; font:600 17px/1.35 var(--body); text-align:center; } }
@@ -271,13 +275,13 @@ body.dn-cine .dn-top, body.dn-cine .dn-side{ opacity:0; pointer-events:none; tra
     <div class="sz-eyebrow">Spitz <b>Arcade</b></div>
     <p class="dn-sub"><span class="sz-setname">Slope-intercept form.</span> Fight through The Crooked Keep, grow your powers, beat the Iron Warden. About 6 to 9 minutes.</p>
     <div class="dn-steps">
-      <div class="dn-step"><b>1. Fight</b>Arrows or WASD move. Space swings your sword. Shift rolls. Roll right as an attack lands for a Perfect dodge and a crit.</div>
+      <div class="dn-step"><b>1. Fight</b>Cut through the horde. Roll right as an attack lands for a Perfect dodge and a crit.</div>
       <div class="dn-step"><b>2. Answer</b>Gems fill your level bar. Questions after each room, at chests and in the shop power you up. Right answers give more and better choices.</div>
       <div class="dn-step"><b>3. Survive</b>Beat the Iron Warden, then survive the 2-minute Last Stand. Combos and flawless rooms score big.</div>
     </div>
     <div class="dn-row"><input class="dn-input" id="dn-nameinput" maxlength="24" placeholder="First name + last initial" autocomplete="off" aria-label="Your name"><button class="sz-mus" id="sz-mus" aria-label="Music on or off, key N">♪ Music on</button></div>
     <button class="dn-go" id="dn-go" disabled><span>Start</span></button>
-    <div class="dn-keyline">Keys: Arrows or WASD move · Space sword · Shift dodge · 1–4 answer · Enter next<br>N music · M mute · Shift+R new game · F full screen</div>
+    <div class="dn-keyline"><div class="sz-ctl" data-ctl="ARROWS/WASD=Move | Space=Sword | Shift=Dodge | 1234=Answer"></div>N music · M mute · Shift+R new game · F full screen</div>
   </div><span class="dn-credit sz-credit">Made by Spitz <i class="sz-burger" aria-hidden="true"></i></span></div>
 
   <div class="dn-over" id="dn-end" hidden><div class="dn-box"><div class="sz-eyebrow">Spitz <b>Arcade</b></div>
