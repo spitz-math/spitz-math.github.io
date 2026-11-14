@@ -1258,7 +1258,7 @@ function heroPose(p){ var w=S.w;
     /* spin: cols = sword right, toward viewer (down), left, away (up), picked from the blade's real angle */
     if(p.spin) return ['rook_spin',0,((Math.round(a/1.5708)%4)+4)%4,false];
     /* long slash rows: 0 front (down), 1 back (up), 2 right (left mirrored); cols windup, slash, follow-through, recover */
-    return ['rook_slash',da[0],el<RR_WIND?0:el<0.11?1:2,da[1]]; }
+    return ['rook_slash',da[0],el<RR_WIND?0:(el<0.11||da[0]===1)?1:2,da[1]]; }
   if(p.swR>0&&!p.mv){ var dr2=rrDir(p,Math.cos(p.swA),Math.sin(p.swA)); return ['rook_slash',dr2[0],3,dr2[1]]; }
   var df=rrDir(p,p.fx,p.fy);
   if(p.blkT>0) return ['rook_shield',0,df[0],df[1]];   /* Aegis block: shield up for a moment */
@@ -1710,8 +1710,8 @@ function update(dt){ var w=S.w, p=w.p, s=stat(), i, e;
   for(i=w.hearts.length-1;i>=0;i--){ var h=w.hearts[i]; h.t+=dt; if(Math.hypot(p.x-h.x,p.y-h.y)<p.r+12&&p.hp<p.max){ p.hp++; w.hearts.splice(i,1); SND.chest(); w.fx.push({k:'txt',x:p.x,y:p.y-30,t:0,v:'+1 ♥',c:'#FF6B86'}); } else if(h.t>14) w.hearts.splice(i,1); }
   /* chests */
   if(w.chest&&!w.chest.arm&&Math.hypot(p.x-w.chest.x,p.y-w.chest.y)>p.r+34) w.chest.arm=1;
-  if(w.chest&&!w.chest.open&&w.chest.arm&&w.pend<=0&&Math.hypot(p.x-w.chest.x,p.y-w.chest.y)<p.r+18){ w.chest.open=true; SND.chest(); var gold=w.chest.type==='gold'; w.coins+=gold?10:6; toast('+'+(gold?10:6)+' coins'); openPick(gold?'gold':'chest',3,gold?1:0.3); return; }
-  var sc=w.secretChest; if(sc&&w.secretOpen&&!sc.open&&Math.hypot(p.x-sc.x,p.y-sc.y)<p.r+18){ sc.open=true; SND.chest(); w.coins+=10; p.hp=p.max; toast('Secret treasure! +10 coins, full hearts'); openPick('secret',3,0.5); return; }
+  if(w.chest&&!w.chest.open&&w.chest.arm&&w.pend<=0&&Math.hypot(p.x-w.chest.x,p.y-w.chest.y)<p.r+18){ w.chest.open=true; SND.chest(); var gold=w.chest.type==='gold'; w.coins+=gold?10:6; toast('+'+(gold?10:6)+' coins'); openAsk('chest',{w:gold?'gold':'chest',g:gold?1:0.3,c:gold?8:4}); return; }
+  var sc=w.secretChest; if(sc&&w.secretOpen&&!sc.open&&Math.hypot(p.x-sc.x,p.y-sc.y)<p.r+18){ sc.open=true; SND.chest(); w.coins+=10; p.hp=p.max; toast('Secret treasure! +10 coins, full hearts'); openAsk('chest',{w:'secret',g:0.5,c:6}); return; }
   stepFx(dt);
   /* banked level-ups get answered at the end of the fight, never in the middle of it */
   if(w.cleared&&w.pend>0&&S.mode==='play'){ w.resolve-=dt; if(w.resolve<=0) levelUp(); }
@@ -1842,6 +1842,7 @@ function randFloor(minD){ var p=S.w.p; for(var k=0;k<80;k++){ var tx=1+Math.floo
     if(tget(tx,ty)!==0) continue; if(!ROOMART&&S.w.rid==='library'&&(tx>=25||tx<=6)&&ty<=4) continue; /* never inside the secret nook */ var x=tx*TS+TS/2, y=ty*TS+TS/2; if(Math.hypot(x-p.x,y-p.y)<minD) continue; if(wallAt(x,y)) continue; return [x,y]; } return [W/2,120]; }
 function spawnWave(list,m,edges){ list.forEach(function(it){ for(var n=0;n<it[1];n++){ var pos=edges&&Math.random()<0.6?edgePos(Math.floor(Math.random()*4)):randFloor(220); S.w.spawns.push({type:it[0],x:pos[0],y:pos[1],t:0.8+Math.random()*0.5,m:m||1,el:it[2]?1:0}); } }); }
 function roomTick(dt){ var w=S.w, R=ROOMS[w.rid];
+  if(R.shop&&!w.dealt){ w.dealT=(w.dealT||0)+dt; if(w.dealT>0.6){ w.dealt=1; openAsk('deal'); } return; }
   if(w.cleared) return;
   if(w.last>0){ lastTick(dt); return; }
   if(R.boss){ if(w.bossIntro>0){ w.bossIntro-=dt; if(w.bossIntro<=0){ var b=spawnEnemy('boss',W/2,170,1); b.cd=1.2; w.boss=b; } } return; }
@@ -1885,6 +1886,7 @@ function lastTick(dt){ var w=S.w, T=w.lastT; w.lastT+=dt; w.last-=dt;
 function drawRubble(c){ var w=S.w; (w.rub||[]).forEach(function(rb){ var k=1-rb.t/1.0, rd=Math.round(rb.r*(0.45+0.55*k)); c.globalAlpha=0.12+0.25*k; c.drawImage(FX.warnDisc,Math.round(rb.x-rd),Math.round(rb.y-rd),rd*2,rd*2); c.globalAlpha=1; c.drawImage(FX.warnRing,Math.round(rb.x-FX.warnRing.width/2),Math.round(rb.y-FX.warnRing.height/2));
   if(rb.t<0.3){ var fy=rb.y-6-rb.t*500; c.fillStyle='#3A3F55'; c.fillRect(Math.round(rb.x-11),Math.round(fy-11),22,20); c.fillStyle='#6E76A4'; c.fillRect(Math.round(rb.x-9),Math.round(fy-9),14,6); } }); }
 function siegeTick(dt){ var w=S.w, R=ROOMS[w.rid], T=R.siege-w.siegeT; w.siegeT-=dt;
+  if(!w.rally&&w.siegeT>0&&w.siegeT<=R.siege/2){ w.rally=1; openAsk('rally'); return; }
   if(w.siegeT<=0){ w.siegeT=0; if(!w.siegeDone){ w.siegeDone=1; w.spawns=[]; DSRC='siege'; w.en.forEach(function(e){ if(!e.dead){ w.fx.push({k:'puff',x:e.x,y:e.y,t:0}); killE(e,{}); } }); w.banner={txt:'YOU HELD THE HALL',sub:'',t:1.4}; } if(!w.en.filter(function(e){ return !e.dead; }).length) roomClear(); return; }
   w.tm.spawn-=dt; if(w.tm.spawn<=0&&w.en.length+w.spawns.length<50){ w.tm.spawn=Math.max(0.4,1.0-T*0.012);
     var pool=['gob','gob','bat']; if(T>8) pool.push('slime','bat'); if(T>16) pool.push('skel','gob'); if(T>26) pool.push('wiz','skel','slime');
@@ -1957,8 +1959,9 @@ function pick(i){ if(S.mode!=='pick') return; var c=S.cards[i]; if(!c) return; v
 /* questions (the shared panel), shown over the frozen castle, only between fights */
 var nextT=0, lockT=0;
 if(FAST) $('dn-q').classList.add('fast');
-var ASKTXT={ level:['Power up!','1 right: 3 power choices. 2 right: a shot at gold'], revive:['Knocked out!','Right answer: get back up with 3 hearts'] };
-function openAsk(why){ S.mode='ask'; HELD={}; S.ask={why:why, need:why==='level'?2:1, got:0, n:0}; newQ(); $('dn-qwrap').hidden=false; save(); }
+var ASKTXT={ level:['Power up!','1 right: 3 power choices. 2 right: a shot at gold'], revive:['Knocked out!','Right answer: get back up with 3 hearts'],
+  chest:['Unlock the chest','Right answer: bonus coins and better treasure'], deal:["The merchant's deal",'Each right answer: +6 coins'], rally:['Rally!','Right answer: +1 heart (or armor if full)'] };
+function openAsk(why,o){ S.mode='ask'; HELD={}; S.ask={why:why, need:why==='level'||why==='deal'?2:1, got:0, n:0, o:o||null}; newQ(); $('dn-qwrap').hidden=false; save(); }
 function showQ(){ var q=S.q, a=S.ask; if(!q||!a) return; var t=ASKTXT[a.why];
   $('dn-qtitle').innerHTML=t[0]+(a.need>1?' <small>Question '+Math.min(a.n+1,a.need)+' of '+a.need+'</small>':'');
   $('dn-tag').textContent=q.topic; $('dn-reward').textContent=a.need>1&&a.why==='level'?'1 right: 3 cards · 2 right: gold chance':t[1].replace('Right answer: ','');
@@ -1985,7 +1988,10 @@ function closeAsk(){ var a=S.ask, w=S.w, p=w.p, all=a.got>=a.need; $('dn-qwrap')
   if(a.why==='level'){ var n=a.got?3:2; if(!w.picks) n=3; w.batch={n:n,g:all?0.2:0}; openPick('level',n,w.batch.g); }
   else if(a.why==='revive'){ if(all){ p.hp=Math.min(p.max,3); p.inv=2.2; w.orbs=[]; w.rings=[]; w.en.forEach(function(e){ var dx=e.x-p.x, dy=e.y-p.y, d=Math.hypot(dx,dy)||1; if(d<240){ e.kx=dx/d*460; e.ky=dy/d*460; e.st=0; e.cd=1.2; } }); w.fx.push({k:'ring',x:p.x,y:p.y,t:0}); toast('Back on your feet!'); SND.level(); }
     else finishRun(!!w.won,'fall'); }
-  save(); }
+  else if(a.why==='chest'){ var o=a.o||{w:'chest',g:0.3,c:4}; if(all){ w.coins+=o.c; toast('Unlocked! +'+o.c+' coins'); } openPick(o.w,3,all?Math.min(1,o.g+0.4):o.g); }
+  else if(a.why==='deal'){ if(a.got){ w.coins+=6*a.got; toast('+'+(6*a.got)+' coins from the merchant'); SND.chest(); } }
+  else if(a.why==='rally'){ p.inv=Math.max(p.inv||0,1.2); if(all){ var hv=p.hp<p.max; if(hv) p.hp++; else p.arm=(p.arm||0)+1; w.fx.push({k:'txt',x:p.x,y:p.y-44,t:0,v:hv?'+1 ♥':'+1 armor',c:'#FF6B86'}); SND.level(); } }
+  hud(1); save(); }
 $('dn-choices').addEventListener('click',function(e){ var b=e.target.closest('.dn-ch'); if(b) answer(+b.dataset.i); });
 $('dn-next').addEventListener('click',function(){ if(S.qDone) askNext(); });
 $('dn-cards').addEventListener('click',function(e){ var b=e.target.closest('.dn-card'); if(b) pick(+b.dataset.i); });
