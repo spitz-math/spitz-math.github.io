@@ -61,7 +61,12 @@ button:disabled{ cursor:default; }
 .dn-bi.evo .ic{ background:linear-gradient(135deg,color-mix(in srgb,var(--pc) 45%,#1E2540) 50%,color-mix(in srgb,var(--pc2) 45%,#1E2540) 50%); }
 .dn-bi .dn-pips span.on{ background:var(--pc,var(--teal)); }
 .dn-bi.max .ic{ box-shadow:0 0 0 2px var(--gold), inset 0 0 0 3px var(--pc,transparent); }
-.dn-bi .nm{ font:700 15px/1.1 var(--body); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.dn-bi .nm{ font:700 15px/1.1 var(--body); overflow:hidden; display:-webkit-box; -webkit-box-orient:vertical; -webkit-line-clamp:2; }
+/* long builds: first tighten the rows, then fall back to an icon grid, so every power always shows */
+#dn-buildlist.tight .dn-bi{ margin-bottom:4px; grid-template-columns:32px 1fr; } #dn-buildlist.tight .dn-bi .ic{ width:32px; height:32px; font-size:20px; border-radius:8px; } #dn-buildlist.tight .dn-bh{ display:none; } #dn-buildlist.tight .dn-bi .nm{ font-size:14px; -webkit-line-clamp:1; } #dn-buildlist.tight .dn-pips{ margin-top:2px; } #dn-buildlist.tight .dn-pips span{ height:6px; }
+#dn-buildlist.grid{ display:grid; grid-template-columns:repeat(3,1fr); gap:8px 4px; } #dn-buildlist.grid .dn-bh, #dn-buildlist.grid .dn-bi .nm{ display:none; } #dn-buildlist.grid .dn-bi{ display:flex; flex-direction:column; align-items:center; margin:0; }
+#dn-buildlist.grid .dn-bi .ic{ width:38px; height:38px; font-size:24px; } #dn-buildlist.grid .dn-pips{ gap:2px; margin-top:4px; } #dn-buildlist.grid .dn-pips span{ width:9px; height:6px; } #dn-buildlist.grid .dn-pips b{ font-size:0; } #dn-buildlist.grid .dn-pips b::before{ content:'✦'; font-size:11px; }
+#dn-buildlist.grid.g4{ grid-template-columns:repeat(4,1fr); gap:6px 2px; } #dn-buildlist.grid.g4 .dn-bi .ic{ width:30px; height:30px; font-size:19px; border-radius:8px; } #dn-buildlist.grid.g4 .dn-pips span{ width:7px; height:5px; } #dn-buildlist.grid.g4 .dn-pips{ margin-top:3px; }
 .dn-bi.max .ic{ background:#4A3A10; box-shadow:0 0 0 2px var(--gold); } .dn-bi.max .nm{ color:var(--gold); }
 .dn-pips{ display:flex; gap:4px; margin-top:4px; } .dn-pips span{ width:16px; height:8px; border-radius:2px; background:var(--panel-2); } .dn-pips span.on{ background:var(--teal); }
 .dn-bi.max .dn-pips span.on{ background:var(--gold); }
@@ -147,7 +152,6 @@ body.dn-big .dn-arena, body.dn-shrink .dn-arena{ z-index:41; }
 .dn-co.big{ justify-content:center; gap:12px; } .dn-co.big .dn-cp{ width:52px; height:52px; font-size:30px; border-width:4px; }
 .dn-lv2{ font:800 15px/1 var(--body); color:var(--muted); }
 .dn-card .ic, .dn-bi .ic{ position:relative; } .dn-ic2{ position:absolute; right:-.12em; bottom:-.06em; font-size:.55em; font-style:normal; line-height:1; filter:drop-shadow(0 0 2px #0A0B16) drop-shadow(0 0 2px #0A0B16); }
-.dn-card .cb{ font:700 19px/1.25 var(--body); color:#C9B2FF; margin-top:auto; padding-top:6px; text-align:center; }
 .dn-card.evo{ border-color:#B56BFF; background:linear-gradient(180deg,#3A2466,#1B1530); box-shadow:0 10px 0 #4A2A80, 0 0 44px rgba(181,107,255,.35); }
 .dn-card.evo .k{ background:#B56BFF; color:#fff; } .dn-card.evo .lv{ color:#E0C8FF; }
 .dn-bh{ font:800 14px/1 var(--body); letter-spacing:.12em; text-transform:uppercase; color:var(--muted); margin:6px 0 8px; }
@@ -155,11 +159,6 @@ body.dn-big .dn-arena, body.dn-shrink .dn-arena{ z-index:41; }
 .dn-pips b{ font:800 12px/8px var(--body); color:#B56BFF; letter-spacing:.08em; }
 
 /* dive over */
-.dn-divebox{ width:1100px; text-align:center; border-radius:24px; padding:34px 40px; background:linear-gradient(180deg,#1C2442,#11162A); border:3px solid var(--border); }
-.dn-divebox h2{ margin:0; font:800 76px/1 var(--head); color:var(--ember); }
-.dn-divebox p{ margin:14px 0 20px; font:600 30px/1.35 var(--body); color:var(--muted); }
-.dn-divebox .big{ font:700 120px/1 var(--display); color:var(--gold); }
-.dn-divebox .icons{ font-size:48px; min-height:60px; margin:10px 0 24px; letter-spacing:.1em; }
 
 /* start and end */
 .dn-over{ position:absolute; inset:0; z-index:15; display:grid; place-items:center; text-align:center;
@@ -273,7 +272,7 @@ body.dn-cine .dn-top, body.dn-cine .dn-side{ opacity:0; pointer-events:none; tra
     <p class="dn-sub"><span class="sz-setname">Slope-intercept form.</span> Fight through The Crooked Keep, grow your powers, beat the Iron Warden. About 6 to 9 minutes.</p>
     <div class="dn-steps">
       <div class="dn-step"><b>1. Fight</b>Arrows or WASD move. Space swings your sword. Shift rolls. Roll right as an attack lands for a Perfect dodge and a crit.</div>
-      <div class="dn-step"><b>2. Answer</b>Gems fill your level bar. After each room, two questions power up every level you earned. Right answers give more and better choices.</div>
+      <div class="dn-step"><b>2. Answer</b>Gems fill your level bar. Questions after each room, at chests and in the shop power you up. Right answers give more and better choices.</div>
       <div class="dn-step"><b>3. Survive</b>Beat the Iron Warden, then survive the 2-minute Last Stand. Combos and flawless rooms score big.</div>
     </div>
     <div class="dn-row"><input class="dn-input" id="dn-nameinput" maxlength="24" placeholder="First name + last initial" autocomplete="off" aria-label="Your name"><button class="sz-mus" id="sz-mus" aria-label="Music on or off, key N">♪ Music on</button></div>
@@ -1056,7 +1055,6 @@ function blob(x,w,h,inside,cols){ var i,j,inn=function(a,b){ return a>=0&&b>=0&&
     var c=cols.base; if(edge) c=cols.line; else if(!inn(i-1,j-1)||!inn(i-2,j-1)&&!inn(i-1,j-2)) c=cols.light; else if(!inn(i+1,j+1)||!inn(i+2,j+1)) c=cols.dark;
     x.fillStyle=c; x.fillRect(i,j,1,1); } }
 function dots(x,list,col){ x.fillStyle=col; list.forEach(function(p){ x.fillRect(p[0],p[1],p[2]||1,p[3]||1); }); }
-function ell(cx0,cy0,rx,ry){ return function(i,j){ var a=(i-cx0)/rx, b=(j-cy0)/ry; return a*a+b*b<=1; }; }
 var SPR={}, GLOW=null;
 function makeSprites(){
   var ART=bbMake(document);
@@ -1086,7 +1084,6 @@ function makeSprites(){
 /* ---------- rooms ---------- */
 /* tiles: 0 floor, 1 wall, 2 pillar, 3 north door, 4 torch, 5 plate, 6 side door (hall only, open) */
 var MAP=new Uint8Array(COLS*ROWS), ROOMC=null;
-var KIND_NAME={start:'Entry Hall',pillars:'Pillar Room',torch:'Torch Room',block:'Block Room',cross:'Cross Room',boss:'Gloom King',hall:'Horde Hall'};
 function tset(x,y,v){ MAP[y*COLS+x]=v; }
 function tget(x,y){ if(x<0||y<0||x>=COLS||y>=ROWS) return 1; return MAP[y*COLS+x]; }
 function pillar(x,y){ tset(x,y,2); tset(x+1,y,2); tset(x,y+1,2); tset(x+1,y+1,2); }
@@ -1397,7 +1394,7 @@ function drawCutWorld(c,t){ var C=CUT; if(!C) return; var T=C.t;
   c.fillStyle='#7DF5FF'; C.bits.forEach(function(b){ if(b.t>=b.d) c.fillRect(Math.round(b.x)-2,Math.round(b.y)-2,4,4); });
   if(C.pulse>=0&&C.pulse<0.6){ var pk=C.pulse/0.6, p=S.w.p; c.strokeStyle='rgba(77,235,255,'+(1-pk)+')'; c.lineWidth=3; c.beginPath(); c.arc(p.x,p.y-22,10+pk*60,0,7); c.stroke(); } }
 function drawCutOverlay(c){ var C=CUT; if(!C||!C.cap) return; var al=Math.min(1,C.capT*3); if(C.cap==='Just one relic.'&&C.t>2.8) al=Math.max(0,1-(C.t-2.8)*3);
-  c.globalAlpha=al; c.font=F(26); c.textAlign='center'; var tw=c.measureText(C.cap).width+44; c.fillStyle='rgba(7,8,18,.78)'; c.fillRect(W/2-tw/2,H-82,tw,42); c.fillStyle='#F3F5FF'; c.fillText('“'+C.cap+'”',W/2,H-52); c.globalAlpha=1;
+  c.globalAlpha=al; c.font=FT(C.cap,24); c.textAlign='center'; var tw=c.measureText('“'+C.cap+'”').width+44; c.fillStyle='rgba(7,8,18,.78)'; c.fillRect(W/2-tw/2,H-82,tw,42); c.fillStyle='#F3F5FF'; c.fillText('“'+C.cap+'”',W/2,H-52); c.globalAlpha=1;
   /* letterbox bars ease away in the last 1.4 s */
   var bar=C.t<10.6?26:26*Math.max(0,1-(C.t-10.6)/1.4); if(bar>0){ c.fillStyle='#04050B'; c.fillRect(0,0,W,bar); c.fillRect(0,H-bar,W,bar); } }
 function hudAlpha(){ if(S.mode==='cut') return 0; if(S.mode==='endcut') return ECUT?Math.max(0,1-ECUT.t/0.5):0; return Math.max(0,Math.min(1,(performance.now()-HUDAT)/900)); }
@@ -1439,7 +1436,7 @@ function endCam(){ if(!ECUT||RM) return null; var E=ECUT, T=E.t, p=S.w.p;
 function drawEndOverlay(c){ var E=ECUT; if(!E) return; var T=E.t;
   if(E.kind==='escape'&&S.w.open){ var g=c.createRadialGradient(W/2,0,4,W/2,0,260); g.addColorStop(0,'rgba(255,230,160,.55)'); g.addColorStop(1,'rgba(255,230,160,0)'); c.fillStyle=g; c.fillRect(W/2-260,0,520,260); }
   var bar=Math.min(26,T*60); c.fillStyle='#04050B'; c.fillRect(0,0,W,bar); c.fillRect(0,H-bar,W,bar);
-  if(E.cap){ var al=Math.min(1,E.capT*3); c.globalAlpha=al; c.font=F(26); c.textAlign='center'; var tw=c.measureText(E.cap).width+44; c.fillStyle='rgba(7,8,18,.78)'; c.fillRect(W/2-tw/2,H-82,tw,42); c.fillStyle='#F3F5FF'; c.fillText('“'+E.cap+'”',W/2,H-52); c.globalAlpha=1; }
+  if(E.cap){ var al=Math.min(1,E.capT*3); c.globalAlpha=al; c.font=FT(E.cap,24); c.textAlign='center'; var tw=c.measureText('“'+E.cap+'”').width+44; c.fillStyle='rgba(7,8,18,.78)'; c.fillRect(W/2-tw/2,H-82,tw,42); c.fillStyle='#F3F5FF'; c.fillText('“'+E.cap+'”',W/2,H-52); c.globalAlpha=1; }
   var f=Math.max(0,(T-(E.dur-1.2))/1.2); if(f>0){ c.fillStyle=E.kind==='escape'?'rgba(255,240,205,'+f+')':'rgba(4,5,11,'+f+')'; c.fillRect(0,0,W,H); } }
 SND.relic=function(){ [E5,G5,C6,E6].forEach(function(f,i){ tone(f,f*1.01,i*0.11,0.35,'sine',0.035); }); };
 SND.gem=function(){ tone(C6,E6,0,0.3,'sine',0.04); };
@@ -1475,7 +1472,7 @@ var ET={
 var GOBT=106, GOBL=100, GOBLOCK=0.24, COMBOT=2.5;
 /* only a few goblins may wind up at once, so a crowd attacks in beats you can read instead of all together */
 function gobSlots(w){ return w.last>0||ROOMS[w.rid].siege?4:(w.rid==='entry'||w.rid==='guard'||early(w))?2:3; }
-/* early(w): Rook has fewer than 3 powers, so the build is not online yet. Enemies wind up a little longer until it is. */
+/* early(w): Rook has fewer than 4 powers, so the build is not online yet. Enemies wind up a little longer until it is. */
 function early(w){ return (w.picks||0)<4&&!(w.last>0); }
 /* elite: a tougher, faster version with a gold ring under it. Worth more gems, coins and points. */
 function spawnEnemy(type,x,y,mult,small,elite){ var t=ET[type], e={type:type,x:x,y:y,r:small?9:t.r,hp:Math.round(t.hp*(mult||1)*(small?0.4:1)*(elite?3:1)),max:0,t:Math.random()*5,kx:0,ky:0,fl:0,st:0,sx:0,sy:0,cd:rnd(0.6,1.4),oh:0,rh:0,eh:0,fa:0,small:!!small};
@@ -1543,7 +1540,6 @@ function applyFork(){ var f=S.w&&S.w.fork; ROOMS.cross.exits=f?{w:'arena',e:'vau
 function restoreMap(){ applyFork(); buildMap(ROOMS[S.w.rid].kind); var w=S.w; if(w.boss) w.boss=w.en.filter(function(e){ return e.type==='boss'&&!e.dead; })[0]||null; }
 
 /* ---------- collision ---------- */
-function doorOpen(t){ return S.w.open&&(t===3||t===9||t===10); }
 function solid(tx,ty){ var t=tget(tx,ty); if(t===1||t===2||t===4||t===8) return true; if(t===3||t===9||t===10) return !S.w.open; return false; }
 function solidE(tx,ty){ var t=tget(tx,ty); if(t===3||t===9||t===10) return true; return solid(tx,ty); }
 function collide(e,sf){ sf=sf||solid; for(var pass=0;pass<2;pass++){
@@ -1592,7 +1588,7 @@ function killE(e,opt){ var w=S.w, t=ET[e.type]; e.dead=true; w.kills++; SND.pop(
   if(L('volatile')&&w.booms.length<40&&(DSRC!=='volatile'||(L('volatile')>=3&&!BGEN))){ var lv=L('volatile'); w.booms.push({x:e.x,y:e.y,r:[0,40,48,58][lv],dmg:[0,3,4,5][lv],t:0.06,g:DSRC==='volatile'?1:0}); }   /* level 3 chains one step, never forever */
   if(opt&&opt.melee&&!RM) S.hs=Math.max(S.hs||0,0.05);
   if(e.type==='boss'&&w.last>0){ w.lsWK=(w.lsWK||0)+1; addPts(1500,e.x,e.y-60,'#FFC93C'); SND.bossDown(); toast('A Warden falls! +1500'); for(var q=0;q<(RM?6:16);q++) w.fx.push({k:'bit',x:e.x,y:e.y-20,vx:rnd(-160,160),vy:rnd(-200,20),t:0,c:'#8A92BE'}); }
-  else if(e.type==='boss'){ var bt=w.runT-(w.roomT0||w.runT); addPts(2000+Math.max(0,1500-15*bt)+(w.hurtRoom?0:500),e.x,e.y-60,'#FFC93C'); w.flawless+=w.hurtRoom?0:1; SND.bossDown(); w.victory=2.6; w.en.forEach(function(o){ if(o!==e&&!o.dead){ o.dead=true; } }); w.tele=[]; w.orbs=[]; toast('The Iron Warden falls!'); } }
+  else if(e.type==='boss'){ var bt=w.runT-(w.roomT0||w.runT); addPts(2000+Math.max(0,1500-15*bt)+(w.hurtRoom?0:500),e.x,e.y-60,'#FFC93C'); w.flawless+=w.hurtRoom?0:1; SND.bossDown(); w.victory=2.6; w.en.forEach(function(o){ if(o!==e&&!o.dead){ o.dead=true; } }); w.tele=[]; w.orbs=[]; var gv=0; w.gems.forEach(function(g){ gv+=g.v; }); w.gems=[]; if(gv) gainXP(gv,1);   /* gems still on the floor count */ toast('The Iron Warden falls!'); } }
 function dropGem(x,y,v){ var w=S.w; if(w.gems.length>=200){ w.gems[Math.floor(Math.random()*w.gems.length)].v+=v; return; } w.gems.push({x:x,y:y,v:v,m:0}); }
 function nearestFoe(x,y,maxD,skip){ var w=S.w, best=null, bd=maxD*maxD; for(var i=0;i<w.en.length;i++){ var e=w.en[i]; if(e.dead||(skip&&skip.indexOf(e)>=0)) continue; var dx=e.x-x, dy=e.y-y, d2=dx*dx+dy*dy; if(d2<bd){ bd=d2; best=e; } } return best; }
 /* sword: swings the way Rook faces. Light aim help: an enemy within ~50° of where you face pulls the swing toward it. */
@@ -1646,7 +1642,9 @@ var GRIDN=28*17, GRID=[]; (function(){ for(var i=0;i<GRIDN;i++) GRID.push([]); }
 function update(dt){ var w=S.w, p=w.p, s=stat(), i, e;
   w.t+=dt; w.runT+=dt; if(w.shake) w.shake=Math.max(0,w.shake-dt); if(w.comboT>0){ w.comboT-=dt; if(w.comboT<=0) w.combo=0; } if(w.comboPop>0) w.comboPop-=dt; if(w.ringT>0) w.ringT-=dt;
   if(w.banner){ w.banner.t-=dt; if(w.banner.t<=0) w.banner=null; }
-  if(w.victory){ w.victory-=dt; stepFx(dt); if(w.victory<=0){ w.victory=0; startLast(); } return; }
+  if(w.victory){ w.victory-=dt; stepFx(dt); if(w.victory<=0){ w.victory=0; if(w.pend>0){ w.preLast=1; w.resolve=0; } else startLast(); } return; }
+  /* levels banked during the Warden fight are paid out before the Last Stand starts */
+  if(w.preLast){ stepFx(dt); if(w.pend>0){ w.resolve-=dt; if(w.resolve<=0) levelUp(); } else { w.preLast=0; startLast(); } hud(); return; }
   /* move (or roll) */
   var mx=(HELD.arrowright||HELD.d?1:0)-(HELD.arrowleft||HELD.a?1:0), my=(HELD.arrowdown||HELD.s?1:0)-(HELD.arrowup||HELD.w?1:0);
   var ml=Math.hypot(mx,my); p.mv=!!ml; if(ml&&p.roll<=0&&p.sw<=0.1){ p.fx=mx/ml; p.fy=my/ml; } if(ml) p.walk+=dt;
@@ -1709,7 +1707,8 @@ function update(dt){ var w=S.w, p=w.p, s=stat(), i, e;
     if(cd<p.r+8){ w.coinsF.splice(i,1); w.coins++; SND.coin(); } }
   for(i=w.hearts.length-1;i>=0;i--){ var h=w.hearts[i]; h.t+=dt; if(Math.hypot(p.x-h.x,p.y-h.y)<p.r+12&&p.hp<p.max){ p.hp++; w.hearts.splice(i,1); SND.chest(); w.fx.push({k:'txt',x:p.x,y:p.y-30,t:0,v:'+1 ♥',c:'#FF6B86'}); } else if(h.t>14) w.hearts.splice(i,1); }
   /* chests */
-  if(w.chest&&!w.chest.arm&&Math.hypot(p.x-w.chest.x,p.y-w.chest.y)>p.r+34) w.chest.arm=1;
+  /* a chest that lands on top of Rook waits: it opens once he steps off and back, or after a beat once the level-ups are done (so nobody gets stuck standing on it) */
+  if(w.chest&&!w.chest.arm){ if(Math.hypot(p.x-w.chest.x,p.y-w.chest.y)>p.r+34) w.chest.arm=1; else if(w.pend<=0){ w.chest.wait=(w.chest.wait||0)+dt; if(w.chest.wait>1.2) w.chest.arm=1; } }
   if(w.chest&&!w.chest.open&&w.chest.arm&&w.pend<=0&&Math.hypot(p.x-w.chest.x,p.y-w.chest.y)<p.r+18){ w.chest.open=true; SND.chest(); var gold=w.chest.type==='gold'; w.coins+=gold?10:6; toast('+'+(gold?10:6)+' coins'); openAsk('chest',{w:gold?'gold':'chest',g:gold?1:0.3,c:gold?8:4}); return; }
   var sc=w.secretChest; if(sc&&w.secretOpen&&!sc.open&&Math.hypot(p.x-sc.x,p.y-sc.y)<p.r+18){ sc.open=true; SND.chest(); w.coins+=10; p.hp=p.max; toast('Secret treasure! +10 coins, full hearts'); openAsk('chest',{w:'secret',g:0.5,c:6}); return; }
   stepFx(dt);
@@ -1905,7 +1904,7 @@ function transTick(dt){ var w=S.w, p=w.p, d=w.tdir||[0,-1], was=trans; trans-=dt
   if(trans<=0){ trans=0; S.mode='play'; p.mv=false; } }
 
 /* ---------- levels, picks and questions ---------- */
-function gainXP(v){ var w=S.w; w.xp+=v; SND.gem(); while(w.xp>=w.need){ w.xp-=w.need; w.lv++; w.need=2+3*w.lv; w.pend++; if(!w.cleared) w.fx.push({k:'txt',x:w.p.x,y:w.p.y-44,t:0,v:'LEVEL UP! (after this fight)',c:'#FFC93C'}); } }
+function gainXP(v,quiet){ var w=S.w; w.xp+=v; if(!quiet) SND.gem(); while(w.xp>=w.need){ w.xp-=w.need; w.lv++; w.need=2+3*w.lv; w.pend++; if(!w.cleared&&!quiet) w.fx.push({k:'txt',x:w.p.x,y:w.p.y-44,t:0,v:'LEVEL UP! (after this fight)',c:'#FFC93C'}); } }
 function levelUp(){ var w=S.w; w.pend--; if(w.batch==null){ SND.level(); openAsk('level'); } else openPick('level',w.batch.n,w.batch.g); }
 function knockedOut(){ var w=S.w; HELD={}; if(!S.revUsed){ S.revUsed=1; openAsk('revive'); } else finishRun(!!w.won,'fall'); }
 function cardsFor(n,goldChance){ var w=S.w, out=[];
@@ -1920,8 +1919,6 @@ function cardsFor(n,goldChance){ var w=S.w, out=[];
     out.push({id:pool[k].id,gold:Math.random()<goldChance}); pool.splice(k,1); }
   if(!out.length) out.push({id:'snack'});
   return out; }
-function synNote(id){ var s=synFor(id).filter(function(u){ return !HAS(u.id); })[0]; if(!s) return ''; var other=s.need.filter(function(q){ return q[0]!==id; }).map(function(q){ return UPI[q[0]].ic+' '+UPI[q[0]].n; }).join(' + ');
-  return 'Synergy: '+s.ic+' '+s.n+(other?' (with '+other+')':' (at Lv '+s.need[0][1]+')'); }
 function openPick(why,n,goldChance){ S.cards=cardsFor(n||3,goldChance||0); S.pickWhy=why; S.mode='pick'; HELD={}; showPick(); save(); }
 var PATHN={blade:'Blade',storm:'Storm',bulwark:'Bulwark',any:'Extra'};
 /* every family has one color everywhere: cards, combo chips and the build list */
@@ -1989,8 +1986,8 @@ function closeAsk(){ var a=S.ask, w=S.w, p=w.p, all=a.got>=a.need; $('dn-qwrap')
   else if(a.why==='revive'){ if(all){ p.hp=Math.min(p.max,3); p.inv=2.2; w.orbs=[]; w.rings=[]; w.en.forEach(function(e){ var dx=e.x-p.x, dy=e.y-p.y, d=Math.hypot(dx,dy)||1; if(d<240){ e.kx=dx/d*460; e.ky=dy/d*460; e.st=0; e.cd=1.2; } }); w.fx.push({k:'ring',x:p.x,y:p.y,t:0}); toast('Back on your feet!'); SND.level(); }
     else finishRun(!!w.won,'fall'); }
   else if(a.why==='chest'){ var o=a.o||{w:'chest',g:0.3,c:4}; if(all){ w.coins+=o.c; toast('Unlocked! +'+o.c+' coins'); } openPick(o.w,3,all?Math.min(1,o.g+0.4):o.g); }
-  else if(a.why==='deal'){ if(a.got){ w.coins+=6*a.got; toast('+'+(6*a.got)+' coins from the merchant'); SND.chest(); } }
-  else if(a.why==='rally'){ p.inv=Math.max(p.inv||0,1.2); if(all){ var hv=p.hp<p.max; if(hv) p.hp++; else p.arm=(p.arm||0)+1; w.fx.push({k:'txt',x:p.x,y:p.y-44,t:0,v:hv?'+1 ♥':'+1 armor',c:'#FF6B86'}); SND.level(); } }
+  else if(a.why==='deal'){ if(a.got){ w.coins+=6*a.got; toast('+'+(6*a.got)+' coins from the merchant'); SND.chest(); } else toast('No deal this time'); }
+  else if(a.why==='rally'){ p.inv=Math.max(p.inv||0,1.2); if(all){ var hv=p.hp<p.max; if(hv) p.hp++; else p.arm=(p.arm||0)+1; w.fx.push({k:'txt',x:p.x,y:p.y-44,t:0,v:hv?'+1 ♥':'+1 armor',c:'#FF6B86'}); SND.level(); } else toast('No bonus this time'); if(!RM) S.slow=0.6; }
   hud(1); save(); }
 $('dn-choices').addEventListener('click',function(e){ var b=e.target.closest('.dn-ch'); if(b) answer(+b.dataset.i); });
 $('dn-next').addEventListener('click',function(){ if(S.qDone) askNext(); });
@@ -2044,7 +2041,7 @@ function draw(){ var c=cx, w=S&&S.w; c.setTransform(1,0,0,1,0,0);
     c.fillStyle='#3A3F55'; c.fillRect(WX-3,WY+4,6,8); c.fillStyle='#FF8A3D'; c.fillRect(WX-4,WY-5+fl2,8,9); c.fillStyle='#FFD34D'; c.fillRect(WX-2,WY-2+fl2,4,5); }
   /* shop */
   if(w.shop){ c.textAlign='center'; w.shop.forEach(function(it){ c.fillStyle='#262A44'; c.fillRect(it.x-26,it.y-8,52,24); c.fillStyle='#565C80'; c.fillRect(it.x-24,it.y-6,48,20); if(!it.sold){ c.font='28px sans-serif'; c.fillStyle='#FFFFFF'; c.fillText(it.ic,it.x,it.y-14); dtx(c,it.cost+' coins',it.x,it.y+42,14,w.coins>=it.cost?'#FFC93C':'#C0788A',0,'#141026'); dtx(c,it.n,it.x,it.y+60,14,'#E8ECFF',0,'#141026'); } else dtx(c,'Sold',it.x,it.y+42,14,'#8A92BE',0,'#141026'); });
-    dtx(c,'The castle shop',W/2,256,16,'#FFE08A',0,'#141026'); if(w.shopNear){ var nm=w.shopNear, ns='Space: buy '+nm.n+' ('+nm.cost+') · '+nm.d, nw=tspr(ns,16,'#FFE08A').width+30; c.fillStyle='rgba(7,8,18,.8)'; c.fillRect(Math.round(W/2-nw/2),H-96,nw,40); dtx(c,ns,W/2,H-70,16,'#FFE08A'); } }
+    if(w.shopNear){ var nm=w.shopNear, ns='Space: buy '+nm.n+' ('+nm.cost+') · '+nm.d, nw=tspr(ns,16,'#FFE08A').width+30; c.fillStyle='rgba(7,8,18,.8)'; c.fillRect(Math.round(W/2-nw/2),H-96,nw,40); dtx(c,ns,W/2,H-70,16,'#FFE08A'); } }
   /* chests */
   [w.chest,w.secretChest].forEach(function(ch){ if(!ch) return; if(ch===w.secretChest&&!w.secretOpen){ return; } if(!ch.open){ c.globalAlpha=0.25+0.15*Math.sin(t*3); c.fillStyle=ch.type==='gold'?'#FFE08A':'#FFC93C'; c.beginPath(); c.arc(ch.x,ch.y+2,26,0,7); c.fill(); c.globalAlpha=1; } spr(ch.open?'chestO':'chest',ch.x,ch.y,false,ch.type==='gold'?3:2); });
   /* pickups */
@@ -2189,10 +2186,12 @@ var hudAt=0, hudSc=-1, hudStr='';
 function hud(force){ var w=S.w, n=0, t=performance.now(); if(!force&&t-hudAt<160) return; hudAt=t; if(w) for(var k in w.seen) n++; if(S.score!==hudSc){ hudSc=S.score; hudStr=S.score.toLocaleString(); } hset('dn-score',hudStr); hset('dn-coins',w?w.coins:0); hset('dn-roomc',n+' / 8'); hset('dn-streak',S.streak); }
 function renderBuild(){ var w=S.w, held=w?UP.concat(SYN).filter(function(u){ return L(u.id)>0; }):[];
   function row(u){ var l=w.b[u.id];
-    return '<div class="dn-bi'+(u.syn||l>=3?' max':'')+(u.syn?' evo':'')+'" style="--pc:'+(u.syn?pc(u.need[0][0]):PATHC[u.path])+';--pc2:'+(u.syn?pc(u.need[u.need.length-1][0]):PATHC[u.path])+'"><span class="ic">'+ICON(u)+'</span><span class="nm">'+u.n+'</span><span class="dn-pips">'+(u.syn?'<b>SYNERGY</b>':[1,2,3].map(function(k){ return '<span class="'+(k<=l?'on':'')+'"></span>'; }).join('')+(synFor(u.id).some(synReady)?'<b>✦</b>':''))+'</span></div>'; }
-  if(!held.length){ $('dn-buildlist').innerHTML='<div class="dn-empty">Clear the Entry Hall and the keep deals your first power. Build around it or fight it. Mix two powers to unlock a synergy.</div>'; return; }
+    return '<div class="dn-bi'+(u.syn||l>=3?' max':'')+(u.syn?' evo':'')+'" title="'+u.n+'" style="--pc:'+(u.syn?pc(u.need[0][0]):PATHC[u.path])+';--pc2:'+(u.syn?pc(u.need[u.need.length-1][0]):PATHC[u.path])+'"><span class="ic">'+ICON(u)+'</span><span class="nm">'+u.n+'</span><span class="dn-pips">'+(u.syn?'<b>SYNERGY</b>':[1,2,3].map(function(k){ return '<span class="'+(k<=l?'on':'')+'"></span>'; }).join('')+(synFor(u.id).some(synReady)?'<b>✦</b>':''))+'</span></div>'; }
+  $('dn-buildlist').className=''; if(!held.length){ $('dn-buildlist').innerHTML='<div class="dn-empty">Clear the Entry Hall and the keep deals your first power. Build around it or fight it. Mix two powers to unlock a synergy.</div>'; return; }
   var groups={blade:[],storm:[],bulwark:[],any:[],syn:[]}; held.forEach(function(u){ groups[u.syn?'syn':u.path].push(u); });
-  $('dn-buildlist').innerHTML=[['blade','Blade'],['storm','Storm'],['bulwark','Bulwark'],['any','Extras'],['syn','Synergies']].filter(function(g){ return groups[g[0]].length; }).map(function(g){ return '<div class="dn-bh" style="color:'+(PATHC[g[0]]||'#C9B2FF')+'">'+g[1]+'</div>'+groups[g[0]].map(row).join(''); }).join(''); }
+  var bl=$('dn-buildlist'), bp=$('dn-build');
+  bl.innerHTML=[['blade','Blade'],['storm','Storm'],['bulwark','Bulwark'],['any','Extras'],['syn','Synergies']].filter(function(g){ return groups[g[0]].length; }).map(function(g){ return '<div class="dn-bh" style="color:'+(PATHC[g[0]]||'#C9B2FF')+'">'+g[1]+'</div>'+groups[g[0]].map(row).join(''); }).join('');
+  ['tight','grid','grid g4'].forEach(function(k){ if(bp.scrollHeight>bp.clientHeight+2) bl.className=k; }); }
 function timerDraw(){ var t=S.w?S.w.runT:0; $('dn-time').textContent=clock(t); }
 
 /* ================= START / END ================= */
@@ -2233,7 +2232,7 @@ document.addEventListener('keydown',function(e){ if(e.metaKey||e.ctrlKey||e.altK
   if(k==='f'){ e.preventDefault(); fullscreen(); return; }
   if(k==='n'){ e.preventDefault(); musicToggle(); return; }
   if(k==='m'){ e.preventDefault(); muted=!muted; save(); toast(muted?'Sound off':'Sound on'); if(!muted) SND.tick(); return; }
-  if(/^[1-4]$/.test(e.key)){ if(S.mode==='ask') answer(+e.key-1); else if(S.mode==='pick'&&!e.repeat) pick(+e.key-1); return; }
+  if(/^[1-4]$/.test(e.key)){ if(e.repeat) return; if(S.mode==='ask') answer(+e.key-1); else if(S.mode==='pick') pick(+e.key-1); return; }
   if(e.key==='Enter'){ if(S.mode==='ask'&&S.qDone&&!$('dn-next').disabled){ e.preventDefault(); askNext(); } return; } });
 document.addEventListener('keyup',function(e){ var k=k0(e); delete EAT[k]; if(e.key==='Shift') delete EAT.shift; HELD[k]=false; if(k==='j') HELD[' ']=false; });
 addEventListener('blur',function(){ HELD={}; EAT={}; });
@@ -2267,7 +2266,7 @@ renderBuild(); hud(1); timerDraw(); setInterval(timerDraw,250); setInterval(func
 (function waitArt(n){ if(artReady()||n>150) boot(); else setTimeout(function(){ waitArt(n+1); },20); })(0);
 
 /* test hooks */
-window.__G={ last:function(){ startLast(); }, finish:function(w,k){ finishRun(w,k); }, pose:function(){ return heroPose(S.w.p); }, spawn:function(t,x,y,m,s){ return spawnEnemy(t,x,y,m,s); }, eframe:function(e){ return enemyFrame(e,S.w.p); }, draw:function(){ return rrDraw.apply(null,arguments); }, state:function(){ return S; }, rects:function(){ return ROOMRECTS; }, collide:function(e){ return collide(e); }, answer:answer, pick:pick, canPlay:canPlay, update:update, swing:swing, roll:roll, held:HELD,
+window.__G={ last:function(){ startLast(); }, finish:function(w,k){ finishRun(w,k); }, pose:function(){ return heroPose(S.w.p); }, spawn:function(t,x,y,m,s){ return spawnEnemy(t,x,y,m,s); }, eframe:function(e){ return enemyFrame(e,S.w.p); }, draw:function(){ return rrDraw.apply(null,arguments); }, state:function(){ return S; }, rects:function(){ return ROOMRECTS; }, collide:function(e){ return collide(e); }, answer:answer, pick:pick, save:save, canPlay:canPlay, update:update, swing:swing, roll:roll, held:HELD,
   hold:function(k,on){ HELD[k]=!!on; }, open:function(w,n,g){ openPick(w,n,g); }, hurt:function(d){ hurtP(null,d||1); }, give:function(id,l){ S.w.b[id]=l; renderBuild(); }, room:function(id,from){ loadRoom(id,from||'s'); }, fast:FAST, stat:stat, ROOMS:ROOMS, playAgain:playAgain, tile:tget, solid:solid, askNext:function(){ askNext(); }, step:function(dt){ if(S.slow>0){ S.slow-=dt; dt*=0.4; } if(S.started&&!S.over){ if(S.mode==='cut') cutTick(dt); else if(S.mode==='endcut') endTick(dt); else if(S.mode==='trans') transTick(dt); else if(canPlay()){ if(S.hs>0) S.hs-=dt; else update(dt); } } }, roomsList:function(){ return ROOMS; }, wallAt:wallAt, endShown:function(){ endShownAt=0; } };
 })();
 
