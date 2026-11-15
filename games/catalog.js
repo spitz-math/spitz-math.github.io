@@ -107,6 +107,10 @@ window.SpitzGames=[
    '<path d="M0 88C30 80 50 92 80 84S130 66 160 76S190 82 200 78V110H0z" fill="#6B4426"/><path d="M0 88C30 80 50 92 80 84S130 66 160 76S190 82 200 78" fill="none" stroke="#7BD84A" stroke-width="4"/>'+
    '<g transform="translate(100 63) rotate(-14) scale(.24)"><path d="M-34 -12L-26 -56L20 -56L34 -12" fill="none" stroke="#2B2B33" stroke-width="7"/><path d="M-90 -26L-40 -26L-30 -12L34 -12L52 -28L84 -24L92 -6L90 12L-90 12Z" fill="#FF4A36" stroke="#5E1208" stroke-width="3"/><path d="M10 -2Q40 -14 60 -10Q46 -4 62 0Q44 4 56 8Q30 6 10 6Z" fill="#FFB21E"/><circle cx="-4" cy="-66" r="15" fill="#FFB21E"/><circle cx="-56" cy="56" r="34" fill="#17140F"/><circle cx="-56" cy="56" r="15" fill="#FFB21E"/><circle cx="58" cy="56" r="34" fill="#17140F"/><circle cx="58" cy="56" r="15" fill="#FFB21E"/></g>'+
    '<rect x="0" y="0" width="200" height="3" fill="#FFB21E"/>'},
+  {id:'rook_and_ruin',name:'Rook & Ruin',d:'Sword run through the dungeon',font:"'Pixelify Sans'",paper:'#120A1F',panel:'#1E1233',acc:'#FFC23A',
+   art:'<rect width="200" height="110" fill="#120A1F"/><g fill="#1E1233"><rect x="0" y="70" width="200" height="40"/></g><g fill="#2A1C44"><rect x="0" y="70" width="40" height="20"/><rect x="80" y="70" width="40" height="20"/><rect x="160" y="70" width="40" height="20"/><rect x="40" y="90" width="40" height="20"/><rect x="120" y="90" width="40" height="20"/></g>'+
+   '<g transform="translate(100 18) rotate(35)"><rect x="-3" y="0" width="6" height="52" fill="#F4ECD8"/><rect x="-12" y="50" width="24" height="5" fill="#FFC23A"/><rect x="-3" y="55" width="6" height="12" fill="#C98A1E"/></g>'+
+   '<g fill="#4FE3F0"><rect x="34" y="40" width="5" height="5"/><rect x="160" y="34" width="5" height="5"/></g><rect x="0" y="0" width="200" height="3" fill="#FFC23A"/>'},
   {id:'pinball',name:'Pinball',d:'Burger Ball pinball',font:"'Shrikhand'",paper:'#0F0805',panel:'#1C110A',acc:'#FF4D3A',
    art:'<rect width="200" height="110" fill="#1C110A"/>'+
    '<g fill="#FFECD2" opacity=".05"><rect x="0" y="0" width="20" height="20"/><rect x="40" y="0" width="20" height="20"/><rect x="80" y="0" width="20" height="20"/><rect x="120" y="0" width="20" height="20"/><rect x="160" y="0" width="20" height="20"/><rect x="20" y="20" width="20" height="20"/><rect x="60" y="20" width="20" height="20"/><rect x="100" y="20" width="20" height="20"/><rect x="140" y="20" width="20" height="20"/><rect x="180" y="20" width="20" height="20"/><rect x="0" y="40" width="20" height="20"/><rect x="40" y="40" width="20" height="20"/><rect x="80" y="40" width="20" height="20"/><rect x="120" y="40" width="20" height="20"/><rect x="160" y="40" width="20" height="20"/><rect x="20" y="60" width="20" height="20"/><rect x="60" y="60" width="20" height="20"/><rect x="100" y="60" width="20" height="20"/><rect x="140" y="60" width="20" height="20"/><rect x="180" y="60" width="20" height="20"/><rect x="0" y="80" width="20" height="20"/><rect x="40" y="80" width="20" height="20"/><rect x="80" y="80" width="20" height="20"/><rect x="120" y="80" width="20" height="20"/><rect x="160" y="80" width="20" height="20"/></g>'+
@@ -159,7 +163,7 @@ window.SpitzGames=[
 (function(){
   var NEW_DAYS=7;
   var ADDED={ brick_breaker:'2026-10-10T20:16', mini_golf:'2026-10-10T20:30', burger_blaster:'2026-10-11T04:15', rocket_buds:'2026-10-11T04:25', paint_royale:'2026-10-11T04:30', snake_arena:'2026-10-11T19:20', brawl_buds:'2026-10-11T19:25', pinball:'2026-10-11T20:00', fit_check:'2026-10-24T14:30' };
-  var BEST=['hoop_buds','football_buds','rocket_buds','paint_royale','snake_arena','brawl_buds','pinball','hill_climb','fit_check','burger_blaster','burger_shop','mini_golf','skate','dash','fishing','brick_breaker','star_swarm','splat_range','shift_racer','jump_man_multiplication'];
+  var BEST=['hoop_buds','football_buds','rocket_buds','paint_royale','snake_arena','brawl_buds','pinball','hill_climb','rook_and_ruin','fit_check','burger_blaster','burger_shop','mini_golf','skate','dash','fishing','brick_breaker','star_swarm','splat_range','shift_racer','jump_man_multiplication'];
   /* Drip release (Kody, 2026-10-11): students start with 10 games and more unlock each week. A game listed in UNLOCK is hidden from the hub
      and leaderboard until its date (UTC); null = locked until Kody says so. To unlock, set the date: the game appears then with a NEW badge.
      Games not listed here are always shown. Hidden games' files stay on the site. */
@@ -167,7 +171,8 @@ window.SpitzGames=[
   var UNLOCK={ mini_golf:'2026-10-19T12:00', brick_breaker:'2026-10-19T12:00', snake_arena:'2026-10-19T12:00',
     burger_blaster:'2026-10-26T12:00', pinball:'2026-10-26T12:00',
     rocket_buds:'2026-11-02T12:00', brawl_buds:'2026-11-02T12:00',
-    paint_royale:'2026-11-09T12:00', hill_climb:'2026-11-09T12:00' };
+    paint_royale:'2026-11-09T12:00', hill_climb:'2026-11-09T12:00',
+    rook_and_ruin:null /* 2026-11-15: ready but hidden until Kody picks a date */ };
   /* Updated games (Kody, 2026-10-30): a big change to a live game shows an UPDATED badge and a short line saying what changed (more = the hover text) on its hub card
      for NEW_DAYS days, and the game sorts up with the new ones. at = when it went live (UTC). */
   var UPDATED={ football_buds:{ at:'2026-10-30T15:00', what:'New: points & All-Pro', more:'Now with a real points score, All-Pro mode and 3 challenges every game' },
@@ -187,7 +192,7 @@ window.SpitzGames=[
 /* Real screenshots on the cards (2026-10-24): a game listed in SHOTS shows a picture from the game itself (games/cards/<id>.webp, 400x220)
    instead of its drawing. Take a game out of the list to bring its drawing back (kept in g.drawn). */
 (function(){
-  var SHOTS=['brawl_buds','brick_breaker','burger_blaster','fishing','football_buds','hill_climb','hoop_buds','pinball','rocket_buds','skate'];
+  var SHOTS=['brawl_buds','brick_breaker','burger_blaster','fishing','football_buds','hill_climb','hoop_buds','pinball','rocket_buds','rook_and_ruin','skate'];
   /* pictures also ready in games/cards/ (busier at card size, so they keep their drawings for now): burger_shop, fit_check, paint_royale, snake_arena, splat_range */
   var me=document.currentScript&&document.currentScript.src, base=me?me.replace(/catalog\.js(\?.*)?$/,''):'/games/';
   window.SpitzGames.forEach(function(g){ if(SHOTS.indexOf(g.id)<0) return; g.drawn=g.art;
