@@ -131,3 +131,24 @@ Delete the hidden page folder `studio/sprite-drop/consent/` from the site, remov
 ## Tests
 - `node --experimental-strip-types --test supabase/functions/sprite-drop/image.test.ts`: file types, dimensions (PNG, JPEG, WebP lossy and lossless, GIF), safe paths, and links never logged.
 - `npx deno test --allow-net --allow-env --allow-read supabase/functions/sprite-drop/tools.int.test.ts`: all three tools over real MCP calls, using an in-memory stand-in for Supabase and fake ChatGPT file links. It covers: a file drop stored with the right size and dimensions, duplicates refused, `get_asset` returning byte-identical data with `checksum_matches`, and each failure stage (no image, expired link, HTML instead of image, bad base64) logged with its stage and nothing stored.
+
+## Task Drop (Spitz.dev experiment 2)
+
+Four more tools on the same function: `create_task`, `list_tasks`, `get_task`, `post_message` (code in `tasks.ts`,
+database rules in `supabase/migrations/20261115120000_task_drop.sql`). The author of every task and message comes
+from the signed-in app (claude.ai or chatgpt.com), never from an argument. Messages are append-only, `request_key`
+makes retries safe, and changing status or turn needs the task's current version.
+
+### Acceptance test result (2026-11-15): PASSED
+
+Kody typed only four prompts, each in a fresh chat with Sprite Drop on. Nothing was copied between chats.
+
+| Step | Who | What the database shows |
+|---|---|---|
+| Create | Claude | Task "Shopkeeper dialogue review" (rook-and-ruin), created_by claude, turn chatgpt, version 1 |
+| A | ChatGPT | seq 1 review (3 new lines rated for warmth, brevity, middle-school fit) |
+| B | ChatGPT | seq 2 decision: use line C as a later-visit greeting, set_turn claude |
+| B | Claude | seq 3 note acknowledging it (no game change), set_status done |
+| C | ChatGPT | read-only calls after 21:06:54 UTC, no new rows; reported the final status and history |
+
+One task, three messages, version 4, status done, no duplicates, no conflicts, no errors in the function logs.
