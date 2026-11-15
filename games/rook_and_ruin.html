@@ -364,6 +364,13 @@ body.dn-big .dn-arena, body.dn-shrink .dn-arena{ z-index:41; }
 .dn-cred{ margin:10px 0 0; font:500 14px/1.4 var(--body); color:var(--rr-mute); text-align:center; }
 .dn-keygrid .dn-cred{ grid-column:1/-1; margin:2px 0 0; }
 .dn-snd{ z-index:60; }
+/* score code box (scorecode.js adds it above Play again at go-live): plum panel, square corners, gold action, like the rest of the end screen */
+#dn-end .spz-code{ border:0; border-radius:0; background:#150C25; box-shadow:inset 0 0 0 3px #45346A; padding:12px 26px; margin:4px auto 12px; }
+#dn-end .spz-code .l{ font:700 18px/1 var(--body); letter-spacing:.02em; text-transform:none; color:var(--rr-mute); }
+#dn-end .spz-code .v{ color:var(--rr-ivory); }
+#dn-end .spz-code a{ border-radius:0; background:transparent; color:var(--rr-gold); box-shadow:inset 0 0 0 3px var(--rr-gold); font:800 20px/1 var(--body); }
+#dn-end .spz-code a:hover{ background:rgba(255,194,58,.14); }
+#dn-end .spz-code .n{ font:600 18px/1.3 var(--body); color:var(--rr-mute); }
 /* Kody 2026-11-15: Start keeps its rounded corners when hovered or pressed (the hover frame used to square it off), no teal slab under it,
    a little more room between Start and the key row, and the toast centred under the title card instead of over the logo */
 #dn-start .dn-go.dn-next, #dn-start .dn-go.dn-next:not(:disabled):hover{ border-radius:16px; box-shadow:none; }
@@ -1316,9 +1323,10 @@ function makeSprites(){
     m.forEach(function(r,j){ for(var i=0;i<9;i++){ var ch=r[i]; if(ch==='.') continue; x.fillStyle=ch==='X'?'#2A0A12':ch==='W'?'#FFD0D8':'#FF4B6B'; x.fillRect(i,j,1,1); } }); });
   SPR.heartE=mk(9,8,function(x){ var m=['.XX...XX.','XEEX.XEEX','XEEEXEEEX','XEEEEEEEX','.XEEEEEX.','..XEEEX..','...XEX...','....X....'];
     m.forEach(function(r,j){ for(var i=0;i<9;i++){ var ch=r[i]; if(ch==='.') continue; x.fillStyle=ch==='X'?'#2A0A12':'#3A2440'; x.fillRect(i,j,1,1); } }); });
-  /* Second Wind (shop revive): the heart in relic cyan */
-  SPR.rev=mk(9,8,function(x){ var m=['.XX...XX.','XRRX.XRRX','XRWRXRRRX','XRRRRRRRX','.XRRRRRX.','..XRRRX..','...XRX...','....X....'];
-    m.forEach(function(r,j){ for(var i=0;i<9;i++){ var ch=r[i]; if(ch==='.') continue; x.fillStyle=ch==='X'?'#062A36':ch==='W'?'#E0FFFF':'#3CEBFF'; x.fillRect(i,j,1,1); } }); });
+  /* Second Wind art from Kody's art pack (2026-11-15; art/second_wind_64x32.png): cell 0 = shop charm 22x18 at (5,8), cell 1 = HUD heart 9x8 */
+  var SWP={X:'#09050B',A:'#32E3FC',B:'#DAD0D9',C:'#26DAF1',D:'#017D96',E:'#048DA4'}, swDraw=function(x,m,ox,oy){ m.forEach(function(r,j){ for(var i=0;i<r.length;i++){ var ch=r[i]; if(ch==='.') continue; x.fillStyle=SWP[ch]; x.fillRect(ox+i,oy+j,1,1); } }); };
+  SPR.rev=mk(9,8,function(x){ swDraw(x,['.XX...XX.','XAAX.XAAX','XBBAXAAAX','XAAAAAADX','.XAAAADX.','..XAADX..','...XDX...','....X....'],0,0); });
+  SPR.revShop=mk(32,32,function(x){ swDraw(x,['.......XX....XX.......','......XAAX..XAAX......','XX...XXAAXXXXAAXX...XX','XXX..XABBAXXAAAAX..XXX','XBX..ABBBACAAAAAA..XBX','XBXX.ABBAAAAAAAAA.XXBX','XBBBXAAAAAAAAAAADXBBBX','.BBBBAAAAAAAAAADDBBBB.','.XBBBEEAAAAAAAADDBBBX.','.XBBBXEEAAAAAADDXBBBX.','.XBBBBXEAAAAAADXBBBBX.','..XXBBBXEAAAADXBBBXX..','...XBBBXEEAADDXBBBX...','...XBBX.XEADDX.XBBX...','....XX...XCDX...XX....','..........CE..........','..........EE..........','..........XX..........'],5,8); });
   SPR.gem=mk(6,8,function(x){ dots(x,[[2,0,2,1],[1,1,4,1],[0,2,6,3],[1,5,4,1],[2,6,2,1]],'#38C8F0'); dots(x,[[1,2,2,2],[2,1,1,1]],'#D6FBFF'); dots(x,[[3,4,2,2]],'#1784C4'); });
   SPR.gemB=mk(6,8,function(x){ dots(x,[[2,0,2,1],[1,1,4,1],[0,2,6,3],[1,5,4,1],[2,6,2,1]],'#FFC93C'); dots(x,[[1,2,2,2],[2,1,1,1]],'#FFF2C2'); dots(x,[[3,4,2,2]],'#C98A12'); });
   if(window.PX){ var walkF=function(src,side){ return mk(src.width,src.height,function(x){ var h=src.height; x.drawImage(src,0,0);
@@ -1467,7 +1475,6 @@ function makeFx(){ var i;
   FX.halo=mk(44,20,function(x){ x.strokeStyle='rgba(125,245,255,.9)'; x.lineWidth=2; x.beginPath(); x.ellipse(22,10,19,7,0,0,6.2832); x.stroke(); });
   FX.elite=mk(44,20,function(x){ x.strokeStyle='rgba(255,201,60,.95)'; x.lineWidth=2; x.beginPath(); x.ellipse(22,10,19,7,0,0,6.2832); x.stroke(); x.fillStyle='rgba(255,120,40,.3)'; x.fill(); });
   /* pickups at screen size (no per-frame scaling) */
-  SPR.rev3=mk(27,24,function(x){ x.imageSmoothingEnabled=false; x.drawImage(SPR.rev,0,0,27,24); });
   ['gem','gemB','coin','heart','heartE','rev'].forEach(function(n){ var im=SPR[n]; SPR[n+'2']=mk(im.width*2,im.height*2,function(x){ x.imageSmoothingEnabled=false; x.drawImage(im,0,0,im.width*2,im.height*2); }); }); }
 function dotLine(c,x,y,ux,uy,len,gap,sz){ var h=sz>>1; for(var q=gap;q<=len;q+=gap) c.fillRect(Math.round(x+ux*q)-h,Math.round(y+uy*q)-h,sz,sz); }
 /* explosions, cached per blast radius: 5 frames each */
@@ -2608,7 +2615,7 @@ function draw(){ var c=cx, w=S&&S.w; c.setTransform(1,0,0,1,0,0);
   /* shop */
   if(w.shop){ c.textAlign='center'; var pix=rrReady('shopi'); w.shop.forEach(function(it){
     /* Nov 14 art: the stone pedestal is its own sprite (col 5); the item stands on its top (cols 0-4). Same spot and pickup radius as before. */
-    if(pix){ c.drawImage(RRI.shopi,160,0,32,32,Math.round(it.x-16),Math.round(it.y-11),32,32); if(!it.sold){ if(it.id==='rev') c.drawImage(SPR.rev3,Math.round(it.x-13),Math.round(it.y-34)); else c.drawImage(RRI.shopi,SHOPSP[it.id]*32,0,32,32,Math.round(it.x-16),Math.round(it.y-37),32,32); } }
+    if(pix){ c.drawImage(RRI.shopi,160,0,32,32,Math.round(it.x-16),Math.round(it.y-11),32,32); if(!it.sold){ if(it.id==='rev') c.drawImage(SPR.revShop,Math.round(it.x-16),Math.round(it.y-37)); else c.drawImage(RRI.shopi,SHOPSP[it.id]*32,0,32,32,Math.round(it.x-16),Math.round(it.y-37),32,32); } }
     else { c.fillStyle='#262A44'; c.fillRect(it.x-26,it.y-8,52,24); c.fillStyle='#565C80'; c.fillRect(it.x-24,it.y-6,48,20); }
     if(!it.sold){ if(!pix){ c.font='28px sans-serif'; c.fillStyle='#FFFFFF'; c.fillText(it.ic,it.x,it.y-14); } dtx(c,it.cost+' coins',it.x,it.y+42,14,w.coins>=it.cost?'#FFC93C':'#C0788A',0,'#141026'); dtx(c,it.n,it.x,it.y+60,14,'#E8ECFF',0,'#141026'); } else dtx(c,'Sold',it.x,it.y+42,14,'#8A92BE',0,'#141026'); });
     if(w.shopNear){ var nm=w.shopNear, can=w.coins>=nm.cost, ns=nm.hold?'Bought! Step off and back on to buy another ('+nm.cost+' coins)':can?'Space: buy '+nm.n+' for '+nm.cost+' coins · '+nm.d:nm.n+' costs '+nm.cost+' · you have '+w.coins+' (need '+(nm.cost-w.coins)+' more)', nc=can?'#FFE08A':'#FFB0BE', nw=tspr(ns,16,nc).width+30; c.fillStyle='rgba(18,8,28,.9)'; c.fillRect(Math.round(W/2-nw/2),H-96,nw,40); dtx(c,ns,W/2,H-70,16,nc); } }
@@ -2839,7 +2846,7 @@ $('dn-go').addEventListener('click',function(){ var n=$('dn-nameinput').value.tr
 var endShownAt=0;
 function endRun(win){ S.over=true; S.win=!!win; HELD={}; clearTimeout(nextT); if(win) S.score+=0;
   ['dn-qwrap','dn-pick'].forEach(function(id){ $(id).hidden=true; }); save(); showEnd(true); }
-function showEnd(celebrate){ var w=S.w; endShownAt=performance.now();
+function showEnd(celebrate){ var w=S.w; endShownAt=performance.now(); $('dn-toast').hidden=true;   /* a leftover toast would sit on the name line */
   $('dn-endtitle').textContent=S.win?(w&&w.lastDone?'Victory! You beat the Warden AND escaped the Last Stand!':'Victory! The Warden is beaten. You fell in the Last Stand at '+clock(w?w.lastT:0)+'.'):'Defeated in the '+(w?ROOMS[w.rid].name:'castle')+'.';
   $('dn-endname').textContent=S.name; $('dn-endscore').innerHTML=S.score.toLocaleString()+'<small>points</small>';
   /* results (final UI pass 2026-11-15): the run and the math are separate; untouched topics say Not attempted */
@@ -2851,7 +2858,7 @@ function showEnd(celebrate){ var w=S.w; endShownAt=performance.now();
   $('dn-endbuild').innerHTML=bl.length?bl.map(function(u){ return '<div class="dn-eb">'+ICON(u)+'<span>'+u.n+'</span><em>'+(u.syn?'Synergy':L(u.id)>=3?'MAX':'Lv '+L(u.id))+'</em></div>'; }).join(''):'<div class="dn-eb"><span>No powers yet</span></div>';
   $('dn-mathbig').innerHTML=S.answered?S.correct+' of '+S.answered+' right<small>'+acc+'%</small>':'No questions answered';
   $('dn-endtopics').innerHTML=Object.keys(S.topics).map(function(k){ var t=S.topics[k]; return t[1]?row(k,t[0]+' / '+t[1]):row(k,'Not attempted',1); }).join('');
-  if(window.SpitzCode&&SpitzCode.show) try{ SpitzCode.show('dn','starter',S); }catch(e){}
+  if(window.SpitzCode&&SpitzCode.show) try{ SpitzCode.show('dn','rook_and_ruin',S); }catch(e){}
   $('dn-end').hidden=false; if(celebrate) auSting(S.win); if(celebrate&&S.win){ [0,350,700,1100].forEach(function(ms,i){ setTimeout(function(){ sparks(360+i*400,1000,18,1); sparks(1560-i*400,1000,18,1); },ms); }); } }
 function playAgain(){ if(performance.now()-endShownAt<1200) return; var keepName=S.name; S=fresh(); S.name=keepName; startRun(); timerDraw(); }
 $('dn-again').addEventListener('click',playAgain);
