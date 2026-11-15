@@ -1,4 +1,4 @@
-// chatgpt-worker (Spitz.dev): does ChatGPT's turn on a Task Drop task by itself, through the OpenAI API.
+// chatgpt-worker (spitz.dev): does ChatGPT's turn on a Task Drop task by itself, through the OpenAI API.
 // Woken by the database (trigger on studio_tasks, or the dashboard's "run ChatGPT now") with a Vault secret.
 //
 // One run = read the task, its messages and its newest images -> ask the model what to do ->
@@ -19,7 +19,7 @@ const DAILY_CAP = Number(Deno.env.get('WORKER_DAILY_CAP') || 20)
 const BUCKET = 'studio-assets'
 const db = createClient(Deno.env.get('SUPABASE_URL')!, Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!, { auth: { persistSession: false } })
 
-const SYSTEM = `You are ChatGPT, the artist and reviewer in Spitz.dev, a small studio where ChatGPT and Claude make HTML math games for Kody's middle-school students.
+const SYSTEM = `You are ChatGPT, the artist and reviewer in spitz.dev, a small studio where ChatGPT and Claude make HTML math games for Kody's middle-school students.
 You are running as an automatic worker: nobody is chatting with you. Read the task brief and every message, then do ChatGPT's next turn.
 Decide ONE action:
 - "image": the task needs a new picture from you (a sprite, sheet, icon, background). Write a precise image_prompt for an image model. For pixel art give the exact sheet size in art pixels (art_width, art_height), the delivery scale from the brief (default 4), and max_colours (usually 6-12). The worker turns the picture into exact hard-edged pixel art at that size, so describe the art filling the canvas the same way the cells are laid out, on a fully transparent background, no labels or grid lines. If the brief lists exact hex colours, put ALL of them in palette (the worker snaps every pixel to them); if it asks for a 1 pixel outline, put that colour in outline (the worker closes the outline itself). Ask the image model for big chunky blocks, bold flat shading and a thick dark outline, so it survives shrinking. If it is NOT pixel art, set art_width/art_height to 0.

@@ -1,4 +1,4 @@
-# Sprite Drop (Spitz.dev experiment 1)
+# Sprite Drop (spitz.dev experiment 1)
 
 **Question:** can ChatGPT hand an image it just generated to a tool as real bytes, with nobody downloading or uploading it, and can Claude fetch those exact bytes later in a different session?
 
@@ -132,7 +132,7 @@ Delete the hidden page folder `studio/sprite-drop/consent/` from the site, remov
 - `node --experimental-strip-types --test supabase/functions/sprite-drop/image.test.ts`: file types, dimensions (PNG, JPEG, WebP lossy and lossless, GIF), safe paths, and links never logged.
 - `npx deno test --allow-net --allow-env --allow-read supabase/functions/sprite-drop/tools.int.test.ts`: all three tools over real MCP calls, using an in-memory stand-in for Supabase and fake ChatGPT file links. It covers: a file drop stored with the right size and dimensions, duplicates refused, `get_asset` returning byte-identical data with `checksum_matches`, and each failure stage (no image, expired link, HTML instead of image, bad base64) logged with its stage and nothing stored.
 
-## Task Drop (Spitz.dev experiment 2)
+## Task Drop (spitz.dev experiment 2)
 
 Four more tools on the same function: `create_task`, `list_tasks`, `get_task`, `post_message` (code in `tasks.ts`,
 database rules in `supabase/migrations/20261115120000_task_drop.sql`). The author of every task and message comes
