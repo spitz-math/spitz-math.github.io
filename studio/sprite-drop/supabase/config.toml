@@ -1,7 +1,7 @@
 # Sprite Drop only. There is deliberately no [auth] block, so nothing here can
 # overwrite the project's sign-in settings. Set project_id to the NEW Sprite Drop
 # project ref (never Off the Clock's pkonclmfrpozizmmtnrv).
-project_id = "YOUR-PROJECT-REF"
+project_id = "klbbcwlddgtsolvsxvwe"
 
 [functions.sprite-drop]
 # The function checks the OAuth token itself, so the gateway's legacy JWT check stays off.
