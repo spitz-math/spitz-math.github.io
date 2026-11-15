@@ -175,7 +175,7 @@ body.dn-big .dn-arena, body.dn-shrink .dn-arena{ z-index:41; }
 .dn-ch:not(:disabled):hover{ border:12px solid transparent; border-radius:0; background:none; border-image:url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAwAAAAMCAYAAABWdVznAAAAVklEQVR42mNkgAIhDpn/DHjAux9PGBkYGBgYYYrf3ojDp55BWGMRw7sfTxgZYYqFNRbh1QBTw4IsKCNmglXxk1dn4GwmBhLBcNDAgis0cAHSI47UpAEAPsIi50xIqVQAAAAASUVORK5CYII=) 4 fill / 12px / 0 stretch; image-rendering:pixelated; }
 .dn-ch.right{ border:12px solid transparent; border-radius:0; background:none; border-image:url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAwAAAAMCAYAAABWdVznAAAAVklEQVR42mNkgAIhDpn/DHjAux9PGBkYGBgYYYo9bxfgU8+wXXUCw7sfTxgZYYq3q07AqwGmhgVZkMWID6viP+c+wdlMDCSC4aCBBVdo4AKkRxypSQMAJPYjCZo72mcAAAAASUVORK5CYII=) 4 fill / 12px / 0 stretch; image-rendering:pixelated; }
 .dn-ch.wrong{ border:12px solid transparent; border-radius:0; background:none; border-image:url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAwAAAAMCAYAAABWdVznAAAAVklEQVR42mNkgAIhDpn/DHjAux9PGBkYGBgYYYrfJvvjU88gPHcjw7sfTxgZYYqF527EqwGmhgVZUJuPA6viq59+wNlMDCSC4aCBBVdo4AKkRxypSQMAKSgjDCMhZaoAAAAASUVORK5CYII=) 4 fill / 12px / 0 stretch; image-rendering:pixelated; }
-.dn-fb{ border:9px solid transparent; border-radius:0; background:none; border-image:url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAwAAAAMCAYAAABWdVznAAAAPElEQVR42mNkgAJRHtX/DHjA6y+3GRkYGBiYiFGMrIaRGMXIgImBRDCqgSgNsBgkBrz+cpuRCTnaiUkaAGl2EtLfCPsFAAAAAElFTkSuQmCC) 3 fill / 9px / 0 stretch; image-rendering:pixelated; }
+.dn-fb{ border:12px solid transparent; border-radius:0; background:none; border-image:url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAwAAAAMCAYAAABWdVznAAAAPElEQVR42mNkgAJRHtX/DHjA6y+3GRkYGBiYiFGMrIaRGMXIgImBRDCqgSgNsBgkBrz+cpuRCTnaiUkaAGl2EtLfCPsFAAAAAElFTkSuQmCC) 3 fill / 12px / 0 stretch; image-rendering:pixelated; }   /* 12px like the right/wrong frames, so answering does not resize the box */
 .dn-fb.ok{ border:12px solid transparent; border-radius:0; background:none; border-image:url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAwAAAAMCAYAAABWdVznAAAAVklEQVR42mNkgAIhDpn/DHjAux9PGBkYGBgYYYo9bxfgU8+wXXUCw7sfTxgZYYq3q07AqwGmhgVZkJmFE6viv3++w9lMDCSC4aCBBVdo4AKkRxypSQMAOxYjPX46dDAAAAAASUVORK5CYII=) 4 fill / 12px / 0 stretch; image-rendering:pixelated; }
 .dn-fb.bad{ border:12px solid transparent; border-radius:0; background:none; border-image:url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAwAAAAMCAYAAABWdVznAAAAVklEQVR42mNkgAIhDpn/DHjAux9PGBkYGBgYYYrfJvvjU88gPHcjw7sfTxgZYYqF527EqwGmhgVZkJmFE6viv3++w9lMDCSC4aCBBVdo4AKkRxypSQMAPi4jPb3p32EAAAAASUVORK5CYII=) 4 fill / 12px / 0 stretch; image-rendering:pixelated; }
 .dn-q{ border:18px solid transparent; border-radius:0; background:none; border-image:url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAjElEQVR42mNkQAJCHDL/GYgA7348YYSxGZE1R/hVEKOfYcWmDrghTKRqZmBgYIjwq4C7lhFZ85HTWxhIAU+eX2FgwSaID8hI6qDwWbAp4uESx6r5y7eXGGJMDBSCUQNwxAK20CbaAPR4JuiFdz+eMK7Y1EGy0588v8Lw7scTRpTMRKztMM0ouZHc7AwAxvQ1StuSAQYAAAAASUVORK5CYII=) 6 fill / 18px / 0 stretch; image-rendering:pixelated; }
@@ -224,9 +224,9 @@ body.dn-big .dn-arena, body.dn-shrink .dn-arena{ z-index:41; }
 .dn-ch .mk{ margin-left:auto; padding-left:12px; font:800 21px/1 var(--body); white-space:nowrap; }
 .dn-ch.right .mk{ color:#7CF0A6; } .dn-ch.wrong .mk{ color:#FF9A9A; }
 .dn-q.fast .dn-ch .mk{ position:absolute; right:16px; top:16px; font-size:20px; }
-.dn-fb{ min-height:150px; }
+.dn-fb{ min-height:176px; }   /* room for the usual right/wrong explanation, so answering does not grow the card */
 .dn-fb:not(.ok):not(.bad) .h{ color:var(--rr-ivory); font-size:26px; }
-.dn-q.fast .dn-fb{ height:auto; min-height:120px; }
+.dn-q.fast .dn-fb{ height:auto; min-height:130px; }
 .dn-q.fast .dn-next{ display:block; }
 .dn-qhead .dn-reward:empty{ display:none; }
 /* the 0.5 s input gate after combat: the choices show at once but sit dimmed until they can be picked */
@@ -355,6 +355,27 @@ body.dn-big .dn-arena, body.dn-shrink .dn-arena{ z-index:41; }
 .dn-keygrid{ position:absolute; left:22px; right:22px; bottom:44px; min-height:190px; align-content:center; z-index:3; display:grid; grid-template-columns:1fr 1fr; gap:10px 26px; padding:20px 24px; background:#1E1233; box-shadow:inset 0 0 0 3px #45346A, 0 0 0 3px #12081C; text-align:left; font:600 19px/1.4 var(--body); color:#E6DCC8; }
 .dn-keygrid kbd{ display:inline-block; min-width:26px; padding:3px 7px 4px; border-radius:6px; background:#F2F2F6; color:#15151D; box-shadow:inset 0 -3px 0 rgba(0,0,0,.28); font:700 16px/1.1 var(--body); text-align:center; }
 .spz-hub{ font-weight:700 !important; font-size:24px !important; }
+/* audio pack 2026-11-15: volume sliders on the pause screen, the credits line, and the ?sound test screen */
+.dn-vol{ margin-left:auto; display:flex; gap:26px; font:700 20px/1 var(--body); color:var(--rr-ivory); }
+.dn-vol label{ display:flex; align-items:center; gap:10px; }
+.dn-vol input{ width:170px; accent-color:var(--rr-gold); cursor:pointer; }
+.dn-vol b{ min-width:52px; font-weight:600; color:var(--rr-mute); }
+.dn-vol + .dn-bdclose{ margin-left:10px; }
+.dn-cred{ margin:10px 0 0; font:500 14px/1.4 var(--body); color:var(--rr-mute); text-align:center; }
+.dn-keygrid .dn-cred{ grid-column:1/-1; margin:2px 0 0; }
+.dn-snd{ z-index:60; }
+/* Kody 2026-11-15: Start keeps its rounded corners when hovered or pressed (the hover frame used to square it off), no teal slab under it,
+   a little more room between Start and the key row, and the toast centred under the title card instead of over the logo */
+#dn-start .dn-go.dn-next, #dn-start .dn-go.dn-next:not(:disabled):hover{ border-radius:16px; box-shadow:none; }
+#dn-start .dn-go.dn-next:not(:disabled):hover{ filter:brightness(1.08); }
+#dn-start .dn-keyline{ margin-top:30px; }
+#dn-start:not([hidden]) ~ #dn-toast.dn-toast{ left:960px; top:996px; }
+.dn-snd .dn-bdbox{ width:1640px; max-height:1000px; }
+.dn-snd h4{ margin:16px 0 8px; font:800 20px/1 var(--body); color:var(--rr-gold); }
+.dn-sndrow{ display:flex; flex-wrap:wrap; gap:8px; }
+.dn-sndrow button{ font:700 17px/1 var(--body); color:var(--rr-ivory); background:#2C1C48; border:0; border-radius:6px; padding:10px 14px; cursor:pointer; box-shadow:inset 0 0 0 2px #45346A; }
+.dn-sndrow button:hover{ box-shadow:inset 0 0 0 2px var(--rr-gold); }
+.dn-snd .dn-cred{ text-align:left; margin-top:18px; }
 /* results: plum panel, run and math side by side, rows not cards */
 #dn-end{ background:rgba(10,6,20,.9); }
 .dn-endbox{ width:1340px; padding:30px 44px 32px; background:#1E1233; box-shadow:inset 0 0 0 3px #45346A, 0 0 0 4px #12081C; text-align:center; }
@@ -499,7 +520,7 @@ body.dn-cine .dn-top, body.dn-cine .dn-side{ opacity:0; pointer-events:none; tra
       <div class="dn-cover" id="dn-pick" hidden><div class="dn-pickbox">
         <div class="dn-pickstep" id="dn-pickstep"></div><h2 id="dn-picktitle">Pick an upgrade</h2><p id="dn-picknote">Press 1, 2 or 3, or click a card.</p>
         <div class="dn-cards" id="dn-cards"></div><p class="dn-readynote" id="dn-readynote"></p></div></div>
-      <div class="dn-cover" id="dn-bdwrap" hidden><div class="dn-bdbox"><div class="dn-bdhead"><h2>Paused</h2><span class="dn-paused">Your build</span><button class="dn-next dn-bdclose" id="dn-bdclose" type="button">Resume (P)</button></div><div class="dn-bdlist" id="dn-bdlist"></div><div class="dn-bdsyn" id="dn-bdsyn"></div></div></div>
+      <div class="dn-cover" id="dn-bdwrap" hidden><div class="dn-bdbox"><div class="dn-bdhead"><h2>Paused</h2><span class="dn-paused">Your build</span><div class="dn-vol"><label>Music <input type="range" id="dn-volm" min="0" max="100" step="5" aria-label="Music volume"><b id="dn-volmv"></b></label><label>Effects <input type="range" id="dn-volf" min="0" max="100" step="5" aria-label="Effects volume"><b id="dn-volfv"></b></label></div><button class="dn-next dn-bdclose" id="dn-bdclose" type="button">Resume (P)</button></div><div class="dn-bdlist" id="dn-bdlist"></div><div class="dn-bdsyn" id="dn-bdsyn"></div></div></div>
       
     </div>
   </div>
@@ -523,6 +544,7 @@ body.dn-cine .dn-top, body.dn-cine .dn-side{ opacity:0; pointer-events:none; tra
         <div><kbd>Shift</kbd> Dodge roll (right-click works too)</div><div><kbd>1</kbd>–<kbd>4</kbd> Answer · <kbd>Enter</kbd> Continue</div>
         <div><kbd>P</kbd> or <kbd>Esc</kbd> Pause and see your build</div><div><kbd>B</kbd> Build details (pauses)</div>
         <div><kbd>F</kbd> Full screen · <kbd>N</kbd> Music · <kbd>M</kbd> Mute</div><div><kbd>Shift</kbd>+<kbd>R</kbd> Start a new game</div>
+        <p class="dn-cred">Music rendered with the Fluid (R3) GM SoundFont, (c) Frank Wen, MIT licence.</p>
       </div></details>
   </div><span class="dn-credit sz-credit">Made by Spitz <i class="sz-burger" aria-hidden="true"></i></span></div>
 
@@ -535,6 +557,7 @@ body.dn-cine .dn-top, body.dn-cine .dn-side{ opacity:0; pointer-events:none; tra
       <section class="dn-endcol"><h3>Your math</h3><div class="dn-mathbig" id="dn-mathbig"></div><div class="dn-topics" id="dn-endtopics"></div></section>
     </div>
     <button class="dn-again dn-next" id="dn-again">Play again</button>
+    <p class="dn-cred">Music rendered with the Fluid (R3) GM SoundFont, (c) Frank Wen, MIT licence.</p>
   </div><span class="dn-credit sz-credit">Made by Spitz <i class="sz-burger" aria-hidden="true"></i></span></div>
 
   <div class="dn-over sz-ask" id="sz-ask" hidden role="dialog" aria-modal="true" aria-labelledby="sz-asktitle"><div class="dn-box">
@@ -1199,10 +1222,10 @@ var RM=window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches
 
 /* ================= SOUND (synthesized) ================= */
 var AC=null, muted=false;
-function ac(){ if(!AC){ var C=window.AudioContext||window.webkitAudioContext; if(!C) return null; AC=new C(); } if(AC.state==='suspended') AC.resume(); return AC; }
+function ac(){ if(!AC){ var C=window.AudioContext||window.webkitAudioContext; if(!C) return null; AC=new C(); } if(AC.state==='suspended'){ try{ var r=AC.resume(); if(r&&r.catch) r.catch(function(){}); }catch(e){} } return AC; }
 function count(){ window.__snd=(window.__snd||0)+1; }
 var BUS=null, VOX=[];
-function bus(a){ if(!BUS){ try{ var cmp=a.createDynamicsCompressor(); cmp.threshold.value=-20; cmp.knee.value=12; cmp.ratio.value=5; cmp.attack.value=0.004; cmp.release.value=0.18; cmp.connect(a.destination); BUS=cmp; }catch(e){ BUS=a.destination; } } return BUS; }
+function bus(a){ if(!BUS){ try{ var cmp=a.createDynamicsCompressor(); cmp.threshold.value=-20; cmp.knee.value=12; cmp.ratio.value=5; cmp.attack.value=0.004; cmp.release.value=0.18; cmp.connect(auSynthOut(a)); BUS=cmp; }catch(e){ BUS=a.destination; } } return BUS; }
 /* room(dur): false when too many sounds are already playing (keeps a busy horde from turning into a wall of noise) */
 function room(a,dur,max){ var t=a.currentTime, n=0; for(var i=VOX.length-1;i>=0;i--){ if(VOX[i]<=t) VOX.splice(i,1); else n++; } if(n>=(max||10)) return false; VOX.push(t+dur); return true; }
 var SOFT=0;   /* set while a low-priority sound is being made */
@@ -1219,7 +1242,7 @@ function brass(f,t0,dur,vol){ var a=ac(); if(!a||muted) return; var t=a.currentT
   g.gain.setValueAtTime(0.0001,t); g.gain.exponentialRampToValueAtTime(vol,t+0.025); g.gain.setValueAtTime(vol,t+Math.max(0.03,dur-0.08)); g.gain.exponentialRampToValueAtTime(0.0001,t+dur);
   [-6,6].forEach(function(det){ var o=a.createOscillator(); o.type='sawtooth'; o.frequency.value=f; o.detune.value=det; o.connect(lp); o.start(t); o.stop(t+dur+0.03); });
   lp.connect(g); g.connect(bus(a)); count(); }
-var C5=523.25,D5=587.33,E5=659.25,F5=698.46,G5=783.99,A5=880,C6=1046.5,D6=1174.66,E6=1318.5,F6=1396.9,A6=1760;
+var C5=523.25,D5=587.33,E5=659.25,F5=698.46,G5=783.99,A5=880,C6=1046.5,D6=1174.66,E6=1318.5,A6=1760;
 var lastS={};
 function gate(k,ms){ var t=performance.now(); if(lastS[k]&&t-lastS[k]<ms) return false; lastS[k]=t; return true; }
 var SND={
@@ -1230,7 +1253,6 @@ var SND={
   hurt:function(){ tone(260,150,0,0.25,'triangle',0.17); },
   block:function(){ tone(880,660,0,0.12,'triangle',0.08); },
   torch:function(){ noise(0,0.05,160,0,1200); tone(392,523,0.02,0.18,'triangle',0.06); },
-  push:function(){ noise(0,0.07,140,0,380); },
   solve:function(){ [E5,G5,C6].forEach(function(f,i){ tone(f,f,i*0.09,0.25,'triangle',0.08); }); },
   chest:function(){ [C5,E5,G5,C6,E6].forEach(function(f,i){ tone(f,f,i*0.07,0.22,'triangle',0.075); }); },
   door:function(){ noise(0,0.12,420,0,260); tone(98,82,0,0.5,'triangle',0.12); },
@@ -1260,33 +1282,10 @@ var SND={
 };
 ['hit','pop','gem','zap','boom','bolt','tele','btele','coin','clang','orb'].forEach(function(k){ var f=SND[k]; SND[k]=function(){ SOFT=1; try{ f(); }finally{ SOFT=0; } }; });
 
-/* ================= SONG: "Warden's Keep" (castle march, 96 bpm, D minor) =================
-   No snare or shaker: a soft low drum on 1 and 3, a walking bass, a quiet harp, a warm pad and an 8-bar lute melody.
-   The melody and harp drop out while a question is up. */
-var D4=293.66,E4=329.63,F4=349.23,G4=392,A4=440,Bb4=466.16;
-var DN_CH=[[73.42,[293.66,349.23,440.00]],[58.27,[233.08,293.66,349.23]],[87.31,[261.63,349.23,440.00]],[65.41,[261.63,329.63,392.00]],
-           [73.42,[293.66,349.23,440.00]],[58.27,[233.08,293.66,349.23]],[65.41,[261.63,329.63,392.00]],[55.00,[277.18,329.63,440.00]]];
-var DN_ARP=[0,1,2,1];
-var DN_MEL=[[[0,A4,4],[4,D5,4],[8,C5,2],[10,A4,2],[12,F4,4]],[[0,G4,6],[6,F4,2],[8,D4,8]],[[0,C5,4],[4,A4,4],[8,C5,2],[10,D5,2],[12,C5,4]],[[0,G4,8],[8,E4,4],[12,G4,4]],
-            [[0,D5,4],[4,F5,4],[8,E5,2],[10,D5,2],[12,A4,4]],[[0,Bb4,6],[6,A4,2],[8,G4,8]],[[0,E4,4],[4,G4,4],[8,C5,4],[12,Bb4,4]],[[0,A4,12]]];
-var SONG={ level:0.085, echo:0.3,
-  want:function(){ return !!S&&S.started&&!S.over; },
-  busy:function(){ return !!S&&S.mode==='ask'; },
-  sd:function(){ return 60/96/4; },
-  voice:function(f,t0,dur){ tone(f,f,t0,dur,'triangle',0.11); },
-  step:function(ctx,g,i,t,sd){ var bar=Math.floor(i/16)%8, c=DN_CH[bar], k=i%16;
-    if(k===0||k===8) mKick(ctx,g.out,t,0.2,110,52);
-    if(k===0) c[1].forEach(function(f){ mNote(ctx,g.out,'sine',f/2,t,sd*15,0.022,700,null,0.25); });
-    if(k===0) mNote(ctx,g.out,'triangle',c[0],t,sd*6,0.3,520,null);
-    if(k===8) mNote(ctx,g.out,'triangle',c[0]*1.5,t,sd*4,0.2,520,null);
-    if(k===14) mNote(ctx,g.out,'triangle',c[0]*2,t,sd*2,0.14,600,null);
-    if(k%4===2) mNote(ctx,g.act,'triangle',c[1][DN_ARP[(k>>2)%4]]*2,t,sd*2.5,0.02,2000,g.echo);
-    DN_MEL[bar].forEach(function(m){ if(m[0]===k) mNote(ctx,g.act,'triangle',m[1],t,sd*m[2]*0.95,0.05,2600,g.echo); });
-  } };
-
+/* (the synth song "Warden's Keep" was replaced by the audio pack music on 2026-11-15: see audio_part.js) */
 /* ================= SPITZ KIT (games/kit.js) ================= */
-var KIT=SpitzKit.game({ ac:function(){ return AC; }, muted:function(){ return muted; }, song:function(){ return SONG; }, confetti:'dn-confetti', toast:'dn-toast', colors:['#FFC23A','#FFE07A','#E3961C','#F4ECD8','#4FE3F0','#38C8F0'] }),
-  szActive=KIT.active, musicToggle=KIT.musicToggle, musBtn=KIT.musBtn, jingle=KIT.jingle, confetti=KIT.confetti, toast=KIT.toast, stagePoint=KIT.stagePoint, musGraph=KIT.musGraph, mNote=KIT.mNote, mHit=KIT.mHit, mKick=KIT.mKick;
+var KIT=SpitzKit.game({ ac:function(){ return AC; }, muted:function(){ return muted; }, voice:function(f,t0,dur){ tone(f,f,t0,dur,'triangle',0.11); }, confetti:'dn-confetti', toast:'dn-toast', colors:['#FFC23A','#FFE07A','#E3961C','#F4ECD8','#4FE3F0','#38C8F0'] }),
+  musicToggle=KIT.musicToggle, musBtn=KIT.musBtn, toast=KIT.toast, stagePoint=KIT.stagePoint;
 
 /* ================= THE DUNGEON ================= */
 var W=960, H=540, TS=30, COLS=32, ROWS=18;
@@ -1295,19 +1294,14 @@ cx.imageSmoothingEnabled=false;
 function FONT(px){ return '700 '+px+'px '+getComputedStyle(document.documentElement).getPropertyValue('--display'); }
 var FONTS={}; function F(px){ return FONTS[px]||(FONTS[px]=FONT(px)); }
 function FB(px){ return FONTS['b'+px]||(FONTS['b'+px]=(px>=20?'800 ':'700 ')+px+'px Lexend,system-ui,sans-serif'); }
-function FT(str,px){ return /[a-z]/.test(str)?FB(px):F(px); }
+/* any words use Lexend (Kody 2026-11-15: the pixel font was still showing on all-caps warnings and banners); only bare numbers keep the pixel font */
+function FT(str,px){ return /[a-zA-Z]/.test(str)?FB(px):F(px); }
 function rnd(a,b){ return a+Math.random()*(b-a); }
 function clamp(v,a,b){ return v<a?a:v>b?b:v; }
-function now(){ return Date.now(); }
 
 /* ---------- pixel sprites, drawn once ---------- */
 function mk(w,h,fn){ var c=document.createElement('canvas'); c.width=w; c.height=h; var x=c.getContext('2d'); fn(x,w,h); return c; }
 function white(src){ return mk(src.width,src.height,function(x){ x.drawImage(src,0,0); x.globalCompositeOperation='source-in'; x.fillStyle='#FFFFFF'; x.fillRect(0,0,src.width,src.height); }); }
-/* a shaded pixel blob: inside(i,j) says which pixels are body; light top-left, dark bottom-right, dark outline */
-function blob(x,w,h,inside,cols){ var i,j,inn=function(a,b){ return a>=0&&b>=0&&a<w&&b<h&&inside(a+0.5,b+0.5); };
-  for(j=0;j<h;j++) for(i=0;i<w;i++){ if(!inn(i,j)) continue; var edge=!inn(i-1,j)||!inn(i+1,j)||!inn(i,j-1)||!inn(i,j+1);
-    var c=cols.base; if(edge) c=cols.line; else if(!inn(i-1,j-1)||!inn(i-2,j-1)&&!inn(i-1,j-2)) c=cols.light; else if(!inn(i+1,j+1)||!inn(i+2,j+1)) c=cols.dark;
-    x.fillStyle=c; x.fillRect(i,j,1,1); } }
 function dots(x,list,col){ x.fillStyle=col; list.forEach(function(p){ x.fillRect(p[0],p[1],p[2]||1,p[3]||1); }); }
 var SPR={}, GLOW=null;
 function makeSprites(){
@@ -1322,6 +1316,9 @@ function makeSprites(){
     m.forEach(function(r,j){ for(var i=0;i<9;i++){ var ch=r[i]; if(ch==='.') continue; x.fillStyle=ch==='X'?'#2A0A12':ch==='W'?'#FFD0D8':'#FF4B6B'; x.fillRect(i,j,1,1); } }); });
   SPR.heartE=mk(9,8,function(x){ var m=['.XX...XX.','XEEX.XEEX','XEEEXEEEX','XEEEEEEEX','.XEEEEEX.','..XEEEX..','...XEX...','....X....'];
     m.forEach(function(r,j){ for(var i=0;i<9;i++){ var ch=r[i]; if(ch==='.') continue; x.fillStyle=ch==='X'?'#2A0A12':'#3A2440'; x.fillRect(i,j,1,1); } }); });
+  /* Second Wind (shop revive): the heart in relic cyan */
+  SPR.rev=mk(9,8,function(x){ var m=['.XX...XX.','XRRX.XRRX','XRWRXRRRX','XRRRRRRRX','.XRRRRRX.','..XRRRX..','...XRX...','....X....'];
+    m.forEach(function(r,j){ for(var i=0;i<9;i++){ var ch=r[i]; if(ch==='.') continue; x.fillStyle=ch==='X'?'#062A36':ch==='W'?'#E0FFFF':'#3CEBFF'; x.fillRect(i,j,1,1); } }); });
   SPR.gem=mk(6,8,function(x){ dots(x,[[2,0,2,1],[1,1,4,1],[0,2,6,3],[1,5,4,1],[2,6,2,1]],'#38C8F0'); dots(x,[[1,2,2,2],[2,1,1,1]],'#D6FBFF'); dots(x,[[3,4,2,2]],'#1784C4'); });
   SPR.gemB=mk(6,8,function(x){ dots(x,[[2,0,2,1],[1,1,4,1],[0,2,6,3],[1,5,4,1],[2,6,2,1]],'#FFC93C'); dots(x,[[1,2,2,2],[2,1,1,1]],'#FFF2C2'); dots(x,[[3,4,2,2]],'#C98A12'); });
   if(window.PX){ var walkF=function(src,side){ return mk(src.width,src.height,function(x){ var h=src.height; x.drawImage(src,0,0);
@@ -1470,10 +1467,8 @@ function makeFx(){ var i;
   FX.halo=mk(44,20,function(x){ x.strokeStyle='rgba(125,245,255,.9)'; x.lineWidth=2; x.beginPath(); x.ellipse(22,10,19,7,0,0,6.2832); x.stroke(); });
   FX.elite=mk(44,20,function(x){ x.strokeStyle='rgba(255,201,60,.95)'; x.lineWidth=2; x.beginPath(); x.ellipse(22,10,19,7,0,0,6.2832); x.stroke(); x.fillStyle='rgba(255,120,40,.3)'; x.fill(); });
   /* pickups at screen size (no per-frame scaling) */
-  ['gem','gemB','coin','heart','heartE'].forEach(function(n){ var im=SPR[n]; SPR[n+'2']=mk(im.width*2,im.height*2,function(x){ x.imageSmoothingEnabled=false; x.drawImage(im,0,0,im.width*2,im.height*2); }); }); }
-/* a jagged pixel bolt between two points: squares along the line, cheaper than a stroked path and it matches the art */
-function bolt(c,x0,y0,x1,y1,jit){ var dx=x1-x0, dy=y1-y0, n=Math.max(2,Math.ceil(Math.hypot(dx,dy)/5)), nx=-dy, ny=dx, nl=Math.hypot(nx,ny)||1, off=0; nx/=nl; ny/=nl;
-  for(var i=0;i<=n;i++){ var k=i/n; if(i%3===0) off=(i===0||i>=n-1)?0:rnd(-jit,jit); c.fillRect(Math.round(x0+dx*k+nx*off)-1,Math.round(y0+dy*k+ny*off)-1,3,3); } }
+  SPR.rev3=mk(27,24,function(x){ x.imageSmoothingEnabled=false; x.drawImage(SPR.rev,0,0,27,24); });
+  ['gem','gemB','coin','heart','heartE','rev'].forEach(function(n){ var im=SPR[n]; SPR[n+'2']=mk(im.width*2,im.height*2,function(x){ x.imageSmoothingEnabled=false; x.drawImage(im,0,0,im.width*2,im.height*2); }); }); }
 function dotLine(c,x,y,ux,uy,len,gap,sz){ var h=sz>>1; for(var q=gap;q<=len;q+=gap) c.fillRect(Math.round(x+ux*q)-h,Math.round(y+uy*q)-h,sz,sz); }
 /* explosions, cached per blast radius: 5 frames each */
 var BOOMC={};
@@ -1566,7 +1561,6 @@ function drawBatRR(c,e,p){ if(!rrReady('bat2')) return null; var fx=e.st===2?e.s
 function drawSlimeRR(c,e){ if(!rrReady('slime2')) return null; var cyc=e.t%1, col=cyc<0.4?(cyc<0.1?3:cyc<0.3?0:1):cyc<0.75?2:0;   /* stretch on the way up, round on the way down */
   var bob=e.st===1&&cyc>=0.4?-Math.sin((cyc-0.4)/0.6*Math.PI)*(e.small?6:10):0, foot=e.y+e.r+2;
   rrDraw(c,'slime2',e.small?1:0,col,e.x,foot+bob,false,e.fl>0&&!RM); return foot-(e.small?16:30)+bob; }
-var RRH={gob:44,skel:56,wiz:58,boss:96};
 
 /* ---------- cutscene: 12 s, in the engine, plays on new runs only ---------- */
 var CUT=null, EAT={};
@@ -1677,7 +1671,7 @@ function endTick(dt){ if(!ECUT||S.mode!=='endcut') return; var w=S.w, p=w.p, E=E
       var dx=mx-p.x, dy=my-p.y; p.mv=true; p.walk+=dt*1.4; if(Math.abs(dx)+Math.abs(dy)>0.5){ var dl=Math.hypot(dx,dy); p.fx=dx/dl; p.fy=dy/dl; } p.x=mx; p.y=my; }
     else if(T>=4.6) p.mv=false;
   } else {
-    if(ecue('down',0.1)){ SND.miss(); }
+    if(ecue('down',0.1)){ SYNTH.miss(); }
     if(ecue('more',0.3)){ for(var i=0;i<(RM?12:30);i++){ var a=Math.random()*6.28, d=rnd(300,520); var ty2=['gob','gob','skel','bat','slime','wiz'][i%6]; var e2=spawnEnemy(ty2,p.x+Math.cos(a)*d,p.y+Math.sin(a)*d*0.7,1); e2.st=0; e2.cd=99; } }
     var live=w.en.filter(function(e){ return !e.dead; });
     live.forEach(function(e,i){ e.st=0; e.stun=0; var a=Math.atan2(e.y-p.y,e.x-p.x)+0.0001*i, ring=Math.max(10,70-T*16)+(i%5)*6, tx=p.x+Math.cos(a)*ring, ty=p.y+Math.sin(a)*ring*0.8; e.x+=(tx-e.x)*Math.min(1,dt*1.6); e.y+=(ty-e.y)*Math.min(1,dt*1.6); });
@@ -1701,6 +1695,183 @@ SND.snarl=function(){ tone(150,95,0,0.3,'sawtooth',0.018); };
 try{ $('dn-start').style.backgroundImage='url('+RRTITLE+')'; }catch(e){}
 /* the HUD wordmark (art/hud_pack, 112x20 art px drawn 3x); the typed title stays as the fallback */
 try{ if(typeof RRWORD!=='undefined'){ var lg=document.querySelector('.dn-logo'); lg.classList.add('art'); lg.style.backgroundImage='url('+RRWORD+')'; } }catch(e){}
+
+/* ================= AUDIO PACK (2026-11-15) =================
+   Music: OGG files played as decoded AudioBuffers. Loops use loop=true, so they are gapless; tracks crossfade over 0.8 s.
+   Effects: 46 OGG one-shots (second batch of 16 added the same night), decoded on the first click or key press. Anything that has not loaded (or will not decode)
+   falls back to the old synth sound, so the game never goes silent and never throws.
+   Where the files come from: on the site they sit beside the game in audio/rook_and_ruin/ (fetched). The _mult test copy
+   carries them inside the file (window.RR_AUD, base64), because a page opened from Downloads cannot fetch files.
+   Music by game state (Kody 2026-11-15: no dungeon track, battle_loop in every regular room):
+     title screen + intro scene -> title_loop | regular rooms -> battle_loop | shop -> shop_loop | Warden room -> boss_metal_loop
+     Last Stand -> last_stand_metal_2min, kept in step with the 2:00 timer (pauses with it), final hit lands on 0:00
+     end screen -> victory_sting / defeat_sting.  Questions, picks and pause duck the music to 40%.
+   Volumes: music 0.5, effects 0.8 (times the Music / Effects sliders on the pause screen, saved per device). N and M still work. */
+var AUD_BASE='audio/rook_and_ruin/';
+var MUSF={title:'title_loop',battle:'battle_loop',shop:'shop_loop',boss:'boss_metal_loop',ls:'last_stand_metal_2min',win:'victory_sting',lose:'defeat_sting'};
+var SFXF=['answer_correct','answer_wrong','card_pick_gold','card_pick_power','chest_open','dodge_roll','door_open','door_unlock','enemy_death_bat','enemy_death_goblin',
+  'enemy_death_skeleton','enemy_death_slime','footstep_stone_1','footstep_stone_2','footstep_stone_3','level_up','pickup_coin','pickup_gem','pickup_heart','player_hurt',
+  'player_knocked_out','pot_smash','room_cleared','shield_block','shop_purchase','sword_hit_armor','sword_hit_flesh','sword_swing','warden_ground_slam','warden_roar',
+  'spark_zap','bomb_explosion','warden_orb_volley','power_bolt','crit_strike','wall_crack','secret_found','combo_up','enemy_telegraph','warden_telegraph',
+  'boss_defeated','enemy_death_wisp','torch_light','relic_glow','goblin_snarl','ui_tick'];
+/* per effect: [shortest gap in ms, most copies at once, volume]. Everything else: [45,4,1]. */
+var FXC={ sword_swing:[60,3,1], sword_hit_flesh:[45,3,1], sword_hit_armor:[80,3,1], pickup_coin:[60,4,1], pickup_gem:[90,3,0.9], pot_smash:[60,4,1],
+  enemy_death_goblin:[50,4,1], enemy_death_bat:[50,4,1], enemy_death_skeleton:[60,3,1], enemy_death_slime:[50,4,1], warden_roar:[900,1,1], warden_ground_slam:[200,2,1],
+  footstep_stone_1:[120,1,1], footstep_stone_2:[120,1,1], footstep_stone_3:[120,1,1], player_hurt:[120,2,1], dodge_roll:[120,2,1], level_up:[200,1,1], room_cleared:[400,1,1],
+  spark_zap:[120,2,1], bomb_explosion:[110,3,1], power_bolt:[90,3,1], warden_orb_volley:[150,1,1], enemy_telegraph:[180,2,1], warden_telegraph:[400,1,1],
+  enemy_death_wisp:[50,4,1], combo_up:[150,1,1], wall_crack:[150,1,1], torch_light:[200,2,1], boss_defeated:[1000,1,1] };
+var SYNTH_TRIM=1;   /* level of the synth effects that have no file yet, relative to the Effects slider */
+var AU={ raw:{}, getting:{}, buf:{}, dec:{}, bad:{}, fail:{}, wait:{}, used:{}, vol:{m:1,f:1}, mg:null, dg:null, fg:null, sg:null, cur:null, src:null, g:null, t0:0, off0:0, pend:null,
+  sting:null, fxLast:{}, fxN:{}, fxAll:0, test:null, pre:0 };
+try{ var auv=JSON.parse(localStorage.getItem('rook_and_ruin_audio')||'null'); if(auv){ if(auv.m>=0&&auv.m<=1) AU.vol.m=+auv.m; if(auv.f>=0&&auv.f<=1) AU.vol.f=+auv.f; } }catch(e){}
+function auSaveVol(){ try{ localStorage.setItem('rook_and_ruin_audio',JSON.stringify(AU.vol)); }catch(e){} }
+function auMusicOff(){ return muted||KIT.musicOff(); }
+
+/* ---------- loading ---------- */
+/* A download that fails (busy school Wi-Fi) is tried again: up to 3 times, 4 s apart. Only then, or when the file can never load
+   (a local copy with no audio beside it, or bytes that will not decode), is the name marked bad for the rest of the visit. */
+function auBytes(n){ if(AU.raw[n]) return Promise.resolve(AU.raw[n]); if(AU.getting[n]) return AU.getting[n];
+  if(AU.wait[n]&&performance.now()<AU.wait[n]) return Promise.reject(new Error('audio: waiting to retry'));
+  var E=window.RR_AUD, p, local=!(E&&E[n])&&location.protocol==='file:';
+  if(E&&E[n]) p=new Promise(function(res){ var s=atob(E[n]), a=new Uint8Array(s.length); for(var i=0;i<s.length;i++) a[i]=s.charCodeAt(i); res(a.buffer); });
+  else if(location.protocol==='file:') p=Promise.reject(new Error('no audio beside a local file'));
+  else p=fetch(AUD_BASE+n+'.ogg').then(function(r){ if(!r.ok) throw new Error('audio '+r.status); return r.arrayBuffer(); });
+  AU.getting[n]=p.then(function(b){ AU.raw[n]=b; delete AU.getting[n]; return b; },function(e){ delete AU.getting[n]; AU.fail[n]=(AU.fail[n]||0)+1; if(local||AU.fail[n]>=3) AU.bad[n]=1; else AU.wait[n]=performance.now()+4000; throw e; });
+  AU.getting[n].catch(function(){}); return AU.getting[n]; }
+function auDecode(a,b){ return new Promise(function(res,rej){ var done=0, ok=function(x){ if(!done){ done=1; res(x); } }, no=function(e){ if(!done){ done=1; rej(e||new Error('decode')); } };
+  try{ var r=a.decodeAudioData(b.slice(0),ok,no); if(r&&r.then) r.then(ok,no); }catch(e){ no(e); } }); }
+function auBuf(n){ AU.used[n]=performance.now(); if(AU.buf[n]) return Promise.resolve(AU.buf[n]); if(AU.dec[n]) return AU.dec[n];
+  var a=AC; if(!a||AU.bad[n]) return Promise.reject(new Error('no audio'));
+  AU.dec[n]=auBytes(n).then(function(b){ return auDecode(a,b); }).then(function(x){ AU.buf[n]=x; delete AU.dec[n]; auTrim(); return x; },function(e){ delete AU.dec[n]; if(AU.raw[n]) AU.bad[n]=1;   /* the bytes arrived but will not decode */ throw e; });
+  AU.dec[n].catch(function(){}); return AU.dec[n]; }
+/* Chromebook memory: a decoded 80 s loop is ~30 MB, so at most 3 long tracks stay decoded (the playing one first). The compressed bytes stay, so a track comes back fast. */
+function auTrim(){ var big=[], k; for(k in MUSF){ var n=MUSF[k]; if(AU.buf[n]&&k!=='win'&&k!=='lose') big.push(n); }
+  if(big.length<=3) return; var keep={}; keep[MUSF[AU.cur]||'']=1; if(AU.cur==='boss') keep[MUSF.ls]=1;
+  big.sort(function(x,y){ return (AU.used[x]||0)-(AU.used[y]||0); });
+  for(var i=0;i<big.length&&big.length-i>3;i++){ if(!keep[big[i]]&&!(AU.src&&AU.src.buffer===AU.buf[big[i]])) delete AU.buf[big[i]]; } }
+function auPreload(){ if(AU.pre||!AC) return; AU.pre=1; SFXF.forEach(function(n){ auBuf(n).catch(function(){}); });
+  /* fetch the music ahead of time (compressed bytes only, one file at a time), so each room's track starts the moment it is needed */
+  var q=['battle','shop','boss','ls'].map(function(k){ return MUSF[k]; }), next=function(){ var n=q.shift(); if(n) auBytes(n).then(next,next); }; setTimeout(next,2500); }
+/* effects that missed their first download are asked for again every 5 s until they load or are marked bad */
+setInterval(function(){ if(!AU.pre||!AC) return; SFXF.forEach(function(n){ if(!AU.buf[n]&&!AU.bad[n]&&!AU.dec[n]) auBuf(n).catch(function(){}); }); },5000);
+
+/* ---------- graph: music -> duck -> music volume, effects -> effects volume, synth effects -> trim ---------- */
+function auGraph(){ var a=AC; if(!a) return null; if(AU.mg) return AU.mg;
+  try{ AU.mg=a.createGain(); AU.dg=a.createGain(); AU.fg=a.createGain(); AU.sg=a.createGain();
+    AU.dg.connect(AU.mg); AU.mg.connect(a.destination); AU.fg.connect(a.destination); AU.sg.connect(a.destination); auVol(true); }catch(e){ AU.mg=null; }
+  return AU.mg; }
+function auSynthOut(a){ return auGraph()?AU.sg:a.destination; }
+function auVol(now){ if(!AU.mg) return; var t=AC.currentTime, set=function(p,v){ if(now) p.value=v; else p.setTargetAtTime(v,t,0.03); };
+  set(AU.mg.gain,0.5*AU.vol.m); set(AU.fg.gain,0.8*AU.vol.f);   /* the soft synth set (Nov 15, 3rd pack) is mastered 6-14 dB quieter, so effects are back at 0.8 */ set(AU.sg.gain,SYNTH_TRIM*AU.vol.f); }
+function auKick(){ try{ var a=ac(); if(!a) return; auGraph(); auPreload(); auTick(); }catch(e){} }
+['pointerdown','keydown','touchstart'].forEach(function(n){ addEventListener(n,auKick,true); });
+
+/* ---------- music ---------- */
+function auWant(){ if(AU.test) return AU.test==='stop'?null:AU.test; if(!S||auMusicOff()) return null;
+  if(!S.started) return 'title'; if(S.over) return null;   /* the end screen belongs to the sting */
+  var w=S.w; if(!w) return 'title';
+  if(S.mode==='cut') return 'title';
+  if(S.mode==='endcut') return AU.cur==='ls'&&ECUT&&ECUT.kind==='escape'?'ls':null;   /* the Last Stand track rings out over the escape; a fall fades */
+  if(w.last>0) return 'ls';
+  var R=ROOMS[w.rid]||{}; return R.boss?'boss':R.shop?'shop':'battle'; }
+function auStart(b,off,loop,fade){ var a=AC, s=a.createBufferSource(), g=a.createGain(), t=a.currentTime; s.buffer=b; s.loop=!!loop;
+  g.gain.setValueAtTime(0.0001,t); g.gain.linearRampToValueAtTime(1,t+fade); s.connect(g); g.connect(AU.dg); s.start(t,off||0);
+  AU.src=s; AU.g=g; AU.t0=t; AU.off0=off||0; s.onended=function(){ if(AU.src===s){ AU.src=null; AU.g=null; } try{ g.disconnect(); }catch(e){} }; }
+function auFadeOut(sec){ if(!AU.src) return; var a=AC, s=AU.src, g=AU.g, t=a.currentTime; AU.src=null; AU.g=null;
+  try{ g.gain.cancelScheduledValues(t); g.gain.setValueAtTime(Math.max(0.0001,g.gain.value),t); g.gain.linearRampToValueAtTime(0.0001,t+sec); s.stop(t+sec+0.05); }catch(e){} }
+function auPos(){ return AU.src?AU.off0+(AC.currentTime-AU.t0):null; }
+function auTick(){ var a=AC; if(!a||!AU.mg) return;
+  var duck=S&&S.started&&!S.over&&(S.mode==='ask'||S.mode==='pick'||S.mode==='build');
+  AU.dg.gain.setTargetAtTime(duck&&!AU.test?0.4:1,a.currentTime,0.2);
+  if(AU.sting&&S&&!S.over&&!AU.test){ try{ AU.sting.stop(); }catch(e){} AU.sting=null; }
+  var want=auWant();
+  if(want==='ls') return auLS();
+  if(want!==AU.cur){ auFadeOut(want?0.8:1.0); AU.cur=want; }
+  if(want==='boss') auBuf(MUSF.ls).catch(function(){});   /* get the Last Stand ready while the Warden fight runs */
+  if(!want||AU.src||AU.pend===want) return;
+  var n=MUSF[want]; if(AU.bad[n]) return;
+  AU.pend=want; auBuf(n).then(function(b){ if(AU.pend===want) AU.pend=null; if(AU.cur===want&&!AU.src) auStart(b,0,!/^(ls|win|lose)$/.test(want),0.8); },function(){ if(AU.pend===want) AU.pend=null; }); }
+/* the Last Stand track follows the timer: it pauses when the timer pauses (pause, revive question, re-entry count) and
+   jumps back in step if slow motion or hit-stop let it drift, so the final hit lands on 0:00 */
+function auLS(){ var w=S.w, n=MUSF.ls;
+  if(AU.cur!=='ls'){ auFadeOut(0.8); AU.cur='ls'; }
+  if(S.mode==='endcut') return;
+  if(S.mode!=='play'){ if(AU.src) auFadeOut(0.15); return; }
+  var b=AU.buf[n]; if(!b){ if(AU.pend!=='ls'&&!AU.bad[n]){ AU.pend='ls'; auBuf(n).then(function(){ AU.pend=null; auTick(); },function(){ AU.pend=null; }); } return; }
+  var want=Math.max(0,LAST-w.last), pos=auPos(), tol=w.last<8?0.12:0.3;
+  if(pos!=null&&Math.abs(pos-want)<tol) return;
+  if(want>=b.duration-0.05) return;
+  var cut=pos!=null; if(cut) auFadeOut(0.06);
+  auStart(b,want,false,cut?0.06:(want<0.5?0.05:0.15)); }
+setInterval(function(){ try{ auTick(); }catch(e){} },150);
+KIT.onMusic=function(){ try{ auTick(); }catch(e){} };
+/* a hidden tab goes silent: the game already pauses there, and 25 Chromebooks should not keep playing music from background tabs */
+document.addEventListener('visibilitychange',function(){ if(!AC) return; try{ var r=document.hidden?AC.suspend():AC.resume(); if(r&&r.catch) r.catch(function(){}); }catch(e){} });
+function auSting(win){ var a=AC; if(!a||!AU.mg){ (win?SYNTH.win:SYNTH.miss)(); return; }
+  auFadeOut(0.4); AU.cur=null; if(muted) return;
+  if(KIT.musicOff()){ (win?SYNTH.win:SYNTH.miss)(); return; }   /* music off: keep the old short effect so the end still has a sound */
+  auBuf(win?MUSF.win:MUSF.lose).then(function(b){ if(!S.over||AU.sting) return; var s=a.createBufferSource(); s.buffer=b; s.connect(AU.dg); s.start(a.currentTime+0.3); AU.sting=s; s.onended=function(){ if(AU.sting===s) AU.sting=null; }; },
+    function(){ (win?SYNTH.win:SYNTH.miss)(); }); }
+
+/* ---------- effects ---------- */
+function fxPlay(n,o){ var a=AC; if(!a||muted||!AU.fg) return false; var b=AU.buf[n]; if(!b) return false; o=o||{};
+  var c=FXC[n]||[45,4,1], t=performance.now();
+  if(AU.fxLast[n]&&t-AU.fxLast[n]<c[0]) return true;            /* rate limit: skip it (and don't fall back to synth) */
+  if((AU.fxN[n]||0)>=c[1]||AU.fxAll>=16) return true;
+  AU.fxLast[n]=t; AU.fxN[n]=(AU.fxN[n]||0)+1; AU.fxAll++;
+  var s=a.createBufferSource(), g=a.createGain(); s.buffer=b; if(o.rate) s.playbackRate.value=o.rate; g.gain.value=c[2]*(o.vol||1);
+  s.connect(g); g.connect(AU.fg); s.onended=function(){ AU.fxN[n]--; AU.fxAll--; try{ s.disconnect(); g.disconnect(); }catch(e){} };
+  s.start(a.currentTime+(o.at||0)); count(); return true; }
+var SYNTH={}; Object.keys(SND).forEach(function(k){ SYNTH[k]=SND[k]; });
+[['swing','sword_swing'],['dodge','dodge_roll'],['block','shield_block'],['hurt','player_hurt'],['clang','sword_hit_armor'],['coin','pickup_coin'],['gem','pickup_gem'],
+ ['chest','chest_open'],['crack','pot_smash'],['correct','answer_correct'],['miss','answer_wrong'],['level','level_up'],['pick','card_pick_power'],['gold','card_pick_gold'],
+ ['buy','shop_purchase'],['gate','door_unlock'],['door','door_open'],['boss','warden_roar'],
+ ['zap','spark_zap'],['boom','bomb_explosion'],['orb','warden_orb_volley'],['bolt','power_bolt'],['crit','crit_strike'],['tele','enemy_telegraph'],['btele','warden_telegraph'],
+ ['solve','secret_found'],['bossDown','boss_defeated'],['torch','torch_light'],['relic','relic_glow'],['snarl','goblin_snarl'],['tick','ui_tick']].forEach(function(m){ var k=m[0], n=m[1]; SND[k]=function(){ if(!fxPlay(n)) SYNTH[k].apply(null,arguments); }; });
+SND.hit=function(e,o){ if(o&&o.melee&&e&&fxPlay(e.type==='skel'||e.type==='boss'?'sword_hit_armor':'sword_hit_flesh')) return; SYNTH.hit(); };
+var DIEF={gob:'enemy_death_goblin',bat:'enemy_death_bat',skel:'enemy_death_skeleton',slime:'enemy_death_slime',wiz:'enemy_death_wisp'};
+SND.die=function(e){ if(e&&e.type==='boss') return; var n=e&&DIEF[e.type]; if(!(n&&fxPlay(n,{rate:e.small?1.1:1}))) SYNTH.pop(); };
+SND.wall=function(){ if(!fxPlay('wall_crack')) SYNTH.crack(); };
+/* combo_up is in D; each multiplier step plays it higher (D, F, A, D) like the old synth figure */
+SND.combo=function(m){ var r=[1,1,1,1.189,1.498,2][Math.min(5,Math.round(m))]||1; if(!fxPlay('combo_up',{rate:r})) SYNTH.combo(m); };
+SND.slam=function(){ if(!fxPlay('warden_ground_slam')) SYNTH.boom(); };
+SND.heart=function(){ if(!fxPlay('pickup_heart')) SYNTH.chest(); };
+/* shop, not enough coins: a low soft tick (not the wrong-answer sound, which belongs to questions only) */
+SND.deny=function(){ if(!fxPlay('ui_tick',{rate:0.6})) tone(300,260,0,0.08,'triangle',0.06); };
+SND.ko=function(){ fxPlay('player_knocked_out'); };
+SND.clear=function(){ if(fxPlay('room_cleared')) fxPlay('door_unlock',{at:0.45}); else SYNTH.door(); };
+SND.lsStart=function(){ SYNTH.boss(); };
+SND.step=function(){ fxPlay('footstep_stone_'+(1+Math.floor(Math.random()*3)),{rate:0.96+Math.random()*0.08}); };
+
+/* ---------- pause screen sliders ---------- */
+(function(){ var m=$('dn-volm'), f=$('dn-volf'); if(!m||!f) return;
+  function show(){ m.value=Math.round(AU.vol.m*100); f.value=Math.round(AU.vol.f*100); $('dn-volmv').textContent=m.value+'%'; $('dn-volfv').textContent=f.value+'%'; }
+  function set(){ AU.vol.m=m.value/100; AU.vol.f=f.value/100; auSaveVol(); auVol(); show(); }
+  [m,f].forEach(function(el){ el.addEventListener('input',set); el.addEventListener('change',function(){ set(); el.blur(); if(el===f) SND.coin(); }); el.addEventListener('keydown',function(e){ if(/^(Arrow|Home|End|Page)/.test(e.key)) e.stopPropagation(); else el.blur(); }); });
+  show(); })();
+
+/* ---------- sound test: add #sound to the end of the link. Every track and effect, plus the combo pitch steps. ---------- */
+var SNDTEST=/^#sound/.test(location.hash)||/[?&]sound\b/.test(location.search);   /* #sound survives the question-set link rewrite */
+function soundTest(){ var box=document.createElement('div'); box.className='dn-cover dn-snd'; box.id='dn-snd';
+  var MUS=[['title','Title'],['battle','Rooms (battle)'],['shop','Shop'],['boss','Warden'],['ls','Last Stand (2:05)'],['win','Victory sting'],['lose','Defeat sting']];
+  var h='<div class="dn-bdbox"><div class="dn-bdhead"><h2>Sound test</h2><span class="dn-paused" id="dn-sndnow">Click anything to hear it</span><button class="dn-next dn-bdclose" id="dn-sndclose" type="button">Close</button></div>';
+  h+='<h4>Music</h4><div class="dn-sndrow">'+MUS.map(function(m){ return '<button data-m="'+m[0]+'">'+m[1]+'</button>'; }).join('')+'<button data-m="ls110">Last Stand from 1:50</button><button data-m="stop">Stop music</button></div>';
+  h+='<h4>Effects (files)</h4><div class="dn-sndrow">'+SFXF.map(function(n){ return '<button data-f="'+n+'">'+n.replace(/_/g,' ')+'</button>'; }).join('')+'<button data-f="steps">footsteps walking</button></div>';
+  h+='<h4>Effect variations the game makes</h4><div class="dn-sndrow">'+[2,3,4,5].map(function(k){ return '<button data-c="'+k+'">combo up x'+k+'</button>'; }).join('')+'</div>';
+  h+='<p class="dn-cred">Music rendered with the Fluid (R3) GM SoundFont, (c) Frank Wen, MIT licence.</p></div>';
+  AU.test='stop'; box.innerHTML=h; ($('dn-bdwrap').parentNode).appendChild(box);
+  var now=$('dn-sndnow'), say=function(t){ now.textContent=t; };
+  box.addEventListener('click',function(e){ var b=e.target.closest('button'); if(!b) return; e.stopPropagation(); auKick(); var a=AC; if(!a) return;
+    if(b.id==='dn-sndclose'){ AU.test=null; auFadeOut(0.3); AU.cur=null; box.remove(); return; }
+    if(b.dataset.m){ var k=b.dataset.m; auFadeOut(0.3); AU.cur=null; if(AU.sting){ try{ AU.sting.stop(); }catch(x){} AU.sting=null; } AU.test='stop'; if(k==='stop'){ say('Music stopped'); return; }
+      var key=k==='ls110'?'ls':k, n=MUSF[key]; say('Loading '+n+'...');
+      auBuf(n).then(function(buf){ AU.cur=null; auFadeOut(0.05); auStart(buf,k==='ls110'?110:0,!/^(ls|win|lose)$/.test(key),0.3); say('Playing '+n+' ('+buf.duration.toFixed(1)+' s'+(/^(ls|win|lose)$/.test(key)?', one-shot':', loops')+')'); },function(){ say(n+' did not load'); }); return; }
+    if(b.dataset.f){ var f=b.dataset.f; if(f==='steps'){ var i=0, iv=setInterval(function(){ SND.step(); if(++i>=12) clearInterval(iv); },320); say('Footsteps (random 1-3, slight pitch change)'); return; }
+      auBuf(f).then(function(){ AU.fxLast[f]=0; fxPlay(f); say('Effect: '+f); },function(){ say(f+' did not load'); }); return; }
+    if(b.dataset.c){ auBuf('combo_up').then(function(){ AU.fxLast.combo_up=0; SND.combo(+b.dataset.c); say('Combo up x'+b.dataset.c); },function(){ say('combo_up did not load'); }); } });
+  window.__sndtest=box; }
+if(SNDTEST) addEventListener('load',function(){ try{ soundTest(); }catch(e){ console.warn(e); } });
+window.__AU=AU;
 
 /* ---------- the castle: one run = these rooms ---------- */
 /* exits: n/w/e -> next room. Rooms lock while there are enemies; clearing opens every exit. */
@@ -1810,7 +1981,8 @@ function loadRoom(id,from){ var w=S.w, R=ROOMS[id]; applyFork(); w.batch=null; w
   w.waves=(R.waves||[]).slice(); w.wave=0; w.waveT=0.9; w.chest=null; w.resolve=0; w.siegeT=R.siege||0; w.crack=0; w.boss=null; w.shop=null;
   w.cleared=!w.waves.length&&!R.siege&&!R.boss; w.open=w.door=w.cleared;
   if(R.shop){ w.mA='wave'; w.mAt=0; }   /* the merchant waves hello as you walk in */
-  if(R.shop) w.shop=[{id:'heal',ic:'🧪',n:'Potion',d:'Heal to full',cost:10},{id:'max',ic:'❤️',n:'Heart Container',d:'+1 max heart',cost:18,next:[32]},{id:'card',ic:'📜',n:'Upgrade Scroll',d:'Pick 1 of 3 powers',cost:22,next:[34,48]},{id:'gold',ic:'🌟',n:'Gold Scroll',d:'Pick 1 of 3 gold powers (+2 levels)',cost:48},{id:'arm',ic:'🪖',n:'Armor',d:'Blocks the next 3 hits',cost:26}].map(function(it,k){ it.x=W/2+(k-2)*150; it.y=322; return it; });
+  if(R.shop) w.shop=[{id:'heal',ic:'🧪',n:'Potion',d:'Heal to full',cost:10},{id:'max',ic:'❤️',n:'Heart Container',d:'+1 max heart',cost:18,next:[32]},{id:'card',ic:'📜',n:'Upgrade Scroll',d:'Pick 1 of 3 powers',cost:22,next:[34,48]},{id:'gold',ic:'🌟',n:'Gold Scroll',d:'Pick 1 of 3 gold powers (+2 levels)',cost:48},{id:'arm',ic:'🪖',n:'Armor',d:'Blocks the next 3 hits',cost:26},{id:'rev',ic:'💙',n:'Second Wind',d:'One more chance if you are knocked out again',cost:30}].map(function(it,k){ it.x=W/2+(k-2.5)*130; it.y=322; return it; });
+  if(w.shop&&S.revExtra) w.shop[5].sold=1;   /* Second Wind (Kody 2026-11-15): a second revive, bought here, one per run */
   placePots(id);
   if(R.secret) w.secretChest=ROOMART?{x:secretX(),y:FLR[1]+10,open:false}:{x:w.secL?W-(27.5*TS+15):27.5*TS+15,y:2.5*TS,open:false};
   else w.secretChest=null;
@@ -1853,11 +2025,11 @@ function hurtE(e,d,fx,fy,kb,opt){ if(e.dead) return; opt=opt||{}; var w=S.w;
   tally(Math.min(d,Math.max(0,e.hp))); e.hp-=d; e.fl=0.09; if(kb){ var k=kb/(ET[e.type].heavy?5:1); e.kx+=fx*k; e.ky+=fy*k; }
   if(d>0&&w.fx.length<80) w.fx.push({k:'num',x:e.x+rnd(-4,4),y:e.y-e.r-6,t:0,v:d,c:opt.crit?'#FFC93C':'#FFFFFF'});
   if(opt.melee&&w.fx.length<90) w.fx.push({k:'spark',x:e.x-fx*e.r*0.6,y:e.y-fy*e.r*0.6-6,a:Math.atan2(fy,fx),t:0});
-  SND.hit(); if(e.hp<=0) killE(e,opt); }
+  SND.hit(e,opt); if(e.hp<=0) killE(e,opt); }
 /* score = points. Kills are worth more while your combo is high; getting hit drops it. Rooms pay for speed and for taking no hits. */
 function cMult(){ var c=S.w.combo||0; return Math.min(5,1+0.25*Math.floor(c/5)); }
 function addPts(n,x,y,col){ var w=S.w; n=Math.round(n); S.score+=n; if(x!=null&&w.fx.length<100) w.fx.push({k:'txt',lo:1,x:x,y:y,t:0,v:'+'+n,c:col||'#FFE08A'}); }
-function killE(e,opt){ var w=S.w, t=ET[e.type]; e.dead=true; w.kills++; SND.pop();
+function killE(e,opt){ var w=S.w, t=ET[e.type]; e.dead=true; w.kills++; SND.die(e);
   if(w.fx.length<130){ var dn=RRE[e.type]; if(dn&&rrReady(dn)&&!e.small){ var dz=enemyFrame(e,w.p); w.fx.push({k:'die',n:rrReady(dz.n)?dz.n:dn,row:rrReady(dz.n)?dz.row:Math.min(1,dz.row),col:dz.col,fl:dz.fl,x:e.x,y:e.y+e.r+2,t:0}); } if(!RM) w.fx.push({k:'pop',x:e.x,y:e.y-8,t:0}); }
   if(opt&&opt.crit&&HAS('executioner')) w.p.rollCd=0;
   var late=ROOMS[w.rid].siege||ROOMS[w.rid].boss;
@@ -1886,7 +2058,7 @@ function swingHits(){ var w=S.w, p=w.p, s=stat(), a=p.swA, rng=p.spin?s.range+12
   /* bat orbs back: a swing that meets an enemy orb sends it flying at the nearest enemy */
   w.orbs.forEach(function(o){ if(o.fr) return; var dx=o.x-p.x, dy=o.y-(p.y-6), d=Math.hypot(dx,dy); if(d<rng+8&&(d<22||angDiff(Math.atan2(dy,dx),a)<arc/2)){ var tg=nearestFoe(o.x,o.y,600), ta=tg?Math.atan2(tg.y-o.y,tg.x-o.x):a; o.fr=1; o.vx=Math.cos(ta)*420; o.vy=Math.sin(ta)*420; o.t=0; SND.clang(); w.fx.push({k:'txt',x:o.x,y:o.y-14,t:0,v:'Return!',c:'#7DF5FF'}); } });
   /* secret wall */
-  if(w.secretChest&&!w.secretOpen){ (ROOMART?[[0,0]]:w.secL?[[3,4],[4,4]]:[[27,4],[28,4]]).forEach(function(c){ if(!ROOMART&&tget(c[0],c[1])!==8) return; var tx=ROOMART?secretX():c[0]*TS+15, ty=ROOMART?FLR[1]-4:c[1]*TS+15; if(Math.hypot(tx-p.x,ty-p.y)<rng+22&&!p.crackHit){ p.crackHit=1; w.crack++; SND.crack(); if(!RM) w.shake=0.1; for(var k=0;k<8;k++) w.fx.push({k:'bit',x:tx,y:ty+10,vx:rnd(-90,90),vy:rnd(-120,10),t:0,c:'#6E76A4'});
+  if(w.secretChest&&!w.secretOpen){ (ROOMART?[[0,0]]:w.secL?[[3,4],[4,4]]:[[27,4],[28,4]]).forEach(function(c){ if(!ROOMART&&tget(c[0],c[1])!==8) return; var tx=ROOMART?secretX():c[0]*TS+15, ty=ROOMART?FLR[1]-4:c[1]*TS+15; if(Math.hypot(tx-p.x,ty-p.y)<rng+22&&!p.crackHit){ p.crackHit=1; w.crack++; SND.wall(); if(!RM) w.shake=0.1; for(var k=0;k<8;k++) w.fx.push({k:'bit',x:tx,y:ty+10,vx:rnd(-90,90),vy:rnd(-120,10),t:0,c:'#6E76A4'});
       if(w.crack>=3){ w.secretOpen=1; openSecret(); if(!ROOMART) ROOMC=drawRoom(ROOMS[w.rid].kind); SND.solve(); toast('A secret room!'); } else toast(w.crack===1?'That wall sounds hollow...':'It is cracking!'); } }); } }
 function swing(){ var w=S.w, p=w.p, s=stat(); if(p.cd>0||p.roll>0) return; var a=aimAngle(s.range+30);
   p.chain=(w.t-p.chainT<0.6)?p.chain+1:1; p.chainT=w.t;
@@ -1939,7 +2111,8 @@ function update(dt){ var w=S.w, p=w.p, s=stat(), i, e;
     if(L('riposte')>=3) w.en.forEach(function(e){ if(!e.dead&&p.rollHit.indexOf(e)<0&&Math.hypot(e.x-p.x,e.y-p.y)<e.r+p.r+6){ p.rollHit.push(e); DSRC='riposte'; hurtE(e,6,p.rx,p.ry,200); } });
     if(p.roll<=0){ p.rolling=0; p.perfect=0; p.rec=0.16; if(L('riposte')&&p.rip<=0) p.rip=1.2; if(early(w)&&L('bash')&&p.rollHit&&p.rollHit.length) p.inv=Math.max(p.inv,0.4);
       if(HAS('battlespin')&&L('bash')&&p.rollHit&&p.rollHit.length){ p.rec=0; p.chain=0; p.spin=1; p.crit=0; p.swA=Math.atan2(p.ry,p.rx); p.sw=0.26; p.cd=0.22; p.hitOnce=0; p.crackHit=0; p.struck=0; p.swR=0; p.sid++; SND.swing(); } } }
-  else { var slow=(p.sw>0?0.55:1)*(p.rec>0?0.25:1); p.x+=(ml?mx/ml*s.spd*slow:0)*dt; p.y+=(ml?my/ml*s.spd*slow:0)*dt; }
+  else { var slow=(p.sw>0?0.55:1)*(p.rec>0?0.25:1); p.x+=(ml?mx/ml*s.spd*slow:0)*dt; p.y+=(ml?my/ml*s.spd*slow:0)*dt;
+    if(ml){ p.stepT=(p.stepT||0)-dt*slow; if(p.stepT<=0){ p.stepT=0.32*165/s.spd; SND.step(); } } else p.stepT=0.08; }
   p.x+=p.kx*dt; p.y+=p.ky*dt; p.kx*=Math.max(0,1-9*dt); p.ky*=Math.max(0,1-9*dt);
   collide(p); potTick(dt);
   if(p.inv>0) p.inv-=dt; if(p.cd>0) p.cd-=dt; if(p.sw>0){ p.sw-=dt; if(p.sw<=0){ if(!p.struck&&p.sid) strike(); p.spin=0; p.crit=0; p.swR=0.08; } } if(p.swR>0) p.swR-=dt; if(p.hurtT>0) p.hurtT-=dt; if(p.blkT>0) p.blkT-=dt; if(p.sh>0) p.sh-=dt; if(p.rollCd>0) p.rollCd-=dt; if(p.rip>0) p.rip-=dt; if(p.rec>0) p.rec-=dt;
@@ -1991,7 +2164,7 @@ function update(dt){ var w=S.w, p=w.p, s=stat(), i, e;
   for(i=w.coinsF.length-1;i>=0;i--){ var cn=w.coinsF[i], cdx=p.x-cn.x, cdy=p.y-cn.y, cd=Math.hypot(cdx,cdy);
     if(cd<70||cn.m||w.cleared){ cn.m=1; cn.x+=cdx/(cd||1)*480*dt; cn.y+=cdy/(cd||1)*480*dt; }
     if(cd<p.r+8){ w.coinsF.splice(i,1); w.coins++; SND.coin(); } }
-  for(i=w.hearts.length-1;i>=0;i--){ var h=w.hearts[i]; h.t+=dt; if(Math.hypot(p.x-h.x,p.y-h.y)<p.r+12&&p.hp<p.max){ p.hp++; w.hearts.splice(i,1); SND.chest(); w.fx.push({k:'txt',x:p.x,y:p.y-30,t:0,v:'+1 ♥',c:'#FF6B86'}); } else if(h.t>14) w.hearts.splice(i,1); }
+  for(i=w.hearts.length-1;i>=0;i--){ var h=w.hearts[i]; h.t+=dt; if(Math.hypot(p.x-h.x,p.y-h.y)<p.r+12&&p.hp<p.max){ p.hp++; w.hearts.splice(i,1); SND.heart(); w.fx.push({k:'txt',x:p.x,y:p.y-30,t:0,v:'+1 ♥',c:'#FF6B86'}); } else if(h.t>14) w.hearts.splice(i,1); }
   /* chests */
   /* a chest that lands on top of Rook waits: it opens once he steps off and back, or after a beat once the level-ups are done (so nobody gets stuck standing on it) */
   if(w.chest&&!w.chest.arm){ if(Math.hypot(p.x-w.chest.x,p.y-w.chest.y)>p.r+34) w.chest.arm=1; else if(w.pend<=0){ w.chest.wait=(w.chest.wait||0)+dt; if(w.chest.wait>1.2) w.chest.arm=1; } }
@@ -2004,7 +2177,7 @@ function update(dt){ var w=S.w, p=w.p, s=stat(), i, e;
 function stepFx(dt){ var w=S.w; for(var i=w.fx.length-1;i>=0;i--){ var f=w.fx[i]; f.t+=dt; if(f.k==='bit'){ f.x+=f.vx*dt; f.y+=f.vy*dt; f.vy+=300*dt; }
     var life=f.k==='bit'?0.5:f.k==='die'?0.16:f.k==='pop'?0.18:f.k==='zap'||f.k==='arc'?0.22:f.k==='ring'?0.35:f.k==='boom'?0.3:f.k==='spark'?0.14:f.k==='hurt'?0.3:f.k==='puff'?0.4:0.8; if(f.t>life) w.fx.splice(i,1); } }
 var TT=0.9, TH=0.45;   /* doorway walk: 0.45 s out through the door, 0.45 s in through the next one */
-function goRoom(id,from){ var w=S.w, p=w.p; w.next=[id,from]; w.tdir=from==='w'?[-1,0]:from==='e'?[1,0]:[0,-1]; p.fx=w.tdir[0]; p.fy=w.tdir[1]; p.sw=0; p.roll=0; p.kx=p.ky=0; S.mode='trans'; trans=TT; HELD={}; save(); }
+function goRoom(id,from){ var w=S.w, p=w.p; w.next=[id,from]; w.tdir=from==='w'?[-1,0]:from==='e'?[1,0]:[0,-1]; p.fx=w.tdir[0]; p.fy=w.tdir[1]; SND.door(); p.sw=0; p.roll=0; p.kx=p.ky=0; S.mode='trans'; trans=TT; HELD={}; save(); }
 
 /* ---------- enemy behaviour: every attack is shown before it lands ---------- */
 function attacking(e){ var t=e.type; return (t==='boss'&&e.st!==5&&e.st!==9)||((t==='gob'||t==='bat')&&e.st===2)||(t==='slime'&&e.st===1); }
@@ -2074,7 +2247,7 @@ function bossAI(e,dt,p,d,ux,uy){ var w=S.w, half=e.hp<e.max/2, sp=half?0.85:1;
       SND.btele(); } }
   else if(e.st===1){ if(e.cd>e.c0*0.4) e.fa=Math.atan2(p.y-e.y,p.x-e.x); if(e.cd<=0){ e.st=2; e.cd=1.4; } }
   else if(e.st===2){ v=560; mx=Math.cos(e.fa); my=Math.sin(e.fa); if(e.cd<=0){ e.lastA='charge'; e.st=5; e.cd=0.5; } }
-  else if(e.st===3){ if(e.cd<=0){ if(!RM) w.shake=0.25; SND.boom(); if(Math.hypot(p.x-e.x,p.y-e.y)<120) hurtP(e); w.fx.push({k:'boom',x:e.x,y:e.y,r:120,t:0}); e.lastA='slam'; if(half&&!(w.ringT>0)){ var ga=Math.random()*6.283; w.ringT=1.5; w.rings=(w.rings||[]).concat([{x:e.x,y:e.y,r:120,hit:0,g:[ga,ga+Math.PI+rnd(-0.5,0.5)]}]); } e.st=5; e.cd=0.7; } }
+  else if(e.st===3){ if(e.cd<=0){ if(!RM) w.shake=0.25; SND.slam(); if(Math.hypot(p.x-e.x,p.y-e.y)<120) hurtP(e); w.fx.push({k:'boom',x:e.x,y:e.y,r:120,t:0}); e.lastA='slam'; if(half&&!(w.ringT>0)){ var ga=Math.random()*6.283; w.ringT=1.5; w.rings=(w.rings||[]).concat([{x:e.x,y:e.y,r:120,hit:0,g:[ga,ga+Math.PI+rnd(-0.5,0.5)]}]); } e.st=5; e.cd=0.7; } }
   else if(e.st===4){ if(e.cd<=0){ var pa=Math.atan2(p.y-e.y,p.x-e.x); w.fx.push({k:'slash',x:e.x,y:e.y-10,a:e.fa,t:0,big:1}); if(Math.hypot(p.x-e.x,p.y-e.y)<130&&angDiff(pa,e.fa)<1.25) hurtP(e); e.lastA='swipe'; e.st=5; e.cd=half?0.35:0.6; } }
   else if(e.st===6){ if(e.cd<=0){ e.lastA='orbs'; for(var k=0;k<10;k++){ var a=k*Math.PI/5+e.t; w.orbs.push({x:e.x,y:e.y-20,vx:Math.cos(a)*140,vy:Math.sin(a)*140,t:0}); } SND.orb(); e.st=5; e.cd=0.6; } }
   else if(e.st===9){ if(e.cd<=0){ e.st=3; e.cd=0.6; e.fa=Math.atan2(p.y-e.y,p.x-e.x); SND.btele(); } }
@@ -2137,7 +2310,7 @@ function roomTick(dt){ var w=S.w, R=ROOMS[w.rid];
   else if(!alive) roomClear(); }
 function roomClear(){ var w=S.w, R=ROOMS[w.rid]; var rt=w.runT-(w.roomT0||w.runT), fl=!w.hurtRoom, bonus=150+Math.max(0,450-6*rt)+(fl?300:0); addPts(bonus); if(fl) w.flawless++;
   w.clearMsg='+'+Math.round(bonus)+' room bonus'+(fl?' · FLAWLESS!':'');
-  w.cleared=true; w.open=w.door=true; w.resolve=0.9; SND.door(); w.orbs=[]; w.rings=[];
+  w.cleared=true; w.open=w.door=true; w.resolve=0.9; SND.clear(); w.orbs=[]; w.rings=[];
   if(w.p.hp<w.p.max&&!R.boss){ w.p.hp++; w.fx.push({k:'txt',x:w.p.x,y:w.p.y-48,t:0,v:'+1 ♥ room clear',c:'#FF6B86'}); }
   w.banner={txt:'ROOM CLEAR',sub:w.clearMsg,t:1.8};
   if(R.chest) w.chest={x:W/2,y:R.kind==='vault'?9*TS:6*TS,open:false,type:R.chest};
@@ -2145,24 +2318,27 @@ function roomClear(){ var w=S.w, R=ROOMS[w.rid]; var rt=w.runT-(w.roomT0||w.runT
 /* LAST STAND: the Warden falls, the keep starts to crumble, and the horde pours in for 2 minutes. This is where scores spread out. */
 var LAST=120;
 function startLast(){ var w=S.w; w.won=1; w.last=LAST; w.lastT=0; w.boss=null; w.tm.spawn=0.5; w.tm.swarm=18; w.tm.rub=3; w.rub=[]; w.lsW=0; w.lsKills=0; w.lsWK=0; w.cleared=false; w.open=false;
-  w.banner={txt:'LAST STAND!',sub:'The keep is falling. Survive 2:00. Kills count double!',t:2.6}; SND.boss(); save(); }
+  w.banner={txt:'LAST STAND!',sub:'The keep is falling. Survive 2:00. Kills count double!',t:2.6}; SND.lsStart(); save(); }
 /* Last Stand: a flood of enemies, falling rubble, and Wardens that keep coming (1 at 0:15, 2 at 0:50, 3 at 1:25) */
+var LSCAP=90;   /* seconds into the Last Stand where the difficulty ramp stops */
 var LSW=[[15,1,'ANOTHER WARDEN!'],[50,2,'TWO WARDENS?!'],[85,3,'THREE WARDENS!!']];   /* [time, Wardens alive from then on, banner] */
 function lastTick(dt){ var w=S.w, T=w.lastT; w.lastT+=dt; w.last-=dt;
   if(w.last<=0){ w.last=0; addPts(5000,w.p.x,w.p.y-60,'#FFC93C'); w.lastDone=1; finishRun(true,'escape'); return; }
   var wardens=w.en.filter(function(e){ return !e.dead&&e.type==='boss'; }); w.boss=wardens[0]||null;
-  /* Wardens: the target count only goes up. A milestone tops the room up to that many at once; a fallen Warden is replaced 10 s later */
+  /* Wardens: the target count only goes up. A milestone tops the room up to that many at once; a fallen Warden is replaced 12 s later */
   var pendW=w.spawns.filter(function(s){ return s.type==='boss'; }).length, haveW=wardens.length+pendW;
   var lsSpawn=function(n,txt){ for(var k=0;k<n;k++){ var sx=[W/2,160,W-160][(w.lsN=(w.lsN||0)+1)%3]; w.spawns.push({type:'boss',x:sx,y:FLR[1]+70,t:1.2,m:0.7}); } if(n>0){ w.banner={txt:txt,sub:'',t:1.4}; SND.boss(); } };
   LSW.forEach(function(q,i){ if(T>=q[0]&&w.lsW<=i){ w.lsW=i+1; w.lsTgt=q[1]; w.lsRe=0; var need=Math.max(1,q[1]-haveW); lsSpawn(need,q[2]); haveW+=need; } });
-  if(w.lsTgt&&haveW<w.lsTgt){ w.lsRe=(w.lsRe||0)+dt; if(w.lsRe>=10){ w.lsRe=0; lsSpawn(1,haveW+1>=2?(['','','TWO','THREE'][haveW+1]+' WARDENS AGAIN!'):'ANOTHER WARDEN!'); } } else w.lsRe=0;
-  w.tm.spawn-=dt; if(w.tm.spawn<=0&&w.en.length+w.spawns.length<90){ w.tm.spawn=Math.max(0.13,0.5-T*0.003);
+  if(w.lsTgt&&haveW<w.lsTgt){ w.lsRe=(w.lsRe||0)+dt; if(w.lsRe>=12){ w.lsRe=0; lsSpawn(1,haveW+1>=2?(['','','TWO','THREE'][haveW+1]+' WARDENS AGAIN!'):'ANOTHER WARDEN!'); } } else w.lsRe=0;
+  /* Kody 2026-11-15, "a tiny bit easier": the horde grows 10% slower and stops growing at 1:30. The last 30 s hold that level (the third Warden still arrives at 1:25) */
+  var Te=Math.min(T,LSCAP)*0.9;
+  w.tm.spawn-=dt; if(w.tm.spawn<=0&&w.en.length+w.spawns.length<90){ w.tm.spawn=Math.max(0.13,0.5-Te*0.003);
     var pool=['gob','gob','bat','slime','gob']; if(T>8) pool.push('skel','gob','bat'); if(T>25) pool.push('wiz','skel','bat','slime'); if(T>60) pool.push('skel','wiz','gob');
-    var pos=edgePos(Math.floor(Math.random()*4)), grp=2+Math.floor(T/20);
-    for(var g=0;g<grp;g++){ var lt=pool[Math.floor(Math.random()*pool.length)]; w.spawns.push({type:lt,x:clamp(pos[0]+rnd(-40,40),FLR[0]+16,FLR[2]-16),y:clamp(pos[1]+rnd(-40,40),FLR[1]+16,FLR[3]-16),t:0.6+g*0.08,m:1+T/28,el:T>20&&lt!=='bat'&&Math.random()<0.05?1:0}); } }
+    var pos=edgePos(Math.floor(Math.random()*4)), grp=2+Math.floor(Te/20);
+    for(var g=0;g<grp;g++){ var lt=pool[Math.floor(Math.random()*pool.length)]; w.spawns.push({type:lt,x:clamp(pos[0]+rnd(-40,40),FLR[0]+16,FLR[2]-16),y:clamp(pos[1]+rnd(-40,40),FLR[1]+16,FLR[3]-16),t:0.6+g*0.08,m:1+Te/28,el:T>20&&lt!=='bat'&&Math.random()<0.05?1:0}); } }
   w.tm.swarm-=dt; if(w.tm.swarm<=0){ w.tm.swarm=20; w.banner={txt:'BAT SWARM!',sub:'',t:1.0}; var sd=Math.floor(Math.random()*4); for(var k=0;k<20;k++){ var p2=edgePos(sd); w.spawns.push({type:'bat',x:p2[0],y:p2[1],t:0.6+k*0.04,m:1+T/60}); } }
   /* falling rubble: a red circle, then a rock. Aimed near Rook, hurts enemies too */
-  w.tm.rub-=dt; if(w.tm.rub<=0){ w.tm.rub=Math.max(0.6,2.2-T*0.014); var nr=1+Math.floor(T/40);
+  w.tm.rub-=dt; if(w.tm.rub<=0){ w.tm.rub=Math.max(0.6,2.2-Te*0.014); var nr=1+Math.floor(Te/40);
     for(var r=0;r<nr;r++){ var at=r===0?[w.p.x+rnd(-40,40),w.p.y+rnd(-30,30)]:randFloor(0); w.rub.push({x:clamp(at[0],FLR[0]+20,FLR[2]-20),y:clamp(at[1],FLR[1]+20,FLR[3]-20),t:1.0,r:44}); } }
   for(var i=w.rub.length-1;i>=0;i--){ var rb=w.rub[i]; rb.t-=dt; if(rb.t<=0){ w.rub.splice(i,1); SND.boom(); if(!RM) w.shake=Math.max(w.shake||0,0.08);
       for(var b=0;b<(RM?3:8);b++) if(w.fx.length<110) w.fx.push({k:'bit',x:rb.x,y:rb.y-6,vx:rnd(-120,120),vy:rnd(-160,10),t:0,c:'#8A92BE'});
@@ -2208,7 +2384,7 @@ function placePots(id){ var w=S.w, R=ROOMS[id], n=POTN[id]||0; w.pots=[]; if(!n|
   var corners=[[[fl[0]+28,top],[fl[0]+64,top],[fl[0]+28,top+40]],[[fl[2]-28,top],[fl[2]-64,top],[fl[2]-28,top+40]],[[fl[0]+28,bot],[fl[0]+64,bot],[fl[0]+28,bot-40]],[[fl[2]-28,bot],[fl[2]-64,bot],[fl[2]-28,bot-40]]];
   function ok(q){ var x=q[0], y=q[1]; if(Math.abs(x-481)<100&&(y<fl[1]+90||y>fl[3]-90)) return false;
     if((x<fl[0]+90||x>fl[2]-90)&&y>DOORS[0]-60&&y<DOORS[1]+60) return false; if(R.secret&&Math.abs(x-secretX())<100&&y<fl[1]+100) return false;
-    var pr={x:x,y:y,r:16}; for(var a=-1;a<=1;a++) for(var b=-1;b<=1;b++) if(wallAt(x+a*14,y+b*14)) return false; return true; }
+    for(var a=-1;a<=1;a++) for(var b=-1;b<=1;b++) if(wallAt(x+a*14,y+b*14)) return false; return true; }
   var order=corners.map(function(c,i){ return [Math.random(),c]; }).sort(function(a,b){ return a[0]-b[0]; }).map(function(a){ return a[1]; });
   for(var i=0;i<order.length&&w.pots.length<n;i++){ var c=order[i].filter(ok); var prev=-1; for(var j=0;j<c.length&&j<2&&w.pots.length<n;j++){ var k; do k=potLook(); while(k===prev); prev=k; w.pots.push({x:c[j][0],y:c[j][1],k:k,st:0,br:0}); } } }
 /* look: the two originals a bit more often (25% each), the four new colourways 12.5% each; the two pots in a pair never match */
@@ -2235,9 +2411,9 @@ var SHOPSP={heal:0,max:1,card:2,gold:3,arm:4}, MERCH=[W/2-84,262];
 function drawMerchant(c,w){ var el=w.t-(w.mAt||0), col=Math.floor(w.t/0.8)%2;
   if(w.mA==='wave'&&el<1.8) col=Math.floor(el/0.3)%2?1:2; else if(w.mA==='nod'&&el>=0&&el<0.7) col=3;
   c.fillStyle='rgba(0,0,0,.32)'; c.fillRect(MERCH[0]-14,MERCH[1]-2,28,4); rrDraw(c,'merchant',0,col,MERCH[0],MERCH[1],false); }
-function buy(it){ var w=S.w, p=w.p; if(w.coins<it.cost){ toast('Not enough coins ('+w.coins+' / '+it.cost+')'); SND.miss(); return; }
+function buy(it){ var w=S.w, p=w.p; if(w.coins<it.cost){ toast('Not enough coins ('+w.coins+' / '+it.cost+')'); SND.deny(); return; }
   w.coins-=it.cost; it.hold=1; if(it.next&&it.next.length) it.cost=it.next.shift(); else it.sold=1; SND.buy(); w.mA='nod'; w.mAt=w.t;
-  if(it.id==='heal'){ p.hp=p.max; toast('Healed!'); } else if(it.id==='max'){ p.max++; p.hp=p.max; toast('+1 max heart!'); } else if(it.id==='arm'){ p.arm=(p.arm||0)+3; toast('Armor on: blocks the next 3 hits'); } else if(it.id==='card'){ openPick('shop',3,0.25); } else if(it.id==='gold'){ openPick('gold',3,1); } }
+  if(it.id==='heal'){ p.hp=p.max; toast('Healed!'); } else if(it.id==='max'){ p.max++; p.hp=p.max; toast('+1 max heart!'); } else if(it.id==='arm'){ p.arm=(p.arm||0)+3; toast('Armor on: blocks the next 3 hits'); } else if(it.id==='rev'){ S.revExtra=1; toast('Second Wind: one more chance if you are knocked out'); } else if(it.id==='card'){ openPick('shop',3,0.25); } else if(it.id==='gold'){ openPick('gold',3,1); } }
 var trans=0;
 function transTick(dt){ var w=S.w, p=w.p, d=w.tdir||[0,-1], was=trans; trans-=dt;
   if(was>TH&&trans<=TH&&w.next){ var n=w.next; w.next=null; loadRoom(n[0],n[1]); save(); p.x-=d[0]*54; p.y-=d[1]*54; p.fx=d[0]; p.fy=d[1]; }
@@ -2247,7 +2423,7 @@ function transTick(dt){ var w=S.w, p=w.p, d=w.tdir||[0,-1], was=trans; trans-=dt
 /* ---------- levels, picks and questions ---------- */
 function gainXP(v,quiet){ var w=S.w; w.xp+=v; if(!quiet) SND.gem(); while(w.xp>=w.need){ w.xp-=w.need; w.lv++; w.need=2+3*w.lv; w.pend++; if(!w.cleared&&!quiet) w.fx.push({k:'txt',x:w.p.x,y:w.p.y-44,t:0,v:'LEVEL UP! (after this fight)',c:'#FFC93C'}); } }
 function levelUp(){ var w=S.w; w.pend--; if(w.batch==null){ SND.level(); openAsk('level'); } else { w.batch.i=(w.batch.i||1)+1; openPick('level',w.batch.n,w.batch.g); } }
-function knockedOut(){ var w=S.w; HELD={}; if(!S.revUsed){ S.revUsed=1; openAsk('revive'); } else finishRun(!!w.won,'fall'); }
+function knockedOut(){ var w=S.w; HELD={}; SND.ko(); if(!S.revUsed){ S.revUsed=1; openAsk('revive'); } else if(S.revExtra===1){ S.revExtra=2; openAsk('revive'); }   /* Second Wind from the shop: the same question, once more */ else finishRun(!!w.won,'fall'); }
 function cardsFor(n,goldChance){ var w=S.w, out=[];
   if(!w.picks){ var ST=[['wave','whirl'],['spark','orbit','volatile'],['bash','thorns','aegis']], pth=ST[Math.floor(Math.random()*3)];
     var fid=pth[Math.floor(Math.random()*pth.length)]; return [{id:fid,gold:UPI[fid].path==='bulwark'||Math.random()<goldChance,first:1}]; }   /* first power is dealt by the keep: build with it or fight it */
@@ -2263,16 +2439,12 @@ function cardsFor(n,goldChance){ var w=S.w, out=[];
 function openPick(why,n,goldChance){ S.cards=cardsFor(n||3,goldChance||0); S.pickWhy=why; S.mode='pick'; HELD={}; showPick(); arm($('dn-pick').querySelector('.dn-pickbox')); save(); }
 var PATHN={blade:'Blade',storm:'Storm',bulwark:'Bulwark',any:'Extra'};
 /* every family has one color everywhere: cards, combo chips and the build list */
-var PATHC={blade:'#FF5A5A',storm:'#4FB4FF',bulwark:'#5BE88A',any:'#FF8AC8'};
-function pc(id){ return PATHC[UPI[id].path]; }
 /* power icons: the Nov 14 pixel icons (RRICON in rr_art.js, one 24x24 image per power, sized by font-size: 1em).
    The emoji in UP/SYN stay as the fallback if an icon is ever missing. */
 (function(){ if(typeof RRICON==='undefined') return; var css='.dn-pi{ display:inline-block; width:1em; height:1em; vertical-align:middle; background:center/100% 100% no-repeat; image-rendering:pixelated; image-rendering:crisp-edges; font-style:normal; }\n';
   Object.keys(RRICON).forEach(function(id){ css+='.dn-pi.pi-'+id+'{ background-image:url('+RRICON[id]+'); }\n'; }); var st=document.createElement('style'); st.textContent=css; document.head.appendChild(st); })();
 function PIC(u){ return typeof RRICON!=='undefined'&&RRICON[u.id]?'<i class="dn-pi pi-'+u.id+'"></i>':null; }
 function ICON(u){ return PIC(u)||u.ic+(u.ic2?'<i class="dn-ic2">'+u.ic2+'</i>':''); }
-function chip(id,have){ return '<span class="dn-cp'+(have?' have':'')+'" style="--pc:'+pc(id)+'">'+(PIC(UPI[id])||UPI[id].ic)+'</span>'; }
-function famTag(path){ return '<span class="dn-fam" style="--pc:'+PATHC[path]+'">'+PATHN[path]+'</span>'; }
 /* the combos a power can make: partner chip -> synergy, owned partners first */
 function comboHTML(id,to){ var rows=synFor(id).filter(function(u){ return !HAS(u.id); }).map(function(s){ var mine=s.need.filter(function(q){ return q[0]===id; })[0], others=s.need.filter(function(q){ return q[0]!==id; }),
       have=others.every(function(q){ return L(q[0])>=q[1]; }), ready=have&&to>=mine[1];
@@ -2345,7 +2517,10 @@ var ASKTXT={ level:['Power up!',''], revive:['Knocked out!','Right answer: get b
 function levelPromise(){ var w=S.w, more=w.pend||0, first=!w.picks;
   if(first) return more?'Starter relic, then '+more+' earned upgrade'+(more>1?'s':'')+'. 1 right: choose from 3. 2 right: gold chances.':'The Keep deals your starter relic. 2 right: it may turn gold.';
   return '1 right: choose from 3 cards (else 2). 2 right: each card has a 1 in 5 gold chance.'+(more?' Covers '+(more+1)+' upgrades.':''); }
-function openAsk(why,o){ S.mode='ask'; HELD={}; S.ask={why:why, need:why==='level'||why==='deal'?2:1, got:0, n:0, o:o||null}; newQ(); $('dn-qwrap').hidden=false; arm($('dn-q')); save(); }
+/* the question card never shrinks during one ask (Kody 2026-11-15: it bounced up and down after each answer); it starts fresh on the next ask */
+var QMIN=0;
+if(window.ResizeObserver) new ResizeObserver(function(){ var q=$('dn-q'); if(!S||S.mode!=='ask') return; var h=q.offsetHeight; if(h>QMIN){ QMIN=h; q.style.minHeight=h+'px'; } }).observe($('dn-q'));
+function openAsk(why,o){ QMIN=0; $('dn-q').style.minHeight=''; S.mode='ask'; HELD={}; S.ask={why:why, need:why==='level'||why==='deal'?2:1, got:0, n:0, o:o||null}; newQ(); $('dn-qwrap').hidden=false; arm($('dn-q')); save(); }
 function showQ(){ var q=S.q, a=S.ask; if(!q||!a) return; var t=ASKTXT[a.why];
   $('dn-qtitle').innerHTML=t[0]+(a.need>1?' <small>Question '+Math.min(a.n+1,a.need)+' of '+a.need+'</small>':'');
   $('dn-tag').textContent=q.topic; $('dn-reward').textContent='';
@@ -2395,7 +2570,7 @@ function spr(name,x,y,flip,scale){ var im=SPR[name]; scale=scale||2; var w=im.wi
 function crescent(c,x,y,t0,t1,r,th){ var mid=(t0+t1)/2, cr=2*(r-th)-r*Math.cos((t1-t0)/2); c.beginPath(); c.arc(x,y,r,t0,t1); c.quadraticCurveTo(x+Math.cos(mid)*cr,y+Math.sin(mid)*cr,x+Math.cos(t0)*r,y+Math.sin(t0)*r); c.closePath(); }
 function wedge(c,x,y,a,arc,r,al){ c.fillStyle='rgba(255,60,80,'+al+')'; c.beginPath(); c.moveTo(x,y); c.arc(x,y,r,a-arc,a+arc); c.closePath(); c.fill(); }
 /* art rooms: wooden doors over the dark openings; an open exit shows a slow gold glint so it reads as the way on */
-function drawArtDoors(c,w,R,t){ var A=ROOMART, ex=R.exits||{}, fl=A.floor, pulse=0.55+0.25*Math.sin(t*3);
+function drawArtDoors(c,w,R,t){ var A=ROOMART, ex=R.exits||{}, fl=A.floor;
   if(A.n){ var nOpen=w.open&&(ex.n||S.mode==='endcut'||S.mode==='cut'); if(!nOpen){ var dy0=22, dh=fl[1]-dy0, x0=DOORN[0], dw=DOORN[1]-DOORN[0]; c.fillStyle='#2A1A0E'; c.fillRect(x0+2,dy0,dw-4,dh); c.fillStyle='#7A5230'; c.fillRect(x0+5,dy0+3,dw-10,dh-3); c.fillStyle='#5E3D22'; for(var pk=x0+12;pk<x0+dw-6;pk+=10) c.fillRect(pk,dy0+3,2,dh-3); c.fillStyle='#3A3F55'; c.fillRect(x0+5,dy0+16,dw-10,4); c.fillRect(x0+5,dy0+46,dw-10,4); c.fillStyle=ex.n?'#FF5A6E':'#6E76A4'; c.fillRect(W/2-4,dy0+26,8,8); }
     }
   var inSide=S.mode==='trans'&&!w.next?(w.from==='w'?'e':w.from==='e'?'w':'s'):'';
@@ -2433,7 +2608,7 @@ function draw(){ var c=cx, w=S&&S.w; c.setTransform(1,0,0,1,0,0);
   /* shop */
   if(w.shop){ c.textAlign='center'; var pix=rrReady('shopi'); w.shop.forEach(function(it){
     /* Nov 14 art: the stone pedestal is its own sprite (col 5); the item stands on its top (cols 0-4). Same spot and pickup radius as before. */
-    if(pix){ c.drawImage(RRI.shopi,160,0,32,32,Math.round(it.x-16),Math.round(it.y-11),32,32); if(!it.sold) c.drawImage(RRI.shopi,SHOPSP[it.id]*32,0,32,32,Math.round(it.x-16),Math.round(it.y-37),32,32); }
+    if(pix){ c.drawImage(RRI.shopi,160,0,32,32,Math.round(it.x-16),Math.round(it.y-11),32,32); if(!it.sold){ if(it.id==='rev') c.drawImage(SPR.rev3,Math.round(it.x-13),Math.round(it.y-34)); else c.drawImage(RRI.shopi,SHOPSP[it.id]*32,0,32,32,Math.round(it.x-16),Math.round(it.y-37),32,32); } }
     else { c.fillStyle='#262A44'; c.fillRect(it.x-26,it.y-8,52,24); c.fillStyle='#565C80'; c.fillRect(it.x-24,it.y-6,48,20); }
     if(!it.sold){ if(!pix){ c.font='28px sans-serif'; c.fillStyle='#FFFFFF'; c.fillText(it.ic,it.x,it.y-14); } dtx(c,it.cost+' coins',it.x,it.y+42,14,w.coins>=it.cost?'#FFC93C':'#C0788A',0,'#141026'); dtx(c,it.n,it.x,it.y+60,14,'#E8ECFF',0,'#141026'); } else dtx(c,'Sold',it.x,it.y+42,14,'#8A92BE',0,'#141026'); });
     if(w.shopNear){ var nm=w.shopNear, can=w.coins>=nm.cost, ns=nm.hold?'Bought! Step off and back on to buy another ('+nm.cost+' coins)':can?'Space: buy '+nm.n+' for '+nm.cost+' coins · '+nm.d:nm.n+' costs '+nm.cost+' · you have '+w.coins+' (need '+(nm.cost-w.coins)+' more)', nc=can?'#FFE08A':'#FFB0BE', nw=tspr(ns,16,nc).width+30; c.fillStyle='rgba(18,8,28,.9)'; c.fillRect(Math.round(W/2-nw/2),H-96,nw,40); dtx(c,ns,W/2,H-70,16,nc); } }
@@ -2541,7 +2716,7 @@ function heroOutline(c,p){ var pose=heroPose(p), foot=p.y+p.r+3; c.globalAlpha=0
 function drawHero(c,p,t){ var w=S.w;
   if(S.mode==='trans'&&w.next){ var ha2=1-Math.min(1,(TT-trans)/0.32); if(ha2<=0) return; c.globalAlpha=ha2; drawHero2(c,p,t); c.globalAlpha=1; return; }
   drawHero2(c,p,t); }
-function drawHero2(c,p,t){ var w=S.w;
+function drawHero2(c,p,t){
   if(p.inv>0&&p.roll<=0&&S.mode==='play'&&Math.floor(p.inv*12)%2&&!RM&&p.inv<0.95) return;
   if(rrReady('rook_walk')&&rrReady('rook_slash')&&rrReady('rook_spin')&&rrReady('rook_shield')&&rrReady('rook_dodge')&&rrReady('rook_idle')) return drawHeroRR(c,p,t);
   var face=Math.abs(p.fx)>Math.abs(p.fy)?'hs':(p.fy<0?'hu':'hd'), step=p.mv&&Math.floor(p.walk*9)%2;
@@ -2564,11 +2739,12 @@ function heartEmpty(){ if(HEARTE) return HEARTE; var im=SPR.heart2; if(!im||!im.
 function plate(c,x,y,w2,h2,warn){ c.fillStyle='rgba(18,8,28,.9)'; c.fillRect(x,y,w2,h2); c.fillStyle=warn?'#C8324E':'#45346A'; c.fillRect(x,y,w2,2); c.fillRect(x,y+h2-2,w2,2); c.fillRect(x,y,2,h2); c.fillRect(x+w2-2,y,2,h2); }
 function drawHUD(t){ var c=cx, w=S.w, p=w.p, i, R=ROOMS[w.rid], na=p.arm||0, low=LOWHP(p)&&S.mode!=='cut';
   /* vitals plate */
-  var hw=(p.max+na)*22, pend=w.pend>0&&!(w.last>0), ptx=pend?'⬆ '+w.pend+' upgrade'+(w.pend>1?'s':'')+' ready · awarded after room':'', pw=Math.max(hw+(low?118:0),262,pend?tspr(ptx,14,'#FFE08A').width+8:0)+16, ph=pend?78:56;
+  var rv=S.revExtra===1?1:0, hw=(p.max+na+rv)*22, pend=w.pend>0&&!(w.last>0), ptx=pend?'⬆ '+w.pend+' upgrade'+(w.pend>1?'s':'')+' ready · awarded after room':'', pw=Math.max(hw+(low?118:0),262,pend?tspr(ptx,14,'#FFE08A').width+8:0)+16, ph=pend?78:56;
   plate(c,4,4,pw,ph,low);
   var beat=low&&!RM?1+0.12*Math.max(0,Math.sin(t*5.5)):1, HE=heartEmpty();
   for(i=0;i<p.max;i++){ var hx=12+i*22, hy=9; if(i<p.hp){ if(i===p.hp-1&&beat>1){ var hs=Math.round(18*beat); c.drawImage(SPR.heart2,hx+9-hs/2,hy+8-hs/2,hs,hs); } else c.drawImage(SPR.heart2,hx,hy); } else c.drawImage(HE,hx,hy); }
   for(i=0;i<na;i++){ var ax=14+(p.max+i)*22; c.fillStyle='#141026'; c.fillRect(ax-1,8,18,20); c.fillStyle='#7DC8FF'; c.fillRect(ax+1,10,14,10); c.fillRect(ax+3,20,10,4); c.fillRect(ax+6,24,4,2); c.fillStyle='#D8F0FF'; c.fillRect(ax+3,12,4,6); }
+  if(rv) c.drawImage(SPR.rev2,12+(p.max+na)*22,9);   /* Second Wind in hand: a cyan heart after the hearts and armor */
   if(low) dtx(c,'Low health',16+hw+6,24,14,'#FF8FA3','left','#12081C');
   var bx=56, bw=pw-56-34, fw=Math.round((bw-4)*Math.min(1,w.xp/w.need));
   dtx(c,'Lv '+w.lv,12,49,15,'#FFC93C','left');
@@ -2591,7 +2767,7 @@ function drawHUD(t){ var c=cx, w=S.w, p=w.p, i, R=ROOMS[w.rid], na=p.arm||0, low
     c.fillStyle='#12081C'; c.fillRect(bx0+bwid/2-1,by0+28,2,12); }
   /* combo: top right, under the room plate (never over Rook). A new multiplier pops there too. */
   if(w.combo>=3){ var cm=cMult(), big=(w.comboPop>0?2:0)+(cm>=3?3:cm>=2?2:0), col=cm>=4?'#FF5A6E':cm>=3?'#FF8A3D':cm>=2?'#FFC93C':'#E8ECFF', cxr=W-54;
-    var cs='Combo '+w.combo+(cm>1?'  ×'+cm:''), csp=tspr(cs,18+big,col,'#0A0B16');
+    var cs='Combo '+w.combo+(cm>1?'  ×'+cm:'');
     dtx(c,cs,cxr,58+big/2,18+big,col,'right','#0A0B16');
     c.fillStyle='#0A0B16'; c.fillRect(cxr-120,64+big/2,120,6); c.fillStyle=col; c.fillRect(cxr-119,65+big/2,Math.round(118*Math.max(0,w.comboT/COMBOT)),4);
     if(w.comboUp>0){ c.globalAlpha=Math.min(1,w.comboUp*2.5); dtx(c,'Multiplier ×'+cm+'!',cxr,92,18,col,'right','#0A0B16'); c.globalAlpha=1; } }
@@ -2599,7 +2775,7 @@ function drawHUD(t){ var c=cx, w=S.w, p=w.p, i, R=ROOMS[w.rid], na=p.arm||0, low
   function goal(txt,left,total,y){ var gw=300, gx=W/2-gw/2; plate(c,gx-10,y,gw+20,46,false); dtx(c,txt,gx,y+21,15,'#F4ECD8','left'); dtx(c,clock(Math.ceil(left)),gx+gw,y+22,20,left<=10?'#FFE07A':'#FF9AAE','right'); c.fillStyle='#2A1030'; c.fillRect(gx,y+30,gw,8); c.fillStyle=left<=10?'#FFC93C':'#E8566E'; c.fillRect(gx,y+30,Math.round(gw*Math.max(0,left/total)),8); }
   if(w.last>0) goal('Last Stand: survive',w.last,LAST,w.boss&&!w.boss.dead?94:40);
   if(ROOMS[w.rid].siege&&!w.cleared) goal('Hold the gate: survive',w.siegeT,ROOMS[w.rid].siege,40);
-  var obj=''; if(S.mode==='play'&&w.cleared&&!w.pend){ if(w.chest&&!w.chest.open) obj='Walk into the chest to open it'; else if(R.secret&&!w.secretOpen&&w.crack===0) obj=''; else if(Object.keys(R.exits).length) obj=Object.keys(R.exits).length>1?'Choose a door: west or east':'The door is open ↑'; }
+  var obj=''; if(S.mode==='play'&&w.cleared&&!w.pend){ if(w.chest&&!w.chest.open) obj='Walk into the chest to open it'; else if(Object.keys(R.exits).length) obj=Object.keys(R.exits).length>1?'Choose a door: west or east':'The door is open ↑'; }
   if(obj){ var os=tspr(obj,18,'#FFE08A'), tw=os.width+30; c.fillStyle='rgba(7,8,18,.75)'; c.fillRect(Math.round(W/2-tw/2),H-58,tw,28); dtx(c,obj,W/2,H-38,18,'#FFE08A'); }
   if(w.banner){ var bt=w.banner, ga=c.globalAlpha; c.globalAlpha=ga*Math.min(1,bt.t*2); c.fillStyle='rgba(7,8,18,.7)'; c.fillRect(0,H/2-70,W,bt.sub?104:72);
     dtx(c,bt.txt,W/2,H/2-20,44,'#FFC93C'); if(bt.sub) dtx(c,bt.sub,W/2,H/2+16,20,'#E8ECFF'); c.globalAlpha=ga; }
@@ -2615,7 +2791,7 @@ function loop(){ var t=performance.now(), dt=Math.min(0.05,(t-lastF)/1000); last
 
 /* ================= GAME STATE ================= */
 var S;
-function fresh(){ return { name:'', started:false, over:false, win:false, score:0, answered:0, correct:0, streak:0, best:0, revUsed:0, hs:0,
+function fresh(){ return { name:'', started:false, over:false, win:false, score:0, answered:0, correct:0, streak:0, best:0, revUsed:0, revExtra:0, hs:0,
   topics:QS?QS.topicTable():{}, q:null, qDone:false, picked:-1, mode:'play', ask:null, cards:[], pickWhy:'', w:null }; }
 function save(){ try{ localStorage.setItem(KEY,JSON.stringify(S,function(k,v){ return k==='hit'||k==='rollHit'||k==='fx'?[]:v; })); localStorage.setItem(KEY+'_mute',muted?'1':'0'); }catch(e){} }
 function load(){ try{ var v=JSON.parse(localStorage.getItem(KEY)||'null'); muted=localStorage.getItem(KEY+'_mute')==='1'; if(v&&v.topics&&'mode' in v) return v; }catch(e){} return null; }
@@ -2644,7 +2820,7 @@ function buildDetails(){ var w=S.w, held=UP.concat(SYN).filter(function(u){ retu
   $('dn-bdlist').innerHTML=(held.length?held.map(card).join(''):'<p class="dn-bdnone">No powers yet. Clear the Entry Hall and the Keep deals your first one.</p>');
   $('dn-bdsyn').innerHTML=(ready.length?'<h4>READY: offered on your next upgrade</h4>'+ready.map(function(s){ return '<div class="dn-bs have">'+(PIC(s)||s.ic)+' <b>'+s.n+'</b> = '+synName(s)+'. '+s.d+'</div>'; }).join(''):'')
     +(near.length?'<h4>Synergies you are close to</h4>'+near.map(function(s){ return '<div class="dn-bs">'+(PIC(s)||s.ic)+' <b>'+s.n+'</b> = '+s.need.map(function(q){ var own=L(q[0])>=q[1]; return '<span class="'+(own?'own':'miss')+'">'+(own?'✓ ':'')+UPI[q[0]].n+(q[1]>1?' Lv '+q[1]:'')+(own?'':' (need)')+'</span>'; }).join(' + ')+'</div>'; }).join(''):''); }
-function openBuild(){ if(!canPlay()) return; S.mode='build'; HELD={}; BUF.s=0; buildDetails(); $('dn-bdwrap').hidden=false; save(); }
+function openBuild(){ if(!canPlay()) return; S.mode='build'; HELD={}; BUF.s=0; buildDetails(); $('dn-bdwrap').hidden=false; $('dn-toast').hidden=true;   /* a toast would sit on top of the Music slider */ save(); }
 function closeBuild(){ if(S.mode!=='build') return; $('dn-bdwrap').hidden=true; arm(null); S.mode='play'; save(); }
 function timerDraw(){ var t=S.w?S.w.runT:0; $('dn-time').textContent=clock(t); }
 
@@ -2676,7 +2852,7 @@ function showEnd(celebrate){ var w=S.w; endShownAt=performance.now();
   $('dn-mathbig').innerHTML=S.answered?S.correct+' of '+S.answered+' right<small>'+acc+'%</small>':'No questions answered';
   $('dn-endtopics').innerHTML=Object.keys(S.topics).map(function(k){ var t=S.topics[k]; return t[1]?row(k,t[0]+' / '+t[1]):row(k,'Not attempted',1); }).join('');
   if(window.SpitzCode&&SpitzCode.show) try{ SpitzCode.show('dn','starter',S); }catch(e){}
-  $('dn-end').hidden=false; if(celebrate&&S.win){ SND.win(); [0,350,700,1100].forEach(function(ms,i){ setTimeout(function(){ sparks(360+i*400,1000,18,1); sparks(1560-i*400,1000,18,1); },ms); }); } else if(celebrate) SND.miss(); }
+  $('dn-end').hidden=false; if(celebrate) auSting(S.win); if(celebrate&&S.win){ [0,350,700,1100].forEach(function(ms,i){ setTimeout(function(){ sparks(360+i*400,1000,18,1); sparks(1560-i*400,1000,18,1); },ms); }); } }
 function playAgain(){ if(performance.now()-endShownAt<1200) return; var keepName=S.name; S=fresh(); S.name=keepName; startRun(); timerDraw(); }
 $('dn-again').addEventListener('click',playAgain);
 
