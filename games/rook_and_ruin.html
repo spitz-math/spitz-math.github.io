@@ -502,6 +502,17 @@ body.dn-cine .dn-top, body.dn-cine .dn-side{ opacity:0; pointer-events:none; tra
 .dn-card .dn-how{ font:800 22px/1.2 var(--body); color:var(--rr-ivory); text-align:center; }
 .dn-co .pt.this{ color:var(--rr-ivory); }
 .dn-conote{ font:700 16px/1.25 var(--body); color:var(--rr-gold); text-align:left; }
+/* Fight readouts live in the top bar (Kody's playtest 2026-11-15: they covered the fight): the room, the Warden's health, the Siege and Last Stand timers */
+#dn-ls{ display:flex; gap:12px; align-items:center; }
+#dn-ls[hidden], #dn-ls .dn-lsg[hidden], #dn-roomchip[hidden]{ display:none; }
+.dn-top #dn-roomchip{ padding:0 0 0 22px; } .dn-top #dn-roomchip .v{ font:800 24px/1.1 var(--head); color:#E6DCC8; }
+.dn-lsg{ position:relative; width:270px; height:66px; padding:8px 14px 0; background:#1A1030; border:3px solid #3A2A5C; display:flex; justify-content:space-between; align-items:flex-start; box-sizing:border-box; }
+.dn-lsg .l{ font:700 19px/1.2 var(--body); color:#F4ECD8; }
+.dn-lsg .v{ font:800 28px/1 var(--head); color:#FF9AAE; font-variant-numeric:tabular-nums; }
+.dn-lsg i{ position:absolute; left:14px; right:14px; bottom:9px; height:12px; background:#2A1030; }
+.dn-lsg b{ display:block; height:100%; width:100%; background:#E8566E; }
+.dn-lsg.hot .v{ color:#FFE07A; } .dn-lsg.hot b{ background:#FFC93C; }
+.dn-lsw{ width:290px; } .dn-lsw b{ background:#B56BFF; } .dn-lsw.stun b{ background:#FFC93C; }
 </style>
 <script src="kit.js"></script>
 </head>
@@ -512,6 +523,8 @@ body.dn-cine .dn-top, body.dn-cine .dn-side{ opacity:0; pointer-events:none; tra
     <div class="dn-brand"><h1 class="dn-logo" aria-label="Rook and Ruin"><span class="dn-swordw" aria-hidden="true"><span class="dn-sword"></span></span><span aria-hidden="true"><i>ROOK</i> <b>&amp;</b> <i>RUIN</i></span></h1><span class="dn-credit sz-credit">Made by Spitz <i class="sz-burger" aria-hidden="true"></i></span></div>
     <div class="dn-chip" id="dn-timerchip" title="Stops during questions and choices"><span class="l">Combat time</span><span class="v" id="dn-time">0:00</span></div>
     <span class="dn-sp"></span>
+    <div id="dn-ls" hidden><div class="dn-lsg" id="dn-goal" hidden><span class="l" id="dn-goaln">Last Stand: survive</span><span class="v" id="dn-lsclock">2:00</span><i><b id="dn-lsfill"></b></i></div><div class="dn-lsg dn-lsw" id="dn-lsw" hidden><span class="l" id="dn-lswn">The Iron Warden</span><i><b id="dn-lswfill"></b></i></div></div>
+    <div class="dn-chip" id="dn-roomchip" hidden><span class="l" id="dn-roomn">Room 1 of 8</span><span class="v" id="dn-roomv">Entry Hall</span></div>
     <div class="dn-chip" id="dn-scorechip"><span class="l">Score</span><span class="v" id="dn-score">0</span></div>
     <div class="dn-chip" id="dn-divechip"><span class="l">Coins</span><span class="v" id="dn-coins">0</span></div>
     <div class="dn-chip" id="dn-bestchip" hidden><span class="l">Rooms</span><span class="v" id="dn-roomc">0 / 8</span></div>
@@ -521,12 +534,12 @@ body.dn-cine .dn-top, body.dn-cine .dn-side{ opacity:0; pointer-events:none; tra
     <div class="dn-side">
       <div class="dn-panel" id="dn-build" role="button" tabindex="-1" aria-label="Your build. Press B for details (pauses the game)"><h3>Your build</h3><div id="dn-buildlist"></div><div class="dn-buildmore" id="dn-buildmore" hidden><kbd>B</kbd>Details (pauses)</div></div>
       <div class="dn-panel dn-keys"><h3>Keys</h3>
-        <div><kbd>↑↓←→</kbd>Move</div><div><kbd>WASD</kbd>Move</div><div><kbd>Space</kbd>Attack (hold)</div><div><kbd>Shift</kbd>Dodge roll</div>
+        <div><kbd>↑↓←→</kbd>Move</div><div><kbd>WASD</kbd>Move</div><div><kbd>Space</kbd>Attack (hold)</div><div><kbd>X</kbd>Dodge roll</div>
         <div><kbd>1–4</kbd>Answer</div><div><kbd>P</kbd>Pause</div><div><kbd>F</kbd>Full screen</div><div><kbd>N</kbd>Music</div><div><kbd>M</kbd>Mute</div><div><kbd>⇧R</kbd>New game</div></div>
     </div>
     <div id="dn-bigbg"></div>
     <div class="dn-arena" id="dn-arena">
-      <canvas id="dn-canvas" width="960" height="540" aria-label="The Crooked Keep. Arrow keys or WASD move, Space swings your sword, Shift rolls."></canvas>
+      <canvas id="dn-canvas" width="960" height="540" aria-label="The Crooked Keep. Arrow keys or WASD move, Space swings your sword, X rolls."></canvas>
       <div class="dn-cover" id="dn-qwrap" hidden>
         <div class="dn-q" id="dn-q">
           <div class="dn-qtitle" id="dn-qtitle">Level up!</div>
@@ -558,11 +571,11 @@ body.dn-cine .dn-top, body.dn-cine .dn-side{ opacity:0; pointer-events:none; tra
     <div class="dn-row"><input class="dn-input" id="dn-nameinput" maxlength="24" placeholder="Like: Levi S" autocomplete="off"><button class="sz-mus" id="sz-mus" aria-label="Music on or off, key N">♪ Music on</button></div>
     <button class="dn-go dn-next" id="dn-go" disabled><span>Start</span></button>
     <p class="dn-gohint" id="dn-gohint">Type your name to unlock Start.</p>
-    <div class="dn-keyline"><div class="sz-ctl" data-ctl="ARROWS/WASD=Move | Hold Space=Attack | Shift=Dodge | 1234=Answer"></div>
+    <div class="dn-keyline"><div class="sz-ctl" data-ctl="ARROWS/WASD=Move | Hold Space=Attack | X=Dodge | 1234=Answer"></div>
 </div>
 <details class="dn-allkeys"><summary>All controls</summary><div class="dn-keygrid">
         <div><kbd>Arrows</kbd> or <kbd>WASD</kbd> Move</div><div><kbd>Space</kbd> Swing your sword (hold to keep swinging)</div>
-        <div><kbd>Shift</kbd> Dodge roll (right-click works too)</div><div><kbd>1</kbd>–<kbd>4</kbd> Answer · <kbd>Enter</kbd> Continue</div>
+        <div><kbd>X</kbd> Dodge roll (K or right-click work too)</div><div><kbd>1</kbd>–<kbd>4</kbd> Answer · <kbd>Enter</kbd> Continue</div>
         <div><kbd>P</kbd> or <kbd>Esc</kbd> Pause and see your build</div><div><kbd>B</kbd> Build details (pauses)</div>
         <div><kbd>F</kbd> Full screen · <kbd>N</kbd> Music · <kbd>M</kbd> Mute</div><div><kbd>Shift</kbd>+<kbd>R</kbd> Start a new game</div>
         <p class="dn-cred">Music rendered with the Fluid (R3) GM SoundFont, (c) Frank Wen, MIT licence.</p>
@@ -1738,7 +1751,7 @@ var SFXF=['answer_correct','answer_wrong','card_pick_gold','card_pick_power','ch
   'boss_defeated','enemy_death_wisp','torch_light','relic_glow','goblin_snarl','ui_tick'];
 /* per effect: [shortest gap in ms, most copies at once, volume]. Everything else: [45,4,1]. */
 var FXC={ sword_swing:[60,3,1], sword_hit_flesh:[45,3,1], sword_hit_armor:[80,3,1], pickup_coin:[60,4,1], pickup_gem:[90,3,0.9], pot_smash:[60,4,1],
-  enemy_death_goblin:[50,4,1], enemy_death_bat:[50,4,1], enemy_death_skeleton:[60,3,1], enemy_death_slime:[50,4,1], warden_roar:[900,1,1], warden_ground_slam:[200,2,1],
+  enemy_death_goblin:[50,4,1], enemy_death_bat:[50,4,1], enemy_death_skeleton:[60,3,1], enemy_death_slime:[50,4,1], warden_roar:[2400,1,1], warden_ground_slam:[200,2,1],
   footstep_stone_1:[120,1,1], footstep_stone_2:[120,1,1], footstep_stone_3:[120,1,1], player_hurt:[120,2,1], dodge_roll:[120,2,1], level_up:[200,1,1], room_cleared:[400,1,1],
   spark_zap:[120,2,1], bomb_explosion:[110,3,1], power_bolt:[90,3,1], warden_orb_volley:[150,1,1], enemy_telegraph:[180,2,1], warden_telegraph:[400,1,1],
   enemy_death_wisp:[50,4,1], combo_up:[150,1,1], wall_crack:[150,1,1], torch_light:[200,2,1], boss_defeated:[1000,1,1] };
@@ -1802,6 +1815,8 @@ function auStart(b,off,loop,fade){ var a=AC, s=a.createBufferSource(), g=a.creat
 function auFadeOut(sec){ if(!AU.src) return; var a=AC, s=AU.src, g=AU.g, t=a.currentTime; AU.src=null; AU.g=null;
   try{ g.gain.cancelScheduledValues(t); g.gain.setValueAtTime(Math.max(0.0001,g.gain.value),t); g.gain.linearRampToValueAtTime(0.0001,t+sec); s.stop(t+sec+0.05); }catch(e){} }
 function auPos(){ return AU.src?AU.off0+(AC.currentTime-AU.t0):null; }
+/* where the Last Stand track is right now (null when it is not the one playing) */
+function auLSPos(){ var b=AU.buf[MUSF.ls]; return AC&&AU.cur==='ls'&&AU.src&&b&&AU.src.buffer===b&&AC.state==='running'?auPos():null; }
 function auTick(){ var a=AC; if(!a||!AU.mg) return;
   var duck=S&&S.started&&!S.over&&(S.mode==='ask'||S.mode==='pick'||S.mode==='build');
   AU.dg.gain.setTargetAtTime(duck&&!AU.test?0.4:1,a.currentTime,0.2);
@@ -1820,7 +1835,7 @@ function auLS(){ var w=S.w, n=MUSF.ls;
   if(S.mode==='endcut') return;
   if(S.mode!=='play'){ if(AU.src) auFadeOut(0.15); return; }
   var b=AU.buf[n]; if(!b){ if(AU.pend!=='ls'&&!AU.bad[n]){ AU.pend='ls'; auBuf(n).then(function(){ AU.pend=null; auTick(); },function(){ AU.pend=null; }); } return; }
-  var want=Math.max(0,LAST-w.last), pos=auPos(), tol=w.last<8?0.12:0.3;
+  var want=Math.max(0,LAST-w.last), pos=auPos(), tol=1.5;   /* the clock follows the track (lastTick), so only a deliberate jump of the clock (or a resume) moves the music */
   if(pos!=null&&Math.abs(pos-want)<tol) return;
   if(want>=b.duration-0.05) return;
   var cut=pos!=null; if(cut) auFadeOut(0.06);
@@ -1898,7 +1913,7 @@ window.__AU=AU;
 /* ---------- the castle: one run = these rooms ---------- */
 /* exits: n/w/e -> next room. Rooms lock while there are enemies; clearing opens every exit. */
 var ROOMS={
-  entry:  {name:'Entry Hall',     kind:'start',    exits:{n:'guard'},   waves:[[['gob',3]],[['gob',4]],[['gob',4],['bat',2]]], sub:'Hold Space to attack. Move to face enemies. Shift to dodge.'},
+  entry:  {name:'Entry Hall',     kind:'start',    exits:{n:'guard'},   waves:[[['gob',3]],[['gob',4]],[['gob',4],['bat',2]]], sub:'Hold Space to attack. Move to face enemies. X to dodge.'},
   guard:  {name:'Guard Room',     kind:'guard',    exits:{n:'cross'},   m:1.0,  waves:[[['gob',4],['bat',2]],[['bat',5],['gob',3]],[['gob',6],['bat',3]],[['gob',5],['bat',4],['gob',1,1]]], sub:'Bats hover, then dive. Dodge through!'},
   cross:  {name:'Crossroads',     kind:'crossr',   exits:{w:'vault',e:'arena'}, m:1.0, waves:[[['skel',1]],[['skel',1],['gob',4],['bat',3]],[['skel',2],['gob',6],['bat',2]]], intro:1, sub:'A shield knight guards this hall. Learn his shield first.'},
   vault:  {name:'Treasure Vault', kind:'vault',    exits:{n:'library'}, m:1.1, waves:[[['slime',4]],[['slime',3],['bat',5]]], chest:'treasure', sub:'A quiet room... mostly.'},
@@ -2185,14 +2200,14 @@ function update(dt){ var w=S.w, p=w.p, s=stat(), i, e;
     if(Math.hypot(ob.x-p.x,ob.y-(p.y-6))<p.r+6){ if(p.inv>0){ hurtP(ob); continue; } w.orbs.splice(i,1); hurtP(ob); if(S.mode!=='play') return; } }
   explosions(dt);
   if(w.en.some(function(q){ return q.dead; })) w.en=w.en.filter(function(q){ return !q.dead; });
-  /* pickups: gems and coins fly to you inside a small radius, and all of them come home when a room is clear */
+  /* pickups: gems and coins fly to you inside 110 px (was 70), hearts inside 170 px when Rook is hurt (Kody's playtest 2026-11-15: much larger, mostly for hearts), and all of them come home when a room is clear */
   for(i=w.gems.length-1;i>=0;i--){ var g=w.gems[i], gdx=p.x-g.x, gdy=p.y-g.y, gd=Math.hypot(gdx,gdy);
-    if(gd<70||g.m||w.cleared){ g.m=1; g.x+=gdx/(gd||1)*480*dt; g.y+=gdy/(gd||1)*480*dt; }
+    if(gd<110||g.m||w.cleared){ g.m=1; g.x+=gdx/(gd||1)*480*dt; g.y+=gdy/(gd||1)*480*dt; }
     if(gd<p.r+8){ w.gems.splice(i,1); gainXP(g.v); } }
   for(i=w.coinsF.length-1;i>=0;i--){ var cn=w.coinsF[i], cdx=p.x-cn.x, cdy=p.y-cn.y, cd=Math.hypot(cdx,cdy);
-    if(cd<70||cn.m||w.cleared){ cn.m=1; cn.x+=cdx/(cd||1)*480*dt; cn.y+=cdy/(cd||1)*480*dt; }
+    if(cd<110||cn.m||w.cleared){ cn.m=1; cn.x+=cdx/(cd||1)*480*dt; cn.y+=cdy/(cd||1)*480*dt; }
     if(cd<p.r+8){ w.coinsF.splice(i,1); w.coins++; SND.coin(); } }
-  for(i=w.hearts.length-1;i>=0;i--){ var h=w.hearts[i]; h.t+=dt; if(Math.hypot(p.x-h.x,p.y-h.y)<p.r+12&&p.hp<p.max){ p.hp++; w.hearts.splice(i,1); SND.heart(); w.fx.push({k:'txt',x:p.x,y:p.y-30,t:0,v:'+1 ♥',c:'#FF6B86'}); } else if(h.t>14) w.hearts.splice(i,1); }
+  for(i=w.hearts.length-1;i>=0;i--){ var h=w.hearts[i], hdx=p.x-h.x, hdy=p.y-h.y, hd=Math.hypot(hdx,hdy); h.t+=dt; if(p.hp<p.max&&(hd<170||h.m||w.cleared)){ h.m=1; var hs=Math.min(hd,520*dt); h.x+=hdx/(hd||1)*hs; h.y+=hdy/(hd||1)*hs; hd=Math.hypot(p.x-h.x,p.y-h.y); } if(hd<p.r+20&&p.hp<p.max){ p.hp++; w.hearts.splice(i,1); SND.heart(); w.fx.push({k:'txt',x:p.x,y:p.y-30,t:0,v:'+1 ♥',c:'#FF6B86'}); } else if(h.t>14) w.hearts.splice(i,1); }
   /* chests */
   /* a chest that lands on top of Rook waits: it opens once he steps off and back, or after a beat once the level-ups are done (so nobody gets stuck standing on it) */
   if(w.chest&&!w.chest.arm){ if(Math.hypot(p.x-w.chest.x,p.y-w.chest.y)>p.r+34) w.chest.arm=1; else if(w.pend<=0){ w.chest.wait=(w.chest.wait||0)+dt; if(w.chest.wait>1.2) w.chest.arm=1; } }
@@ -2352,6 +2367,9 @@ function startLast(){ var w=S.w; w.won=1; w.last=LAST; w.lastT=0; w.boss=null; w
 var LSCAP=90;   /* seconds into the Last Stand where the difficulty ramp stops */
 var LSW=[[15,1,'ANOTHER WARDEN!'],[50,2,'TWO WARDENS?!'],[85,3,'THREE WARDENS!!']];   /* [time, Wardens alive from then on, banner] */
 function lastTick(dt){ var w=S.w, T=w.lastT; w.lastT+=dt; w.last-=dt;
+  /* the survive clock follows the music while the Last Stand track plays (Kody's playtest 2026-11-15: the music skipped).
+     Hit-stop and slow frames used to let the clock fall behind the track, and every 0.3 s of drift cut the music back to match. */
+  var mp=auLSPos(); if(mp!=null&&mp>0.05&&Math.abs(LAST-mp-w.last)<1.5) w.last=Math.max(0,Math.min(LAST,LAST-mp));   /* a bigger gap means the clock was moved on purpose: the music seeks to it instead */
   if(w.last<=0){ w.last=0; addPts(5000,w.p.x,w.p.y-60,'#FFC93C'); w.lastDone=1; finishRun(true,'escape'); return; }
   var wardens=w.en.filter(function(e){ return !e.dead&&e.type==='boss'; }); w.boss=wardens[0]||null;
   /* Wardens: the target count only goes up. A milestone tops the room up to that many at once; a fallen Warden is replaced 12 s later */
@@ -2361,7 +2379,7 @@ function lastTick(dt){ var w=S.w, T=w.lastT; w.lastT+=dt; w.last-=dt;
   if(w.lsTgt&&haveW<w.lsTgt){ w.lsRe=(w.lsRe||0)+dt; if(w.lsRe>=12){ w.lsRe=0; lsSpawn(1,haveW+1>=2?(['','','TWO','THREE'][haveW+1]+' WARDENS AGAIN!'):'ANOTHER WARDEN!'); } } else w.lsRe=0;
   /* Kody 2026-11-15, "a tiny bit easier": the horde grows 10% slower and stops growing at 1:30. The last 30 s hold that level (the third Warden still arrives at 1:25) */
   var Te=Math.min(T,LSCAP)*0.9;
-  w.tm.spawn-=dt; if(w.tm.spawn<=0&&w.en.length+w.spawns.length<90){ w.tm.spawn=Math.max(0.13,0.5-Te*0.003);
+  w.tm.spawn-=dt; if(w.tm.spawn<=0&&w.en.length+w.spawns.length<(LITE?60:90)){ w.tm.spawn=Math.max(0.13,0.5-Te*0.003);
     var pool=['gob','gob','bat','slime','gob']; if(T>8) pool.push('skel','gob','bat'); if(T>25) pool.push('wiz','skel','bat','slime'); if(T>60) pool.push('skel','wiz','gob');
     var pos=edgePos(Math.floor(Math.random()*4)), grp=2+Math.floor(Te/20);
     for(var g=0;g<grp;g++){ var lt=pool[Math.floor(Math.random()*pool.length)]; w.spawns.push({type:lt,x:clamp(pos[0]+rnd(-40,40),FLR[0]+16,FLR[2]-16),y:clamp(pos[1]+rnd(-40,40),FLR[1]+16,FLR[3]-16),t:0.6+g*0.08,m:1+Te/28,el:T>20&&lt!=='bat'&&Math.random()<0.05?1:0}); } }
@@ -2627,14 +2645,29 @@ function crescent(c,x,y,t0,t1,r,th){ var mid=(t0+t1)/2, cr=2*(r-th)-r*Math.cos((
 function wedge(c,x,y,a,arc,r,al){ c.fillStyle='rgba(255,60,80,'+al+')'; c.beginPath(); c.moveTo(x,y); c.arc(x,y,r,a-arc,a+arc); c.closePath(); c.fill(); }
 /* art rooms: wooden doors over the dark openings; an open exit shows a slow gold glint so it reads as the way on */
 function drawArtDoors(c,w,R,t){ var A=ROOMART, ex=R.exits||{}, fl=A.floor;
-  if(A.n){ var nOpen=w.open&&(ex.n||S.mode==='endcut'||S.mode==='cut'); if(!nOpen){ var dy0=22, dh=fl[1]-dy0, x0=DOORN[0], dw=DOORN[1]-DOORN[0]; c.fillStyle='#2A1A0E'; c.fillRect(x0+2,dy0,dw-4,dh); c.fillStyle='#7A5230'; c.fillRect(x0+5,dy0+3,dw-10,dh-3); c.fillStyle='#5E3D22'; for(var pk=x0+12;pk<x0+dw-6;pk+=10) c.fillRect(pk,dy0+3,2,dh-3); c.fillStyle='#3A3F55'; c.fillRect(x0+5,dy0+16,dw-10,4); c.fillRect(x0+5,dy0+46,dw-10,4); c.fillStyle=ex.n?'#FF5A6E':'#6E76A4'; c.fillRect(W/2-4,dy0+26,8,8); }
+  if(A.n){ var nOpen=w.open&&(ex.n||S.mode==='endcut'||S.mode==='cut'); if(!nOpen){ var dy0=22, dh=fl[1]-dy0, x0=DOORN[0], dw=DOORN[1]-DOORN[0]; c.fillStyle='#2A1A0E'; c.fillRect(x0+2,dy0,dw-4,dh); c.fillStyle='#7A5230'; c.fillRect(x0+5,dy0+3,dw-10,dh-3); c.fillStyle='#5E3D22'; for(var pk=x0+12;pk<x0+dw-6;pk+=10) c.fillRect(pk,dy0+3,2,dh-3); c.fillStyle='#3A3F55'; c.fillRect(x0+5,dy0+16,dw-10,4); c.fillRect(x0+5,dy0+46,dw-10,4); if(ex.n) padlock(c,W/2,dy0+31); }
     }
   var inSide=S.mode==='trans'&&!w.next?(w.from==='w'?'e':w.from==='e'?'w':'s'):'';
   [['w',16],['e',W-50]].forEach(function(sd){ var st=A[sd[0]]; if(!st) return; var x0=sd[1], y0=DOORS[0]+6, hh=DOORS[1]-DOORS[0]-10, open=(w.open&&st===2)||inSide===sd[0];
-    if(!open){ c.fillStyle='#2A1A0E'; c.fillRect(x0,y0,34,hh); c.fillStyle='#7A5230'; c.fillRect(x0+3,y0+3,28,hh-6); c.fillStyle='#5E3D22'; for(var pq=y0+11;pq<y0+hh-6;pq+=10) c.fillRect(x0+3,pq,28,2); c.fillStyle='#3A3F55'; c.fillRect(x0+9,y0+3,4,hh-6); c.fillRect(x0+22,y0+3,4,hh-6); c.fillStyle=st===2?'#FF5A6E':'#6E76A4'; c.fillRect(x0+13,y0+hh/2-4,8,8); }
+    if(!open){ c.fillStyle='#2A1A0E'; c.fillRect(x0,y0,34,hh); c.fillStyle='#7A5230'; c.fillRect(x0+3,y0+3,28,hh-6); c.fillStyle='#5E3D22'; for(var pq=y0+11;pq<y0+hh-6;pq+=10) c.fillRect(x0+3,pq,28,2); c.fillStyle='#3A3F55'; c.fillRect(x0+9,y0+3,4,hh-6); c.fillRect(x0+22,y0+3,4,hh-6); if(st===2) padlock(c,x0+17,y0+hh/2); }
     else if(!(w.open&&st===2)){ c.fillStyle='#04050B'; c.fillRect(x0,y0,34,hh); } });
   if(w.open&&S.mode==='play') drawExitArrows(c,ex,t);
   if(A.south&&inSide!=='s'&&!(CUT&&(!CUT.gate||CUT.t<5.72))){ var gx0=448, gy0=H-50; c.fillStyle='#14121C'; c.fillRect(gx0,gy0,64,50); c.fillStyle='#5A5E7E'; for(var b=0;b<6;b++) c.fillRect(gx0+4+b*11,gy0,4,50); c.fillRect(gx0,gy0+42,64,4); c.fillRect(gx0,gy0+20,64,3); } }
+/* a locked exit shows a small iron padlock (was a red square: Kody's playtest 2026-11-15). Doors that are not exits show none. */
+function padlock(c,x,y){ x=Math.round(x); y=Math.round(y);
+  c.fillStyle='#141026'; c.fillRect(x-5,y-12,10,3); c.fillRect(x-5,y-12,3,9); c.fillRect(x+2,y-12,3,9); c.fillRect(x-8,y-4,16,13);
+  c.fillStyle='#8A90B0'; c.fillRect(x-4,y-11,8,1); c.fillRect(x-4,y-11,1,7); c.fillRect(x+3,y-11,1,7);
+  c.fillStyle='#8A90B0'; c.fillRect(x-7,y-3,14,11); c.fillStyle='#B4BAD6'; c.fillRect(x-7,y-3,14,2); c.fillStyle='#5E6488'; c.fillRect(x-7,y+6,14,2);
+  c.fillStyle='#141026'; c.fillRect(x-1,y,2,2); c.fillRect(x-1,y+2,2,3); }
+/* Whirlwind (Kody's playtest 2026-11-15: "looks off"): the old spin drew a moon-shaped crescent that ran ahead of Rook's body,
+   centred low and fading in late. Now an even ring of steel trails the blade around Rook, its leading edge on the same angle the
+   body faces (heroPose), with a tail that fades behind it. It stays outside his body so it never covers him. */
+function spinTrail(c,p,dur,rng){ var el=Math.max(0,dur-p.sw), k=Math.min(1,el/dur), lead=p.swA+k*6.283, len=Math.min(4.4,0.6+k*7), cx0=p.x, cy0=p.y-18,
+    ro=rng+8, ri=Math.max(44,rng*0.66), fade=k>0.72?Math.max(0,1-(k-0.72)/0.28):1, col=p.crit?'#FFEC96':HAS('bladestorm')?'#BFF6FF':'#E8F6FF', N=8;
+  for(var i=0;i<N;i++){ var a1=lead-len*i/N, a0=lead-len*(i+1)/N; c.globalAlpha=fade*0.85*(1-i/N);
+    c.beginPath(); c.arc(cx0,cy0,ro,a0,a1); c.arc(cx0,cy0,ri,a1,a0,true); c.closePath(); c.fillStyle=col; c.fill(); }
+  c.globalAlpha=fade; c.beginPath(); c.arc(cx0,cy0,ro,lead-len,lead); c.strokeStyle=p.crit?'#FFAA3C':'#7DF5FF'; c.lineWidth=2; c.stroke();
+  c.beginPath(); c.moveTo(cx0+Math.cos(lead)*ri,cy0+Math.sin(lead)*ri); c.lineTo(cx0+Math.cos(lead)*ro,cy0+Math.sin(lead)*ro); c.strokeStyle='#FFFFFF'; c.lineWidth=3; c.stroke(); c.globalAlpha=1; }
 /* bobbing gold arrows point out of every open exit */
 function drawExitArrows(c,ex,t){ var b=RM?0:Math.abs(Math.sin(t*3.2))*7, my=(DOORS[0]+DOORS[1])/2;
   if(ex.n) exitArrow(c,W/2,FLR[1]+38-b,0,-1); if(ex.w) exitArrow(c,FLR[0]+38-b,my,-1,0); if(ex.e) exitArrow(c,FLR[2]-38+b,my,1,0); }
@@ -2648,7 +2681,7 @@ function drawDoor(c,side,open,t,locked){ var x0,y0,w0,h0; if(side==='n'){ x0=15*
   if(open){ c.fillStyle='#04050B'; c.fillRect(x0,y0,w0,h0); c.fillStyle='rgba(255,201,60,'+(0.25+0.15*Math.sin(t*4))+')'; c.fillRect(x0+(side==='e'?0:side==='w'?w0-4:0),y0+(side==='n'?h0-4:0),side==='n'?w0:4,side==='n'?4:h0); return; }
   c.fillStyle='#2A1A0E'; c.fillRect(x0,y0,w0,h0); c.fillStyle='#7A5230'; c.fillRect(x0+3,y0+3,w0-6,h0-6); c.fillStyle='#3A3F55';
   if(side==='n'){ c.fillRect(x0+3,y0+8,w0-6,3); c.fillRect(x0+3,y0+19,w0-6,3); } else { c.fillRect(x0+8,y0+3,3,h0-6); c.fillRect(x0+19,y0+3,3,h0-6); }
-  if(locked){ c.fillStyle='#FF5A6E'; c.fillRect(x0+w0/2-4,y0+h0/2-4,8,8); } }
+  if(locked) padlock(c,x0+w0/2,y0+h0/2); }
 function draw(){ var c=cx, w=S&&S.w; c.setTransform(1,0,0,1,0,0);
   if(!w||!ROOMC){ c.fillStyle='#07080F'; c.fillRect(0,0,W,H); return; }
   var t=performance.now()/1000, sk=w.shake&&!RM?w.shake*16:0; if(CUT&&CUT.shake) sk=CUT.shake*16; var cam=S.mode==='cut'?cutCam():S.mode==='endcut'?endCam():null;
@@ -2719,10 +2752,10 @@ function draw(){ var c=cx, w=S&&S.w; c.setTransform(1,0,0,1,0,0);
   for(i=0;i<w.orbs.length;i++){ var o0=w.orbs[i]; c.drawImage(o0.fr?FX.orbR:FX.orb,Math.round(o0.x-12),Math.round(o0.y-12)); }
   /* sword: a clean crescent that sweeps the real hit area (the art pack's ragged swoosh was removed from the frames) */
   if(p.sw>0&&(p.struck||!rrReady('rook_slash'))){ var s=stat(), dur=p.spin?0.26:0.2, k2=Math.max(0,Math.min(1,((1-p.sw/dur)-RR_WIND/dur)/(1-RR_WIND/dur))), rng=p.spin?s.range+12+8*L('whirl'):s.range, hy0=p.y-6, t0, t1;
-    if(p.spin){ t1=p.swA+k2*7.2; t0=Math.max(p.swA,t1-2.3); }
+    if(p.spin){ spinTrail(c,p,dur,rng); }
     else { /* sweep the way the drawn blade travels: right-facing top to bottom, otherwise the other way (hit area unchanged) */
       var sg=(p.rrRow===2&&!p.rrFl)?1:-1, a0=p.swA-sg*s.arc/2, hd=a0+sg*s.arc*Math.min(1,k2*2.2), tl=a0+sg*s.arc*clamp((k2-0.3)*1.45,0,1); t0=Math.min(hd,tl); t1=Math.max(hd,tl); }
-    if(t1-t0>0.08){ c.globalAlpha=k2<0.55?0.95:Math.max(0,0.95*(1-(k2-0.55)/0.45)); crescent(c,p.x,hy0,t0,t1,rng,rng*0.27);
+    if(!p.spin&&t1-t0>0.08){ c.globalAlpha=k2<0.55?0.95:Math.max(0,0.95*(1-(k2-0.55)/0.45)); crescent(c,p.x,hy0,t0,t1,rng,rng*0.27);
       c.fillStyle=p.crit?'#FFEC96':p.spin&&HAS('bladestorm')?'#BFF6FF':'#E8F6FF'; c.fill(); c.strokeStyle=p.crit?'#FFAA3C':'#7DF5FF'; c.lineWidth=2; c.stroke(); c.globalAlpha=1; }
     if(!rrReady('rook_slash')){ var sl=Math.max(40,rng-14); c.save(); c.translate(Math.round(p.x),Math.round(hy0)); c.rotate(t1+Math.PI/2); c.drawImage(SPR.sword,-7,-(14+sl),14,sl); c.restore(); } }
   /* shots */
@@ -2735,7 +2768,7 @@ function draw(){ var c=cx, w=S&&S.w; c.setTransform(1,0,0,1,0,0);
   /* effects */
   var nbolt=0;
   for(i=0;i<w.fx.length;i++){ var f=w.fx[i], fk=f.k;
-    if(fk==='bit'){ c.fillStyle=f.c; c.fillRect(Math.round(f.x),Math.round(f.y),4,4); }
+    if(fk==='bit'){ if(!LITE){ c.fillStyle=f.c; c.fillRect(Math.round(f.x),Math.round(f.y),4,4); } }
     else if(fk==='num'||f.lo){}
     else if(fk==='txt'){ c.globalAlpha=Math.max(0,Math.min(1,2.4*(1-f.t/0.8))); dtx(c,f.v,f.x,f.y-f.t*30,f.big?26:18,f.c,0,'#141026'); c.globalAlpha=1; }
     else if(fk==='spark'){ c.globalAlpha=Math.max(0,1-f.t/0.14); c.drawImage(FX.star,Math.round(f.x-12),Math.round(f.y-12)); c.globalAlpha=1; }
@@ -2796,6 +2829,7 @@ function heartEmpty(){ if(HEARTE) return HEARTE; var im=SPR.heart2; if(!im||!im.
     d.data.set(o); x.putImageData(d,0,0); }); return HEARTE; }
 function plate(c,x,y,w2,h2,warn){ c.fillStyle='rgba(18,8,28,.9)'; c.fillRect(x,y,w2,h2); c.fillStyle=warn?'#C8324E':'#45346A'; c.fillRect(x,y,w2,2); c.fillRect(x,y+h2-2,w2,2); c.fillRect(x,y,2,h2); c.fillRect(x+w2-2,y,2,h2); }
 function drawHUD(t){ var c=cx, w=S.w, p=w.p, i, R=ROOMS[w.rid], na=p.arm||0, low=LOWHP(p)&&S.mode!=='cut';
+  if(SHOWFPS) dtx(c,Math.round(1000/PERF.ema)+' fps'+(LITE?' · lite':''),10,H-10,14,'#F4ECD8','left','#141026');
   if(w.shop) drawBubble(c,w);
   /* vitals plate */
   var rv=S.revExtra===1?1:0, hw=(p.max+na+rv)*22, pend=w.pend>0&&!(w.last>0), ptx=pend?(w.cleared?'⬆ '+w.pend+' upgrade'+(w.pend>1?'s':'')+' ready to choose':'⬆ '+w.pend+' upgrade'+(w.pend>1?'s':'')+' banked · '+(R.boss?'beat the Warden':R.siege?'survive':'clear this room')+' to claim'):'', pw=Math.max(hw+(low?118:0),262,pend?tspr(ptx,14,'#FFE08A').width+8:0)+16, ph=pend?78:56;
@@ -2811,29 +2845,18 @@ function drawHUD(t){ var c=cx, w=S.w, p=w.p, i, R=ROOMS[w.rid], na=p.arm||0, low
   /* gems fill it, so it is relic cyan (UI pass 2026-11-14) */ c.fillStyle='#38C8F0'; c.fillRect(bx+2,38,fw,10); c.fillStyle='#9AF2FF'; c.fillRect(bx+2,38,fw,2); c.fillStyle='#1784C4'; c.fillRect(bx+2,46,fw,2);
   dtx(c,'XP',bx+bw+6,48,13,'#9AF2FF','left');
   if(pend) dtx(c,ptx,12,72,14,'#FFE08A','left');
-  /* room plate: Room 2 of 8 · Guard Room, then the castle map */
-  var n=0; for(var sk in w.seen) n++; var rs='Room '+Math.max(1,Math.min(8,n))+' of 8 · '+R.name, rsp=tspr(rs,15,'#F4ECD8'), rw=rsp.width+20;
-  plate(c,W-48-rw-6,4,rw,28,false); dtx(c,rs,W-48-rw/2-6,24,15,'#F4ECD8');
+  /* the castle map (the room name is in the top bar now) */
   plate(c,W-46,4,42,94,false);
   for(var id in MAPPOS){ var m=MAPPOS[id], X=W-25+m[0]*12, Y=4+m[1]*10; c.fillStyle=id===w.rid?'#FFC93C':w.seen[id]?'#8E86B4':'rgba(142,134,180,.3)'; c.fillRect(X-5,Y-4,10,8); }
   if(w.shop){ var cst='Your coins: '+w.coins, csw=tspr(cst,15,'#FFE07A').width+40; plate(c,4,ph+8,csw,28,false); c.drawImage(SPR.coin2,12,ph+15); dtx(c,cst,32,ph+28,15,'#FFE07A','left'); }
-  /* boss bar */
-  /* boss plate (final UI pass): top centre, never over the fight at the bottom. Name, health, phase in words. */
-  if(w.boss&&!w.boss.dead){ var b=w.boss, nW=1; if(w.last>0){ nW=0; for(i=0;i<w.en.length;i++) if(!w.en[i].dead&&w.en[i].type==='boss') nW++; }
-    var bwid=360, bx0=W/2-bwid/2, by0=40, ph2=b.st===9?'Stunned: hits do extra damage':b.raged?'Enraged: faster attacks':'Watch for the red warnings';
-    plate(c,bx0-10,by0,bwid+20,48,false); dtx(c,nW>1?'Iron Wardens ×'+nW:'The Iron Warden',bx0,by0+20,15,'#F4ECD8','left'); dtx(c,ph2,bx0+bwid,by0+20,13,b.st===9?'#FFE07A':b.raged?'#FF9AAE':'#B9A9D0','right');
-    c.fillStyle='#2A1030'; c.fillRect(bx0,by0+28,bwid,12); c.fillStyle=b.st===9?'#FFC93C':'#B56BFF'; c.fillRect(bx0,by0+28,Math.round(bwid*Math.max(0,b.hp/b.max)),12); c.fillStyle='rgba(255,255,255,.25)'; c.fillRect(bx0,by0+28,Math.round(bwid*Math.max(0,b.hp/b.max)),2);
-    c.fillStyle='#12081C'; c.fillRect(bx0+bwid/2-1,by0+28,2,12); }
+  /* the Warden's health is in the top bar now (lsTop) */
   /* combo: top right, under the room plate (never over Rook). A new multiplier pops there too. */
   if(w.combo>=3){ var cm=cMult(), big=(w.comboPop>0?2:0)+(cm>=3?3:cm>=2?2:0), col=cm>=4?'#FF5A6E':cm>=3?'#FF8A3D':cm>=2?'#FFC93C':'#E8ECFF', cxr=W-54;
     var cs='Combo '+w.combo+(cm>1?'  ×'+cm:'');
-    dtx(c,cs,cxr,58+big/2,18+big,col,'right','#0A0B16');
-    c.fillStyle='#0A0B16'; c.fillRect(cxr-120,64+big/2,120,6); c.fillStyle=col; c.fillRect(cxr-119,65+big/2,Math.round(118*Math.max(0,w.comboT/COMBOT)),4);
-    if(w.comboUp>0){ c.globalAlpha=Math.min(1,w.comboUp*2.5); dtx(c,'Multiplier ×'+cm+'!',cxr,92,18,col,'right','#0A0B16'); c.globalAlpha=1; } }
-  /* timed objectives: a plate with the goal in words, the countdown, and a draining bar */
-  function goal(txt,left,total,y){ var gw=300, gx=W/2-gw/2; plate(c,gx-10,y,gw+20,46,false); dtx(c,txt,gx,y+21,15,'#F4ECD8','left'); dtx(c,clock(Math.ceil(left)),gx+gw,y+22,20,left<=10?'#FFE07A':'#FF9AAE','right'); c.fillStyle='#2A1030'; c.fillRect(gx,y+30,gw,8); c.fillStyle=left<=10?'#FFC93C':'#E8566E'; c.fillRect(gx,y+30,Math.round(gw*Math.max(0,left/total)),8); }
-  if(w.last>0) goal('Last Stand: survive',w.last,LAST,w.boss&&!w.boss.dead?94:40);
-  if(ROOMS[w.rid].siege&&!w.cleared) goal('Hold the gate: survive',w.siegeT,ROOMS[w.rid].siege,40);
+    dtx(c,cs,cxr,26+big/2,18+big,col,'right','#0A0B16');
+    c.fillStyle='#0A0B16'; c.fillRect(cxr-120,32+big/2,120,6); c.fillStyle=col; c.fillRect(cxr-119,33+big/2,Math.round(118*Math.max(0,w.comboT/COMBOT)),4);
+    if(w.comboUp>0){ c.globalAlpha=Math.min(1,w.comboUp*2.5); dtx(c,'Multiplier ×'+cm+'!',cxr,60,18,col,'right','#0A0B16'); c.globalAlpha=1; } }
+  /* the Siege and Last Stand timers are in the top bar now (lsTop) */
   var obj=''; if(S.mode==='play'&&w.cleared&&!w.pend){ if(w.chest&&!w.chest.open) obj='Walk into the chest to open it'; else if(Object.keys(R.exits).length) obj=Object.keys(R.exits).length>1?'Choose a door: west or east':'The door is open ↑'; }
   if(obj){ var os=tspr(obj,18,'#FFE08A'), tw=os.width+30; c.fillStyle='rgba(7,8,18,.75)'; c.fillRect(Math.round(W/2-tw/2),H-58,tw,28); dtx(c,obj,W/2,H-38,18,'#FFE08A'); }
   if(w.banner){ var bt=w.banner, ga=c.globalAlpha; c.globalAlpha=ga*Math.min(1,bt.t*2); c.fillStyle='rgba(7,8,18,.7)'; c.fillRect(0,H/2-70,W,bt.sub?104:72);
@@ -2843,9 +2866,32 @@ function drawHUD(t){ var c=cx, w=S.w, p=w.p, i, R=ROOMS[w.rid], na=p.arm||0, low
   if(S.mode==='reentry'){ var rn=Math.max(1,Math.ceil(S.reT/(REENTRY/3))); c.fillStyle='rgba(18,10,31,.72)'; c.fillRect(0,H/2-78,W,140);
     dtx(c,'Back on your feet!',W/2,H/2-36,30,'#FFE07A',0,'#12081C'); dtx(c,p.hp+' hearts restored. Enemies were pushed back.',W/2,H/2-2,18,'#F4ECD8',0,'#12081C'); dtx(c,String(rn),W/2,H/2+44,36,'#F4ECD8',0,'#12081C'); } }
 var REENTRY=1.8;
+/* Last Stand readouts in the page top bar: written only when they change */
+var LSV={};
+function lsSet(id,k,v){ if(LSV[id+k]===v) return; LSV[id+k]=v; var el=$(id); if(!el) return; if(k==='hidden') el.hidden=v; else if(k==='text') el.textContent=v; else if(k==='w') el.style.width=v; else if(k==='cls') el.className=v; }
+function lsTop(w){ var live=!!(w&&S.started&&!S.over&&S.mode!=='endcut'&&S.mode!=='cut'), R=live?ROOMS[w.rid]||{}:{}, ls=live&&w.last>0;
+  /* the room: name and number, except in the Last Stand (that space goes to the timer and the Wardens) */
+  var showRoom=live&&!ls&&!(R.boss&&w.boss&&!w.boss.dead); lsSet('dn-roomchip','hidden',!showRoom);   /* the Warden bar names the room in the boss fight */
+  if(showRoom){ var n=0; for(var sk in w.seen) n++; lsSet('dn-roomn','text','Room '+Math.max(1,Math.min(8,n))+' of 8'); lsSet('dn-roomv','text',R.name||''); }
+  /* the timer: Last Stand or the Siege Hall */
+  var gl=null; if(ls) gl=['Last Stand',w.last,LAST]; else if(live&&R.siege&&!w.cleared&&w.siegeT>0) gl=['Hold the gate',w.siegeT,R.siege];
+  lsSet('dn-goal','hidden',!gl);
+  if(gl){ lsSet('dn-goaln','text',gl[0]); lsSet('dn-lsclock','text',clock(Math.ceil(gl[1]))); lsSet('dn-lsfill','w',Math.round(100*Math.max(0,gl[1]/gl[2]))+'%');
+    var hot=gl[1]<=10; if(hot!==!!LSV.hot){ LSV.hot=hot; $('dn-goal').classList.toggle('hot',hot); } }
+  /* the Warden's health: the boss fight, and every Warden in the Last Stand */
+  var nW=0, bb=null; if(ls){ for(var i=0;i<w.en.length;i++){ var e=w.en[i]; if(!e.dead&&e.type==='boss'){ nW++; if(!bb||e.hp/e.max>bb.hp/bb.max) bb=e; } } }
+  if(!bb&&live&&w.boss&&!w.boss.dead){ bb=w.boss; nW=1; }
+  lsSet('dn-lsw','hidden',!bb);
+  if(bb){ lsSet('dn-lswn','text',(nW>1?'Iron Wardens ×'+nW:'The Iron Warden')+(nW>1?'':bb.st===9?' · stunned':bb.raged?' · enraged':'')); lsSet('dn-lswfill','w',Math.round(100*Math.max(0,bb.hp/bb.max))+'%'); lsSet('dn-lsw','cls','dn-lsg dn-lsw'+(bb.st===9?' stun':'')); }
+  lsSet('dn-ls','hidden',!(gl||bb)); }
 var lastF=performance.now();
 var lastF0=0;
-function loop(){ var t=performance.now(), dt=Math.min(0.05,(t-lastF)/1000); lastF=t;
+/* slow-Chromebook guard (Kody's playtest 2026-11-15): if play runs under about 33 fps for 3 s, LITE mode turns on for the rest of
+   the visit: no debris particles, and the Last Stand horde stops at 60 bodies instead of 90. Add ?fps (or #fps) to the link to see the frame rate. */
+var LITE=0, PERF={ema:16.7,slowT:0}, SHOWFPS=/[?&#]fps\b/.test(location.search+location.hash);
+function perfTick(ft){ if(!S||!S.started||S.over||S.mode!=='play'||document.hidden||ft>250) return; PERF.ema=PERF.ema*0.95+ft*0.05;
+  if(PERF.ema>30) PERF.slowT+=ft/1000; else PERF.slowT=Math.max(0,PERF.slowT-ft/2000); if(!LITE&&PERF.slowT>3) LITE=1; }
+function loop(){ var t=performance.now(), dt=Math.min(0.05,(t-lastF)/1000); perfTick(t-lastF); lastF=t; lsTop(S&&S.w);
   /* total session time (classroom length): everything but the pause screen and a hidden tab; real time, not slowed */
   if(S&&S.started&&!S.over&&!document.hidden&&S.mode!=='build') S.sess=(S.sess||0)+Math.min(0.25,(t-(lastF0||t))/1000); lastF0=t; if(S&&S.slow>0){ S.slow-=dt; dt*=0.4; }
   if(S.started&&!S.over){ if(S.mode==='cut') cutTick(dt); else if(S.mode==='endcut') endTick(dt); else if(S.mode==='trans') transTick(dt); else if(S.mode==='reentry'){ S.reT-=dt; if(S.reT<=0){ S.mode='play'; S.reT=0; } } else if(canPlay()){ if(S.hs>0) S.hs-=dt; else update(dt); } }
@@ -2946,7 +2992,8 @@ document.addEventListener('keydown',function(e){ if(e.metaKey||e.ctrlKey||e.altK
   if(EAT[k]||(e.key==='Shift'&&EAT.shift)){ e.preventDefault(); return; }
   if(k==='j'||k===' '){ e.preventDefault(); if(canPlay()){ HELD[' ']=true; if(!e.repeat) BUF.s=0.3; } return; }
   if(k==='e'){ e.preventDefault(); if(canPlay()&&!e.repeat) BUF.e=performance.now(); return; }
-  if((e.key==='Shift'||k==='k')&&!e.repeat){ if(canPlay()) roll(); return; }
+  /* dodge: X (arrow-key players) or K (WASD players). Shift still works, but no hint names it: five quick Shift taps open Sticky Keys on Windows (Kody's playtest 2026-11-15) */
+  if((k==='x'||k==='k'||e.key==='Shift')&&!e.repeat){ if(k==='x') e.preventDefault(); if(canPlay()) roll(); return; }
   if(MOVE[k]){ e.preventDefault(); if(canPlay()) HELD[k]=true; return; }
   if((k==='b'||k==='p'||e.key==='Escape')&&!e.repeat){ if(S.mode==='build'){ e.preventDefault(); closeBuild(); return; } if(canPlay()){ e.preventDefault(); openBuild(); return; } if(k==='b'||k==='p') return; }
   if(S.mode==='build'&&e.key==='Enter'){ e.preventDefault(); closeBuild(); return; }
@@ -2992,7 +3039,7 @@ renderBuild(); hud(1); timerDraw(); setInterval(timerDraw,250); setInterval(func
 (function waitArt(n){ if(artReady()||n>150) boot(); else setTimeout(function(){ waitArt(n+1); },20); })(0);
 
 /* test hooks */
-window.__G={ pressE:function(){ BUF.e=performance.now(); }, hidden:function(){ return heroHidden(S.w,S.w.p); }, showPick:function(){ showPick(); }, info:function(){ return INFO; }, last:function(){ startLast(); }, frame:function(){ draw(); }, potTick:function(dt){ potTick(dt); }, potSheet:function(){ return potSheet(); }, icons:function(){ return UP.concat(SYN).map(function(u){ return [u.id,ICON(u),typeof RRICON!=='undefined'?RRICON[u.id]:null]; }); }, finish:function(w,k){ finishRun(w,k); }, pose:function(){ return heroPose(S.w.p); }, spawn:function(t,x,y,m,s){ return spawnEnemy(t,x,y,m,s); }, eframe:function(e){ return enemyFrame(e,S.w.p); }, draw:function(){ return rrDraw.apply(null,arguments); }, state:function(){ return S; }, rects:function(){ return ROOMRECTS; }, collide:function(e){ return collide(e); }, answer:answer, pick:pick, save:save, canPlay:canPlay, update:update, swing:swing, roll:roll, held:HELD,
+window.__G={ pressE:function(){ BUF.e=performance.now(); }, perf:function(){ return {lite:LITE,ema:PERF.ema}; }, hidden:function(){ return heroHidden(S.w,S.w.p); }, showPick:function(){ showPick(); }, info:function(){ return INFO; }, last:function(){ startLast(); }, frame:function(){ draw(); }, potTick:function(dt){ potTick(dt); }, potSheet:function(){ return potSheet(); }, icons:function(){ return UP.concat(SYN).map(function(u){ return [u.id,ICON(u),typeof RRICON!=='undefined'?RRICON[u.id]:null]; }); }, finish:function(w,k){ finishRun(w,k); }, pose:function(){ return heroPose(S.w.p); }, spawn:function(t,x,y,m,s){ return spawnEnemy(t,x,y,m,s); }, eframe:function(e){ return enemyFrame(e,S.w.p); }, draw:function(){ return rrDraw.apply(null,arguments); }, state:function(){ return S; }, rects:function(){ return ROOMRECTS; }, collide:function(e){ return collide(e); }, answer:answer, pick:pick, save:save, canPlay:canPlay, update:update, swing:swing, roll:roll, held:HELD,
   hold:function(k,on){ HELD[k]=!!on; }, open:function(w,n,g){ openPick(w,n,g); }, hurt:function(d){ hurtP(null,d||1); }, give:function(id,l){ S.w.b[id]=l; renderBuild(); }, room:function(id,from){ loadRoom(id,from||'s'); }, fast:FAST, stat:stat, ROOMS:ROOMS, playAgain:playAgain, tile:tget, solid:solid, askNext:function(){ NEXTGATE=0; askNext(); }, gate:function(){ return {open:gateOpen(),next:performance.now()>=NEXTGATE,mode:S.mode}; }, step:function(dt){ if(S.slow>0){ S.slow-=dt; dt*=0.4; } if(S.started&&!S.over){ if(S.mode==='cut') cutTick(dt); else if(S.mode==='endcut') endTick(dt); else if(S.mode==='trans') transTick(dt); else if(S.mode==='reentry'){ S.reT-=dt; if(S.reT<=0){ S.mode='play'; S.reT=0; } } else if(canPlay()){ if(S.hs>0) S.hs-=dt; else update(dt); } } }, roomsList:function(){ return ROOMS; }, wallAt:wallAt, endShown:function(){ endShownAt=0; } };
 })();
 
