@@ -2055,14 +2055,14 @@ function lineClear(x0,y0,x1,y1){ var n=Math.ceil(Math.hypot(x1-x0,y1-y0)/12); fo
 
 /* ---------- stats ---------- */
 function stat(){ var e=L('edge'), bo=L('boots');
-  return { dmg:3+2*e, range:58+7*e, arc:2.4, cd:0.3, spd:165*(1+0.12*bo), rollCd:Math.max(0.55,1.15*(L('riposte')>=2?0.7:1)*(L('bash')>=3?0.75:1)*(1-0.1*bo)) }; }
+  return { dmg:3+2*e, range:58+7*e, arc:2.4, cd:0.3, spd:180*(1+0.12*bo), rollCd:Math.max(0.55,1.15*(L('riposte')>=2?0.7:1)*(L('bash')>=3?0.75:1)*(1-0.1*bo)) }; }
 
 /* ---------- combat ---------- */
 var DSRC='sword', BGEN=0; function tally(d){ var t=window.__dmg; if(t) t[DSRC]=(t[DSRC]||0)+d; }
 function angDiff(a,b){ var d=a-b; while(d>Math.PI) d-=2*Math.PI; while(d<-Math.PI) d+=2*Math.PI; return Math.abs(d); }
 function hurtE(e,d,fx,fy,kb,opt){ if(e.dead) return; opt=opt||{}; var w=S.w;
   /* skeleton knights block sword hits from the front, unless they are recovering or you crit */
-  if(e.type==='skel'&&(opt.melee||opt.proj||opt.orb)&&!opt.crit&&!opt.bash&&e.st!==3){ var pa=opt.proj?Math.atan2(-fy,-fx):Math.atan2(w.p.y-e.y,w.p.x-e.x); if(angDiff(pa,e.fa)<1.3){ d=0; SND.clang(); if(!(w.t-(e.blkAt||-9)<0.9)){ e.blkAt=w.t; w.fx.push({k:'txt',x:e.x,y:e.y-34,t:0,v:'BLOCKED',c:'#CFE0FF'}); } if(opt.melee){ w.p.kx-=fx*220; w.p.ky-=fy*220; } kb=40; if(!opt.melee) return; } }
+  if(e.type==='skel'&&(opt.melee||opt.proj||opt.orb)&&!opt.crit&&!opt.bash&&e.st!==3){ var pa=opt.proj?Math.atan2(-fy,-fx):Math.atan2(w.p.y-e.y,w.p.x-e.x); if(angDiff(pa,e.fa)<1.3){ d=0; SND.clang(); if(!(w.t-(e.blkAt||-9)<0.9)){ e.blkAt=w.t; w.fx.push({k:'txt',x:e.x,y:e.y-34,t:0,v:'BLOCKED',c:'#CFE0FF'}); if(opt.melee){ w.p.kx-=fx*70; w.p.ky-=fy*70; } }   /* a small push back, once per knight per 0.9 s (was 220 on every blocked hit: Rook pinballed in crowds, Kody's playtest 2026-11-15) */ kb=40; if(!opt.melee) return; } }
   if(e.type==='boss'&&e.st===9) d=Math.round(d*1.6);   /* stunned boss takes more */
   tally(Math.min(d,Math.max(0,e.hp))); e.hp-=d; e.fl=0.09; if(kb){ var k=kb/(ET[e.type].heavy?5:1); e.kx+=fx*k; e.ky+=fy*k; }
   if(d>0&&w.fx.length<80) w.fx.push({k:'num',x:e.x+rnd(-4,4),y:e.y-e.r-6,t:0,v:d,c:opt.crit?'#FFC93C':'#FFFFFF'});
@@ -2155,7 +2155,7 @@ function update(dt){ var w=S.w, p=w.p, s=stat(), i, e;
     if(L('riposte')>=3) w.en.forEach(function(e){ if(!e.dead&&p.rollHit.indexOf(e)<0&&Math.hypot(e.x-p.x,e.y-p.y)<e.r+p.r+6){ p.rollHit.push(e); DSRC='riposte'; hurtE(e,6,p.rx,p.ry,200); } });
     if(p.roll<=0){ p.rolling=0; p.perfect=0; p.rec=0.16; if(L('riposte')&&p.rip<=0) p.rip=1.2; if(early(w)&&L('bash')&&p.rollHit&&p.rollHit.length) p.inv=Math.max(p.inv,0.4);
       if(HAS('battlespin')&&L('bash')&&p.rollHit&&p.rollHit.length){ p.rec=0; p.chain=0; p.spin=1; p.crit=0; p.swA=Math.atan2(p.ry,p.rx); p.sw=0.26; p.cd=0.22; p.hitOnce=0; p.crackHit=0; p.struck=0; p.swR=0; p.sid++; SND.swing(); } } }
-  else { var slow=(p.sw>0?0.55:1)*(p.rec>0?0.25:1); p.x+=(ml?mx/ml*s.spd*slow:0)*dt; p.y+=(ml?my/ml*s.spd*slow:0)*dt;
+  else { var slow=(p.sw>0?0.85:1)*(p.rec>0?0.25:1);   /* Kody's playtest 2026-11-15: holding attack slowed Rook to 55% for most of a fight; now 85% */ p.x+=(ml?mx/ml*s.spd*slow:0)*dt; p.y+=(ml?my/ml*s.spd*slow:0)*dt;
     if(ml){ p.stepT=(p.stepT||0)-dt*slow; if(p.stepT<=0){ p.stepT=0.32*165/s.spd; SND.step(); } } else p.stepT=0.08; }
   p.x+=p.kx*dt; p.y+=p.ky*dt; p.kx*=Math.max(0,1-9*dt); p.ky*=Math.max(0,1-9*dt);
   collide(p); potTick(dt);
