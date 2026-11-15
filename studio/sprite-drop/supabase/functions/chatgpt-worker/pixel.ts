@@ -74,6 +74,35 @@ export function verifyGrid(img: Rgba, s: number): { ok: boolean; colours: number
   return { ok: true, colours: cols.size }
 }
 
-export function pixelize(src: Rgba, artW: number, artH: number, scale: number, maxColours: number): Rgba {
-  return enlarge(limitPalette(toGrid(src, artW, artH), maxColours), scale)
+const hexRgb = (h: string) => { const m = /^#?([0-9a-f]{6})$/i.exec(h.trim()); if (!m) return null; const n = parseInt(m[1], 16); return [n >> 16, (n >> 8) & 255, n & 255] }
+
+/** Snap every opaque pixel to the nearest colour of a fixed palette (the brief's exact hex colours). */
+export function snapPalette(img: Rgba, palette: string[]): Rgba {
+  const pal = palette.map(hexRgb).filter((c): c is number[] => !!c)
+  if (pal.length < 2) return img
+  const out = new Uint8Array(img.data)
+  for (let i = 0; i < out.length; i += 4) if (out[i + 3] === 255) {
+    let best = pal[0], bd = Infinity
+    for (const c of pal) { const d = (out[i] - c[0]) ** 2 + (out[i + 1] - c[1]) ** 2 + (out[i + 2] - c[2]) ** 2; if (d < bd) { bd = d; best = c } }
+    out[i] = best[0]; out[i + 1] = best[1]; out[i + 2] = best[2]
+  }
+  return { w: img.w, h: img.h, data: out }
+}
+
+/** Close the outline: every opaque pixel that touches transparency or the sheet edge (4 directions) becomes the outline colour. */
+export function closeOutline(img: Rgba, outline: string): Rgba {
+  const c = hexRgb(outline); if (!c) return img
+  const out = new Uint8Array(img.data), A = (x: number, y: number) => x < 0 || y < 0 || x >= img.w || y >= img.h ? 0 : img.data[(y * img.w + x) * 4 + 3]
+  for (let y = 0; y < img.h; y++) for (let x = 0; x < img.w; x++) {
+    const i = (y * img.w + x) * 4
+    if (img.data[i + 3] === 255 && (!A(x - 1, y) || !A(x + 1, y) || !A(x, y - 1) || !A(x, y + 1))) { out[i] = c[0]; out[i + 1] = c[1]; out[i + 2] = c[2] }
+  }
+  return { w: img.w, h: img.h, data: out }
+}
+
+export function pixelize(src: Rgba, artW: number, artH: number, scale: number, maxColours: number, palette: string[] = [], outline = ''): Rgba {
+  let g = toGrid(src, artW, artH)
+  g = palette.length >= 2 ? snapPalette(g, palette) : limitPalette(g, maxColours)
+  if (outline) g = closeOutline(g, outline)
+  return enlarge(g, scale)
 }

@@ -22,20 +22,22 @@ const db = createClient(Deno.env.get('SUPABASE_URL')!, Deno.env.get('SUPABASE_SE
 const SYSTEM = `You are ChatGPT, the artist and reviewer in Spitz.dev, a small studio where ChatGPT and Claude make HTML math games for Kody's middle-school students.
 You are running as an automatic worker: nobody is chatting with you. Read the task brief and every message, then do ChatGPT's next turn.
 Decide ONE action:
-- "image": the task needs a new picture from you (a sprite, sheet, icon, background). Write a precise image_prompt for an image model. For pixel art give the exact sheet size in art pixels (art_width, art_height), the delivery scale from the brief (default 4), and max_colours (usually 6-12). The worker turns the picture into exact hard-edged pixel art at that size, so describe the art filling the canvas the same way the cells are laid out, on a fully transparent background, no labels or grid lines. If it is NOT pixel art, set art_width/art_height to 0.
+- "image": the task needs a new picture from you (a sprite, sheet, icon, background). Write a precise image_prompt for an image model. For pixel art give the exact sheet size in art pixels (art_width, art_height), the delivery scale from the brief (default 4), and max_colours (usually 6-12). The worker turns the picture into exact hard-edged pixel art at that size, so describe the art filling the canvas the same way the cells are laid out, on a fully transparent background, no labels or grid lines. If the brief lists exact hex colours, put ALL of them in palette (the worker snaps every pixel to them); if it asks for a 1 pixel outline, put that colour in outline (the worker closes the outline itself). Ask the image model for big chunky blocks, bold flat shading and a thick dark outline, so it survives shrinking. If it is NOT pixel art, set art_width/art_height to 0.
 - "reply": the turn needs words only (a review of screenshots, an answer, a decision). Be concrete and short.
 Then choose next_turn: "claude" when Claude should act next (wire art in, build, fix), "kody" when Kody must decide or approve something, and done=true only when the brief's goal is fully met and nothing is left.
 Never claim to have tested a game or approved a deploy: only Kody approves merges and deploys.`
 
 const PLAN_SCHEMA = {
   type: 'object', additionalProperties: false,
-  required: ['action', 'body', 'image_prompt', 'art_width', 'art_height', 'scale', 'max_colours', 'file_name', 'next_turn', 'done'],
+  required: ['action', 'body', 'image_prompt', 'art_width', 'art_height', 'scale', 'max_colours', 'palette', 'outline', 'file_name', 'next_turn', 'done'],
   properties: {
     action: { type: 'string', enum: ['image', 'reply'] },
     body: { type: 'string', description: 'The message to post on the task (for image: what you drew and any notes for Claude).' },
     image_prompt: { type: 'string' },
     art_width: { type: 'integer' }, art_height: { type: 'integer' },
     scale: { type: 'integer' }, max_colours: { type: 'integer' },
+    palette: { type: 'array', items: { type: 'string' }, description: 'Exact #RRGGBB colours the brief requires (outline included), or [] to let the worker pick.' },
+    outline: { type: 'string', description: 'The #RRGGBB outline colour if the brief wants a 1 art pixel outline around the shapes, else "".' },
     file_name: { type: 'string' },
     next_turn: { type: 'string', enum: ['claude', 'kody'] },
     done: { type: 'boolean' },
@@ -47,6 +49,25 @@ async function openai(path: string, body: unknown) {
   const j = await r.json().catch(() => ({}))
   if (!r.ok) throw new Error(`OpenAI ${path} ${r.status}: ${j?.error?.message || 'no details'}`)
   return j
+}
+
+// Draw with the configured image model; if this account doesn't have it, ask OpenAI which gpt-image models it does have and use the newest.
+async function drawImage(body: Record<string, unknown>): Promise<{ img: any; model: string }> {
+  try { return { img: await openai('images/generations', { ...body, model: IMAGE_MODEL }), model: IMAGE_MODEL } }
+  catch (e) {
+    if (!/does not exist|not found|do not have access|must be verified/i.test(String(e))) throw e
+    const r = await fetch('https://api.openai.com/v1/models', { headers: { Authorization: 'Bearer ' + OPENAI_KEY } })
+    const j = await r.json().catch(() => ({}))
+    if (!r.ok) throw new Error(`${String(e).replace(/^Error: /, '')} (and listing models failed: ${r.status} ${j?.error?.message || ''})`)
+    const ids: string[] = (j.data || []).map((m: any) => m.id).filter((id: string) => /^(gpt-image|chatgpt-image)/.test(id) && id !== IMAGE_MODEL)
+    ids.sort((a, b) => Number(/mini/.test(a)) - Number(/mini/.test(b)) || b.localeCompare(a, undefined, { numeric: true }))
+    if (!ids.length) throw new Error(`${String(e).replace(/^Error: /, '')} No gpt-image model is available on this OpenAI account (it may need organization verification).`)
+    let last: unknown = e
+    for (const m of ids.slice(0, 3)) {
+      try { return { img: await openai('images/generations', { ...body, model: m }), model: m } } catch (e2) { last = e2 }
+    }
+    throw last
+  }
 }
 
 const sha256 = async (b: Uint8Array) => Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256', b))).map(x => x.toString(16).padStart(2, '0')).join('')
@@ -105,15 +126,15 @@ async function run(taskId: string) {
     const pixel = p.art_width > 0 && p.art_height > 0
     const ratio = pixel ? p.art_width / p.art_height : 1
     const size = ratio > 1.25 ? '1536x1024' : ratio < 0.8 ? '1024x1536' : '1024x1024'
-    const img = await openai('images/generations', { model: IMAGE_MODEL, prompt: p.image_prompt, size, background: 'transparent', output_format: 'png', quality: 'high', n: 1 })
+    const { img, model: imageModel } = await drawImage({ prompt: p.image_prompt, size, background: 'transparent', output_format: 'png', quality: 'high', n: 1 })
     const b64 = img?.data?.[0]?.b64_json
     if (!b64) throw new Error('The image model returned no picture.')
     let bytes = Uint8Array.from(atob(b64), c => c.charCodeAt(0))
-    let note = `Made by the ChatGPT worker (${IMAGE_MODEL}).`
+    let note = `Made by the ChatGPT worker (${imageModel}).`
     if (pixel) {
       const scale = Math.min(16, Math.max(1, p.scale || 4))
       const dec = await Image.decode(bytes)
-      const out = pixelize({ w: dec.width, h: dec.height, data: new Uint8Array(dec.bitmap) }, p.art_width, p.art_height, scale, Math.min(32, Math.max(2, p.max_colours || 10)))
+      const out = pixelize({ w: dec.width, h: dec.height, data: new Uint8Array(dec.bitmap) }, p.art_width, p.art_height, scale, Math.min(32, Math.max(2, p.max_colours || 10)), (p.palette || []).slice(0, 32), p.outline || '')
       const check = verifyGrid(out, scale)
       if (!check.ok) throw new Error('Pixel check failed: ' + check.reason)
       const im = new Image(out.w, out.h); im.bitmap.set(out.data)
@@ -135,7 +156,7 @@ async function run(taskId: string) {
   } catch (e) {
     const msg = e instanceof Error ? e.message : String(e)
     await finish('error', msg)
-    await post({ p_kind: 'question', p_body: `The ChatGPT worker couldn't finish this turn: ${msg}\n\nFix the cause, then hand the task back to ChatGPT (or press "start ChatGPT") to try again.`, p_set_turn: 'kody' })
+    await post({ p_kind: 'question', p_body: `The ChatGPT worker couldn't finish this turn: ${msg}\n\nFix the cause, then hand the task back to ChatGPT (or press "run ChatGPT now" on the dashboard) to try again.`, p_set_turn: 'kody' })
     return 'error: ' + msg
   }
 }
