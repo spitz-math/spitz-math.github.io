@@ -1699,7 +1699,7 @@ function endTick(dt){ if(!ECUT||S.mode!=='endcut') return; var w=S.w, p=w.p, E=E
   if(w.shake) w.shake=Math.max(0,w.shake-dt); stepFx(dt);
   w.en.forEach(function(e){ e.t+=dt; e.fl=0; });
   if(E.kind==='escape'){
-    if(ecue('dust',0.2)){ w.en.forEach(function(e){ if(!e.dead){ e.dead=true; if(w.fx.length<140) w.fx.push({k:'puff',x:e.x,y:e.y,t:0}); } }); SND.bossDown(); if(!RM) w.shake=0.4; }
+    if(ecue('dust',0.2)){ var wl=0; w.en.forEach(function(e){ if(!e.dead){ if(e.type==='boss') wl=1; e.dead=true; if(w.fx.length<140) w.fx.push({k:'puff',x:e.x,y:e.y,t:0}); } }); if(wl) SND.bossDown(); else SND.slam(); if(!RM) w.shake=0.4; }   /* the death groan (Warden voice, 2026-11-15) only when a Warden is actually there to fall */
     if(!RM&&T<4&&Math.random()<dt*5&&w.fx.length<140) for(var b=0;b<5;b++) w.fx.push({k:'bit',x:rnd(60,W-60),y:rnd(60,H-60),vx:rnd(-60,60),vy:rnd(-120,0),t:0,c:'#8A92BE'});
     if(ecue('door',0.9)){ w.open=true; SND.door(); E.cap='Not today.'; E.capT=0; }
     if(T>1.3&&T<4.6){ var k=Math.min(1,(T-1.3)/3.0), tx=480, ty=-30, mx=k<0.4?(E.x0+(tx-E.x0)*(k/0.4)):tx, my=E.y0+(ty-E.y0)*k;
