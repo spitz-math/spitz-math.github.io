@@ -37,7 +37,7 @@ function fakeDb() {
     createSignedUrl: (p: string, s: number) => Promise.resolve({ data: { signedUrl: `https://signed.example/${p}?t=${s}` }, error: null }),
     remove: (ps: string[]) => (ps.forEach((p) => files.delete(p)), Promise.resolve({ error: null })),
   })
-  return { db: { from: query, storage: { from: storage } }, tables, files }
+  return { db: { from: query, storage: { from: storage }, rpc: () => Promise.resolve({ data: null, error: { message: 'no rpc in this test' } }) }, tables, files }
 }
 
 // ChatGPT's file links, served by a fake fetch.
