@@ -488,6 +488,20 @@ body.dn-cine .dn-top, body.dn-cine .dn-side{ opacity:0; pointer-events:none; tra
 
 /* ================= SPITZ ARCADE BRAND: the shared styles live in games/kit.js (anything below is this game's own) ================= */
 :root{ --sz-fs-x:0.42; --sz-fs-y:top; }
+/* Shift+R box (playtest handoff 2026-11-15, the only approved restyle): the same square plum panel as Paused, gold Yes like Continue, no glow backdrop */
+#sz-ask.dn-over{ background:rgba(7,8,18,.80); }
+#sz-ask .dn-box{ width:980px; padding:30px 40px 34px; background:#1E1233; box-shadow:inset 0 0 0 3px #45346A, 0 0 0 3px #12081C; border-radius:0; }
+#sz-ask h2{ margin:0 0 10px; font:800 46px/1.1 var(--body); color:var(--rr-gold); letter-spacing:0; text-transform:none; text-shadow:none; }
+#sz-ask .dn-sub{ margin:0 0 26px; font:600 24px/1.35 var(--body); color:var(--rr-mute); }
+#sz-ask .sz-askrow button{ height:76px; padding:0 30px; border-radius:0; font:800 28px/1 var(--body); }
+#sz-ask #sz-askno{ background:#150C25; border:0; box-shadow:inset 0 0 0 3px #45346A; color:var(--rr-ivory); }
+#sz-ask #sz-askno:hover{ box-shadow:inset 0 0 0 3px var(--rr-mute); }
+#sz-ask #sz-askyes{ border:15px solid transparent; border-radius:0; background:none; border-image:url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAA4AAAAOCAYAAAAfSC3RAAAAb0lEQVR42mNkgAIhDpn/DESAdz+eMDIwMDAwwjRlmH8iRh/DjJN8DO9+PGFkgWlqXZhDlEaG+CkMM07K/GdBFhPWWIRXz8U+BJsFXfLBKjGsmhTCXqHwmRjIBCNBIwuh0CNKI3I8EQJkJzlGchM5AErKJeX/xCPOAAAAAElFTkSuQmCC) 5 fill / 15px / 0 stretch; image-rendering:pixelated; box-shadow:none;  color:var(--rr-ink); }
+#sz-ask #sz-askyes:hover{ filter:brightness(1.08); }
+.dn-tip{ margin:10px 0 0; font:600 19px/1.35 var(--body); color:#E6DCC8; } .dn-tip b{ color:var(--rr-gold); font-weight:800; }
+.dn-card .dn-how{ font:800 22px/1.2 var(--body); color:var(--rr-ivory); text-align:center; }
+.dn-co .pt.this{ color:var(--rr-ivory); }
+.dn-conote{ font:700 16px/1.25 var(--body); color:var(--rr-gold); text-align:left; }
 </style>
 <script src="kit.js"></script>
 </head>
@@ -496,7 +510,7 @@ body.dn-cine .dn-top, body.dn-cine .dn-side{ opacity:0; pointer-events:none; tra
 <div id="stage">
   <div class="dn-top">
     <div class="dn-brand"><h1 class="dn-logo" aria-label="Rook and Ruin"><span class="dn-swordw" aria-hidden="true"><span class="dn-sword"></span></span><span aria-hidden="true"><i>ROOK</i> <b>&amp;</b> <i>RUIN</i></span></h1><span class="dn-credit sz-credit">Made by Spitz <i class="sz-burger" aria-hidden="true"></i></span></div>
-    <div class="dn-chip" id="dn-timerchip"><span class="l">Time</span><span class="v" id="dn-time">0:00</span></div>
+    <div class="dn-chip" id="dn-timerchip" title="Stops during questions and choices"><span class="l">Combat time</span><span class="v" id="dn-time">0:00</span></div>
     <span class="dn-sp"></span>
     <div class="dn-chip" id="dn-scorechip"><span class="l">Score</span><span class="v" id="dn-score">0</span></div>
     <div class="dn-chip" id="dn-divechip"><span class="l">Coins</span><span class="v" id="dn-coins">0</span></div>
@@ -507,7 +521,7 @@ body.dn-cine .dn-top, body.dn-cine .dn-side{ opacity:0; pointer-events:none; tra
     <div class="dn-side">
       <div class="dn-panel" id="dn-build" role="button" tabindex="-1" aria-label="Your build. Press B for details (pauses the game)"><h3>Your build</h3><div id="dn-buildlist"></div><div class="dn-buildmore" id="dn-buildmore" hidden><kbd>B</kbd>Details (pauses)</div></div>
       <div class="dn-panel dn-keys"><h3>Keys</h3>
-        <div><kbd>↑↓←→</kbd>Move</div><div><kbd>WASD</kbd>Move</div><div><kbd>Space</kbd>Sword</div><div><kbd>Shift</kbd>Dodge roll</div>
+        <div><kbd>↑↓←→</kbd>Move</div><div><kbd>WASD</kbd>Move</div><div><kbd>Space</kbd>Attack (hold)</div><div><kbd>Shift</kbd>Dodge roll</div>
         <div><kbd>1–4</kbd>Answer</div><div><kbd>P</kbd>Pause</div><div><kbd>F</kbd>Full screen</div><div><kbd>N</kbd>Music</div><div><kbd>M</kbd>Mute</div><div><kbd>⇧R</kbd>New game</div></div>
     </div>
     <div id="dn-bigbg"></div>
@@ -534,17 +548,17 @@ body.dn-cine .dn-top, body.dn-cine .dn-side{ opacity:0; pointer-events:none; tra
 
   <div class="dn-over dn-title" id="dn-start"><div class="dn-box">
     <h2 class="dn-sr">Rook &amp; Ruin</h2>
-    <p class="dn-sub"><span class="sz-setname">Slope-intercept form.</span> About 10 to 15 minutes.</p>
+    <p class="dn-sub"><span class="sz-setname">Slope-intercept form.</span></p>
     <div class="dn-steps">
       <div class="dn-step"><b>Fight</b>Cut through the horde. Roll through attacks.</div>
       <div class="dn-step"><b>Answer</b>Right answers after each room power you up.</div>
-      <div class="dn-step"><b>Survive</b>Beat the Iron Warden, then last 2 minutes.</div>
+      <div class="dn-step"><b>Win</b>Beat the Warden to win. Survive the bonus Last Stand to escape.</div>
     </div>
     <label class="dn-namelbl" for="dn-nameinput">Your name <span>first name + last initial</span></label>
     <div class="dn-row"><input class="dn-input" id="dn-nameinput" maxlength="24" placeholder="Like: Levi S" autocomplete="off"><button class="sz-mus" id="sz-mus" aria-label="Music on or off, key N">♪ Music on</button></div>
     <button class="dn-go dn-next" id="dn-go" disabled><span>Start</span></button>
     <p class="dn-gohint" id="dn-gohint">Type your name to unlock Start.</p>
-    <div class="dn-keyline"><div class="sz-ctl" data-ctl="ARROWS/WASD=Move | Space=Sword | Shift=Dodge | 1234=Answer"></div>
+    <div class="dn-keyline"><div class="sz-ctl" data-ctl="ARROWS/WASD=Move | Hold Space=Attack | Shift=Dodge | 1234=Answer"></div>
 </div>
 <details class="dn-allkeys"><summary>All controls</summary><div class="dn-keygrid">
         <div><kbd>Arrows</kbd> or <kbd>WASD</kbd> Move</div><div><kbd>Space</kbd> Swing your sword (hold to keep swinging)</div>
@@ -1519,11 +1533,11 @@ function heroPose(p){ var w=S.w;
   if(p.hurtT>0) return ['rook_idle',df[0],2,df[1]];
   if(p.mv) return ['rook_walk',df[0],Math.floor(p.walk*8)%4,df[1]];
   return ['rook_idle',df[0],Math.floor((w?w.t:0)*1.7)%2,df[1]]; }
-function drawHeroRR(c,p,t){ var pose=heroPose(p), foot=p.y+p.r+3;
+function drawHeroRR(c,p,t){ var pose=heroPose(p), foot=p.y+p.r+3; invRing(c,p);
   c.fillStyle='rgba(0,0,0,.32)'; c.fillRect(Math.round(p.x-12),Math.round(p.y+p.r-1),24,4);
   /* grounded marker (readability pass 2026-11-15): a small gold ring at Rook's feet, always on in play, never a big glow */
   if(S.mode==='play'||S.mode==='ask'||S.mode==='pick'||S.mode==='reentry'||S.mode==='build'){ var gx=Math.round(p.x), gy=Math.round(p.y+p.r+1); c.lineWidth=4; c.strokeStyle='rgba(18,8,28,.85)'; c.beginPath(); c.ellipse(gx,gy,17,6,0,0,6.2832); c.stroke(); c.lineWidth=2; c.strokeStyle='#FFD45C'; c.beginPath(); c.ellipse(gx,gy,17,6,0,0,6.2832); c.stroke(); }
-  if(p.rip>0&&L('riposte')){ c.fillStyle='rgba(255,214,90,'+(0.25+0.15*Math.sin(t*20))+')'; c.beginPath(); c.arc(p.x,p.y-24,32,0,7); c.fill(); }
+  if(p.rip>0&&L('riposte')){ c.fillStyle='rgba(255,214,90,.32)'; c.beginPath(); c.arc(p.x,p.y-24,32,0,7); c.fill(); }
   rrDraw(c,pose[0],pose[1],pose[2],p.x,foot,pose[3]);
   if(L('aegis')&&p.sh<=0){ c.strokeStyle='rgba(77,224,192,.55)'; c.lineWidth=2; c.beginPath(); c.arc(p.x,p.y-22,34,0,7); c.stroke(); }
   if(p.rollCd>0&&S.mode==='play'){ var s=stat(); c.strokeStyle='rgba(255,255,255,.55)'; c.lineWidth=3; c.beginPath(); c.arc(p.x,p.y+p.r+8,7,-1.57,-1.57+6.28*(1-p.rollCd/s.rollCd)); c.stroke(); } }
@@ -1619,8 +1633,9 @@ function cutTick(dt){ if(!CUT||S.mode!=='cut') return; var w=S.w, p=w.p, C=CUT; 
 function cutEnd(){ if(S.mode!=='cut') return; var w=S.w, p=w.p, gx=480, gy=CUT&&CUT.gob.show?CUT.gob.y:178;
   w.open=false; p.cutPose=null; p.mv=false; p.x=480; p.y=372; p.fx=0; p.fy=-1; p.inv=Math.max(p.inv,0.6); p.cd=0.15; p.roll=0; p.rec=0;
   /* the goblin from the scene is real: it joins the first wave in place of one spawn */
-  if(!w.cutGob){ w.cutGob=1; var g=spawnEnemy('gob',gx,gy); g.cd=1.1; g.st=0; if(w.waves[0]&&w.waves[0][0]&&w.waves[0][0][1]>1) w.waves[0]=[[w.waves[0][0][0],w.waves[0][0][1]-1]].concat(w.waves[0].slice(1)); }
-  w.waveT=Math.max(w.waveT,0.9); w.banner={txt:ROOMS[w.rid].name.toUpperCase(),sub:ROOMS[w.rid].sub||'',t:2.4};
+  if(!w.cutGob){ w.cutGob=1; var g=spawnEnemy('gob',gx,gy); g.cd=3.0; g.st=0; if(w.waves[0]&&w.waves[0][0]&&w.waves[0][0][1]>1) w.waves[0]=[[w.waves[0][0][0],w.waves[0][0][1]-1]].concat(w.waves[0].slice(1)); }
+  /* playtest handoff 2026-11-15: the controls stay up a little longer and the first wave waits for them; then the starter relic is dealt (dealStarter) */
+  w.waveT=Math.max(w.waveT,2.8); w.banner={txt:ROOMS[w.rid].name.toUpperCase(),sub:ROOMS[w.rid].sub||'',t:3.0}; dealStarter();
   CUT=null; HELD={}; BUF.s=BUF.r=0; $('dn-skip').hidden=true; S.mode='play'; cine(false); bigCut(false); save(); }
 function cutCam(){ if(!CUT||RM) return null; var T=CUT.t, k=T<10?0:Math.min(1,(T-10)/1.4), e=k*k*(3-2*k), z=1.12-0.12*e;
   var fy=T<7.8?330:330-80*Math.min(1,(T-7.8)/0.8); fy=fy+(270-fy)*e;
@@ -1883,15 +1898,15 @@ window.__AU=AU;
 /* ---------- the castle: one run = these rooms ---------- */
 /* exits: n/w/e -> next room. Rooms lock while there are enemies; clearing opens every exit. */
 var ROOMS={
-  entry:  {name:'Entry Hall',     kind:'start',    exits:{n:'guard'},   waves:[[['gob',3]],[['gob',4]],[['gob',4],['bat',2]]], sub:'Space swings · Shift dodges · Goblins pounce after the red !'},
+  entry:  {name:'Entry Hall',     kind:'start',    exits:{n:'guard'},   waves:[[['gob',3]],[['gob',4]],[['gob',4],['bat',2]]], sub:'Hold Space to attack. Move to face enemies. Shift to dodge.'},
   guard:  {name:'Guard Room',     kind:'guard',    exits:{n:'cross'},   m:1.0,  waves:[[['gob',4],['bat',2]],[['bat',5],['gob',3]],[['gob',6],['bat',3]],[['gob',5],['bat',4],['gob',1,1]]], sub:'Bats hover, then dive. Dodge through!'},
-  cross:  {name:'Crossroads',     kind:'crossr',   exits:{w:'vault',e:'arena'}, m:1.0, waves:[[['skel',1],['gob',4]],[['skel',1],['bat',5],['gob',2]],[['skel',2],['gob',6],['bat',2]]], sub:'Skeleton knights block from the front. Wait for the swing.'},
+  cross:  {name:'Crossroads',     kind:'crossr',   exits:{w:'vault',e:'arena'}, m:1.0, waves:[[['skel',1]],[['skel',1],['gob',4],['bat',3]],[['skel',2],['gob',6],['bat',2]]], intro:1, sub:'A shield knight guards this hall. Learn his shield first.'},
   vault:  {name:'Treasure Vault', kind:'vault',    exits:{n:'library'}, m:1.1, waves:[[['slime',4]],[['slime',3],['bat',5]]], chest:'treasure', sub:'A quiet room... mostly.'},
   arena:  {name:'Proving Ground', kind:'arena',    exits:{n:'library'}, m:1.1,  waves:[[['skel',2],['gob',6]],[['wiz',2],['bat',6]],[['skel',2],['wiz',2],['gob',7]],[['gob',12],['bat',5],['skel',1,1]]], chest:'gold', sub:'The doors lock behind you. Win for a GOLD reward.'},
   library:{name:'Library',        kind:'library',  exits:{n:'shop'},    m:1.2,  waves:[[['wiz',2],['slime',3],['gob',3]],[['skel',2],['slime',2],['bat',6]],[['wiz',3],['gob',7]],[['gob',10],['slime',2],['wiz',1],['skel',1,1]]], secret:true, sub:'Wizards aim first. Swing at orbs to bat them back!'},
-  shop:   {name:'Shop',           kind:'shop',     exits:{n:'siege'},   waves:[], shop:true, sub:'Stand on an item and press Space to buy'},
+  shop:   {name:'Shop',           kind:'shop',     exits:{n:'siege'},   waves:[], shop:true, sub:'Walk up to an item and press E to buy'},
   siege:  {name:'Siege Hall',     kind:'siege',    exits:{n:'boss'},    siege:50, sub:'The doors slam shut. Survive!'},
-  boss:   {name:'The Iron Warden',kind:'bossroom', exits:{},            boss:true, sub:'Watch the red warnings. Hit him when he is stunned.'}
+  boss:   {name:'The Iron Warden',kind:'bossroom', exits:{},            boss:true, sub:"Bait his charge into a wall. Strike while he's stunned."}
 };
 var MAPPOS={entry:[0,8],guard:[0,7],cross:[0,6],vault:[-1,5],arena:[1,5],library:[0,4],shop:[0,3],siege:[0,2],boss:[0,1]};
 
@@ -1949,21 +1964,22 @@ var SYN=[
 ];
 /* readability pass 2026-11-15: every power says what it does from scratch (base) and its real numbers per level (st).
    The numbers are copied from the code that runs each power (stat(), powers(), strike(), roll, hurtP, thorns, explosions). */
+/* how + use (playtest handoff 2026-11-15): cards lead with what the power does and what you do to use it (Automatic / Hold attack / After dodge / Defensive) */
 var INFO={
-  wave:{base:'Every sword swing also fires an energy wave straight ahead.', st:function(l){ return [['Wave damage',[0,5,6,8][l]],['Goes through',[0,2,4,6][l]+' enemies'],['Bounces off walls',l>=3?'yes':'no']]; }},
-  whirl:{base:'Keep swinging without a pause and your chain ends in a full spin that hits all around you.', st:function(l){ return [['Spin on',l>=3?'every 2nd swing':'every 3rd swing'],['Spin damage',(1.5+0.25*l)+'× sword'],['Spin reach','+'+Math.round((12+8*l)/58*100)+'%']]; }},
-  riposte:{base:'After every dodge roll, your next swing (within 1.2 s) is a critical hit: double damage plus a fan of 3 sword waves.', st:function(l){ return [['Dodge recharge',l>=2?'30% faster':'normal'],['Rolling through enemies',l>=3?'cuts them (6)':'no damage']]; }},
-  edge:{base:'A sharper sword: every swing hits harder and reaches farther.', st:function(l){ return [['Sword damage',(3+2*l)+' (base 3)'],['Sword reach','+'+Math.round(7*l/58*100)+'%']]; }},
-  volatile:{base:'Defeated enemies explode and hurt the enemies around them.', st:function(l){ return [['Blast damage',[0,3,4,5][l]],['Blast size',[0,100,120,145][l]+'%'],['Blasts set off blasts',l>=3?'yes, one step':'no']]; }},
-  spark:{base:'Lightning strikes the nearest enemy on its own, then jumps to more enemies nearby.', st:function(l){ return [['Strikes every',[0,2.4,2.0,1.6][l]+' s'],['Jumps to',(l+1)+' more'],['First-hit damage',4+2*l]]; }},
-  orbit:{base:'Blades circle close around you and cut any enemy they touch.', st:function(l){ return [['Blades',[0,2,3,4][l]],['Damage per cut',3+l]]; }},
-  ricochet:{base:'Every 1.5 s you throw an orb at the nearest enemy. It bounces off walls and hits everything it passes.', st:function(l){ return [['Wall bounces',l+2],['Damage',3+l],['Orbs per throw',l>=3?2:1]]; }},
-  bash:{base:'Your dodge roll becomes a shield charge: enemies you roll into take damage and are stunned (the Warden is only pushed).', st:function(l){ return [['Bash damage',[0,6,9,13][l]],['Stun',[0,0.8,1.1,1.4][l]+' s'],['Dodge recharge',l>=3?'25% faster':'normal']]; }},
-  thorns:{base:'Enemies that hit you take damage back. Bumping into them deals half.', st:function(l){ return [['Damage back',[0,6,10,15][l]]]; }},
-  aegis:{base:'A shield blocks one hit, then recharges. Each block blasts the enemies around you, and every block makes the next blast stronger (up to 5).', st:function(l){ return [['Recharge',[0,12,9,6][l]+' s'],['First blast damage',Math.round((6+3*l)*1.25)]]; }},
-  ward:{base:'Relic gems circle close to you. They catch enemy magic orbs and fire them back as bolts, and nick enemies they touch.', st:function(l){ return [['Gems',l],['Bolt damage',8+3*l],['Bolts go through',l>=3?'3 enemies':'1 enemy']]; }},
-  heart:{base:'One more heart, and you heal to full.', st:function(l){ return [['Max hearts',(S&&S.w?S.w.p.max-L('heart')+l:5+l)]]; }},
-  boots:{base:'You run faster and your dodge roll recharges sooner.', st:function(l){ return [['Move speed','+'+(12*l)+'%'],['Dodge recharge',(10*l)+'% faster']]; }}
+  wave:{how:'Send attacks forward', use:'Hold attack', base:'Every sword swing also fires an energy wave straight ahead.', st:function(l){ return [['Wave damage',[0,5,6,8][l]],['Goes through',[0,2,4,6][l]+' enemies'],['Bounces off walls',l>=3?'yes':'no']]; }},
+  whirl:{how:'Attack all around you', use:'Hold attack', base:'Keep swinging without a pause and your chain ends in a full spin that hits all around you.', st:function(l){ return [['Spin on',l>=3?'every 2nd swing':'every 3rd swing'],['Spin damage',(1.5+0.25*l)+'× sword'],['Spin reach','+'+Math.round((12+8*l)/58*100)+'%']]; }},
+  riposte:{how:'Dodge, then land a powerful strike', use:'After dodge', base:'After every dodge roll, your next swing (within 1.2 s) is a critical hit: double damage plus a fan of 3 sword waves.', st:function(l){ return [['Dodge recharge',l>=2?'30% faster':'normal'],['Rolling through enemies',l>=3?'cuts them (6)':'no damage']]; }},
+  edge:{how:'Bigger, longer sword hits', use:'Hold attack', base:'A sharper sword: every swing hits harder and reaches farther.', st:function(l){ return [['Sword damage',(3+2*l)+' (base 3)'],['Sword reach','+'+Math.round(7*l/58*100)+'%']]; }},
+  volatile:{how:'Defeated enemies explode', use:'Automatic', base:'Defeated enemies explode and hurt the enemies around them.', st:function(l){ return [['Blast damage',[0,3,4,5][l]],['Blast size',[0,100,120,145][l]+'%'],['Blasts set off blasts',l>=3?'yes, one step':'no']]; }},
+  spark:{how:'Automatic lightning', use:'Automatic', base:'Lightning strikes the nearest enemy on its own, then jumps to more enemies nearby.', st:function(l){ return [['Strikes every',[0,2.4,2.0,1.6][l]+' s'],['Jumps to',(l+1)+' more'],['First-hit damage',4+2*l]]; }},
+  orbit:{how:'Blades circle you and cut', use:'Automatic', base:'Blades circle close around you and cut any enemy they touch.', st:function(l){ return [['Blades',[0,2,3,4][l]],['Damage per cut',3+l]]; }},
+  ricochet:{how:'A bouncing orb, thrown for you', use:'Automatic', base:'Every 1.5 s you throw an orb at the nearest enemy. It bounces off walls and hits everything it passes.', st:function(l){ return [['Wall bounces',l+2],['Damage',3+l],['Orbs per throw',l>=3?2:1]]; }},
+  bash:{how:'Damage enemies with your dodge', use:'After dodge', base:'Your dodge roll becomes a shield charge: enemies you roll into take damage and are stunned (the Warden is only pushed).', st:function(l){ return [['Bash damage',[0,6,9,13][l]],['Stun',[0,0.8,1.1,1.4][l]+' s'],['Dodge recharge',l>=3?'25% faster':'normal']]; }},
+  thorns:{how:'Enemies that hit you get hurt', use:'Defensive', base:'Enemies that hit you take damage back. Bumping into them deals half.', st:function(l){ return [['Damage back',[0,6,10,15][l]]]; }},
+  aegis:{how:'Block a hit, then blast back', use:'Defensive', base:'A shield blocks one hit, then recharges. Each block blasts the enemies around you, and every block makes the next blast stronger (up to 5).', st:function(l){ return [['Recharge',[0,12,9,6][l]+' s'],['First blast damage',Math.round((6+3*l)*1.25)]]; }},
+  ward:{how:'Reflect enemy projectiles', use:'Defensive', base:'Relic gems circle close to you. They catch enemy magic orbs and fire them back as bolts, and nick enemies they touch.', st:function(l){ return [['Gems',l],['Bolt damage',8+3*l],['Bolts go through',l>=3?'3 enemies':'1 enemy']]; }},
+  heart:{how:'One more heart', use:'Defensive', base:'One more heart, and you heal to full.', st:function(l){ return [['Max hearts',(S&&S.w?S.w.p.max-L('heart')+l:5+l)]]; }},
+  boots:{how:'Run and dodge faster', use:'Always on', base:'You run faster and your dodge roll recharges sooner.', st:function(l){ return [['Move speed','+'+(12*l)+'%'],['Dodge recharge',(10*l)+'% faster']]; }}
 };
 /* the stat lines for a card: from -> to, changed ones marked */
 function statRows(id,from,to){ var a=from?INFO[id].st(from):null, b=INFO[id].st(to);
@@ -1980,10 +1996,11 @@ function synFor(id){ return SYN.filter(function(u){ return u.need.some(function(
 function freshWorld(){
   return { rid:'entry', from:'s', seen:{entry:1}, t:0, runT:0,
     p:{x:W/2,y:H-70,r:11,fx:0,fy:-1,hp:6,max:6,arm:0,inv:0,sw:0,swA:0,cd:0,kx:0,ky:0,sh:0,walk:0,roll:0,rollCd:0,rx:0,ry:0,rip:0,chain:0,chainT:0,sid:0,spin:0,crit:0,buyLock:0},
-    b:{}, picks:0, xp:0, lv:1, need:5, pend:0, coins:0, kills:0, combo:0, comboT:0, bestCombo:0, flawless:0, last:0, en:[], spawns:[], gems:[], coinsF:[], hearts:[], shots:[], orbs:[], fx:[], booms:[], tele:[],
+    b:{}, picks:0, xp:0, lv:1, need:7,   /* 7 (was 5): the starter relic is free now, so the Entry Hall pays one level instead of two */
+    pend:0, coins:0, kills:0, combo:0, comboT:0, bestCombo:0, flawless:0, last:0, en:[], spawns:[], gems:[], coinsF:[], hearts:[], shots:[], orbs:[], fx:[], booms:[], tele:[],
     waves:[], wave:0, waveT:0.9, cleared:false, open:false, door:false, chest:null, resolve:0, siegeT:0, crack:0, shop:null, boss:null, victory:0,
     tm:{spark:1.5, rico:1, spawn:0.5, swarm:22}, oa:0, banner:null, fork:Math.random()<0.5?1:0, secL:Math.random()<0.5?1:0, batch:null }; }
-function loadRoom(id,from){ var w=S.w, R=ROOMS[id]; applyFork(); w.batch=null; w.aeg=0; w.hurtRoom=0; w.roomT0=w.runT; w.rid=id; w.from=from||'s'; w.seen[id]=1; buildMap(R.kind);
+function loadRoom(id,from){ var w=S.w, R=ROOMS[id]; applyFork(); w.bannerQ=[]; w.batch=null; w.aeg=0; w.hurtRoom=0; w.roomT0=w.runT; w.rid=id; w.from=from||'s'; w.seen[id]=1; buildMap(R.kind);
   w.en=[]; w.spawns=[]; w.gems=[]; w.coinsF=[]; w.hearts=[]; w.shots=[]; w.orbs=[]; w.fx=[]; w.booms=[]; w.tele=[]; w.t=0;
   w.waves=(R.waves||[]).slice(); w.wave=0; w.waveT=0.9; w.chest=null; w.resolve=0; w.siegeT=R.siege||0; w.crack=0; w.boss=null; w.shop=null;
   w.cleared=!w.waves.length&&!R.siege&&!R.boss; w.open=w.door=w.cleared;
@@ -2027,7 +2044,7 @@ var DSRC='sword', BGEN=0; function tally(d){ var t=window.__dmg; if(t) t[DSRC]=(
 function angDiff(a,b){ var d=a-b; while(d>Math.PI) d-=2*Math.PI; while(d<-Math.PI) d+=2*Math.PI; return Math.abs(d); }
 function hurtE(e,d,fx,fy,kb,opt){ if(e.dead) return; opt=opt||{}; var w=S.w;
   /* skeleton knights block sword hits from the front, unless they are recovering or you crit */
-  if(e.type==='skel'&&(opt.melee||opt.proj||opt.orb)&&!opt.crit&&!opt.bash&&e.st!==3){ var pa=opt.proj?Math.atan2(-fy,-fx):Math.atan2(w.p.y-e.y,w.p.x-e.x); if(angDiff(pa,e.fa)<1.3){ d=0; SND.clang(); w.fx.push({k:'txt',x:e.x,y:e.y-34,t:0,v:'Block!',c:'#CFE0FF'}); if(opt.melee){ w.p.kx-=fx*220; w.p.ky-=fy*220; } kb=40; if(!opt.melee) return; } }
+  if(e.type==='skel'&&(opt.melee||opt.proj||opt.orb)&&!opt.crit&&!opt.bash&&e.st!==3){ var pa=opt.proj?Math.atan2(-fy,-fx):Math.atan2(w.p.y-e.y,w.p.x-e.x); if(angDiff(pa,e.fa)<1.3){ d=0; SND.clang(); if(!(w.t-(e.blkAt||-9)<0.9)){ e.blkAt=w.t; w.fx.push({k:'txt',x:e.x,y:e.y-34,t:0,v:'BLOCKED',c:'#CFE0FF'}); } if(opt.melee){ w.p.kx-=fx*220; w.p.ky-=fy*220; } kb=40; if(!opt.melee) return; } }
   if(e.type==='boss'&&e.st===9) d=Math.round(d*1.6);   /* stunned boss takes more */
   tally(Math.min(d,Math.max(0,e.hp))); e.hp-=d; e.fl=0.09; if(kb){ var k=kb/(ET[e.type].heavy?5:1); e.kx+=fx*k; e.ky+=fy*k; }
   if(d>0&&w.fx.length<80) w.fx.push({k:'num',x:e.x+rnd(-4,4),y:e.y-e.r-6,t:0,v:d,c:opt.crit?'#FFC93C':'#FFFFFF'});
@@ -2050,7 +2067,7 @@ function killE(e,opt){ var w=S.w, t=ET[e.type]; e.dead=true; w.kills++; SND.die(
   if(L('volatile')&&w.booms.length<40&&(DSRC!=='volatile'||(L('volatile')>=3&&!BGEN))){ var lv=L('volatile'); w.booms.push({x:e.x,y:e.y,r:[0,40,48,58][lv],dmg:[0,3,4,5][lv],t:0.06,g:DSRC==='volatile'?1:0}); }   /* level 3 chains one step, never forever */
   if(opt&&opt.melee&&!RM) S.hs=Math.max(S.hs||0,0.05);
   if(e.type==='boss'&&w.last>0){ w.lsWK=(w.lsWK||0)+1; addPts(1500,e.x,e.y-60,'#FFC93C'); SND.bossDown(); toast('A Warden falls! +1500'); for(var q=0;q<(RM?6:16);q++) w.fx.push({k:'bit',x:e.x,y:e.y-20,vx:rnd(-160,160),vy:rnd(-200,20),t:0,c:'#8A92BE'}); }
-  else if(e.type==='boss'){ var bt=w.runT-(w.roomT0||w.runT); addPts(2000+Math.max(0,1500-15*bt)+(w.hurtRoom?0:500),e.x,e.y-60,'#FFC93C'); w.flawless+=w.hurtRoom?0:1; SND.bossDown(); w.victory=2.6; w.en.forEach(function(o){ if(o!==e&&!o.dead){ o.dead=true; } }); w.tele=[]; w.orbs=[]; var gv=0; w.gems.forEach(function(g){ gv+=g.v; }); w.gems=[]; if(gv) gainXP(gv,1);   /* gems still on the floor count */ toast('The Iron Warden falls!'); } }
+  else if(e.type==='boss'){ var bt=w.runT-(w.roomT0||w.runT); addPts(2000+Math.max(0,1500-15*bt)+(w.hurtRoom?0:500),e.x,e.y-60,'#FFC93C'); w.flawless+=w.hurtRoom?0:1; SND.bossDown(); w.won=1; w.victory=2.6; w.en.forEach(function(o){ if(o!==e&&!o.dead){ o.dead=true; } }); w.tele=[]; w.orbs=[]; var gv=0; w.gems.forEach(function(g){ gv+=g.v; }); w.gems=[]; if(gv) gainXP(gv,1);   /* gems still on the floor count */ toast('The Iron Warden falls!'); } }
 function dropGem(x,y,v){ var w=S.w; if(w.gems.length>=200){ w.gems[Math.floor(Math.random()*w.gems.length)].v+=v; return; } w.gems.push({x:x,y:y,v:v,m:0}); }
 function nearestFoe(x,y,maxD,skip){ var w=S.w, best=null, bd=maxD*maxD; for(var i=0;i<w.en.length;i++){ var e=w.en[i]; if(e.dead||(skip&&skip.indexOf(e)>=0)) continue; var dx=e.x-x, dy=e.y-y, d2=dx*dx+dy*dy; if(d2<bd){ bd=d2; best=e; } } return best; }
 /* sword: swings the way Rook faces. Light aim help: an enemy within ~50° of where you face pulls the swing toward it. */
@@ -2096,6 +2113,7 @@ function hurtP(src,dmg){ var w=S.w, p=w.p; if(S.mode!=='play'||w.victory) return
   if(L('aegis')&&p.sh<=0){ p.sh=[0,12,9,6][L('aegis')]; w.aeg=Math.min(5,(w.aeg||0)+1); var ar=130+20*w.aeg, am=1+0.25*w.aeg; w.fx.push({k:'boom',x:p.x,y:p.y-6,r:ar,t:0}); p.inv=0.8; SND.block(); w.fx.push({k:'txt',x:p.x,y:p.y-34,t:0,v:'Blocked!',c:'#4DE0C0'}); p.blkT=0.3; w.fx.push({k:'ring',x:p.x,y:p.y-6,t:0});
     DSRC='aegis'; w.en.forEach(function(e){ var dx=e.x-p.x, dy=e.y-p.y, d=Math.hypot(dx,dy)||1; if(d<ar&&!e.dead) hurtE(e,Math.round((6+3*L('aegis'))*am),dx/d,dy/d,420); }); w.orbs=w.orbs.filter(function(o){ return o.fr||Math.hypot(o.x-p.x,o.y-p.y)>ar; });
     if(HAS('thunder')) thunderGuard(); return; }
+  w.hitBy=!src?'':src.type?src.type:('vx' in src)?'orb':('r' in src)?'ring':'rubble';
   p.hp-=dmg||1; p.inv=early(w)?1.3:1.0; p.hurtT=0.22; if(w.combo>=5) w.fx.push({k:'txt',x:p.x,y:p.y-56,t:0,v:'Combo lost',c:'#FF8A8A'}); w.combo=0; w.hurtRoom=1; SND.hurt(); if(!RM){ w.shake=0.2; S.hs=0.06; } w.fx.push({k:'hurt',t:0});
   if(src){ var dx=p.x-src.x, dy=p.y-src.y, d=Math.hypot(dx,dy)||1; p.kx=dx/d*280; p.ky=dy/d*280; }
   if(p.hp<=0){ p.hp=0; knockedOut(); } }
@@ -2105,6 +2123,7 @@ var GRIDN=28*17, GRID=[]; (function(){ for(var i=0;i<GRIDN;i++) GRID.push([]); }
 function update(dt){ var w=S.w, p=w.p, s=stat(), i, e;
   w.t+=dt; w.runT+=dt; if(w.shake) w.shake=Math.max(0,w.shake-dt); if(w.comboT>0){ w.comboT-=dt; if(w.comboT<=0) w.combo=0; } if(w.comboPop>0) w.comboPop-=dt; if(w.comboUp>0) w.comboUp-=dt; if(w.ringT>0) w.ringT-=dt;
   if(w.banner){ w.banner.t-=dt; if(w.banner.t<=0) w.banner=null; }
+  if(!w.banner&&w.bannerQ&&w.bannerQ.length) w.banner=w.bannerQ.shift();
   if(w.victory){ w.victory-=dt; stepFx(dt); if(w.victory<=0){ w.victory=0; if(w.pend>0){ w.preLast=1; w.resolve=0; } else startLast(); } return; }
   /* levels banked during the Warden fight are paid out before the Last Stand starts */
   if(w.preLast){ stepFx(dt); if(w.pend>0){ w.resolve-=dt; if(w.resolve<=0) levelUp(); } else { w.preLast=0; startLast(); } hud(); return; }
@@ -2122,14 +2141,16 @@ function update(dt){ var w=S.w, p=w.p, s=stat(), i, e;
     if(ml){ p.stepT=(p.stepT||0)-dt*slow; if(p.stepT<=0){ p.stepT=0.32*165/s.spd; SND.step(); } } else p.stepT=0.08; }
   p.x+=p.kx*dt; p.y+=p.ky*dt; p.kx*=Math.max(0,1-9*dt); p.ky*=Math.max(0,1-9*dt);
   collide(p); potTick(dt);
-  if(p.inv>0) p.inv-=dt; if(p.cd>0) p.cd-=dt; if(p.sw>0){ p.sw-=dt; if(p.sw<=0){ if(!p.struck&&p.sid) strike(); p.spin=0; p.crit=0; p.swR=0.08; } } if(p.swR>0) p.swR-=dt; if(p.hurtT>0) p.hurtT-=dt; if(p.blkT>0) p.blkT-=dt; if(p.sh>0) p.sh-=dt; if(p.rollCd>0) p.rollCd-=dt; if(p.rip>0) p.rip-=dt; if(p.rec>0) p.rec-=dt;
+  if(p.inv>(p.invP||0)+0.01) p.invMax=p.inv; p.invP=p.inv; if(p.inv>0) p.inv-=dt; if(p.cd>0) p.cd-=dt; if(p.sw>0){ p.sw-=dt; if(p.sw<=0){ if(!p.struck&&p.sid) strike(); p.spin=0; p.crit=0; p.swR=0.08; } } if(p.swR>0) p.swR-=dt; if(p.hurtT>0) p.hurtT-=dt; if(p.blkT>0) p.blkT-=dt; if(p.sh>0) p.sh-=dt; if(p.rollCd>0) p.rollCd-=dt; if(p.rip>0) p.rip-=dt; if(p.rec>0) p.rec-=dt;
   /* shop: stand on an item and press Space */
   /* one purchase per visit to an item: after buying, step off and back on to buy it again (final UI pass: no double buys from mashing Space) */
-  var near=null; if(w.shop) w.shop.forEach(function(it){ var d=Math.hypot(p.x-it.x,p.y-it.y); if(d>=40) it.hold=0; if(!it.sold&&d<34) near=it; }); w.shopNear=near;
+  var near=null; if(w.shop) w.shop.forEach(function(it){ var d=Math.hypot(p.x-it.x,p.y-it.y); if(d>=40) it.hold=0; if(!it.sold&&d<34) near=it; }); if(near!==w.shopNear){ NEARAT=performance.now(); if(near&&!w.shopSeen){ w.shopSeen=1; say('browse'); } } w.shopNear=near;
+  if(w.bub&&w.bub.t>0) w.bub.t-=dt; if(w.shop&&w.dealt&&p.y<FLR[1]+80&&Math.abs(p.x-W/2)<90) say('leave');
+  if(BUF.e){ var eAt=BUF.e; BUF.e=0; if(near&&eAt>NEARAT&&!near.hold) buy(near); }   /* playtest handoff 2026-11-15: E to buy, a fresh press after stepping up (holding E or walking across items never buys) */
   /* input buffer: a tap during a roll or a swing still lands as soon as it can */
   if(BUF.s>0) BUF.s-=dt; if(BUF.r>0){ BUF.r-=dt; if(p.rollCd<=0&&p.roll<=0){ BUF.r=0; roll(); } }
   if(p.buyT>0) p.buyT-=dt;
-  if(HELD[' ']||BUF.s>0){ if(near){ if(!p.buyLock&&!(p.buyT>0)&&!near.hold){ p.buyLock=1; p.buyT=0.7; BUF.s=0; buy(near); } else BUF.s=0; } else if(p.cd<=0&&p.roll<=0){ BUF.s=0; swing(); } } if(!HELD[' ']) p.buyLock=0;
+  if(HELD[' ']||BUF.s>0){ if(p.cd<=0&&p.roll<=0){ BUF.s=0; swing(); } }
   if(p.sw>0&&p.sid){ if(!p.struck&&(p.spin?0.26:0.2)-p.sw>=RR_WIND-1e-6) strike(); else if(p.struck) swingHits(); }
   /* doorways */
   if(w.open){ var ex=ROOMS[w.rid].exits;
@@ -2184,7 +2205,7 @@ function update(dt){ var w=S.w, p=w.p, s=stat(), i, e;
 function stepFx(dt){ var w=S.w; for(var i=w.fx.length-1;i>=0;i--){ var f=w.fx[i]; f.t+=dt; if(f.k==='bit'){ f.x+=f.vx*dt; f.y+=f.vy*dt; f.vy+=300*dt; }
     var life=f.k==='bit'?0.5:f.k==='die'?0.16:f.k==='pop'?0.18:f.k==='zap'||f.k==='arc'?0.22:f.k==='ring'?0.35:f.k==='boom'?0.3:f.k==='spark'?0.14:f.k==='hurt'?0.3:f.k==='puff'?0.4:0.8; if(f.t>life) w.fx.splice(i,1); } }
 var TT=0.9, TH=0.45;   /* doorway walk: 0.45 s out through the door, 0.45 s in through the next one */
-function goRoom(id,from){ var w=S.w, p=w.p; w.next=[id,from]; w.tdir=from==='w'?[-1,0]:from==='e'?[1,0]:[0,-1]; p.fx=w.tdir[0]; p.fy=w.tdir[1]; SND.door(); p.sw=0; p.roll=0; p.kx=p.ky=0; S.mode='trans'; trans=TT; HELD={}; save(); }
+function goRoom(id,from){ var w=S.w, p=w.p; if(w.shop) say('leave'); w.next=[id,from]; w.tdir=from==='w'?[-1,0]:from==='e'?[1,0]:[0,-1]; p.fx=w.tdir[0]; p.fy=w.tdir[1]; SND.door(); p.sw=0; p.roll=0; p.kx=p.ky=0; S.mode='trans'; trans=TT; HELD={}; save(); }
 
 /* ---------- enemy behaviour: every attack is shown before it lands ---------- */
 function attacking(e){ var t=e.type; return (t==='boss'&&e.st!==5&&e.st!==9)||((t==='gob'||t==='bat')&&e.st===2)||(t==='slime'&&e.st===1); }
@@ -2242,12 +2263,13 @@ function enemyAI(e,dt,p){ var w=S.w, dx=p.x-e.x, dy=p.y-e.y, d=Math.hypot(dx,dy)
    0 walk · 1 charge warning (red lane) · 2 charging · 9 stunned after hitting a wall
    3 slam warning (red circle) · 4 sweep warning (red wedge) · 5 recover · 6 volley warning */
 function bossAI(e,dt,p,d,ux,uy){ var w=S.w, half=e.hp<e.max/2, sp=half?0.85:1;
-  if(w.last>0){ half=true; sp=0.8; e.raged=0; } else if(half&&!e.raged){ e.raged=1; e.addT=10; w.banner={txt:'THE WARDEN IS ENRAGED',sub:'Faster attacks. Help is coming!',t:1.8}; SND.boss(); spawnWave([['gob',4],['skel',2]],1,true); }
+  if(w.last>0){ half=true; sp=0.8; e.raged=0; } else if(half&&!e.raged){ e.raged=1; e.addT=10; w.banner={txt:'THE WARDEN IS ENRAGED',sub:'Faster attacks. Reinforcements incoming!',t:1.8}; SND.boss(); var n0=w.spawns.length; spawnWave([['gob',4],['skel',2]],1,true); for(var si=n0;si<w.spawns.length;si++) w.spawns[si].t+=0.9; }
   if(e.raged){ e.addT-=dt; if(e.addT<=0){ e.addT=10; spawnWave([['gob',3],['bat',2]],1,true); } }
   var v=0, mx=0, my=0;
   if(e.st===0&&e.cd<=0&&w.last>0){ var busy=0; for(var bi=0;bi<w.en.length;bi++){ var o2=w.en[bi]; if(o2!==e&&!o2.dead&&o2.type==='boss'&&o2.st!==0&&o2.st!==5&&o2.st!==9) busy++; } if(busy>=2) e.cd=0.3; }
   if(e.st===0){ v=ET.boss.spd*(half?1.25:1); mx=ux; my=uy; if(e.cd<=0){ var r=Math.random();
-      if(d<130){ e.st=4; e.cd=0.6*sp; e.fa=Math.atan2(p.y-e.y,p.x-e.x); }
+      if(!e.taught&&!(w.last>0)){ e.taught=1; e.st=1; e.cd=1.25; e.c0=e.cd; e.fa=Math.atan2(p.y-e.y,p.x-e.x); e.chains=0; }
+      else if(d<130){ e.st=4; e.cd=0.7*sp; e.fa=Math.atan2(p.y-e.y,p.x-e.x); }
       else if(r<0.45){ e.st=1; e.cd=0.85*sp; e.c0=e.cd; e.fa=Math.atan2(p.y-e.y,p.x-e.x); e.chains=half?1:(Math.random()<0.4?1:0); }
       else if(r<0.8||!half){ e.st=3; e.cd=0.8*sp; e.fa=Math.atan2(p.y-e.y,p.x-e.x); }
       else { e.st=6; e.cd=0.7*sp; }
@@ -2258,7 +2280,7 @@ function bossAI(e,dt,p,d,ux,uy){ var w=S.w, half=e.hp<e.max/2, sp=half?0.85:1;
   else if(e.st===4){ if(e.cd<=0){ var pa=Math.atan2(p.y-e.y,p.x-e.x); w.fx.push({k:'slash',x:e.x,y:e.y-10,a:e.fa,t:0,big:1}); if(Math.hypot(p.x-e.x,p.y-e.y)<130&&angDiff(pa,e.fa)<1.25) hurtP(e); e.lastA='swipe'; e.st=5; e.cd=half?0.35:0.6; } }
   else if(e.st===6){ if(e.cd<=0){ e.lastA='orbs'; for(var k=0;k<10;k++){ var a=k*Math.PI/5+e.t; w.orbs.push({x:e.x,y:e.y-20,vx:Math.cos(a)*140,vy:Math.sin(a)*140,t:0}); } SND.orb(); e.st=5; e.cd=0.6; } }
   else if(e.st===9){ if(e.cd<=0){ e.st=3; e.cd=0.6; e.fa=Math.atan2(p.y-e.y,p.x-e.x); SND.btele(); } }
-  else if(e.st===5){ if(e.cd<=0){ if(e.chains>0){ e.chains--; e.st=1; e.cd=0.55*sp; e.c0=e.cd; e.fa=Math.atan2(p.y-e.y,p.x-e.x); SND.btele(); } else { e.st=0; e.cd=rnd(0.6,1.1)*sp; } } }
+  else if(e.st===5){ if(e.cd<=0){ if(e.chains>0){ e.chains--; e.st=1; e.cd=0.7*sp; e.c0=e.cd; e.fa=Math.atan2(p.y-e.y,p.x-e.x); SND.btele(); } else { e.st=0; e.cd=rnd(0.6,1.1)*sp; } } }
   e.mv=v; e.wd=(e.wd||0)+v*dt;
   e.x+=(mx*v+e.kx)*dt; e.y+=(my*v+e.ky)*dt; e.kx*=Math.max(0,1-8*dt); e.ky*=Math.max(0,1-8*dt);
   e.hitWall=0; collide(e,solidE);
@@ -2313,7 +2335,7 @@ function roomTick(dt){ var w=S.w, R=ROOMS[w.rid];
   if(R.boss){ if(w.bossIntro>0){ w.bossIntro-=dt; if(w.bossIntro<=0){ var b=spawnEnemy('boss',W/2,170,1); b.cd=1.2; w.boss=b; } } return; }
   if(R.siege){ siegeTick(dt); return; }
   var alive=w.en.length+w.spawns.length;
-  if(w.wave<w.waves.length){ if(alive<=3&&w.waveT>0.7) w.waveT=0.7; w.waveT-=dt; if(w.waveT<=0){ var last=w.wave===w.waves.length-1&&w.waves.length>3; spawnWave(w.waves[w.wave],R.m||1,w.wave>0); if(last) w.banner={txt:'HERE THEY COME!',sub:'',t:1.1}; w.wave++; w.waveT=6; } }
+  if(w.wave<w.waves.length){ if(alive<=3&&w.waveT>0.7) w.waveT=0.7; if(R.intro&&w.wave===1&&(alive||w.spawns.length)&&(w.introT=(w.introT||0)+dt)<25) w.waveT=Math.max(w.waveT,1.4); w.waveT-=dt; if(w.waveT<=0){ var last=w.wave===w.waves.length-1&&w.waves.length>3; spawnWave(w.waves[w.wave],R.m||1,w.wave>0); if(last) w.banner={txt:'HERE THEY COME!',sub:'',t:1.1}; if(R.intro&&w.wave===0) (w.bannerQ=w.bannerQ||[]).push({txt:'SHIELD KNIGHT',sub:'He blocks attacks from the front. Dodge past his swing, then strike from behind.',t:3.4}); w.wave++; w.waveT=6; } }
   else if(!alive) roomClear(); }
 function roomClear(){ var w=S.w, R=ROOMS[w.rid]; var rt=w.runT-(w.roomT0||w.runT), fl=!w.hurtRoom, bonus=150+Math.max(0,450-6*rt)+(fl?300:0); addPts(bonus); if(fl) w.flawless++;
   w.clearMsg='+'+Math.round(bonus)+' room bonus'+(fl?' · FLAWLESS!':'');
@@ -2325,7 +2347,7 @@ function roomClear(){ var w=S.w, R=ROOMS[w.rid]; var rt=w.runT-(w.roomT0||w.runT
 /* LAST STAND: the Warden falls, the keep starts to crumble, and the horde pours in for 2 minutes. This is where scores spread out. */
 var LAST=120;
 function startLast(){ var w=S.w; w.won=1; w.last=LAST; w.lastT=0; w.boss=null; w.tm.spawn=0.5; w.tm.swarm=18; w.tm.rub=3; w.rub=[]; w.lsW=0; w.lsKills=0; w.lsWK=0; w.cleared=false; w.open=false;
-  w.banner={txt:'LAST STAND!',sub:'The keep is falling. Survive 2:00. Kills count double!',t:2.6}; SND.lsStart(); save(); }
+  w.banner={txt:'BONUS: LAST STAND',sub:'You already won! Survive 2:00 to escape. Kills count double.',t:3.2}; SND.lsStart(); save(); }
 /* Last Stand: a flood of enemies, falling rubble, and Wardens that keep coming (1 at 0:15, 2 at 0:50, 3 at 1:25) */
 var LSCAP=90;   /* seconds into the Last Stand where the difficulty ramp stops */
 var LSW=[[15,1,'ANOTHER WARDEN!'],[50,2,'TWO WARDENS?!'],[85,3,'THREE WARDENS!!']];   /* [time, Wardens alive from then on, banner] */
@@ -2334,7 +2356,7 @@ function lastTick(dt){ var w=S.w, T=w.lastT; w.lastT+=dt; w.last-=dt;
   var wardens=w.en.filter(function(e){ return !e.dead&&e.type==='boss'; }); w.boss=wardens[0]||null;
   /* Wardens: the target count only goes up. A milestone tops the room up to that many at once; a fallen Warden is replaced 12 s later */
   var pendW=w.spawns.filter(function(s){ return s.type==='boss'; }).length, haveW=wardens.length+pendW;
-  var lsSpawn=function(n,txt){ for(var k=0;k<n;k++){ var sx=[W/2,160,W-160][(w.lsN=(w.lsN||0)+1)%3]; w.spawns.push({type:'boss',x:sx,y:FLR[1]+70,t:1.2,m:0.7}); } if(n>0){ w.banner={txt:txt,sub:'',t:1.4}; SND.boss(); } };
+  var lsSpawn=function(n,txt){ for(var k=0;k<n;k++){ var sx=[W/2,160,W-160][(w.lsN=(w.lsN||0)+1)%3]; w.spawns.push({type:'boss',x:sx,y:FLR[1]+70,t:1.2,m:0.7}); } if(n>0){ w.lsWT=T; w.banner={txt:txt,sub:'',t:1.4}; SND.boss(); } };
   LSW.forEach(function(q,i){ if(T>=q[0]&&w.lsW<=i){ w.lsW=i+1; w.lsTgt=q[1]; w.lsRe=0; var need=Math.max(1,q[1]-haveW); lsSpawn(need,q[2]); haveW+=need; } });
   if(w.lsTgt&&haveW<w.lsTgt){ w.lsRe=(w.lsRe||0)+dt; if(w.lsRe>=12){ w.lsRe=0; lsSpawn(1,haveW+1>=2?(['','','TWO','THREE'][haveW+1]+' WARDENS AGAIN!'):'ANOTHER WARDEN!'); } } else w.lsRe=0;
   /* Kody 2026-11-15, "a tiny bit easier": the horde grows 10% slower and stops growing at 1:30. The last 30 s hold that level (the third Warden still arrives at 1:25) */
@@ -2343,11 +2365,13 @@ function lastTick(dt){ var w=S.w, T=w.lastT; w.lastT+=dt; w.last-=dt;
     var pool=['gob','gob','bat','slime','gob']; if(T>8) pool.push('skel','gob','bat'); if(T>25) pool.push('wiz','skel','bat','slime'); if(T>60) pool.push('skel','wiz','gob');
     var pos=edgePos(Math.floor(Math.random()*4)), grp=2+Math.floor(Te/20);
     for(var g=0;g<grp;g++){ var lt=pool[Math.floor(Math.random()*pool.length)]; w.spawns.push({type:lt,x:clamp(pos[0]+rnd(-40,40),FLR[0]+16,FLR[2]-16),y:clamp(pos[1]+rnd(-40,40),FLR[1]+16,FLR[3]-16),t:0.6+g*0.08,m:1+Te/28,el:T>20&&lt!=='bat'&&Math.random()<0.05?1:0}); } }
-  w.tm.swarm-=dt; if(w.tm.swarm<=0){ w.tm.swarm=20; w.banner={txt:'BAT SWARM!',sub:'',t:1.0}; var sd=Math.floor(Math.random()*4); for(var k=0;k<20;k++){ var p2=edgePos(sd); w.spawns.push({type:'bat',x:p2[0],y:p2[1],t:0.6+k*0.04,m:1+T/60}); } }
+  w.tm.swarm-=dt; if(w.tm.swarm<=0&&T-(w.lsWT==null?-99:w.lsWT)<7) w.tm.swarm=7-(T-w.lsWT);   /* playtest handoff: big threats are staggered, a swarm never lands within 7 s of a Warden */
+  if(w.tm.swarm<=0){ w.tm.swarm=20; w.banner={txt:'BAT SWARM!',sub:'',t:1.0}; var sd=Math.floor(Math.random()*4); for(var k=0;k<20;k++){ var p2=edgePos(sd); w.spawns.push({type:'bat',x:p2[0],y:p2[1],t:0.6+k*0.04,m:1+T/60}); } }
   /* falling rubble: a red circle, then a rock. Aimed near Rook, hurts enemies too */
-  w.tm.rub-=dt; if(w.tm.rub<=0){ w.tm.rub=Math.max(0.6,2.2-Te*0.014); var nr=1+Math.floor(Te/40);
+  w.tm.rub-=dt; if(w.tm.rub<=0&&T-(w.lsWT==null?-99:w.lsWT)<3) w.tm.rub=0.5;   /* no rubble in the 3 s a new Warden lands */
+  if(w.tm.rub<=0){ w.tm.rub=Math.max(0.6,2.2-Te*0.014); var nr=1+Math.floor(Te/40);
     for(var r=0;r<nr;r++){ var at=r===0?[w.p.x+rnd(-40,40),w.p.y+rnd(-30,30)]:randFloor(0); w.rub.push({x:clamp(at[0],FLR[0]+20,FLR[2]-20),y:clamp(at[1],FLR[1]+20,FLR[3]-20),t:1.0,r:44}); } }
-  for(var i=w.rub.length-1;i>=0;i--){ var rb=w.rub[i]; rb.t-=dt; if(rb.t<=0){ w.rub.splice(i,1); SND.boom(); if(!RM) w.shake=Math.max(w.shake||0,0.08);
+  for(var i=w.rub.length-1;i>=0;i--){ var rb=w.rub[i]; if(!rb) continue;   /* a knock-out from one rock can clear the list mid-loop */ rb.t-=dt; if(rb.t<=0){ w.rub.splice(i,1); SND.boom(); if(!RM) w.shake=Math.max(w.shake||0,0.08);
       for(var b=0;b<(RM?3:8);b++) if(w.fx.length<110) w.fx.push({k:'bit',x:rb.x,y:rb.y-6,vx:rnd(-120,120),vy:rnd(-160,10),t:0,c:'#8A92BE'});
       if(Math.hypot(w.p.x-rb.x,w.p.y-rb.y)<rb.r) hurtP({x:rb.x,y:rb.y},1);
       DSRC='rubble'; w.en.forEach(function(e){ if(!e.dead&&e.type!=='boss'&&Math.hypot(e.x-rb.x,e.y-rb.y)<rb.r+e.r) hurtE(e,20,0,0,0); }); } } }
@@ -2415,25 +2439,43 @@ function drawPot(c,pt){ var sh=potSheet(), col=pt.st===2?2:pt.st, fy=Math.round(
 /* shop art (Nov 14): sprite column per item, and the merchant's spot (feet) behind the item row, left of the carpet.
    He is scenery only: no hitbox, never a target. Frames: 0/1 idle breathing, 2 wave hello, 3 nod after a purchase or a good deal. */
 var SHOPSP={heal:0,max:1,card:2,gold:3,arm:4}, MERCH=[W/2-84,262];
+/* the merchant's speech bubble (playtest handoff 2026-11-15): one short line at a time, only on real moments (walking in, first look, a buy,
+   not enough coins, heading out). Never the same line twice in a row, a cooldown for the quiet ones, no clicks, no sound, no blocking. */
+var SAY={ enter:['Welcome in, knight. Catch your breath.','Come on in. Have a look.'], browse:['Something here might help.','Take your time. You\u2019re safe here.'],
+  bought:['There you go. Make it count!','A little help for the road.'], poor:['A few more coins, friend.'], leave:['Take care out there, Rook.'] };
+function say(k){ var w=S.w; if(!w||!w.shop) return; var quiet=k==='enter'||k==='browse', now=w.t; if(quiet&&w.bub&&w.bub.t>0) return; if(quiet&&now<(w.sayCd||0)) return;
+  if(k==='leave'&&w.saidLeave) return; if(k==='leave') w.saidLeave=1;
+  var L0=SAY[k], last=w.bub&&w.bub.s, opts=L0.filter(function(x){ return x!==last; }); if(!opts.length) opts=L0; var line=opts[Math.floor(Math.random()*opts.length)];
+  if(k==='poor'&&w.bub&&w.bub.s===line&&w.bub.t>0){ w.bub.t=2.2; return; }
+  w.bub={s:line,t:k==='leave'?1.8:2.6}; w.sayCd=now+6; }
+function drawBubble(c,w){ var b=w.bub; if(!b||b.t<=0) return; var im=tspr(b.s,15,'#F4ECD8'), bw=im.width+22, bh=32, x=Math.round(Math.max(FLR[0]+6,Math.min(FLR[2]-6-bw,MERCH[0]-bw/2))), y=MERCH[1]-104;
+  var ga=c.globalAlpha; c.globalAlpha=ga*Math.min(1,b.t/0.25);
+  c.fillStyle='#12081C'; c.fillRect(x-2,y-2,bw+4,bh+4); c.fillStyle='#1E1233'; c.fillRect(x,y,bw,bh); c.fillStyle='#45346A'; c.fillRect(x,y,bw,2); c.fillRect(x,y+bh-2,bw,2); c.fillRect(x,y,2,bh); c.fillRect(x+bw-2,y,2,bh);
+  var tx=Math.round(MERCH[0]); c.fillStyle='#45346A'; c.fillRect(tx-6,y+bh,12,2); c.fillRect(tx-4,y+bh+2,8,2); c.fillRect(tx-2,y+bh+4,4,2); c.fillStyle='#1E1233'; c.fillRect(tx-4,y+bh-2,8,2); c.fillRect(tx-2,y+bh,4,2);
+  c.drawImage(im,x+11-im.pad,Math.round(y+bh/2-im.height/2)); c.globalAlpha=ga; }
 function drawMerchant(c,w){ var el=w.t-(w.mAt||0), col=Math.floor(w.t/0.8)%2;
   if(w.mA==='wave'&&el<1.8) col=Math.floor(el/0.3)%2?1:2; else if(w.mA==='nod'&&el>=0&&el<0.7) col=3;
   c.fillStyle='rgba(0,0,0,.32)'; c.fillRect(MERCH[0]-14,MERCH[1]-2,28,4); rrDraw(c,'merchant',0,col,MERCH[0],MERCH[1],false); }
-function buy(it){ var w=S.w, p=w.p; if(w.coins<it.cost){ toast('Not enough coins ('+w.coins+' / '+it.cost+')'); SND.deny(); return; }
-  w.coins-=it.cost; it.hold=1; if(it.next&&it.next.length) it.cost=it.next.shift(); else it.sold=1; SND.buy(); w.mA='nod'; w.mAt=w.t;
+var NEARAT=0;
+function buy(it){ var w=S.w, p=w.p; if(w.coins<it.cost){ toast('Not enough coins ('+w.coins+' / '+it.cost+')'); SND.deny(); say('poor'); return; }
+  w.coins-=it.cost; it.hold=1; if(it.next&&it.next.length) it.cost=it.next.shift(); else it.sold=1; SND.buy(); w.mA='nod'; w.mAt=w.t; say('bought');
   if(it.id==='heal'){ p.hp=p.max; toast('Healed!'); } else if(it.id==='max'){ p.max++; p.hp=p.max; toast('+1 max heart!'); } else if(it.id==='arm'){ p.arm=(p.arm||0)+3; toast('Armor on: blocks the next 3 hits'); } else if(it.id==='rev'){ S.revExtra=1; toast('Second Wind: one more chance if you are knocked out'); } else if(it.id==='card'){ openPick('shop',3,0.25); } else if(it.id==='gold'){ openPick('gold',3,1); } }
 var trans=0;
-function transTick(dt){ var w=S.w, p=w.p, d=w.tdir||[0,-1], was=trans; trans-=dt;
+function transTick(dt){ var w=S.w, p=w.p, d=w.tdir||[0,-1], was=trans; trans-=dt; if(w.bub&&w.bub.t>0) w.bub.t-=dt;
   if(was>TH&&trans<=TH&&w.next){ var n=w.next; w.next=null; loadRoom(n[0],n[1]); save(); p.x-=d[0]*54; p.y-=d[1]*54; p.fx=d[0]; p.fy=d[1]; }
   var sp=w.next?(d[1]?110:80):120; p.x+=d[0]*sp*dt; p.y+=d[1]*sp*dt; p.mv=true; p.walk+=dt;
   if(trans<=0){ trans=0; S.mode='play'; p.mv=false; } }
 
 /* ---------- levels, picks and questions ---------- */
-function gainXP(v,quiet){ var w=S.w; w.xp+=v; if(!quiet) SND.gem(); while(w.xp>=w.need){ w.xp-=w.need; w.lv++; w.need=2+3*w.lv; w.pend++; if(!w.cleared&&!quiet) w.fx.push({k:'txt',x:w.p.x,y:w.p.y-44,t:0,v:'LEVEL UP! (after this fight)',c:'#FFC93C'}); } }
-function levelUp(){ var w=S.w; w.pend--; if(w.batch==null){ SND.level(); openAsk('level'); } else { w.batch.i=(w.batch.i||1)+1; openPick('level',w.batch.n,w.batch.g); } }
+function gainXP(v,quiet){ var w=S.w; w.xp+=v; if(!quiet) SND.gem(); while(w.xp>=w.need){ w.xp-=w.need; w.lv++; w.need=2+3*w.lv; w.pend++; if(!w.cleared&&!quiet) w.fx.push({k:'txt',x:w.p.x,y:w.p.y-44,t:0,v:'Upgrade banked!',c:'#FFC93C'}); } }
+function levelUp(){ var w=S.w; w.pend--; if(w.batch==null){ SND.level(); openAsk('level'); } else { w.batch.i=(w.batch.i||1)+1; openPick('level',w.batch.n,w.batch.g,w.batch.pm); } }
 function knockedOut(){ var w=S.w; HELD={}; SND.ko(); if(!S.revUsed){ S.revUsed=1; openAsk('revive'); } else if(S.revExtra===1){ S.revExtra=2; openAsk('revive'); }   /* Second Wind from the shop: the same question, once more */ else finishRun(!!w.won,'fall'); }
-function cardsFor(n,goldChance){ var w=S.w, out=[];
-  if(!w.picks){ var ST=[['wave','whirl'],['spark','orbit','volatile'],['bash','thorns','aegis']], pth=ST[Math.floor(Math.random()*3)];
-    var fid=pth[Math.floor(Math.random()*pth.length)]; return [{id:fid,gold:UPI[fid].path==='bulwark'||Math.random()<goldChance,first:1}]; }   /* first power is dealt by the keep: build with it or fight it */
+/* starter relic (playtest handoff 2026-11-15): dealt as Rook walks into the Entry Hall, before the first wave, with no screen to accept.
+   Still random from the same three families; a Bulwark starter comes at Lv 2 as before (they are weaker on their own). w.starter = its id, so a reload never deals a second one. */
+function dealStarter(){ var w=S.w; if(w.starter||w.picks) return; var ST=[['wave','whirl'],['spark','orbit','volatile'],['bash','thorns','aegis']], pth=ST[Math.floor(Math.random()*3)];
+  var fid=pth[Math.floor(Math.random()*pth.length)], lv=UPI[fid].path==='bulwark'?2:1; w.b[fid]=lv; w.picks=1; w.starter=fid;
+  w.bannerQ=[{txt:'STARTER RELIC: '+UPI[fid].n.toUpperCase(),sub:INFO[fid].how+'. '+INFO[fid].use+'. Right answers earn more powers.',t:3.0,ic:fid}]; renderBuild(); }
+function cardsFor(n,goldChance,perfect){ var w=S.w, out=[];
   SYN.forEach(function(u){ if(out.length<1&&synReady(u)) out.push({id:u.id,syn:1}); });
   var paths={}; UP.forEach(function(u){ if(L(u.id)&&u.path!=='any') paths[u.path]=(paths[u.path]||0)+1; });
   var pool=UP.filter(function(u){ return L(u.id)<3; }).map(function(u){ var wt=1; if(L(u.id)) wt=3; else if(paths[u.path]) wt=2;
@@ -2442,8 +2484,9 @@ function cardsFor(n,goldChance){ var w=S.w, out=[];
   while(out.length<n&&pool.length){ var tot=pool.reduce(function(a,b){ return a+b.wt; },0), r=Math.random()*tot, k=0; for(;k<pool.length-1;k++){ r-=pool[k].wt; if(r<=0) break; }
     out.push({id:pool[k].id,gold:Math.random()<goldChance}); pool.splice(k,1); }
   if(!out.length) out.push({id:'snack'});
+  if(perfect){ var best=null; out.forEach(function(c){ if(c.syn||c.id==='snack') return; if(!best||L(c.id)<L(best.id)) best=c; }); if(best){ best.gold=true; best.pm=1; } }
   return out; }
-function openPick(why,n,goldChance){ S.cards=cardsFor(n||3,goldChance||0); S.pickWhy=why; S.mode='pick'; HELD={}; showPick(); arm($('dn-pick').querySelector('.dn-pickbox')); save(); }
+function openPick(why,n,goldChance,perfect){ S.cards=cardsFor(n||3,goldChance||0,perfect); S.pickWhy=why; S.mode='pick'; HELD={}; showPick(); arm($('dn-pick').querySelector('.dn-pickbox')); save(); }
 var PATHN={blade:'Blade',storm:'Storm',bulwark:'Bulwark',any:'Extra'};
 /* every family has one color everywhere: cards, combo chips and the build list */
 /* power icons: the Nov 14 pixel icons (RRICON in rr_art.js, one 24x24 image per power, sized by font-size: 1em).
@@ -2455,26 +2498,31 @@ function ICON(u){ return PIC(u)||u.ic+(u.ic2?'<i class="dn-ic2">'+u.ic2+'</i>':'
 /* the combos a power can make: partner chip -> synergy, owned partners first */
 function comboHTML(id,to){ var rows=synFor(id).filter(function(u){ return !HAS(u.id); }).map(function(s){ var mine=s.need.filter(function(q){ return q[0]===id; })[0], others=s.need.filter(function(q){ return q[0]!==id; }),
       have=others.every(function(q){ return L(q[0])>=q[1]; }), ready=have&&to>=mine[1];
-    var parts=s.need.map(function(q){ var own=q[0]===id?to>=q[1]:L(q[0])>=q[1]; return '<span class="pt'+(own?' own':'')+'">'+(own?'✓ ':'')+UPI[q[0]].n+(q[1]>1?' Lv '+q[1]:'')+'</span>'; }).join('<span class="ar">+</span>');
-    return {have:ready?2:have?1:0, h:'<div class="dn-co'+(ready?' have':'')+'">'+parts+'<span class="ar">→</span><span class="sn">'+(PIC(s)||s.ic)+' '+s.n+'</span>'+(ready?'<b>READY</b>':'')+'</div>'}; });
-  if(!rows.length) return ''; rows.sort(function(a,b){ return b.have-a.have; });
-  return '<div class="dn-combos"><div class="t">Synergies</div>'+rows.slice(0,2).map(function(r){ return r.h; }).join('')+'</div>'; }
+    var parts=s.need.map(function(q){ if(q[0]===id) return '<span class="pt this">'+(others.length?'This card':UPI[q[0]].n)+(q[1]>1?' Lv '+q[1]:'')+'</span>';
+      var own=L(q[0])>=q[1]; return '<span class="pt'+(own?' own':'')+'">'+(own?'✓ ':'')+UPI[q[0]].n+(q[1]>1?' Lv '+q[1]:'')+'</span>'; }).join('<span class="ar">+</span>');
+    return {have:ready?2:have?1:0, s:s, h:'<div class="dn-co'+(ready?' have':'')+'">'+parts+'<span class="ar">→</span><span class="sn">'+(PIC(s)||s.ic)+' '+s.n+'</span></div>'}; });
+  if(!rows.length) return ''; rows.sort(function(a,b){ return b.have-a.have; }); var r=rows[0];
+  /* what taking this card does for that synergy. cardsFor offers the first ready synergy (in SYN order) on the very next card choice, so say "next" only when it will be this one */
+  var note='';
+  if(r.have===2){ var nextS=SYN.filter(function(u){ return !HAS(u.id)&&u.need.every(function(q){ return (q[0]===id?to:L(q[0]))>=q[1]; }); })[0];
+    note='<div class="dn-conote">Taking this unlocks '+r.s.n+(nextS===r.s?' as your next upgrade choice.':' as a future upgrade choice.')+'</div>'; }
+  return '<div class="dn-combos"><div class="t">Synergy</div>'+r.h+note+'</div>'; }
 function showPick(){ var why=S.pickWhy;
   var w=S.w, b=why==='level'&&w.batch, first=S.cards.length===1&&S.cards[0].first, n=S.cards.length;
   $('dn-pickstep').textContent=b&&b.tot>1?'Reward '+Math.min(b.i,b.tot)+' of '+b.tot:'';
   $('dn-picktitle').textContent=first?'Starter relic':why==='chest'?'Treasure':why==='gold'?'Gold treasure':why==='secret'?'Secret treasure':why==='shop'?'Upgrade Scroll':'Earned upgrade';
   $('dn-picknote').textContent=first?'Assigned by the Keep. No choosing this one: build around it, or fight against it. Press 1 to take it.'
-    :(n>1?'Choose 1 of '+n+'. ':'')+(S.cards.some(function(c){ return c.syn; })?'A synergy is ready! ':why==='level'&&n<3?'No right answers this time, so 2 cards. ':'')+'Press '+(n>1?'1'+(n>2?', 2 or 3':' or 2'):'1')+', or click a card.';
+    :(n>1?'Choose 1 of '+n+'. ':'')+(S.cards.some(function(c){ return c.syn; })?'A synergy is ready to choose! ':S.cards.some(function(c){ return c.pm; })?'Perfect math: one card is gold. ':why==='level'&&n<3?'No right answers this time, so 2 cards. ':'')+'Press '+(n>1?'1'+(n>2?', 2 or 3':' or 2'):'1')+', or click a card.';
   var anyReady=false;
   $('dn-cards').innerHTML=S.cards.map(function(c,i){ if(c.id==='snack') return '<button class="dn-card" data-i="'+i+'"><span class="k">'+(i+1)+'</span><span class="ic">🍎</span><span class="n">Snack</span><span class="lv">Everything is maxed</span><span class="d">Heal to full</span></button>';
     var u=UPI[c.id];
     if(u.syn) return '<button class="dn-card evo" data-i="'+i+'"><span class="k">'+(i+1)+'</span><span class="dn-fam">Synergy</span><span class="ic">'+ICON(u)+'</span><span class="n">'+u.n+'</span><span class="lv">'+synName(u)+'</span><span class="d">'+u.d+'</span><span class="dn-rar">Synergy · one level</span></button>';
-    var l=L(c.id), to=Math.min(3,l+(c.gold?2:1)), cn=comboHTML(c.id,to); if(/READY/.test(cn)) anyReady=true;
-    var tier=(l?'Upgrade · Lv '+l+' → '+(to>=3?'MAX':to):'New power'+(to>1?' · Lv '+to:'')),
+    var l=L(c.id), to=Math.min(3,l+(c.gold?2:1)), cn=comboHTML(c.id,to);
+    var tier=(l?'Upgrade · Lv '+l+' → '+(to>=3?'MAX':to):'New power'+(to>1?' · Lv '+to:''))+' · '+INFO[c.id].use,
         body=l?'<div class="dn-sts">'+statRows(c.id,l,to)+'</div><span class="d base">'+INFO[c.id].base+'</span>'
-              :'<span class="d">'+INFO[c.id].base+'</span><div class="dn-sts">'+statRows(c.id,0,to)+'</div>';
-    return '<button class="dn-card fam p-'+u.path+(c.gold?' gold':'')+'" data-i="'+i+'"><span class="k">'+(i+1)+'</span><span class="dn-fam">'+PATHN[u.path]+(u.path==='any'?'':' power')+'</span><span class="ic">'+ICON(u)+'</span><span class="n">'+u.n+'</span><span class="lv">'+tier+'</span>'+body+cn+(c.gold?'<span class="dn-rar">Gold card · skips a level</span>':'')+'</button>'; }).join('');
-  $('dn-readynote').textContent=anyReady?'READY: take that card and the synergy is offered on your next upgrade.':'';
+              :'<div class="dn-sts">'+statRows(c.id,0,to)+'</div><span class="d base">'+INFO[c.id].base+'</span>';
+    return '<button class="dn-card fam p-'+u.path+(c.gold?' gold':'')+'" data-i="'+i+'"><span class="k">'+(i+1)+'</span><span class="dn-fam">'+PATHN[u.path]+(u.path==='any'?'':' power')+'</span><span class="ic">'+ICON(u)+'</span><span class="n">'+u.n+'</span><span class="lv">'+tier+'</span><span class="dn-how">'+INFO[c.id].how+'</span>'+body+cn+(c.pm?'<span class="dn-rar">Perfect math · +2 levels</span>':c.gold?'<span class="dn-rar">Gold card · skips a level</span>':'')+'</button>'; }).join('');
+  $('dn-readynote').textContent='';
   $('dn-pick').hidden=false; }
 function pick(i){ if(S.mode!=='pick') return; var c=S.cards[i]; if(!c) return; var w=S.w, p=w.p;
   if(c.id==='snack'){ p.hp=p.max; }
@@ -2486,7 +2534,9 @@ function pick(i){ if(S.mode!=='pick') return; var c=S.cards[i]; if(!c) return; v
   var card=$('dn-cards').children[i]; if(card){ var r=card.getBoundingClientRect(), pt=stagePoint(card,0,0), k=1920/$('stage').getBoundingClientRect().width; sparks(pt[0]+r.width*k/2,pt[1]+r.height*k/3,c.syn?26:c.gold?20:12,c.syn||c.gold?1:0); }
   if(c.gold||c.syn) SND.gold(); else SND.pick();
   toast(c.id==='snack'?'Healed!':c.syn?'Synergy: '+UPI[c.id].n:(c.first?'Starter relic: ':'')+UPI[c.id].n+(w.b[c.id]>=3?' MAX':' Lv '+w.b[c.id]));
-  $('dn-pick').hidden=true; S.cards=[]; S.mode='play'; S.pickWhy=''; w.resolve=0.25; if(w.pend<=0) w.batch=null; renderBuild(); save(); }
+  var why=S.pickWhy; $('dn-pick').hidden=true; S.cards=[]; S.mode='play'; S.pickWhy=''; w.resolve=0.25; if(w.pend<=0) w.batch=null; renderBuild();
+  if(why==='level'&&w.batch&&w.pend>0&&(w.cleared||w.preLast)){ levelUp(); return; }   /* more earned upgrades: straight to the next choice, no arena in between (the input gate still applies) */
+  save(); }
 
 /* sparks (2026-11-14, replaces the kit's rainbow confetti in this game): a small burst of square gold sparks, plus cyan relic
    fragments for gold and synergy picks. Short, time-based, drawn on the confetti layer; nothing at all with reduced motion. */
@@ -2507,7 +2557,7 @@ var nextT=0, lockT=0;
    keys still held from the fight are eaten until they are released, and a click only counts if the mouse/touch went down after the gate opened.
    Nothing pressed during the gate is queued. The same gate (shorter) sits between an answer and its Continue. */
 var ARM_MS=500, NEXT_MS=400, GATE=0, NEXTGATE=0, DOWNK={}, lastPD=0, armT=0;
-function arm(el){ GATE=performance.now()+ARM_MS; HELD={}; BUF.s=0; Object.keys(DOWNK).forEach(function(k){ EAT[k]=1; }); if(DOWNK.shift) EAT.shift=1;
+function arm(el){ GATE=performance.now()+ARM_MS; HELD={}; BUF.s=0; BUF.e=0; Object.keys(DOWNK).forEach(function(k){ EAT[k]=1; }); if(DOWNK.shift) EAT.shift=1;
   try{ if(document.activeElement&&document.activeElement!==document.body) document.activeElement.blur(); }catch(e){}
   if(el){ el.classList.add('arming'); clearTimeout(armT); armT=setTimeout(function(){ el.classList.remove('arming'); },ARM_MS); } }
 function gateOpen(){ return performance.now()>=GATE; }
@@ -2520,10 +2570,9 @@ if(FAST) $('dn-q').classList.add('fast');
 var ASKTXT={ level:['Power up!',''], revive:['Knocked out!','Right answer: get back up with 3 hearts'],
   chest:['Unlock the chest','Right answer: bonus coins and better odds of gold treasure'], deal:["The merchant's deal",'Each right answer: +6 coins'], rally:['Rally!','Right answer: +1 heart (or armor if full)'] };
 /* what a level-up's questions really pay (2026-11-14 flow pass): 1+ right = pick from 3 cards (0 right = 2), both right = each card has a 1 in 5 gold chance.
-   The very first one also brings the starter relic the Keep deals (no choice). */
-function levelPromise(){ var w=S.w, more=w.pend||0, first=!w.picks;
-  if(first) return more?'Starter relic, then '+more+' earned upgrade'+(more>1?'s':'')+'. 1 right: choose from 3. 2 right: gold chances.':'The Keep deals your starter relic. 2 right: it may turn gold.';
-  return '1 right: choose from 3 cards (else 2). 2 right: each card has a 1 in 5 gold chance.'+(more?' Covers '+(more+1)+' upgrades.':''); }
+   The starter relic is dealt at the start of the Entry Hall instead (dealStarter). */
+function levelPromise(){ var w=S.w, more=w.pend||0;
+  return '1 right: choose from 3 cards (else 2). 2 right: one card is guaranteed gold (+2 levels).'+(more?' Then '+(more+1)+' upgrade choices in a row.':''); }
 /* the question card never shrinks during one ask (Kody 2026-11-15: it bounced up and down after each answer); it starts fresh on the next ask */
 var QMIN=0;
 if(window.ResizeObserver) new ResizeObserver(function(){ var q=$('dn-q'); if(!S||S.mode!=='ask') return; var h=q.offsetHeight; if(h>QMIN){ QMIN=h; q.style.minHeight=h+'px'; } }).observe($('dn-q'));
@@ -2554,11 +2603,11 @@ function answer(i){ if(S.mode!=='ask'||S.qDone||!S.q) return; var c=S.q.choices[
   save(); hud(1); }
 function askNext(){ clearTimeout(nextT); var a=S.ask; if(!a||!S.qDone||performance.now()<NEXTGATE) return; if(a.n<a.need){ newQ(); arm($('dn-q')); return; } closeAsk(); }
 function closeAsk(){ var a=S.ask, w=S.w, p=w.p, all=a.got>=a.need; $('dn-qwrap').hidden=true; S.ask=null; S.q=null; S.mode='play';
-  if(a.why==='level'){ var n=a.got?3:2; w.batch={n:n,g:all?0.2:0,tot:1+(w.pend||0),i:1}; openPick('level',n,w.batch.g); }
+  if(a.why==='level'){ var n=a.got?3:2; w.batch={n:n,g:all?0.2:0,pm:all?1:0,tot:1+(w.pend||0),i:1}; if(all) toast('Perfect! A gold card is guaranteed'); openPick('level',n,w.batch.g,w.batch.pm); }
   else if(a.why==='revive'){ if(all){ p.hp=Math.min(p.max,3); p.inv=2.2; S.mode='reentry'; S.reT=REENTRY; HELD={}; BUF.s=0; Object.keys(DOWNK).forEach(function(k){ EAT[k]=1; }); w.orbs=[]; w.rings=[]; w.en.forEach(function(e){ var dx=e.x-p.x, dy=e.y-p.y, d=Math.hypot(dx,dy)||1; if(d<240){ e.kx=dx/d*460; e.ky=dy/d*460; e.st=0; e.cd=1.2; } }); w.fx.push({k:'ring',x:p.x,y:p.y,t:0}); SND.level(); }
     else finishRun(!!w.won,'fall'); }
   else if(a.why==='chest'){ var o=a.o||{w:'chest',g:0.3,c:4}; if(all){ w.coins+=o.c; toast('Unlocked! +'+o.c+' coins'); } openPick(o.w,3,all?Math.min(1,o.g+0.4):o.g); }
-  else if(a.why==='deal'){ if(a.got){ w.mA='nod'; w.mAt=w.t; w.coins+=6*a.got; toast('+'+(6*a.got)+' coins from the merchant'); SND.chest(); } else toast('No deal this time'); }
+  else if(a.why==='deal'){ setTimeout(function(){ if(S.w&&S.w.shop) say('enter'); },0); if(a.got){ w.mA='nod'; w.mAt=w.t; w.coins+=6*a.got; toast('+'+(6*a.got)+' coins from the merchant'); SND.chest(); } else toast('No deal this time'); }
   else if(a.why==='rally'){ p.inv=Math.max(p.inv||0,1.2); if(all){ var hv=p.hp<p.max; if(hv) p.hp++; else p.arm=(p.arm||0)+1; w.fx.push({k:'txt',x:p.x,y:p.y-44,t:0,v:hv?'+1 ♥':'+1 armor',c:'#FF6B86'}); SND.level(); } else toast('No bonus this time'); if(!RM) S.slow=0.6; }
   hud(1); save(); }
 /* clicks count only if the press started after the gate opened (a held or spammed click from the fight never answers); keyboard "clicks" on a focused button are ignored, 1-4 and Enter do that job */
@@ -2618,14 +2667,14 @@ function draw(){ var c=cx, w=S&&S.w; c.setTransform(1,0,0,1,0,0);
     if(pix){ c.drawImage(RRI.shopi,160,0,32,32,Math.round(it.x-16),Math.round(it.y-11),32,32); if(!it.sold){ if(it.id==='rev') c.drawImage(SPR.revShop,Math.round(it.x-16),Math.round(it.y-37)); else c.drawImage(RRI.shopi,SHOPSP[it.id]*32,0,32,32,Math.round(it.x-16),Math.round(it.y-37),32,32); } }
     else { c.fillStyle='#262A44'; c.fillRect(it.x-26,it.y-8,52,24); c.fillStyle='#565C80'; c.fillRect(it.x-24,it.y-6,48,20); }
     if(!it.sold){ if(!pix){ c.font='28px sans-serif'; c.fillStyle='#FFFFFF'; c.fillText(it.ic,it.x,it.y-14); } dtx(c,it.cost+' coins',it.x,it.y+42,14,w.coins>=it.cost?'#FFC93C':'#C0788A',0,'#141026'); dtx(c,it.n,it.x,it.y+60,14,'#E8ECFF',0,'#141026'); } else dtx(c,'Sold',it.x,it.y+42,14,'#8A92BE',0,'#141026'); });
-    if(w.shopNear){ var nm=w.shopNear, can=w.coins>=nm.cost, ns=nm.hold?'Bought! Step off and back on to buy another ('+nm.cost+' coins)':can?'Space: buy '+nm.n+' for '+nm.cost+' coins · '+nm.d:nm.n+' costs '+nm.cost+' · you have '+w.coins+' (need '+(nm.cost-w.coins)+' more)', nc=can?'#FFE08A':'#FFB0BE', nw=tspr(ns,16,nc).width+30; c.fillStyle='rgba(18,8,28,.9)'; c.fillRect(Math.round(W/2-nw/2),H-96,nw,40); dtx(c,ns,W/2,H-70,16,nc); } }
+    if(w.shopNear){ var nm=w.shopNear, can=w.coins>=nm.cost, ns=nm.hold?'Bought! Step off and back on to buy another ('+nm.cost+' coins)':can?'Press E to buy '+nm.n+' for '+nm.cost+' coins · '+nm.d:nm.n+' costs '+nm.cost+' · you have '+w.coins+' (need '+(nm.cost-w.coins)+' more)', nc=can?'#FFE08A':'#FFB0BE', nw=tspr(ns,16,nc).width+30; c.fillStyle='rgba(18,8,28,.9)'; c.fillRect(Math.round(W/2-nw/2),H-96,nw,40); dtx(c,ns,W/2,H-70,16,nc); } }
   /* chests */
   [w.chest,w.secretChest].forEach(function(ch){ if(!ch) return; if(ch===w.secretChest&&!w.secretOpen){ return; } if(!ch.open){ c.globalAlpha=0.25+0.15*Math.sin(t*3); c.fillStyle=ch.type==='gold'?'#FFE08A':'#FFC93C'; c.beginPath(); c.arc(ch.x,ch.y+2,26,0,7); c.fill(); c.globalAlpha=1; } spr(ch.open?'chestO':'chest',ch.x,ch.y,false,ch.type==='gold'?3:2); });
   /* pickups */
   for(i=0;i<w.gems.length;i++){ var g2=w.gems[i]; c.drawImage(g2.v>=3?SPR.gemB2:SPR.gem2,Math.round(g2.x-6),Math.round(g2.y-8)); }
   if(w.pots) w.pots.forEach(function(pt){ if(pt.st===2) drawPot(c,pt); });
   for(i=0;i<w.coinsF.length;i++){ var cn=w.coinsF[i]; c.drawImage(SPR.coin2,Math.round(cn.x-6),Math.round(cn.y-6+Math.sin(t*6+i)*2)); }
-  for(i=0;i<w.hearts.length;i++){ var h0=w.hearts[i]; if(h0.t>11&&Math.floor(h0.t*4)%2) continue; c.drawImage(SPR.heart2,Math.round(h0.x-9),Math.round(h0.y-8+Math.sin(t*4)*2)); }
+  for(i=0;i<w.hearts.length;i++){ var h0=w.hearts[i]; var ha0=c.globalAlpha; if(h0.t>11) c.globalAlpha=ha0*Math.max(0.25,1-(h0.t-11)); c.drawImage(SPR.heart2,Math.round(h0.x-9),Math.round(h0.y-8+Math.sin(t*4)*2)); c.globalAlpha=ha0; }
   /* spawn warnings */
   var sf=FX.spawn[RM?0:Math.floor(t*10)&3]; for(i=0;i<w.spawns.length;i++){ var s0=w.spawns[i]; if(s0.type==='boss') c.drawImage(sf,Math.round(s0.x-48),Math.round(s0.y-48),96,96); else c.drawImage(sf,Math.round(s0.x-24),Math.round(s0.y-24)); }
   /* damage numbers and point floats sit UNDER the floor warnings and bodies (readability pass): a number never hides a telegraph */
@@ -2662,7 +2711,7 @@ function draw(){ var c=cx, w=S&&S.w; c.setTransform(1,0,0,1,0,0);
     var flip=e.type==='skel'?Math.cos(e.fa)<0:(p.x<e.x&&e.type!=='boss'&&e.type!=='slime');
     var top=drawEnemyRR(c,e,p,t), hh=top==null?im.height*sc:foot-top; if(top==null) sprF(e.fl>0&&!RM?nm+'W':nm,e.x+jx,foot+bob,flip&&e.type!=='bat',sc);
     if(e.el&&!(e.st===1&&e.type!=='slime')) c.drawImage(FX.crown,Math.round(e.x-7),Math.round(foot-hh-12));
-    if(e.type==='skel'&&e.st===3) dtx(c,'open!',e.x,foot-hh-6,12,'#FFE08A',0,'#141026');
+    if(e.type==='skel'&&e.st===3) dtx(c,'Open: strike!',e.x,foot-hh-6,13,'#FFE08A',0,'#141026');
     if((e.st===1&&e.type!=='slime'&&e.type!=='boss')) dtx(c,'!',e.x,foot-hh-4,22,'#FF5A6E',0,'#1A0A12');
     if(e.stun>0){ for(var sz=0;sz<2;sz++){ var ab=t*5+sz*3.1; dtx(c,'★',e.x+Math.cos(ab)*12,foot-hh-2+Math.sin(ab)*4,12,'#FFC93C'); } }
     if(e.type==='boss'&&e.st===9){ for(var st=0;st<3;st++){ var aa=t*4+st*2.1; dtx(c,'★',e.x+Math.cos(aa)*26,foot-hh-4+Math.sin(aa)*6,16,'#FFC93C'); } } });
@@ -2711,7 +2760,6 @@ function draw(){ var c=cx, w=S&&S.w; c.setTransform(1,0,0,1,0,0);
   if(S.mode==='trans'){ var fa=trans>TH?Math.pow(Math.min(1,(TT-trans)/TH),1.5):Math.pow(Math.max(0,trans/TH),1.5); c.fillStyle='rgba(4,5,11,'+fa.toFixed(3)+')'; c.fillRect(0,0,W,H); } }
 /* is anything drawn in front of Rook? (an enemy below him on screen, close enough to overlap, or a blast on him) */
 function heroHidden(w,p){ if(!(S.mode==='play'||S.mode==='reentry')||!rrReady('rook_walk')) return false;
-  if(p.inv>0&&p.roll<=0&&S.mode==='play'&&Math.floor(p.inv*12)%2&&!RM&&p.inv<0.95) return false;
   for(var i=0;i<w.en.length;i++){ var e=w.en[i]; if(e.dead) continue; var dy=e.y-p.y, dx=Math.abs(e.x-p.x), hh=RRH[e.type]||30;
     if(dy>-2&&dy<hh+4&&dx<e.r+16) return true; }
   for(i=0;i<w.fx.length;i++){ var f=w.fx[i]; if(f.k==='boom'&&f.t<0.3&&Math.hypot(f.x-p.x,f.y-p.y)<f.r*0.7) return true; }
@@ -2723,13 +2771,16 @@ function heroOutline(c,p){ var pose=heroPose(p), foot=p.y+p.r+3; c.globalAlpha=0
 function drawHero(c,p,t){ var w=S.w;
   if(S.mode==='trans'&&w.next){ var ha2=1-Math.min(1,(TT-trans)/0.32); if(ha2<=0) return; c.globalAlpha=ha2; drawHero2(c,p,t); c.globalAlpha=1; return; }
   drawHero2(c,p,t); }
+/* no blinking (playtest handoff 2026-11-15): while Rook can't be hurt he stays fully drawn and a steady light ring at his feet shrinks as the safe time runs out */
+function invRing(c,p){ if(!(p.inv>0&&p.roll<=0&&(p.invMax||0)>0.5&&(S.mode==='play'||S.mode==='reentry'))) return; var f=Math.max(0,Math.min(1,p.inv/p.invMax)), cy=p.y+p.r+1;
+  c.strokeStyle='rgba(200,240,255,.85)'; c.lineWidth=3; c.beginPath(); c.ellipse(p.x,cy,20,8,0,-Math.PI/2,-Math.PI/2+f*2*Math.PI); c.stroke(); }
 function drawHero2(c,p,t){
-  if(p.inv>0&&p.roll<=0&&S.mode==='play'&&Math.floor(p.inv*12)%2&&!RM&&p.inv<0.95) return;
+  invRing(c,p);
   if(rrReady('rook_walk')&&rrReady('rook_slash')&&rrReady('rook_spin')&&rrReady('rook_shield')&&rrReady('rook_dodge')&&rrReady('rook_idle')) return drawHeroRR(c,p,t);
   var face=Math.abs(p.fx)>Math.abs(p.fy)?'hs':(p.fy<0?'hu':'hd'), step=p.mv&&Math.floor(p.walk*9)%2;
   c.fillStyle='rgba(0,0,0,.32)'; c.fillRect(Math.round(p.x-11),Math.round(p.y+p.r-1),22,4);
   if(p.roll>0){ c.globalAlpha=0.35; sprF(face,p.x-p.rx*18,p.y+p.r+3-p.ry*18,face==='hs'&&p.rx<0); c.globalAlpha=1; }
-  if(p.rip>0&&L('riposte')){ c.fillStyle='rgba(255,214,90,'+(0.25+0.15*Math.sin(t*20))+')'; c.beginPath(); c.arc(p.x,p.y-20,30,0,7); c.fill(); }
+  if(p.rip>0&&L('riposte')){ c.fillStyle='rgba(255,214,90,.32)'; c.beginPath(); c.arc(p.x,p.y-20,30,0,7); c.fill(); }
   sprF(face+(step?'2':''),p.x,p.y+p.r+3-(step?1:0)+(p.roll>0?3:0),face==='hs'&&p.fx<0);
   if(L('aegis')&&p.sh<=0){ c.strokeStyle='rgba(77,224,192,.55)'; c.lineWidth=2; c.beginPath(); c.arc(p.x,p.y-18,30,0,7); c.stroke(); }
   /* dodge meter */
@@ -2745,8 +2796,9 @@ function heartEmpty(){ if(HEARTE) return HEARTE; var im=SPR.heart2; if(!im||!im.
     d.data.set(o); x.putImageData(d,0,0); }); return HEARTE; }
 function plate(c,x,y,w2,h2,warn){ c.fillStyle='rgba(18,8,28,.9)'; c.fillRect(x,y,w2,h2); c.fillStyle=warn?'#C8324E':'#45346A'; c.fillRect(x,y,w2,2); c.fillRect(x,y+h2-2,w2,2); c.fillRect(x,y,2,h2); c.fillRect(x+w2-2,y,2,h2); }
 function drawHUD(t){ var c=cx, w=S.w, p=w.p, i, R=ROOMS[w.rid], na=p.arm||0, low=LOWHP(p)&&S.mode!=='cut';
+  if(w.shop) drawBubble(c,w);
   /* vitals plate */
-  var rv=S.revExtra===1?1:0, hw=(p.max+na+rv)*22, pend=w.pend>0&&!(w.last>0), ptx=pend?'⬆ '+w.pend+' upgrade'+(w.pend>1?'s':'')+' ready · awarded after room':'', pw=Math.max(hw+(low?118:0),262,pend?tspr(ptx,14,'#FFE08A').width+8:0)+16, ph=pend?78:56;
+  var rv=S.revExtra===1?1:0, hw=(p.max+na+rv)*22, pend=w.pend>0&&!(w.last>0), ptx=pend?(w.cleared?'⬆ '+w.pend+' upgrade'+(w.pend>1?'s':'')+' ready to choose':'⬆ '+w.pend+' upgrade'+(w.pend>1?'s':'')+' banked · '+(R.boss?'beat the Warden':R.siege?'survive':'clear this room')+' to claim'):'', pw=Math.max(hw+(low?118:0),262,pend?tspr(ptx,14,'#FFE08A').width+8:0)+16, ph=pend?78:56;
   plate(c,4,4,pw,ph,low);
   var beat=low&&!RM?1+0.12*Math.max(0,Math.sin(t*5.5)):1, HE=heartEmpty();
   for(i=0;i<p.max;i++){ var hx=12+i*22, hy=9; if(i<p.hp){ if(i===p.hp-1&&beat>1){ var hs=Math.round(18*beat); c.drawImage(SPR.heart2,hx+9-hs/2,hy+8-hs/2,hs,hs); } else c.drawImage(SPR.heart2,hx,hy); } else c.drawImage(HE,hx,hy); }
@@ -2786,13 +2838,16 @@ function drawHUD(t){ var c=cx, w=S.w, p=w.p, i, R=ROOMS[w.rid], na=p.arm||0, low
   if(obj){ var os=tspr(obj,18,'#FFE08A'), tw=os.width+30; c.fillStyle='rgba(7,8,18,.75)'; c.fillRect(Math.round(W/2-tw/2),H-58,tw,28); dtx(c,obj,W/2,H-38,18,'#FFE08A'); }
   if(w.banner){ var bt=w.banner, ga=c.globalAlpha; c.globalAlpha=ga*Math.min(1,bt.t*2); c.fillStyle='rgba(7,8,18,.7)'; c.fillRect(0,H/2-70,W,bt.sub?104:72);
     dtx(c,bt.txt,W/2,H/2-20,44,'#FFC93C'); if(bt.sub) dtx(c,bt.sub,W/2,H/2+16,20,'#E8ECFF'); c.globalAlpha=ga; }
-  if(w.victory) dtx(c,'VICTORY!',W/2,H/2,64,'#FFC93C',0,'#141026');
+  if(w.victory){ dtx(c,'VICTORY!',W/2,H/2,64,'#FFC93C',0,'#141026'); dtx(c,'The Warden is beaten. You win!',W/2,H/2+46,24,'#F4ECD8',0,'#141026'); }
   /* back from a knockout: what came back, then a short count-in before enemies move again */
   if(S.mode==='reentry'){ var rn=Math.max(1,Math.ceil(S.reT/(REENTRY/3))); c.fillStyle='rgba(18,10,31,.72)'; c.fillRect(0,H/2-78,W,140);
     dtx(c,'Back on your feet!',W/2,H/2-36,30,'#FFE07A',0,'#12081C'); dtx(c,p.hp+' hearts restored. Enemies were pushed back.',W/2,H/2-2,18,'#F4ECD8',0,'#12081C'); dtx(c,String(rn),W/2,H/2+44,36,'#F4ECD8',0,'#12081C'); } }
 var REENTRY=1.8;
 var lastF=performance.now();
-function loop(){ var t=performance.now(), dt=Math.min(0.05,(t-lastF)/1000); lastF=t; if(S&&S.slow>0){ S.slow-=dt; dt*=0.4; }
+var lastF0=0;
+function loop(){ var t=performance.now(), dt=Math.min(0.05,(t-lastF)/1000); lastF=t;
+  /* total session time (classroom length): everything but the pause screen and a hidden tab; real time, not slowed */
+  if(S&&S.started&&!S.over&&!document.hidden&&S.mode!=='build') S.sess=(S.sess||0)+Math.min(0.25,(t-(lastF0||t))/1000); lastF0=t; if(S&&S.slow>0){ S.slow-=dt; dt*=0.4; }
   if(S.started&&!S.over){ if(S.mode==='cut') cutTick(dt); else if(S.mode==='endcut') endTick(dt); else if(S.mode==='trans') transTick(dt); else if(S.mode==='reentry'){ S.reT-=dt; if(S.reT<=0){ S.mode='play'; S.reT=0; } } else if(canPlay()){ if(S.hs>0) S.hs-=dt; else update(dt); } }
   draw(); requestAnimationFrame(loop); }
 
@@ -2813,7 +2868,7 @@ function hud(force){ var w=S.w, n=0, t=performance.now(); if(!force&&t-hudAt<160
    B or a click opens the build details, which PAUSE the run (mode 'build'), so reading never costs a hit. */
 function lvTxt(u){ return u.syn?'Synergy':L(u.id)>=3?'MAX':'Lv '+L(u.id); }
 function renderBuild(){ var w=S.w, held=w?UP.concat(SYN).filter(function(u){ return L(u.id)>0; }):[], bl=$('dn-buildlist');
-  if(!held.length){ bl.className=''; bl.innerHTML='<div class="dn-empty">Clear the Entry Hall and the Keep deals your first power. Mix two powers to unlock a synergy.</div>'; $('dn-buildmore').hidden=true; return; }
+  if(!held.length){ bl.className=''; bl.innerHTML='<div class="dn-empty">The Keep deals your starter relic as you walk in. Mix two powers to unlock a synergy.</div>'; $('dn-buildmore').hidden=true; return; }
   held.sort(function(a,b){ return (a.syn?1:0)-(b.syn?1:0); });
   bl.className=held.length>9?'inv many':'inv';
   bl.innerHTML=held.map(function(u){ var rdy=!u.syn&&synFor(u.id).some(synReady);
@@ -2821,11 +2876,11 @@ function renderBuild(){ var w=S.w, held=w?UP.concat(SYN).filter(function(u){ ret
   $('dn-buildmore').hidden=false; var bp=$('dn-build'); ['inv many','inv many g4'].forEach(function(k){ if(bp.scrollHeight>bp.clientHeight+2) bl.className=k; }); }
 function buildDetails(){ var w=S.w, held=UP.concat(SYN).filter(function(u){ return L(u.id)>0; });
   function card(u){ var l=L(u.id);
-    return '<div class="dn-bd'+(u.syn?' evo':' p-'+u.path)+'"><span class="ic">'+ICON(u)+'</span><div><div class="nm">'+u.n+' <em>'+(u.syn?'Synergy':PATHN[u.path]+(u.path==='any'?'':' power'))+' · '+(u.syn?'one level':l>=3?'Lv 3 (MAX)':'Lv '+l+' of 3')+'</em></div>'
+    return '<div class="dn-bd'+(u.syn?' evo':' p-'+u.path)+'"><span class="ic">'+ICON(u)+'</span><div><div class="nm">'+u.n+' <em>'+(u.syn?'Synergy':PATHN[u.path]+(u.path==='any'?'':' power'))+' · '+(u.syn?'Active':l>=3?'Lv 3 (MAX)':'Lv '+l+' of 3')+'</em></div>'
       +(u.syn?'<div class="ds">'+synName(u)+'</div><div class="ds">'+u.d+'</div>':'<div class="ds">'+INFO[u.id].base+'</div><div class="dn-sts">'+statRows(u.id,0,l)+'</div>')+'</div></div>'; }
   var ready=SYN.filter(synReady), near=SYN.filter(function(s){ return !HAS(s.id)&&!synReady(s)&&s.need.some(function(q){ return L(q[0])>0; }); }).slice(0,4);
-  $('dn-bdlist').innerHTML=(held.length?held.map(card).join(''):'<p class="dn-bdnone">No powers yet. Clear the Entry Hall and the Keep deals your first one.</p>');
-  $('dn-bdsyn').innerHTML=(ready.length?'<h4>READY: offered on your next upgrade</h4>'+ready.map(function(s){ return '<div class="dn-bs have">'+(PIC(s)||s.ic)+' <b>'+s.n+'</b> = '+synName(s)+'. '+s.d+'</div>'; }).join(''):'')
+  $('dn-bdlist').innerHTML=(held.length?held.map(card).join(''):'<p class="dn-bdnone">No powers yet. The Keep deals your starter relic as you walk into the Entry Hall.</p>');
+  $('dn-bdsyn').innerHTML=(ready.length?'<h4>Unlocked: offered on your next upgrade choice</h4>'+ready.map(function(s){ return '<div class="dn-bs have">'+(PIC(s)||s.ic)+' <b>'+s.n+'</b> = '+synName(s)+'. '+s.d+'</div>'; }).join(''):'')
     +(near.length?'<h4>Synergies you are close to</h4>'+near.map(function(s){ return '<div class="dn-bs">'+(PIC(s)||s.ic)+' <b>'+s.n+'</b> = '+s.need.map(function(q){ var own=L(q[0])>=q[1]; return '<span class="'+(own?'own':'miss')+'">'+(own?'✓ ':'')+UPI[q[0]].n+(q[1]>1?' Lv '+q[1]:'')+(own?'':' (need)')+'</span>'; }).join(' + ')+'</div>'; }).join(''):''); }
 function openBuild(){ if(!canPlay()) return; S.mode='build'; HELD={}; BUF.s=0; buildDetails(); $('dn-bdwrap').hidden=false; $('dn-toast').hidden=true;   /* a toast would sit on top of the Music slider */ save(); }
 function closeBuild(){ if(S.mode!=='build') return; $('dn-bdwrap').hidden=true; arm(null); S.mode='play'; save(); }
@@ -2846,18 +2901,33 @@ $('dn-go').addEventListener('click',function(){ var n=$('dn-nameinput').value.tr
 var endShownAt=0;
 function endRun(win){ S.over=true; S.win=!!win; HELD={}; clearTimeout(nextT); if(win) S.score+=0;
   ['dn-qwrap','dn-pick'].forEach(function(id){ $(id).hidden=true; }); save(); showEnd(true); }
+/* one short, useful tip on the end screen (playtest handoff 2026-11-15): from what actually landed the last hit when we know it, else from the room */
+var TIPS={ gob:['A goblin pounce','Goblins flash a red ! before they leap. Dodge sideways, then strike.'],
+  bat:['A diving bat','Bats hover, then dive. Dodge through the dive and swing as they pass.'],
+  skel:['A shield knight','Shield knights block frontal attacks. Dodge past their swing and strike from behind.'],
+  wiz:['A wizard','Wizards aim before they cast. Swing at the orbs to send them back.'], orb:['A magic orb','Wizards aim before they cast. Swing at the orbs to send them back.'],
+  slime:['A slime','Slimes hit hard up close. Keep moving and strike from the side.'],
+  boss:['The Iron Warden','Bait his charge into a wall, then strike while he is stunned.'], ring:['A shockwave','Shockwave rings have a gap. Run through the gap, or dodge as the ring reaches you.'],
+  rubble:['Falling rubble','Rubble shows a warning mark first. Step out of the mark.'] };
+function endTip(w){ var t=TIPS[w.hitBy]; if(t) return '<b>'+t[0]+' got you.</b> '+t[1];
+  var room={guard:'bat',cross:'skel',arena:'skel',library:'wiz',boss:'boss'}[w.rid]; t=TIPS[room]||TIPS.gob; return '<b>Tip:</b> '+t[1]; }
 function showEnd(celebrate){ var w=S.w; endShownAt=performance.now(); $('dn-toast').hidden=true;   /* a leftover toast would sit on the name line */
   $('dn-endtitle').textContent=S.win?(w&&w.lastDone?'Victory! You beat the Warden AND escaped the Last Stand!':'Victory! The Warden is beaten. You fell in the Last Stand at '+clock(w?w.lastT:0)+'.'):'Defeated in the '+(w?ROOMS[w.rid].name:'castle')+'.';
   $('dn-endname').textContent=S.name; $('dn-endscore').innerHTML=S.score.toLocaleString()+'<small>points</small>';
   /* results (final UI pass 2026-11-15): the run and the math are separate; untouched topics say Not attempted */
   var acc=S.answered?Math.round(100*S.correct/S.answered):0, bl=w?UP.concat(SYN).filter(function(u){ return L(u.id)>0; }):[];
-  var ls=w&&w.won?(w.lastDone?'Survived 2:00':'Fell at '+clock(w.lastT||0)):'Not reached';
+  var esc=w&&w.won?(w.lastDone?'Escaped! (2:00)':w.last>0||w.lastT?'Fell at '+clock(w.lastT||0):'Not started'):'Not reached';
   function row(l,v,na){ return '<div class="dn-row2'+(na?' na':'')+'"><span>'+l+'</span><b>'+v+'</b></div>'; }
-  $('dn-endstats').innerHTML=row('Enemies defeated',w?w.kills:0)+row('Best combo',w?w.bestCombo||0:0)+row('Flawless rooms',w?w.flawless||0:0)+row('Last Stand',ls,!(w&&w.won))+row('Run time',w?clock(w.runT):'0:00');
+  /* Combat time is the HUD clock (it stops for questions and choices); Total time is the whole session minus pauses (playtest handoff 2026-11-15) */
+  $('dn-endstats').innerHTML=row('Enemies defeated',w?w.kills:0)+row('Best combo',w?w.bestCombo||0:0)
+    +row('Iron Warden',w&&w.won?'Beaten: you win!':'Not beaten',!(w&&w.won))+row('Last Stand',esc,!(w&&w.won))
+    +row('Time',w?clock(S.sess||0)+' total · '+clock(w.runT)+' combat':'0:00')
+;
   $('dn-endbuild').className='dn-endbuild'+(bl.length>12?' many':'');
   $('dn-endbuild').innerHTML=bl.length?bl.map(function(u){ return '<div class="dn-eb">'+ICON(u)+'<span>'+u.n+'</span><em>'+(u.syn?'Synergy':L(u.id)>=3?'MAX':'Lv '+L(u.id))+'</em></div>'; }).join(''):'<div class="dn-eb"><span>No powers yet</span></div>';
   $('dn-mathbig').innerHTML=S.answered?S.correct+' of '+S.answered+' right<small>'+acc+'%</small>':'No questions answered';
-  $('dn-endtopics').innerHTML=Object.keys(S.topics).map(function(k){ var t=S.topics[k]; return t[1]?row(k,t[0]+' / '+t[1]):row(k,'Not attempted',1); }).join('');
+  $('dn-endtopics').innerHTML=Object.keys(S.topics).map(function(k){ var t=S.topics[k]; return t[1]?row(k,t[0]+' / '+t[1]):row(k,'Not attempted',1); }).join('')
+    +(w&&!(w.won&&w.lastDone)?'<p class="dn-tip">'+endTip(w)+'</p>':'');   /* the one combat tip sits under the math column, which has room */
   if(window.SpitzCode&&SpitzCode.show) try{ SpitzCode.show('dn','rook_and_ruin',S); }catch(e){}
   $('dn-end').hidden=false; if(celebrate) auSting(S.win); if(celebrate&&S.win){ [0,350,700,1100].forEach(function(ms,i){ setTimeout(function(){ sparks(360+i*400,1000,18,1); sparks(1560-i*400,1000,18,1); },ms); }); } }
 function playAgain(){ if(performance.now()-endShownAt<1200) return; var keepName=S.name; S=fresh(); S.name=keepName; startRun(); timerDraw(); }
@@ -2875,6 +2945,7 @@ document.addEventListener('keydown',function(e){ if(e.metaKey||e.ctrlKey||e.altK
   if((S.mode==='cut'||S.mode==='endcut')&&S.started&&!S.over){ if(k!=='f'&&k!=='n'&&k!=='m') EAT[k]=1; if(e.key==='Shift') EAT.shift=1; if(e.key==='Enter'||e.key==='Escape'||k===' '||k==='j'){ e.preventDefault(); if(!e.repeat) skipScene(); } else if(MOVE[k]) e.preventDefault(); if(k!=='f'&&k!=='n'&&k!=='m') return; }
   if(EAT[k]||(e.key==='Shift'&&EAT.shift)){ e.preventDefault(); return; }
   if(k==='j'||k===' '){ e.preventDefault(); if(canPlay()){ HELD[' ']=true; if(!e.repeat) BUF.s=0.3; } return; }
+  if(k==='e'){ e.preventDefault(); if(canPlay()&&!e.repeat) BUF.e=performance.now(); return; }
   if((e.key==='Shift'||k==='k')&&!e.repeat){ if(canPlay()) roll(); return; }
   if(MOVE[k]){ e.preventDefault(); if(canPlay()) HELD[k]=true; return; }
   if((k==='b'||k==='p'||e.key==='Escape')&&!e.repeat){ if(S.mode==='build'){ e.preventDefault(); closeBuild(); return; } if(canPlay()){ e.preventDefault(); openBuild(); return; } if(k==='b'||k==='p') return; }
@@ -2909,7 +2980,7 @@ function boot(){
 if(!QS){ $('dn-prompt').textContent='questions.js is missing: keep it in the same folder as this game.'; }
 if(S.started){ $('dn-start').hidden=true;
   if(S.over){ if(S.w) restoreMap(); showEnd(false); }
-  else { if(!S.w){ S.w=freshWorld(); loadRoom('entry','s'); } else restoreMap(); if(S.mode==='cut'){ CUT={t:12,gob:{show:0},cues:{}}; S.mode='cut'; cutEnd(); }
+  else { if(!S.w){ S.w=freshWorld(); loadRoom('entry','s'); } else { restoreMap(); if(S.w.rid==='entry') dealStarter(); } if(S.mode==='cut'){ CUT={t:12,gob:{show:0},cues:{}}; S.mode='cut'; cutEnd(); }
     if(S.mode==='endcut'){ S.mode='play'; endRun(!!S.endWin); }
     if(S.mode==='reentry'||S.mode==='build') S.mode='play';
     if(S.mode==='trans'){ S.mode='play'; if(S.w.next){ loadRoom(S.w.next[0],S.w.next[1]); S.w.next=null; } else loadRoom(S.w.rid,S.w.from); }
@@ -2921,7 +2992,7 @@ renderBuild(); hud(1); timerDraw(); setInterval(timerDraw,250); setInterval(func
 (function waitArt(n){ if(artReady()||n>150) boot(); else setTimeout(function(){ waitArt(n+1); },20); })(0);
 
 /* test hooks */
-window.__G={ hidden:function(){ return heroHidden(S.w,S.w.p); }, showPick:function(){ showPick(); }, info:function(){ return INFO; }, last:function(){ startLast(); }, frame:function(){ draw(); }, potTick:function(dt){ potTick(dt); }, potSheet:function(){ return potSheet(); }, icons:function(){ return UP.concat(SYN).map(function(u){ return [u.id,ICON(u),typeof RRICON!=='undefined'?RRICON[u.id]:null]; }); }, finish:function(w,k){ finishRun(w,k); }, pose:function(){ return heroPose(S.w.p); }, spawn:function(t,x,y,m,s){ return spawnEnemy(t,x,y,m,s); }, eframe:function(e){ return enemyFrame(e,S.w.p); }, draw:function(){ return rrDraw.apply(null,arguments); }, state:function(){ return S; }, rects:function(){ return ROOMRECTS; }, collide:function(e){ return collide(e); }, answer:answer, pick:pick, save:save, canPlay:canPlay, update:update, swing:swing, roll:roll, held:HELD,
+window.__G={ pressE:function(){ BUF.e=performance.now(); }, hidden:function(){ return heroHidden(S.w,S.w.p); }, showPick:function(){ showPick(); }, info:function(){ return INFO; }, last:function(){ startLast(); }, frame:function(){ draw(); }, potTick:function(dt){ potTick(dt); }, potSheet:function(){ return potSheet(); }, icons:function(){ return UP.concat(SYN).map(function(u){ return [u.id,ICON(u),typeof RRICON!=='undefined'?RRICON[u.id]:null]; }); }, finish:function(w,k){ finishRun(w,k); }, pose:function(){ return heroPose(S.w.p); }, spawn:function(t,x,y,m,s){ return spawnEnemy(t,x,y,m,s); }, eframe:function(e){ return enemyFrame(e,S.w.p); }, draw:function(){ return rrDraw.apply(null,arguments); }, state:function(){ return S; }, rects:function(){ return ROOMRECTS; }, collide:function(e){ return collide(e); }, answer:answer, pick:pick, save:save, canPlay:canPlay, update:update, swing:swing, roll:roll, held:HELD,
   hold:function(k,on){ HELD[k]=!!on; }, open:function(w,n,g){ openPick(w,n,g); }, hurt:function(d){ hurtP(null,d||1); }, give:function(id,l){ S.w.b[id]=l; renderBuild(); }, room:function(id,from){ loadRoom(id,from||'s'); }, fast:FAST, stat:stat, ROOMS:ROOMS, playAgain:playAgain, tile:tget, solid:solid, askNext:function(){ NEXTGATE=0; askNext(); }, gate:function(){ return {open:gateOpen(),next:performance.now()>=NEXTGATE,mode:S.mode}; }, step:function(dt){ if(S.slow>0){ S.slow-=dt; dt*=0.4; } if(S.started&&!S.over){ if(S.mode==='cut') cutTick(dt); else if(S.mode==='endcut') endTick(dt); else if(S.mode==='trans') transTick(dt); else if(S.mode==='reentry'){ S.reT-=dt; if(S.reT<=0){ S.mode='play'; S.reT=0; } } else if(canPlay()){ if(S.hs>0) S.hs-=dt; else update(dt); } } }, roomsList:function(){ return ROOMS; }, wallAt:wallAt, endShown:function(){ endShownAt=0; } };
 })();
 
