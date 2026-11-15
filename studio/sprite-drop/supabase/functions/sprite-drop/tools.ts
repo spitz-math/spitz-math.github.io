@@ -1,10 +1,11 @@
 // Sprite Drop tools (see index.ts for the sign-in wiring).
 import { createMcpHandler, McpServer } from 'npm:@modelcontextprotocol/server@^2.4.0'
 import { z } from 'npm:zod@^4.3.6'
+import { registerTaskTools } from './tasks.ts'
 import { assetPath, BUCKET, cleanTaskId, describeFile, dimensions, fromBase64, INLINE_LIMIT, MAX_BYTES, sniff, toBase64 } from './image.ts'
 
 // deno-lint-ignore no-explicit-any
-export type Db = { from: (t: string) => any; storage: { from: (b: string) => any } }
+export type Db = { from: (t: string) => any; storage: { from: (b: string) => any }; rpc: (fn: string, args?: Record<string, unknown>) => any }
 
 const text = (v: unknown) => ({ content: [{ type: 'text' as const, text: typeof v === 'string' ? v : JSON.stringify(v, null, 2) }] })
 const fail = (e: unknown) => ({ isError: true, content: [{ type: 'text' as const, text: e instanceof Error ? e.message : String(e) }] })
@@ -45,7 +46,7 @@ export function handlerFor(supabase: Db, userId: string, who?: Who) {
     Promise.resolve(supabase.from('studio_drop_log').insert({ user_id: userId, ...row })).catch(() => {})
 
   return createMcpHandler(() => {
-    const server = new McpServer({ name: 'sprite-drop', version: '0.1.0' })
+    const server = new McpServer({ name: 'sprite-drop', version: '0.2.0' })
 
     server.registerTool('drop_asset', {
       title: 'Drop an image for Claude',
@@ -182,6 +183,9 @@ export function handlerFor(supabase: Db, userId: string, who?: Who) {
       description: 'Shows what the server verified from your sign-in token: the account, and the OAuth client_id of the app you are calling from. Changes nothing; the check is noted in the drop log so Claude can compare apps.',
       inputSchema: z.object({}),
     }, async () => { await log({ task_id: null, stage: 'whoami', ok: true, detail: { ...who } }); return text(who) })
+
+    // Task Drop: create_task, list_tasks, get_task, post_message (tasks.ts).
+    registerTaskTools(server, supabase)
 
     return server
   })

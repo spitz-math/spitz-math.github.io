@@ -6,7 +6,7 @@
 // OAuth 2.1 server, so every query runs under the owner's row-level security.
 // No service-role key is used.
 //
-// Tools: drop_asset, list_assets, get_asset
+// Tools: drop_asset, list_assets, get_asset, whoami, and Task Drop's create_task, list_tasks, get_task, post_message
 import 'jsr:@supabase/functions-js/edge-runtime.d.ts'
 import { pipeline } from 'npm:@supabase/middleware@1'
 import { withOAuthProtectedResource, withSupabase } from 'npm:@supabase/server@^1.9.0'
