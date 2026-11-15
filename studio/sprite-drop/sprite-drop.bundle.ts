@@ -1,5 +1,5 @@
 // Sprite Drop, ONE-FILE copy for pasting into the Supabase dashboard editor.
-// Generated from index.ts + tools.ts + image.ts in spitz-arcade/studio/sprite-drop. Edit those, not this.
+// Generated from index.ts + tools.ts + image.ts in spitz-arcade/studio/sprite-drop by make_bundle.py. Edit those, not this.
 import 'jsr:@supabase/functions-js/edge-runtime.d.ts'
 import { pipeline } from 'npm:@supabase/middleware@1'
 import { withOAuthProtectedResource, withSupabase } from 'npm:@supabase/server@^1.9.0'
@@ -150,7 +150,10 @@ async function download(url: string): Promise<{ bytes: Uint8Array; status: numbe
   return { bytes, status: res.status, contentType }
 }
 
-export function handlerFor(supabase: Db, userId: string) {
+// What the server verified about the caller, from the signed token (never from tool arguments).
+export type Who = { user_id: string; email: string | null; client_id: string | null; session_id: string | null; owner_lock: 'off' | 'match' }
+
+export function handlerFor(supabase: Db, userId: string, who?: Who) {
   // Every drop attempt is logged, success or not, so we can see exactly where a transfer broke.
   const log = (row: { task_id: string | null; stage: string; ok: boolean; detail: Record<string, unknown> }) =>
     Promise.resolve(supabase.from('studio_drop_log').insert({ user_id: userId, ...row })).catch(() => {})
@@ -286,10 +289,17 @@ export function handlerFor(supabase: Db, userId: string) {
       } catch (e) { return fail(e) }
     })
 
+    // Read-only identity check for Spitz.dev (Task Drop milestone 1): which app is calling, as the token proves it.
+    if (who) server.registerTool('whoami', {
+      title: 'Who am I connected as',
+      annotations: { readOnlyHint: true },
+      description: 'Shows what the server verified from your sign-in token: the account, and the OAuth client_id of the app you are calling from. Changes nothing; the check is noted in the drop log so Claude can compare apps.',
+      inputSchema: z.object({}),
+    }, async () => { await log({ task_id: null, stage: 'whoami', ok: true, detail: { ...who } }); return text(who) })
+
     return server
   })
 }
-
 
 // ---------- index.ts ----------
 // Sprite Drop: a throwaway test bridge for Spitz.dev.
@@ -305,6 +315,14 @@ export function handlerFor(supabase: Db, userId: string) {
 // Optional lock: set SPRITE_DROP_OWNER_EMAIL in the function's secrets and every other account is refused.
 const OWNER = (Deno.env.get('SPRITE_DROP_OWNER_EMAIL') || '').trim().toLowerCase()
 
+// The token was already verified by withSupabase; this only reads its claims for whoami.
+function whoFrom(req: Request, userId: string, email: string): Who {
+  let c: Record<string, unknown> = {}
+  try { c = JSON.parse(atob((req.headers.get('authorization') || '').split(' ')[1].split('.')[1].replace(/-/g, '+').replace(/_/g, '/'))) } catch { /* no readable claims */ }
+  const s = (v: unknown) => (typeof v === 'string' && v ? v : null)
+  return { user_id: userId, email: email || null, client_id: s(c.client_id), session_id: s(c.session_id), owner_lock: OWNER ? 'match' : 'off' }
+}
+
 Deno.serve(pipeline(
   [withOAuthProtectedResource(), withSupabase({ auth: 'user' })],
   (req, { supabase, userClaims }) => {
@@ -313,6 +331,6 @@ Deno.serve(pipeline(
     // deno-lint-ignore no-explicit-any
     const email = String((userClaims as any)?.email ?? '').toLowerCase()
     if (OWNER && email !== OWNER) return Promise.resolve(new Response('This bridge belongs to someone else.', { status: 403 }))
-    return handlerFor(supabase as unknown as Db, userId).fetch(req)
+    return handlerFor(supabase as unknown as Db, userId, whoFrom(req, userId, email)).fetch(req)
   },
 ))

@@ -36,7 +36,10 @@ async function download(url: string): Promise<{ bytes: Uint8Array; status: numbe
   return { bytes, status: res.status, contentType }
 }
 
-export function handlerFor(supabase: Db, userId: string) {
+// What the server verified about the caller, from the signed token (never from tool arguments).
+export type Who = { user_id: string; email: string | null; client_id: string | null; session_id: string | null; owner_lock: 'off' | 'match' }
+
+export function handlerFor(supabase: Db, userId: string, who?: Who) {
   // Every drop attempt is logged, success or not, so we can see exactly where a transfer broke.
   const log = (row: { task_id: string | null; stage: string; ok: boolean; detail: Record<string, unknown> }) =>
     Promise.resolve(supabase.from('studio_drop_log').insert({ user_id: userId, ...row })).catch(() => {})
@@ -171,6 +174,14 @@ export function handlerFor(supabase: Db, userId: string) {
         return { content }
       } catch (e) { return fail(e) }
     })
+
+    // Read-only identity check for Spitz.dev (Task Drop milestone 1): which app is calling, as the token proves it.
+    if (who) server.registerTool('whoami', {
+      title: 'Who am I connected as',
+      annotations: { readOnlyHint: true },
+      description: 'Shows what the server verified from your sign-in token: the account, and the OAuth client_id of the app you are calling from. Changes nothing; the check is noted in the drop log so Claude can compare apps.',
+      inputSchema: z.object({}),
+    }, async () => { await log({ task_id: null, stage: 'whoami', ok: true, detail: { ...who } }); return text(who) })
 
     return server
   })
