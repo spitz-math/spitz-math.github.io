@@ -28,9 +28,9 @@ var R=[];
   R.push({ ch:0, name:'The Waystone', rows:rows(m), exit:'right', way:true }); })();
 /* ---------- chapter 2: Falls Cliffs (the Ember Dash) ---------- */
 (function(){ var m=walls(blank(),{side:'right',y0:7,y1:10}); box(m,0,16,31,17); box(m,7,16,15,16,'^'); box(m,0,12,6,17); box(m,16,12,20,17); box(m,21,16,26,16,'^'); box(m,27,11,30,17); box(m,0,0,31,0); put(m,2,11,'S');
-  R.push({ ch:1, name:'Across the falls', rows:rows(m), exit:'right', hint:'Jump, then <kbd>X</kbd> to dash. Arrows aim the dash.' }); })();
+  R.push({ ch:1, name:'Across the falls', rows:rows(m), exit:'right', hint:'Jump, then <kbd>Shift</kbd> or <kbd>X</kbd> to dash. Your move keys aim it.' }); })();
 (function(){ var m=walls(blank(),{side:'right',y0:4,y1:7}); box(m,0,15,31,17); box(m,11,15,19,15,'^'); box(m,20,8,30,17); box(m,0,0,31,0); put(m,3,14,'S');
-  R.push({ ch:1, name:'Dash up', rows:rows(m), exit:'right', hint:'Hold <kbd>↑</kbd> and press <kbd>X</kbd> to dash straight up' }); })();
+  R.push({ ch:1, name:'Dash up', rows:rows(m), exit:'right', hint:'Hold <kbd>↑</kbd> or <kbd>W</kbd>, then <kbd>Shift</kbd> or <kbd>X</kbd> to dash straight up' }); })();
 (function(){ var m=walls(blank(),{side:'right',y0:5,y1:8}); box(m,0,16,31,17); box(m,1,16,30,16,'^'); box(m,0,10,4,17); box(m,27,9,30,17); box(m,0,0,31,0);
   put(m,10,9,'o'); put(m,16,9,'o'); put(m,22,8,'o'); put(m,2,9,'S');
   R.push({ ch:1, name:'Ember chain', rows:rows(m), exit:'right', hint:'Touch an ember to get your dash back in the air' }); })();

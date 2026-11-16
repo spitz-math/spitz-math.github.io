@@ -55,6 +55,10 @@ const REPLAY=`window.__replay=function(sol){ var D=[[1,0],[-1,0],[0,-1],[0,1],[1
     const nd=await p.evaluate(()=>{ __G.state().dash=false; __G.go(1,false); var x0=__G.hero().x; __G.key('j',true); for(var i=0;i<10;i++) __G.step(1/120); __G.key('ds',true); __G.step(1/120); __G.key('ds',false); for(var i=0;i<4;i++) __G.step(1/120); __G.key('j',false);
       return {dashT:__G.hero().dashT||0, dx:Math.abs(__G.hero().x-x0)}; });
     ok(nd.dashT<=0&&nd.dx<20,'X does nothing before the Waystone '+JSON.stringify(nd));
+    // Shift (WASD players) and X (arrow players) both dash
+    for(const key of ['Shift','x','k']){ await p.evaluate(()=>{ __G.hold(false); __G.go(6,true); }); await p.waitForTimeout(150);
+      await p.keyboard.down('d'); await p.keyboard.press(key); await p.waitForTimeout(30); const dt=await p.evaluate(()=>__G.hero().dashT||0); await p.keyboard.up('d');
+      ok(dt>0,key+' dashes'); await p.evaluate(()=>__G.hold(true)); }
     // thorns: walk right into the first pit in Thorns
     const th=await p.evaluate(()=>{ __G.go(1,false); var d0=__G.state().deaths; __G.key('r',true); for(var i=0;i<240&&__G.mode()==='play';i++) __G.step(1/120); __G.key('r',false);
       var m=__G.mode(); for(var i=0;i<90;i++) __G.step(1/120); return {m:m,retries:__G.state().deaths-d0,after:__G.mode(),x:__G.hero().x,sx:__G.room().sx}; });

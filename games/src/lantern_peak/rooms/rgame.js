@@ -87,7 +87,7 @@ function enter(i,keepP){ S.room=i; R=ROOMS[i]; RP.reset(R); rt=0; R.exit=(R.way&
 
 /* ---------------- input ---------------- */
 var held={}, blocked={}, downKeys={}, jumpEdge=false, dashEdge=false, ptrDownAt=0, qShownAt=0, answeredAt=0, panelAt=0;
-function act(k){ return ({arrowleft:'l',a:'l',arrowright:'r',d:'r',arrowup:'u',w:'u',arrowdown:'dn',s:'dn',' ':'j',z:'j',x:'ds',c:'ds'})[k]; }
+function act(k){ return ({arrowleft:'l',a:'l',arrowright:'r',d:'r',arrowup:'u',w:'u',arrowdown:'dn',s:'dn',' ':'j',z:'j',j:'j',x:'ds',c:'ds',k:'ds',shift:'ds'})[k]; }
 function blockHeld(){ Object.keys(downKeys).forEach(function(k){ blocked[k]=true; }); held={}; jumpEdge=dashEdge=false; P.buf=0; }
 function inp(){ return { l:!!held.l, r:!!held.r, u:!!held.u, d:!!held.dn, jumpHeld:!!held.j, jumpPressed:jumpEdge, dashPressed:dashEdge }; }
 addEventListener('pointerdown',function(){ ptrDownAt=performance.now(); ac(); },true);
@@ -127,7 +127,7 @@ $('lp-pmute').addEventListener('click',function(){ muted=!muted; save(); pauseLa
 $('lp-pmusic').addEventListener('click',function(){ KIT.musicToggle(); pauseLabels(); });
 $('lp-prestart').addEventListener('click',function(){ askNew(true); });
 $('lp-pend').addEventListener('click',function(){ askNew(true,'end'); });
-function moveList(){ var h='<span><kbd>←</kbd><kbd>→</kbd> Run</span><span><kbd>Space</kbd> Jump</span><span>Jump at a wall: wall jump</span>'; if(S.dash) h+='<span><kbd>X</kbd> Dash (arrows aim)</span>'; $('lp-moves').innerHTML=h; }
+function moveList(){ var h='<span><kbd>←</kbd><kbd>→</kbd> Run</span><span><kbd>Space</kbd> Jump</span><span>Jump at a wall: wall jump</span>'; if(S.dash) h+='<span><kbd>Shift</kbd> or <kbd>X</kbd> Dash (aim with your move keys)</span>'; $('lp-moves').innerHTML=h; }
 var askKind='new';
 function askNew(o,kind){ if(o){ askKind=kind||'new'; var e=askKind==='end';
     $('sz-asktitle').textContent=e?'Stop here?':'Start a new game?'; $('lp-asksub').textContent=e?'Your climb ends here and you get your score.':'Your climb so far will be lost.';
@@ -189,10 +189,10 @@ function cont(){ if(mode!=='cp'||!S.qDone) return; if(performance.now()-answered
   newQ(); }
 $('lp-choices').addEventListener('click',function(e){ var b=e.target.closest('.lp-ch'); if(b) answer(+b.dataset.i,'click'); });
 $('lp-next').addEventListener('click',function(){ if(ptrDownAt<answeredAt+1) return; cont('click'); });
-function openReward(){ $('lp-rwname').textContent='Ember Dash'; $('lp-rwtext').innerHTML='Press <b>X</b> to dash. Hold an arrow to aim it: sideways, up, down or diagonal.<br>One dash per jump. Landing, or touching an ember, gives it back.';
+function openReward(){ $('lp-rwname').textContent='Ember Dash'; $('lp-rwtext').innerHTML='Press <b>Shift</b> (WASD players) or <b>X</b> (arrow players) to dash. Hold a direction to aim it: sideways, up, down or diagonal.<br>One dash per jump. Landing, or touching an ember, gives it back.';
   document.querySelector('#lp-reward .eyebrow').textContent='The Waystone is lit · new move';
   setMode('reward'); $('lp-cp').hidden=false; $('lp-card').hidden=true; $('lp-reward').hidden=false; panelAt=performance.now(); SND.unlock(); KIT.confetti(960,420,RM.matches?40:90,2.4); hud(); pop('lp-ab-ds'); demoT=0; }
-function closeReward(){ S.reward=false; save(); $('lp-cp').hidden=true; setMode('play'); blockHeld(); hint('<kbd>X</kbd> Dash · hold an arrow to aim it','dashhint'); }
+function closeReward(){ S.reward=false; save(); $('lp-cp').hidden=true; setMode('play'); blockHeld(); hint('<kbd>Shift</kbd> or <kbd>X</kbd> Dash · hold a direction to aim it','dashhint'); }
 $('lp-try').addEventListener('click',function(){ if(performance.now()-panelAt>600&&ptrDownAt>panelAt) closeReward(); });
 
 /* ---------------- play ---------------- */
@@ -321,7 +321,7 @@ function demo(dt){ demoT+=dt; var c=dcx, T2=demoT%3.2, x, y=200, f='idle', label
   for(v=0;v<5;v++) spike(c,'^',165+v*32,230);
   if(T2<0.4){ x=50+T2*150; f=(Math.floor(T2*8)%2)?'run':'idle'; }
   else if(T2<0.75){ var u=T2-0.4; x=110+u*200; y=200-(520*u-700*u*u); f='jump'; label='Space'; }
-  else if(T2<1.0){ var u2=T2-0.75; x=180+u2*560; y=200-(520*0.35-700*0.35*0.35)-u2*360; f='run'; label='↗ + X'; if(!RM.matches&&ready(HERO)) for(v=1;v<4;v++){ c.globalAlpha=0.4-0.1*v; c.save(); c.translate(x-v*22,y+v*14); c.scale(1.5,1.5); spriteHero(c,'run',0,0,1); c.restore(); } c.globalAlpha=1; }
+  else if(T2<1.0){ var u2=T2-0.75; x=180+u2*560; y=200-(520*0.35-700*0.35*0.35)-u2*360; f='run'; label='↗ + Shift'; if(!RM.matches&&ready(HERO)) for(v=1;v<4;v++){ c.globalAlpha=0.4-0.1*v; c.save(); c.translate(x-v*22,y+v*14); c.scale(1.5,1.5); spriteHero(c,'run',0,0,1); c.restore(); } c.globalAlpha=1; }
   else { x=Math.min(400,320+(T2-1.0)*200); y=110; f=x<400?'run':'idle'; }
   if(ready(HERO)){ c.save(); c.translate(x,y); c.scale(1.5,1.5); spriteHero(c,f,0,0,1); c.restore(); }
   if(label){ c.font='600 22px '+F; c.fillStyle='#FFF6E8'; c.textAlign='left'; c.fillText(label,20,40); } }
