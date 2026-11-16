@@ -216,6 +216,8 @@ export function registerTaskTools(server: any, db: TaskDb) {
       const t = await db.from('studio_tasks').select('*').eq('id', a.id).maybeSingle()
       if (t.error) throw tdErr(t.error)
       if (!t.data) throw new Error(`No task with id ${a.id}. Use list_tasks.`)
+      // record "this agent opened the task" for the dashboard's activity feed (never blocks the read)
+      await db.rpc('studio_note_read', { p_task_id: a.id }).then(() => {}, () => {})
       let mq = db.from('studio_messages').select('seq, author, kind, body, refs, set_status, set_turn, created_at').eq('task_id', a.id).order('seq', { ascending: true })
       if (a.since_seq) mq = mq.gt('seq', a.since_seq)
       const m = await mq
