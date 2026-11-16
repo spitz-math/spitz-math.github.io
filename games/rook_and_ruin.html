@@ -1940,7 +1940,7 @@ if(SNDTEST) addEventListener('load',function(){ try{ soundTest(); }catch(e){ con
 window.__AU=AU;
 
 /* Chain Spark and Volatile numbers (Kody 2026-11-16 nerf); defined first because the card text reads them at load */
-var CSPK={every:[0,3.0,2.6,2.2], jumps:[0,1,2,3], dmg:[0,5,6,8]}, VOLD=[0,2,3,4];
+var CSPK={every:[0,3.0,2.6,2.2], jumps:[0,1,2,3], dmg:[0,2,4,6]}, VOLD=[0,1,2,3];
 /* ---------- the castle: one run = these rooms ---------- */
 /* exits: n/w/e -> next room. Rooms lock while there are enemies; clearing opens every exit. */
 var ROOMS={
