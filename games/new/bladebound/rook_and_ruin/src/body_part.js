@@ -401,11 +401,11 @@ function bossAI(e,dt,p,d,ux,uy){ var w=S.w, half=e.hp<e.max/2, sp=half?0.85:1;
   if(e.st===2&&e.hitWall){ e.st=9; e.cd=1.1; e.chains=0; SND.boom(); if(!RM) w.shake=0.3; w.fx.push({k:'txt',x:e.x,y:e.y-80,t:0,v:'STUNNED!',c:'#FFC93C'}); for(var q=0;q<10;q++) w.fx.push({k:'bit',x:e.x,y:e.y,vx:rnd(-150,150),vy:rnd(-160,20),t:0,c:'#8A92BE'}); } }
 /* ---------- Warden fire (Kody's classroom test 2026-11-16: a student asked for poison / damage over time) ----------
    Every Warden ground slam (Warden fight and Last Stand) leaves 2 fire patches. Each shows a dim outline for 0.5 s, burns 6 s, then dies out.
-   At most 4 burn at once; never on a door, never under Rook. Stepping in sets Rook on fire: a bar drains over 2 s, then 1 heart
+   At most 4 burn at once; never on a door, never under Rook. Stepping in sets Rook on fire for 6 s: his last heart visibly drains and he loses 1 heart every 3 s (2 in all),
    (straight through armor and Aegis). Kody 2026-11-16: a dodge roll does NOT put it out (too free); rolling across a patch
    still doesn't light you. One burn at a time, no stacking.
    Enemies standing in fire take 4 damage every 0.5 s (Wardens are immune). */
-var FIRE={r:38, warn:0.5, life:6, max:4, burn:2};
+var FIRE={r:38, warn:0.5, life:6, max:4, burn:6, tick:3};   /* Kody 2026-11-16: burn ticks health down over a longer time: 1 heart every 3 s for 6 s (2 hearts) */
 function slamFire(e,p){ var w=S.w; w.fires=w.fires||[]; var made=0;
   for(var k=0;k<12&&made<2&&w.fires.length<FIRE.max;k++){ var a=Math.random()*6.283, d=rnd(70,130), x=e.x+Math.cos(a)*d, y=e.y+Math.sin(a)*d;
     if(x<FLR[0]+60||x>FLR[2]-60||y<FLR[1]+60||y>FLR[3]-60||wallAt(x,y)) continue;
@@ -414,9 +414,9 @@ function slamFire(e,p){ var w=S.w; w.fires=w.fires||[]; var made=0;
     w.fires.push({x:x,y:y,t:-FIRE.warn,s:Math.random()*9}); made++; } }
 function fireTick(dt,p){ var w=S.w, F=w.fires; if(!F||(!F.length&&!(p.burn>0))) return;
   for(var i=F.length-1;i>=0;i--){ var f=F[i]; f.t+=dt; if(f.t>=FIRE.life){ F.splice(i,1); continue; } if(f.t<0) continue;
-    if(!(p.burn>0)&&p.roll<=0&&Math.hypot(p.x-f.x,(p.y-f.y)*1.6)<FIRE.r){ p.burn=FIRE.burn; SND.tele(); if(!w.fireTold){ w.fireTold=1; w.fx.push({k:'txt',x:p.x,y:p.y-56,t:0,v:'On fire! Stay out of the flames',c:'#FF9A3C'}); } }
+    if(!(p.burn>0)&&p.roll<=0&&Math.hypot(p.x-f.x,(p.y-f.y)*1.6)<FIRE.r){ p.burn=FIRE.burn; p.bseg=FIRE.tick; p.bn=Math.round(FIRE.burn/FIRE.tick); SND.tele(); if(!w.fireTold){ w.fireTold=1; w.fx.push({k:'txt',x:p.x,y:p.y-56,t:0,v:'On fire! Stay out of the flames',c:'#FF9A3C'}); } }
     f.hT=(f.hT||0)-dt; if(f.hT<=0){ f.hT=0.5; DSRC='fire'; for(var j=0;j<w.en.length;j++){ var e=w.en[j]; if(!e.dead&&e.type!=='boss'&&Math.hypot(e.x-f.x,(e.y-f.y)*1.6)<FIRE.r+e.r*0.5) hurtE(e,4,0,0,0); } } }
-  if(p.burn>0){ p.burn-=dt; if(p.burn<=0){ p.burn=0; hurtP({x:p.x,y:p.y+1,fire:1},1); } } }
+  if(p.burn>0){ p.burn-=dt; p.bseg=(p.bseg||FIRE.tick)-dt; if(p.bseg<=0){ p.bseg=FIRE.tick; p.bn=(p.bn||1)-1; hurtP({x:p.x,y:p.y+1,fire:1},1); if(p.bn<=0||S.mode!=='play'){ p.burn=0; return; } } if(p.burn<0.05) p.burn=0.05; } }
 /* fire patch: a low ember glow and pixel flames that rise and fall (gentle, never flashing). Outline only during the warning. */
 function drawFire(c,f,t){ var rx=FIRE.r, ry=Math.round(FIRE.r*0.62), x=Math.round(f.x), y=Math.round(f.y);
   var fade=f.t<0?0:Math.min(1,f.t/0.25)*Math.min(1,(FIRE.life-f.t)/0.6);
@@ -997,6 +997,7 @@ function drawHUD(t){ var c=cx, w=S.w, p=w.p, i, R=ROOMS[w.rid], na=p.arm||0, low
   plate(c,4,4,pw,ph,low);
   var beat=low&&!RM?1+0.12*Math.max(0,Math.sin(t*5.5)):1, HE=heartEmpty();
   for(i=0;i<p.max;i++){ var hx=12+i*22, hy=9; if(i<p.hp){ if(i===p.hp-1&&beat>1){ var hs=Math.round(18*beat); c.drawImage(SPR.heart2,hx+9-hs/2,hy+8-hs/2,hs,hs); } else c.drawImage(SPR.heart2,hx,hy); } else c.drawImage(HE,hx,hy); }
+  if(p.burn>0&&p.hp>0){ var bh=12+(p.hp-1)*22, bf=Math.max(0,Math.min(1,1-(p.bseg||FIRE.tick)/FIRE.tick)); c.save(); c.beginPath(); c.rect(bh-2,7,24,Math.round(22*bf)); c.clip(); c.drawImage(HE,bh,9); c.restore(); c.fillStyle='#FF8A2A'; c.fillRect(bh,9+Math.round(18*bf),18,2); }   /* the heart that is burning drains from the top */
   for(i=0;i<na;i++){ var ax=14+(p.max+i)*22; c.fillStyle='#141026'; c.fillRect(ax-1,8,18,20); c.fillStyle='#7DC8FF'; c.fillRect(ax+1,10,14,10); c.fillRect(ax+3,20,10,4); c.fillRect(ax+6,24,4,2); c.fillStyle='#D8F0FF'; c.fillRect(ax+3,12,4,6); }
   if(rv) c.drawImage(SPR.rev2,12+(p.max+na)*22,9);   /* Second Wind in hand: a cyan heart after the hearts and armor */
   if(low) dtx(c,'Low health',16+hw+6,24,14,'#FF8FA3','left','#12081C');
