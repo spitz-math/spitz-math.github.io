@@ -5,7 +5,7 @@
           planning each jump with physics.js: three Waystones, three moves, the tower's three fires, the beacon, the end screen
    rules  Waystone rules: world frozen, held keys / early clicks / key repeat / Space can't answer, the explanation stays until Continue,
           a wrong answer costs nothing but the rune, Continue clears the old explanation
-   falls  falls and thorns send you to the last lantern; a fall costs a heart and 3 embers; out of hearts goes back to the start of the stretch; pause, Shift+R, reload
+   falls  falls and thorns send you to the last lantern; a fall or a hard landing costs a heart and 3 embers; out of hearts goes back to the start of the stretch; pause, Shift+R, reload
    moves  Scarf Glide, rising wind, Ember Dash and ice walls; the reward cards; melted ice and moves survive a reload
    boss   the Gloom: warnings before ice, ice breaks on ledges, a hit costs a heart, gusts from the start, frozen while a question is up
    end    stopping early from the pause menu; the end screen fits
@@ -153,15 +153,17 @@ const BOT=`window.__bot=function(ti,hint){
   /* ---------- falls, thorns, hearts; pause, restart, reload ---------- */
   if(ONLY.includes('falls')){ const p=await fresh('?set=mult');
     await p.evaluate(()=>__G.hold(true));
-    await p.evaluate(()=>{ __G.state().embers=[0,1,2,3,4]; __G.setCamp('c2'); __G.tp(840,1260); for(let n=0;n<120;n++) __G.step(1/120); });
+    await p.evaluate(()=>{ __G.state().embers=[0,1,2,3,4]; __G.setCamp('c0'); __G.tp(840,1260); for(let n=0;n<120;n++) __G.step(1/120); });
     let m=await mode(p); ok(m==='respawn','thorns send you back ('+m+')');
     await steps(p,160);
-    const h=await p.evaluate(()=>[__G.hero().x,__G.hero().y,__G.mode()]); ok(h[1]===870&&h[2]==='play','…to the last lantern (camp 2): '+h);
+    const h=await p.evaluate(()=>[__G.hero().x,__G.hero().y,__G.mode()]); ok(h[1]===0&&h[2]==='play','…to the last lantern (the village; lanterns are only at stations now): '+h);
     const s1=await p.evaluate(()=>({hearts:__G.state().hearts,emb:__G.state().embers.length}));
     ok(s1.hearts===2&&s1.emb===2,'thorns cost a heart and 3 embers '+JSON.stringify(s1));
-    const fallOnce=()=>p.evaluate(()=>{ __G.tp(800,520); for(let n=0;n<400&&__G.mode()!=='respawn';n++) __G.step(1/120); for(let n=0;n<160;n++) __G.step(1/120); return {falls:__G.state().falls,hearts:__G.state().hearts,camp:__G.state().camp,y:__G.hero().y,help:__G.state().help}; });
-    const s2=await fallOnce(); ok(s2.hearts===1&&s2.camp==='c2'&&s2.y===870,'falling far below the lantern costs a heart and respawns there '+JSON.stringify(s2));
-    const s=await fallOnce(); ok(s.falls===3&&s.hearts===3&&s.camp==='c0'&&s.y===0&&!s.help,'out of hearts: back to the start of the stretch with full hearts, no helping wind '+JSON.stringify(s));
+    const fallOnce=()=>p.evaluate(()=>{ __G.tp(800,520); for(let n=0;n<400&&__G.mode()==='play'&&!__G.hero().on;n++) __G.step(1/120); const m=__G.mode(); for(let n=0;n<160;n++) __G.step(1/120); return {m,falls:__G.state().falls,hearts:__G.state().hearts,camp:__G.state().camp,y:__G.hero().y,mode:__G.mode(),help:__G.state().help}; });
+    const s2=await fallOnce(); ok(s2.m==='play'&&s2.hearts===1&&s2.y<=320&&s2.mode==='play','a hard fall (200+ px) costs a heart where you land '+JSON.stringify(s2));
+    const s=await fallOnce(); ok(s.m==='respawn'&&s.falls===3&&s.hearts===3&&s.camp==='c0'&&s.y===0&&!s.help,'out of hearts: back to the start of the stretch with full hearts '+JSON.stringify(s));
+    const s3=await p.evaluate(()=>{ __G.tp(400,190); const h0=__G.state().hearts; for(let n=0;n<300;n++) __G.step(1/120); return {lost:h0-__G.state().hearts}; });
+    ok(s3.lost===0,'a short drop (190 px) costs nothing');
     await p.evaluate(()=>__G.hold(false));
     await p.keyboard.press('Escape'); await p.waitForTimeout(100); const g0=await p.evaluate(()=>__G.gt()); await p.waitForTimeout(500);
     ok(await p.evaluate(g=>__G.mode()==='pause'&&__G.gt()===g,g0),'Esc pauses and the world stops');
@@ -189,17 +191,17 @@ const BOT=`window.__bot=function(ti,hint){
     r=await air(2,655,4950,{},60); ok(r.y<4950,'…and does nothing if you are not gliding');
     await p.evaluate(()=>{ __G.setSt(2,'top'); __G.tp(655,4950); __G.hero().on=null; __G.hero().airT=0.2; __G.key('j',true); for(let i=0;i<60;i++) __G.step(1/120); __G.hold(false); }); await p.waitForTimeout(250); await p.screenshot({path:SHOTS+'/glide.png'}); await p.evaluate(()=>{ __G.key('j',false); __G.hold(true); });
     // ice wall 1: blocked without the dash, melted with it
-    const wall=st=>p.evaluate(st=>{ __G.setSt(st,'c13'); __G.state().ice.length=0; __G.level.solids.forEach(s=>{ if(s.ice){ s.off=false; delete s.broken; } }); __G.tp(560,7352); for(let i=0;i<30;i++) __G.step(1/120);
+    const wall=st=>p.evaluate(st=>{ __G.setSt(st,'way3'); __G.state().ice.length=0; __G.level.solids.forEach(s=>{ if(s.ice){ s.off=false; delete s.broken; } }); __G.tp(560,7352); for(let i=0;i<30;i++) __G.step(1/120);
       __G.key('r',true); for(let i=0;i<50;i++){ if(i===20){ __G.key('ds',true); __G.key('ds',false); } __G.step(1/120); } __G.key('r',false); return {x:__G.hero().x,ice:__G.state().ice.slice(),off:__G.level.solids.find(s=>s.id==='i1').off}; },st);
     let w=await wall(2); ok(w.x<630&&!w.ice.length,'ice wall: no way through without Ember Dash (stopped at x '+w.x.toFixed(0)+')');
     w=await wall(3); ok(w.x>690&&w.ice[0]==='i1'&&w.off,'Ember Dash melts the ice wall and carries you through (x '+w.x.toFixed(0)+')');
     await p.evaluate(()=>__G.hold(false)); await p.waitForTimeout(200); await p.screenshot({path:SHOTS+'/ice_melted.png'});
     // one dash per jump in the air
     await p.evaluate(()=>__G.hold(true));
-    r=await p.evaluate(()=>{ __G.setSt(3,'c13'); __G.tp(300,7700); const P=__G.hero(); P.on=null; P.airT=0.2; P.face=1; let n=0; for(let i=0;i<60;i++){ if(i===2||i===40){ __G.key('ds',true); __G.key('ds',false); } __G.step(1/120); if(__G.hero().dashT>0&&(i===3||i===41)) n++; } return n; });
+    r=await p.evaluate(()=>{ __G.setSt(3,'way3'); __G.tp(300,7700); const P=__G.hero(); P.on=null; P.airT=0.2; P.face=1; let n=0; for(let i=0;i<60;i++){ if(i===2||i===40){ __G.key('ds',true); __G.key('ds',false); } __G.step(1/120); if(__G.hero().dashT>0&&(i===3||i===41)) n++; } return n; });
     ok(r===1,'one Ember Dash per jump in the air ('+r+')');
     // reload keeps the moves and the melted ice
-    await p.evaluate(()=>{ __G.setSt(3,'c13'); __G.state().ice=['i1']; __G.hold(false); __G.tp(300,7352); }); await p.waitForTimeout(300); await p.keyboard.press('Escape'); await p.waitForTimeout(100); await p.keyboard.press('Escape');
+    await p.evaluate(()=>{ __G.setSt(3,'way3'); __G.state().ice=['i1']; __G.hold(false); __G.tp(300,7352); }); await p.waitForTimeout(300); await p.keyboard.press('Escape'); await p.waitForTimeout(100); await p.keyboard.press('Escape');
     await p.evaluate(()=>{ const P=__G.hero(); __G.key('r',true); }); await p.waitForTimeout(150); await p.evaluate(()=>__G.key('r',false)); await p.waitForTimeout(200);
     await p.evaluate(()=>{ localStorage.setItem(Object.keys(localStorage).find(k=>/^lantern_peak_v1/.test(k)&&!/_mute$/.test(k)),JSON.stringify(__G.state())); });
     await p.reload(); await p.waitForTimeout(400); await p.click('#lp-go'); await p.waitForTimeout(300);
@@ -251,7 +253,7 @@ const BOT=`window.__bot=function(ti,hint){
 
   /* ---------- end: stop early from the pause menu; the end screen fits ---------- */
   if(ONLY.includes('end')){ for(const vp of [{width:1366,height:768},{width:1366,height:620}]){ const p=await fresh('?set=mult',vp);
-    await p.evaluate(()=>{ __G.setSt(2,'c8'); __G.tp(300,5295); const s=__G.state(); s.best=5295; s.answered=10; s.correct=9; }); await p.waitForTimeout(300);
+    await p.evaluate(()=>{ __G.setSt(2,'top'); __G.tp(300,5295); const s=__G.state(); s.best=5295; s.answered=10; s.correct=9; }); await p.waitForTimeout(300);
     await p.keyboard.press('Escape'); await p.waitForTimeout(150); await p.click('#lp-pend'); await p.waitForTimeout(150);
     ok(await p.evaluate(()=>!document.getElementById('sz-ask').hidden&&/Stop here/.test(document.getElementById('sz-asktitle').textContent)),'"Stop here and show my score" asks first');
     await p.keyboard.press('n'); await p.waitForTimeout(100); ok(await p.evaluate(()=>document.getElementById('sz-ask').hidden&&!__G.state().over),'N goes back to the climb');
@@ -290,7 +292,7 @@ const BOT=`window.__bot=function(ti,hint){
   if(ONLY.includes('fps')){ const p=await fresh('?set=mult');
     const cdp=await p.context().newCDPSession(p); await cdp.send('Emulation.setCPUThrottlingRate',{rate:6});
     const fps=()=>p.evaluate(()=>new Promise(r=>{ let n=0; const t0=performance.now(); (function f(){ n++; if(performance.now()-t0<4000) requestAnimationFrame(f); else r(n/((performance.now()-t0)/1000)); })(); }));
-    for(const [name,st,camp,x,y] of [['Pinewood Steps',0,'c1',340,505],['Falls Cliffs',1,'c5',600,2700],['Windy Ruins (wind on screen)',2,'c10',850,5485],['Beacon Summit (snow, ice)',3,'c13',300,7355],['the tower (the Gloom, ice, gusts)',5,'b2',330,9595]]){
+    for(const [name,st,camp,x,y] of [['Pinewood Steps',0,'c0',340,505],['Falls Cliffs',1,'way',600,2700],['Windy Ruins (wind on screen)',2,'top',850,5485],['Beacon Summit (snow, ice)',3,'way3',300,7355],['the tower (the Gloom, ice, gusts)',5,'b2',330,9595]]){
       await p.evaluate(([st,camp,x,y])=>{ __G.setSt(st,camp); __G.tp(x,y); },[st,camp,x,y]); await p.keyboard.down('ArrowRight'); await p.waitForTimeout(1500); await p.keyboard.up('ArrowRight');
       const f=await fps(); ok(f>=30,'fps at 6x CPU slowdown, 1366x768, '+name+': '+f.toFixed(1)); }
     await p.close(); }

@@ -43,7 +43,9 @@ The earlier plan (Glide Dash, then a choice of Wall Kick or Spring Step) was rep
 - **3 hearts.** A fall, thorns or an icicle costs a heart and the last 3 embers picked up (they go back on the mountain).
 - **Out of hearts:** back to the start of the stretch (the last Waystone, the foot of the tower or the last fire) with 3 hearts. Moves and lit stations are never lost.
 - **Only the three Waystones refill hearts.** The tower fires do not (Kody: refills must be rare), so you climb the tower on the hearts you bring.
-- Half the old lanterns, cracked planks break in 0.35 s (was 0.5), plain ledges a fifth narrower past each zone's opening, and no helping wind.
+- **Hard falls** (Kody, v3: "falling still doesn't do a whole lot"): landing 200+ px below the last ledge you stood on costs a heart right where you land. A glide softens the landing. The signposted way never needs a drop that big.
+- **Lanterns only at the stations** (the Waystones, the tower's foot and the fires), so a long fall loses real height.
+- Cracked planks break in 0.35 s (was 0.5), plain ledges a fifth narrower past each zone's opening, and no helping wind.
 
 ## The Gloom (finale)
 - It wakes when the hero reaches the foot of the tower. A small bar at the top shows three flames, one per fire.

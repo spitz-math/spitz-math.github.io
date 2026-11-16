@@ -156,7 +156,7 @@ function start(){ var n=$('lp-name').value.trim().replace(/\s+/g,' '); if(!n) re
   moves(); solids(); save(); $('lp-start').hidden=true; KIT.jingle(); place(campOf(S.camp)); buildMeter(); hud(); setMode('play');
   if(S.cp) setTimeout(openCP,50); else if(S.reward) setTimeout(function(){ S.reward=false; openReward(); },50);
   showZone(zoneAt(P.y),true); }
-function place(c){ P=LPPH.fresh(c.x,c.y); P.face=1; cam=Math.max(-60,c.y-190); LV.plats.forEach(function(p){ delete p.goneAt; delete p.tT; }); ghosts.length=0; bossClear(1.6); }
+function place(c){ P=LPPH.fresh(c.x,c.y); groundY=c.y; P.face=1; cam=Math.max(-60,c.y-190); LV.plats.forEach(function(p){ delete p.goneAt; delete p.tT; }); ghosts.length=0; bossClear(1.6); }
 function pause(o){ if(o){ if(mode==='pause') return; pauseFrom=mode; setMode('pause'); $('lp-pause').hidden=false; $('lp-pausewhere').textContent=ZN[zoneAt(P.y)]+' · '+Math.floor(Math.max(0,P.y)/20)+' m'; pauseLabels(); moveList(); SND.pause(); blockHeld(); }
   else { if(mode!=='pause') return; $('lp-pause').hidden=true; setMode(pauseFrom||'play'); blockHeld(); if(mode==='cp') qShownAt=performance.now(); } }
 var pauseFrom='play';
@@ -328,7 +328,8 @@ function update(dt){
 }
 var JV0=PH.JV, DJ0=PH.DJV; function boost(){ PH.JV=JV0*1.13; PH.DJV=DJ0*1.1; } function unboost(){ PH.JV=JV0; PH.DJV=DJ0; }
 var respawned=false, finishT=0, finCheer=false;
-function events(){ P.ev.forEach(function(e){
+function events(){ var hard=false; P.ev.forEach(function(e){
+  if((e==='land'||e==='landHard')&&groundY-P.y>=HARD&&gt-glideAt>0.12&&mode==='play') hard=true;
   if(e==='jump'){ SND.jump(); sq=-0.35; S.hints.jumps=(S.hints.jumps||0)+1; if(S.hints.jumps>=2) S.hints.jump=1; puff(P.x,P.y,4,'#F3E9D8'); }
   else if(e==='dj'){ SND.hop(); sq=-0.3; spin=RM.matches?0:1; ring(P.x,P.y+6); S.hints.hop=1; }
   else if(e==='glide'){ SND.glide(); S.hints.glide=1; spin=0; }
@@ -339,17 +340,23 @@ function events(){ P.ev.forEach(function(e){
   else if(e==='crumble'){ SND.crumble(); }
   else if(e==='drop'){ }
   else if(e==='hurt') fall('hurt');
-}); }
+}); if(P.glide) glideAt=gt; if(P.on) groundY=P.y; if(hard) hardFall(); }
 /* hard mode (Kody 2026-11-16: "not punishing enough"): a fall, thorns or ice cost a heart and the last 3 embers picked up (they go back
    on the mountain). Out of hearts: back to the start of the stretch (the last Waystone, the tower's foot or the last fire), hearts refilled.
    Moves and lit stations are never lost. Only the three Waystones refill hearts (Kody: refills must be rare); the tower fires do not. */
 var BIG=['c0','way','top','way3','base','b1','b2'];
 function bigCamp(){ var y=campOf(S.camp).y, id='c0'; BIG.forEach(function(b){ if(camps[b]&&camps[b].y<=y) id=b; }); return id; }
-function fall(why){ if(mode!=='play') return; S.falls++; S.campFalls++; if(why==='hurt'){ SND.hurt(); P.ouch=true; }
-  var lost=S.embers.splice(Math.max(0,S.embers.length-3),3).length; S.hearts--;
-  if(S.hearts<=0){ S.hearts=3; var b=bigCamp(), back=b!==S.camp; S.camp=b; KIT.toast(back?(b==='c0'?'Out of hearts! Back to the village':(b==='base'?'Out of hearts! Back to the foot of the tower':(b[0]==='b'?'Out of hearts! Back to the last fire':'Out of hearts! Back to the Waystone'))):'Out of hearts! Hearts refilled'); }
-  else KIT.toast(S.hearts+' heart'+(S.hearts>1?'s':'')+' left'+(lost?' · lost '+lost+' ember'+(lost>1?'s':''):''));
-  hud(); pop('lp-hpchip'); respawned=false; setMode('respawn'); save(); }
+function outName(b){ return b==='c0'?'the village':(b==='base'?'the foot of the tower':(b[0]==='b'?'the last fire':'the Waystone')); }
+/* lose a heart; true when that was the last one (then the hero goes back to the stretch's start with 3 hearts) */
+function loseHeart(what){ S.falls++; S.campFalls++; var lost=S.embers.splice(Math.max(0,S.embers.length-3),3).length; S.hearts--; hud(); pop('lp-hpchip');
+  if(S.hearts<=0){ S.hearts=3; S.camp=bigCamp(); KIT.toast('Out of hearts! Back to '+outName(S.camp)); hud(); return true; }
+  KIT.toast(what+' '+S.hearts+' heart'+(S.hearts>1?'s':'')+' left'+(lost?' · lost '+lost+' ember'+(lost>1?'s':''):'')); return false; }
+function fall(why){ if(mode!=='play') return; if(why==='hurt'){ SND.hurt(); P.ouch=true; }
+  loseHeart(why==='hurt'?'Ouch!':'You fell!'); respawned=false; setMode('respawn'); save(); }
+/* a hard fall: landing 200+ px below the last ledge you stood on costs a heart, right where you land (a glide softens the landing) */
+var groundY=0, glideAt=-9, HARD=200;
+function hardFall(){ SND.hurt(); P.ouch=true; if(!RM.matches) shake=0.25; sq=0.6;
+  if(loseHeart('Hard fall!')){ respawned=false; setMode('respawn'); } save(); }
 function campCheck(){ if(!P.on) return; LV.camps.forEach(function(c,i){ if(c.id===S.camp) return; if(P.on.id!==c.id&&(Math.abs(P.y-c.y)>2||Math.abs(P.x-c.x)>140)) return;
   if(c.y<campOf(S.camp).y) return; S.camp=c.id; S.campFalls=0; SND.camp(); sparkle(c.x+12,c.y+34,8,'#FFD98A'); save(); }); }
 function pickups(){ var px=P.x, py=P.y+22;
@@ -574,7 +581,7 @@ window.__G={ state:function(){ return S; }, hero:function(){ return P; }, mode:f
   key:function(a,b){ held[a]=!!b; if(b&&a==='j') jumpEdge=true; if(b&&a==='dn') downEdge=true; if(b&&a==='ds') dashEdge=true; },
   setSt:function(n,camp){ S.st=n; S.runes=0; moves(); solids(); if(camp) S.camp=camp; hud(); bossBar(); },   // tests: jump to a stage
   calm:function(b){ BOSS.calm=!!b; if(b) bossClear(0); }, closeCP:function(){ S.cp=false; S.q=null; S.qDone=false; $('lp-cp').hidden=true; setMode('play'); }, opening:function(){ return opening; },
-  tp:function(x,y){ P=LPPH.fresh(x,y); P.on=null; cam=Math.max(-60,y-200); },
+  tp:function(x,y){ P=LPPH.fresh(x,y); P.on=null; groundY=y; cam=Math.max(-60,y-200); },
   setCamp:function(id){ S.camp=id; }, step:function(dt){ update(dt); }, cam:function(){ return cam; }, rs:function(){ return RS; },
   blocked:function(){ return Object.keys(blocked); }, gt:function(){ return gt; }, hold:function(b){ testHold=!!b; }, held:function(){ return held; }, end:function(){ finish(); finishT=9; showEnd(); }, openCP:openCP, endEarly:endEarly, world:WORLD };
 })();

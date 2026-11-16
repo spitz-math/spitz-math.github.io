@@ -105,7 +105,7 @@ solids.push(
   {x:0,y:7978,w:190,h:22},                         // the alcove's solid floor
   {x:150,y:8000,w:40,h:300,ice:true,id:'i3'}       // ice wall 3: the Star Feather's alcove
 );
-var CAMPS=['c1','c2','c5','c7','way','top','c8','c10','c11','way3','c13','c15','base','b1','b2'];   /* hard mode: half the old lanterns */
+var CAMPS=['way','top','way3','base','b1','b2'];   /* hard mode (Kody: falling must matter): lanterns only at the Waystones, the tower's foot and the fires */
 var LEVEL={
   plats:plats, hazards:hazards, solids:solids, st:ST,
   /* wind boxes: up = rising wind (lifts a glider), vx = tail wind (carries a glider sideways) */
