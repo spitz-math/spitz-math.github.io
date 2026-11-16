@@ -34,7 +34,7 @@ const {chromium}=require('playwright'); const D=process.argv[2]||'out';
  const b2=await ev(()=>{ const S=__G.state(); return {mode:S.mode, t:S.w.t, ep:S.w.en.map(e=>Math.round(e.x)+','+Math.round(e.y)).join('|'), hp:S.w.p.hp}; });
  check('detailsPause',b1.mode==='build'&&b1.shown&&b1.cards===5&&b2.mode==='build'&&b1.t===b2.t&&b1.ep===b2.ep,{b1,b2});
  const det=await ev(()=>document.getElementById('dn-bdlist').textContent);
- check('detailsText',/Lightning strikes the nearest enemy/.test(det)&&/Strikes every2 s/.test(det)&&/Lv 2 of 3/.test(det),det.slice(0,300));
+ check('detailsText',/Lightning strikes the nearest enemy/.test(det)&&/Strikes every2.6 s/.test(det)&&/Lv 2 of 3/.test(det),det.slice(0,300));
  await pg.keyboard.press('b'); await wait(100); const b3=await ev(()=>({mode:__G.state().mode, shown:!document.getElementById('dn-bdwrap').hidden}));
  check('detailsClose',b3.mode==='play'&&!b3.shown,b3);
  // clicking the sidebar opens it too; Esc closes
@@ -46,7 +46,7 @@ const {chromium}=require('playwright'); const D=process.argv[2]||'out';
  await wait(700); await pg.screenshot({path:D+'/tour/read_04_cards.png'});
  const cd=await ev(()=>[...document.querySelectorAll('.dn-card')].map(c=>({t:c.innerText, h:c.getBoundingClientRect().height, sh:c.scrollHeight, ch:c.clientHeight})));
  check('newPowerBase',/A shield blocks one hit/.test(cd[0].t)&&/New power/.test(cd[0].t)&&/Recharge\s*12 s/.test(cd[0].t)&&/BULWARK POWER/i.test(cd[0].t),cd[0].t);
- check('upgradeNumbers',/Upgrade · Lv 2 → MAX|Upgrade · Lv 2 → 3/.test(cd[1].t)&&/2 s\s*→\s*1.6 s/.test(cd[1].t)&&/3 more\s*→\s*4 more/.test(cd[1].t),cd[1].t);
+ check('upgradeNumbers',/Upgrade · Lv 2 → MAX|Upgrade · Lv 2 → 3/.test(cd[1].t)&&/2.6 s\s*→\s*2.2 s/.test(cd[1].t)&&/2 more\s*→\s*3 more/.test(cd[1].t),cd[1].t);
  check('goldLabel',/Gold card · skips a level/.test(cd[2].t)&&/STORM POWER/i.test(cd[2].t)&&/New power · Lv 2/.test(cd[2].t),cd[2].t);
  check('synergyNames',/Orbit Blades\s*\+\s*✓ Chain Spark|✓ Orbit Blades\s*\+\s*✓ Chain Spark/.test(cd[1].t)||/Chain Spark/.test(cd[1].t)&&/Tempest/.test(cd[1].t),cd[1].t);
  check('cardsFit',cd.every(c=>c.sh<=c.ch+2),cd.map(c=>[c.sh,c.ch]));

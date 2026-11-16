@@ -172,7 +172,7 @@ window.SpitzGames=[
     burger_blaster:'2026-10-26T12:00', pinball:'2026-10-26T12:00',
     rocket_buds:'2026-11-02T12:00', brawl_buds:'2026-11-02T12:00',
     paint_royale:'2026-11-09T12:00', hill_climb:'2026-11-09T12:00',
-    rook_and_ruin:'2026-11-23T12:00' /* launch PR 2026-11-16: proposed Monday; Kody picks the final date */ };
+    rook_and_ruin:'2026-11-16T12:00' /* Kody 2026-11-16: "make it live" (moved up from Nov 23) */ };
   /* Updated games (Kody, 2026-10-30): a big change to a live game shows an UPDATED badge and a short line saying what changed (more = the hover text) on its hub card
      for NEW_DAYS days, and the game sorts up with the new ones. at = when it went live (UTC). */
   var UPDATED={ football_buds:{ at:'2026-10-30T15:00', what:'New: points & All-Pro', more:'Now with a real points score, All-Pro mode and 3 challenges every game' },
