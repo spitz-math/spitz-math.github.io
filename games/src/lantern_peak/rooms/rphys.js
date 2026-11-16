@@ -88,7 +88,7 @@ function step(P,inp,dt,R,t){
     if(k&&Rr>k[0]&&L<k[2]&&B>k[1]&&Tp<k[3]){ P.dead=true; P.ev.push('die'); return P; } }
   /* embers refill the dash */
   if(R.orbs) for(var i=0;i<R.orbs.length;i++){ var o=R.orbs[i]; if(o.gone!==undefined&&t<o.gone+PH.EMBERBACK) continue; if(o.gone!==undefined) delete o.gone;
-    if(!P.dashOk&&Math.abs(o.x-P.x)<22&&Math.abs(o.y-(P.y-19))<30){ P.dashOk=true; o.gone=t; P.ev.push('ember'); } }
+    if(!P.dashOk&&Math.abs(o.x-P.x)<32&&Math.abs(o.y-(P.y-19))<40){ P.dashOk=true; o.gone=t; P.ev.push('ember'); } }
   /* fell out of the room, or left through its exit */
   if(P.y-PH.HH>ROWS*T+10){ P.dead=true; P.ev.push('die'); return P; }
   if((R.exit==='up'&&P.y<4)||(R.exit==='right'&&P.x>COLS*T+4)||(R.exit==='left'&&P.x<-4)){ P.exit=true; P.ev.push('exit'); }

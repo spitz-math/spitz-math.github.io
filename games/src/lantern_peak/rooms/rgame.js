@@ -345,6 +345,6 @@ setTimeout(function(){ if(!$('lp-start').hidden) try{ $('lp-name').focus(); }cat
 /* ---------------- test hooks ---------------- */
 window.__G={ state:function(){ return S; }, hero:function(){ return P; }, mode:function(){ return mode; }, rooms:ROOMS, room:function(){ return R; }, need:need,
   key:function(a,b){ held[a]=!!b; if(b&&a==='j') jumpEdge=true; if(b&&a==='ds') dashEdge=true; },
-  go:function(i,dash){ if(dash!==undefined) S.dash=!!dash; enter(i); setMode('play'); }, step:function(dt){ update(dt); }, hold:function(b){ testHold=!!b; }, gt:function(){ return gt; },
+  go:function(i,dash){ if(dash!==undefined) S.dash=!!dash; enter(i); acc=0; setMode('play'); }, step:function(dt){ update(dt); }, hold:function(b){ testHold=!!b; }, gt:function(){ return gt; },
   end:function(){ finish(); showEnd(); }, openCP:openCP, endEarly:endEarly, closeCP:function(){ S.cp=false; S.q=null; S.qDone=false; $('lp-cp').hidden=true; setMode('play'); }, blocked:function(){ return Object.keys(blocked); } };
 })();
