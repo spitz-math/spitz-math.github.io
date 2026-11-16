@@ -22,7 +22,7 @@ const IMAGE_MODEL_ENV = Deno.env.get('OPENAI_IMAGE_MODEL') || '' // optional ove
 const MAX_IMAGE_ATTEMPTS = 3 // per picture, all models together; a paid generation is never retried in a loop
 const MAX_IMAGES = 3 // pictures per turn
 const CACHE_HOURS = 24
-const DAILY_CAP = Number(Deno.env.get('WORKER_DAILY_CAP') || 20)
+const DAILY_CAP = Number(Deno.env.get('WORKER_DAILY_CAP') || 30) // finished (ok) runs in 24 h; failed, stalled and capped runs don't count
 const BUCKET = 'studio-assets'
 const HEARTBEAT_MS = 10_000
 const STEP_BUDGET_MS = Number(Deno.env.get('WORKER_STEP_BUDGET_MS') || 125_000) // stop an OpenAI call before Supabase's 150 s limit
@@ -247,7 +247,7 @@ async function startTurn(taskId: string): Promise<string> {
     return 'resumed run ' + prev.id
   }
   const since = new Date(Date.now() - 864e5).toISOString()
-  const { count } = await db.from('studio_worker_runs').select('id', { count: 'exact', head: true }).gte('created_at', since).neq('status', 'skipped')
+  const { count } = await db.from('studio_worker_runs').select('id', { count: 'exact', head: true }).gte('created_at', since).eq('status', 'ok')
   const fresh = { status: 'started', step: 'reading the task', heartbeat_at: nowIso(), model: MODEL, finished_at: null, detail: null, error_kind: null, plan: null, done_assets: [], next_part: 0, part_started_at: null, alerted: false }
   const runRow = prev
     ? await db.from('studio_worker_runs').update(fresh).eq('id', prev.id).eq('status', prev.status).select('*').maybeSingle()
@@ -259,7 +259,7 @@ async function startTurn(taskId: string): Promise<string> {
   const tr: Track = { attempts: 0, kinds: [], tried: [] }
   try {
     const { data: st } = await db.from('studio_worker_settings').select('*').eq('id', 1).single() as { data: Settings }
-    if ((count ?? 0) >= DAILY_CAP) throw new Stop(`Daily cap reached (${DAILY_CAP} runs in 24 hours). Raise WORKER_DAILY_CAP or wait.`, 'spend_cap')
+    if ((count ?? 0) >= DAILY_CAP) throw new Stop(`Daily cap reached (${DAILY_CAP} finished runs in 24 hours). Raise WORKER_DAILY_CAP or wait.`, 'spend_cap')
     // monthly spending limit (estimated) and picture cap, so a retry loop can never drain the credits
     const month = new Date(); month.setUTCDate(1); month.setUTCHours(0, 0, 0, 0)
     const { data: spent } = await db.from('studio_worker_runs').select('est_cost_usd,attempts,image_model').gte('created_at', month.toISOString())

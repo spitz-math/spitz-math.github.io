@@ -34,6 +34,7 @@ Everything goes through Task Drop: tasks, messages and Sprite Drop assets. Don't
 5. When ChatGPT approves (or after round 2), fix what's reasonable, then mark the subtask done.
 
 ## Phase 4: Deliver
+0. PUSH LIMIT (measured 2026-11-16): the Claude worker's scheduled runs cannot push to GitHub (no repo attached, and auto mode refuses git push). The worker builds and tests, then posts the full diff (base commit + `git apply --unidiff-zero`) on the request as kind "note" and says "Ready to push". The studio thread applies it to the branch, re-runs `run_tests.sh full`, pushes, and opens the draft PR. It asks Kody once for an OK naming the branch.
 1. Open a PR (never merge it). Build the test copy, `downloads/<game>_mult_vNN.html` in project files, using the next number from the studio notes.
 2. Post kind "report" on the request. Include the summary of what changed, the PR link as a ref, the test copy path, test results with the 6x CPU fps, the screenshots as asset refs, what ChatGPT made and reviewed, the rounds used, and known issues and limits. Then set_turn kody.
 3. Update the project's studio notes only with decisions Kody makes after reviewing.

@@ -1,7 +1,7 @@
 # Studio notes: Rook & Ruin
 
 Short, factual notes for any agent working on this game. Every line here was decided or stated by Kody, or is a measured fact, with the date. Anything not listed here is NOT decided. Ask, don't assume.
-Last updated 2026-11-16 by Claude, from the project's memory and the game's README.
+Last updated 2026-11-16 by Claude: added the slime decisions, test-copy numbering.
 
 ## What the game is
 - Top-down sword roguelite for middle schoolers. One run is about 12-15 minutes. Keep that run length. (2026-11-16)
@@ -15,6 +15,7 @@ Last updated 2026-11-16 by Claude, from the project's memory and the game's READ
 - No challenges, medals or end-screen goals. No fake doors. Secrets should not be obvious. (2026-11-14)
 - Warden warnings and lightning stay quiet, with no flashing backgrounds. Reduced-motion is respected. (site-wide rule)
 - Movement pass v53: Rook moves at 85% speed while attacking. (2026-11-15)
+- Slime tell: pink (#FD63AF) landing marker within 200 px, wind-up shake, hop direction locked at wind-up, goo droplets on hit, floor splat using ChatGPT's art as-is. Shipped in PR #166. (2026-11-16)
 
 ## Look (Kody)
 - Pixel art. Sprite packs come from ChatGPT. Every sprite must be a clean pixel grid with alpha 0 or 255.
@@ -33,5 +34,5 @@ Last updated 2026-11-16 by Claude, from the project's memory and the game's READ
 ## Technical facts
 - Source: repo games/new/bladebound/rook_and_ruin/src/ on main. Build with `python3 build.py`. Test with `bash run_tests.sh` (quick) or `bash run_tests.sh full` (adds speed at 6x CPU slowdown). Every test must print errors []. (2026-11-16)
 - Canvas is 960x540 with time-based motion. Students play on Chromebooks with trackpads, so the target is about 30+ fps at 6x CPU slowdown. Last Stand ran 24-38 fps at 6x. (2026-11-14)
-- Test copies go to project files downloads/rook_and_ruin_mult_vNN.html. The next number is v57. (2026-11-16)
+- Test copies go to project files downloads/rook_and_ruin_mult_vNN.html. Use the next number after the highest one already in downloads (other threads add copies too). (2026-11-16)
 - The game is locked in the catalog until Mon 2026-11-23 12:00 UTC. The live site changes only on Kody's "push it". (2026-11-16)
