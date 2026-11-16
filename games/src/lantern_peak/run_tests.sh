@@ -1,7 +1,7 @@
 #!/bin/bash
 # Lantern Peak tests. From the repo root:  bash games/src/lantern_peak/run_tests.sh
-# 1) route checker (pure physics): every required route is beatable, zone 2 needs Cloud Hop, no softlocks
-# 2) builds, serves the repo on :8765 and runs the Playwright play test (bot climb, Waystone rules, falls, pause/restart/reload, all sets, fps)
+# 1) route checker (pure physics): every stage is beatable, each zone needs its move, no softlocks, the signposted way jump by jump
+# 2) builds, serves the repo on :8765 and runs the Playwright play test (bot climb, station rules, falls, moves, the Gloom, end screens, all sets, fps)
 set -e
 D="$(cd "$(dirname "$0")" && pwd)"; R="$(cd "$D/../../.." && pwd)"
 node "$D/tests/routes.js"

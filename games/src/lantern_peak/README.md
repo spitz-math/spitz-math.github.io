@@ -1,6 +1,6 @@
 # Lantern Peak (working title): Jump Man rebuilt as a climbing platformer
 
-Vertical slice: Pinewood Steps → the first Waystone (questions) → Cloud Hop → Falls Cliffs → Falls Lookout.
+Full game: four zones (Pinewood Steps, Falls Cliffs, Windy Ruins, Beacon Summit), three moves (Cloud Hop, Scarf Glide, Ember Dash) and the Beacon Tower finale against the Gloom.
 The live `games/jump_man_multiplication.html` is untouched; nothing here is on the site until Kody says "push it".
 
 ## Files
@@ -8,15 +8,15 @@ The live `games/jump_man_multiplication.html` is untouched; nothing here is on t
 |---|---|
 | `head.html` | page shell: CSS, HUD, Waystone card, start / pause / end screens (fonts go in at `<!--FONTS-->`) |
 | `physics.js` | movement (pure functions, shared with the route checker) |
-| `level.js` | the climb: ledges, lifts, cracked planks, thorns, lanterns, embers, Star Feathers, signs, the Waystone and gate |
-| `art.js` | code-drawn ledges, pickups, Waystone, gate and scenery (scenery is drawn at half resolution for the pixel look) |
+| `level.js` | the climb: ledges, lifts, cracked planks, thorns, winds, ice walls, lanterns, embers, Star Feathers, signs, the six stations (3 Waystones, 3 tower fires) and their gates |
+| `art.js` | code-drawn ledges, pickups, Waystone, gate, ice, braziers, the Gloom and scenery (scenery is drawn at half resolution for the pixel look) |
 | `art/` | the approved ChatGPT source PNGs (hero sheet, Pinewood backdrop) and `make_art.py`, which writes `art_data.js` |
 | `art_data.js` | generated: the hero sprite strip and backdrop as data URLs |
-| `game.js` | the game: input guard, Waystone flow, camera, sound, music, save, HUD, test hooks (`window.__G`) |
+| `game.js` | the game: input guard, station flow, moves, the Gloom, camera, sound, music, save, HUD, end screen, test hooks (`window.__G`) |
 | `build.py` | writes `out/` (see below) |
-| `tests/routes.js` | route checker |
-| `tests/play.js` | Playwright play test |
-| `DESIGN.md` | concept, math cadence, art direction, asset list, what's tested |
+| `tests/routes.js` | route checker (`node tests/routes.js edges <stage> <ledge #>` lists what one ledge can reach) |
+| `tests/play.js` | Playwright play test (`node tests/play.js <url> bot,rules,falls,moves,boss,end,sets,fps` runs chosen parts) |
+| `DESIGN.md` | concept, zones, moves, the Gloom, math cadence, art direction, asset list, what's tested |
 
 ## Build
 ```
@@ -37,3 +37,6 @@ bash games/src/lantern_peak/run_tests.sh
 - `scorecode.js`: GAMES entry (next free number) + save key `lantern_peak:'lantern_peak_v1'` in the 20-minute list + tab emoji; change `'starter'` in `SpitzCode.show('lp','starter',S)` to the game id
 - `catalog.js`: card, locked (`UNLOCK` null) until Kody picks a date
 - drop the "Preview · working title" badge in `head.html`
+
+## Changing the level
+After any change to `level.js` or `physics.js`, run `node games/src/lantern_peak/tests/routes.js`. If a ledge on the signposted way moves, update `MAIN` in `tests/routes.js` (the bot follows it).
