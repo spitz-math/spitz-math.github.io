@@ -24,11 +24,14 @@ function room(ch,name,ex,draw,o){ var m=blank(); o=o||{};
   /* the way in, from the last room's exit; the start (where a retry puts you) is right by it */
   var sx=o.sx, sy=o.sy;
   if(prevExit&&prevExit.right){ for(var y2=prevExit.right[0];y2<=prevExit.right[1];y2++) m[y2][0]='.'; if(sx===undefined){ sx=1; sy=prevExit.right[1]; } }
-  if(prevExit&&prevExit.up){ for(var x2=prevExit.up[0];x2<=prevExit.up[1];x2++){ m[15][x2]='='; m[16][x2]='.'; m[17][x2]='.'; } if(sx===undefined){ sx=prevExit.up[0]+1; sy=14; } }
+  if(prevExit&&prevExit.up){ for(var x2=prevExit.up[0];x2<=prevExit.up[1];x2++){ m[15][x2]='='; m[16][x2]='.'; m[17][x2]='.'; }
+    [prevExit.up[0]-1,prevExit.up[1]+1].forEach(function(x3){ if(x3>0&&x3<31&&m[15][x3]==='.') m[15][x3]='='; });   // a little extra ledge either side
+    if(sx===undefined){ sx=prevExit.up[0]+1; sy=14; } }
   if(sx!==undefined) m[sy][sx]='S';
   var def={ ch:ch, name:name, rows:m.map(function(r){ return r.join(''); }), exit:ex?(ex.right?'right':'up'):'none', inFrom:prevExit?(prevExit.right?'left':'down'):null,
     inSpan:prevExit?(prevExit.right||prevExit.up):null, exitSpan:ex?(ex.right||ex.up):null };
   for(var k in o) if(k!=='sx'&&k!=='sy') def[k]=o[k];
+  if(typeof o.way==='string'){ def.give=o.way; def.way=true; }   // what the Waystone gives: 'dash', 'twin' or 'light'
   R.push(def); prevExit=ex; }
 function spikes(m,x0,x1,y){ box(m,x0,y,x1,y,'^'); box(m,x0,y+1,x1,17); }   // a row of thorns on rock
 

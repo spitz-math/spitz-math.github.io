@@ -66,13 +66,13 @@ function step(P,inp,dt,R,t){
     var mf=(P.wall&&dir===P.wall&&P.vy>0)?PH.SLIDE:PH.MAXFALL; if(P.vy>mf) P.vy=Math.max(mf,P.vy-4000*dt); }
 
   /* move across, then up/down, against the rock */
-  var wv=R.wind?R.wind*(P.onG?0.6:1):0; if(dashing) wv=0;
+  var wv=R.wind&&!P.onG?R.wind:0;   // wind pushes you in the air (standing on the ground you hold your spot) if(dashing) wv=0;
   if(dashing) smash(R,P.x+P.vx*dt-PH.HW-2,P.y+P.vy*dt-PH.HH-2,P.x+P.vx*dt+PH.HW+2,P.y+P.vy*dt+2,P);
   var nx=P.x+(P.vx+wv)*dt, h=boxHits(R,nx-PH.HW,P.y-PH.HH,nx+PH.HW,P.y,t);
   if(h){ if(P.vx+wv>0) nx=h.x*T-PH.HW; else if(P.vx+wv<0) nx=(h.x+1)*T+PH.HW; touchCrumble(R,h.x,h.y,t,P); if(!dashing||Math.abs(P.dvy)<1) P.vx=0; else P.vx=0; }
   P.x=nx;
   var ny=P.y+P.vy*dt, wasG=P.onG; P.onG=false;
-  if(P.vy>=0){ var hb=boxHits(R,P.x-PH.HW,ny-PH.HH,P.x+PH.HW,ny,t);
+  if(P.vy>=0){ var hb=boxHits(R,P.x-PH.HW,ny-PH.HH,P.x+PH.HW,ny+0.5,t);   // +0.5: standing still on the ground stays on the ground
     /* jump-through ledges: land only from above */
     var lt=null, ly0=Math.floor(P.y/T), ly1=Math.floor(ny/T);
     for(var yy=ly0;yy<=ly1&&!lt;yy++){ if(P.y<=yy*T+0.01&&ny>=yy*T){ for(var xx=Math.floor((P.x-PH.HW)/T);xx<=Math.floor((P.x+PH.HW-0.001)/T);xx++) if(tileAt(R,xx,yy)==='='){ lt={y:yy}; break; } } }
@@ -112,7 +112,7 @@ function room(def){ var R={ name:def.name, map:def.rows.map(function(r){ return 
 function reset(R){ R.cr={}; R.br={}; R.orbs.forEach(function(o){ delete o.gone; }); }
 /* the climber leaves through the exit and keeps going in the next room (the game pans the view meanwhile) */
 function carry(P,dir){ var Q=JSON.parse(JSON.stringify(P)); Q.exit=false; Q.ev=[]; Q.lock=0;
-  if(dir==='right'){ Q.x=PH.HW+2; } else if(dir==='up'){ Q.y+=ROWS*T; Q.vy=Math.min(Q.vy,-PH.UPBOOST); Q.jumping=false; if(Q.dashT>0&&Q.dvy<0) Q.dvy=Math.min(Q.dvy,-PH.UPBOOST); }
+  if(dir==='right'){ Q.x=PH.HW+2; } else if(dir==='up'){ Q.y+=ROWS*T; Q.vy=Math.min(Q.vy,-PH.UPBOOST); Q.vx*=0.35; Q.jumping=false; Q.dashT=0; }
   return Q; }
 root.LPR={ T:T, COLS:COLS, ROWS:ROWS, PH:PH, step:step, fresh:fresh, room:room, reset:reset, carry:carry, tileAt:tileAt, solidAt:solidAt };
 })(typeof window!=='undefined'?window:globalThis);

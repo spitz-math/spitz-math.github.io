@@ -37,6 +37,8 @@ const REPLAY=`window.__replay=function(sol){ var D=[[1,0],[-1,0],[0,-1],[0,1],[1
       const def=await p.evaluate(i=>({way:!!__G.rooms[i].way,give:__G.rooms[i].give,lantern:!!__G.rooms[i].lantern,name:__G.rooms[i].name||''}),i);
       const want=def.way?'cp':def.lantern?'finish':'slide';
       ok(r.mode===want&&r.deaths===0&&(want!=='slide'||r.room===i+1),'room '+i+': the solver\'s inputs clear it in the real game ('+JSON.stringify(r)+')');
+      if(r.mode==='slide'){ const en=await p.evaluate(()=>{ var d0=__G.state().deaths; for(var n=0;n<180;n++) __G.step(1/120); var m=__G.mode(); return {m:m,dead:__G.state().deaths-d0,onG:__G.hero().onG,x:__G.hero().x|0,y:__G.hero().y|0}; });
+        ok(en.m==='play'&&en.dead===0&&en.onG,'room '+(i+1)+': you come in safely and land (letting go of every key) '+JSON.stringify(en)); }
       if(i===0||i===10||i===16||i===21) { await p.evaluate(()=>{ __G.go(__G.state().room); }); await p.waitForTimeout(150); await snap(p,'room'+i); }
       if(def.way){ await snap(p,'waystone_card_'+def.give); await p.evaluate(()=>__G.hold(false)); await answerAll(p);
         if(def.give==='light'){ ok(await p.evaluate(()=>__G.mode())==='play','the third Waystone lights the way (no new move)'); }
@@ -61,7 +63,7 @@ const REPLAY=`window.__replay=function(sol){ var D=[[1,0],[-1,0],[0,-1],[0,1],[1
       await p.keyboard.down('d'); await p.keyboard.press(key); await p.waitForTimeout(30); const dt=await p.evaluate(()=>__G.hero().dashT||0); await p.keyboard.up('d');
       ok(dt>0,key+' dashes'); await p.evaluate(()=>__G.hold(true)); }
     // thorns: walk right into the first pit in Thorns
-    const th=await p.evaluate(()=>{ __G.go(1,false); var d0=__G.state().deaths; __G.key('r',true); for(var i=0;i<240&&__G.mode()==='play';i++) __G.step(1/120); __G.key('r',false);
+    const th=await p.evaluate(()=>{ __G.go(1,false); var d0=__G.state().deaths; __G.key('r',true); for(var i=0;i<600&&__G.mode()==='play';i++) __G.step(1/120); __G.key('r',false);
       var m=__G.mode(); for(var i=0;i<90;i++) __G.step(1/120); return {m:m,retries:__G.state().deaths-d0,after:__G.mode(),x:__G.hero().x,sx:__G.room().sx}; });
     ok(th.m==='dead'&&th.retries===1&&th.after==='play'&&Math.abs(th.x-th.sx)<2,'thorns cost a retry and put you back at the room start '+JSON.stringify(th));
     // falling out of a dash room
