@@ -127,7 +127,7 @@ $('lp-pmute').addEventListener('click',function(){ muted=!muted; save(); pauseLa
 $('lp-pmusic').addEventListener('click',function(){ KIT.musicToggle(); pauseLabels(); });
 $('lp-prestart').addEventListener('click',function(){ askNew(true); });
 $('lp-pend').addEventListener('click',function(){ askNew(true,'end'); });
-function moveList(){ var h='<span><kbd>←</kbd><kbd>→</kbd> Run</span><span><kbd>Space</kbd> Jump</span><span>Jump at a wall: wall jump</span>'; if(S.dash) h+='<span><kbd>Shift</kbd> or <kbd>X</kbd> Dash (aim with your move keys)</span>'; $('lp-moves').innerHTML=h; }
+function moveList(){ var h='<span><kbd>←</kbd><kbd>→</kbd> Run</span><span><kbd>Space</kbd>, <kbd>Z</kbd> or <kbd>J</kbd> Jump</span><span>Jump at a wall: wall jump</span>'; if(S.dash) h+='<span><kbd>Shift</kbd>, <kbd>X</kbd> or <kbd>K</kbd> Dash (aim with your move keys)</span>'; $('lp-moves').innerHTML=h; }
 var askKind='new';
 function askNew(o,kind){ if(o){ askKind=kind||'new'; var e=askKind==='end';
     $('sz-asktitle').textContent=e?'Stop here?':'Start a new game?'; $('lp-asksub').textContent=e?'Your climb ends here and you get your score.':'Your climb so far will be lost.';
@@ -189,10 +189,10 @@ function cont(){ if(mode!=='cp'||!S.qDone) return; if(performance.now()-answered
   newQ(); }
 $('lp-choices').addEventListener('click',function(e){ var b=e.target.closest('.lp-ch'); if(b) answer(+b.dataset.i,'click'); });
 $('lp-next').addEventListener('click',function(){ if(ptrDownAt<answeredAt+1) return; cont('click'); });
-function openReward(){ $('lp-rwname').textContent='Ember Dash'; $('lp-rwtext').innerHTML='Press <b>Shift</b> (WASD players) or <b>X</b> (arrow players) to dash. Hold a direction to aim it: sideways, up, down or diagonal.<br>One dash per jump. Landing, or touching an ember, gives it back.';
+function openReward(){ $('lp-rwname').textContent='Ember Dash'; $('lp-rwtext').innerHTML='Press <b>Shift</b>, <b>X</b> or <b>K</b> to dash. Hold a direction to aim it: sideways, up, down or diagonal.<br>One dash per jump. Landing, or touching an ember, gives it back.';
   document.querySelector('#lp-reward .eyebrow').textContent='The Waystone is lit · new move';
   setMode('reward'); $('lp-cp').hidden=false; $('lp-card').hidden=true; $('lp-reward').hidden=false; panelAt=performance.now(); SND.unlock(); KIT.confetti(960,420,RM.matches?40:90,2.4); hud(); pop('lp-ab-ds'); demoT=0; }
-function closeReward(){ S.reward=false; save(); $('lp-cp').hidden=true; setMode('play'); blockHeld(); hint('<kbd>Shift</kbd> or <kbd>X</kbd> Dash · hold a direction to aim it','dashhint'); }
+function closeReward(){ S.reward=false; save(); $('lp-cp').hidden=true; setMode('play'); blockHeld(); hint('<kbd>Shift</kbd>, <kbd>X</kbd> or <kbd>K</kbd> Dash · hold a direction to aim it','dashhint'); }
 $('lp-try').addEventListener('click',function(){ if(performance.now()-panelAt>600&&ptrDownAt>panelAt) closeReward(); });
 
 /* ---------------- play ---------------- */
