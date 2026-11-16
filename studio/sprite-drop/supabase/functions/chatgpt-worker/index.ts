@@ -102,6 +102,9 @@ async function run(taskId: string) {
   // one run per task version (a failed run may be retried)
   const prev = await db.from('studio_worker_runs').select('id,status').eq('task_id', t.id).eq('task_version', t.version).maybeSingle()
   if (prev.data && prev.data.status !== 'error') return 'already ran on this version'
+  // a run on an older version of this task is still drawing: let it finish (it re-posts on the newer version)
+  const busy = await db.from('studio_worker_runs').select('id', { count: 'exact', head: true }).eq('task_id', t.id).eq('status', 'started').gte('created_at', new Date(Date.now() - 6e5).toISOString())
+  if ((busy.count ?? 0) > 0) return 'another run on this task is still working'
   const since = new Date(Date.now() - 864e5).toISOString()
   const { count } = await db.from('studio_worker_runs').select('id', { count: 'exact', head: true }).gte('created_at', since).neq('status', 'skipped')
   const runRow = prev.data
@@ -118,7 +121,14 @@ async function run(taskId: string) {
     error_kind: status === 'error' ? (rec.error_kind || tr.kinds.at(-1) || 'other') : null,
     est_cost_usd: cost.plan === null && cost.image === null ? null : Number(((cost.plan || 0) + (cost.image || 0)).toFixed(4)),
   }).eq('id', runId)
-  const post = (args: Record<string, unknown>) => db.rpc('studio_worker_post', { p_task_id: t.id, p_request_key: `worker-${t.id}-v${t.version}`, p_expected_version: t.version, ...args })
+  // post; if only a note was added meanwhile (still ChatGPT's open turn), post once more on the newer version
+  const post = async (args: Record<string, unknown>) => {
+    let r = await db.rpc('studio_worker_post', { p_task_id: t.id, p_request_key: `worker-${t.id}-v${t.version}`, p_expected_version: t.version, ...args })
+    const nt = r.data?.conflict ? r.data.task : null
+    if (nt && nt.turn === 'chatgpt' && nt.status === 'open') r = await db.rpc('studio_worker_post', { p_task_id: t.id, p_request_key: `worker-${t.id}-v${nt.version}`, p_expected_version: nt.version, ...args })
+    return r
+  }
+  const conflicted = (r: { data?: { conflict?: boolean } }) => r.data?.conflict ? finish('skipped', 'Not posted: the task changed hands while the worker was working.').then(() => true) : Promise.resolve(false)
 
   try {
     const { data: st } = await db.from('studio_worker_settings').select('*').eq('id', 1).single() as { data: Settings }
@@ -156,6 +166,7 @@ async function run(taskId: string) {
     if (p.action === 'reply') {
       const r = await post({ p_kind: 'review', p_body: p.body, p_refs: [], ...turnArgs })
       if (r.error) throw new Error(r.error.message)
+      if (await conflicted(r)) return 'task changed, not posted'
       await finish('ok', 'reply')
       return 'replied'
     }
@@ -194,6 +205,7 @@ async function run(taskId: string) {
     if (ins.error) throw new Error('Recording the image failed: ' + ins.error.message)
     const r = await post({ p_kind: 'report', p_body: `${p.body}\n\nAsset ${ins.data.id} · sha256 ${sha} · ${note}`, p_refs: [{ type: 'asset', id: ins.data.id }], ...turnArgs })
     if (r.error) throw new Error(r.error.message)
+    if (await conflicted(r)) return 'task changed, image ' + ins.data.id + ' saved but not posted'
     await finish('ok', 'image ' + ins.data.id)
     return 'drew ' + ins.data.id
   } catch (e) {
