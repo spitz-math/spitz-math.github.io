@@ -14,7 +14,7 @@ RD = os.path.dirname(os.path.abspath(__file__)); D = os.path.dirname(RD); G = os
 O = D + '/out'; os.makedirs(O, exist_ok=True)
 read = lambda p: open(p, encoding='utf-8').read()
 head = read(D + '/head.html')
-head = head.replace('The beacon on the peak has gone out. Climb the mountain, answer at each Waystone to learn a new move, and light it again.', 'Climb the mountain one cliff at a time. Every fall sends you back to the start of the room, so try again. Answer at the Waystone to learn the Ember Dash.')
+head = head.replace('The beacon on the peak has gone out. Climb the mountain, answer at each Waystone to learn a new move, and light it again.', 'Climb the mountain one cliff at a time. A fall only sends you back to the start of the room, so keep trying. Answer at each Waystone to learn a new move.')
 head = head.replace('LR/AD=Run | Space/↑=Jump | ↓=Drop down | 1234=Answer', 'LR/AD=Run | Space/Z/J=Jump | Shift/X/K=Dash | 1234=Answer')
 assert 'Ember Dash' in head and 'Shift/X/K=Dash' in head
 js = ''.join(read(D + '/' + f) + '\n' for f in ['rooms/rphys.js', 'rooms/rlevel.js', 'art.js', 'art_data.js', 'rooms/rgame.js'])

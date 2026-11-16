@@ -34,14 +34,15 @@ const REPLAY=`window.__replay=function(sol){ var D=[[1,0],[-1,0],[0,-1],[0,1],[1
   if(ONLY.includes('bot')){ const p=await fresh(); await p.evaluate(()=>__G.hold(true));
     for(let i=0;i<SOL.length;i++){
       const r=await p.evaluate(([i,s])=>{ __G.go(i); var d0=__G.state().deaths, r=__replay(s); r.deaths=__G.state().deaths-d0; r.room=__G.state().room; return r; },[i,SOL[i]]);
-      const def=await p.evaluate(i=>({way:!!__G.rooms[i].way,lantern:!!__G.rooms[i].lantern,name:__G.rooms[i].name||''}),i);
+      const def=await p.evaluate(i=>({way:!!__G.rooms[i].way,give:__G.rooms[i].give,lantern:!!__G.rooms[i].lantern,name:__G.rooms[i].name||''}),i);
       const want=def.way?'cp':def.lantern?'finish':'slide';
       ok(r.mode===want&&r.deaths===0&&(want!=='slide'||r.room===i+1),'room '+i+': the solver\'s inputs clear it in the real game ('+JSON.stringify(r)+')');
-      if(i===0||i===5||i===8) { await p.evaluate(()=>{ __G.go(__G.state().room); }); await p.waitForTimeout(150); await snap(p,'room'+i); }
-      if(def.way){ await snap(p,'waystone_card'); await p.evaluate(()=>__G.hold(false)); await answerAll(p);
-        ok(await p.evaluate(()=>__G.mode())==='reward','the Waystone gives a reward card after enough right answers'); await p.waitForTimeout(900); await snap(p,'reward');
-        ok(await p.evaluate(()=>__G.state().dash===true),'the Ember Dash is unlocked');
-        await p.waitForTimeout(700); await p.keyboard.press('Enter'); await p.waitForTimeout(200); ok(await p.evaluate(()=>__G.mode())==='play','the reward card closes with Enter');
+      if(i===0||i===10||i===16||i===21) { await p.evaluate(()=>{ __G.go(__G.state().room); }); await p.waitForTimeout(150); await snap(p,'room'+i); }
+      if(def.way){ await snap(p,'waystone_card_'+def.give); await p.evaluate(()=>__G.hold(false)); await answerAll(p);
+        if(def.give==='light'){ ok(await p.evaluate(()=>__G.mode())==='play','the third Waystone lights the way (no new move)'); }
+        else { ok(await p.evaluate(()=>__G.mode())==='reward','Waystone ('+def.give+') gives a reward card after enough right answers'); await p.waitForTimeout(900); await snap(p,'reward_'+def.give);
+        ok(await p.evaluate(g=>g==='dash'?__G.state().dash===true:__G.state().twin===true,def.give),'the '+(def.give==='dash'?'Ember Dash':'Twin Dash')+' is unlocked');
+        await p.waitForTimeout(700); await p.keyboard.press('Enter'); await p.waitForTimeout(200); ok(await p.evaluate(()=>__G.mode())==='play','the reward card closes with Enter'); }
         ok(await p.evaluate(()=>__G.room().exit==='right'),'the Waystone room opens its exit'); await p.evaluate(()=>__G.hold(true)); }
       if(def.lantern){ await p.evaluate(()=>__G.hold(false)); await p.waitForTimeout(3300);
         const e=await p.evaluate(()=>{ const el=document.getElementById('lp-end'), st=document.getElementById('stage').getBoundingClientRect(), r=el.querySelector('.lp-box')?el.querySelector('.lp-box').getBoundingClientRect():el.getBoundingClientRect();
@@ -77,7 +78,7 @@ const REPLAY=`window.__replay=function(sol){ var D=[[1,0],[-1,0],[0,-1],[0,1],[1
     await p.click('#lp-go'); await p.waitForTimeout(300);
     ok(await p.evaluate(()=>__G.state().room===6&&__G.mode()==='play'),'Keep climbing goes back to that room');
     // frozen while a question is up
-    const fr=await p.evaluate(()=>{ __G.hold(false); __G.go(4,false); __G.openCP(); return __G.hero().x; }); await p.keyboard.down('ArrowRight'); await p.waitForTimeout(600); await p.keyboard.up('ArrowRight');
+    const fr=await p.evaluate(()=>{ __G.hold(false); __G.go(5,false); __G.openCP(); return __G.hero().x; }); await p.keyboard.down('ArrowRight'); await p.waitForTimeout(600); await p.keyboard.up('ArrowRight');
     const fr2=await p.evaluate(()=>({x:__G.hero().x,m:__G.mode(),dead:__G.state().deaths}));
     ok(fr2.m==='cp'&&Math.abs(fr2.x-fr)<1,'the world is frozen while a question is up '+JSON.stringify(fr2));
     // a wrong answer costs nothing but the rune
@@ -98,7 +99,7 @@ const REPLAY=`window.__replay=function(sol){ var D=[[1,0],[-1,0],[0,-1],[0,1],[1
 
   if(ONLY.includes('sets')){ const sets=await (async()=>{ const p=await fresh(); const s=await p.evaluate(()=>Object.keys(SpitzQ.sets)); await p.context().close(); return s; })();
     for(const vp of [{width:1366,height:768},{width:1366,height:620},{width:1280,height:720}]) for(const id of sets){
-      const p=await fresh('?set='+id,vp); await p.evaluate(()=>__G.go(4,false)); let bad=[];
+      const p=await fresh('?set='+id,vp); await p.evaluate(()=>__G.go(5,false)); let bad=[];
       for(let k=0;k<6;k++){ await p.evaluate(()=>{ const S=__G.state(); S.q=null; S.qDone=false; __G.openCP(); }); await p.waitForTimeout(80);
         const fit=()=>p.evaluate(()=>{ const card=document.getElementById('lp-card').getBoundingClientRect(), st=document.getElementById('stage').getBoundingClientRect();
           const over=[...document.querySelectorAll('.lp-ch .t, .lp-prompt')].filter(e=>e.scrollWidth>e.clientWidth+2||e.getBoundingClientRect().right>card.right).length;
@@ -113,7 +114,7 @@ const REPLAY=`window.__replay=function(sol){ var D=[[1,0],[-1,0],[0,-1],[0,1],[1
   if(ONLY.includes('fps')){ const p=await fresh();
     const cdp=await p.context().newCDPSession(p); await cdp.send('Emulation.setCPUThrottlingRate',{rate:6});
     const fps=()=>p.evaluate(()=>new Promise(r=>{ let n=0; const t0=performance.now(); (function f(){ n++; if(performance.now()-t0<4000) requestAnimationFrame(f); else r(n/((performance.now()-t0)/1000)); })(); }));
-    for(const [i,name] of [[0,'First steps'],[7,'Ember chain'],[8,'Up the falls']]){ await p.evaluate(i=>__G.go(i,true),i); await p.keyboard.down('ArrowRight'); await p.waitForTimeout(1200); await p.keyboard.up('ArrowRight');
+    for(const [i,name] of [[0,'First steps'],[14,'Headwind (wind)'],[21,'Thorn tunnel (summit)'],[10,'Brittle rock']]){ await p.evaluate(i=>__G.go(i,true),i); await p.keyboard.down('ArrowRight'); await p.waitForTimeout(1200); await p.keyboard.up('ArrowRight');
       const f=await fps(); ok(f>=30,'fps at 6x CPU slowdown, 1366x768, '+name+': '+f.toFixed(1)); }
     await p.context().close(); }
 

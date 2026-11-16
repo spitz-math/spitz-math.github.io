@@ -26,11 +26,11 @@ function multQ(){ var a=ri(2,12), b=ri(2,12), ans=a*b, seen={}, ch=[{html:''+ans
 function nextQuestion(){ return QS?QS.next():multQ(); }
 
 /* ---------------- run state ---------------- */
-function fresh(){ return { ver:1, name:'', started:false, over:false, score:0, answered:0, correct:0, topics:QS?QS.topicTable():{'Multiplication':[0,0]},
-  q:null, qDone:false, picked:-1, room:0, best:0, runes:0, cp:false, reward:false, dash:false, lit:[], deaths:0, playT:0, done:false, early:false, hints:{} }; }
+function fresh(){ return { ver:2, name:'', started:false, over:false, score:0, answered:0, correct:0, topics:QS?QS.topicTable():{'Multiplication':[0,0]},
+  q:null, qDone:false, picked:-1, room:0, best:0, runes:0, cp:false, reward:false, dash:false, twin:false, lit:[], deaths:0, playT:0, done:false, early:false, hints:{} }; }
 var S=load()||fresh();
 function save(){ try{ localStorage.setItem(KEY,JSON.stringify(S)); localStorage.setItem(KEY+'_mute',muted?'1':'0'); }catch(e){} }
-function load(){ try{ muted=localStorage.getItem(KEY+'_mute')==='1'; var v=JSON.parse(localStorage.getItem(KEY)||'null'); if(v&&v.ver===1&&v.topics&&Array.isArray(v.lit)) return v; }catch(e){} return null; }
+function load(){ try{ muted=localStorage.getItem(KEY+'_mute')==='1'; var v=JSON.parse(localStorage.getItem(KEY)||'null'); if(v&&v.ver===2&&v.topics&&Array.isArray(v.lit)) return v; }catch(e){} return null; }
 function score(){ return Math.max(0,S.correct*100+S.best*150+(S.done?1000:0)-S.deaths*5); }
 
 /* ---------------- sound ---------------- */
@@ -48,6 +48,8 @@ var SND={
   dash:function(){ tone(260,620,0,0.14,'triangle',0.05); noise(0,0.14,0.03,0,1500); },
   ember:function(){ tone(784,1175,0,0.18,'triangle',0.05); tone(1568,1568,0.03,0.12,'sine',0.02); },
   crack:function(){ noise(0,0.09,0.05,1200); },
+  spring:function(){ tone(220,660,0,0.16,'triangle',0.06); tone(440,1320,0.04,0.12,'sine',0.025); },
+  smash:function(){ noise(0,0.22,0.07,900); tone(180,90,0,0.18,'sine',0.05); },
   crumble:function(){ noise(0,0.25,0.06,450); tone(160,90,0,0.2,'sine',0.04); },
   die:function(){ tone(392,196,0,0.22,'triangle',0.06); noise(0,0.12,0.03,900); },
   respawn:function(){ tone(392,784,0,0.2,'sine',0.04); },
@@ -82,8 +84,9 @@ addEventListener('resize',fit);
 /* ---------------- world ---------------- */
 var R=ROOMS[0], P=RP.fresh(R.sx,R.sy), rt=0, gt=0, mode='title', modeT=0;   // modes: title, play, dead, slide, cp, reward, pause, finish, end
 var dust=[], sparks=[], ghosts=[], shake=0, sq=0, lastLandT=0, slideFrom=null, slideDir='up';
-function enter(i,keepP){ S.room=i; R=ROOMS[i]; RP.reset(R); rt=0; R.exit=(R.way&&S.lit.indexOf(i)<0)?'none':(R.lantern?'none':RL.rooms[i].exit);
-  R.noDash=!S.dash; if(!keepP){ P=RP.fresh(R.sx,R.sy); P.onG=true; } ghosts.length=0; showRoom(); save(); }
+function enter(i,carried){ S.room=i; R=ROOMS[i]; RP.reset(R); rt=0; R.exit=(R.way&&S.lit.indexOf(i)<0)?'none':(R.lantern?'none':RL.rooms[i].exit);
+  R.noDash=!S.dash; R.maxDash=S.twin?2:1; if(carried) P=carried; else spawn(); ghosts.length=0; showRoom(); save(); }
+function spawn(){ P=RP.fresh(R.sx,R.sy); P.onG=true; P.dashN=R.maxDash; P.dashOk=true; }
 
 /* ---------------- input ---------------- */
 var held={}, blocked={}, downKeys={}, jumpEdge=false, dashEdge=false, ptrDownAt=0, qShownAt=0, answeredAt=0, panelAt=0;
@@ -127,7 +130,7 @@ $('lp-pmute').addEventListener('click',function(){ muted=!muted; save(); pauseLa
 $('lp-pmusic').addEventListener('click',function(){ KIT.musicToggle(); pauseLabels(); });
 $('lp-prestart').addEventListener('click',function(){ askNew(true); });
 $('lp-pend').addEventListener('click',function(){ askNew(true,'end'); });
-function moveList(){ var h='<span><kbd>←</kbd><kbd>→</kbd> Run</span><span><kbd>Space</kbd>, <kbd>Z</kbd> or <kbd>J</kbd> Jump</span><span>Jump at a wall: wall jump</span>'; if(S.dash) h+='<span><kbd>Shift</kbd>, <kbd>X</kbd> or <kbd>K</kbd> Dash (aim with your move keys)</span>'; $('lp-moves').innerHTML=h; }
+function moveList(){ var h='<span><kbd>←</kbd><kbd>→</kbd> Run</span><span><kbd>Space</kbd>, <kbd>Z</kbd> or <kbd>J</kbd> Jump</span><span>Jump at a wall: wall jump</span>'; if(S.dash) h+='<span><kbd>Shift</kbd>, <kbd>X</kbd> or <kbd>K</kbd> Dash (aim with your move keys)'+(S.twin?', twice in the air':'')+'</span>'; $('lp-moves').innerHTML=h; }
 var askKind='new';
 function askNew(o,kind){ if(o){ askKind=kind||'new'; var e=askKind==='end';
     $('sz-asktitle').textContent=e?'Stop here?':'Start a new game?'; $('lp-asksub').textContent=e?'Your climb ends here and you get your score.':'Your climb so far will be lost.';
@@ -155,7 +158,7 @@ function hint(html,key){ var el=$('lp-hint'); if(!html){ el.classList.remove('on
 
 /* ---------------- the Waystone ---------------- */
 var words={ title:'The Waystone', unit:'rune', goal:'to learn the Ember Dash', ok:'Correct! A rune lights up.', bad:'Not quite. No rune this time.', go:'Learn the dash ', note:'The Waystone is ready!', all:'Every rune is lit!' };
-function runes(){ var h='', NEED=need(); $('lp-cptitle').textContent=words.title; for(var i=0;i<NEED;i++){ var on=i<S.runes; h+='<svg class="lp-rune" viewBox="0 0 58 58"><circle cx="29" cy="29" r="24" fill="'+(on?'#FFC23D':'#3A2D50')+'" stroke="#2A1B2E" stroke-width="4"/>'+(on?'<path d="M29 15l4 10 10 4-10 4-4 10-4-10-10-4 10-4z" fill="#FFF1C2"/>':'<circle cx="29" cy="29" r="6" fill="#5D6178"/>')+'</svg>'; }
+function runes(){ var h='', NEED=need(); $('lp-cptitle').textContent=words.title; words.goal=R.give==='twin'?'to learn the Twin Dash':R.give==='light'?'to light the way to the summit':'to learn the Ember Dash'; words.go=R.give==='light'?'Light the way ':R.give==='twin'?'Learn the Twin Dash ':'Learn the dash '; for(var i=0;i<NEED;i++){ var on=i<S.runes; h+='<svg class="lp-rune" viewBox="0 0 58 58"><circle cx="29" cy="29" r="24" fill="'+(on?'#FFC23D':'#3A2D50')+'" stroke="#2A1B2E" stroke-width="4"/>'+(on?'<path d="M29 15l4 10 10 4-10 4-4 10-4-10-10-4 10-4z" fill="#FFF1C2"/>':'<circle cx="29" cy="29" r="6" fill="#5D6178"/>')+'</svg>'; }
   $('lp-runes').innerHTML=h; var left=NEED-S.runes; $('lp-cpsub').textContent=left>0?'Light '+left+' more rune'+(left>1?'s':'')+' '+words.goal:words.all; }
 function openCP(){ S.cp=true; setMode('cp'); blockHeld(); P.vx=0; $('lp-cp').hidden=false; $('lp-card').hidden=false; $('lp-reward').hidden=true; hint(null);
   if(!S.q||(S.qDone&&S.runes<need()&&!keepAnswered)){ newQ(); } else showQ(); keepAnswered=false; save(); }
@@ -184,15 +187,19 @@ function answer(i,how){ if(mode!=='cp'||S.qDone||!S.q) return; var now=performan
   else SND.miss();
   answeredAt=now; save(); mark(i); runes(); }
 function cont(){ if(mode!=='cp'||!S.qDone) return; if(performance.now()-answeredAt<400) return;
-  if(S.runes>=need()){ S.cp=false; S.q=null; S.qDone=false; S.picked=-1; S.runes=0; S.lit.push(S.room); S.dash=true; R.noDash=false; R.exit=RL.rooms[S.room].exit; P.dashOk=true;
-    $('lp-cp').hidden=true; blockHeld(); SND.open(); save(); openReward(); return; }
+  if(S.runes>=need()){ S.cp=false; S.q=null; S.qDone=false; S.picked=-1; S.runes=0; S.lit.push(S.room); var g=R.give;
+    if(g==='dash') S.dash=true; if(g==='twin') S.twin=true; R.noDash=!S.dash; R.maxDash=S.twin?2:1; R.exit=RL.rooms[S.room].exit; P.dashOk=S.dash; P.dashN=R.maxDash;
+    $('lp-cp').hidden=true; blockHeld(); SND.open(); save();
+    if(g==='light'){ setMode('play'); KIT.toast('The Waystone is lit. On to the summit!'); KIT.confetti(960,420,RM.matches?30:70,2.2); return; }
+    openReward(); return; }
   newQ(); }
 $('lp-choices').addEventListener('click',function(e){ var b=e.target.closest('.lp-ch'); if(b) answer(+b.dataset.i,'click'); });
 $('lp-next').addEventListener('click',function(){ if(ptrDownAt<answeredAt+1) return; cont('click'); });
-function openReward(){ $('lp-rwname').textContent='Ember Dash'; $('lp-rwtext').innerHTML='Press <b>Shift</b>, <b>X</b> or <b>K</b> to dash. Hold a direction to aim it: sideways, up, down or diagonal.<br>One dash per jump. Landing, or touching an ember, gives it back.';
+function openReward(){ var tw=R.give==='twin'; $('lp-rwname').textContent=tw?'Twin Dash':'Ember Dash';
+  $('lp-rwtext').innerHTML=tw?'Now you can dash <b>twice</b> before you land. Dash, then aim a second dash.<br>Landing, a spring or an ember gives both back.':'Press <b>Shift</b>, <b>X</b> or <b>K</b> to dash. Hold a direction to aim it: sideways, up, down or diagonal.<br>One dash per jump. Landing, or touching an ember, gives it back.';
   document.querySelector('#lp-reward .eyebrow').textContent='The Waystone is lit · new move';
   setMode('reward'); $('lp-cp').hidden=false; $('lp-card').hidden=true; $('lp-reward').hidden=false; panelAt=performance.now(); SND.unlock(); KIT.confetti(960,420,RM.matches?40:90,2.4); hud(); pop('lp-ab-ds'); demoT=0; }
-function closeReward(){ S.reward=false; save(); $('lp-cp').hidden=true; setMode('play'); blockHeld(); hint('<kbd>Shift</kbd>, <kbd>X</kbd> or <kbd>K</kbd> Dash · hold a direction to aim it','dashhint'); }
+function closeReward(){ S.reward=false; save(); $('lp-cp').hidden=true; setMode('play'); blockHeld(); if(S.twin&&R.give==='twin') hint('Two dashes now: dash, then dash again before you land','twinhint'); else hint('<kbd>Shift</kbd>, <kbd>X</kbd> or <kbd>K</kbd> Dash · hold a direction to aim it','dashhint'); }
 $('lp-try').addEventListener('click',function(){ if(performance.now()-panelAt>600&&ptrDownAt>panelAt) closeReward(); });
 
 /* ---------------- play ---------------- */
@@ -200,8 +207,8 @@ var FIX=1/120, acc=0;
 function update(dt){
   modeT+=dt; gt+=dt;
   stepFx(dt);
-  if(mode==='dead'){ if(modeT>0.5){ RP.reset(R); P=RP.fresh(R.sx,R.sy); P.onG=true; rt=0; SND.respawn(); setMode('play'); } return; }
-  if(mode==='slide'){ if(modeT>0.42){ slideFrom=null; setMode('play'); } return; }
+  if(mode==='dead'){ if(modeT>0.5){ RP.reset(R); spawn(); rt=0; SND.respawn(); respT=0.35; sparkle(P.x,P.y-20,10,'#FFF1C2'); setMode('play'); } return; }
+  if(mode==='slide'){ if(modeT>=SLIDE){ slideFrom=null; setMode('play'); } return; }
   if(mode==='finish'){ if(modeT>2.6&&!$('lp-end').offsetParent) showEnd(); return; }
   if(mode!=='play') return;
   S.playT+=dt; acc+=dt; var n=0;
@@ -219,6 +226,8 @@ function events(){ P.ev.forEach(function(e){
   else if(e==='dash'){ SND.dash(); puff(P.x,P.y-20,5,'#FF9A3C'); if(!RM.matches) shake=0.06; S.hints['r'+S.room]=1; }
   else if(e==='land'){ if(gt-lastLandT>0.08) SND.land(); lastLandT=gt; sq=0.3; puff(P.x,P.y,4,'#F3E9D8'); }
   else if(e==='ember'){ SND.ember(); sparkle(P.x,P.y-20,10,'#FFC23D'); }
+  else if(e==='spring'){ SND.spring(); puff(P.x,P.y,6,'#F3E9D8'); springAt[Math.floor(P.x/T)+','+Math.floor((P.y-1)/T)]=gt; }
+  else if(e==='smash'){ SND.smash(); if(!RM.matches) shake=0.08; rubble(P.x,P.y-20); }
   else if(e==='crack') SND.crack();
   else if(e==='crumble') SND.crumble();
   else if(e==='die') die();
@@ -226,10 +235,12 @@ function events(){ P.ev.forEach(function(e){
 }); }
 function die(){ S.deaths++; SND.die(); for(var i=0;i<14;i++){ var a=i/14*Math.PI*2; sparks.push({x:P.x,y:P.y-20,vx:Math.cos(a)*260,vy:Math.sin(a)*260,t:0,max:0.5,col:i%2?'#FFC23D':'#2EC4B6'}); }
   if(!RM.matches) shake=0.15; setMode('dead'); save(); }
-function nextRoom(){ var from=S.room, dir=RL.rooms[from].exit; slideFrom={ room:R, p:{x:P.x,y:P.y,face:P.face}, dir:dir };
-  enter(from+1); if(S.room>S.best) S.best=S.room; SND.room(); setMode('slide'); save(); }
+var SLIDE=0.38, respT=0;
+/* the next room: the view pans across while the climber carries on through the gap (Celeste-style), keeping speed and dashes */
+function nextRoom(){ var from=S.room, dir=RL.rooms[from].exit; slideFrom={ room:R, dir:dir, x0:P.x, y0:P.y };
+  var Q=RP.carry(P,dir); enter(from+1,Q); slideFrom.x1=P.x; slideFrom.y1=P.y; dust.length=0; sparks.length=0; if(S.room>S.best) S.best=S.room; SND.room(); setMode('slide'); save(); }
 function finish(){ S.done=true; S.over=true; S.cp=false; S.best=NR; S.score=score(); save(); SND.finish(); KIT.confetti(960,300,RM.matches?60:140,2.6); setMode('finish'); hint(null); }
-function stars(){ return [ [S.done,'reached the Lookout'], [S.answered>0&&S.correct/S.answered>=0.9,'90% right'], [S.done&&S.deaths<=25,'25 retries or fewer'], [S.done&&S.playT<=300,'under 5 minutes'] ]; }
+function stars(){ return [ [S.done,'reached the Lookout'], [S.answered>0&&S.correct/S.answered>=0.9,'90% right'], [S.done&&S.deaths<=60,'60 retries or fewer'], [S.done&&S.playT<=720,'under 12 minutes'] ]; }
 function showEnd(){ setMode('end'); panelAt=performance.now(); $('lp-hud').hidden=true; S.score=score(); save();
   var t=Math.round(S.playT), mm=Math.floor(t/60), ss=('0'+t%60).slice(-2);
   $('lp-endtitle').textContent=S.done?'You reached the Lookout!':'Climb ended in room '+(S.room+1); $('lp-endtitle').style.fontSize=S.done?'88px':'68px';
@@ -245,21 +256,25 @@ function showEnd(){ setMode('end'); panelAt=performance.now(); $('lp-hud').hidde
 /* ---------------- effects ---------------- */
 function puff(x,y,n,col){ if(RM.matches) n=Math.min(n,2); for(var i=0;i<n;i++) dust.push({x:x+(Math.random()-0.5)*16,y:y-2,vx:(Math.random()-0.5)*120,vy:-20-Math.random()*50,t:0,max:0.35+Math.random()*0.2,r:3+Math.random()*3,col:col}); }
 function sparkle(x,y,n,col){ for(var i=0;i<n;i++){ var a=Math.random()*Math.PI*2, s=60+Math.random()*120; sparks.push({x:x,y:y,vx:Math.cos(a)*s,vy:Math.sin(a)*s-60,t:0,max:0.5+Math.random()*0.3,col:col}); } }
-function stepFx(dt){ dust=dust.filter(function(d){ d.t+=dt; d.x+=d.vx*dt; d.y+=d.vy*dt; d.vx*=0.9; d.vy*=0.92; return d.t<d.max; });
+function stepFx(dt){ if(respT>0) respT-=dt; dust=dust.filter(function(d){ d.t+=dt; d.x+=d.vx*dt; d.y+=d.vy*dt; d.vx*=0.9; d.vy*=0.92; return d.t<d.max; });
   sparks=sparks.filter(function(s){ s.t+=dt; s.x+=s.vx*dt; s.y+=s.vy*dt; s.vy+=300*dt; return s.t<s.max; });
   ghosts=ghosts.filter(function(g){ g.t-=dt; return g.t>0; }); if(shake>0) shake-=dt; sq*=Math.pow(0.0005,dt); if(Math.abs(sq)<0.01) sq=0; }
 
 /* ---------------- drawing ---------------- */
 /* each chapter's look: sky bands, rock, its top (grass or moss), outline */
 var LOOK=[ { sky:['#93C6CF','#BBD8C8','#E8DCAE','#F3C990','#F2B47C'], rock:'#6E5B4A', rock2:'#5E4D3F', top:'#7DB45E', top2:'#5E9A4A', line:'#2A1B2E', far:'#8DAE8C' },
-           { sky:['#6F8CB8','#9E9BC0','#D9A2A8','#EEAE8E','#F4C381'], rock:'#6B6A8E', rock2:'#5A5979', top:'#9FB6C9', top2:'#7F96AB', line:'#2A1B2E', far:'#8C8AAE' } ];
+           { sky:['#6F8CB8','#9E9BC0','#D9A2A8','#EEAE8E','#F4C381'], rock:'#6B6A8E', rock2:'#5A5979', top:'#9FB6C9', top2:'#7F96AB', line:'#2A1B2E', far:'#8C8AAE' },
+           { sky:['#5E7F86','#7F9C93','#A9B79A','#D5C99A','#E9D7A4'], rock:'#7A7466', rock2:'#686356', top:'#A7B46E', top2:'#86924F', line:'#2A1B2E', far:'#8E9A86', ruin:true },
+           { sky:['#1E2A4F','#2C3C6B','#45578A','#6C78A8','#9AA0C8'], rock:'#5D6A8C', rock2:'#4F5B7A', top:'#EEF3FF', top2:'#C9D4EE', line:'#141A30', far:'#3A4772', snow:true } ];
 var ROOMC={};
 function roomCanvas(i){ if(ROOMC[i]) return ROOMC[i]; var r=ROOMS[i], L=LOOK[r.ch], c=document.createElement('canvas'); c.width=W; c.height=H; var g=c.getContext('2d'); g.imageSmoothingEnabled=false;
   /* sky */
   for(var b=0;b<5;b++){ g.fillStyle=L.sky[b]; g.fillRect(0,b*H/5-1,W,H/5+2); }
   if(r.ch===0&&ready(BG1)){ g.globalAlpha=0.9; g.drawImage(BG1,0,0,W,H); g.globalAlpha=1; }
   else { g.fillStyle=L.far; for(var k=0;k<6;k++){ var px=k*190-40, ph=180+((k*73)%90); g.beginPath(); g.moveTo(px,H); g.lineTo(px+95,H-ph); g.lineTo(px+190,H); g.fill(); }
-    g.fillStyle='rgba(255,255,255,.35)'; for(k=0;k<3;k++){ g.fillRect(140+k*300,0,6,H); g.fillRect(150+k*300,0,2,H); } }
+    if(L.ruin){ g.fillStyle='rgba(60,55,45,.35)'; for(k=0;k<5;k++){ var cx0=60+k*200, ch0=120+((k*57)%140); g.fillRect(cx0,H-ch0,34,ch0); g.fillRect(cx0-8,H-ch0,50,10); } }
+    else if(L.snow){ g.fillStyle='rgba(255,255,255,.8)'; for(k=0;k<70;k++){ var sx0=(k*137)%W, sy0=(k*89)%(H*0.6); g.fillRect(sx0,sy0,k%5===0?3:2,k%5===0?3:2); } }
+    else { g.fillStyle='rgba(255,255,255,.35)'; for(k=0;k<3;k++){ g.fillRect(140+k*300,0,6,H); g.fillRect(150+k*300,0,2,H); } } }
   /* rock and ledges */
   var M=r.map, sol=function(x,y){ var ch=RP.tileAt(r,x,y); return ch==='#'; };
   for(var y=0;y<18;y++) for(var x=0;x<32;x++){ var ch=M[y][x], X=x*T, Y=y*T;
@@ -275,11 +290,18 @@ function spike(g,ch,X,Y){ g.save(); g.translate(X+15,Y+15); g.rotate({'^':0,'>':
 function drawRoom(c,r,ox,oy,t,live){ var i=ROOMS.indexOf(r); c.drawImage(roomCanvas(i),ox,oy);
   var L=LOOK[r.ch];
   /* crumbling rock */
-  for(var y=0;y<18;y++) for(var x=0;x<32;x++) if(r.map[y][x]==='c'){ var s=live&&r.cr[x+','+y], X=ox+x*T, Y=oy+y*T, gone=s&&s.gone!==undefined, shk=s&&s.t!==undefined&&!gone;
+  var x,y; for(y=0;y<18;y++) for(x=0;x<32;x++) if(r.map[y][x]==='c'){ var s=live&&r.cr[x+','+y], X=ox+x*T, Y=oy+y*T, gone=s&&s.gone!==undefined, shk=s&&s.t!==undefined&&!gone;
     if(gone){ var ft=rt-s.gone; if(ft<0.4){ c.globalAlpha=1-ft/0.4; Y+=ft*ft*500; } else { c.globalAlpha=0.25; c.strokeStyle='#FFF6E8'; c.setLineDash([4,4]); c.strokeRect(X+3,Y+3,T-6,T-6); c.setLineDash([]); c.globalAlpha=1; continue; } }
     if(shk&&!RM.matches) X+=Math.sin(gt*70)*1.5;
     c.fillStyle='#A88A6A'; c.fillRect(X,Y,T,T); c.fillStyle=L.line; c.fillRect(X,Y,T,3); c.fillRect(X,Y+T-3,T,3); c.fillRect(X,Y,3,T); c.fillRect(X+T-3,Y,3,T);
     c.fillRect(X+8,Y+6,2,10); c.fillRect(X+10,Y+14,8,2); c.fillRect(X+18,Y+14,2,9); c.globalAlpha=1; }
+  /* brittle rock (a dash smashes it) and springs */
+  for(y=0;y<18;y++) for(x=0;x<32;x++){ var tc=r.map[y][x]; if(tc!=='b'&&tc!=='p') continue; var X2=ox+x*T, Y2=oy+y*T;
+    if(tc==='b'){ if(live&&r.br[x+','+y]) continue; c.fillStyle='#B98E62'; c.fillRect(X2,Y2,T,T); c.fillStyle='#8E6A47'; c.fillRect(X2+3,Y2+3,T-6,T-6); c.fillStyle='#FF9A3C';
+      c.fillRect(X2+7,Y2+6,3,8); c.fillRect(X2+10,Y2+12,8,3); c.fillRect(X2+18,Y2+12,3,10); c.fillStyle=L.line; c.fillRect(X2,Y2,T,2); c.fillRect(X2,Y2+T-2,T,2); c.fillRect(X2,Y2,2,T); c.fillRect(X2+T-2,Y2,2,T); }
+    else { var st=live&&springAt[x+','+y]!==undefined?gt-springAt[x+','+y]:9, up=st<0.25?(RM.matches?6:18*(1-st/0.25)):0;
+      c.fillStyle=L.line; c.fillRect(X2+4,Y2+T-6,T-8,6); c.fillStyle='#C9CDD8'; for(var z=0;z<3;z++) c.fillRect(X2+9,Y2+T-8-z*4-up*z/3,T-18,2);
+      c.fillStyle='#E8553D'; c.fillRect(X2+2,Y2+T-18-up,T-4,7); c.fillStyle=L.line; c.fillRect(X2+2,Y2+T-18-up,T-4,2); c.fillStyle='#FFB199'; c.fillRect(X2+5,Y2+T-15-up,T-10,2); } }
   /* embers that refill the dash */
   r.orbs.forEach(function(o,k){ var gone=live&&o.gone!==undefined&&rt<o.gone+PH.EMBERBACK; var X=ox+o.x, Y=oy+o.y+(RM.matches?0:Math.sin(t*2.6+k)*3);
     if(gone){ c.globalAlpha=0.3; c.strokeStyle='#FFC23D'; c.lineWidth=2; c.beginPath(); c.arc(X,Y,10,0,7); c.stroke(); c.globalAlpha=1; return; }
@@ -291,25 +313,37 @@ function drawRoom(c,r,ox,oy,t,live){ var i=ROOMS.indexOf(r); c.drawImage(roomCan
 function render(){ var c=cx, t=gt; c.setTransform(1,0,0,1,0,0); c.imageSmoothingEnabled=false;
   var ox=shake>0?(Math.random()-0.5)*5:0, oy=shake>0?(Math.random()-0.5)*5:0;
   c.save(); c.translate(ox,oy);
-  if(mode==='slide'&&slideFrom){ var k=Math.min(1,modeT/0.4), e=k<0.5?2*k*k:1-Math.pow(-2*k+2,2)/2, dx=0, dy=0;
-    if(slideFrom.dir==='up') dy=H*e; else if(slideFrom.dir==='right') dx=-W*e; else dx=W*e;
-    drawRoom(c,slideFrom.room,dx,dy,t,false); drawRoom(c,R,dx+(slideFrom.dir==='right'?W:slideFrom.dir==='left'?-W:0),dy-(slideFrom.dir==='up'?H:0),t,true);
+  if(mode==='slide'&&slideFrom){ var k=Math.min(1,modeT/SLIDE), e=1-Math.pow(1-k,3), dx=0, dy=0, up=slideFrom.dir==='up';
+    if(up) dy=H*e; else dx=-W*e;
+    drawRoom(c,slideFrom.room,dx,dy,t,false); var nx0=dx+(up?0:W), ny0=dy-(up?H:0); drawRoom(c,R,nx0,ny0,t,true);
+    /* the climber glides from where they left to where they come in */
+    var hx=up?slideFrom.x0:slideFrom.x0+(slideFrom.x1+W-slideFrom.x0)*k, hy=up?slideFrom.y0+(slideFrom.y1-H-slideFrom.y0)*k:slideFrom.y0;
+    c.save(); c.translate(dx,dy); drawHeroAt(c,hx,hy,up?'jump':'run'); c.restore();
     c.restore(); return; }
   drawRoom(c,R,0,0,t,true);
+  if(R.wind) drawWind(c,R.wind,t);
   dust.forEach(function(d){ c.globalAlpha=1-d.t/d.max; c.fillStyle=d.col; c.fillRect(d.x-d.r/2,d.y-d.r/2,d.r,d.r); }); c.globalAlpha=1;
   if(ready(HERO)&&!RM.matches) ghosts.forEach(function(g){ c.globalAlpha=0.45*g.t/0.22; spriteHero(c,'run',g.x,g.y,g.face); }); c.globalAlpha=1;
-  if(mode!=='dead'&&mode!=='title') drawHero(c);
+  if(mode!=='dead'&&mode!=='title'){ if(respT>0&&!RM.matches) c.globalAlpha=1-respT/0.35*0.7; drawHero(c); c.globalAlpha=1; }
   sparks.forEach(function(s){ c.globalAlpha=1-s.t/s.max; c.fillStyle=s.col; c.fillRect(s.x-3,s.y-3,6,6); }); c.globalAlpha=1;
   c.restore();
   if(mode==='dead'){ var a=modeT<0.25?modeT/0.25:1-(modeT-0.25)/0.25; c.fillStyle='rgba(27,20,38,'+(0.6*Math.max(0,Math.min(1,a)))+')'; c.fillRect(0,0,W,H); }
   if(mode==='title'){ c.fillStyle='rgba(18,13,26,.35)'; c.fillRect(0,0,W,H); }
 }
-var runPh=0;
+var runPh=0, springAt={}, WIND=[];
+function drawHeroAt(c,x,y,f){ if(ready(HERO)) spriteHero(c,f,x,y,P.face||1); }
+/* wind: thin streaks drifting the way it blows (slower and fewer with reduced motion) */
+function drawWind(c,w,t){ if(!WIND.length) for(var i=0;i<26;i++) WIND.push({x:Math.random()*W,y:Math.random()*H,l:30+Math.random()*50,s:0.7+Math.random()*0.6});
+  c.strokeStyle='rgba(255,255,255,.35)'; c.lineWidth=2; c.beginPath(); var n=RM.matches?8:WIND.length;
+  for(var i=0;i<n;i++){ var q=WIND[i], sp=(RM.matches?0.3:1)*w*2.2*q.s, xx=((q.x+t*sp)%(W+200)+W+200)%(W+200)-100, yy=q.y+Math.sin(t*2+i)*6; c.moveTo(xx,yy); c.lineTo(xx-Math.sign(w)*q.l,yy); }
+  c.stroke(); }
+function rubble(x,y){ for(var i=0;i<12;i++){ var a=Math.random()*Math.PI*2, s=80+Math.random()*180; sparks.push({x:x,y:y,vx:Math.cos(a)*s,vy:Math.sin(a)*s-80,t:0,max:0.5+Math.random()*0.3,col:i%2?'#B98E62':'#8E6A47'}); } }
 function drawHero(c){ if(P.onG) runPh+=Math.abs(P.vx)*(1/60)/11;
   var f; if(P.dashT>0) f='run'; else if(!P.onG) f=P.vy<-40?'jump':'fall'; else if(gt-lastLandT<0.12&&sq>0.2) f='land'; else if(Math.abs(P.vx)>30) f=(Math.floor(runPh/1.6)%2)?'run':'idle'; else f='idle';
   if(ready(HERO)) spriteHero(c,f,P.x,P.y,P.face||1);
   /* the dash is ready: a small ember glows at the scarf (grey when it is spent) */
-  if(S.dash){ var X=Math.round(P.x-(P.face||1)*9), Y=Math.round(P.y-30); c.fillStyle='#2A1B2E'; c.fillRect(X-4,Y-4,8,8); c.fillStyle=P.dashOk?'#FFC23D':'#6D6680'; c.fillRect(X-3,Y-3,6,6); if(P.dashOk){ c.fillStyle='#FFF1C2'; c.fillRect(X-1,Y-2,2,2); } } }
+  if(S.dash){ var mx=S.twin?2:1, have=P.dashOk?(P.dashN||1):0; for(var d=0;d<mx;d++){ var X=Math.round(P.x-(P.face||1)*(9+d*9)), Y=Math.round(P.y-30+d*3); c.fillStyle='#2A1B2E'; c.fillRect(X-4,Y-4,8,8);
+      var on=d<have; c.fillStyle=on?(d?'#FF7A59':'#FFC23D'):'#6D6680'; c.fillRect(X-3,Y-3,6,6); if(on){ c.fillStyle='#FFF1C2'; c.fillRect(X-1,Y-2,2,2); } } } }
 function spriteHero(c,f,x,y,face){ var r=PIX.heroF[f], w=r[2], h=r[3];
   c.save(); c.imageSmoothingEnabled=false; c.translate(Math.round(x),Math.round(y)); c.scale(face,1); c.drawImage(HERO,r[0],r[1],w,h,-Math.round(w/2),-h,w,h); c.restore(); }
 
@@ -345,6 +379,6 @@ setTimeout(function(){ if(!$('lp-start').hidden) try{ $('lp-name').focus(); }cat
 /* ---------------- test hooks ---------------- */
 window.__G={ state:function(){ return S; }, hero:function(){ return P; }, mode:function(){ return mode; }, rooms:ROOMS, room:function(){ return R; }, need:need,
   key:function(a,b){ held[a]=!!b; if(b&&a==='j') jumpEdge=true; if(b&&a==='ds') dashEdge=true; },
-  go:function(i,dash){ if(dash!==undefined) S.dash=!!dash; enter(i); acc=0; setMode('play'); }, step:function(dt){ update(dt); }, hold:function(b){ testHold=!!b; }, gt:function(){ return gt; },
+  go:function(i,dash,twin){ if(dash!==undefined) S.dash=!!dash; if(twin!==undefined) S.twin=!!twin; else if(dash!==undefined) S.twin=!!dash&&ROOMS[i].ch>=2; enter(i); acc=0; setMode('play'); }, step:function(dt){ update(dt); }, hold:function(b){ testHold=!!b; }, gt:function(){ return gt; },
   end:function(){ finish(); showEnd(); }, openCP:openCP, endEarly:endEarly, closeCP:function(){ S.cp=false; S.q=null; S.qDone=false; $('lp-cp').hidden=true; setMode('play'); }, blocked:function(){ return Object.keys(blocked); } };
 })();
