@@ -49,7 +49,7 @@ function step(P,inp,dt,W){
   /* ride a moving lift */
   if(P.on&&P.on.per){ var a=platAt(P.on,t0), b=platAt(P.on,t); P.x+=b.x-a.x; P.y+=b.y-a.y; }
   /* crumbling plank: shakes, then drops */
-  if(P.on&&P.on.kind==='crumble'){ if(P.on.tT===undefined) { P.on.tT=t; P.ev.push('crack'); } if(t-P.on.tT>(P.on.hold||0.5)){ P.on.goneAt=t; P.on.tT=undefined; P.ev.push('crumble'); P.on=null; P.coy=PH.COYOTE*0.6; } }
+  if(P.on&&P.on.kind==='crumble'){ if(P.on.tT===undefined) { P.on.tT=t; P.ev.push('crack'); } if(t-P.on.tT>(P.on.hold||0.35)){ P.on.goneAt=t; P.on.tT=undefined; P.ev.push('crumble'); P.on=null; P.coy=PH.COYOTE*0.6; } }
 
   /* drop down through a ledge */
   if(inp.downPressed&&P.on&&!P.on.floor&&!P.on.solid){ P.on=null; P.dropT=PH.DROP; P.coy=0; P.y-=1; P.ev.push('drop'); }

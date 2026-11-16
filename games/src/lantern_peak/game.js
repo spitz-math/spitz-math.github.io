@@ -33,11 +33,11 @@ function nextQuestion(){ return QS?QS.next():multQ(); }
 function fresh(){ return { ver:2, name:'', started:false, over:false, len:0, score:0, answered:0, correct:0,
   topics:QS?QS.topicTable():{'Multiplication':[0,0]}, q:null, qDone:false, picked:-1,
   camp:'c0', st:0, dj:false, gl:false, ds:false, runes:0, cp:false, reward:false, embers:[], feathers:[], ice:[], falls:0, playT:0, best:0, done:false, early:false,
-  campFalls:0, help:false, zone:0, hints:{}, bossSeen:false }; }
+  campFalls:0, help:false, zone:0, hints:{}, bossSeen:false, hearts:3 }; }
 function moves(){ S.dj=S.st>=1; S.gl=S.st>=2; S.ds=S.st>=3; }
 var S=load()||fresh();
 function save(){ try{ localStorage.setItem(KEY,JSON.stringify(S)); localStorage.setItem(KEY+'_mute',muted?'1':'0'); }catch(e){} }
-function load(){ try{ muted=localStorage.getItem(KEY+'_mute')==='1'; var v=JSON.parse(localStorage.getItem(KEY)||'null'); if(v&&v.ver===2&&v.topics&&Array.isArray(v.embers)&&Array.isArray(v.ice)) return v; }catch(e){} return null; }
+function load(){ try{ muted=localStorage.getItem(KEY+'_mute')==='1'; var v=JSON.parse(localStorage.getItem(KEY)||'null'); if(v&&v.ver===2&&v.topics&&Array.isArray(v.embers)&&Array.isArray(v.ice)){ if(!(v.hearts>0)) v.hearts=3; v.help=false; return v; } }catch(e){} return null; }
 function score(){ return S.embers.length*10+S.feathers.length*250+S.correct*100+Math.floor(S.best/10)+Math.max(0,Math.min(3,S.st-3))*150+(S.done?1000:0); }
 
 /* ---------------- sound: soft, musical, procedural ---------------- */
@@ -195,7 +195,7 @@ function buildMeter(){ var m=$('lp-meter'), h=800, top=LV.summitY, html='<div cl
   html+='<svg class="goal" viewBox="0 0 56 56"><path d="M20 50h16l-2-26h-12z" fill="#7E8DB0" stroke="#2A1B2E" stroke-width="3" stroke-linejoin="round"/><path d="M16 24h24l-12-14z" fill="#5A6385" stroke="#2A1B2E" stroke-width="3" stroke-linejoin="round"/><rect x="24" y="30" width="8" height="9" fill="#C9A86A" stroke="#2A1B2E" stroke-width="2"/></svg>';
   html+='<div class="me" id="lp-me"></div>'; m.innerHTML=html; }
 var meY=-1;
-function hud(){ $('lp-emb').textContent=S.embers.length; $('lp-feath').textContent=S.feathers.length; $('lp-fchip').hidden=!S.feathers.length;
+function hud(){ var hh=''; for(var i=0;i<3;i++) hh+='<svg viewBox="0 0 40 40" aria-hidden="true"><path d="M20 34C8 25 4 19 4 13a8 8 0 0 1 16-2 8 8 0 0 1 16 2c0 6-4 12-16 21z" fill="'+(i<S.hearts?'#E8553D':'#3A2D50')+'" stroke="#2A1B2E" stroke-width="3" stroke-linejoin="round"/>'+(i<S.hearts?'<path d="M10 13a4 4 0 0 1 5-4" stroke="#FFB3A0" stroke-width="3" fill="none" stroke-linecap="round"/>':'')+'</svg>'; $('lp-hpchip').innerHTML=hh; $('lp-hpchip').title=S.hearts+' of 3 hearts'; $('lp-emb').textContent=S.embers.length; $('lp-feath').textContent=S.feathers.length; $('lp-fchip').hidden=!S.feathers.length;
   $('lp-ab-dj').hidden=!S.dj; $('lp-ab-gl').hidden=!S.gl; $('lp-ab-ds').hidden=!S.ds; }
 function pop(id){ var e=$(id); e.classList.remove('pop'); void e.offsetWidth; e.classList.add('pop'); }
 var hintKey='', hintT=0;
@@ -245,7 +245,7 @@ function answer(i,how){ if(mode!=='cp'||S.qDone||!S.q) return; var now=performan
   else SND.miss();
   answeredAt=now; save(); mark(i,true); runes(); }
 function cont(how){ if(mode!=='cp'||!S.qDone) return; if(performance.now()-answeredAt<400) return;
-  if(S.runes>=need()){ var s=stn(); S.cp=false; S.q=null; S.qDone=false; S.picked=-1; S.runes=0; S.st++; moves(); solids(); $('lp-cp').hidden=true; blockHeld();
+  if(S.runes>=need()){ var s=stn(); S.cp=false; S.q=null; S.qDone=false; S.picked=-1; S.runes=0; S.st++; if(s.kind==='way') S.hearts=3; hud(); moves(); solids(); $('lp-cp').hidden=true; blockHeld();
     if(s.last){ finish(); return; }
     S.reward=!!s.move; save(); setMode('play'); gateT=0; opening=true; SND.open();
     if(s.kind==='braz'){ SND.fire(); SND.gloomHurt(); BOSS.hurtT=2.4; bossBar(); sparkle(s.x,s.y+70,16,'#FFC23D'); KIT.toast('The Gloom shrinks!'); }
@@ -266,8 +266,8 @@ $('lp-try').addEventListener('click',function(){ if(performance.now()-panelAt>60
    It wakes when you reach the foot of the tower. Each cycle it warns first (a marked lane, an icicle growing under it), then drops ice.
    From the first fire on it also blows: it slides to one side, breathes in for a second, then a gust pushes across the tower.
    Fair by construction: every lane is marked 0.9 s before the ice falls, ice breaks on the first ledge it meets (a ledge overhead
-   is shelter), gusts and ice never overlap, and a hit only sends you back to the last fire. After 3 falls in one stretch it tires:
-   fewer icicles, longer warnings, weaker gusts. Nothing moves while a question is up. */
+   is shelter), gusts and ice never overlap. A hit costs a heart, like a fall. It does not tire: 2, 3, then 4 icicles a volley,
+   0.65 s warnings, gusts from the start. Nothing moves while a question is up. */
 var BOSS={ on:false, a:0, x:480, bt:0, nextV:3, nextG:7, warn:[], ice:[], gust:null, hurtT:0, sc:1, calm:false }, ghosts=[];
 function bossPhase(){ return Math.max(0,Math.min(2,S.st-3)); }
 function bossWant(){ return S.st>=3&&!S.done&&!S.over&&(P.y>LV.base.y-40||campOf(S.camp).y>=LV.base.y); }
@@ -280,16 +280,16 @@ function bossStep(dt){
     if(!S.bossSeen){ S.bossSeen=true; save(); KIT.toast('The Gloom put out the beacon. Light the three fires!'); } }
   if(!on&&BOSS.on){ BOSS.on=false; bossClear(0); $('lp-boss').hidden=true; }
   if(!on){ BW.off=true; return; }
-  BOSS.bt+=dt; var ph=bossPhase(), help=S.help, bt=BOSS.bt, g=BOSS.gust, busy=BOSS.calm||BOSS.hurtT>0;
+  BOSS.bt+=dt; var ph=bossPhase(), help=false, bt=BOSS.bt, g=BOSS.gust, busy=BOSS.calm||BOSS.hurtT>0;
   /* gusts, from the first fire on */
-  if(!g&&ph>=1&&bt>=BOSS.nextG&&!busy&&!BOSS.warn.length){ g=BOSS.gust={dir:Math.random()<0.5?-1:1,t:0}; SND.inhale(); }
-  if(g){ g.t+=dt; if(g.t>=1&&!g.blow){ g.blow=true; SND.gust(); } if(g.t>=2.4){ BOSS.gust=g=null; BOSS.nextG=bt+(ph>=2?5.5:6.5); BOSS.nextV=Math.max(BOSS.nextV,bt+0.5); } }
+  if(!g&&bt>=BOSS.nextG&&!busy&&!BOSS.warn.length){ g=BOSS.gust={dir:Math.random()<0.5?-1:1,t:0}; SND.inhale(); }
+  if(g){ g.t+=dt; if(g.t>=1&&!g.blow){ g.blow=true; SND.gust(); } if(g.t>=2.4){ BOSS.gust=g=null; BOSS.nextG=bt+(5.5-0.5*ph); BOSS.nextV=Math.max(BOSS.nextV,bt+0.5); } }
   BW.off=!(g&&g.blow); if(g&&g.blow) BW.vx=g.dir*(help?100:165)*Math.min(1,(g.t-1)/0.25,(2.4-g.t)/0.25);
   BOSS.x+=((g?(g.dir>0?150:810):Math.max(170,Math.min(790,P.x)))-BOSS.x)*Math.min(1,dt*(g?3:1.2));
   /* icicles: one aimed at the hero, the others to the sides */
-  if(!g&&bt>=BOSS.nextV&&!busy){ var n=Math.max(1,(ph>=2?3:2)-(help?1:0)), tele=help?1.3:0.9, xs=[Math.max(30,Math.min(930,P.x))], sd=Math.random()<0.5?-1:1;
+  if(!g&&bt>=BOSS.nextV&&!busy){ var n=2+ph, tele=0.65, xs=[Math.max(30,Math.min(930,P.x))], sd=Math.random()<0.5?-1:1;
     for(var i=1;i<n;i++){ var x=xs[0]+sd*(150+Math.random()*110); if(x<30||x>930) x=xs[0]-sd*(150+Math.random()*110); xs.push(Math.max(30,Math.min(930,x))); sd=-sd; }
-    xs.forEach(function(x,i){ BOSS.warn.push({x:x,t:-i*0.18,tele:tele}); }); BOSS.nextV=bt+(ph>=2?2.5:2.9)+(help?0.8:0); SND.warn(); }
+    xs.forEach(function(x,i){ BOSS.warn.push({x:x,t:-i*0.18,tele:tele}); }); BOSS.nextV=bt+(2.5-0.25*ph); SND.warn(); }
   BOSS.warn=BOSS.warn.filter(function(w){ w.t+=dt; if(w.t>=w.tele){ BOSS.ice.push({x:w.x,y:cam+H-150,vy:-420}); return false; } return true; });
   var hit=false;
   BOSS.ice=BOSS.ice.filter(function(ic){ var y0=ic.y; ic.vy=Math.max(-760,ic.vy-900*dt); ic.y+=ic.vy*dt;
@@ -340,11 +340,18 @@ function events(){ P.ev.forEach(function(e){
   else if(e==='drop'){ }
   else if(e==='hurt') fall('hurt');
 }); }
+/* hard mode (Kody 2026-11-16: "not punishing enough"): a fall, thorns or ice cost a heart and the last 3 embers picked up (they go back
+   on the mountain). Out of hearts: back to the start of the stretch (the last Waystone, the tower's foot or the last fire), hearts refilled.
+   Moves and lit stations are never lost. Only the three Waystones refill hearts (Kody: refills must be rare); the tower fires do not. */
+var BIG=['c0','way','top','way3','base','b1','b2'];
+function bigCamp(){ var y=campOf(S.camp).y, id='c0'; BIG.forEach(function(b){ if(camps[b]&&camps[b].y<=y) id=b; }); return id; }
 function fall(why){ if(mode!=='play') return; S.falls++; S.campFalls++; if(why==='hurt'){ SND.hurt(); P.ouch=true; }
-  if(S.campFalls>=3&&!S.help){ S.help=true; KIT.toast(BOSS.on?'The Gloom is tiring. A helping wind lifts your jumps':'A helping wind lifts your jumps until the next lantern'); }
-  respawned=false; setMode('respawn'); save(); }
+  var lost=S.embers.splice(Math.max(0,S.embers.length-3),3).length; S.hearts--;
+  if(S.hearts<=0){ S.hearts=3; var b=bigCamp(), back=b!==S.camp; S.camp=b; KIT.toast(back?(b==='c0'?'Out of hearts! Back to the village':(b==='base'?'Out of hearts! Back to the foot of the tower':(b[0]==='b'?'Out of hearts! Back to the last fire':'Out of hearts! Back to the Waystone'))):'Out of hearts! Hearts refilled'); }
+  else KIT.toast(S.hearts+' heart'+(S.hearts>1?'s':'')+' left'+(lost?' · lost '+lost+' ember'+(lost>1?'s':''):''));
+  hud(); pop('lp-hpchip'); respawned=false; setMode('respawn'); save(); }
 function campCheck(){ if(!P.on) return; LV.camps.forEach(function(c,i){ if(c.id===S.camp) return; if(P.on.id!==c.id&&(Math.abs(P.y-c.y)>2||Math.abs(P.x-c.x)>140)) return;
-  if(c.y<campOf(S.camp).y) return; S.camp=c.id; S.campFalls=0; if(S.help){ S.help=false; S.hints.helpSeen=1; } SND.camp(); sparkle(c.x+12,c.y+34,8,'#FFD98A'); save(); }); }
+  if(c.y<campOf(S.camp).y) return; S.camp=c.id; S.campFalls=0; SND.camp(); sparkle(c.x+12,c.y+34,8,'#FFD98A'); save(); }); }
 function pickups(){ var px=P.x, py=P.y+22;
   LV.embers.forEach(function(e,i){ if(S.embers.indexOf(i)>=0) return; if(Math.abs(e[0]-px)<24&&Math.abs(e[1]-py)<30){ S.embers.push(i); SND.ember(); sparkle(e[0],e[1],6,'#FFC23D'); pop('lp-embchip'); hud(); save(); } });
   LV.feathers.forEach(function(f){ if(S.feathers.indexOf(f.id)>=0) return; if(Math.abs(f.x-px)<28&&Math.abs(f.y-py)<34){ S.feathers.push(f.id); SND.feather(); sparkle(f.x,f.y,14,'#2EC4B6'); KIT.toast('Star Feather! '+S.feathers.length+' of '+LV.feathers.length); hud(); pop('lp-fchip'); save(); } }); }

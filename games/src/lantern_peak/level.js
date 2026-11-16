@@ -85,6 +85,11 @@ var plats=[
   L(240,10250,480,'brick',{id:'peak',ledge:true})  // the beacon
 ];
 var get=function(id){ return plats.filter(function(p){ return p.id===id; })[0]; };
+/* hard mode (Kody 2026-11-16): past the opening of each zone, plain stepping ledges are a fifth narrower (lanterns, stations, lifts,
+   cracked planks, thorny ledges and the wide shelves keep their size). The route checker proves every stretch is still beatable. */
+var CALM=[[0,700],[1970,2400],[4560,4900],[6900,7250],[8570,8700]];
+plats.forEach(function(p){ if(p.id||p.thorn||p.ledge||p.per||p.kind==='crumble'||p.w<120||p.w>=260) return;
+  if(CALM.some(function(c){ return p.y>=c[0]&&p.y<=c[1]; })) return; p.w=Math.round(p.w*0.8); });
 var hazards=[]; plats.forEach(function(p){ if(p.thorn) hazards.push({x:p.thorn[0],y:p.y,w:p.thorn[1],h:24}); });
 var way=get('way');
 /* stations: the three Waystones (each teaches a move and opens the gate above it), then the tower's three fires */
@@ -100,7 +105,7 @@ solids.push(
   {x:0,y:7978,w:190,h:22},                         // the alcove's solid floor
   {x:150,y:8000,w:40,h:300,ice:true,id:'i3'}       // ice wall 3: the Star Feather's alcove
 );
-var CAMPS=['c1','c2','c3','c4','c5','c6','c7','way','top','c8','c9','c10','c11','c12','way3','c13','c14','c15','c16','base','b1','b2'];
+var CAMPS=['c1','c2','c5','c7','way','top','c8','c10','c11','way3','c13','c15','base','b1','b2'];   /* hard mode: half the old lanterns */
 var LEVEL={
   plats:plats, hazards:hazards, solids:solids, st:ST,
   /* wind boxes: up = rising wind (lifts a glider), vx = tail wind (carries a glider sideways) */

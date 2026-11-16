@@ -36,6 +36,7 @@ kbd{ display:inline-grid; place-items:center; min-width:40px; height:40px; paddi
 .lp-chip{ display:flex; align-items:center; gap:10px; height:64px; padding:0 22px 0 14px; border-radius:20px; background:rgba(27,20,38,.82); border:3px solid var(--plum); font:600 32px/1 var(--display); color:var(--text); }
 .lp-chip svg{ width:40px; height:40px; flex:none; }
 .lp-chip.ab{ padding:0 12px; }
+.lp-chip.lp-hp{ gap:4px; padding:0 12px; } .lp-chip.lp-hp svg{ width:36px; height:36px; }
 .lp-boss{ position:absolute; left:50%; top:32px; transform:translateX(-50%); display:flex; align-items:center; gap:18px; height:72px; padding:0 22px 0 28px; border-radius:22px; background:rgba(27,20,38,.9); border:3px solid var(--plum); font:600 34px/1 var(--display); color:var(--text); white-space:nowrap; }
 .lp-boss b{ font-weight:600; }
 .lp-boss span{ display:flex; gap:8px; }
@@ -160,6 +161,7 @@ html.sz-alg .lp-fb{ font-size:27px; }
   <canvas id="lp-cv" width="960" height="540"></canvas>
   <div class="lp-hud" id="lp-hud" hidden>
     <div class="lp-chips">
+      <div class="lp-chip lp-hp" id="lp-hpchip" title="Hearts"></div>
       <div class="lp-chip" id="lp-embchip" title="Embers"><svg viewBox="0 0 40 40" aria-hidden="true"><path d="M20 4c6 8 12 12 12 20a12 12 0 0 1-24 0c0-5 3-8 5-11 1 4 3 5 4 5 0-5 1-10 3-14z" fill="#FF9A3C" stroke="#2A1B2E" stroke-width="3" stroke-linejoin="round"/><path d="M20 22c3 3 5 5 5 8a5 5 0 0 1-10 0c0-3 2-5 5-8z" fill="#FFE08A"/></svg><b id="lp-emb">0</b></div>
       <div class="lp-chip" id="lp-fchip" hidden title="Star Feathers"><svg viewBox="0 0 40 40" aria-hidden="true"><path d="M8 34C10 20 18 8 33 5c-1 14-9 25-23 29z" fill="#2EC4B6" stroke="#2A1B2E" stroke-width="3" stroke-linejoin="round"/><path d="M10 32L28 11" stroke="#2A1B2E" stroke-width="2.5" stroke-linecap="round"/><path d="M30 26l2 4 4 1-3 3 1 4-4-2-4 2 1-4-3-3 4-1z" fill="#FFC23D" stroke="#2A1B2E" stroke-width="2"/></svg><b id="lp-feath">0</b></div>
       <div class="lp-chip ab" id="lp-ab-dj" hidden title="Cloud Hop: jump again in the air"><svg viewBox="0 0 40 40" aria-hidden="true"><path d="M7 27a7 7 0 0 1 6-10 9 9 0 0 1 17 1 6 6 0 0 1 2 11H11a5 5 0 0 1-4-2z" fill="#F3E9D8" stroke="#2A1B2E" stroke-width="3" stroke-linejoin="round"/><path d="M20 21v-9m-4 4l4-4 4 4" stroke="#2EC4B6" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg></div>

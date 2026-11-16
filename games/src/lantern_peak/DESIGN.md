@@ -39,13 +39,19 @@
 Each Waystone card shows the new move in a small looping demo, and the pause screen lists the moves learned so far.
 The earlier plan (Glide Dash, then a choice of Wall Kick or Spring Step) was replaced: two simple moves read better than a choice screen, and neither puts an action on W, A, S or D.
 
+## Hearts and hard mode (Kody, 2026-11-16: "not punishing enough, not hard enough")
+- **3 hearts.** A fall, thorns or an icicle costs a heart and the last 3 embers picked up (they go back on the mountain).
+- **Out of hearts:** back to the start of the stretch (the last Waystone, the foot of the tower or the last fire) with 3 hearts. Moves and lit stations are never lost.
+- **Only the three Waystones refill hearts.** The tower fires do not (Kody: refills must be rare), so you climb the tower on the hearts you bring.
+- Half the old lanterns, cracked planks break in 0.35 s (was 0.5), plain ledges a fifth narrower past each zone's opening, and no helping wind.
+
 ## The Gloom (finale)
 - It wakes when the hero reaches the foot of the tower. A small bar at the top shows three flames, one per fire.
-- **Ice:** a dashed lane and a small icicle warn for 0.9 s, then the icicle falls and breaks on the first ledge it meets. One lane is aimed at the hero, the others are beside it.
-- **Gusts** (from the first fire on): the Gloom breathes in for 1 s, then blows for 1.4 s. A standing hero is pushed about 115 px, and walking into the wind holds your place.
-- A hit only sends the hero back to the last lantern, the same as a fall. Each fire is a lantern.
+- **Ice:** a dashed lane and a small icicle warn for 0.65 s (2, 3, then 4 lanes), then the icicle falls and breaks on the first ledge it meets. One lane is aimed at the hero, the others are beside it.
+- **Gusts** (from the foot of the tower on): the Gloom breathes in for 1 s, then blows for 1.4 s. A standing hero is pushed about 115 px, and walking into the wind holds your place.
+- A hit costs a heart, the same as a fall. Each fire is a lantern.
 - **It is frozen while a question is up**, and it clears its ice when a fire is lit.
-- **It tires:** after 3 falls in the same stretch it throws fewer icicles, warns for 1.3 s and blows more gently.
+- It does not tire.
 - Lighting the third fire lights the beacon: the Gloom dissolves, the sky turns to dawn, confetti, then the end screen.
 
 ## Stopping early
