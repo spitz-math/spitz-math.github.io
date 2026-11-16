@@ -541,7 +541,7 @@ function cards(force){ if(!S.P||!S.R) return; var p=Math.floor(S.P.dmg), r=Math.
   var low=S.started&&!S.over&&S.phase==='live'&&S.P.pow<COST; $('bb-cornerbtn').classList.toggle('low',low); }
 
 /* ================= QUESTIONS UI: the corner ================= */
-var nextT=0, lockT=0;
+var nextT=0, lockT=0, qAt=0, missWait=3000;   /* qAt: when this question appeared; missWait: how long a miss holds the next question */
 if(FAST) $('bb-q').classList.add('fast');
 function canGo(){ return S.pitKind==='mid'||S.pitAns.length>=NEED; }
 function supersTxt(n){ return n===1?'1 Super':n+' Supers'; }
@@ -559,13 +559,13 @@ function showQ(){ var q=S.q; $('bb-tag').textContent=q.topic; $('bb-prompt').inn
   $('bb-choices').innerHTML=q.choices.map(function(c,i){ return '<button class="bb-ch" data-i="'+i+'"><span class="k">'+(i+1)+'</span><span class="t">'+c.html+'</span></button>'; }).join('');
   var fb=$('bb-fb'); if(!FAST||!S.answered){ fb.className='bb-fb'; fb.innerHTML=pitIdle(); } $('bb-next').disabled=true;
   if(S.qDone) markAnswered(S.picked,false); pitHud(); }
-function newQ(){ clearTimeout(nextT); if(!QS) return; S.q=QS.next(); S.qDone=false; S.picked=-1; save(); showQ(); }
+function newQ(){ clearTimeout(nextT); if(!QS) return; S.q=QS.next(); S.qDone=false; S.picked=-1; save(); showQ(); qAt=performance.now(); }
 function gainTxt(){ var pw=S.P.pow; return pw>=MAXP?' All 3 Supers charged!':pw%COST===0?' Super ready!':' Next Super '+Math.round((pw%COST)/GAIN)+' / '+PER+'.'; }
 function markAnswered(i,fresh0){ var q=S.q, btns=$('bb-choices').querySelectorAll('.bb-ch'), c=q.choices[i], fb=$('bb-fb');
   btns.forEach(function(b,j){ b.disabled=true; if(q.choices[j].ok) b.classList.add('right'); else if(j!==i&&!FAST) b.hidden=true; }); if(!c.ok) btns[i].classList.add('wrong');
   if(c.ok){ fb.className='bb-fb ok'; fb.innerHTML='<span class="h">Correct!'+(fresh0?gainTxt():'')+(fresh0&&S.streak>1?' Streak '+S.streak+'.':'')+'</span>'+q.explain; $('bb-next').disabled=false; }
   else { fb.className='bb-fb bad'; fb.innerHTML='<span class="h">Not quite. '+(S.pro?'The Rival charges up (All-Pro).':'No power this time.')+'</span>'+c.why+(FAST?' ':'<br>')+q.explain;
-    $('bb-next').disabled=!!fresh0; if(fresh0&&!FAST){ clearTimeout(lockT); lockT=setTimeout(function(){ $('bb-next').disabled=false; },1800); } } }
+    $('bb-next').disabled=!!fresh0; if(fresh0&&!FAST){ clearTimeout(lockT); lockT=setTimeout(function(){ $('bb-next').disabled=false; },missWait); } } }
 function answer(i){ if(!S.started||S.over||S.phase!=='pit'||S.qDone||!S.q) return; var c=S.q.choices[i]; if(!c) return; S.qDone=true; S.picked=i; S.answered++;
   if(!S.topics[S.q.topic]) S.topics[S.q.topic]=[0,0]; S.topics[S.q.topic][1]++; S.pitAns.push(c.ok?1:0);
   if(c.ok){ S.correct++; S.topics[S.q.topic][0]++; S.streak++; S.best=Math.max(S.best,S.streak);
@@ -574,8 +574,10 @@ function answer(i){ if(!S.started||S.over||S.phase!=='pit'||S.qDone||!S.q) retur
     SND.correct(); if(S.P.pow>before){ if(Math.floor(S.P.pow/COST)>Math.floor(before/COST)) SND.ready(); else SND.charge(); }
     if(S.streak===HOT){ SND.fire(); toast('ON FIRE! Your hits launch farther'); }
     markAnswered(i,true); nextT=setTimeout(function(){ if(S.qDone&&S.phase==='pit') newQ(); },FAST?150:1600); }
-  else { S.streak=0; if(S.pro&&S.R) S.R.pow=Math.min(MAXP,S.R.pow+GAIN); SND.miss(); markAnswered(i,true);
-    if(FAST) nextT=setTimeout(function(){ if(S.qDone&&S.phase==='pit') newQ(); },1200); }
+  else { S.streak=0; if(S.pro&&S.R) S.R.pow=Math.min(MAXP,S.R.pow+GAIN); SND.miss();
+    /* a miss pauses longer than a hit, and a miss faster than anyone can read the question pauses 2 s more, so mashing answers doesn't pay (Kody, 2026-11-16) */
+    missWait=(FAST?2500:3000)+(qAt&&performance.now()-qAt<(FAST?1200:2500)?2000:0); markAnswered(i,true);
+    if(FAST) nextT=setTimeout(function(){ if(S.qDone&&S.phase==='pit') newQ(); },missWait); }
   if(S.pitKind==='kick'&&S.pitAns.length===NEED){ S.pits++; if(S.pitAns.indexOf(0)<0){ S.perfect++; S.prow++; S.prowBest=Math.max(S.prowBest,S.prow); S.dropBud=1; addPts(200); toast('Perfect corner! An item drops next to you'); } else S.prow=0; }
   save(); hud(); }
 $('bb-choices').addEventListener('click',function(e){ var b=e.target.closest('.bb-ch'); if(b) answer(+b.dataset.i); });
