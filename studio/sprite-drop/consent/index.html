@@ -47,17 +47,27 @@ const SPRITE_DROP = {
   const sb = window.supabase.createClient(SPRITE_DROP.supabaseUrl, SPRITE_DROP.supabaseKey, { auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true, flowType: 'pkce' } })
 
   function signInForm() {
-    say('Sign in with your email. You will get a link; open it on this device and you come right back here.')
-    card.insertAdjacentHTML('beforeend', '<input id="email" type="email" autocomplete="email" placeholder="you@example.com"><button class="btn primary" type="button" id="send">Email me a sign-in link</button>')
-    const send = document.getElementById('send'), email = document.getElementById('email')
+    // Password first: it works inside the Claude and ChatGPT sign-in windows (iPhone fills it with Face ID).
+    // The email link only works when it opens in this same browser, which phones usually don't do.
+    say('Sign in with your spitz.dev email and password.')
+    card.insertAdjacentHTML('beforeend', '<form id="pf" style="display:grid;gap:10px"><input id="email" type="email" autocomplete="username" required placeholder="you@example.com"><input id="pw" type="password" autocomplete="current-password" required placeholder="Password"><button class="btn primary" type="submit" id="go">Sign in</button></form><button class="btn" type="button" id="send">Email me a sign-in link instead</button>')
+    const f = document.getElementById('pf'), send = document.getElementById('send'), email = document.getElementById('email')
+    f.onsubmit = async (ev) => {
+      ev.preventDefault()
+      const go = document.getElementById('go'); go.disabled = true
+      const { error } = await sb.auth.signInWithPassword({ email: email.value.trim(), password: document.getElementById('pw').value })
+      if (error) { go.disabled = false; say('Could not sign in: ' + esc(error.message)); return }
+      f.remove(); send.remove(); say('Signed in. Loading the request…')
+      card.prepend(msg); show().catch((e) => say('Something went wrong: ' + esc(e.message)))
+    }
     send.onclick = async () => {
       const e = email.value.trim()
-      if (!e) return
+      if (!e) { say('Type your email first.'); return }
       send.disabled = true
       const { error } = await sb.auth.signInWithOtp({ email: e, options: { emailRedirectTo: location.href } })
       if (error) { send.disabled = false; say('Could not send the link: ' + esc(error.message)); return }
-      say('Check your email for the sign-in link. Keep this tab open; the link brings you back here.')
-      email.remove(); send.remove()
+      say('Check your email for the sign-in link. It only works if it opens in this same browser.')
+      f.remove(); send.remove()
     }
   }
 
