@@ -2331,7 +2331,7 @@ function bossAI(e,dt,p,d,ux,uy){ var w=S.w, half=e.hp<e.max/2, sp=half?0.85:1;
       SND.btele(); } }
   else if(e.st===1){ if(e.cd>e.c0*0.4) e.fa=Math.atan2(p.y-e.y,p.x-e.x); if(e.cd<=0){ e.st=2; e.cd=1.4; } }
   else if(e.st===2){ v=560; mx=Math.cos(e.fa); my=Math.sin(e.fa); if(e.cd<=0){ e.lastA='charge'; e.st=5; e.cd=0.5; } }
-  else if(e.st===3){ if(e.cd<=0){ if(!RM) w.shake=0.25; SND.slam(); if(Math.hypot(p.x-e.x,p.y-e.y)<120) hurtP(e); w.fx.push({k:'boom',x:e.x,y:e.y,r:120,t:0}); e.lastA='slam'; slamFire(e,p); if(half&&!(w.ringT>0)){ var ga=Math.random()*6.283; w.ringT=1.5; w.rings=(w.rings||[]).concat([{x:e.x,y:e.y,r:120,hit:0,ls:w.last>0?1:0,g:[ga,ga+Math.PI+rnd(-0.5,0.5)]}]); } e.st=5; e.cd=0.7; } }
+  else if(e.st===3){ if(e.cd<=0){ if(!RM) w.shake=0.25; SND.slam(); if(Math.hypot(p.x-e.x,p.y-e.y)<120) hurtP(e); w.fx.push({k:'boom',x:e.x,y:e.y,r:120,t:0}); e.lastA='slam'; if(half) slamFire(e,p);   /* Kody 2026-11-16: first Warden fight makes fire only once he is enraged; the Last Stand always */ if(half&&!(w.ringT>0)){ var ga=Math.random()*6.283; w.ringT=1.5; w.rings=(w.rings||[]).concat([{x:e.x,y:e.y,r:120,hit:0,ls:w.last>0?1:0,g:[ga,ga+Math.PI+rnd(-0.5,0.5)]}]); } e.st=5; e.cd=0.7; } }
   else if(e.st===4){ if(e.cd<=0){ var pa=Math.atan2(p.y-e.y,p.x-e.x); w.fx.push({k:'slash',x:e.x,y:e.y-10,a:e.fa,t:0,big:1}); if(Math.hypot(p.x-e.x,p.y-e.y)<130&&angDiff(pa,e.fa)<1.25) hurtP(e); e.lastA='swipe'; e.st=5; e.cd=half?0.35:0.6; } }
   else if(e.st===6){ if(e.cd<=0){ e.lastA='orbs'; for(var k=0;k<10;k++){ var a=k*Math.PI/5+e.t; w.orbs.push({x:e.x,y:e.y-20,vx:Math.cos(a)*140,vy:Math.sin(a)*140,t:0}); } SND.orb(); e.st=5; e.cd=0.6; } }
   else if(e.st===9){ if(e.cd<=0){ e.st=3; e.cd=0.6; e.fa=Math.atan2(p.y-e.y,p.x-e.x); SND.btele(); } }
@@ -2341,7 +2341,7 @@ function bossAI(e,dt,p,d,ux,uy){ var w=S.w, half=e.hp<e.max/2, sp=half?0.85:1;
   e.hitWall=0; collide(e,solidE);
   if(e.st===2&&e.hitWall){ e.st=9; e.cd=1.1; e.chains=0; SND.boom(); if(!RM) w.shake=0.3; w.fx.push({k:'txt',x:e.x,y:e.y-80,t:0,v:'STUNNED!',c:'#FFC93C'}); for(var q=0;q<10;q++) w.fx.push({k:'bit',x:e.x,y:e.y,vx:rnd(-150,150),vy:rnd(-160,20),t:0,c:'#8A92BE'}); } }
 /* ---------- Warden fire (Kody's classroom test 2026-11-16: a student asked for poison / damage over time) ----------
-   Every Warden ground slam (Warden fight and Last Stand) leaves 2 fire patches. Each shows a dim outline for 0.5 s, burns 6 s, then dies out.
+   Every Last Stand Warden slam, and every slam once the first Warden is enraged (below half health), leaves 2 fire patches. Each shows a dim outline for 0.5 s, burns 6 s, then dies out.
    At most 4 burn at once; never on a door, never under Rook. Stepping in sets Rook on fire for 6 s: his last heart visibly drains and he loses 1 heart every 3 s (2 in all),
    (straight through armor and Aegis). Kody 2026-11-16: a dodge roll does NOT put it out (too free); rolling across a patch
    still doesn't light you. One burn at a time, no stacking.
