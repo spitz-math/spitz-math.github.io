@@ -203,7 +203,8 @@ async function run(taskId: string) {
     const dims = await Image.decode(bytes)
     const ins = await db.from('studio_assets').upsert({ user_id: t.user_id, task_id: t.id, file_name: path.split('/').pop(), original_name: base + '.png', mime_type: 'image/png', size_bytes: bytes.length, width: dims.width, height: dims.height, sha256: sha, path, source: 'base64', note }, { onConflict: 'user_id,task_id,sha256' }).select('id').single()
     if (ins.error) throw new Error('Recording the image failed: ' + ins.error.message)
-    const r = await post({ p_kind: 'report', p_body: `${p.body}\n\nAsset ${ins.data.id} · sha256 ${sha} · ${note}`, p_refs: [{ type: 'asset', id: ins.data.id }], ...turnArgs })
+    // new art is never self-approved: it always goes to Claude (or Kody) for a check, even if the plan said done
+    const r = await post({ p_kind: 'report', p_body: `${p.body}\n\nAsset ${ins.data.id} · sha256 ${sha} · ${note}`, p_refs: [{ type: 'asset', id: ins.data.id }], p_set_turn: p.next_turn === 'kody' ? 'kody' : 'claude' })
     if (r.error) throw new Error(r.error.message)
     if (await conflicted(r)) return 'task changed, image ' + ins.data.id + ' saved but not posted'
     await finish('ok', 'image ' + ins.data.id)
