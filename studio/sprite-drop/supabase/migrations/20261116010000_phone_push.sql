@@ -1,7 +1,7 @@
 -- spitz.dev: phone notifications from the dashboard itself (Web Push, so they show the burger icon).
 -- Kody adds dev.spitzmath.com to the home screen and taps the bell; the browser's push subscription is saved here.
 -- Every new task, hand-off, block and finish calls the push-notify edge function, which sends to the task owner's phones.
--- The VAPID key pair is made by the edge function on its first call and kept in Vault.
+-- The VAPID key pair is made by the edge function on its first call and kept in Vault. Applied 2026-11-16.
 
 create table if not exists public.studio_push_subs (
   endpoint text primary key,
@@ -103,6 +103,9 @@ end;
 $$;
 revoke all on function public.studio_notify_phone() from public, anon, authenticated;
 
-drop trigger if exists studio_tasks_notify_phone on public.studio_tasks;
-create trigger studio_tasks_notify_phone after insert or update on public.studio_tasks
-  for each row execute function public.studio_notify_phone();
+do $$ begin
+  if not exists (select 1 from pg_trigger where tgname = 'studio_tasks_notify_phone') then
+    create trigger studio_tasks_notify_phone after insert or update on public.studio_tasks
+      for each row execute function public.studio_notify_phone();
+  end if;
+end $$;
