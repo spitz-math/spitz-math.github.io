@@ -1,0 +1,39 @@
+# spitz.dev studio playbook: Claude as studio lead
+
+This playbook is for STUDIO REQUESTS. A studio request is a Task Drop task that Kody created, whose turn is Claude, and that asks for game work beyond checking one picture. It also covers that request's SUBTASKS. Approved by Kody and ChatGPT on 2026-11-16.
+
+The aim is one request in, coordinated work, and a playable result back. Kody touches it 3 times: submit, approve the plan, review the result. Kody never carries messages between the AIs.
+
+Everything goes through Task Drop: tasks, messages and Sprite Drop assets. Don't use side channels. Any agent (the ChatGPT API worker, a future ChatGPT scheduled task, an interactive chat, or Claude) must be able to take part using only the task's brief, its messages and its assets.
+
+## Hard limits
+- Never merge, deploy, or change the live site. Kody says "push it".
+- At most 2 review rounds with ChatGPT for the whole request. If problems remain after round 2, stop and ask Kody.
+- API budget under $1 per request. That means at most about 6 ChatGPT turns, and at most 3 of them with pictures.
+- Keep the change to what the request asks for, with no refactors.
+
+## Phase 1: Plan (the first wake on a new request)
+1. Read `studio/notes/<project>.md` in the spitz-arcade repo, if it exists. Pull main and read the game's source and README for the part you'll change.
+2. Post a message with kind "question" on the request. It contains the goal in one line, the planned code changes, the design or art ChatGPT will do (pixel sizes, palette), the test plan (`run_tests.sh full` plus screenshots), the round and budget limits, and the open questions. End with: "Reply approve (or say what to change) and press Send + Claude's turn."
+3. set_turn kody. Don't change any code yet.
+
+## Phase 2: Delegate (when Kody's reply approves)
+1. If Kody asked for changes, revise the plan and ask again (Phase 1, step 2).
+2. Create ONE subtask for ChatGPT, or two only if really needed, with create_task, turn chatgpt.
+   - Title: `<request title>: <part>`.
+   - Brief: start with "Part of studio request <request id>." Then give the exact design question or art spec (art pixel size, scale, palette hex colours, outline, frames and layout), a "Studio notes" section with only the notes lines that matter, and what to send back.
+   - Mechanical picture work (resizing, palette swaps, frame layout, transparency cleanup) is Claude's job. Don't ask ChatGPT for it.
+3. Post a note on the request listing the subtask ids ("Waiting on ChatGPT: <subtask id>"). Leave the request open on Claude's turn. Don't block it, because "blocked" sends Kody a "needs you" alert. On any later wake, skip a request whose subtask is still on ChatGPT's turn, and work on the subtask that came back instead.
+4. Start the code that doesn't depend on the art, on a branch `claude/studio-<short-name>`.
+
+## Phase 3: Build and review (each time a subtask comes back on Claude's turn)
+1. Art: get_asset, then check checksum, size, pixel grid, alpha 0/255 and palette. Fix mechanical problems in code. Send real drawing problems back as a review, which counts as a round.
+2. Wire it in, build, and run `bash run_tests.sh full` (6x CPU speed test included). Every test must print errors [].
+3. Screenshots: use headless Chromium at 1366x620 (Chromebook size), showing the moment the request is about, with 2 to 4 frames. Commit them to your branch under `studio/review/<request-id>/`, then drop_asset each one by its raw.githubusercontent.com URL with task_id = the subtask id.
+4. Review round: post kind "review" on the subtask with the screenshots as asset refs. Ask ChatGPT to check them against the brief and the studio notes and list concrete problems or say "approved". set_turn chatgpt. Count the round in a note on the request ("review round 1 of 2").
+5. When ChatGPT approves (or after round 2), fix what's reasonable, then mark the subtask done.
+
+## Phase 4: Deliver
+1. Open a PR (never merge it). Build the test copy, `downloads/<game>_mult_vNN.html` in project files, using the next number from the studio notes.
+2. Post kind "report" on the request. Include the summary of what changed, the PR link as a ref, the test copy path, test results with the 6x CPU fps, the screenshots as asset refs, what ChatGPT made and reviewed, the rounds used, and known issues and limits. Then set_turn kody.
+3. Update the project's studio notes only with decisions Kody makes after reviewing.
