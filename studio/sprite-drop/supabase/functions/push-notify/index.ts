@@ -1,5 +1,6 @@
 // spitz.dev phone notifications: the database calls this on every hand-off; it sends a Web Push to each saved phone.
 // Called only by the database (x-worker-secret checked against Vault). Dead subscriptions (404/410) are removed.
+// The phone already shows the app name (spitz.dev), so the title is just what happened.
 import { createClient } from 'npm:@supabase/supabase-js@2.119.0'
 import webpush from 'npm:web-push@3.6.7'
 
@@ -18,7 +19,7 @@ Deno.serve(async req => {
   if (init) return Response.json({ ready: true })
   webpush.setVapidDetails('https://dev.spitzmath.com', pub, priv)
   const { data: subs } = await db.from('studio_push_subs').select('endpoint,sub').eq('user_id', user_id)
-  const payload = JSON.stringify({ title: 'spitz.dev · ' + String(title || '').slice(0, 80), body: String(body || '').slice(0, 200), tag, url: 'https://dev.spitzmath.com/' })
+  const payload = JSON.stringify({ title: String(title || 'Update').slice(0, 80), body: String(body || '').slice(0, 200), tag, url: 'https://dev.spitzmath.com/' })
   let sent = 0
   for (const s of subs || []) {
     try { await webpush.sendNotification(s.sub, payload, { TTL: 3600, urgency: 'high' }); sent++ }
