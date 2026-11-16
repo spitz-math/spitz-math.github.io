@@ -40,14 +40,15 @@
 Each Waystone card shows the new move in a small looping demo, and the pause screen lists the moves learned so far.
 The earlier plan (Glide Dash, then a choice of Wall Kick or Spring Step) was replaced: two simple moves read better than a choice screen, and neither puts an action on W, A, S or D.
 
-## Hearts and hard mode (Kody, 2026-11-16: "not punishing enough, not hard enough")
-- **3 hearts.** A fall, thorns or an icicle costs a heart and the last 3 embers picked up (they go back on the mountain).
-- **Out of hearts:** back to the start of the stretch (the last Waystone, the foot of the tower or the last fire) with 3 hearts. Moves and lit stations are never lost.
-- **Only the three Waystones refill hearts.** The tower fires do not (Kody: refills must be rare), so you climb the tower on the hearts you bring.
-- **Embers are dash fuel** (Kody, 2026-11-16): each ember picked up is one dash, a fall burns 3. The ember chip shows how many you have.
-- **Hard falls** (Kody, v3: "falling still doesn't do a whole lot"): landing 200+ px below the last ledge you stood on costs a heart right where you land. A glide softens the landing. The signposted way never needs a drop that big.
-- **Lanterns only at the stations** (the Waystones, the tower's foot and the fires), so a long fall loses real height.
-- Cracked planks break in 0.35 s (was 0.5), plain ledges a fifth narrower past each zone's opening, and no helping wind.
+## The core: the Gloom chases you (Kody, 2026-11-16, v6)
+After v2 to v5 Kody found the climb "not hard enough" and the extras (embers, Star Feathers, dash fuel) pointless. The fix is one pressure:
+- **The Gloom's fog rises from below the whole climb.** It speeds up zone by zone (26 to 48 px/s) and is never more than 430 px below you, so a long fall drops you into it.
+- **Touch it: lose a heart.** It sinks 300 px and you get 1.2 s of safety. **Out of hearts:** back to the last Waystone (or the tower's foot or last fire) with 3 hearts.
+- **Questions push it back.** It is frozen while a question is up, and lighting a Waystone or a fire drives it far down.
+- **Hearts:** 3, refilled only at the three Waystones. Thorns and falling ice cost a heart and knock you back (no teleport).
+- **Ember Dash from the start** (one per jump). Waystone 3 makes it a **Blazing Dash** that melts ice.
+- **Cut:** embers, Star Feathers, dash fuel, the hard-fall rule and the helping wind. Lanterns only at the stations.
+- **Score:** 100 per right answer, height, 150 per tower fire, 1000 for the beacon plus 250 per heart left. Stars: beacon lit, 90% right, caught 2 times or less, finished with 3 hearts.
 
 ## The Gloom (finale)
 - It wakes when the hero reaches the foot of the tower. A small bar at the top shows three flames, one per fire.

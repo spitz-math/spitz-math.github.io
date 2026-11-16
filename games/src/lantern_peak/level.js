@@ -155,3 +155,5 @@ plats.forEach(function(p){ if(p.y<4700||p.thorn||p.ledge||p.per) return; var e=[
 LEVEL.get=get;
 root.LPLEVEL=LEVEL;
 })(typeof window!=='undefined'?window:globalThis);
+/* The Gloom chases you (Kody 2026-11-16): no embers or Star Feathers any more, so the climb has one clear goal. */
+globalThis.LPLEVEL.embers=[]; globalThis.LPLEVEL.feathers=[];

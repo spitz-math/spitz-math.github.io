@@ -33,12 +33,12 @@ function nextQuestion(){ return QS?QS.next():multQ(); }
 function fresh(){ return { ver:2, name:'', started:false, over:false, len:0, score:0, answered:0, correct:0,
   topics:QS?QS.topicTable():{'Multiplication':[0,0]}, q:null, qDone:false, picked:-1,
   camp:'c0', st:0, dj:false, gl:false, ds:true, hot:false, runes:0, cp:false, reward:false, embers:[], feathers:[], ice:[], falls:0, playT:0, best:0, done:false, early:false,
-  campFalls:0, help:false, zone:0, hints:{}, bossSeen:false, hearts:3, fuel:0 }; }
+  campFalls:0, help:false, zone:0, hints:{}, bossSeen:false, hearts:3, fog:-450, caught:0 }; }
 function moves(){ S.dj=S.st>=1; S.gl=S.st>=2; S.ds=true; S.hot=S.st>=3; }   /* Ember Dash from the start (Kody); Waystone 3 makes it hot enough to melt ice */
 var S=load()||fresh();
 function save(){ try{ localStorage.setItem(KEY,JSON.stringify(S)); localStorage.setItem(KEY+'_mute',muted?'1':'0'); }catch(e){} }
-function load(){ try{ muted=localStorage.getItem(KEY+'_mute')==='1'; var v=JSON.parse(localStorage.getItem(KEY)||'null'); if(v&&v.ver===2&&v.topics&&Array.isArray(v.embers)&&Array.isArray(v.ice)){ if(!(v.hearts>0)) v.hearts=3; if(!(v.fuel>=0)) v.fuel=0; v.help=false; return v; } }catch(e){} return null; }
-function score(){ return S.embers.length*10+S.feathers.length*250+S.correct*100+Math.floor(S.best/10)+Math.max(0,Math.min(3,S.st-3))*150+(S.done?1000:0); }
+function load(){ try{ muted=localStorage.getItem(KEY+'_mute')==='1'; var v=JSON.parse(localStorage.getItem(KEY)||'null'); if(v&&v.ver===2&&v.topics&&Array.isArray(v.embers)&&Array.isArray(v.ice)){ if(!(v.hearts>0)) v.hearts=3; if(typeof v.fog!=='number') v.fog=-450; if(!(v.caught>=0)) v.caught=0; v.help=false; return v; } }catch(e){} return null; }
+function score(){ return S.correct*100+(S.done?S.hearts*250:0)+Math.floor(S.best/10)+Math.max(0,Math.min(3,S.st-3))*150+(S.done?1000:0); }
 
 /* ---------------- sound: soft, musical, procedural ---------------- */
 var AC=null, muted=false;
@@ -156,7 +156,7 @@ function start(){ var n=$('lp-name').value.trim().replace(/\s+/g,' '); if(!n) re
   moves(); solids(); save(); $('lp-start').hidden=true; KIT.jingle(); place(campOf(S.camp)); buildMeter(); hud(); setMode('play');
   if(S.cp) setTimeout(openCP,50); else if(S.reward) setTimeout(function(){ S.reward=false; openReward(); },50);
   showZone(zoneAt(P.y),true); }
-function place(c){ P=LPPH.fresh(c.x,c.y); groundY=c.y; P.face=1; cam=Math.max(-60,c.y-190); LV.plats.forEach(function(p){ delete p.goneAt; delete p.tT; }); ghosts.length=0; bossClear(1.6); }
+function place(c){ P=LPPH.fresh(c.x,c.y); S.fog=c.y-FOGBACK; invT=0; P.face=1; cam=Math.max(-60,c.y-190); LV.plats.forEach(function(p){ delete p.goneAt; delete p.tT; }); ghosts.length=0; bossClear(1.6); }
 function pause(o){ if(o){ if(mode==='pause') return; pauseFrom=mode; setMode('pause'); $('lp-pause').hidden=false; $('lp-pausewhere').textContent=ZN[zoneAt(P.y)]+' · '+Math.floor(Math.max(0,P.y)/20)+' m'; pauseLabels(); moveList(); SND.pause(); blockHeld(); }
   else { if(mode!=='pause') return; $('lp-pause').hidden=true; setMode(pauseFrom||'play'); blockHeld(); if(mode==='cp') qShownAt=performance.now(); } }
 var pauseFrom='play';
@@ -168,7 +168,7 @@ $('lp-pmusic').addEventListener('click',function(){ KIT.musicToggle(); pauseLabe
 $('lp-prestart').addEventListener('click',function(){ askNew(true); });
 $('lp-pend').addEventListener('click',function(){ askNew(true,'end'); });
 /* the pause menu lists the moves learned so far, with their keys */
-function moveList(){ var h='<span><kbd>Space</kbd> Jump</span>'; if(S.dj) h+='<span><kbd>Space</kbd><kbd>Space</kbd> Cloud Hop</span>'; if(S.gl) h+='<span>then hold <kbd>Space</kbd> Glide</span>'; if(S.ds) h+='<span><kbd>X</kbd> Dash (1 ember'+(S.hot?', melts ice':'')+')</span>'; $('lp-moves').innerHTML=h; }
+function moveList(){ var h='<span><kbd>Space</kbd> Jump</span>'; if(S.dj) h+='<span><kbd>Space</kbd><kbd>Space</kbd> Cloud Hop</span>'; if(S.gl) h+='<span>then hold <kbd>Space</kbd> Glide</span>'; if(S.ds) h+='<span><kbd>X</kbd> Dash'+(S.hot?' (melts ice)':'')+'</span>'; $('lp-moves').innerHTML=h; }
 /* one box asks before either ending: a new game (Shift+R), or stopping here with a score (for when class time runs out) */
 var askKind='new';
 function askNew(o,kind){ if(o){ askKind=kind||'new'; var e=askKind==='end';
@@ -195,7 +195,7 @@ function buildMeter(){ var m=$('lp-meter'), h=800, top=LV.summitY, html='<div cl
   html+='<svg class="goal" viewBox="0 0 56 56"><path d="M20 50h16l-2-26h-12z" fill="#7E8DB0" stroke="#2A1B2E" stroke-width="3" stroke-linejoin="round"/><path d="M16 24h24l-12-14z" fill="#5A6385" stroke="#2A1B2E" stroke-width="3" stroke-linejoin="round"/><rect x="24" y="30" width="8" height="9" fill="#C9A86A" stroke="#2A1B2E" stroke-width="2"/></svg>';
   html+='<div class="me" id="lp-me"></div>'; m.innerHTML=html; }
 var meY=-1;
-function hud(){ var hh=''; for(var i=0;i<3;i++) hh+='<svg viewBox="0 0 40 40" aria-hidden="true"><path d="M20 34C8 25 4 19 4 13a8 8 0 0 1 16-2 8 8 0 0 1 16 2c0 6-4 12-16 21z" fill="'+(i<S.hearts?'#E8553D':'#3A2D50')+'" stroke="#2A1B2E" stroke-width="3" stroke-linejoin="round"/>'+(i<S.hearts?'<path d="M10 13a4 4 0 0 1 5-4" stroke="#FFB3A0" stroke-width="3" fill="none" stroke-linecap="round"/>':'')+'</svg>'; $('lp-hpchip').innerHTML=hh; $('lp-hpchip').title=S.hearts+' of 3 hearts'; $('lp-emb').textContent=S.fuel||0; $('lp-embchip').classList.toggle('empty',!(S.fuel>0)); $('lp-feath').textContent=S.feathers.length; $('lp-fchip').hidden=!S.feathers.length;
+function hud(){ var hh=''; for(var i=0;i<3;i++) hh+='<svg viewBox="0 0 40 40" aria-hidden="true"><path d="M20 34C8 25 4 19 4 13a8 8 0 0 1 16-2 8 8 0 0 1 16 2c0 6-4 12-16 21z" fill="'+(i<S.hearts?'#E8553D':'#3A2D50')+'" stroke="#2A1B2E" stroke-width="3" stroke-linejoin="round"/>'+(i<S.hearts?'<path d="M10 13a4 4 0 0 1 5-4" stroke="#FFB3A0" stroke-width="3" fill="none" stroke-linecap="round"/>':'')+'</svg>'; $('lp-hpchip').innerHTML=hh; $('lp-hpchip').title=S.hearts+' of 3 hearts'; $('lp-embchip').hidden=true; $('lp-feath').textContent=S.feathers.length; $('lp-fchip').hidden=true;
   $('lp-ab-dj').hidden=!S.dj; $('lp-ab-gl').hidden=!S.gl; $('lp-ab-ds').hidden=!S.ds; }
 function pop(id){ var e=$(id); e.classList.remove('pop'); void e.offsetWidth; e.classList.add('pop'); }
 var hintKey='', hintT=0;
@@ -205,7 +205,8 @@ function hints(){ var h=S.hints; if(BOSS.on) return hint(null);
   if(!h.jump) return hint('<kbd>Space</kbd> or <kbd>↑</kbd> Jump','jump');
   if(S.dj&&!h.hop) return hint('Jump, then <kbd>Space</kbd> again in the air: Cloud Hop','hop');
   if(S.gl&&!h.glide) return hint('After your hop, hold <kbd>Space</kbd> to glide','glide');
-  if(S.fuel>0&&!h.dash) return hint('<kbd>X</kbd> Ember Dash · burns 1 ember','dash');
+  if(h.jump&&!h.dash) return hint('<kbd>X</kbd> Ember Dash','dash');
+  if(h.dash&&!h.fog) return hint('The Gloom rises behind you. Climb!','fog');
   if(S.help&&!h.helpSeen) return hint('A helping wind: your jumps go higher until the next lantern','help');
   hint(null); }
 
@@ -245,7 +246,7 @@ function answer(i,how){ if(mode!=='cp'||S.qDone||!S.q) return; var now=performan
   else SND.miss();
   answeredAt=now; save(); mark(i,true); runes(); }
 function cont(how){ if(mode!=='cp'||!S.qDone) return; if(performance.now()-answeredAt<400) return;
-  if(S.runes>=need()){ var s=stn(); S.cp=false; S.q=null; S.qDone=false; S.picked=-1; S.runes=0; S.st++; if(s.kind==='way') S.hearts=3; hud(); moves(); solids(); $('lp-cp').hidden=true; blockHeld();
+  if(S.runes>=need()){ var s=stn(); S.cp=false; S.q=null; S.qDone=false; S.picked=-1; S.runes=0; S.st++; S.fog=Math.min(S.fog,s.y-FOGBACK-120); if(s.kind==='way') S.hearts=3; hud(); moves(); solids(); $('lp-cp').hidden=true; blockHeld();
     if(s.last){ finish(); return; }
     S.reward=!!s.move; save(); setMode('play'); gateT=0; opening=true; SND.open();
     if(s.kind==='braz'){ SND.fire(); SND.gloomHurt(); BOSS.hurtT=2.4; bossBar(); sparkle(s.x,s.y+70,16,'#FFC23D'); KIT.toast('The Gloom shrinks!'); }
@@ -256,7 +257,7 @@ $('lp-next').addEventListener('click',function(){ if(ptrDownAt<answeredAt+1) ret
 var opening=false, gateT=0;
 var REW={ dj:{ name:'Cloud Hop', chip:'lp-ab-dj', text:'Jump, then press jump <b>again in the air</b> for a second jump.<br>The cliffs above need it.' },
   gl:{ name:'Scarf Glide', chip:'lp-ab-gl', text:'After your Cloud Hop, <b>hold jump</b> to glide.<br>Rising wind lifts you. Let go to drop.' },
-  ds:{ name:'Blazing Dash', chip:'lp-ab-ds', text:'Your Ember Dash burns hot now.<br><b>Dash into ice to melt it.</b> Each dash still burns 1 ember.' } }, rewardMove='dj';
+  ds:{ name:'Blazing Dash', chip:'lp-ab-ds', text:'Your Ember Dash burns hot now.<br><b>Dash into ice to melt it.</b> ' } }, rewardMove='dj';
 function openReward(){ var s=LV.st[S.st-1]; rewardMove=(s&&s.move)||'dj'; var r=REW[rewardMove]; $('lp-rwname').textContent=r.name; $('lp-rwtext').innerHTML=r.text;
   setMode('reward'); $('lp-cp').hidden=false; $('lp-card').hidden=true; $('lp-reward').hidden=false; panelAt=performance.now(); SND.unlock(); KIT.confetti(960,420,RM.matches?40:90,2.4); hud(); pop(r.chip); demoT=0; }
 function closeReward(){ S.reward=false; save(); $('lp-cp').hidden=true; setMode('play'); blockHeld(); }
@@ -296,7 +297,7 @@ function bossStep(dt){
     if(Math.abs(ic.x-P.x)<PH.HW+7&&ic.y<P.y+PH.HH-4&&y0+26>P.y+6){ shards(ic.x,ic.y,8); hit=true; return false; }
     for(var i=0;i<LV.plats.length;i++){ var p=LV.plats[i]; if(p.y>y0||p.y<ic.y||!LPPH.alive(p,gt)) continue; if(ic.x>p.x&&ic.x<p.x+p.w){ shards(ic.x,p.y+6,5); SND.tick(); return false; } }
     return ic.y>cam-60; });
-  if(hit) fall('hurt');
+  if(hit) knock();
 }
 
 /* ---------------- the climb ---------------- */
@@ -315,11 +316,11 @@ function update(dt){
   S.playT+=dt; acc+=dt; var n=0;
   WORLD.dj=S.dj; WORLD.gl=S.gl; WORLD.ds=S.ds; WORLD.melt=!!S.hot; solids();
   bossStep(dt); if(mode!=='play') return;
-  while(acc>=FIX&&n<10){ acc-=FIX; n++; gt+=FIX; WORLD.t=gt; var I=inp(); if(I.dashPressed&&(S.fuel||0)<1){ I.dashPressed=false; noFuel(); } if(S.help) boost(); LPPH.step(P,I,FIX,WORLD); unboost(); jumpEdge=false; downEdge=false; dashEdge=false; events(); if(mode!=='play') break;
+  while(acc>=FIX&&n<10){ acc-=FIX; n++; gt+=FIX; WORLD.t=gt; var I=inp(); if(S.help) boost(); LPPH.step(P,I,FIX,WORLD); unboost(); jumpEdge=false; downEdge=false; dashEdge=false; events(); if(mode!=='play') break;
     if(P.dashT>0&&(n%2)) ghosts.push({x:P.x,y:P.y,face:P.face,t:0.2}); }
   if(acc>FIX) acc=FIX;
   if(Math.abs(P.vx)>40) S.hints.run=1;
-  camFollow(dt,false); stepFx(dt); pickups(); campCheck();
+  camFollow(dt,false); stepFx(dt); pickups(); campCheck(); fogStep(dt); if(mode!=='play') return;
   if(nearStation()&&mode==='play'){ openCP(); return; }
   if(P.y<campOf(S.camp).y-280) fall('fell');
   var z=zoneAt(P.y); if(z!==S.zone){ S.zone=z; showZone(z); save(); }
@@ -329,53 +330,60 @@ function update(dt){
 var JV0=PH.JV, DJ0=PH.DJV; function boost(){ PH.JV=JV0*1.13; PH.DJV=DJ0*1.1; } function unboost(){ PH.JV=JV0; PH.DJV=DJ0; }
 var respawned=false, finishT=0, finCheer=false;
 function events(){ var hard=false; P.ev.forEach(function(e){
-  if((e==='land'||e==='landHard')&&groundY-P.y>=HARD&&gt-glideAt>0.12&&mode==='play') hard=true;
   if(e==='jump'){ SND.jump(); sq=-0.35; S.hints.jumps=(S.hints.jumps||0)+1; if(S.hints.jumps>=2) S.hints.jump=1; puff(P.x,P.y,4,'#F3E9D8'); }
   else if(e==='dj'){ SND.hop(); sq=-0.3; spin=RM.matches?0:1; ring(P.x,P.y+6); S.hints.hop=1; }
   else if(e==='glide'){ SND.glide(); S.hints.glide=1; spin=0; }
-  else if(e==='dash'){ S.fuel=Math.max(0,(S.fuel||0)-1); hud(); SND.dash(); S.hints.dash=1; spin=0; puff(P.x,P.y+20,5,'#FF9A3C'); }
+  else if(e==='dash'){ SND.dash(); S.hints.dash=1; spin=0; puff(P.x,P.y+20,5,'#FF9A3C'); }
   else if(e==='shatter'){ var w=P.shat; if(w&&w.id&&S.ice.indexOf(w.id)<0){ S.ice.push(w.id); save(); } SND.shatter(); if(w) for(var q=0;q<5;q++) shards(w.x+w.w/2,w.y+w.h*(0.1+0.2*q),RM.matches?2:5); if(!RM.matches) shake=0.1; }
   else if(e==='land'||e==='landHard'){ if(gt-lastLandT>0.08){ SND.land(e==='landHard'); } lastLandT=gt; sq=e==='landHard'?0.55:0.32; puff(P.x,P.y,e==='landHard'?8:4,'#F3E9D8'); if(e==='landHard'&&!RM.matches) shake=0.12; }
   else if(e==='crack') SND.crack();
   else if(e==='crumble'){ SND.crumble(); }
   else if(e==='drop'){ }
-  else if(e==='hurt') fall('hurt');
-}); if(P.glide) glideAt=gt; if(P.on) groundY=P.y; if(hard) hardFall(); }
+  else if(e==='hurt') knock();
+}); }
 /* hard mode (Kody 2026-11-16: "not punishing enough"): a fall, thorns or ice cost a heart and the last 3 embers picked up (they go back
    on the mountain). Out of hearts: back to the start of the stretch (the last Waystone, the tower's foot or the last fire), hearts refilled.
    Moves and lit stations are never lost. Only the three Waystones refill hearts (Kody: refills must be rare); the tower fires do not. */
 var BIG=['c0','way','top','way3','base','b1','b2'];
 function bigCamp(){ var y=campOf(S.camp).y, id='c0'; BIG.forEach(function(b){ if(camps[b]&&camps[b].y<=y) id=b; }); return id; }
-/* embers are the fuel for Ember Dash (Kody 2026-11-16): each dash burns one; a fall burns 3. With none left, X only fizzles. */
-var fizzT=-9;
-function noFuel(){ if(gt-fizzT<0.6) return; fizzT=gt; tone(220,150,0,0.12,'sine',0.03); pop('lp-embchip'); KIT.toast('No embers left to dash. Grab more!'); }
 function outName(b){ return b==='c0'?'the village':(b==='base'?'the foot of the tower':(b[0]==='b'?'the last fire':'the Waystone')); }
 /* lose a heart; true when that was the last one (then the hero goes back to the stretch's start with 3 hearts) */
-function loseHeart(what){ S.falls++; S.campFalls++; var lost=S.embers.splice(Math.max(0,S.embers.length-3),3).length; S.fuel=Math.max(0,(S.fuel||0)-3); S.hearts--; hud(); pop('lp-hpchip');
+function loseHeart(what){ S.falls++; S.campFalls++; var lost=0; S.hearts--; hud(); pop('lp-hpchip');
   if(S.hearts<=0){ S.hearts=3; S.camp=bigCamp(); KIT.toast('Out of hearts! Back to '+outName(S.camp)); hud(); return true; }
   KIT.toast(what+' '+S.hearts+' heart'+(S.hearts>1?'s':'')+' left'+(lost?' · lost '+lost+' ember'+(lost>1?'s':''):'')); return false; }
 function fall(why){ if(mode!=='play') return; if(why==='hurt'){ SND.hurt(); P.ouch=true; }
   loseHeart(why==='hurt'?'Ouch!':'You fell!'); respawned=false; setMode('respawn'); save(); }
-/* a hard fall: landing 200+ px below the last ledge you stood on costs a heart, right where you land (a glide softens the landing) */
-var groundY=0, glideAt=-9, HARD=200;
-function hardFall(){ SND.hurt(); P.ouch=true; if(!RM.matches) shake=0.25; sq=0.6;
-  if(loseHeart('Hard fall!')){ respawned=false; setMode('respawn'); } save(); }
+/* THE GLOOM CHASES YOU (Kody 2026-11-16). Its fog rises from below the whole climb. Touch it: lose a heart, and it sinks back a little.
+   Out of hearts: back to the last Waystone (or the tower's foot or last fire) with 3 hearts. Lighting a Waystone or a fire drives the fog
+   far down. It is frozen while a question is up, and never further than FOGMAX below you (so it is always close). Thorns and falling ice
+   cost a heart and knock you back, with a moment of safety after. */
+var FOGV=[26,32,36,40,44,48], FOGMAX=430, FOGBACK=460, FOGHIT=300, invT=0;
+var FOGOFF=false;
+function fogStep(dt){ invT=Math.max(0,invT-dt); if(FOGOFF) return; var v=FOGV[Math.min(FOGV.length-1,zoneAt(P.y))]*(1+0.25*Math.max(0,S.st-3)/3);
+  S.fog=Math.max(S.fog+v*dt,P.y-FOGMAX);
+  if(P.y<S.fog+8&&invT<=0) caught(); }
+function caught(){ S.caught++; SND.hurt(); P.ouch=true; if(!RM.matches) shake=0.2;
+  if(loseHeart('The Gloom caught you!')){ respawned=false; setMode('respawn'); save(); return; }
+  S.fog=P.y-FOGHIT; invT=1.2; if(P.vy<300) P.vy=560; save(); }
+function knock(){ if(invT>0) return; SND.hurt(); P.ouch=true; if(!RM.matches) shake=0.15;
+  if(loseHeart('Ouch!')){ respawned=false; setMode('respawn'); save(); return; } invT=1.2; P.vy=520; P.vx=-(P.face||1)*220; P.on=null; save(); }
+
 function campCheck(){ if(!P.on) return; LV.camps.forEach(function(c,i){ if(c.id===S.camp) return; if(P.on.id!==c.id&&(Math.abs(P.y-c.y)>2||Math.abs(P.x-c.x)>140)) return;
   if(c.y<campOf(S.camp).y) return; S.camp=c.id; S.campFalls=0; SND.camp(); sparkle(c.x+12,c.y+34,8,'#FFD98A'); save(); }); }
 function pickups(){ var px=P.x, py=P.y+22;
-  LV.embers.forEach(function(e,i){ if(S.embers.indexOf(i)>=0) return; if(Math.abs(e[0]-px)<24&&Math.abs(e[1]-py)<30){ S.embers.push(i); S.fuel=(S.fuel||0)+1; SND.ember(); sparkle(e[0],e[1],6,'#FFC23D'); pop('lp-embchip'); hud(); save(); } });
+  LV.embers.forEach(function(e,i){ if(S.embers.indexOf(i)>=0) return; if(Math.abs(e[0]-px)<24&&Math.abs(e[1]-py)<30){ S.embers.push(i); SND.ember(); sparkle(e[0],e[1],6,'#FFC23D'); pop('lp-embchip'); hud(); save(); } });
   LV.feathers.forEach(function(f){ if(S.feathers.indexOf(f.id)>=0) return; if(Math.abs(f.x-px)<28&&Math.abs(f.y-py)<34){ S.feathers.push(f.id); SND.feather(); sparkle(f.x,f.y,14,'#2EC4B6'); KIT.toast('Star Feather! '+S.feathers.length+' of '+LV.feathers.length); hud(); pop('lp-fchip'); save(); } }); }
 function finish(){ S.done=true; S.over=true; S.cp=false; S.score=score(); save(); SND.fire(); SND.beacon(); setMode('finish'); finishT=0; finCheer=false; hint(null);
   BOSS.on=false; bossClear(0); $('lp-boss').hidden=true; }
 /* the end screen: after the beacon, or wherever the student chose to stop */
-function stars(){ return [ [S.done,'beacon lit'], [S.answered>0&&S.correct/S.answered>=0.9,'90% right'], [S.embers.length>=LV.embers.length*0.9,'90% of embers'], [S.feathers.length>=LV.feathers.length,'every Star Feather'] ]; }
+function stars(){ return [ [S.done,'beacon lit'], [S.answered>0&&S.correct/S.answered>=0.9,'90% right'], [S.done&&S.caught<=2,'caught 2 times or less'], [S.done&&S.hearts>=3,'finished with 3 hearts'] ]; }
 function showEnd(){ setMode('end'); panelAt=performance.now(); $('lp-hud').hidden=true; S.score=score(); save();
   var t=Math.round(S.playT), mm=Math.floor(t/60), ss=('0'+t%60).slice(-2), zi=zoneAt(S.best);
   $('lp-endtitle').textContent=S.done?'You lit the beacon!':'Climb ended in '+ZN[zi];
   $('lp-endtitle').style.fontSize=S.done?'88px':'68px';
   $('lp-endclimb').innerHTML=LV.zones.map(function(z,i){ var ok=i<4?S.st>i:S.done; return '<span style="'+(ok?'':'color:var(--muted)')+'">'+(z.finale?'The Beacon':z.name)+(ok?' ✓':'')+'</span>'; }).join('<span style="color:var(--muted)">›</span>');
   $('lp-endname').textContent=S.name+' · climbed '+Math.floor(S.best/20)+' m in '+mm+':'+ss+(S.falls?' · '+S.falls+' fall'+(S.falls>1?'s':''):' · no falls!');
-  var st=[[S.correct+' of '+S.answered,'questions right'],[S.embers.length+' / '+LV.embers.length,'embers'],[S.feathers.length+' / '+LV.feathers.length,'Star Feathers'],[Math.min(3,S.st)+' / 3','moves learned']];
+  var st=[[S.correct+' of '+S.answered,'questions right'],[Math.floor(S.best/20)+' m','highest point'],[S.caught+'','times caught'],[Math.min(3,S.st)+' / 3','moves learned']];
   $('lp-stats').innerHTML=st.map(function(s){ return '<div class="lp-stat"><b>'+s[0]+'</b><span>'+s[1]+'</span></div>'; }).join('');
   var sr=stars(), got=sr.filter(function(x){ return x[0]; }).length;
   $('lp-stars').innerHTML='<b>'+'★'.repeat(got)+'☆'.repeat(4-got)+'</b> &nbsp;'+sr.map(function(x){ return '<i class="'+(x[0]?'on':'')+'">'+x[1]+'</i>'; }).join(' · ');
@@ -507,6 +515,13 @@ function render(){
   if(mode!=='respawn'||modeT>0.45||modeT<0.12){ drawHero(c,P.x,sy(P.y),1.2); if(P.glide) canopy(c,P.x,sy(P.y)); }
   sparks.forEach(function(s){ c.globalAlpha=1-s.t/s.max; c.save(); c.translate(s.x,sy(s.y)); c.scale(0.6,0.6); A.star(c,s.col); c.restore(); }); c.globalAlpha=1;
   c.restore();
+  /* the Gloom's fog: a dark rolling bank from below, with a few slow eyes in it. No flashing; still under reduce-motion */
+  if(mode!=='title'&&mode!=='end'&&!S.done){ var fy=sy(S.fog);
+    if(fy>=H){ var near=Math.max(0,Math.min(1,1-(fy-H)/260)); if(near>0){ var gr=c.createLinearGradient(0,H-90*near,0,H); gr.addColorStop(0,'rgba(20,12,32,0)'); gr.addColorStop(1,'rgba(20,12,32,'+(0.85*near).toFixed(2)+')'); c.fillStyle=gr; c.fillRect(0,H-90*near,W,90*near); } }
+    if(fy<H+40){ var mo=RM.matches?0:t;
+    c.fillStyle='rgba(20,12,32,0.94)'; c.beginPath(); c.moveTo(0,H); for(var fx=0;fx<=W;fx+=24) c.lineTo(fx,fy+Math.sin(fx*0.021+mo*1.3)*9+Math.sin(fx*0.057-mo*0.8)*5); c.lineTo(W,H); c.closePath(); c.fill();
+    c.fillStyle='rgba(74,46,108,0.55)'; c.beginPath(); for(var fx=0;fx<=W;fx+=24) c.lineTo(fx,fy-6+Math.sin(fx*0.03-mo)*7); for(var fx=W;fx>=0;fx-=24) c.lineTo(fx,fy+16+Math.sin(fx*0.03-mo)*7); c.closePath(); c.fill();
+    for(var k=0;k<3;k++){ var ex=(k*331+140+Math.sin(mo*0.3+k)*40)%W, ey=fy+50+k*36; if(ey<H-6){ c.fillStyle='#E9DFF7'; c.fillRect(ex-14,ey,10,4); c.fillRect(ex+4,ey,10,4); } } } }
   /* respawn: a soft iris to the last lantern */
   if(mode==='respawn'){ var a=modeT<0.45?modeT/0.45:1-(modeT-0.45)/0.45; c.fillStyle='rgba(27,20,38,'+(0.85*Math.max(0,Math.min(1,a)))+')'; c.fillRect(0,0,W,H); }
   if(S.done){ c.fillStyle='rgba(255,217,138,'+(0.12*ramp(finishT,0.4,2)).toFixed(3)+')'; c.fillRect(0,0,W,H); }
@@ -584,7 +599,7 @@ window.__G={ state:function(){ return S; }, hero:function(){ return P; }, mode:f
   key:function(a,b){ held[a]=!!b; if(b&&a==='j') jumpEdge=true; if(b&&a==='dn') downEdge=true; if(b&&a==='ds') dashEdge=true; },
   setSt:function(n,camp){ S.st=n; S.runes=0; moves(); solids(); if(camp) S.camp=camp; hud(); bossBar(); },   // tests: jump to a stage
   calm:function(b){ BOSS.calm=!!b; if(b) bossClear(0); }, closeCP:function(){ S.cp=false; S.q=null; S.qDone=false; $('lp-cp').hidden=true; setMode('play'); }, opening:function(){ return opening; },
-  tp:function(x,y){ P=LPPH.fresh(x,y); P.on=null; groundY=y; cam=Math.max(-60,y-200); },
-  setCamp:function(id){ S.camp=id; }, step:function(dt){ update(dt); }, cam:function(){ return cam; }, rs:function(){ return RS; },
+  tp:function(x,y){ P=LPPH.fresh(x,y); P.on=null; invT=0; S.fog=Math.min(S.fog,y-FOGBACK); cam=Math.max(-60,y-200); },
+  setCamp:function(id){ S.camp=id; }, nofog:function(b){ FOGOFF=!!b; }, inv:function(){ return invT; }, step:function(dt){ update(dt); }, cam:function(){ return cam; }, rs:function(){ return RS; },
   blocked:function(){ return Object.keys(blocked); }, gt:function(){ return gt; }, hold:function(b){ testHold=!!b; }, held:function(){ return held; }, end:function(){ finish(); finishT=9; showEnd(); }, openCP:openCP, endEarly:endEarly, world:WORLD };
 })();
