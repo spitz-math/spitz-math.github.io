@@ -430,20 +430,36 @@ function fireTick(dt,p){ var w=S.w, F=w.fires; if(!F||(!F.length&&!(p.burn>0))) 
     f.hT=(f.hT||0)-dt; if(f.hT<=0){ f.hT=0.5; DSRC='fire'; for(var j=0;j<w.en.length;j++){ var e=w.en[j]; if(!e.dead&&e.type!=='boss'&&Math.hypot(e.x-f.x,(e.y-f.y)*1.6)<FIRE.r+e.r*0.5) hurtE(e,4,0,0,0); } } }
   if(p.burn>0){ p.burn-=dt; p.bseg=(p.bseg||FIRE.tick)-dt; if(p.bseg<=0){ p.bseg=FIRE.tick; p.bn=(p.bn||1)-1; hurtP({x:p.x,y:p.y+1,fire:1},1); if(p.bn<=0||S.mode!=='play'){ p.burn=0; return; } } if(p.burn<0.05) p.burn=0.05; } }
 /* fire patch: a low ember glow and pixel flames that rise and fall (gentle, never flashing). Outline only during the warning. */
+/* flame sprites inside a fire patch: [dx, dy (feet), scale], back to front */
+var FLAMES=[[-24,-4,1],[22,-6,1],[-10,-2,2],[12,2,2],[-28,10,1],[0,12,2],[27,12,1]];
 function drawFire(c,f,t){ var rx=FIRE.r, ry=Math.round(FIRE.r*0.62), x=Math.round(f.x), y=Math.round(f.y);
   var fade=f.t<0?0:Math.min(1,f.t/0.25)*Math.min(1,(FIRE.life-f.t)/0.6);
   c.save();
   if(f.t<0){ c.globalAlpha=0.35+0.5*(1+f.t/FIRE.warn); c.strokeStyle='#FF8A2A'; c.lineWidth=2; c.beginPath(); c.ellipse(x,y,rx,ry,0,0,7); c.stroke(); c.restore(); return; }
-  c.globalAlpha=0.30*fade; c.fillStyle='#E0461C'; c.beginPath(); c.ellipse(x,y,rx,ry,0,0,7); c.fill();
-  c.globalAlpha=0.55*fade; c.fillStyle='#FF8A2A'; c.beginPath(); c.ellipse(x,y,rx*0.6,ry*0.6,0,0,7); c.fill();
-  c.globalAlpha=fade; var n=LITE?4:7;
-  for(var k=0;k<n;k++){ var ang=k/n*6.283+f.s, fx=x+Math.round(Math.cos(ang)*rx*0.55), fy=y+Math.round(Math.sin(ang)*ry*0.55),
-      h=RM?10:Math.round(9+5*Math.sin(t*6+k*1.7+f.s));
-    c.fillStyle='#3A0E06'; c.fillRect(fx-4,fy-h-1,8,h+2); c.fillStyle='#FF6A1E'; c.fillRect(fx-3,fy-h,6,h); c.fillStyle='#FFC23A'; c.fillRect(fx-1,fy-Math.round(h*0.6),2,Math.round(h*0.6)); }
+  /* scorched ember floor = the full danger oval */
+  c.globalAlpha=0.55*fade; c.fillStyle='#3A1214'; c.beginPath(); c.ellipse(x,y,rx,ry,0,0,7); c.fill();
+  c.globalAlpha=0.35*fade; c.fillStyle='#B33B1B'; c.beginPath(); c.ellipse(x,y,rx*0.72,ry*0.72,0,0,7); c.fill();
+  c.globalAlpha=0.9*fade; c.strokeStyle='#6E1D14'; c.lineWidth=2; c.beginPath(); c.ellipse(x,y,rx,ry,0,0,7); c.stroke();
+  c.globalAlpha=fade;
+  if(RRI.fire_patch){ /* ChatGPT's flame strip (Task Drop 1110ba38): a back row and a front row inside the oval */
+    var k=RM?0:Math.floor(t*7+f.s*3)%3, k2=(k+1)%3, im=RRI.fire_patch; c.imageSmoothingEnabled=false;
+    c.drawImage(im,k2*80+8,0,64,48,x-32,Math.round(y-ry*0.55)-31,64,48);
+    if(RRI.burn_flame){ var bf=RRI.burn_flame;
+      for(var q=0;q<FLAMES.length;q++){ var F=FLAMES[q], kb=RM?q%3:(Math.floor(t*8+f.s*3)+q)%3, sc=F[2];
+        c.drawImage(bf,kb*12,0,12,20,x+F[0]-6*sc,y+F[1]-17*sc,12*sc,20*sc); } }
+    c.drawImage(im,k*80,0,80,48,x-40,y+ry-5-31,80,48);
+  } else {
+    var n=LITE?4:7;
+    for(var q=0;q<n;q++){ var ang=q/n*6.283+f.s, fx=x+Math.round(Math.cos(ang)*rx*0.55), fy=y+Math.round(Math.sin(ang)*ry*0.55),
+        h=RM?10:Math.round(9+5*Math.sin(t*6+q*1.7+f.s));
+      c.fillStyle='#3A0E06'; c.fillRect(fx-4,fy-h-1,8,h+2); c.fillStyle='#FF6A1E'; c.fillRect(fx-3,fy-h,6,h); c.fillStyle='#FFC23A'; c.fillRect(fx-1,fy-Math.round(h*0.6),2,Math.round(h*0.6)); }
+  }
   c.restore(); }
 /* Rook on fire: two small flames on his shoulders and a draining orange bar over his head */
 function drawBurn(c,p,t){ if(!(p.burn>0)) return; var x=Math.round(p.x), y=Math.round(p.y), k=p.burn/FIRE.burn;
-  for(var s2=-1;s2<=1;s2+=2){ var h=RM?8:Math.round(7+3*Math.sin(t*9+s2)); c.fillStyle='#3A0E06'; c.fillRect(x+s2*9-3,y-30-h,6,h+2); c.fillStyle='#FF6A1E'; c.fillRect(x+s2*9-2,y-29-h,4,h); }
+  for(var s2=-1;s2<=1;s2+=2){
+    if(RRI.burn_flame){ var kb=RM?1:(Math.floor(t*9)+(s2>0?1:0))%3; c.imageSmoothingEnabled=false; c.drawImage(RRI.burn_flame,kb*12,0,12,20,x+s2*15-6,y-16-17,12,20); }
+    else { var h=RM?8:Math.round(7+3*Math.sin(t*9+s2)); c.fillStyle='#3A0E06'; c.fillRect(x+s2*9-3,y-30-h,6,h+2); c.fillStyle='#FF6A1E'; c.fillRect(x+s2*9-2,y-29-h,4,h); } }
   c.fillStyle='#141026'; c.fillRect(x-20,y-58,40,7); c.fillStyle='#FF8A2A'; c.fillRect(x-19,y-57,Math.round(38*k),5); }
 var RGAP=0.4;   /* half-width of the safe gaps in a slam ring */
 function telegraphs(dt,p){ var w=S.w; if(!w.rings) return;
