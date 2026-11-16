@@ -1,3 +1,5 @@
+/* Chain Spark and Volatile numbers (Kody 2026-11-16 nerf); defined first because the card text reads them at load */
+var CSPK={every:[0,3.0,2.6,2.2], jumps:[0,1,2,3], dmg:[0,5,6,8]}, VOLD=[0,2,3,4];
 /* ---------- the castle: one run = these rooms ---------- */
 /* exits: n/w/e -> next room. Rooms lock while there are enemies; clearing opens every exit. */
 var ROOMS={
@@ -41,7 +43,7 @@ var UP=[
   {id:'riposte',  path:'blade', ic:'🤺', n:'Riposte',      d:function(l){ return ['','Every dodge (not just perfect ones) sets up a crit that fires a 3-wave fan','Dodge recharges 30% faster','Dodging through enemies cuts them'][l]; }},
   {id:'edge',     path:'blade', ic:'🗡️', n:'Keen Edge',   d:function(l){ return 'Sword hits for '+(3+2*l)+' and reaches farther'; }},
   {id:'volatile', path:'storm', ic:'💥', n:'Volatile',     d:function(l){ return ['','Defeated enemies explode and hurt enemies nearby','Bigger, stronger explosions','Huge explosions that chain through crowds'][l]; }},
-  {id:'spark',    path:'storm', ic:'⚡', n:'Chain Spark',  d:function(l){ return 'Lightning hits the nearest enemy every '+[0,2.4,2.0,1.6][l]+'s and jumps to '+(l+1)+' more'; }},
+  {id:'spark',    path:'storm', ic:'⚡', n:'Chain Spark',  d:function(l){ return 'Lightning hits the nearest enemy every '+CSPK.every[l]+'s and jumps to '+CSPK.jumps[l]+' more'; }},
   {id:'orbit',    path:'storm', ic:'🔪', n:'Orbit Blades', d:function(l){ return [0,2,3,4][l]+' blades circle you and cut what they touch'; }},
   {id:'ricochet', path:'storm', ic:'🔵', n:'Ricochet Orb', d:function(l){ return 'Throws an orb that bounces off walls '+(l+2)+' times'+(l>=3?', two at a time':''); }},
   {id:'bash',     path:'bulwark', ic:'🛡️', n:'Shield Bash', d:function(l){ return ['','Your dodge becomes a shield charge: enemies you hit take damage and are stunned','Harder bash, longer stun','Huge bash, and your dodge recharges faster'][l]; }},
@@ -73,8 +75,8 @@ var INFO={
   whirl:{how:'Attack all around you', use:'Hold attack', base:'Keep swinging without a pause and your chain ends in a full spin that hits all around you.', st:function(l){ return [['Spin on',l>=3?'every 2nd swing':'every 3rd swing'],['Spin damage',(1.5+0.25*l)+'× sword'],['Spin reach','+'+Math.round((12+8*l)/58*100)+'%']]; }},
   riposte:{how:'Dodge, then land a powerful strike', use:'After dodge', base:'After every dodge roll, your next swing (within 1.2 s) is a critical hit: double damage plus a fan of 3 sword waves.', st:function(l){ return [['Dodge recharge',l>=2?'30% faster':'normal'],['Rolling through enemies',l>=3?'cuts them (6)':'no damage']]; }},
   edge:{how:'Bigger, longer sword hits', use:'Hold attack', base:'A sharper sword: every swing hits harder and reaches farther.', st:function(l){ return [['Sword damage',(3+2*l)+' (base 3)'],['Sword reach','+'+Math.round(7*l/58*100)+'%']]; }},
-  volatile:{how:'Defeated enemies explode', use:'Automatic', base:'Defeated enemies explode and hurt the enemies around them.', st:function(l){ return [['Blast damage',[0,3,4,5][l]],['Blast size',[0,100,120,145][l]+'%'],['Blasts set off blasts',l>=3?'yes, one step':'no']]; }},
-  spark:{how:'Automatic lightning', use:'Automatic', base:'Lightning strikes the nearest enemy on its own, then jumps to more enemies nearby.', st:function(l){ return [['Strikes every',[0,2.4,2.0,1.6][l]+' s'],['Jumps to',(l+1)+' more'],['First-hit damage',4+2*l]]; }},
+  volatile:{how:'Defeated enemies explode', use:'Automatic', base:'Defeated enemies explode and hurt the enemies around them.', st:function(l){ return [['Blast damage',VOLD[l]],['Blast size',[0,100,120,145][l]+'%'],['Blasts set off blasts',l>=3?'yes, one step':'no']]; }},
+  spark:{how:'Automatic lightning', use:'Automatic', base:'Lightning strikes the nearest enemy on its own, then jumps to more enemies nearby.', st:function(l){ return [['Strikes every',CSPK.every[l]+' s'],['Jumps to',CSPK.jumps[l]+' more'],['First-hit damage',CSPK.dmg[l]]]; }},
   orbit:{how:'Blades circle you and cut', use:'Automatic', base:'Blades circle close around you and cut any enemy they touch.', st:function(l){ return [['Blades',[0,2,3,4][l]],['Damage per cut',3+l]]; }},
   ricochet:{how:'A bouncing orb, thrown for you', use:'Automatic', base:'Every 1.5 s you throw an orb at the nearest enemy. It bounces off walls and hits everything it passes.', st:function(l){ return [['Wall bounces',l+2],['Damage',3+l],['Orbs per throw',l>=3?2:1]]; }},
   bash:{how:'Damage enemies with your dodge', use:'After dodge', base:'Your dodge roll becomes a shield charge: enemies you roll into take damage and are stunned (the Warden is only pushed).', st:function(l){ return [['Bash damage',[0,6,9,13][l]],['Stun',[0,0.8,1.1,1.4][l]+' s'],['Dodge recharge',l>=3?'25% faster':'normal']]; }},
@@ -145,7 +147,12 @@ function stat(){ var e=L('edge'), bo=L('boots');
 /* ---------- combat ---------- */
 var DSRC='sword', BGEN=0; function tally(d){ var t=window.__dmg; if(t) t[DSRC]=(t[DSRC]||0)+d; }
 function angDiff(a,b){ var d=a-b; while(d>Math.PI) d-=2*Math.PI; while(d<-Math.PI) d+=2*Math.PI; return Math.abs(d); }
+/* Kody's classroom test 2026-11-16: "lightning and volatile are still way too strong, especially for dealing with the skeletons".
+   Chain Spark: slower (was 2.4/2.0/1.6 s), one fewer jump (was 2/3/4), less damage (was 6/8/10). Volatile blasts 2/3/4 (was 3/4/5).
+   Shield knights' shields ground lightning and blunt blasts: they take a third of any storm damage, so the sword is still the answer. */
+var STORMD={spark:1,overcharge:1,tcharge:1,thunder:1,stormcall:1,volatile:1,spite:1};
 function hurtE(e,d,fx,fy,kb,opt){ if(e.dead) return; opt=opt||{}; var w=S.w;
+  if(e.type==='skel'&&STORMD[DSRC]&&d>0) d=Math.max(1,Math.round(d/3));
   /* skeleton knights block sword hits from the front, unless they are recovering or you crit */
   if(e.type==='skel'&&(opt.melee||opt.proj||opt.orb)&&!opt.crit&&!opt.bash&&e.st!==3){ var pa=opt.proj?Math.atan2(-fy,-fx):Math.atan2(w.p.y-e.y,w.p.x-e.x); if(angDiff(pa,e.fa)<1.3){ d=0; SND.clang(); if(!(w.t-(e.blkAt||-9)<0.9)){ e.blkAt=w.t; w.fx.push({k:'txt',x:e.x,y:e.y-34,t:0,v:'BLOCKED',c:'#CFE0FF'}); if(opt.melee){ w.p.kx-=fx*70; w.p.ky-=fy*70; } }   /* a small push back, once per knight per 0.9 s (was 220 on every blocked hit: Rook pinballed in crowds, Kody's playtest 2026-11-15) */ kb=40; if(!opt.melee) return; } }
   if(e.type==='boss'&&e.st===9) d=Math.round(d*1.6);   /* stunned boss takes more */
@@ -169,7 +176,7 @@ function killE(e,opt){ var w=S.w, t=ET[e.type]; e.dead=true; w.kills++; SND.die(
   if(!(w.last>0)&&Math.random()<(w.p.hp<=2?0.15:0.045)&&w.p.hp<w.p.max&&w.hearts.length<4) w.hearts.push({x:e.x,y:e.y,t:0});
   if(e.type==='slime'&&w.fx.length<130) w.fx.push({k:'splat',x:e.x,y:e.y+e.r+2,sm:e.small?1:0,t:0});   /* goo splat on the floor, also when a big one splits */
   if(e.type==='slime'&&!e.small){ for(var s2=0;s2<2;s2++){ var a=Math.random()*6.28, sm=spawnEnemy('slime',e.x+Math.cos(a)*10,e.y+Math.sin(a)*10,1,true); sm.kx=Math.cos(a)*220; sm.ky=Math.sin(a)*220; sm.cd=0.6; } }
-  if(L('volatile')&&w.booms.length<40&&(DSRC!=='volatile'||(L('volatile')>=3&&!BGEN))){ var lv=L('volatile'); w.booms.push({x:e.x,y:e.y,r:[0,40,48,58][lv],dmg:[0,3,4,5][lv],t:0.06,g:DSRC==='volatile'?1:0}); }   /* level 3 chains one step, never forever */
+  if(L('volatile')&&w.booms.length<40&&(DSRC!=='volatile'||(L('volatile')>=3&&!BGEN))){ var lv=L('volatile'); w.booms.push({x:e.x,y:e.y,r:[0,40,48,58][lv],dmg:VOLD[lv],t:0.06,g:DSRC==='volatile'?1:0}); }   /* level 3 chains one step, never forever */
   if(opt&&opt.melee&&!RM) S.hs=Math.max(S.hs||0,0.05);
   if(e.type==='boss'&&w.last>0){ w.lsWK=(w.lsWK||0)+1; addPts(1500,e.x,e.y-60,'#FFC93C'); SND.bossDown(); toast('A Warden falls! +1500'); for(var q=0;q<(RM?6:16);q++) w.fx.push({k:'bit',x:e.x,y:e.y-20,vx:rnd(-160,160),vy:rnd(-200,20),t:0,c:'#8A92BE'}); }
   else if(e.type==='boss'){ var bt=w.runT-(w.roomT0||w.runT); addPts(2000+Math.max(0,1500-15*bt)+(w.hurtRoom?0:500),e.x,e.y-60,'#FFC93C'); w.flawless+=w.hurtRoom?0:1; SND.bossDown(); w.won=1; w.victory=2.6; w.en.forEach(function(o){ if(o!==e&&!o.dead){ o.dead=true; } }); w.tele=[]; w.orbs=[]; var gv=0; w.gems.forEach(function(g){ gv+=g.v; }); w.gems=[]; if(gv) gainXP(gv,1);   /* gems still on the floor count */ toast('The Iron Warden falls!'); } }
@@ -384,12 +391,13 @@ function bossAI(e,dt,p,d,ux,uy){ var w=S.w, half=e.hp<e.max/2, sp=half?0.85:1;
   if(e.st===0){ v=ET.boss.spd*(half?1.25:1); mx=ux; my=uy; if(e.cd<=0){ var r=Math.random();
       if(!e.taught&&!(w.last>0)){ e.taught=1; e.st=1; e.cd=1.25; e.c0=e.cd; e.fa=Math.atan2(p.y-e.y,p.x-e.x); e.chains=0; }
       else if(d<130){ e.st=4; e.cd=0.7*sp; e.fa=Math.atan2(p.y-e.y,p.x-e.x); }
-      else if(r<0.45){ e.st=1; e.cd=0.85*sp; e.c0=e.cd; e.fa=Math.atan2(p.y-e.y,p.x-e.x); e.chains=w.last>0?2:half?1:(Math.random()<0.4?1:0); }
-      else if(r<0.8||!half){ e.st=3; e.cd=0.8*sp; e.fa=Math.atan2(p.y-e.y,p.x-e.x); }
+      else if(r<(half?0.7:0.55)){ e.st=1; e.cd=0.85*sp; e.c0=e.cd; e.fa=Math.atan2(p.y-e.y,p.x-e.x); e.chains=half?2:(Math.random()<0.5?1:0); }   /* Kody 2026-11-16: charges more, much more when enraged (was 45%, 1 extra charge) */
+      else if(r<0.88||!half){ e.st=3; e.cd=0.8*sp; e.fa=Math.atan2(p.y-e.y,p.x-e.x); }
       else { e.st=6; e.cd=0.7*sp; }
       SND.btele(); } }
-  else if(e.st===1){ if(e.cd>e.c0*0.4) e.fa=Math.atan2(p.y-e.y,p.x-e.x); if(e.cd<=0){ e.st=2; e.cd=1.4; } }
-  else if(e.st===2){ v=560; mx=Math.cos(e.fa); my=Math.sin(e.fa); if(e.cd<=0){ e.lastA='charge'; e.st=5; e.cd=0.5; } }
+  else if(e.st===1){ if(e.cd>e.c0*0.4) e.fa=Math.atan2(p.y-e.y,p.x-e.x); if(e.cd<=0){ e.st=2; e.cd=1.4; e.cdist=0; } }
+  else if(e.st===2){ v=560; mx=Math.cos(e.fa); my=Math.sin(e.fa); if(half){ e.cdist=(e.cdist||0)+v*dt; if(e.cdist>=130){ e.cdist=0; addFire(e.x,e.y,p); } }   /* an enraged charge leaves a trail of fire */
+    if(e.cd<=0){ e.lastA='charge'; e.st=5; e.cd=0.5; } }
   else if(e.st===3){ if(e.cd<=0){ if(!RM) w.shake=0.25; SND.slam(); if(Math.hypot(p.x-e.x,p.y-e.y)<120) hurtP(e); w.fx.push({k:'boom',x:e.x,y:e.y,r:120,t:0}); e.lastA='slam'; if(half) slamFire(e,p);   /* Kody 2026-11-16: first Warden fight makes fire only once he is enraged; the Last Stand always */ if(half&&!(w.ringT>0)){ var ga=Math.random()*6.283; w.ringT=1.5; w.rings=(w.rings||[]).concat([{x:e.x,y:e.y,r:120,hit:0,ls:w.last>0?1:0,g:[ga,ga+Math.PI+rnd(-0.5,0.5)]}]); } e.st=5; e.cd=0.7; } }
   else if(e.st===4){ if(e.cd<=0){ var pa=Math.atan2(p.y-e.y,p.x-e.x); w.fx.push({k:'slash',x:e.x,y:e.y-10,a:e.fa,t:0,big:1}); if(Math.hypot(p.x-e.x,p.y-e.y)<130&&angDiff(pa,e.fa)<1.25) hurtP(e); e.lastA='swipe'; e.st=5; e.cd=half?0.35:0.6; } }
   else if(e.st===6){ if(e.cd<=0){ e.lastA='orbs'; for(var k=0;k<10;k++){ var a=k*Math.PI/5+e.t; w.orbs.push({x:e.x,y:e.y-20,vx:Math.cos(a)*140,vy:Math.sin(a)*140,t:0}); } SND.orb(); e.st=5; e.cd=0.6; } }
@@ -405,7 +413,11 @@ function bossAI(e,dt,p,d,ux,uy){ var w=S.w, half=e.hp<e.max/2, sp=half?0.85:1;
    (straight through armor and Aegis). Kody 2026-11-16: a dodge roll does NOT put it out (too free); rolling across a patch
    still doesn't light you. One burn at a time, no stacking.
    Enemies standing in fire take 4 damage every 0.5 s (Wardens are immune). */
-var FIRE={r:38, warn:0.5, life:6, max:4, burn:6, tick:3};   /* Kody 2026-11-16: burn ticks health down over a longer time: 1 heart every 3 s for 6 s (2 hearts) */
+var FIRE={r:38, warn:0.5, life:6, max:6, burn:6, tick:3};   /* max 6 (was 4): enraged charges add a fire trail */   /* Kody 2026-11-16: burn ticks health down over a longer time: 1 heart every 3 s for 6 s (2 hearts) */
+function addFire(x,y,p){ var w=S.w; w.fires=w.fires||[]; if(w.fires.length>=FIRE.max) return false;
+  if(x<FLR[0]+60||x>FLR[2]-60||y<FLR[1]+60||y>FLR[3]-60||wallAt(x,y)||Math.hypot(x-p.x,y-p.y)<FIRE.r+40) return false;
+  if(w.fires.some(function(f){ return Math.hypot(f.x-x,f.y-y)<FIRE.r*1.6; })) return false;
+  w.fires.push({x:x,y:y,t:-FIRE.warn,s:Math.random()*9}); return true; }
 function slamFire(e,p){ var w=S.w; w.fires=w.fires||[]; var made=0;
   for(var k=0;k<12&&made<2&&w.fires.length<FIRE.max;k++){ var a=Math.random()*6.283, d=rnd(70,130), x=e.x+Math.cos(a)*d, y=e.y+Math.sin(a)*d;
     if(x<FLR[0]+60||x>FLR[2]-60||y<FLR[1]+60||y>FLR[3]-60||wallAt(x,y)) continue;
@@ -450,7 +462,7 @@ function powers(dt,p){ var w=S.w, i, e, l;
       for(var oi=w.orbs.length-1;oi>=0;oi--){ var o=w.orbs[oi]; if(o.fr) continue; if(Math.hypot(o.x-gx,o.y-gy)<16){ w.orbs.splice(oi,1); var tw=nearestFoe(gx,gy,520), ta=tw?Math.atan2(tw.y-gy,tw.x-gx):ga;
           w.shots.push({k:'rico',ward:1,x:gx,y:gy,vx:Math.cos(ta)*460,vy:Math.sin(ta)*460,t:0,life:1.4,dmg:8+3*l,bounce:0,pierce:l>=3?3:1,hit:[]}); SND.bolt(); } }
       for(i=0;i<w.en.length;i++){ e=w.en[i]; if(e.dead||e.wh>0) continue; if(Math.hypot(e.x-gx,e.y-gy)<e.r+9){ e.wh=0.5; DSRC='ward'; var gd=Math.hypot(e.x-p.x,e.y-p.y)||1; hurtE(e,2+l,(e.x-p.x)/gd,(e.y-p.y)/gd,200,{orb:1}); } } } }
-  l=L('spark'); if(l){ w.tm.spark-=dt; if(w.tm.spark<=0){ var tg=nearestFoe(p.x,p.y,420); if(tg){ w.tm.spark=[0,2.4,2.0,1.6][l]; DSRC='spark'; w.fx.push({k:'zap',x:tg.x,y:tg.y,t:0}); chainZap(p.x,p.y-10,tg,l+1,4+2*l); SND.zap(); } else w.tm.spark=0.3; } }
+  l=L('spark'); if(l){ w.tm.spark-=dt; if(w.tm.spark<=0){ var tg=nearestFoe(p.x,p.y,420); if(tg){ w.tm.spark=CSPK.every[l]; DSRC='spark'; w.fx.push({k:'zap',x:tg.x,y:tg.y,t:0}); chainZap(p.x,p.y-10,tg,CSPK.jumps[l],CSPK.dmg[l]); SND.zap(); } else w.tm.spark=0.3; } }
   l=L('ricochet'); if(l){ w.tm.rico-=dt; if(w.tm.rico<=0){ w.tm.rico=1.5; var tg2=nearestFoe(p.x,p.y,500), base=tg2?Math.atan2(tg2.y-p.y,tg2.x-p.x):Math.atan2(p.fy,p.fx);
       (l>=3?[base-0.25,base+0.25]:[base]).forEach(function(a){ w.shots.push({k:'rico',x:p.x,y:p.y-6,vx:Math.cos(a)*360,vy:Math.sin(a)*360,t:0,life:3,dmg:3+l,bounce:l+2,hit:[]}); }); SND.bolt(); } } }
 function explosions(dt){ var w=S.w, n=0;
@@ -483,7 +495,7 @@ function roomTick(dt){ var w=S.w, R=ROOMS[w.rid];
   if(R.boss){ if(w.bossIntro>0){ w.bossIntro-=dt; if(w.bossIntro<=0){ var b=spawnEnemy('boss',W/2,170,1); b.cd=1.2; w.boss=b; } } return; }
   if(R.siege){ siegeTick(dt); return; }
   var alive=w.en.length+w.spawns.length;
-  if(w.wave<w.waves.length){ if(alive<=3&&w.waveT>0.7) w.waveT=0.7; if(R.intro&&w.wave===1&&(alive||w.spawns.length)&&(w.introT=(w.introT||0)+dt)<25) w.waveT=Math.max(w.waveT,1.4); w.waveT-=dt; if(w.waveT<=0){ var last=w.wave===w.waves.length-1&&w.waves.length>3; spawnWave(w.waves[w.wave],R.m||1,w.wave>0); if(last) w.banner={txt:'HERE THEY COME!',sub:'',t:1.1}; if(R.intro&&w.wave===0) (w.bannerQ=w.bannerQ||[]).push({txt:'SHIELD KNIGHT',sub:'He blocks attacks from the front. Dodge past his swing, then strike from behind.',t:3.4}); w.wave++; w.waveT=6; } }
+  if(w.wave<w.waves.length){ if(alive<=3&&w.waveT>0.7) w.waveT=0.7; if(R.intro&&w.wave===1&&(alive||w.spawns.length)&&(w.introT=(w.introT||0)+dt)<25) w.waveT=Math.max(w.waveT,1.4); w.waveT-=dt; if(w.waveT<=0){ var last=w.wave===w.waves.length-1&&w.waves.length>3; spawnWave(w.waves[w.wave],R.m||1,w.wave>0); if(last) w.banner={txt:'HERE THEY COME!',sub:'',t:1.1}; if(R.intro&&w.wave===0) (w.bannerQ=w.bannerQ||[]).push({txt:'Shield Knight',sub:'He blocks attacks from the front. Dodge past his swing, then strike from behind.',t:4.5,tip:1}); w.wave++; w.waveT=6; } }
   else if(!alive) roomClear(); }
 function roomClear(){ var w=S.w, R=ROOMS[w.rid]; var rt=w.runT-(w.roomT0||w.runT), fl=!w.hurtRoom, bonus=150+Math.max(0,450-6*rt)+(fl?300:0); addPts(bonus); if(fl) w.flawless++;
   w.clearMsg='+'+Math.round(bonus)+' room bonus'+(fl?' · FLAWLESS!':'');
@@ -1021,7 +1033,11 @@ function drawHUD(t){ var c=cx, w=S.w, p=w.p, i, R=ROOMS[w.rid], na=p.arm||0, low
   /* the Siege and Last Stand timers are in the top bar now (lsTop) */
   var obj=''; if(S.mode==='play'&&w.cleared&&!w.pend){ if(w.chest&&!w.chest.open) obj='Walk into the chest to open it'; else if(Object.keys(R.exits).length) obj=Object.keys(R.exits).length>1?'Choose a door: west or east':'The door is open ↑'; }
   if(obj){ var os=tspr(obj,18,'#FFE08A'), tw=os.width+30; c.fillStyle='rgba(7,8,18,.75)'; c.fillRect(Math.round(W/2-tw/2),H-58,tw,28); dtx(c,obj,W/2,H-38,18,'#FFE08A'); }
-  if(w.banner){ var bt=w.banner, ga=c.globalAlpha; c.globalAlpha=ga*Math.min(1,bt.t*2); c.fillStyle='rgba(7,8,18,.7)'; c.fillRect(0,H/2-70,W,bt.sub?104:72);
+  /* Kody 2026-11-16: teaching notes are a small plate along the top wall, not a full-width banner */
+  if(w.banner&&w.banner.tip){ var tb=w.banner, ga2=c.globalAlpha, pw=660, ph=54, px=Math.round(W/2-pw/2), py=64; c.globalAlpha=ga2*Math.min(1,tb.t*2);
+    c.fillStyle='#120A1F'; c.fillRect(px-2,py-2,pw+4,ph+4); c.fillStyle='#1E1233'; c.fillRect(px,py,pw,ph); c.fillStyle='#FFC23A'; c.fillRect(px,py,4,ph);
+    dtx(c,tb.txt,W/2,py+17,17,'#FFC23A'); dtx(c,tb.sub,W/2,py+39,14,'#F4ECD8'); c.globalAlpha=ga2; }
+  else if(w.banner){ var bt=w.banner, ga=c.globalAlpha; c.globalAlpha=ga*Math.min(1,bt.t*2); c.fillStyle='rgba(7,8,18,.7)'; c.fillRect(0,H/2-70,W,bt.sub?104:72);
     dtx(c,bt.txt,W/2,H/2-20,44,'#FFC93C'); if(bt.sub) dtx(c,bt.sub,W/2,H/2+16,20,'#E8ECFF'); c.globalAlpha=ga; }
   if(w.victory){ dtx(c,'VICTORY!',W/2,H/2,64,'#FFC93C',0,'#141026'); dtx(c,'The Warden is beaten. You win!',W/2,H/2+46,24,'#F4ECD8',0,'#141026'); }
   /* back from a knockout: what came back, then a short count-in before enemies move again */
