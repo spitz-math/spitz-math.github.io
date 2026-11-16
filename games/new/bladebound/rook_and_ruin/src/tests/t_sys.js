@@ -86,7 +86,7 @@ const {chromium}=require('playwright'); const D=process.argv[2]||'out', O=D+'/to
  for(let k=0;k<20&&await ed.evaluate(()=>document.getElementById('dn-end').hidden);k++) await ed.waitForTimeout(500);
  await ed.waitForTimeout(2500); await ed.screenshot({path:O+'sys_09_end_defeat_cb.png'});
  const er=await ed.evaluate(()=>{ const box=document.querySelector('.dn-endbox').getBoundingClientRect(); return {txt:document.getElementById('dn-endtopics').textContent, run:document.getElementById('dn-endstats').textContent, math:document.getElementById('dn-mathbig').textContent, build:document.getElementById('dn-endbuild').textContent, fits:box.bottom<=innerHeight+1&&box.top>=-1, teacher:/Show this screen to your teacher/.test(document.getElementById('dn-end').textContent), name:document.getElementById('dn-endname').textContent}; });
- check('resultsSplit',/Not attempted/.test(er.txt)&&/Enemies defeated/.test(er.run)&&!/right/.test(er.run)&&/11 of 14 right/.test(er.math)&&/Sword Wave/.test(er.build)&&/Lv 2|MAX/.test(er.build)&&er.teacher&&er.name==='Levi S',er);
+ check('resultsSplit',/Not attempted/.test(er.txt)&&/Enemies defeated/.test(er.run)&&!/right/.test(er.run)&&/11 of 14 right/.test(er.math)&&/Sword Wave/.test(er.build)&&/Lv 2|MAX/.test(er.build)&&!er.teacher&&er.name==='Levi S',er);
  check('resultsFitCB',er.fits,er);
  const tt=await page(1366,620,false); await tt.screenshot({path:O+'sys_10_title_cb.png'}); check('titleFitsCB',await tt.evaluate(()=>{ const r=document.querySelector('#dn-start .dn-box').getBoundingClientRect(); return r.bottom<=innerHeight+1; }),'');
 
