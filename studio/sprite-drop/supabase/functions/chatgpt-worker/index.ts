@@ -16,7 +16,8 @@ import { OpenAIError, classify, candidates, imageCost, textCost, type Priority, 
 const OPENAI_KEY = Deno.env.get('OPENAI_API_KEY') || ''
 const MODEL = Deno.env.get('OPENAI_MODEL') || 'gpt-5'
 const IMAGE_MODEL_ENV = Deno.env.get('OPENAI_IMAGE_MODEL') || '' // optional override; normally the settings row picks
-const MAX_IMAGE_ATTEMPTS = 3 // per run, all models together; a paid generation is never retried in a loop
+const MAX_IMAGE_ATTEMPTS = 3 // per picture, all models together; a paid generation is never retried in a loop
+const MAX_IMAGES = 3 // pictures per turn
 const CACHE_HOURS = 24
 const DAILY_CAP = Number(Deno.env.get('WORKER_DAILY_CAP') || 20)
 const BUCKET = 'studio-assets'
@@ -25,24 +26,35 @@ const db = createClient(Deno.env.get('SUPABASE_URL')!, Deno.env.get('SUPABASE_SE
 const SYSTEM = `You are ChatGPT, the artist and reviewer in spitz.dev, a small studio where ChatGPT and Claude make HTML math games for Kody's middle-school students.
 You are running as an automatic worker: nobody is chatting with you. Read the task brief and every message, then do ChatGPT's next turn.
 Decide ONE action:
-- "image": the task needs a new picture from you (a sprite, sheet, icon, background). Write a precise image_prompt for an image model. For pixel art give the exact sheet size in art pixels (art_width, art_height), the delivery scale from the brief (default 4), and max_colours (usually 6-12). The worker turns the picture into exact hard-edged pixel art at that size, so describe the art filling the canvas the same way the cells are laid out, on a fully transparent background, no labels or grid lines. If the brief lists exact hex colours, put ALL of them in palette (the worker snaps every pixel to them); if it asks for a 1 pixel outline, put that colour in outline (the worker closes the outline itself). Ask the image model for big chunky blocks, bold flat shading and a thick dark outline, so it survives shrinking. If it is NOT pixel art, set art_width/art_height to 0. Set priority to "default" unless the brief or Kody asks for quality, speed or cost.
+- "image": the task needs new pictures from you (a sprite, sheet, icon, background). Put one entry in images for each picture the brief asks for this turn (at most 3). For each, write a precise image_prompt for an image model. For pixel art give the exact sheet size in art pixels (art_width, art_height), the delivery scale from the brief (default 4), and max_colours (usually 6-12). The worker turns the picture into exact hard-edged pixel art at that size, so describe the art filling the canvas the same way the cells are laid out, on a fully transparent background, no labels or grid lines. If the brief lists exact hex colours, put ALL of them in palette (the worker snaps every pixel to them); if it asks for a 1 pixel outline, put that colour in outline (the worker closes the outline itself). Ask the image model for big chunky blocks, bold flat shading and a thick dark outline, so it survives shrinking. If it is NOT pixel art, set art_width/art_height to 0 and set size to the brief's shape (1536x1024 wide, 1024x1536 tall, 1024x1024 square). Set background to "opaque" when the brief wants a background colour or scene (say the colour in image_prompt), "transparent" for sprites and cut-outs. Set priority to "default" unless the brief or Kody asks for quality, speed or cost.
 - "reply": the turn needs words only (a review of screenshots, an answer, a decision). Be concrete and short.
 Then choose next_turn: "claude" when Claude should act next (wire art in, build, fix), "kody" when Kody must decide or approve something, and done=true only when the brief's goal is fully met and nothing is left.
 Never claim to have tested a game or approved a deploy: only Kody approves merges and deploys.`
 
 const PLAN_SCHEMA = {
   type: 'object', additionalProperties: false,
-  required: ['action', 'body', 'priority', 'image_prompt', 'art_width', 'art_height', 'scale', 'max_colours', 'palette', 'outline', 'file_name', 'next_turn', 'done'],
+  required: ['action', 'body', 'priority', 'images', 'next_turn', 'done'],
   properties: {
     action: { type: 'string', enum: ['image', 'reply'] },
     body: { type: 'string', description: 'The message to post on the task (for image: what you drew and any notes for Claude).' },
     priority: { type: 'string', enum: ['quality', 'speed', 'cost', 'default'], description: 'quality for important game art, speed for experiments and quick revisions, cost for bulk or simple assets; default unless the brief or Kody asks.' },
-    image_prompt: { type: 'string' },
-    art_width: { type: 'integer' }, art_height: { type: 'integer' },
-    scale: { type: 'integer' }, max_colours: { type: 'integer' },
-    palette: { type: 'array', items: { type: 'string' }, description: 'Exact #RRGGBB colours the brief requires (outline included), or [] to let the worker pick.' },
-    outline: { type: 'string', description: 'The #RRGGBB outline colour if the brief wants a 1 art pixel outline around the shapes, else "".' },
-    file_name: { type: 'string' },
+    images: {
+      type: 'array', description: 'One entry per picture to make this turn (1 to 3); [] for a reply.',
+      items: {
+        type: 'object', additionalProperties: false,
+        required: ['image_prompt', 'size', 'background', 'art_width', 'art_height', 'scale', 'max_colours', 'palette', 'outline', 'file_name'],
+        properties: {
+          image_prompt: { type: 'string' },
+          size: { type: 'string', enum: ['1024x1024', '1536x1024', '1024x1536'], description: 'Canvas shape. Pixel art: the worker picks it from art_width/art_height.' },
+          background: { type: 'string', enum: ['transparent', 'opaque'], description: 'opaque when the brief wants a background colour or scene; pixel art is always transparent.' },
+          art_width: { type: 'integer' }, art_height: { type: 'integer' },
+          scale: { type: 'integer' }, max_colours: { type: 'integer' },
+          palette: { type: 'array', items: { type: 'string' }, description: 'Exact #RRGGBB colours the brief requires (outline included), or [] to let the worker pick.' },
+          outline: { type: 'string', description: 'The #RRGGBB outline colour if the brief wants a 1 art pixel outline around the shapes, else "".' },
+          file_name: { type: 'string' },
+        },
+      },
+    },
     next_turn: { type: 'string', enum: ['claude', 'kody'] },
     done: { type: 'boolean' },
   },
@@ -79,7 +91,8 @@ async function drawImage(body: Record<string, unknown>, priority: Priority, st: 
   let list = candidates(preferred && (!list_ || list_.includes(preferred)) ? preferred : null, list_, priority)
   if (!list.length) list = candidates(null, await available(st, true), priority)
   let last: unknown = new Error('No image model to try.'), retried = false, refreshed = false
-  while (list.length && tr.attempts < MAX_IMAGE_ATTEMPTS) {
+  const cap = tr.attempts + MAX_IMAGE_ATTEMPTS
+  while (list.length && tr.attempts < cap) {
     const model = list[0]
     try { tr.attempts++; return { img: await openai('images/generations', { ...body, model, quality }), model, quality } }
     catch (e) {
@@ -171,44 +184,61 @@ async function run(taskId: string) {
       return 'replied'
     }
 
-    // draw
+    // draw: each picture in turn; everything saved is posted, even if a later picture fails
     const Image = await loadImage()
-    const pixel = p.art_width > 0 && p.art_height > 0
-    const ratio = pixel ? p.art_width / p.art_height : 1
-    const size = ratio > 1.25 ? '1536x1024' : ratio < 0.8 ? '1024x1536' : '1024x1024'
     const priority: Priority = ['quality', 'speed', 'cost'].includes(p.priority) ? p.priority : (st.default_priority || 'quality')
-    Object.assign(rec, { priority, image_size: size })
-    const { img, model: imageModel, quality } = await drawImage({ prompt: p.image_prompt, size, background: 'transparent', output_format: 'png', n: 1 }, priority, st, tr)
-    cost.image = imageCost(img.usage, st.rates || {})
-    Object.assign(rec, { image_model: imageModel, image_quality: quality, usage: { plan: plan.usage || null, image: img.usage || null } })
-    const b64 = img?.data?.[0]?.b64_json
-    if (!b64) throw new Error('The image model returned no picture.')
-    let bytes = Uint8Array.from(atob(b64), c => c.charCodeAt(0))
-    let note = `Made by the ChatGPT worker (${imageModel}, ${priority}).`
-    if (pixel) {
-      const scale = Math.min(16, Math.max(1, p.scale || 4))
-      const dec = await Image.decode(bytes)
-      const out = pixelize({ w: dec.width, h: dec.height, data: new Uint8Array(dec.bitmap) }, p.art_width, p.art_height, scale, Math.min(32, Math.max(2, p.max_colours || 10)), (p.palette || []).slice(0, 32), p.outline || '')
-      const check = verifyGrid(out, scale)
-      if (!check.ok) throw new Error('Pixel check failed: ' + check.reason)
-      const im = new Image(out.w, out.h); im.bitmap.set(out.data)
-      bytes = await im.encode()
-      note += ` ${p.art_width}x${p.art_height} art px at ${scale}x (${out.w}x${out.h}), ${check.colours} colours, every block solid, alpha 0/255.`
+    const list = (p.images || []).slice(0, MAX_IMAGES)
+    if (!list.length) throw new Error('The plan said "image" but listed no pictures.')
+    const saved: string[] = [], notes: string[] = [], usages: unknown[] = []
+    let failed = ''
+    for (const [k, q] of list.entries()) {
+      try {
+        const pixel = q.art_width > 0 && q.art_height > 0
+        const ratio = pixel ? q.art_width / q.art_height : 1
+        const size = pixel ? (ratio > 1.25 ? '1536x1024' : ratio < 0.8 ? '1024x1536' : '1024x1024') : (['1024x1024', '1536x1024', '1024x1536'].includes(q.size) ? q.size : '1024x1024')
+        const background = pixel || q.background !== 'opaque' ? 'transparent' : 'opaque'
+        Object.assign(rec, { priority, image_size: size })
+        const { img, model: imageModel, quality } = await drawImage({ prompt: q.image_prompt, size, background, output_format: 'png', n: 1 }, priority, st, tr)
+        const c = imageCost(img.usage, st.rates || {}); if (c !== null) cost.image = (cost.image || 0) + c
+        usages.push(img.usage || null)
+        Object.assign(rec, { image_model: imageModel, image_quality: quality, usage: { plan: plan.usage || null, images: usages } })
+        const b64 = img?.data?.[0]?.b64_json
+        if (!b64) throw new Error('The image model returned no picture.')
+        let bytes = Uint8Array.from(atob(b64), c => c.charCodeAt(0))
+        let note = `Made by the ChatGPT worker (${imageModel}, ${priority}, ${size}, ${background}).`
+        if (pixel) {
+          const scale = Math.min(16, Math.max(1, q.scale || 4))
+          const dec = await Image.decode(bytes)
+          const out = pixelize({ w: dec.width, h: dec.height, data: new Uint8Array(dec.bitmap) }, q.art_width, q.art_height, scale, Math.min(32, Math.max(2, q.max_colours || 10)), (q.palette || []).slice(0, 32), q.outline || '')
+          const check = verifyGrid(out, scale)
+          if (!check.ok) throw new Error('Pixel check failed: ' + check.reason)
+          const im = new Image(out.w, out.h); im.bitmap.set(out.data)
+          bytes = await im.encode()
+          note += ` ${q.art_width}x${q.art_height} art px at ${scale}x (${out.w}x${out.h}), ${check.colours} colours, every block solid, alpha 0/255.`
+        }
+        const sha = await sha256(bytes)
+        const base = (q.file_name || 'chatgpt_art').replace(/\.[a-z0-9]{1,5}$/i, '').replace(/[^A-Za-z0-9._-]+/g, '-').slice(0, 60) || 'chatgpt_art'
+        const path = `${t.user_id}/${t.id}/${sha.slice(0, 8)}-${base}.png`
+        const up = await db.storage.from(BUCKET).upload(path, bytes, { contentType: 'image/png', upsert: false })
+        if (up.error && !/exists/i.test(up.error.message)) throw new Error('Saving the image failed: ' + up.error.message)
+        const dims = await Image.decode(bytes)
+        const ins = await db.from('studio_assets').upsert({ user_id: t.user_id, task_id: t.id, file_name: path.split('/').pop(), original_name: base + '.png', mime_type: 'image/png', size_bytes: bytes.length, width: dims.width, height: dims.height, sha256: sha, path, source: 'base64', note }, { onConflict: 'user_id,task_id,sha256' }).select('id').single()
+        if (ins.error) throw new Error('Recording the image failed: ' + ins.error.message)
+        saved.push(ins.data.id); notes.push(`Asset ${ins.data.id} (${base}) · sha256 ${sha} · ${note}`)
+      } catch (e) {
+        if (!saved.length) throw e // nothing to show: the normal error path hands it to Kody
+        const c = e instanceof OpenAIError ? classify(e) : null
+        failed = `Picture ${k + 1} of ${list.length} failed: ${c ? c.plain + ' ' : ''}(${e instanceof Error ? e.message : String(e)})`
+        break
+      }
     }
-    const sha = await sha256(bytes)
-    const base = (p.file_name || 'chatgpt_art').replace(/\.[a-z0-9]{1,5}$/i, '').replace(/[^A-Za-z0-9._-]+/g, '-').slice(0, 60) || 'chatgpt_art'
-    const path = `${t.user_id}/${t.id}/${sha.slice(0, 8)}-${base}.png`
-    const up = await db.storage.from(BUCKET).upload(path, bytes, { contentType: 'image/png', upsert: false })
-    if (up.error && !/exists/i.test(up.error.message)) throw new Error('Saving the image failed: ' + up.error.message)
-    const dims = await Image.decode(bytes)
-    const ins = await db.from('studio_assets').upsert({ user_id: t.user_id, task_id: t.id, file_name: path.split('/').pop(), original_name: base + '.png', mime_type: 'image/png', size_bytes: bytes.length, width: dims.width, height: dims.height, sha256: sha, path, source: 'base64', note }, { onConflict: 'user_id,task_id,sha256' }).select('id').single()
-    if (ins.error) throw new Error('Recording the image failed: ' + ins.error.message)
-    // new art is never self-approved: it always goes to Claude (or Kody) for a check, even if the plan said done
-    const r = await post({ p_kind: 'report', p_body: `${p.body}\n\nAsset ${ins.data.id} · sha256 ${sha} · ${note}`, p_refs: [{ type: 'asset', id: ins.data.id }], p_set_turn: p.next_turn === 'kody' ? 'kody' : 'claude' })
+    // new art is never self-approved: it always goes to Claude (or Kody) for a check, even if the plan said done.
+    // If a picture failed, Kody decides what to do with the rest.
+    const r = await post({ p_kind: 'report', p_body: `${p.body}\n\n${notes.join('\n')}${failed ? '\n\n' + failed : ''}`, p_refs: saved.map(id => ({ type: 'asset', id })), p_set_turn: failed || p.next_turn === 'kody' ? 'kody' : 'claude' })
     if (r.error) throw new Error(r.error.message)
-    if (await conflicted(r)) return 'task changed, image ' + ins.data.id + ' saved but not posted'
-    await finish('ok', 'image ' + ins.data.id)
-    return 'drew ' + ins.data.id
+    if (await conflicted(r)) return 'task changed, images ' + saved.join(', ') + ' saved but not posted'
+    await finish(failed ? 'error' : 'ok', (failed ? failed + ' ' : '') + 'images ' + saved.join(', '))
+    return 'drew ' + saved.join(', ')
   } catch (e) {
     const raw = e instanceof Error ? e.message : String(e)
     const c = e instanceof OpenAIError ? classify(e) : null
