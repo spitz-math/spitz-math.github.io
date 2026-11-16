@@ -79,9 +79,24 @@ function drawBatRR(c,e,p){ if(!rrReady('bat2')) return null; var fx=e.st===2?e.s
   var col=e.st===2?3:[0,2,1,2][Math.floor(e.t*(e.st===1?16:11))%4], bob=e.st===2?0:Math.sin(e.t*5)*3;
   rrDraw(c,'bat2',row,col,e.x,e.y+27+bob,row===1&&!!e.rrFl,e.fl>0&&!RM); return e.y-18+bob; }
 /* slime: rows full / small; rest, squash, hop, landing, following its own 1 s hop cycle (still 0-0.4 s, hop 0.4-1 s) */
-function drawSlimeRR(c,e){ if(!rrReady('slime2')) return null; var cyc=e.t%1, col=cyc<0.4?(cyc<0.1?3:cyc<0.3?0:1):cyc<0.75?2:0;   /* stretch on the way up, round on the way down */
-  var bob=e.st===1&&cyc>=0.4?-Math.sin((cyc-0.4)/0.6*Math.PI)*(e.small?6:10):0, foot=e.y+e.r+2;
-  rrDraw(c,'slime2',e.small?1:0,col,e.x,foot+bob,false,e.fl>0&&!RM); return foot-(e.small?16:30)+bob; }
+/* the wind-up (0.15-0.4 s) holds the squash frame and shakes a little; a sword hit squashes it for 0.1 s */
+function drawSlimeRR(c,e){ if(!rrReady('slime2')) return null; var cyc=e.t%1, col=cyc<0.4?(cyc<0.1?3:cyc<0.15?0:1):cyc<0.75?2:0;   /* stretch on the way up, round on the way down */
+  if(e.sq>0) col=1;
+  var bob=e.st===1&&cyc>=0.4?-Math.sin((cyc-0.4)/0.6*Math.PI)*(e.small?6:10):0, foot=e.y+e.r+2, jx=e.wu&&!RM?(Math.floor(e.t*30)%2?1:-1):0;
+  rrDraw(c,'slime2',e.small?1:0,col,e.x+jx,foot+bob,false,e.fl>0&&!RM); return foot-(e.small?16:30)+bob; }
+/* landing marker: thin soft-pink ellipse where the hop lands. Fades in over the wind-up, out as it lands; still outline with reduced motion. */
+function slimeMark(c,e){ var cyc=e.t%1, a=RM?0.8:e.wu?Math.min(1,(cyc-0.15)/0.25)*0.85:Math.max(0,Math.min(1,(1-cyc)/0.15))*0.85; if(a<=0.02) return;
+  var rx=e.small?11:19, ry=Math.round(rx*0.45), x=Math.round(e.tx), y=Math.round(e.ty+e.r+2);
+  c.save(); c.globalAlpha=a*0.22; c.fillStyle='#FD63AF'; c.beginPath(); c.ellipse(x,y,rx,ry,0,0,7); c.fill();
+  c.globalAlpha=a; c.strokeStyle='#FD63AF'; c.lineWidth=2; c.beginPath(); c.ellipse(x,y,rx,ry,0,0,7); c.stroke(); c.restore(); }
+/* goo splat: 3 frames over 0.6 s (ChatGPT art when present, simple pixel blocks otherwise), fading in the last frame */
+function drawSplat(c,f){ var k=Math.min(2,Math.floor(f.t/0.2)), a=k<2?1:Math.max(0,1-(f.t-0.4)/0.2), s=f.sm?1:2;
+  c.save(); c.globalAlpha=a;
+  if(RRI.slime_splat){ c.imageSmoothingEnabled=false; c.drawImage(RRI.slime_splat,k*24,0,24,24,Math.round(f.x-12*s),Math.round(f.y-12*s),24*s,24*s); }
+  else { var w2=[7,9,9][k]*s, h2=[3,4,3][k]*s, x=Math.round(f.x), y=Math.round(f.y);
+    c.fillStyle='#0B0108'; c.fillRect(x-w2-s,y-h2-s,2*w2+2*s,2*h2+2*s); c.fillStyle=k<2?'#FD63AF':'#C63A80'; c.fillRect(x-w2,y-h2,2*w2,2*h2);
+    c.fillStyle='#652246'; c.fillRect(x-w2,y+h2-s,2*w2,s); if(k<2){ c.fillStyle='#FEE6F3'; c.fillRect(x-w2+2*s,y-h2+s,2*s,s); } }
+  c.restore(); }
 
 /* ---------- cutscene: 12 s, in the engine, plays on new runs only ---------- */
 var CUT=null, EAT={};

@@ -151,6 +151,7 @@ function hurtE(e,d,fx,fy,kb,opt){ if(e.dead) return; opt=opt||{}; var w=S.w;
   if(e.type==='boss'&&e.st===9) d=Math.round(d*1.6);   /* stunned boss takes more */
   tally(Math.min(d,Math.max(0,e.hp))); e.hp-=d; e.fl=0.09; if(kb){ var k=kb/(ET[e.type].heavy?5:1); e.kx+=fx*k; e.ky+=fy*k; }
   if(d>0&&w.fx.length<80) w.fx.push({k:'num',x:e.x+rnd(-4,4),y:e.y-e.r-6,t:0,v:d,c:opt.crit?'#FFC93C':'#FFFFFF'});
+  if(e.type==='slime'&&opt.melee&&d>0){ e.sq=0.1; for(var gd=0;gd<(RM?3:4)&&w.fx.length<90;gd++) w.fx.push({k:'goo',x:e.x+rnd(-4,4),y:e.y-6,vx:fx*rnd(40,110)+rnd(-50,50),vy:rnd(-130,-50),t:0,c:['#FD63AF','#C63A80','#FEE6F3','#FD63AF'][gd]}); }   /* goo droplets and a quick squash */
   if(opt.melee&&w.fx.length<90) w.fx.push({k:'spark',x:e.x-fx*e.r*0.6,y:e.y-fy*e.r*0.6-6,a:Math.atan2(fy,fx),t:0});
   SND.hit(e,opt); if(e.hp<=0) killE(e,opt); }
 /* score = points. Kills are worth more while your combo is high; getting hit drops it. Rooms pay for speed and for taking no hits. */
@@ -166,6 +167,7 @@ function killE(e,opt){ var w=S.w, t=ET[e.type]; e.dead=true; w.kills++; SND.die(
   if(!(w.last>0)&&!late&&Math.random()<t.coin*0.6*(e.small?0.5:1)) for(var c=0;c<(t.coin>=1?2:1);c++) w.coinsF.push({x:e.x+rnd(-10,10),y:e.y+rnd(-10,10),m:0});
   if(w.fx.length<100) for(var j=0;j<(RM||w.fx.length>50?3:7);j++) w.fx.push({k:'bit',x:e.x,y:e.y-8,vx:rnd(-110,110),vy:rnd(-140,30),t:0,c:t.col});
   if(Math.random()<(w.p.hp<=2?0.15:0.045)&&w.p.hp<w.p.max&&w.hearts.length<4) w.hearts.push({x:e.x,y:e.y,t:0});
+  if(e.type==='slime'&&w.fx.length<130) w.fx.push({k:'splat',x:e.x,y:e.y+e.r+2,sm:e.small?1:0,t:0});   /* goo splat on the floor, also when a big one splits */
   if(e.type==='slime'&&!e.small){ for(var s2=0;s2<2;s2++){ var a=Math.random()*6.28, sm=spawnEnemy('slime',e.x+Math.cos(a)*10,e.y+Math.sin(a)*10,1,true); sm.kx=Math.cos(a)*220; sm.ky=Math.sin(a)*220; sm.cd=0.6; } }
   if(L('volatile')&&w.booms.length<40&&(DSRC!=='volatile'||(L('volatile')>=3&&!BGEN))){ var lv=L('volatile'); w.booms.push({x:e.x,y:e.y,r:[0,40,48,58][lv],dmg:[0,3,4,5][lv],t:0.06,g:DSRC==='volatile'?1:0}); }   /* level 3 chains one step, never forever */
   if(opt&&opt.melee&&!RM) S.hs=Math.max(S.hs||0,0.05);
@@ -305,8 +307,8 @@ function update(dt){ var w=S.w, p=w.p, s=stat(), i, e;
   /* banked level-ups get answered at the end of the fight, never in the middle of it */
   if(w.cleared&&w.pend>0&&S.mode==='play'){ w.resolve-=dt; if(w.resolve<=0) levelUp(); }
   hud(); }
-function stepFx(dt){ var w=S.w; for(var i=w.fx.length-1;i>=0;i--){ var f=w.fx[i]; f.t+=dt; if(f.k==='bit'){ f.x+=f.vx*dt; f.y+=f.vy*dt; f.vy+=300*dt; }
-    var life=f.k==='bit'?0.5:f.k==='die'?0.16:f.k==='pop'?0.18:f.k==='zap'||f.k==='arc'?0.22:f.k==='ring'?0.35:f.k==='boom'?0.3:f.k==='spark'?0.14:f.k==='hurt'?0.3:f.k==='puff'?0.4:0.8; if(f.t>life) w.fx.splice(i,1); } }
+function stepFx(dt){ var w=S.w; for(var i=w.fx.length-1;i>=0;i--){ var f=w.fx[i]; f.t+=dt; if(f.k==='bit'||f.k==='goo'){ f.x+=f.vx*dt; f.y+=f.vy*dt; f.vy+=300*dt; }
+    var life=f.k==='bit'?0.5:f.k==='goo'?0.4:f.k==='splat'?0.6:f.k==='die'?0.16:f.k==='pop'?0.18:f.k==='zap'||f.k==='arc'?0.22:f.k==='ring'?0.35:f.k==='boom'?0.3:f.k==='spark'?0.14:f.k==='hurt'?0.3:f.k==='puff'?0.4:0.8; if(f.t>life) w.fx.splice(i,1); } }
 var TT=0.9, TH=0.45;   /* doorway walk: 0.45 s out through the door, 0.45 s in through the next one */
 function goRoom(id,from){ var w=S.w, p=w.p; if(w.shop) say('leave'); w.next=[id,from]; w.tdir=from==='w'?[-1,0]:from==='e'?[1,0]:[0,-1]; p.fx=w.tdir[0]; p.fy=w.tdir[1]; SND.door(); p.sw=0; p.roll=0; p.kx=p.ky=0; S.mode='trans'; trans=TT; HELD={}; save(); }
 
@@ -333,6 +335,7 @@ function enemyAI(e,dt,p){ var w=S.w, dx=p.x-e.x, dy=p.y-e.y, d=Math.hypot(dx,dy)
   if(!t.fly&&e.type!=='boss'){ e.losT=(e.losT||0)-dt; if(e.losT<=0){ e.losT=0.2+Math.random()*0.1; e.los=lineClear(e.x,e.y,p.x,p.y)&&lineClear(e.x+e.r*0.7,e.y,p.x,p.y)&&lineClear(e.x-e.r*0.7,e.y,p.x,p.y); }
     if(!e.los){ var nd=navDir(e,p); if(nd){ ux=nd[0]; uy=nd[1]; } } }
   mx=ux; my=uy;
+  if(e.sq>0) e.sq-=dt;
   if(e.stun>0){ e.mv=0; e.stun-=dt; e.x+=e.kx*dt; e.y+=e.ky*dt; e.kx*=Math.max(0,1-8*dt); e.ky*=Math.max(0,1-8*dt); return; }
   e.t+=dt; e.cd-=dt;
   if(e.type==='gob'){   /* chase, crouch with a red "!" for 0.45 s, lunge, then stand there catching its breath */
@@ -355,8 +358,10 @@ function enemyAI(e,dt,p){ var w=S.w, dx=p.x-e.x, dy=p.y-e.y, d=Math.hypot(dx,dy)
       if(d<80&&e.cd<1.2&&!e.blinked){ var spot=randFloor(260); w.fx.push({k:'puff',x:e.x,y:e.y,t:0}); w.fx.push({k:'wout',x:e.x,y:e.y+e.r+2,row:e.rrRow==null?1:e.rrRow,fl:!!e.rrFl,t:0}); e.bkT=e.t; e.x=spot[0]; e.y=spot[1]; e.blinked=1; w.fx.push({k:'puff',x:e.x,y:e.y,t:0}); e.cd=1.0; }
       if(e.cd<=0&&d<460&&lineClear(e.x,e.y,p.x,p.y)){ e.st=1; e.cd=0.85; e.aim=Math.atan2(dy,dx); SND.tele(); } }
     else if(e.st===1){ v=0; e.aim=Math.atan2(dy,dx); if(e.cd<=0){ e.st=0; e.cd=rnd(2.6,3.4); e.blinked=0; if(w.orbs.length<40){ [-0.28,0,0.28].forEach(function(o){ w.orbs.push({x:e.x,y:e.y-8,vx:Math.cos(e.aim+o)*150,vy:Math.sin(e.aim+o)*150,t:0}); }); SND.orb(); } } } }
-  else if(e.type==='slime'){   /* squish (still), then hop toward you */
-    var cyc=(e.t%1.0); if(cyc<0.4){ v=0; e.st=0; } else { v=e.small?150:120; e.st=1; } }
+  else if(e.type==='slime'){   /* sits, winds up for the last 0.25 s (held squash, a shake and a pink landing marker), then hops in a straight line to the marked spot */
+    var cyc=(e.t%1.0), cn=Math.floor(e.t), hv=e.small?150:120;
+    if(cyc>=0.15&&e.lk!==cn){ e.lk=cn; e.sx=ux; e.sy=uy; var hd=hv*(e.el?1.2:1)*0.6; e.tx=e.x+ux*hd; e.ty=e.y+uy*hd; e.mk=d<200?1:0; }   /* direction locks when the wind-up starts */
+    if(cyc<0.4){ v=0; e.st=0; e.wu=cyc>=0.15?1:0; } else { v=hv; e.st=1; e.wu=0; mx=e.sx; my=e.sy; } }
   else if(e.type==='boss'){ bossAI(e,dt,p,d,ux,uy); return; }
   if(e.el&&(e.st===0||e.type==='slime')) v*=1.2;
   e.mv=v; e.wd=(e.wd||0)+v*dt;   /* walk cycle advances with distance */
@@ -823,6 +828,9 @@ function draw(){ var c=cx, w=S&&S.w; c.setTransform(1,0,0,1,0,0);
   var lo=L('orbit'); if(lo){ var n=[0,2,3,4][lo]+(HAS('tempest')?1:0); for(var kb=0;kb<n;kb++){ var a=w.oa+kb*2*Math.PI/n, bx2=p.x+Math.cos(a)*58, by2=p.y-6+Math.sin(a)*58;
     c.save(); c.translate(bx2,by2); c.rotate(a+1.57); c.fillStyle='#141026'; c.fillRect(-4,-11,8,22); c.fillStyle=HAS('tempest')?'#BFF6FF':'#CFE0FF'; c.fillRect(-3,-10,6,20); c.fillStyle='#FFFFFF'; c.fillRect(-1,-10,2,20); c.restore(); } }
   if(S.mode==='cut') drawCutWorld(c,t); if(w.rub&&w.rub.length) drawRubble(c);
+  /* slime landing markers and goo splats sit on the floor, under every body */
+  for(i=0;i<w.en.length;i++){ var se=w.en[i]; if(se.type==='slime'&&!se.dead&&se.mk&&!(se.stun>0)&&(se.wu||se.st===1)) slimeMark(c,se); }
+  for(i=0;i<w.fx.length;i++) if(w.fx[i].k==='splat'&&!LITE) drawSplat(c,w.fx[i]);
   /* bodies, top to bottom */
   var list=w.en.filter(function(e){ return !e.dead; }); list.push({hero:1,y:p.y}); if(w.shop&&rrReady('merchant')) list.push({merch:1,y:MERCH[1]-14}); if(w.pots) w.pots.forEach(function(pt){ if(pt.st<2) list.push({pot:pt,y:pt.y}); }); list.sort(function(a,b){ return a.y-b.y; });
   list.forEach(function(e){ if(e.hero){ drawHero(c,p,t); return; } if(e.merch){ drawMerchant(c,w); return; } if(e.pot){ drawPot(c,e.pot); return; }
@@ -861,6 +869,8 @@ function draw(){ var c=cx, w=S&&S.w; c.setTransform(1,0,0,1,0,0);
   var nbolt=0;
   for(i=0;i<w.fx.length;i++){ var f=w.fx[i], fk=f.k;
     if(fk==='bit'){ if(!LITE){ c.fillStyle=f.c; c.fillRect(Math.round(f.x),Math.round(f.y),4,4); } }
+    else if(fk==='goo'){ c.fillStyle='#0B0108'; c.fillRect(Math.round(f.x)-1,Math.round(f.y)-1,6,6); c.fillStyle=f.c; c.fillRect(Math.round(f.x),Math.round(f.y),4,4); }
+    else if(fk==='splat'){}
     else if(fk==='num'||f.lo){}
     else if(fk==='txt'){ c.globalAlpha=Math.max(0,Math.min(1,2.4*(1-f.t/0.8))); dtx(c,f.v,f.x,f.y-f.t*30,f.big?26:18,f.c,0,'#141026'); c.globalAlpha=1; }
     else if(fk==='spark'){ c.globalAlpha=Math.max(0,1-f.t/0.14); c.drawImage(FX.star,Math.round(f.x-12),Math.round(f.y-12)); c.globalAlpha=1; }
