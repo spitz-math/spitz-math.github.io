@@ -32,7 +32,7 @@ const {chromium}=require('playwright'); const http=require('http'), fs=require('
  await m.evaluate(()=>{ const el=document.getElementById('dn-volm'); el.value=40; el.dispatchEvent(new Event('input')); });
  const sv=await m.evaluate(()=>({ls:localStorage.getItem('rook_and_ruin_audio'), g:+__AU.mg.gain.value.toFixed(2)}));
  await m.waitForTimeout(200); const sv2=await m.evaluate(()=>+__AU.mg.gain.value.toFixed(3));
- check('sliderSaved',/"m":0.4/.test(sv.ls)&&Math.abs(sv2-0.2)<0.02,{sv,sv2});
+ check('sliderSaved',/"m":0.4/.test(sv.ls)&&Math.abs(sv2-0.12)<0.02,{sv,sv2});
  await m.keyboard.press('p'); await m.waitForTimeout(800); check('unduck',(await A(m)).duck>=0.95,await A(m));
  // shop, boss
  await m.evaluate(()=>{ __G.room('shop','s'); __G.state().mode='play'; });

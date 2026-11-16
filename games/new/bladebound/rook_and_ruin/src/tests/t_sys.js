@@ -36,7 +36,7 @@ const {chromium}=require('playwright'); const D=process.argv[2]||'out', O=D+'/to
  check('oneBuyPerVisit',c0-c1.coins===18,{c0,c1});
  await s.evaluate(()=>{ const w=__G.state().w; w.p.y+=80; }); await run(s,10); await s.evaluate(()=>{ const w=__G.state().w, it=w.shop[1]; w.p.x=it.x; w.p.y=it.y+10; }); await run(s,10);
  await s.keyboard.press('e'); await s.waitForTimeout(150); const c2=await s.evaluate(()=>__G.state().w.coins);
- check('buyAgainAfterStepOff',c1.coins-c2===32,{c1,c2});
+ check('heartSoldOnce',c1.coins-c2===0,{c1,c2});   /* Kody 2026-11-16: the Shop sells only one Heart Container (was a 2nd at 32) */
  await s.evaluate(()=>{ const w=__G.state().w, it=w.shop[3]; w.coins=20; w.p.x=it.x; w.p.y=it.y+10; }); await run(s,10); await s.screenshot({path:O+'sys_03_shop_cant.png'});
  await s.keyboard.press('e'); await s.waitForTimeout(150); check('cantAfford',await s.evaluate(()=>__G.state().w.coins===20&&!__G.state().w.shop[3].sold),'');
 

@@ -329,6 +329,10 @@ body.dn-big .dn-arena, body.dn-shrink .dn-arena{ z-index:41; }
 .dn-co{ flex-wrap:wrap; gap:4px 6px; font:700 16px/1.2 var(--body); }
 .dn-co .pt{ color:rgba(244,236,216,.7); } .dn-co .pt.own{ color:#B8F5C8; }
 .dn-co b{ margin-left:auto; }
+.dn-pickbox{ position:relative; }
+.dn-reroll{ position:absolute; left:50%; top:100%; transform:translateX(-50%); margin-top:4px; white-space:nowrap; padding:12px 26px; font:700 24px/1 var(--body); color:var(--rr-ivory,#F4EBDD); background:#2A1A44; border:3px solid var(--rr-gold); border-radius:8px; cursor:pointer; }
+.dn-reroll b{ font-family:var(--pixel); color:var(--rr-gold); }
+.dn-reroll:disabled{ opacity:.45; cursor:default; border-color:#6A5A80; }
 .dn-readynote{ margin:16px 0 0 !important; min-height:30px; font:700 20px/1.3 var(--body) !important; color:var(--rr-gold) !important; }
 
 
@@ -550,7 +554,7 @@ body.dn-cine .dn-top, body.dn-cine .dn-side{ opacity:0; pointer-events:none; tra
       <button class="dn-skip" id="dn-skip" type="button" hidden aria-label="Skip the opening scene (Enter, Space or Escape)">Skip <span aria-hidden="true">›</span></button>
       <div class="dn-cover" id="dn-pick" hidden><div class="dn-pickbox">
         <div class="dn-pickstep" id="dn-pickstep"></div><h2 id="dn-picktitle">Pick an upgrade</h2><p id="dn-picknote">Press 1, 2 or 3, or click a card.</p>
-        <div class="dn-cards" id="dn-cards"></div><p class="dn-readynote" id="dn-readynote"></p></div></div>
+        <div class="dn-cards" id="dn-cards"></div><button class="dn-reroll" id="dn-reroll" hidden></button><p class="dn-readynote" id="dn-readynote"></p></div></div>
       <div class="dn-cover" id="dn-bdwrap" hidden><div class="dn-bdbox"><div class="dn-bdhead"><h2>Paused</h2><span class="dn-paused">Your build</span><div class="dn-vol"><label>Music <input type="range" id="dn-volm" min="0" max="100" step="5" aria-label="Music volume"><b id="dn-volmv"></b></label><label>Effects <input type="range" id="dn-volf" min="0" max="100" step="5" aria-label="Effects volume"><b id="dn-volfv"></b></label></div><button class="dn-next dn-bdclose" id="dn-bdclose" type="button">Resume (P)</button></div><div class="dn-bdlist" id="dn-bdlist"></div><div class="dn-bdsyn" id="dn-bdsyn"></div></div></div>
       
     </div>
