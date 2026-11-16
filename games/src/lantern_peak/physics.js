@@ -82,7 +82,7 @@ function step(P,inp,dt,W){
   if(P.x<PH.HW){ P.x=PH.HW; P.vx=0; } if(P.x>PH.W-PH.HW){ P.x=PH.W-PH.HW; P.vx=0; }
   var S=W.solids||[], i, s;
   for(i=0;i<S.length;i++){ s=S[i]; if(s.off) continue; if(P.y<s.y+s.h-2&&P.y+PH.HH>s.y+2&&overX(P,s.x,s.w,0)){
-    if(s.ice&&dashing){ s.off=true; s.broken=true; P.ev.push('shatter'); P.shat=s; continue; }
+    if(s.ice&&dashing&&W.melt!==false){ s.off=true; s.broken=true; P.ev.push('shatter'); P.shat=s; continue; }
     if(P.x<s.x+s.w/2) P.x=s.x-PH.HW; else P.x=s.x+s.w+PH.HW; P.vx=0; } }
 
   /* up and down */

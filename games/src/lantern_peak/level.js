@@ -142,7 +142,7 @@ var LEVEL={
     {x:850,y:4870,text:'← Ride the rising wind'},
     {x:880,y:5480,text:'← calm   brave ↑'},
     {x:330,y:6900,text:'Touch the Waystone',max:2},
-    {x:400,y:6900,text:'Dash!',keys:'X',min:3},
+    {x:400,y:6900,text:'Hot dash!',keys:'X',min:3},
     {x:330,y:7350,text:'A dash melts ice',keys:'X'},
     {x:90,y:7800,text:'A Star Feather is in the ice ↑'},
     {x:300,y:8570,text:'Light the three fires'}

@@ -9,11 +9,11 @@
 const PATH=require('path'); require(PATH.join(__dirname,'../physics.js')); require(PATH.join(__dirname,'../level.js'));
 const {PH,step,fresh,platAt}=globalThis.LPPH, LV=globalThis.LPLEVEL;
 const plats=LV.plats, DT=1/120, ST=LV.st;
-const mv=k=>({dj:k>=1,gl:k>=2,ds:k>=3});
+const mv=k=>({dj:k>=1,gl:k>=2,ds:true,melt:k>=3});   /* Ember Dash from the start; it melts ice from Waystone 3 on */
 function sim(from,o){
   const lo=from.y-750, hi=from.y+900;
   const W={ plats:plats.filter(p=>p.y+(p.my||0)>=lo&&p.y<=hi), solids:LV.solids.filter(s=>!(s.gate!==undefined&&s.gate<o.st)&&s.y+s.h>=lo&&s.y<=hi),
-    hazards:LV.hazards.filter(h=>h.y>=lo&&h.y<=hi), winds:LV.winds, t:o.tOff, dj:o.mv.dj, gl:o.mv.gl, ds:o.mv.ds };
+    hazards:LV.hazards.filter(h=>h.y>=lo&&h.y<=hi), winds:LV.winds, t:o.tOff, dj:o.mv.dj, gl:o.mv.gl, ds:o.mv.ds, melt:!!o.mv.melt };
   W.plats.forEach(p=>{ delete p.goneAt; delete p.tT; }); W.solids.forEach(s=>{ if(s.ice){ s.off=false; delete s.broken; } });
   const P=fresh(o.x0,platAt(from,o.tOff).y); P.on=from; P.vx=o.vx0||0;
   let t=0;
@@ -57,7 +57,7 @@ function reach(from,k,m){
       for(const d of [-1,1]) for(const run of [0,1]) for(const djT of [0,0.3,0.5]) for(const dsT of [0.25,0.5,0.8]) for(const gl of (djT?[0.5,9]:[0.5]))
         add({...B,x0,vx0:run*d*PH.RUN,d,stop:9,hold:9,djT,gl:m.gl?gl:0.5,dsT}); } }
   return out; }
-const MEMO=new Map(); function edges(a,k,m){ const key=plats.indexOf(a)+'|'+k+'|'+(m.dj?1:0)+(m.gl?1:0)+(m.ds?1:0); if(!MEMO.has(key)) MEMO.set(key,reach(a,k,m)); return MEMO.get(key); }
+const MEMO=new Map(); function edges(a,k,m){ const key=plats.indexOf(a)+'|'+k+'|'+(m.dj?1:0)+(m.gl?1:0)+(m.ds?1:0)+(m.melt?1:0); if(!MEMO.has(key)) MEMO.set(key,reach(a,k,m)); return MEMO.get(key); }
 /* everything reachable from `start` in stage k with moves m (ledges far below the start are left out: a fall that deep goes back to the lantern) */
 function closure(start,k,m,floor){ const seen=new Set([start]), q=[start]; if(floor===undefined) floor=start.y-60;
   while(q.length){ const a=q.shift(); for(const [b] of edges(a,k,m)){ if(b.y<floor) continue; if(!seen.has(b)){ seen.add(b); q.push(b); } } }
@@ -80,7 +80,7 @@ module.exports={path,plats,LV,startOf,goalOf,mv,edges,route};
 if(require.main!==module) return;
 if(process.argv[2]==='edges'){ const k=+process.argv[3]; for(const a of process.argv.slice(4)){ const p=plats[+a]; console.log('from #'+a+' x'+p.x+' y'+p.y+' ->',[...edges(p,k,mv(k))].map(([b,o])=>'#'+plats.indexOf(b)+'(x'+b.x+' y'+b.y+')').join(' ')); } return; }
 let fail=0; const ok=(c,m)=>{ console.log((c?'PASS ':'FAIL ')+m); if(!c) fail++; };
-const NAME=['Pinewood Steps','Falls Cliffs','Windy Ruins','Beacon Summit','tower, part 2','tower, part 3'], MOVE=['','Cloud Hop','Scarf Glide','Ember Dash'];
+const NAME=['Pinewood Steps','Falls Cliffs','Windy Ruins','Beacon Summit','tower, part 2','tower, part 3'], MOVE=['','Cloud Hop','Scarf Glide','the hot dash'];
 const all=new Set(), T0=Date.now();
 for(let k=0;k<ST.length;k++){ const s=startOf(k), g=goalOf(k), C=closure(s,k,mv(k));
   ok(C.has(g),NAME[k]+': '+ST[k].id+' (y '+g.y+') is reachable'+(k&&k<4?' with '+MOVE[k]:''));
@@ -98,7 +98,7 @@ for(const [k,a,b,what] of SIDE) ok(edges(at(a[0],a[1]),k,mv(k)).has(at(b[0],b[1]
 for(const f of LV.feathers){ const near=[...all].some(p=>{ const q=platAt(p,0); return f.x>q.x-60&&f.x<q.x+p.w+60&&f.y>q.y&&f.y-q.y<230; })||LV.winds.some(w=>w.up&&f.x>w.x&&f.x<w.x+w.w&&f.y>w.y&&f.y<w.y+w.h);
   ok(near,'feather '+f.id+' sits within a jump of a reachable ledge (or in a rising wind)'); }
 /* the Star Feather in the ice alcove needs the dash */
-{ const alc=plats.find(p=>p.x===0&&p.y===8000), s=startOf(3); ok(closure(s,3,mv(3)).has(alc)&&!closure(s,3,mv(2)).has(alc),'the ice alcove opens only with Ember Dash'); }
+{ const alc=plats.find(p=>p.x===0&&p.y===8000), s=startOf(3); ok(closure(s,3,mv(3)).has(alc)&&!closure(s,3,mv(2)).has(alc),'the ice alcove opens only with the hot dash (Waystone 3)'); }
 /* jump numbers */
 { const P=fresh(100,0); P.on=plats[0]; const W={plats:[plats[0]],solids:[],t:0,dj:false}; let mx=0; for(let n=0;n<200;n++){ W.t+=DT; step(P,{jumpHeld:true,jumpPressed:n===0},DT,W); mx=Math.max(mx,P.y); } console.log('full jump apex',mx.toFixed(1));
   const Q=fresh(100,0); Q.on=plats[0]; let my=0; W.t=0; for(let n=0;n<200;n++){ W.t+=DT; step(Q,{jumpHeld:n<10,jumpPressed:n===0},DT,W); my=Math.max(my,Q.y); } console.log('tap jump apex',my.toFixed(1));

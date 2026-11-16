@@ -191,14 +191,15 @@ const BOT=`window.__bot=function(ti,hint){
     r=await air(2,655,4950,{},60); ok(r.y<4950,'…and does nothing if you are not gliding');
     await p.evaluate(()=>{ __G.setSt(2,'top'); __G.tp(655,4950); __G.hero().on=null; __G.hero().airT=0.2; __G.key('j',true); for(let i=0;i<60;i++) __G.step(1/120); __G.hold(false); }); await p.waitForTimeout(250); await p.screenshot({path:SHOTS+'/glide.png'}); await p.evaluate(()=>{ __G.key('j',false); __G.hold(true); });
     // ice wall 1: blocked without the dash, melted with it
-    const wall=st=>p.evaluate(st=>{ __G.setSt(st,'way3'); __G.state().ice.length=0; __G.level.solids.forEach(s=>{ if(s.ice){ s.off=false; delete s.broken; } }); __G.tp(560,7352); for(let i=0;i<30;i++) __G.step(1/120);
-      __G.key('r',true); for(let i=0;i<50;i++){ if(i===20){ __G.key('ds',true); __G.key('ds',false); } __G.step(1/120); } __G.key('r',false); return {x:__G.hero().x,ice:__G.state().ice.slice(),off:__G.level.solids.find(s=>s.id==='i1').off}; },st);
-    let w=await wall(2); ok(w.x<630&&!w.ice.length,'ice wall: no way through without Ember Dash (stopped at x '+w.x.toFixed(0)+')');
-    w=await wall(3); ok(w.x>690&&w.ice[0]==='i1'&&w.off,'Ember Dash melts the ice wall and carries you through (x '+w.x.toFixed(0)+')');
+    const wall=(st,fuel)=>p.evaluate(([st,fuel])=>{ __G.setSt(st,'way3'); __G.state().fuel=fuel; __G.state().ice.length=0; __G.level.solids.forEach(s=>{ if(s.ice){ s.off=false; delete s.broken; } }); __G.tp(560,7352); for(let i=0;i<30;i++) __G.step(1/120);
+      __G.key('r',true); for(let i=0;i<50;i++){ if(i===20){ __G.key('ds',true); __G.key('ds',false); } __G.step(1/120); } __G.key('r',false); return {x:__G.hero().x,fuel:__G.state().fuel,ice:__G.state().ice.slice(),off:__G.level.solids.find(s=>s.id==='i1').off}; },[st,fuel]);
+    let w=await wall(2,5); ok(w.x<630&&!w.ice.length&&w.fuel===4,'before Waystone 3 the dash works (burns 1 ember) but cannot melt ice (stopped at x '+w.x.toFixed(0)+')');
+    w=await wall(3,0); ok(w.x<630&&!w.ice.length&&w.fuel===0,'with no embers, X does not dash (stopped at x '+w.x.toFixed(0)+')');
+    w=await wall(3,5); ok(w.x>690&&w.ice[0]==='i1'&&w.off&&w.fuel===4,'the hot dash melts the ice wall, carries you through and burns 1 ember (x '+w.x.toFixed(0)+')');
     await p.evaluate(()=>__G.hold(false)); await p.waitForTimeout(200); await p.screenshot({path:SHOTS+'/ice_melted.png'});
     // one dash per jump in the air
     await p.evaluate(()=>__G.hold(true));
-    r=await p.evaluate(()=>{ __G.setSt(3,'way3'); __G.tp(300,7700); const P=__G.hero(); P.on=null; P.airT=0.2; P.face=1; let n=0; for(let i=0;i<60;i++){ if(i===2||i===40){ __G.key('ds',true); __G.key('ds',false); } __G.step(1/120); if(__G.hero().dashT>0&&(i===3||i===41)) n++; } return n; });
+    r=await p.evaluate(()=>{ __G.setSt(3,'way3'); __G.state().fuel=9; __G.tp(300,7700); const P=__G.hero(); P.on=null; P.airT=0.2; P.face=1; let n=0; for(let i=0;i<60;i++){ if(i===2||i===40){ __G.key('ds',true); __G.key('ds',false); } __G.step(1/120); if(__G.hero().dashT>0&&(i===3||i===41)) n++; } return n; });
     ok(r===1,'one Ember Dash per jump in the air ('+r+')');
     // reload keeps the moves and the melted ice
     await p.evaluate(()=>{ __G.setSt(3,'way3'); __G.state().ice=['i1']; __G.hold(false); __G.tp(300,7352); }); await p.waitForTimeout(300); await p.keyboard.press('Escape'); await p.waitForTimeout(100); await p.keyboard.press('Escape');

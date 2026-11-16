@@ -34,7 +34,8 @@
 |---|---|---|---|
 | 1 | **Cloud Hop** | jump again in the air | Falls Cliffs |
 | 2 | **Scarf Glide** | after the hop, hold jump: the scarf opens and the fall slows to 140 px/s. Rising winds lift a glider at 300 px/s | Windy Ruins |
-| 3 | **Ember Dash** | X or C: a quick straight dash (about 145 px), once per jump, on the ground or in the air. Melts ice | Beacon Summit and the tower |
+| start | **Ember Dash** | X or C: a quick straight dash (about 145 px), once per jump. **Each dash burns 1 ember**; with none left, X only fizzles | everywhere |
+| 3 | **Blazing Dash** | the dash now melts ice | Beacon Summit and the tower |
 
 Each Waystone card shows the new move in a small looping demo, and the pause screen lists the moves learned so far.
 The earlier plan (Glide Dash, then a choice of Wall Kick or Spring Step) was replaced: two simple moves read better than a choice screen, and neither puts an action on W, A, S or D.
@@ -43,6 +44,7 @@ The earlier plan (Glide Dash, then a choice of Wall Kick or Spring Step) was rep
 - **3 hearts.** A fall, thorns or an icicle costs a heart and the last 3 embers picked up (they go back on the mountain).
 - **Out of hearts:** back to the start of the stretch (the last Waystone, the foot of the tower or the last fire) with 3 hearts. Moves and lit stations are never lost.
 - **Only the three Waystones refill hearts.** The tower fires do not (Kody: refills must be rare), so you climb the tower on the hearts you bring.
+- **Embers are dash fuel** (Kody, 2026-11-16): each ember picked up is one dash, a fall burns 3. The ember chip shows how many you have.
 - **Hard falls** (Kody, v3: "falling still doesn't do a whole lot"): landing 200+ px below the last ledge you stood on costs a heart right where you land. A glide softens the landing. The signposted way never needs a drop that big.
 - **Lanterns only at the stations** (the Waystones, the tower's foot and the fires), so a long fall loses real height.
 - Cracked planks break in 0.35 s (was 0.5), plain ledges a fifth narrower past each zone's opening, and no helping wind.

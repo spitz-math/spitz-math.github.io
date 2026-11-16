@@ -32,12 +32,12 @@ function nextQuestion(){ return QS?QS.next():multQ(); }
 /* st = how many stations are done (0..6): 1 = Cloud Hop, 2 = Scarf Glide, 3 = Ember Dash, 4 and 5 = the tower's first two fires, 6 = the beacon */
 function fresh(){ return { ver:2, name:'', started:false, over:false, len:0, score:0, answered:0, correct:0,
   topics:QS?QS.topicTable():{'Multiplication':[0,0]}, q:null, qDone:false, picked:-1,
-  camp:'c0', st:0, dj:false, gl:false, ds:false, runes:0, cp:false, reward:false, embers:[], feathers:[], ice:[], falls:0, playT:0, best:0, done:false, early:false,
-  campFalls:0, help:false, zone:0, hints:{}, bossSeen:false, hearts:3 }; }
-function moves(){ S.dj=S.st>=1; S.gl=S.st>=2; S.ds=S.st>=3; }
+  camp:'c0', st:0, dj:false, gl:false, ds:true, hot:false, runes:0, cp:false, reward:false, embers:[], feathers:[], ice:[], falls:0, playT:0, best:0, done:false, early:false,
+  campFalls:0, help:false, zone:0, hints:{}, bossSeen:false, hearts:3, fuel:0 }; }
+function moves(){ S.dj=S.st>=1; S.gl=S.st>=2; S.ds=true; S.hot=S.st>=3; }   /* Ember Dash from the start (Kody); Waystone 3 makes it hot enough to melt ice */
 var S=load()||fresh();
 function save(){ try{ localStorage.setItem(KEY,JSON.stringify(S)); localStorage.setItem(KEY+'_mute',muted?'1':'0'); }catch(e){} }
-function load(){ try{ muted=localStorage.getItem(KEY+'_mute')==='1'; var v=JSON.parse(localStorage.getItem(KEY)||'null'); if(v&&v.ver===2&&v.topics&&Array.isArray(v.embers)&&Array.isArray(v.ice)){ if(!(v.hearts>0)) v.hearts=3; v.help=false; return v; } }catch(e){} return null; }
+function load(){ try{ muted=localStorage.getItem(KEY+'_mute')==='1'; var v=JSON.parse(localStorage.getItem(KEY)||'null'); if(v&&v.ver===2&&v.topics&&Array.isArray(v.embers)&&Array.isArray(v.ice)){ if(!(v.hearts>0)) v.hearts=3; if(!(v.fuel>=0)) v.fuel=0; v.help=false; return v; } }catch(e){} return null; }
 function score(){ return S.embers.length*10+S.feathers.length*250+S.correct*100+Math.floor(S.best/10)+Math.max(0,Math.min(3,S.st-3))*150+(S.done?1000:0); }
 
 /* ---------------- sound: soft, musical, procedural ---------------- */
@@ -168,7 +168,7 @@ $('lp-pmusic').addEventListener('click',function(){ KIT.musicToggle(); pauseLabe
 $('lp-prestart').addEventListener('click',function(){ askNew(true); });
 $('lp-pend').addEventListener('click',function(){ askNew(true,'end'); });
 /* the pause menu lists the moves learned so far, with their keys */
-function moveList(){ var h='<span><kbd>Space</kbd> Jump</span>'; if(S.dj) h+='<span><kbd>Space</kbd><kbd>Space</kbd> Cloud Hop</span>'; if(S.gl) h+='<span>then hold <kbd>Space</kbd> Glide</span>'; if(S.ds) h+='<span><kbd>X</kbd> Dash</span>'; $('lp-moves').innerHTML=h; }
+function moveList(){ var h='<span><kbd>Space</kbd> Jump</span>'; if(S.dj) h+='<span><kbd>Space</kbd><kbd>Space</kbd> Cloud Hop</span>'; if(S.gl) h+='<span>then hold <kbd>Space</kbd> Glide</span>'; if(S.ds) h+='<span><kbd>X</kbd> Dash (1 ember'+(S.hot?', melts ice':'')+')</span>'; $('lp-moves').innerHTML=h; }
 /* one box asks before either ending: a new game (Shift+R), or stopping here with a score (for when class time runs out) */
 var askKind='new';
 function askNew(o,kind){ if(o){ askKind=kind||'new'; var e=askKind==='end';
@@ -195,7 +195,7 @@ function buildMeter(){ var m=$('lp-meter'), h=800, top=LV.summitY, html='<div cl
   html+='<svg class="goal" viewBox="0 0 56 56"><path d="M20 50h16l-2-26h-12z" fill="#7E8DB0" stroke="#2A1B2E" stroke-width="3" stroke-linejoin="round"/><path d="M16 24h24l-12-14z" fill="#5A6385" stroke="#2A1B2E" stroke-width="3" stroke-linejoin="round"/><rect x="24" y="30" width="8" height="9" fill="#C9A86A" stroke="#2A1B2E" stroke-width="2"/></svg>';
   html+='<div class="me" id="lp-me"></div>'; m.innerHTML=html; }
 var meY=-1;
-function hud(){ var hh=''; for(var i=0;i<3;i++) hh+='<svg viewBox="0 0 40 40" aria-hidden="true"><path d="M20 34C8 25 4 19 4 13a8 8 0 0 1 16-2 8 8 0 0 1 16 2c0 6-4 12-16 21z" fill="'+(i<S.hearts?'#E8553D':'#3A2D50')+'" stroke="#2A1B2E" stroke-width="3" stroke-linejoin="round"/>'+(i<S.hearts?'<path d="M10 13a4 4 0 0 1 5-4" stroke="#FFB3A0" stroke-width="3" fill="none" stroke-linecap="round"/>':'')+'</svg>'; $('lp-hpchip').innerHTML=hh; $('lp-hpchip').title=S.hearts+' of 3 hearts'; $('lp-emb').textContent=S.embers.length; $('lp-feath').textContent=S.feathers.length; $('lp-fchip').hidden=!S.feathers.length;
+function hud(){ var hh=''; for(var i=0;i<3;i++) hh+='<svg viewBox="0 0 40 40" aria-hidden="true"><path d="M20 34C8 25 4 19 4 13a8 8 0 0 1 16-2 8 8 0 0 1 16 2c0 6-4 12-16 21z" fill="'+(i<S.hearts?'#E8553D':'#3A2D50')+'" stroke="#2A1B2E" stroke-width="3" stroke-linejoin="round"/>'+(i<S.hearts?'<path d="M10 13a4 4 0 0 1 5-4" stroke="#FFB3A0" stroke-width="3" fill="none" stroke-linecap="round"/>':'')+'</svg>'; $('lp-hpchip').innerHTML=hh; $('lp-hpchip').title=S.hearts+' of 3 hearts'; $('lp-emb').textContent=S.fuel||0; $('lp-embchip').classList.toggle('empty',!(S.fuel>0)); $('lp-feath').textContent=S.feathers.length; $('lp-fchip').hidden=!S.feathers.length;
   $('lp-ab-dj').hidden=!S.dj; $('lp-ab-gl').hidden=!S.gl; $('lp-ab-ds').hidden=!S.ds; }
 function pop(id){ var e=$(id); e.classList.remove('pop'); void e.offsetWidth; e.classList.add('pop'); }
 var hintKey='', hintT=0;
@@ -205,7 +205,7 @@ function hints(){ var h=S.hints; if(BOSS.on) return hint(null);
   if(!h.jump) return hint('<kbd>Space</kbd> or <kbd>↑</kbd> Jump','jump');
   if(S.dj&&!h.hop) return hint('Jump, then <kbd>Space</kbd> again in the air: Cloud Hop','hop');
   if(S.gl&&!h.glide) return hint('After your hop, hold <kbd>Space</kbd> to glide','glide');
-  if(S.ds&&!h.dash) return hint('<kbd>X</kbd> Ember Dash','dash');
+  if(S.fuel>0&&!h.dash) return hint('<kbd>X</kbd> Ember Dash · burns 1 ember','dash');
   if(S.help&&!h.helpSeen) return hint('A helping wind: your jumps go higher until the next lantern','help');
   hint(null); }
 
@@ -256,7 +256,7 @@ $('lp-next').addEventListener('click',function(){ if(ptrDownAt<answeredAt+1) ret
 var opening=false, gateT=0;
 var REW={ dj:{ name:'Cloud Hop', chip:'lp-ab-dj', text:'Jump, then press jump <b>again in the air</b> for a second jump.<br>The cliffs above need it.' },
   gl:{ name:'Scarf Glide', chip:'lp-ab-gl', text:'After your Cloud Hop, <b>hold jump</b> to glide.<br>Rising wind lifts you. Let go to drop.' },
-  ds:{ name:'Ember Dash', chip:'lp-ab-ds', text:'Press <b>X</b> for a quick dash, on the ground or in the air.<br>A dash melts ice.' } }, rewardMove='dj';
+  ds:{ name:'Blazing Dash', chip:'lp-ab-ds', text:'Your Ember Dash burns hot now.<br><b>Dash into ice to melt it.</b> Each dash still burns 1 ember.' } }, rewardMove='dj';
 function openReward(){ var s=LV.st[S.st-1]; rewardMove=(s&&s.move)||'dj'; var r=REW[rewardMove]; $('lp-rwname').textContent=r.name; $('lp-rwtext').innerHTML=r.text;
   setMode('reward'); $('lp-cp').hidden=false; $('lp-card').hidden=true; $('lp-reward').hidden=false; panelAt=performance.now(); SND.unlock(); KIT.confetti(960,420,RM.matches?40:90,2.4); hud(); pop(r.chip); demoT=0; }
 function closeReward(){ S.reward=false; save(); $('lp-cp').hidden=true; setMode('play'); blockHeld(); }
@@ -313,9 +313,9 @@ function update(dt){
     if(finishT>5&&!$('lp-end').offsetParent) showEnd(); return; }
   if(mode!=='play') return;
   S.playT+=dt; acc+=dt; var n=0;
-  WORLD.dj=S.dj; WORLD.gl=S.gl; WORLD.ds=S.ds; solids();
+  WORLD.dj=S.dj; WORLD.gl=S.gl; WORLD.ds=S.ds; WORLD.melt=!!S.hot; solids();
   bossStep(dt); if(mode!=='play') return;
-  while(acc>=FIX&&n<10){ acc-=FIX; n++; gt+=FIX; WORLD.t=gt; var I=inp(); if(S.help) boost(); LPPH.step(P,I,FIX,WORLD); unboost(); jumpEdge=false; downEdge=false; dashEdge=false; events(); if(mode!=='play') break;
+  while(acc>=FIX&&n<10){ acc-=FIX; n++; gt+=FIX; WORLD.t=gt; var I=inp(); if(I.dashPressed&&(S.fuel||0)<1){ I.dashPressed=false; noFuel(); } if(S.help) boost(); LPPH.step(P,I,FIX,WORLD); unboost(); jumpEdge=false; downEdge=false; dashEdge=false; events(); if(mode!=='play') break;
     if(P.dashT>0&&(n%2)) ghosts.push({x:P.x,y:P.y,face:P.face,t:0.2}); }
   if(acc>FIX) acc=FIX;
   if(Math.abs(P.vx)>40) S.hints.run=1;
@@ -333,7 +333,7 @@ function events(){ var hard=false; P.ev.forEach(function(e){
   if(e==='jump'){ SND.jump(); sq=-0.35; S.hints.jumps=(S.hints.jumps||0)+1; if(S.hints.jumps>=2) S.hints.jump=1; puff(P.x,P.y,4,'#F3E9D8'); }
   else if(e==='dj'){ SND.hop(); sq=-0.3; spin=RM.matches?0:1; ring(P.x,P.y+6); S.hints.hop=1; }
   else if(e==='glide'){ SND.glide(); S.hints.glide=1; spin=0; }
-  else if(e==='dash'){ SND.dash(); S.hints.dash=1; spin=0; puff(P.x,P.y+20,5,'#FF9A3C'); }
+  else if(e==='dash'){ S.fuel=Math.max(0,(S.fuel||0)-1); hud(); SND.dash(); S.hints.dash=1; spin=0; puff(P.x,P.y+20,5,'#FF9A3C'); }
   else if(e==='shatter'){ var w=P.shat; if(w&&w.id&&S.ice.indexOf(w.id)<0){ S.ice.push(w.id); save(); } SND.shatter(); if(w) for(var q=0;q<5;q++) shards(w.x+w.w/2,w.y+w.h*(0.1+0.2*q),RM.matches?2:5); if(!RM.matches) shake=0.1; }
   else if(e==='land'||e==='landHard'){ if(gt-lastLandT>0.08){ SND.land(e==='landHard'); } lastLandT=gt; sq=e==='landHard'?0.55:0.32; puff(P.x,P.y,e==='landHard'?8:4,'#F3E9D8'); if(e==='landHard'&&!RM.matches) shake=0.12; }
   else if(e==='crack') SND.crack();
@@ -346,9 +346,12 @@ function events(){ var hard=false; P.ev.forEach(function(e){
    Moves and lit stations are never lost. Only the three Waystones refill hearts (Kody: refills must be rare); the tower fires do not. */
 var BIG=['c0','way','top','way3','base','b1','b2'];
 function bigCamp(){ var y=campOf(S.camp).y, id='c0'; BIG.forEach(function(b){ if(camps[b]&&camps[b].y<=y) id=b; }); return id; }
+/* embers are the fuel for Ember Dash (Kody 2026-11-16): each dash burns one; a fall burns 3. With none left, X only fizzles. */
+var fizzT=-9;
+function noFuel(){ if(gt-fizzT<0.6) return; fizzT=gt; tone(220,150,0,0.12,'sine',0.03); pop('lp-embchip'); KIT.toast('No embers left to dash. Grab more!'); }
 function outName(b){ return b==='c0'?'the village':(b==='base'?'the foot of the tower':(b[0]==='b'?'the last fire':'the Waystone')); }
 /* lose a heart; true when that was the last one (then the hero goes back to the stretch's start with 3 hearts) */
-function loseHeart(what){ S.falls++; S.campFalls++; var lost=S.embers.splice(Math.max(0,S.embers.length-3),3).length; S.hearts--; hud(); pop('lp-hpchip');
+function loseHeart(what){ S.falls++; S.campFalls++; var lost=S.embers.splice(Math.max(0,S.embers.length-3),3).length; S.fuel=Math.max(0,(S.fuel||0)-3); S.hearts--; hud(); pop('lp-hpchip');
   if(S.hearts<=0){ S.hearts=3; S.camp=bigCamp(); KIT.toast('Out of hearts! Back to '+outName(S.camp)); hud(); return true; }
   KIT.toast(what+' '+S.hearts+' heart'+(S.hearts>1?'s':'')+' left'+(lost?' · lost '+lost+' ember'+(lost>1?'s':''):'')); return false; }
 function fall(why){ if(mode!=='play') return; if(why==='hurt'){ SND.hurt(); P.ouch=true; }
@@ -360,7 +363,7 @@ function hardFall(){ SND.hurt(); P.ouch=true; if(!RM.matches) shake=0.25; sq=0.6
 function campCheck(){ if(!P.on) return; LV.camps.forEach(function(c,i){ if(c.id===S.camp) return; if(P.on.id!==c.id&&(Math.abs(P.y-c.y)>2||Math.abs(P.x-c.x)>140)) return;
   if(c.y<campOf(S.camp).y) return; S.camp=c.id; S.campFalls=0; SND.camp(); sparkle(c.x+12,c.y+34,8,'#FFD98A'); save(); }); }
 function pickups(){ var px=P.x, py=P.y+22;
-  LV.embers.forEach(function(e,i){ if(S.embers.indexOf(i)>=0) return; if(Math.abs(e[0]-px)<24&&Math.abs(e[1]-py)<30){ S.embers.push(i); SND.ember(); sparkle(e[0],e[1],6,'#FFC23D'); pop('lp-embchip'); hud(); save(); } });
+  LV.embers.forEach(function(e,i){ if(S.embers.indexOf(i)>=0) return; if(Math.abs(e[0]-px)<24&&Math.abs(e[1]-py)<30){ S.embers.push(i); S.fuel=(S.fuel||0)+1; SND.ember(); sparkle(e[0],e[1],6,'#FFC23D'); pop('lp-embchip'); hud(); save(); } });
   LV.feathers.forEach(function(f){ if(S.feathers.indexOf(f.id)>=0) return; if(Math.abs(f.x-px)<28&&Math.abs(f.y-py)<34){ S.feathers.push(f.id); SND.feather(); sparkle(f.x,f.y,14,'#2EC4B6'); KIT.toast('Star Feather! '+S.feathers.length+' of '+LV.feathers.length); hud(); pop('lp-fchip'); save(); } }); }
 function finish(){ S.done=true; S.over=true; S.cp=false; S.score=score(); save(); SND.fire(); SND.beacon(); setMode('finish'); finishT=0; finCheer=false; hint(null);
   BOSS.on=false; bossClear(0); $('lp-boss').hidden=true; }
