@@ -567,8 +567,8 @@ body.dn-cine .dn-top, body.dn-cine .dn-side{ opacity:0; pointer-events:none; tra
       <div class="dn-step"><b>Answer</b>Right answers after each room power you up.</div>
       <div class="dn-step"><b>Win</b>Beat the Warden to win. Survive the bonus Last Stand to escape.</div>
     </div>
-    <label class="dn-namelbl" for="dn-nameinput">Your name <span>first name + last initial</span></label>
-    <div class="dn-row"><input class="dn-input" id="dn-nameinput" maxlength="24" placeholder="Like: Levi S" autocomplete="off"><button class="sz-mus" id="sz-mus" aria-label="Music on or off, key N">♪ Music on</button></div>
+    <label class="dn-namelbl" for="dn-nameinput">Your name</label>
+    <div class="dn-row"><input class="dn-input" id="dn-nameinput" maxlength="24" placeholder="First name and last initial" autocomplete="off"><button class="sz-mus" id="sz-mus" aria-label="Music on or off, key N">♪ Music on</button></div>
     <button class="dn-go dn-next" id="dn-go" disabled><span>Start</span></button>
     <p class="dn-gohint" id="dn-gohint">Type your name to unlock Start.</p>
     <div class="dn-keyline"><div class="sz-ctl" data-ctl="ARROWS/WASD=Move | Hold Space=Attack | X=Dodge | 1234=Answer"></div>
@@ -1357,6 +1357,9 @@ function makeSprites(){
   /* Falling rubble v1 (ChatGPT via Task Drop task dea2ac39 / Sprite Drop asset 78e5837d, 2026-11-15, sha256 93eeebc4...; art/falling_rubble_v1/): exact pixels, two 24x24 rocks. Made by art/falling_rubble_v1/make_js.py */
   var RBP={A:'#12101D',B:'#9D9FBF',C:'#565C7E',D:'#3A3F55',E:'#6E76A4'}, rbDraw=function(x,m){ m.forEach(function(r,j){ for(var i=0;i<r.length;i++){ var ch=r[i]; if(ch==='.') continue; x.fillStyle=RBP[ch]; x.fillRect(i,j,1,1); } }); };
   SPR.rubble=[mk(24,24,function(x){ rbDraw(x,['........................','..............AAAAA.....','...AAABBBBBBBBBBBBBA....','...ABBBBBBBBBBBBBBCAA...','..ABBBBBBBBBBBBBCCCCA...','.AABBBBBBBBBBBCCCCCDA...','.ABBBBBBBBCCCCCCCCDA....','.ADCCCCCCCCCCCCCDDDA....','.ADCCCCCCCCCCCCDDDD.....','.ADCCCCCCCCCCCCDEAA.....','.ADCCCCCCCCCCCCCEEE.....','.ADCCCCCCCCCCCCCCEEEAA..','.ADDCCCCCCCCCCCCCCEEEAA.','.ADDCCCCCCCCCCCCCCCDDDA.','.ADDDDDDDDDCCCCCCCDDDA..','.ADDDDDDDDDDDDCCCCDDAA..','.ADDDDDDDDDDDDDDDDDDA...','.AEEEEEEEEDEECCCDDDA....','.ADDDDDDDDDCCCCCDDAA....','.ADDDDDDDDDCCCCCCAAA....','.ADDDDDDDDDCCCCCCCEEE...','..AADDDDDDDCCCDDDDDAA...','...AAAAAAAAAAAAAAAAA....','........................']); }),mk(24,24,function(x){ rbDraw(x,['........................','...........AAAA.........','.........AABBBCA........','.......AABBBBBCAAA......','....ABBBBBBBBBCCCA......','...AABBBBBBBBCCCCA......','..ABBBBBBBBCCCCCA.......','..ABBBBBBCCCCCCDD.......','.ABBBBBCCCCCCCCDDAA.....','.ACCCCCCCCCCCCCDABBAA...','.ADDCCCCCCCCCDDDABBBAA..','.ADDDCCCCCCCDDDAABBBBA..','.AADDCCCCCCDAAABBBBBCCA.','...DDDDDDDDAAEEEEBBBCCA.','...AECCCADAACEECCCCCCCA.','..AEEEEEEAAACCCCCCCCCAA.','.AAEEEEEBBBACCCCCCCCCA..','.AEEEEEEECCCDDDCCCCCAA..','.ACDDDECCCCCDDDCCDDA....','.AADDDDCCCCCDDDCCDDA....','..ADDDDCCCAA.AADDDA.....','...AADDDDCA...AAAAA.....','....AAAA................','........................']); })];
+  /* Merchant speech bubble v1 (ChatGPT via Task Drop task ec41f295 / Sprite Drop asset 22a89043, 2026-11-16, sha256 9b46014a...; art/merchant_bubble_v1/): exact pixels, 8x8 cells: 0-8 = 9-slice frame (TL,T,TR,L,C,R,BL,B,BR), 9 = tail pointing down. Made by art/merchant_bubble_v1/make_js.py */
+  var BBP={A:'#12101D',B:'#D9C7A0',C:'#FFC23A',D:'#A88B5E',E:'#E3961C',F:'#F4ECD8'}, bbDraw=function(x,m){ m.forEach(function(r,j){ for(var i=0;i<r.length;i++){ var ch=r[i]; if(ch==='.') continue; x.fillStyle=BBP[ch]; x.fillRect(i,j,1,1); } }); };
+  SPR.bubble=[mk(8,8,function(x){ bbDraw(x,['...AAAAA','.AABBBBB','ABBCBBBB','ABDEBFFF','ABBBFFFF','ABBFFFFF','ABBFFFFF','ABBFFFFF']); }),mk(8,8,function(x){ bbDraw(x,['AAAAAAAA','BBBBBBBB','BBBBBBBB','FFFFFFFF','FFFFFFFF','FFFFFFFF','FFFFFFFF','FFFFFFFF']); }),mk(8,8,function(x){ bbDraw(x,['AAAAAAA.','BBBBDDDA','BBBBDCDA','FFFBDEDA','FFFFDDDA','FFFFFDDA','FFFFFDDA','FFFFFDDA']); }),mk(8,8,function(x){ bbDraw(x,['ABBFFFFF','ABBFFFFF','ABBFFFFF','ABBFFFFF','ABBFFFFF','ABBFFFFF','ABBFFFFF','ABBFFFFF']); }),mk(8,8,function(x){ bbDraw(x,['FFFFFFFF','FFFFFFFF','FFFFFFFF','FFFFFFFF','FFFFFFFF','FFFFFFFF','FFFFFFFF','FFFFFFFF']); }),mk(8,8,function(x){ bbDraw(x,['FFFFFDDA','FFFFFDDA','FFFFFDDA','FFFFFDDA','FFFFFDDA','FFFFFDDA','FFFFFDDA','FFFFFDDA']); }),mk(8,8,function(x){ bbDraw(x,['ABBFFFFF','ABBFFFFF','ABBFFFFF','ABBBFFFF','ABBCBFFF','ADDEDDDD','AADDDDDD','..AAAAAA']); }),mk(8,8,function(x){ bbDraw(x,['FFFFFFFF','FFFFFFFF','FFFFFFFF','FFFFFFFF','FFFFFFFF','DDDDDDDD','DDDDDDDD','AAAAAAAA']); }),mk(8,8,function(x){ bbDraw(x,['FFFFFDDA','FFFFFDDA','FFFFFDDA','FFFFDDDA','FFFDCCDA','DDDDEEDA','DDDDDDA.','AAAAAAA.']); }),mk(8,8,function(x){ bbDraw(x,['........','.AAAAAA.','..AFFA..','...ABA..','...AA...','........','........','........']); })];
   SPR.gem=mk(6,8,function(x){ dots(x,[[2,0,2,1],[1,1,4,1],[0,2,6,3],[1,5,4,1],[2,6,2,1]],'#38C8F0'); dots(x,[[1,2,2,2],[2,1,1,1]],'#D6FBFF'); dots(x,[[3,4,2,2]],'#1784C4'); });
   SPR.gemB=mk(6,8,function(x){ dots(x,[[2,0,2,1],[1,1,4,1],[0,2,6,3],[1,5,4,1],[2,6,2,1]],'#FFC93C'); dots(x,[[1,2,2,2],[2,1,1,1]],'#FFF2C2'); dots(x,[[3,4,2,2]],'#C98A12'); });
   if(window.PX){ var walkF=function(src,side){ return mk(src.width,src.height,function(x){ var h=src.height; x.drawImage(src,0,0);
@@ -2469,11 +2472,15 @@ function say(k){ var w=S.w; if(!w||!w.shop) return; var quiet=k==='enter'||k==='
   var L0=SAY[k], last=w.bub&&w.bub.s, opts=L0.filter(function(x){ return x!==last; }); if(!opts.length) opts=L0; var line=opts[Math.floor(Math.random()*opts.length)];
   if(k==='poor'&&w.bub&&w.bub.s===line&&w.bub.t>0){ w.bub.t=2.2; return; }
   w.bub={s:line,t:k==='leave'?1.8:2.6}; w.sayCd=now+6; }
-function drawBubble(c,w){ var b=w.bub; if(!b||b.t<=0) return; var im=tspr(b.s,15,'#F4ECD8'), bw=im.width+22, bh=32, x=Math.round(Math.max(FLR[0]+6,Math.min(FLR[2]-6-bw,MERCH[0]-bw/2))), y=MERCH[1]-104;
-  var ga=c.globalAlpha; c.globalAlpha=ga*Math.min(1,b.t/0.25);
-  c.fillStyle='#12081C'; c.fillRect(x-2,y-2,bw+4,bh+4); c.fillStyle='#1E1233'; c.fillRect(x,y,bw,bh); c.fillStyle='#45346A'; c.fillRect(x,y,bw,2); c.fillRect(x,y+bh-2,bw,2); c.fillRect(x,y,2,bh); c.fillRect(x+bw-2,y,2,bh);
-  var tx=Math.round(MERCH[0]); c.fillStyle='#45346A'; c.fillRect(tx-6,y+bh,12,2); c.fillRect(tx-4,y+bh+2,8,2); c.fillRect(tx-2,y+bh+4,4,2); c.fillStyle='#1E1233'; c.fillRect(tx-4,y+bh-2,8,2); c.fillRect(tx-2,y+bh,4,2);
-  c.drawImage(im,x+11-im.pad,Math.round(y+bh/2-im.height/2)); c.globalAlpha=ga; }
+function drawBubble(c,w){ var b=w.bub; if(!b||b.t<=0) return; var im=tspr(b.s,15,'#2B1D14'), K=2, E=8*K, bw=Math.max(2*E,im.width+28), bh=Math.max(2*E,im.height+14), x=Math.round(Math.max(FLR[0]+6,Math.min(FLR[2]-6-bw,MERCH[0]-bw/2))), y=MERCH[1]-104-(bh-32);
+  /* merchant bubble v1: ChatGPT's parchment 9-slice (SPR.bubble, 8x8 art cells drawn at K=2); edges stretch along their run (every edge row/column is one colour), centre is one flat fill */
+  var ga=c.globalAlpha, sm=c.imageSmoothingEnabled, B=SPR.bubble, mw=bw-2*E, mh=bh-2*E; c.globalAlpha=ga*Math.min(1,b.t/0.25); c.imageSmoothingEnabled=false;
+  c.drawImage(B[0],x,y,E,E); c.drawImage(B[2],x+bw-E,y,E,E); c.drawImage(B[6],x,y+bh-E,E,E); c.drawImage(B[8],x+bw-E,y+bh-E,E,E);
+  if(mw>0){ c.drawImage(B[1],x+E,y,mw,E); c.drawImage(B[7],x+E,y+bh-E,mw,E); }
+  if(mh>0){ c.drawImage(B[3],x,y+E,E,mh); c.drawImage(B[5],x+bw-E,y+E,E,mh); }
+  if(mw>0&&mh>0) c.drawImage(B[4],x+E,y+E,mw,mh);
+  var tx=Math.round(Math.max(x+E,Math.min(x+bw-E,MERCH[0]))); c.drawImage(B[9],tx-E/2,y+bh-2*K,E,E); /* tail row 1 (its top outline) sits on the frame bottom outline */
+  c.imageSmoothingEnabled=sm; c.drawImage(im,Math.round(x+bw/2-im.width/2),Math.round(y+bh/2-im.height/2)); c.globalAlpha=ga; }
 function drawMerchant(c,w){ var el=w.t-(w.mAt||0), col=Math.floor(w.t/0.8)%2;
   if(w.mA==='wave'&&el<1.8) col=Math.floor(el/0.3)%2?1:2; else if(w.mA==='nod'&&el>=0&&el<0.7) col=3;
   c.fillStyle='rgba(0,0,0,.32)'; c.fillRect(MERCH[0]-14,MERCH[1]-2,28,4); rrDraw(c,'merchant',0,col,MERCH[0],MERCH[1],false); }
