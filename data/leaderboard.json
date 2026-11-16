@@ -1,5 +1,5 @@
 {
- "updated": "2026-11-16T21:38:07.479Z",
+ "updated": "2026-11-16T21:40:15.506Z",
  "games": {
   "splat_range": {
    "name": "Splat Range",
@@ -1183,27 +1183,6 @@
   "rook_and_ruin": {
    "name": "Rook & Ruin",
    "top": [
-    {
-     "name": "Sylvestre Cantu",
-     "score": "170,904",
-     "acc": 81,
-     "set": "Multiplication facts",
-     "date": "2026-11-16"
-    },
-    {
-     "name": "tanix.b",
-     "score": "162,398",
-     "acc": 81,
-     "set": "Multiplication facts",
-     "date": "2026-11-16"
-    },
-    {
-     "name": "Ethan A",
-     "score": "120,504",
-     "acc": 100,
-     "set": "Multiplication facts",
-     "date": "2026-11-16"
-    },
     {
      "name": "Zach S",
      "score": "43,389",
