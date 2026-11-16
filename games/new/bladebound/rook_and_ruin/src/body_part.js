@@ -78,10 +78,10 @@ var INFO={
   orbit:{how:'Blades circle you and cut', use:'Automatic', base:'Blades circle close around you and cut any enemy they touch.', st:function(l){ return [['Blades',[0,2,3,4][l]],['Damage per cut',3+l]]; }},
   ricochet:{how:'A bouncing orb, thrown for you', use:'Automatic', base:'Every 1.5 s you throw an orb at the nearest enemy. It bounces off walls and hits everything it passes.', st:function(l){ return [['Wall bounces',l+2],['Damage',3+l],['Orbs per throw',l>=3?2:1]]; }},
   bash:{how:'Damage enemies with your dodge', use:'After dodge', base:'Your dodge roll becomes a shield charge: enemies you roll into take damage and are stunned (the Warden is only pushed).', st:function(l){ return [['Bash damage',[0,6,9,13][l]],['Stun',[0,0.8,1.1,1.4][l]+' s'],['Dodge recharge',l>=3?'25% faster':'normal']]; }},
-  thorns:{how:'Enemies that hit you get hurt', use:'Defensive', base:'Enemies that hit you take damage back. Bumping into them deals half.', st:function(l){ return [['Damage back',[0,6,10,15][l]]]; }},
+  thorns:{how:'Hurts enemies that hit you', use:'Defensive', base:'Enemies that hit you take damage back. Bumping into them deals half.', st:function(l){ return [['Damage back',[0,6,10,15][l]]]; }},
   aegis:{how:'Block a hit, then blast back', use:'Defensive', base:'A shield blocks one hit, then recharges. Each block blasts the enemies around you, and every block makes the next blast stronger (up to 5).', st:function(l){ return [['Recharge',[0,12,9,6][l]+' s'],['First blast damage',Math.round((6+3*l)*1.25)]]; }},
   ward:{how:'Reflect enemy projectiles', use:'Defensive', base:'Relic gems circle close to you. They catch enemy magic orbs and fire them back as bolts, and nick enemies they touch.', st:function(l){ return [['Gems',l],['Bolt damage',8+3*l],['Bolts go through',l>=3?'3 enemies':'1 enemy']]; }},
-  heart:{how:'One more heart', use:'Defensive', base:'One more heart, and you heal to full.', st:function(l){ return [['Max hearts',(S&&S.w?S.w.p.max-L('heart')+l:5+l)]]; }},
+  heart:{how:'One more heart', use:'Defensive', base:'One more heart, and you heal to full.', st:function(l){ return [['Max hearts',Math.min(MAXH,S&&S.w?S.w.p.max-L('heart')+l:5+l)]]; }},
   boots:{how:'Run and dodge faster', use:'Always on', base:'You run faster and your dodge roll recharges sooner.', st:function(l){ return [['Move speed','+'+(12*l)+'%'],['Dodge recharge',(10*l)+'% faster']]; }}
 };
 /* the stat lines for a card: from -> to, changed ones marked */
@@ -98,7 +98,7 @@ function synFor(id){ return SYN.filter(function(u){ return u.need.some(function(
 /* ---------- a run ---------- */
 function freshWorld(){
   return { rid:'entry', from:'s', seen:{entry:1}, t:0, runT:0,
-    p:{x:W/2,y:H-70,r:11,fx:0,fy:-1,hp:6,max:6,arm:0,inv:0,sw:0,swA:0,cd:0,kx:0,ky:0,sh:0,walk:0,roll:0,rollCd:0,rx:0,ry:0,rip:0,chain:0,chainT:0,sid:0,spin:0,crit:0,buyLock:0},
+    p:{x:W/2,y:H-70,r:11,fx:0,fy:-1,hp:5,max:5,arm:0,inv:0,sw:0,swA:0,cd:0,kx:0,ky:0,sh:0,walk:0,roll:0,rollCd:0,rx:0,ry:0,rip:0,chain:0,chainT:0,sid:0,spin:0,crit:0,buyLock:0},
     b:{}, picks:0, xp:0, lv:1, need:7,   /* 7 (was 5): the starter relic is free now, so the Entry Hall pays one level instead of two */
     pend:0, coins:0, kills:0, combo:0, comboT:0, bestCombo:0, flawless:0, last:0, en:[], spawns:[], gems:[], coinsF:[], hearts:[], shots:[], orbs:[], fx:[], booms:[], tele:[],
     waves:[], wave:0, waveT:0.9, cleared:false, open:false, door:false, chest:null, resolve:0, siegeT:0, crack:0, shop:null, boss:null, victory:0,
@@ -108,7 +108,7 @@ function loadRoom(id,from){ var w=S.w, R=ROOMS[id]; applyFork(); w.bannerQ=[]; w
   w.waves=(R.waves||[]).slice(); w.wave=0; w.waveT=0.9; w.chest=null; w.resolve=0; w.siegeT=R.siege||0; w.crack=0; w.boss=null; w.shop=null;
   w.cleared=!w.waves.length&&!R.siege&&!R.boss; w.open=w.door=w.cleared;
   if(R.shop){ w.mA='wave'; w.mAt=0; }   /* the merchant waves hello as you walk in */
-  if(R.shop) w.shop=[{id:'heal',ic:'🧪',n:'Potion',d:'Heal to full',cost:10},{id:'max',ic:'❤️',n:'Heart Container',d:'+1 max heart',cost:18,next:[32]},{id:'card',ic:'📜',n:'Upgrade Scroll',d:'Pick 1 of 3 powers',cost:22,next:[34,48]},{id:'gold',ic:'🌟',n:'Gold Scroll',d:'Pick 1 of 3 gold powers (+2 levels)',cost:48},{id:'arm',ic:'🪖',n:'Armor',d:'Blocks the next 3 hits',cost:26},{id:'rev',ic:'💙',n:'Second Wind',d:'One more chance if you are knocked out again',cost:30}].map(function(it,k){ it.x=W/2+(k-2.5)*130; it.y=322; return it; });
+  if(R.shop) w.shop=[{id:'heal',ic:'🧪',n:'Potion',d:'Heal to full',cost:10},{id:'max',ic:'❤️',n:'Heart Container',d:'+1 max heart',cost:18},{id:'card',ic:'📜',n:'Upgrade Scroll',d:'Pick 1 of 3 powers',cost:22,next:[34,48]},{id:'gold',ic:'🌟',n:'Gold Scroll',d:'Pick 1 of 3 gold powers (+2 levels)',cost:48},{id:'arm',ic:'🪖',n:'Armor',d:'Blocks the next 3 hits',cost:26},{id:'rev',ic:'💙',n:'Second Wind',d:'One more chance if you are knocked out again',cost:30}].map(function(it,k){ it.x=W/2+(k-2.5)*130; it.y=322; return it; });
   if(w.shop&&S.revExtra) w.shop[5].sold=1;   /* Second Wind (Kody 2026-11-15): a second revive, bought here, one per run */
   placePots(id);
   if(R.secret) w.secretChest=ROOMART?{x:secretX(),y:FLR[1]+10,open:false}:{x:w.secL?W-(27.5*TS+15):27.5*TS+15,y:2.5*TS,open:false};
@@ -151,6 +151,7 @@ function hurtE(e,d,fx,fy,kb,opt){ if(e.dead) return; opt=opt||{}; var w=S.w;
   if(e.type==='boss'&&e.st===9) d=Math.round(d*1.6);   /* stunned boss takes more */
   tally(Math.min(d,Math.max(0,e.hp))); e.hp-=d; e.fl=0.09; if(kb){ var k=kb/(ET[e.type].heavy?5:1); e.kx+=fx*k; e.ky+=fy*k; }
   if(d>0&&w.fx.length<80) w.fx.push({k:'num',x:e.x+rnd(-4,4),y:e.y-e.r-6,t:0,v:d,c:opt.crit?'#FFC93C':'#FFFFFF'});
+  if(e.type==='slime'&&opt.melee&&d>0){ e.sq=0.1; for(var gd=0;gd<(RM?3:4)&&w.fx.length<90;gd++) w.fx.push({k:'goo',x:e.x+rnd(-4,4),y:e.y-6,vx:fx*rnd(40,110)+rnd(-50,50),vy:rnd(-130,-50),t:0,c:['#FD63AF','#C63A80','#FEE6F3','#FD63AF'][gd]}); }   /* goo droplets and a quick squash */
   if(opt.melee&&w.fx.length<90) w.fx.push({k:'spark',x:e.x-fx*e.r*0.6,y:e.y-fy*e.r*0.6-6,a:Math.atan2(fy,fx),t:0});
   SND.hit(e,opt); if(e.hp<=0) killE(e,opt); }
 /* score = points. Kills are worth more while your combo is high; getting hit drops it. Rooms pay for speed and for taking no hits. */
@@ -165,7 +166,8 @@ function killE(e,opt){ var w=S.w, t=ET[e.type]; e.dead=true; w.kills++; SND.die(
   if(t.xp&&!(w.last>0)) for(var i=0;i<(e.small?1:Math.max(1,Math.round(t.xp/2)));i++) dropGem(e.x+rnd(-8,8),e.y+rnd(-8,8),e.small?1:Math.ceil(t.xp/Math.max(1,Math.round(t.xp/2))));
   if(!(w.last>0)&&!late&&Math.random()<t.coin*0.6*(e.small?0.5:1)) for(var c=0;c<(t.coin>=1?2:1);c++) w.coinsF.push({x:e.x+rnd(-10,10),y:e.y+rnd(-10,10),m:0});
   if(w.fx.length<100) for(var j=0;j<(RM||w.fx.length>50?3:7);j++) w.fx.push({k:'bit',x:e.x,y:e.y-8,vx:rnd(-110,110),vy:rnd(-140,30),t:0,c:t.col});
-  if(Math.random()<(w.p.hp<=2?0.15:0.045)&&w.p.hp<w.p.max&&w.hearts.length<4) w.hearts.push({x:e.x,y:e.y,t:0});
+  if(!(w.last>0)&&Math.random()<(w.p.hp<=2?0.15:0.045)&&w.p.hp<w.p.max&&w.hearts.length<4) w.hearts.push({x:e.x,y:e.y,t:0});
+  if(e.type==='slime'&&w.fx.length<130) w.fx.push({k:'splat',x:e.x,y:e.y+e.r+2,sm:e.small?1:0,t:0});   /* goo splat on the floor, also when a big one splits */
   if(e.type==='slime'&&!e.small){ for(var s2=0;s2<2;s2++){ var a=Math.random()*6.28, sm=spawnEnemy('slime',e.x+Math.cos(a)*10,e.y+Math.sin(a)*10,1,true); sm.kx=Math.cos(a)*220; sm.ky=Math.sin(a)*220; sm.cd=0.6; } }
   if(L('volatile')&&w.booms.length<40&&(DSRC!=='volatile'||(L('volatile')>=3&&!BGEN))){ var lv=L('volatile'); w.booms.push({x:e.x,y:e.y,r:[0,40,48,58][lv],dmg:[0,3,4,5][lv],t:0.06,g:DSRC==='volatile'?1:0}); }   /* level 3 chains one step, never forever */
   if(opt&&opt.melee&&!RM) S.hs=Math.max(S.hs||0,0.05);
@@ -212,8 +214,13 @@ function thorns(e,mult){ var w=S.w, l=L('thorns'); if(!l||!e||!e.type||e.dead||e
   if(HAS('spite')&&(mult||1)>=1&&w.booms.length<40) w.booms.push({x:e.x,y:e.y,r:64,dmg:8,t:0.05,spite:1}); }
 function hurtP(src,dmg){ var w=S.w, p=w.p; if(S.mode!=='play'||w.victory) return; if(src&&src.type) thorns(src,1);
   if(p.inv>0){ if(p.roll>0&&!p.perfect){ p.perfect=1; p.rip=1.4; p.ripP=1; addPts(50*cMult(),p.x,p.y-60,'#7DF5FF'); S.slow=RM?0:0.35; SND.crit(); w.fx.push({k:'txt',x:p.x,y:p.y-40,t:0,v:'Perfect! Strike now!',c:'#7DF5FF'}); w.fx.push({k:'ring',x:p.x,y:p.y-6,t:0}); } return; }
-  if(p.arm>0){ p.arm--; p.inv=0.8; SND.block(); w.fx.push({k:'txt',x:p.x,y:p.y-34,t:0,v:p.arm?'Armor! ('+p.arm+' left)':'Armor broke!',c:'#7DC8FF'}); w.fx.push({k:'ring',x:p.x,y:p.y-6,t:0}); return; }
-  if(L('aegis')&&p.sh<=0){ p.sh=[0,12,9,6][L('aegis')]; w.aeg=Math.min(5,(w.aeg||0)+1); var ar=130+20*w.aeg, am=1+0.25*w.aeg; w.fx.push({k:'boom',x:p.x,y:p.y-6,r:ar,t:0}); p.inv=0.8; SND.block(); w.fx.push({k:'txt',x:p.x,y:p.y-34,t:0,v:'Blocked!',c:'#4DE0C0'}); p.blkT=0.3; w.fx.push({k:'ring',x:p.x,y:p.y-6,t:0});
+  /* Kody's classroom test 2026-11-16: kids with armor and Aegis took no damage in the Last Stand. There a Warden's blow smashes through
+     armor and Aegis and costs 2 hearts; only a dodge (or being out of reach) saves you. A kid who walked away still survived,
+     so falling rubble (aimed at Rook) also gets through armor and Aegis there, for 1 heart: standing still is no longer safe. */
+  var wb=w.last>0&&src&&(src.type==='boss'||src.ls||src.rk);
+  if(wb){ if(!src.rk) dmg=2; if(p.arm>0||(L('aegis')&&p.sh<=0)) w.fx.push({k:'txt',x:p.x,y:p.y-34,t:0,v:'Smashed through!',c:'#FF8A8A'}); }
+  if(p.arm>0&&!wb){ p.arm--; p.inv=0.8; SND.block(); w.fx.push({k:'txt',x:p.x,y:p.y-34,t:0,v:p.arm?'Armor! ('+p.arm+' left)':'Armor broke!',c:'#7DC8FF'}); w.fx.push({k:'ring',x:p.x,y:p.y-6,t:0}); return; }
+  if(L('aegis')&&p.sh<=0&&!wb){ p.sh=[0,12,9,6][L('aegis')]; w.aeg=Math.min(5,(w.aeg||0)+1); var ar=130+20*w.aeg, am=1+0.25*w.aeg; w.fx.push({k:'boom',x:p.x,y:p.y-6,r:ar,t:0}); p.inv=0.8; SND.block(); w.fx.push({k:'txt',x:p.x,y:p.y-34,t:0,v:'Blocked!',c:'#4DE0C0'}); p.blkT=0.3; w.fx.push({k:'ring',x:p.x,y:p.y-6,t:0});
     DSRC='aegis'; w.en.forEach(function(e){ var dx=e.x-p.x, dy=e.y-p.y, d=Math.hypot(dx,dy)||1; if(d<ar&&!e.dead) hurtE(e,Math.round((6+3*L('aegis'))*am),dx/d,dy/d,420); }); w.orbs=w.orbs.filter(function(o){ return o.fr||Math.hypot(o.x-p.x,o.y-p.y)>ar; });
     if(HAS('thunder')) thunderGuard(); return; }
   w.hitBy=!src?'':src.type?src.type:('vx' in src)?'orb':('r' in src)?'ring':'rubble';
@@ -305,8 +312,8 @@ function update(dt){ var w=S.w, p=w.p, s=stat(), i, e;
   /* banked level-ups get answered at the end of the fight, never in the middle of it */
   if(w.cleared&&w.pend>0&&S.mode==='play'){ w.resolve-=dt; if(w.resolve<=0) levelUp(); }
   hud(); }
-function stepFx(dt){ var w=S.w; for(var i=w.fx.length-1;i>=0;i--){ var f=w.fx[i]; f.t+=dt; if(f.k==='bit'){ f.x+=f.vx*dt; f.y+=f.vy*dt; f.vy+=300*dt; }
-    var life=f.k==='bit'?0.5:f.k==='die'?0.16:f.k==='pop'?0.18:f.k==='zap'||f.k==='arc'?0.22:f.k==='ring'?0.35:f.k==='boom'?0.3:f.k==='spark'?0.14:f.k==='hurt'?0.3:f.k==='puff'?0.4:0.8; if(f.t>life) w.fx.splice(i,1); } }
+function stepFx(dt){ var w=S.w; for(var i=w.fx.length-1;i>=0;i--){ var f=w.fx[i]; f.t+=dt; if(f.k==='bit'||f.k==='goo'){ f.x+=f.vx*dt; f.y+=f.vy*dt; f.vy+=300*dt; }
+    var life=f.k==='bit'?0.5:f.k==='goo'?0.4:f.k==='splat'?0.6:f.k==='die'?0.16:f.k==='pop'?0.18:f.k==='zap'||f.k==='arc'?0.22:f.k==='ring'?0.35:f.k==='boom'?0.3:f.k==='spark'?0.14:f.k==='hurt'?0.3:f.k==='puff'?0.4:0.8; if(f.t>life) w.fx.splice(i,1); } }
 var TT=0.9, TH=0.45;   /* doorway walk: 0.45 s out through the door, 0.45 s in through the next one */
 function goRoom(id,from){ var w=S.w, p=w.p; if(w.shop) say('leave'); w.next=[id,from]; w.tdir=from==='w'?[-1,0]:from==='e'?[1,0]:[0,-1]; p.fx=w.tdir[0]; p.fy=w.tdir[1]; SND.door(); p.sw=0; p.roll=0; p.kx=p.ky=0; S.mode='trans'; trans=TT; HELD={}; save(); }
 
@@ -333,6 +340,7 @@ function enemyAI(e,dt,p){ var w=S.w, dx=p.x-e.x, dy=p.y-e.y, d=Math.hypot(dx,dy)
   if(!t.fly&&e.type!=='boss'){ e.losT=(e.losT||0)-dt; if(e.losT<=0){ e.losT=0.2+Math.random()*0.1; e.los=lineClear(e.x,e.y,p.x,p.y)&&lineClear(e.x+e.r*0.7,e.y,p.x,p.y)&&lineClear(e.x-e.r*0.7,e.y,p.x,p.y); }
     if(!e.los){ var nd=navDir(e,p); if(nd){ ux=nd[0]; uy=nd[1]; } } }
   mx=ux; my=uy;
+  if(e.sq>0) e.sq-=dt;
   if(e.stun>0){ e.mv=0; e.stun-=dt; e.x+=e.kx*dt; e.y+=e.ky*dt; e.kx*=Math.max(0,1-8*dt); e.ky*=Math.max(0,1-8*dt); return; }
   e.t+=dt; e.cd-=dt;
   if(e.type==='gob'){   /* chase, crouch with a red "!" for 0.45 s, lunge, then stand there catching its breath */
@@ -355,8 +363,10 @@ function enemyAI(e,dt,p){ var w=S.w, dx=p.x-e.x, dy=p.y-e.y, d=Math.hypot(dx,dy)
       if(d<80&&e.cd<1.2&&!e.blinked){ var spot=randFloor(260); w.fx.push({k:'puff',x:e.x,y:e.y,t:0}); w.fx.push({k:'wout',x:e.x,y:e.y+e.r+2,row:e.rrRow==null?1:e.rrRow,fl:!!e.rrFl,t:0}); e.bkT=e.t; e.x=spot[0]; e.y=spot[1]; e.blinked=1; w.fx.push({k:'puff',x:e.x,y:e.y,t:0}); e.cd=1.0; }
       if(e.cd<=0&&d<460&&lineClear(e.x,e.y,p.x,p.y)){ e.st=1; e.cd=0.85; e.aim=Math.atan2(dy,dx); SND.tele(); } }
     else if(e.st===1){ v=0; e.aim=Math.atan2(dy,dx); if(e.cd<=0){ e.st=0; e.cd=rnd(2.6,3.4); e.blinked=0; if(w.orbs.length<40){ [-0.28,0,0.28].forEach(function(o){ w.orbs.push({x:e.x,y:e.y-8,vx:Math.cos(e.aim+o)*150,vy:Math.sin(e.aim+o)*150,t:0}); }); SND.orb(); } } } }
-  else if(e.type==='slime'){   /* squish (still), then hop toward you */
-    var cyc=(e.t%1.0); if(cyc<0.4){ v=0; e.st=0; } else { v=e.small?150:120; e.st=1; } }
+  else if(e.type==='slime'){   /* sits, winds up for the last 0.25 s (held squash, a shake and a pink landing marker), then hops in a straight line to the marked spot */
+    var cyc=(e.t%1.0), cn=Math.floor(e.t), hv=e.small?150:120;
+    if(cyc>=0.15&&e.lk!==cn){ e.lk=cn; e.sx=ux; e.sy=uy; var hd=hv*(e.el?1.2:1)*0.6; e.tx=e.x+ux*hd; e.ty=e.y+uy*hd; e.mk=d<200?1:0; }   /* direction locks when the wind-up starts */
+    if(cyc<0.4){ v=0; e.st=0; e.wu=cyc>=0.15?1:0; } else { v=hv; e.st=1; e.wu=0; mx=e.sx; my=e.sy; } }
   else if(e.type==='boss'){ bossAI(e,dt,p,d,ux,uy); return; }
   if(e.el&&(e.st===0||e.type==='slime')) v*=1.2;
   e.mv=v; e.wd=(e.wd||0)+v*dt;   /* walk cycle advances with distance */
@@ -366,20 +376,20 @@ function enemyAI(e,dt,p){ var w=S.w, dx=p.x-e.x, dy=p.y-e.y, d=Math.hypot(dx,dy)
    0 walk · 1 charge warning (red lane) · 2 charging · 9 stunned after hitting a wall
    3 slam warning (red circle) · 4 sweep warning (red wedge) · 5 recover · 6 volley warning */
 function bossAI(e,dt,p,d,ux,uy){ var w=S.w, half=e.hp<e.max/2, sp=half?0.85:1;
-  if(w.last>0){ half=true; sp=0.8; e.raged=0; } else if(half&&!e.raged){ e.raged=1; e.addT=10; w.banner={txt:'THE WARDEN IS ENRAGED',sub:'Faster attacks. Reinforcements incoming!',t:1.8}; SND.boss(); var n0=w.spawns.length; spawnWave([['gob',4],['skel',2]],1,true); for(var si=n0;si<w.spawns.length;si++) w.spawns[si].t+=0.9; }
+  if(w.last>0){ half=true; sp=0.7; e.raged=0; }   /* Last Stand Wardens: quicker wind-ups (was 0.8) */ else if(half&&!e.raged){ e.raged=1; e.addT=10; w.banner={txt:'THE WARDEN IS ENRAGED',sub:'Faster attacks. Reinforcements incoming!',t:1.8}; SND.boss(); var n0=w.spawns.length; spawnWave([['gob',4],['skel',2]],1,true); for(var si=n0;si<w.spawns.length;si++) w.spawns[si].t+=0.9; }
   if(e.raged){ e.addT-=dt; if(e.addT<=0){ e.addT=10; spawnWave([['gob',3],['bat',2]],1,true); } }
   var v=0, mx=0, my=0;
   if(e.st===0&&e.cd<=0&&w.last>0){ var busy=0; for(var bi=0;bi<w.en.length;bi++){ var o2=w.en[bi]; if(o2!==e&&!o2.dead&&o2.type==='boss'&&o2.st!==0&&o2.st!==5&&o2.st!==9) busy++; } if(busy>=2) e.cd=0.3; }
   if(e.st===0){ v=ET.boss.spd*(half?1.25:1); mx=ux; my=uy; if(e.cd<=0){ var r=Math.random();
       if(!e.taught&&!(w.last>0)){ e.taught=1; e.st=1; e.cd=1.25; e.c0=e.cd; e.fa=Math.atan2(p.y-e.y,p.x-e.x); e.chains=0; }
       else if(d<130){ e.st=4; e.cd=0.7*sp; e.fa=Math.atan2(p.y-e.y,p.x-e.x); }
-      else if(r<0.45){ e.st=1; e.cd=0.85*sp; e.c0=e.cd; e.fa=Math.atan2(p.y-e.y,p.x-e.x); e.chains=half?1:(Math.random()<0.4?1:0); }
+      else if(r<0.45){ e.st=1; e.cd=0.85*sp; e.c0=e.cd; e.fa=Math.atan2(p.y-e.y,p.x-e.x); e.chains=w.last>0?2:half?1:(Math.random()<0.4?1:0); }
       else if(r<0.8||!half){ e.st=3; e.cd=0.8*sp; e.fa=Math.atan2(p.y-e.y,p.x-e.x); }
       else { e.st=6; e.cd=0.7*sp; }
       SND.btele(); } }
   else if(e.st===1){ if(e.cd>e.c0*0.4) e.fa=Math.atan2(p.y-e.y,p.x-e.x); if(e.cd<=0){ e.st=2; e.cd=1.4; } }
   else if(e.st===2){ v=560; mx=Math.cos(e.fa); my=Math.sin(e.fa); if(e.cd<=0){ e.lastA='charge'; e.st=5; e.cd=0.5; } }
-  else if(e.st===3){ if(e.cd<=0){ if(!RM) w.shake=0.25; SND.slam(); if(Math.hypot(p.x-e.x,p.y-e.y)<120) hurtP(e); w.fx.push({k:'boom',x:e.x,y:e.y,r:120,t:0}); e.lastA='slam'; if(half&&!(w.ringT>0)){ var ga=Math.random()*6.283; w.ringT=1.5; w.rings=(w.rings||[]).concat([{x:e.x,y:e.y,r:120,hit:0,g:[ga,ga+Math.PI+rnd(-0.5,0.5)]}]); } e.st=5; e.cd=0.7; } }
+  else if(e.st===3){ if(e.cd<=0){ if(!RM) w.shake=0.25; SND.slam(); if(Math.hypot(p.x-e.x,p.y-e.y)<120) hurtP(e); w.fx.push({k:'boom',x:e.x,y:e.y,r:120,t:0}); e.lastA='slam'; if(half&&!(w.ringT>0)){ var ga=Math.random()*6.283; w.ringT=1.5; w.rings=(w.rings||[]).concat([{x:e.x,y:e.y,r:120,hit:0,ls:w.last>0?1:0,g:[ga,ga+Math.PI+rnd(-0.5,0.5)]}]); } e.st=5; e.cd=0.7; } }
   else if(e.st===4){ if(e.cd<=0){ var pa=Math.atan2(p.y-e.y,p.x-e.x); w.fx.push({k:'slash',x:e.x,y:e.y-10,a:e.fa,t:0,big:1}); if(Math.hypot(p.x-e.x,p.y-e.y)<130&&angDiff(pa,e.fa)<1.25) hurtP(e); e.lastA='swipe'; e.st=5; e.cd=half?0.35:0.6; } }
   else if(e.st===6){ if(e.cd<=0){ e.lastA='orbs'; for(var k=0;k<10;k++){ var a=k*Math.PI/5+e.t; w.orbs.push({x:e.x,y:e.y-20,vx:Math.cos(a)*140,vy:Math.sin(a)*140,t:0}); } SND.orb(); e.st=5; e.cd=0.6; } }
   else if(e.st===9){ if(e.cd<=0){ e.st=3; e.cd=0.6; e.fa=Math.atan2(p.y-e.y,p.x-e.x); SND.btele(); } }
@@ -449,10 +459,14 @@ function roomClear(){ var w=S.w, R=ROOMS[w.rid]; var rt=w.runT-(w.roomT0||w.runT
   save(); }
 /* LAST STAND: the Warden falls, the keep starts to crumble, and the horde pours in for 2 minutes. This is where scores spread out. */
 var LAST=120;
-function startLast(){ var w=S.w; w.won=1; w.last=LAST; w.lastT=0; w.boss=null; w.tm.spawn=0.5; w.tm.swarm=18; w.tm.rub=3; w.rub=[]; w.lsW=0; w.lsKills=0; w.lsWK=0; w.cleared=false; w.open=false;
+function startLast(){ var w=S.w; w.won=1; w.last=LAST; w.lastT=0; w.boss=null; w.tm.spawn=0.5; w.tm.swarm=18; w.tm.rub=3; w.rub=[]; w.lsW=0; w.lsKills=0; w.lsWK=0; w.cleared=false; w.open=false; w.lsHard=lsHard();
   w.banner={txt:'BONUS: LAST STAND',sub:'You already won! Survive 2:00 to escape. Kills count double.',t:3.2}; SND.lsStart(); save(); }
 /* Last Stand: a flood of enemies, falling rubble, and Wardens that keep coming (1 at 0:15, 2 at 0:50, 3 at 1:25) */
-var LSCAP=90;   /* seconds into the Last Stand where the difficulty ramp stops */
+var LSCAP=105;   /* seconds into the Last Stand where the difficulty ramp stops */
+/* Kody's classroom test 2026-11-16: "people are getting through last stand way too easily, especially with all their upgrades".
+   The horde scales with how built-up Rook is: every upgrade level adds 4% enemy health (Wardens too), capped at +60%.
+   It changes health and rubble, never how many enemies are on screen, so the frame rate stays where it was. */
+function lsHard(){ var b=S.w.b||{}, n=0; for(var k in b) n+=(+b[k]||0); return Math.min(1.6,1+0.04*n); }
 var LSW=[[15,1,'ANOTHER WARDEN!'],[50,2,'TWO WARDENS?!'],[85,3,'THREE WARDENS!!']];   /* [time, Wardens alive from then on, banner] */
 function lastTick(dt){ var w=S.w, T=w.lastT; w.lastT+=dt; w.last-=dt;
   /* the survive clock follows the music while the Last Stand track plays (Kody's playtest 2026-11-15: the music skipped).
@@ -462,24 +476,24 @@ function lastTick(dt){ var w=S.w, T=w.lastT; w.lastT+=dt; w.last-=dt;
   var wardens=w.en.filter(function(e){ return !e.dead&&e.type==='boss'; }); w.boss=wardens[0]||null;
   /* Wardens: the target count only goes up. A milestone tops the room up to that many at once; a fallen Warden is replaced 12 s later */
   var pendW=w.spawns.filter(function(s){ return s.type==='boss'; }).length, haveW=wardens.length+pendW;
-  var lsSpawn=function(n,txt){ for(var k=0;k<n;k++){ var sx=[W/2,160,W-160][(w.lsN=(w.lsN||0)+1)%3]; w.spawns.push({type:'boss',x:sx,y:FLR[1]+70,t:1.2,m:0.7}); } if(n>0){ w.lsWT=T; w.banner={txt:txt,sub:'',t:1.4}; SND.boss(); } };
+  var lsSpawn=function(n,txt){ for(var k=0;k<n;k++){ var sx=[W/2,160,W-160][(w.lsN=(w.lsN||0)+1)%3]; w.spawns.push({type:'boss',x:sx,y:FLR[1]+70,t:1.2,m:0.7*(w.lsHard||1)}); } if(n>0){ w.lsWT=T; w.banner={txt:txt,sub:w.lsTold?'':'Its blows break armor. Dodge them!',t:w.lsTold?1.4:2.2}; w.lsTold=1; SND.boss(); } };
   LSW.forEach(function(q,i){ if(T>=q[0]&&w.lsW<=i){ w.lsW=i+1; w.lsTgt=q[1]; w.lsRe=0; var need=Math.max(1,q[1]-haveW); lsSpawn(need,q[2]); haveW+=need; } });
   if(w.lsTgt&&haveW<w.lsTgt){ w.lsRe=(w.lsRe||0)+dt; if(w.lsRe>=12){ w.lsRe=0; lsSpawn(1,haveW+1>=2?(['','','TWO','THREE'][haveW+1]+' WARDENS AGAIN!'):'ANOTHER WARDEN!'); } } else w.lsRe=0;
-  /* Kody 2026-11-15, "a tiny bit easier": the horde grows 10% slower and stops growing at 1:30. The last 30 s hold that level (the third Warden still arrives at 1:25) */
-  var Te=Math.min(T,LSCAP)*0.9;
+  /* Kody 2026-11-15 asked for "a tiny bit easier" (10% slower growth, cap at 1:30); the 2026-11-16 classroom test showed it was too easy, so full-speed growth is back, the cap moved to 1:45, and H scales with upgrades */
+  var Te=Math.min(T,LSCAP), H=w.lsHard||(w.lsHard=lsHard());
   w.tm.spawn-=dt; if(w.tm.spawn<=0&&w.en.length+w.spawns.length<(LITE?60:90)){ w.tm.spawn=Math.max(0.13,0.5-Te*0.003);
     var pool=['gob','gob','bat','slime','gob']; if(T>8) pool.push('skel','gob','bat'); if(T>25) pool.push('wiz','skel','bat','slime'); if(T>60) pool.push('skel','wiz','gob');
     var pos=edgePos(Math.floor(Math.random()*4)), grp=2+Math.floor(Te/20);
-    for(var g=0;g<grp;g++){ var lt=pool[Math.floor(Math.random()*pool.length)]; w.spawns.push({type:lt,x:clamp(pos[0]+rnd(-40,40),FLR[0]+16,FLR[2]-16),y:clamp(pos[1]+rnd(-40,40),FLR[1]+16,FLR[3]-16),t:0.6+g*0.08,m:1+Te/28,el:T>20&&lt!=='bat'&&Math.random()<0.05?1:0}); } }
+    for(var g=0;g<grp;g++){ var lt=pool[Math.floor(Math.random()*pool.length)]; w.spawns.push({type:lt,x:clamp(pos[0]+rnd(-40,40),FLR[0]+16,FLR[2]-16),y:clamp(pos[1]+rnd(-40,40),FLR[1]+16,FLR[3]-16),t:0.6+g*0.08,m:(1+Te/28)*H,el:T>20&&lt!=='bat'&&Math.random()<0.05+0.08*(H-1)?1:0}); } }
   w.tm.swarm-=dt; if(w.tm.swarm<=0&&T-(w.lsWT==null?-99:w.lsWT)<7) w.tm.swarm=7-(T-w.lsWT);   /* playtest handoff: big threats are staggered, a swarm never lands within 7 s of a Warden */
   if(w.tm.swarm<=0){ w.tm.swarm=20; w.banner={txt:'BAT SWARM!',sub:'',t:1.0}; var sd=Math.floor(Math.random()*4); for(var k=0;k<20;k++){ var p2=edgePos(sd); w.spawns.push({type:'bat',x:p2[0],y:p2[1],t:0.6+k*0.04,m:1+T/60}); } }
   /* falling rubble: a red circle, then a rock. Aimed near Rook, hurts enemies too */
   w.tm.rub-=dt; if(w.tm.rub<=0&&T-(w.lsWT==null?-99:w.lsWT)<3) w.tm.rub=0.5;   /* no rubble in the 3 s a new Warden lands */
-  if(w.tm.rub<=0){ w.tm.rub=Math.max(0.6,2.2-Te*0.014); var nr=1+Math.floor(Te/40);
+  if(w.tm.rub<=0){ w.tm.rub=Math.max(0.5,2.0-Te*0.014); var nr=1+Math.floor(Te/35)+(H>=1.4?1:0);
     for(var r=0;r<nr;r++){ var at=r===0?[w.p.x+rnd(-40,40),w.p.y+rnd(-30,30)]:randFloor(0); w.rub.push({x:clamp(at[0],FLR[0]+20,FLR[2]-20),y:clamp(at[1],FLR[1]+20,FLR[3]-20),t:1.0,r:44}); } }
   for(var i=w.rub.length-1;i>=0;i--){ var rb=w.rub[i]; if(!rb) continue;   /* a knock-out from one rock can clear the list mid-loop */ rb.t-=dt; if(rb.t<=0){ w.rub.splice(i,1); SND.boom(); if(!RM) w.shake=Math.max(w.shake||0,0.08);
       for(var b=0;b<(RM?3:8);b++) if(w.fx.length<110) w.fx.push({k:'bit',x:rb.x,y:rb.y-6,vx:rnd(-120,120),vy:rnd(-160,10),t:0,c:'#8A92BE'});
-      if(Math.hypot(w.p.x-rb.x,w.p.y-rb.y)<rb.r) hurtP({x:rb.x,y:rb.y},1);
+      if(Math.hypot(w.p.x-rb.x,w.p.y-rb.y)<rb.r) hurtP({x:rb.x,y:rb.y,rk:1},1);
       DSRC='rubble'; w.en.forEach(function(e){ if(!e.dead&&e.type!=='boss'&&Math.hypot(e.x-rb.x,e.y-rb.y)<rb.r+e.r) hurtE(e,20,0,0,0); }); } } }
 function drawRubble(c){ var w=S.w; (w.rub||[]).forEach(function(rb){ var k=1-rb.t/1.0, rd=Math.round(rb.r*(0.45+0.55*k)); c.globalAlpha=0.12+0.25*k; c.drawImage(FX.warnDisc,Math.round(rb.x-rd),Math.round(rb.y-rd),rd*2,rd*2); c.globalAlpha=1; c.drawImage(FX.warnRing,Math.round(rb.x-FX.warnRing.width/2),Math.round(rb.y-FX.warnRing.height/2));
   if(rb.t<0.3){ var fy=rb.y-6-rb.t*500; c.drawImage(SPR.rubble[(Math.round(rb.x)+Math.round(rb.y))&1],Math.round(rb.x-12),Math.round(fy-12));   /* falling rubble v1: 2 rocks, picked by spot so each rock keeps its look */ } }); }
@@ -567,9 +581,10 @@ function drawMerchant(c,w){ var el=w.t-(w.mAt||0), col=Math.floor(w.t/0.8)%2;
   if(w.mA==='wave'&&el<1.8) col=Math.floor(el/0.3)%2?1:2; else if(w.mA==='nod'&&el>=0&&el<0.7) col=3;
   c.fillStyle='rgba(0,0,0,.32)'; c.fillRect(MERCH[0]-14,MERCH[1]-2,28,4); rrDraw(c,'merchant',0,col,MERCH[0],MERCH[1],false); }
 var NEARAT=0;
-function buy(it){ var w=S.w, p=w.p; if(w.coins<it.cost){ toast('Not enough coins ('+w.coins+' / '+it.cost+')'); SND.deny(); say('poor'); return; }
+function buy(it){ var w=S.w, p=w.p; if(it.id==='max'&&p.max>=MAXH){ toast('Hearts are maxed ('+MAXH+')'); SND.deny(); return; }
+  if(w.coins<it.cost){ toast('Not enough coins ('+w.coins+' / '+it.cost+')'); SND.deny(); say('poor'); return; }
   w.coins-=it.cost; it.hold=1; if(it.next&&it.next.length) it.cost=it.next.shift(); else it.sold=1; SND.buy(); w.mA='nod'; w.mAt=w.t; say('bought');
-  if(it.id==='heal'){ p.hp=p.max; toast('Healed!'); } else if(it.id==='max'){ p.max++; p.hp=p.max; toast('+1 max heart!'); } else if(it.id==='arm'){ p.arm=(p.arm||0)+3; toast('Armor on: blocks the next 3 hits'); } else if(it.id==='rev'){ S.revExtra=1; toast('Second Wind: one more chance if you are knocked out'); } else if(it.id==='card'){ openPick('shop',3,0.25); } else if(it.id==='gold'){ openPick('gold',3,1); } }
+  if(it.id==='heal'){ p.hp=p.max; toast('Healed!'); } else if(it.id==='max'){ p.max=Math.min(MAXH,p.max+1); p.hp=p.max; toast('+1 max heart!'); } else if(it.id==='arm'){ p.arm=(p.arm||0)+3; toast('Armor on: blocks the next 3 hits'); } else if(it.id==='rev'){ S.revExtra=1; toast('Second Wind: one more chance if you are knocked out'); } else if(it.id==='card'){ openPick('shop',3,0.25); } else if(it.id==='gold'){ openPick('gold',3,1); } }
 var trans=0;
 function transTick(dt){ var w=S.w, p=w.p, d=w.tdir||[0,-1], was=trans; trans-=dt; if(w.bub&&w.bub.t>0) w.bub.t-=dt;
   if(was>TH&&trans<=TH&&w.next){ var n=w.next; w.next=null; loadRoom(n[0],n[1]); save(); p.x-=d[0]*54; p.y-=d[1]*54; p.fx=d[0]; p.fy=d[1]; }
@@ -585,10 +600,13 @@ function knockedOut(){ var w=S.w; HELD={}; SND.ko(); if(!S.revUsed){ S.revUsed=1
 function dealStarter(){ var w=S.w; if(w.starter||w.picks) return; var ST=[['wave','whirl'],['spark','orbit','volatile'],['bash','thorns','aegis']], pth=ST[Math.floor(Math.random()*3)];
   var fid=pth[Math.floor(Math.random()*pth.length)], lv=UPI[fid].path==='bulwark'?2:1; w.b[fid]=lv; w.picks=1; w.starter=fid;
   w.bannerQ=[{txt:'STARTER RELIC: '+UPI[fid].n.toUpperCase(),sub:INFO[fid].how+'. '+INFO[fid].use+'. Right answers earn more powers.',t:3.0,ic:fid}]; renderBuild(); }
+/* Kody's classroom test 2026-11-16: start with 5 hearts, never more than 7. The Shop sells one Heart Container,
+   and the Heart Container card is rare (weight 0.35, other cards 1-3) and stops showing up at 7. */
+var MAXH=7;
 function cardsFor(n,goldChance,perfect){ var w=S.w, out=[];
   SYN.forEach(function(u){ if(out.length<1&&synReady(u)) out.push({id:u.id,syn:1}); });
   var paths={}; UP.forEach(function(u){ if(L(u.id)&&u.path!=='any') paths[u.path]=(paths[u.path]||0)+1; });
-  var pool=UP.filter(function(u){ return L(u.id)<3; }).map(function(u){ var wt=1; if(L(u.id)) wt=3; else if(paths[u.path]) wt=2;
+  var pool=UP.filter(function(u){ return L(u.id)<3&&(u.id!=='heart'||w.p.max<MAXH); }).map(function(u){ var wt=1; if(u.id==='heart') return {id:u.id,wt:0.35}; if(L(u.id)) wt=3; else if(paths[u.path]) wt=2;
       synFor(u.id).forEach(function(sy){ if(!HAS(sy.id)&&sy.need.some(function(q){ return q[0]!==u.id&&L(q[0])>0; })) wt+=2; });
       return {id:u.id,wt:wt}; });
   while(out.length<n&&pool.length){ var tot=pool.reduce(function(a,b){ return a+b.wt; },0), r=Math.random()*tot, k=0; for(;k<pool.length-1;k++){ r-=pool[k].wt; if(r<=0) break; }
@@ -596,7 +614,15 @@ function cardsFor(n,goldChance,perfect){ var w=S.w, out=[];
   if(!out.length) out.push({id:'snack'});
   if(perfect){ var best=null; out.forEach(function(c){ if(c.syn||c.id==='snack') return; if(!best||L(c.id)<L(best.id)) best=c; }); if(best){ best.gold=true; best.pm=1; } }
   return out; }
-function openPick(why,n,goldChance,perfect){ S.cards=cardsFor(n||3,goldChance||0,perfect); S.pickWhy=why; S.mode='pick'; HELD={}; showPick(); arm($('dn-pick').querySelector('.dn-pickbox')); save(); }
+/* Kody's classroom test 2026-11-16: "allow the ability to re roll powers with gold". R (or the button) deals a fresh hand
+   for coins: 15, then 10 more each time this run. Same number of cards and the same perfect-math gold card; never on the starter relic. */
+function rerollCost(){ return 15+10*(S.w.rrN||0); }
+function canReroll(){ return S.mode==='pick'&&S.cards.length&&!S.cards[0].first&&S.cards[0].id!=='snack'; }
+function reroll(){ if(!canReroll()||!gateOpen()) return; var w=S.w, c=rerollCost();
+  if(w.coins<c){ toast('Reroll costs '+c+' coins'); SND.tick(); return; }
+  var a=S.pickArgs||[S.cards.length,0,S.cards.some(function(x){ return x.pm; })]; w.coins-=c; w.rrN=(w.rrN||0)+1;
+  S.cards=cardsFor(a[0],a[1],a[2]); SND.pick(); showPick(); renderBuild(); save(); }
+function openPick(why,n,goldChance,perfect){ S.pickArgs=[n||3,goldChance||0,perfect]; S.cards=cardsFor(n||3,goldChance||0,perfect); S.pickWhy=why; S.mode='pick'; HELD={}; showPick(); arm($('dn-pick').querySelector('.dn-pickbox')); save(); }
 var PATHN={blade:'Blade',storm:'Storm',bulwark:'Bulwark',any:'Extra'};
 /* every family has one color everywhere: cards, combo chips and the build list */
 /* power icons: the Nov 14 pixel icons (RRICON in rr_art.js, one 24x24 image per power, sized by font-size: 1em).
@@ -633,12 +659,13 @@ function showPick(){ var why=S.pickWhy;
               :'<div class="dn-sts">'+statRows(c.id,0,to)+'</div><span class="d base">'+INFO[c.id].base+'</span>';
     return '<button class="dn-card fam p-'+u.path+(c.gold?' gold':'')+'" data-i="'+i+'"><span class="k">'+(i+1)+'</span><span class="dn-fam">'+PATHN[u.path]+(u.path==='any'?'':' power')+'</span><span class="ic">'+ICON(u)+'</span><span class="n">'+u.n+'</span><span class="lv">'+tier+'</span><span class="dn-how">'+INFO[c.id].how+'</span>'+body+cn+(c.pm?'<span class="dn-rar">Perfect math · +2 levels</span>':c.gold?'<span class="dn-rar">Gold card · skips a level</span>':'')+'</button>'; }).join('');
   $('dn-readynote').textContent='';
+  var rb=$('dn-reroll'), rc=rerollCost(); rb.hidden=!canReroll(); rb.disabled=w.coins<rc; rb.innerHTML='Reroll (R) · <b>'+rc+'</b> coins';
   $('dn-pick').hidden=false; }
 function pick(i){ if(S.mode!=='pick') return; var c=S.cards[i]; if(!c) return; var w=S.w, p=w.p;
   if(c.id==='snack'){ p.hp=p.max; }
   else if(c.syn){ w.b[c.id]=1; }
   else { var before=L(c.id), to=Math.min(3,before+(c.gold?2:1)); w.b[c.id]=to;
-    if(c.id==='heart'){ p.max+=to-before; p.hp=p.max; }
+    if(c.id==='heart'){ p.max=Math.min(MAXH,p.max+to-before); p.hp=p.max; }
     if(c.id==='aegis'&&!before) p.sh=0; }
   w.picks++;
   var card=$('dn-cards').children[i]; if(card){ var r=card.getBoundingClientRect(), pt=stagePoint(card,0,0), k=1920/$('stage').getBoundingClientRect().width; sparks(pt[0]+r.width*k/2,pt[1]+r.height*k/3,c.syn?26:c.gold?20:12,c.syn||c.gold?1:0); }
@@ -723,6 +750,7 @@ function closeAsk(){ var a=S.ask, w=S.w, p=w.p, all=a.got>=a.need; $('dn-qwrap')
 /* clicks count only if the press started after the gate opened (a held or spammed click from the fight never answers); keyboard "clicks" on a focused button are ignored, 1-4 and Enter do that job */
 $('dn-choices').addEventListener('click',function(e){ var b=e.target.closest('.dn-ch'); if(b&&gateOpen()&&freshClick(e,GATE)) answer(+b.dataset.i); });
 $('dn-next').addEventListener('click',function(e){ if(S.qDone&&freshClick(e,NEXTGATE)) askNext(); });
+$('dn-reroll').addEventListener('click',function(e){ if(freshClick(e,GATE)) reroll(); this.blur(); });
 $('dn-cards').addEventListener('click',function(e){ var b=e.target.closest('.dn-card'); if(b&&gateOpen()&&freshClick(e,GATE)) pick(+b.dataset.i); });
 function clock(t){ t=Math.floor(t); return Math.floor(t/60)+':'+('0'+t%60).slice(-2); }
 
@@ -823,6 +851,9 @@ function draw(){ var c=cx, w=S&&S.w; c.setTransform(1,0,0,1,0,0);
   var lo=L('orbit'); if(lo){ var n=[0,2,3,4][lo]+(HAS('tempest')?1:0); for(var kb=0;kb<n;kb++){ var a=w.oa+kb*2*Math.PI/n, bx2=p.x+Math.cos(a)*58, by2=p.y-6+Math.sin(a)*58;
     c.save(); c.translate(bx2,by2); c.rotate(a+1.57); c.fillStyle='#141026'; c.fillRect(-4,-11,8,22); c.fillStyle=HAS('tempest')?'#BFF6FF':'#CFE0FF'; c.fillRect(-3,-10,6,20); c.fillStyle='#FFFFFF'; c.fillRect(-1,-10,2,20); c.restore(); } }
   if(S.mode==='cut') drawCutWorld(c,t); if(w.rub&&w.rub.length) drawRubble(c);
+  /* slime landing markers and goo splats sit on the floor, under every body */
+  for(i=0;i<w.en.length;i++){ var se=w.en[i]; if(se.type==='slime'&&!se.dead&&se.mk&&!(se.stun>0)&&(se.wu||se.st===1)) slimeMark(c,se); }
+  for(i=0;i<w.fx.length;i++) if(w.fx[i].k==='splat'&&!LITE) drawSplat(c,w.fx[i]);
   /* bodies, top to bottom */
   var list=w.en.filter(function(e){ return !e.dead; }); list.push({hero:1,y:p.y}); if(w.shop&&rrReady('merchant')) list.push({merch:1,y:MERCH[1]-14}); if(w.pots) w.pots.forEach(function(pt){ if(pt.st<2) list.push({pot:pt,y:pt.y}); }); list.sort(function(a,b){ return a.y-b.y; });
   list.forEach(function(e){ if(e.hero){ drawHero(c,p,t); return; } if(e.merch){ drawMerchant(c,w); return; } if(e.pot){ drawPot(c,e.pot); return; }
@@ -861,6 +892,8 @@ function draw(){ var c=cx, w=S&&S.w; c.setTransform(1,0,0,1,0,0);
   var nbolt=0;
   for(i=0;i<w.fx.length;i++){ var f=w.fx[i], fk=f.k;
     if(fk==='bit'){ if(!LITE){ c.fillStyle=f.c; c.fillRect(Math.round(f.x),Math.round(f.y),4,4); } }
+    else if(fk==='goo'){ c.fillStyle='#0B0108'; c.fillRect(Math.round(f.x)-1,Math.round(f.y)-1,6,6); c.fillStyle=f.c; c.fillRect(Math.round(f.x),Math.round(f.y),4,4); }
+    else if(fk==='splat'){}
     else if(fk==='num'||f.lo){}
     else if(fk==='txt'){ c.globalAlpha=Math.max(0,Math.min(1,2.4*(1-f.t/0.8))); dtx(c,f.v,f.x,f.y-f.t*30,f.big?26:18,f.c,0,'#141026'); c.globalAlpha=1; }
     else if(fk==='spark'){ c.globalAlpha=Math.max(0,1-f.t/0.14); c.drawImage(FX.star,Math.round(f.x-12),Math.round(f.y-12)); c.globalAlpha=1; }
@@ -1092,6 +1125,7 @@ document.addEventListener('keydown',function(e){ if(e.metaKey||e.ctrlKey||e.altK
   if(k==='f'){ e.preventDefault(); fullscreen(); return; }
   if(k==='n'){ e.preventDefault(); musicToggle(); return; }
   if(k==='m'){ e.preventDefault(); muted=!muted; save(); toast(muted?'Sound off':'Sound on'); if(!muted) SND.tick(); return; }
+  if(k==='r'&&S.mode==='pick'){ e.preventDefault(); if(!e.repeat) reroll(); return; }
   if(/^[1-4]$/.test(e.key)){ if(e.repeat||!gateOpen()) return; if(S.mode==='ask') answer(+e.key-1); else if(S.mode==='pick') pick(+e.key-1); return; }
   if(e.key==='Enter'){ if(S.mode==='ask'){ e.preventDefault(); if(!e.repeat&&S.qDone&&!$('dn-next').disabled) askNext(); } return; } });
 document.addEventListener('keyup',function(e){ var k=k0(e); delete EAT[k]; if(e.key==='Shift') delete EAT.shift; HELD[k]=false; if(k==='j') HELD[' ']=false; });

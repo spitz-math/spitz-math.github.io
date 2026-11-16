@@ -63,8 +63,11 @@ function auGraph(){ var a=AC; if(!a) return null; if(AU.mg) return AU.mg;
     AU.dg.connect(AU.mg); AU.mg.connect(a.destination); AU.fg.connect(a.destination); AU.sg.connect(a.destination); auVol(true); }catch(e){ AU.mg=null; }
   return AU.mg; }
 function auSynthOut(a){ return auGraph()?AU.sg:a.destination; }
+/* music level: every track is mastered to -18 LUFS. Kody's classroom test 2026-11-16: "the music is too loud on launch" on Chromebooks,
+   so the music bus went from 0.5 to 0.3 (-4.4 dB) and the title loop plays a further 3 dB under that. */
+var MUSV=0.3, MUS_TITLE=0.7;
 function auVol(now){ if(!AU.mg) return; var t=AC.currentTime, set=function(p,v){ if(now) p.value=v; else p.setTargetAtTime(v,t,0.03); };
-  set(AU.mg.gain,0.5*AU.vol.m); set(AU.fg.gain,0.8*AU.vol.f);   /* the soft synth set (Nov 15, 3rd pack) is mastered 6-14 dB quieter, so effects are back at 0.8 */ set(AU.sg.gain,SYNTH_TRIM*AU.vol.f); }
+  set(AU.mg.gain,MUSV*AU.vol.m); set(AU.fg.gain,0.8*AU.vol.f);   /* the soft synth set (Nov 15, 3rd pack) is mastered 6-14 dB quieter, so effects are back at 0.8 */ set(AU.sg.gain,SYNTH_TRIM*AU.vol.f); }
 function auKick(){ try{ var a=ac(); if(!a) return; auGraph(); auPreload(); auTick(); }catch(e){} }
 ['pointerdown','keydown','touchstart'].forEach(function(n){ addEventListener(n,auKick,true); });
 
@@ -77,7 +80,7 @@ function auWant(){ if(AU.test) return AU.test==='stop'?null:AU.test; if(!S||auMu
   if(w.last>0) return 'ls';
   var R=ROOMS[w.rid]||{}; return R.boss?'boss':R.shop?'shop':'battle'; }
 function auStart(b,off,loop,fade){ var a=AC, s=a.createBufferSource(), g=a.createGain(), t=a.currentTime; s.buffer=b; s.loop=!!loop;
-  g.gain.setValueAtTime(0.0001,t); g.gain.linearRampToValueAtTime(1,t+fade); s.connect(g); g.connect(AU.dg); s.start(t,off||0);
+  g.gain.setValueAtTime(0.0001,t); g.gain.linearRampToValueAtTime(b===AU.buf[MUSF.title]?MUS_TITLE:1,t+fade); s.connect(g); g.connect(AU.dg); s.start(t,off||0);
   AU.src=s; AU.g=g; AU.t0=t; AU.off0=off||0; s.onended=function(){ if(AU.src===s){ AU.src=null; AU.g=null; } try{ g.disconnect(); }catch(e){} }; }
 function auFadeOut(sec){ if(!AU.src) return; var a=AC, s=AU.src, g=AU.g, t=a.currentTime; AU.src=null; AU.g=null;
   try{ g.gain.cancelScheduledValues(t); g.gain.setValueAtTime(Math.max(0.0001,g.gain.value),t); g.gain.linearRampToValueAtTime(0.0001,t+sec); s.stop(t+sec+0.05); }catch(e){} }
