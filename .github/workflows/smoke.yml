@@ -1,15 +1,18 @@
 name: Safety check
 # Opens every page, game and Checkpoint test in Chrome and fails on any script error, missing file or broken picture.
 # See .github/smoke/smoke.js. A red X on a pull request means: don't merge until it's fixed.
+# Pull requests opened by the draft-PR Action don't start checks on their own (GitHub ignores events made with the
+# Action's token), so claude/* branches are checked on push instead, and their duplicate pull_request run is skipped.
 on:
   pull_request:
   push:
-    branches: [main]
+    branches: [main, 'claude/**']
   workflow_dispatch:
 permissions:
   contents: read
 jobs:
   smoke:
+    if: github.event_name != 'pull_request' || !startsWith(github.head_ref, 'claude/')
     runs-on: ubuntu-latest
     timeout-minutes: 25
     steps:

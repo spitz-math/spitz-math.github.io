@@ -1,0 +1,67 @@
+name: Gameplay checks
+# Plays the games a change touches, with real key presses, and fails with a readable reason when a promise breaks
+# ("after restart, hp is reset: expected 5, got 1"). See tools/qa/README.md.
+# - Only the apps whose files changed run (tools/qa/apps.json). A shared file (kit.js, scorecode.js, catalog.js,
+#   questions.js, sw.js) runs every app that has tests.
+# - Results: the run's Summary page, plus screenshots and results.json as a downloadable artifact (7 days).
+# - Read-only: it never comments, merges, deploys or uses secrets.
+# Runs on pushes to claude/* branches (pull requests opened by the draft-PR Action don't start checks on their own),
+# and on pull requests from any other branch.
+on:
+  push:
+    branches: ['claude/**']
+  pull_request:
+  workflow_dispatch:
+    inputs:
+      lane:
+        description: 'quick or full (full adds the 1920x1080 board size and the game suites at 6x CPU)'
+        default: full
+      apps:
+        description: 'App ids separated by spaces, or "all"'
+        default: all
+permissions:
+  contents: read
+concurrency:
+  group: qa-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  play:
+    # A claude/* branch is already checked on push; skip the duplicate pull_request run for it.
+    if: github.event_name != 'pull_request' || !startsWith(github.head_ref, 'claude/')
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Install Chrome for the checks
+        run: |
+          npm init -y > /dev/null
+          npm install --no-save playwright@1.49.1
+          npx playwright install --with-deps chromium
+      - name: Play the changed games
+        env:
+          EVENT: ${{ github.event_name }}
+          BASE_REF: ${{ github.base_ref }}
+          LANE: ${{ inputs.lane }}
+          APPS: ${{ inputs.apps }}
+        run: |
+          set -o pipefail
+          if [ "$EVENT" = "workflow_dispatch" ]; then
+            if [ "$APPS" = "all" ]; then node tools/qa/run.js --all --lane "$LANE"; else node tools/qa/run.js $APPS --lane "$LANE"; fi
+          elif [ "$EVENT" = "pull_request" ]; then
+            node tools/qa/run.js --changed "origin/$BASE_REF"
+          else
+            node tools/qa/run.js --changed origin/main
+          fi
+      - name: Keep screenshots and results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: qa-results
+          path: qa-out/
+          retention-days: 7
+          if-no-files-found: ignore
