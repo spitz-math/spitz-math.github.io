@@ -1946,7 +1946,7 @@ var CSPK={every:[0,3.0,2.6,2.2], jumps:[0,1,2,3], dmg:[0,2,4,6]}, VOLD=[0,1,2,3]
 /* ---------- the castle: one run = these rooms ---------- */
 /* exits: n/w/e -> next room. Rooms lock while there are enemies; clearing opens every exit. */
 var ROOMS={
-  entry:  {name:'Entry Hall',     kind:'start',    exits:{n:'guard'},   waves:[[['gob',3]],[['gob',4]],[['gob',4],['bat',2]]], sub:'Hold Space to attack. Move to face enemies. X to dodge.'},
+  entry:  {name:'Entry Hall',     kind:'start',    exits:{n:'guard'},   waves:[[['gob',3]],[['gob',4]],[['gob',4],['bat',2]]], sub:'Hold Space to attack. Move to face enemies. X or K to dodge.'},
   guard:  {name:'Guard Room',     kind:'guard',    exits:{n:'cross'},   m:1.0,  waves:[[['gob',4],['bat',2]],[['bat',5],['gob',3]],[['gob',6],['bat',3]],[['gob',5],['bat',4],['gob',1,1]]], sub:'Bats hover, then dive. Dodge through!'},
   cross:  {name:'Crossroads',     kind:'crossr',   exits:{w:'vault',e:'arena'}, m:1.0, waves:[[['skel',1]],[['skel',1],['gob',4],['bat',3]],[['skel',2],['gob',6],['bat',2]]], intro:1, sub:'A shield knight guards this hall. Learn his shield first.'},
   vault:  {name:'Treasure Vault', kind:'vault',    exits:{n:'library'}, m:1.1, waves:[[['slime',4]],[['slime',3],['bat',5]]], chest:'treasure', sub:'A quiet room... mostly.'},
