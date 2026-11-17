@@ -29,6 +29,10 @@ function changedApps(ref) {
   return { apps, why: apps.length ? 'app files changed' : 'no app with tests was touched', files };
 }
 
+/* list files, folding a folder with more than 3 changed pages into one line */
+function group(fs_) { const by = {}; fs_.forEach(f => { const d = f.includes('/') ? f.slice(0, f.lastIndexOf('/') + 1) : ''; (by[d] = by[d] || []).push(f); });
+  return Object.entries(by).flatMap(([d, l]) => l.length > 3 ? ['- `' + d + '` (' + l.length + ' pages)'] : l.map(f => '- `' + f + '`')); }
+
 /* Changed pages that no adapter covers: a game page, the hub, Checkpoint... They get the Safety check only, and the report says so. */
 function uncovered(files) {
   const covered = f => CFG.apps.some(a => a.paths.some(p => f === p || f.startsWith(p)));
@@ -92,8 +96,11 @@ async function runApp(app, i) {
       parts.push(fs.readFileSync(path.join(ROOT, 'qa-out', app.id, 'summary.md'), 'utf8')); }
     catch (e) { code = 2; parts.push(`### ${app.name}: the test runner broke`, '```', String(e.stack || e).slice(0, 1500), '```'); console.error(e); }
   }
+  // shared files that need an independent ChatGPT review before "push it" (tools/review/review.json)
+  try { const { hit } = require('../review/brief'); const rv = (files || []).filter(hit);
+    if (rv.length) parts.push('### ChatGPT review needed', 'This change touches shared files, so it gets an independent ChatGPT review before Kody says "push it" (`node tools/review/brief.js`):', ...rv.slice(0, 12).map(f => '- `' + f + '`'), ''); } catch (e) {}
   const bare = uncovered(files);
-  if (bare.length) { gaps += bare.length; parts.push('### Changed pages with no gameplay tests yet', 'These get the Safety check only (loads, starts, no errors). Untested, not passed:', ...bare.map(f => '- `' + f + '`'), ''); }
+  if (bare.length) { gaps += bare.length; parts.push('### Changed pages with no gameplay tests yet', 'These get the Safety check only (loads, starts, no errors). Untested, not passed:', ...group(bare), ''); }
   if (!apps.length && !bare.length) parts.push('No page with gameplay tests was changed, so there was nothing to play. The Safety check still applies.');
   if (argv.includes('--strict') && gaps && code === 0) code = 1;
   if (flaky) parts.splice(1, 0, `**${flaky} test(s) only passed on a second try (flaky).** They count as warnings, not passes: see the rows marked flaky.`);

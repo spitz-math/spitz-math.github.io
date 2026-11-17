@@ -1,0 +1,16 @@
+{
+  "_about": "Files where one mistake can break every game, Checkpoint or the CI. A change to any of them gets an independent ChatGPT review before Kody says 'push it'. See tools/review/README.md.",
+  "paths": {
+    "games/scorecode.js": "score codes and saved-run expiry: codes must still decode for every game id, old codes keep working, ids never reused",
+    "games/catalog.js": "hub list and UNLOCK dates: a game must not unlock early or vanish; NEW badges",
+    "games/kit.js": "shared game kit (sound, keys, fullscreen, reduce-motion, end screen): every game loads it",
+    "games/questions.js": "question sets: right answers must be right, every set must still generate, set order is fixed",
+    "games/sw.js": "service worker: a bad cache can serve students stale or broken games",
+    "teacher.css": "teacher pages styles",
+    "checkpoint/player.html": "the Checkpoint test player students take tests in",
+    ".github/workflows/": "CI: permissions, triggers, secrets, untrusted PR code",
+    "tools/qa/lib/": "the shared gameplay test runner: tests that pass while a game is broken (false greens)",
+    "tools/qa/run.js": "the shared gameplay test runner",
+    ".claude/settings.json": "what Claude sessions may run or push"
+  }
+}
