@@ -1,6 +1,6 @@
 {
  "image": "out/barracks_1x.png",
- "sha256": "0e94e745ba51241ef4bddabe13a5b9671b7d6543efa6220ddc49ee7d38fc00c1",
+ "sha256": "dae09c670a9be2e8ff060a379c61fdbec7e079c8ed4e2a894ddafb3b4ed905fe",
  "spec": {
   "kind": "room",
   "size": [
@@ -14,18 +14,30 @@
     17,
     46,
     224,
-    255
+    48
    ],
    [
     258,
     46,
     464,
+    48
+   ],
+   [
+    17,
+    46,
+    37,
     255
    ],
    [
-    225,
-    215,
-    257,
+    442,
+    46,
+    464,
+    255
+   ],
+   [
+    17,
+    229,
+    464,
     255
    ],
    [
@@ -53,6 +65,7 @@
     45
    ]
   ],
+  "note": "Round 2 (Kody 2026-11-17: no pillars, floor looked odd). Barracks = guard room (f397fa63) with the open floor x38-441, y49-228 re-laid on one even grid from clean tiles of the same room (no pillars, no carpet, no stains). Floor edges, wall shadow, walls and the north arch stay identical to the guard room. The north wall band (x17-207 and x275-464, y0-45) also changes: banners recoloured, lance_rack (f0e12503) and armor_stand (49efabe4) placed there, cool tint. Only the 3 rows under the north door still come from the siege room's bare floor (33b43b24).",
   "also_match": [
    {
     "source": "refs/siege_room_1x.png",
@@ -61,12 +74,11 @@
       225,
       46,
       257,
-      214
+      48
      ]
     ]
    }
-  ],
-  "note": "Barracks = guard room (f397fa63) with the carpet strip replaced by the siege room's bare floor (33b43b24). Only the north wall band (x17-207 and x275-464, y0-45) may change: banners recoloured, lance_rack (f0e12503) and armor_stand (49efabe4) placed there, cool tint."
+  ]
  },
  "result": "PASS",
  "checks": [
@@ -86,17 +98,27 @@
    "detail": "0 see-through px"
   },
   {
-   "check": "protected [17,46,224,255] identical",
+   "check": "protected [17,46,224,48] identical",
    "result": "pass",
    "detail": "0 px differ"
   },
   {
-   "check": "protected [258,46,464,255] identical",
+   "check": "protected [258,46,464,48] identical",
    "result": "pass",
    "detail": "0 px differ"
   },
   {
-   "check": "protected [225,215,257,255] identical",
+   "check": "protected [17,46,37,255] identical",
+   "result": "pass",
+   "detail": "0 px differ"
+  },
+  {
+   "check": "protected [442,46,464,255] identical",
+   "result": "pass",
+   "detail": "0 px differ"
+  },
+  {
+   "check": "protected [17,229,464,255] identical",
    "result": "pass",
    "detail": "0 px differ"
   },
@@ -121,7 +143,7 @@
    "detail": "0 px differ"
   },
   {
-   "check": "[225,46,257,214] identical to siege_room_1x.png",
+   "check": "[225,46,257,48] identical to siege_room_1x.png",
    "result": "pass",
    "detail": "0 px differ"
   }

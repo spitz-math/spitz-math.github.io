@@ -4,7 +4,7 @@ Inputs (refs/, fetched from Sprite Drop for task 28e60182 and checked by sha256)
   siege_room_1x.png  33b43b24  0afb75dc...   bare floor that replaces the guard room's carpet strip
   lance_rack.png     f0e12503  cf358438...   prop, 28x34
   armor_stand.png    49efabe4  111fcc16...   prop, 14x28
-No image generation. Only the north wall band (x17-207, x275-464, y0-45) changes besides the carpet strip.
+No image generation. Round 2 also re-lays the open floor from this room's own clean tiles (no pillars).
     python3 make_barracks.py   -> out/barracks_1x.png (+ 2x preview)
 """
 import hashlib, os
@@ -24,6 +24,33 @@ rack, stand = ref('lance_rack.png', 'RGBA'), ref('armor_stand.png', 'RGBA')
 img = guard.copy()
 # 1. carpet strip -> the siege room's bare floor, pixel for pixel
 img[46:215, 225:258] = siege[46:215, 225:258]
+# 1b. (Kody 2026-11-17, round 2: "don't want pillars in here", "the floor looks a little odd")
+#     Re-lay the open floor x38-442, y49-229 on one even grid from clean floor tiles of this same room:
+#     no pillars, no rust stains, no half-shifted tiles. Edges, torch glow and wall shadow keep their pixels.
+src = img.copy()
+POOL_X = [51, 64, 77, 90, 155, 168, 274, 287, 300, 313, 365, 378, 391, 404]   # clean 13 px columns (no pillar, no glow)
+POOL_Y = [100, 113, 126, 139, 152, 165, 178]
+warm = lambda c: float((c[..., 0].astype(int) - c[..., 2].astype(int)).mean())
+pool = [src[y:y + 13, x:x + 13].copy() for x in POOL_X for y in POOL_Y]
+w = np.array([warm(c) for c in pool]); pool = [c for c, v in zip(pool, w) if v <= np.median(w) + 4]
+def fit(c, h, wd):          # 13x13 tile -> 12 high or 14 wide by dropping or repeating its middle row/column
+    if h < 13: c = np.delete(c, 6, 0)
+    if wd > 13: c = np.insert(c, 6, c[:, 6], 1)
+    return c
+XS = list(range(38, 234, 13)) + list(range(247, 443, 13))      # 38..233 | 233..247 centre | 247..442
+if XS[-1] != 442: XS.append(442)
+XS = sorted(set(XS))
+YS = [49, 62, 75, 88, 100, 113, 126, 139, 152, 165, 178, 191, 203, 216, 229]
+rng = np.random.default_rng(7); last = {}
+glow = (src[..., 0].astype(int) - src[..., 2].astype(int)) > 0
+glow[:200] = False; glow[:, :180] = False; glow[:, 300:] = False     # only the two south-door torches light this area
+for j in range(len(YS) - 1):
+    for i in range(len(XS) - 1):
+        x0, x1, y0, y1 = XS[i], XS[i + 1], YS[j], YS[j + 1]
+        if glow[y0:y1, x0:x1].any(): continue                          # torch-lit tiles stay as drawn
+        k = rng.integers(len(pool))
+        while k in (last.get((i - 1, j)), last.get((i, j - 1))): k = rng.integers(len(pool))
+        last[(i, j)] = k; img[y0:y1, x0:x1] = fit(pool[k], y1 - y0, x1 - x0)
 # 2. banners: red fabric -> Lancer green (the pennant greens of the approved lance rack); gold trim and pole unchanged
 BANNERS = [60, 150, 300, 390]            # x of each 30 px banner, y 4-45 (rooms/make_rooms.py)
 RECOLOR = {(0x77, 0x2b, 0x47): (0x28, 0x75, 0x5a), (0x4a, 0x28, 0x35): (0x18, 0x4d, 0x40)}
