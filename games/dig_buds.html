@@ -266,7 +266,7 @@ button:disabled{ cursor:default; }
     <div class="dg-steps">
       <div class="dg-step"><b>1. Answer</b>Press Q for questions. Each right answer charges your energy and earns cash.</div>
       <div class="dg-step"><b>2. Dig</b>Walk to a glowing beam and hold X to dig straight down. A lost Bud is waiting right under every beam.</div>
-      <div class="dg-step"><b>3. Rescue</b>Ore pays cash, crystals give energy. Spend cash in the shop (B) on a Drill, an Ore Magnet and more.</div>
+      <div class="dg-step"><b>3. Rescue</b>Walk up to a lost Bud and it hops home to camp. Ore you dig pays cash for the shop (B).</div>
     </div>
     <div class="dg-row"><input class="dg-input" id="dg-nameinput" maxlength="24" placeholder="First name + last initial" autocomplete="off" aria-label="Your name"><button class="sz-mus" id="sz-mus" aria-label="Music on or off, key N">♪ Music on</button></div>
     <p class="dg-nogl" id="dg-nogl" hidden>This Chromebook can't draw the 3D world right now. Close your other tabs and reload the page, or pick another game.</p>
@@ -276,7 +276,7 @@ button:disabled{ cursor:default; }
   </div><span class="dg-credit sz-credit">Made by Spitz <i class="sz-burger" aria-hidden="true"></i></span></div>
 
   <div class="dg-over" id="dg-end" hidden><div class="dg-box"><div class="sz-eyebrow">Spitz <b>Arcade</b></div>
-    <p class="dg-sub" style="margin:0">Time! Show this screen to your teacher.</p>
+    <p class="dg-sub" style="margin:0">Time!</p>
     <div class="dg-name" id="dg-endname"></div>
     <div class="dg-final" id="dg-endscore">0</div>
     <div class="dg-stats" id="dg-endstats"></div>
@@ -735,7 +735,7 @@ function update(dt){
   if(PL.ground||wet) PL.peak=PL.y; else PL.peak=Math.max(PL.peak||PL.y,PL.y);   // falls of 5+ blocks hurt
   if(PL.y<-4) spawn();
   if(PL.ground&&!(PL.inv>0)){ var fy=Math.floor(PL.y-0.2), hot=false; [[-RAD,-RAD],[RAD,-RAD],[-RAD,RAD],[RAD,RAD]].forEach(function(o){ if(get(Math.floor(PL.x+o[0]),fy,Math.floor(PL.z+o[1]))===23) hot=true; });
-    if(hot){ PL.vy=6.5; PL.ground=false; SND.sizzle(); say('Ouch, magma burns! Bridge over it with blocks'); hurt(1); } }
+    if(hot){ PL.vy=6.5; PL.ground=false; SND.sizzle(); say('Ouch, magma burns! Walk around the glowing orange'); hurt(1); } }
   PL.inv=Math.max(0,(PL.inv||0)-dt); PL.hurtT=Math.max(0,(PL.hurtT||0)-dt); PL.calm=(PL.calm||0)+dt;
   if(hp()<5&&PL.calm>9){ S.hp=hp()+1; PL.calm=0; hud(); }   // hearts come back slowly
   updGlooms(dt); updBuds(dt); updDrops(dt); checkGoal(dt); updParts(dt);
