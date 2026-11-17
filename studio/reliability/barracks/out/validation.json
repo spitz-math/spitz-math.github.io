@@ -1,0 +1,130 @@
+{
+ "image": "out/barracks_1x.png",
+ "sha256": "0e94e745ba51241ef4bddabe13a5b9671b7d6543efa6220ddc49ee7d38fc00c1",
+ "spec": {
+  "kind": "room",
+  "size": [
+   480,
+   270
+  ],
+  "alpha": "opaque",
+  "source": "refs/guard_room_1x.png",
+  "protected": [
+   [
+    17,
+    46,
+    224,
+    255
+   ],
+   [
+    258,
+    46,
+    464,
+    255
+   ],
+   [
+    225,
+    215,
+    257,
+    255
+   ],
+   [
+    0,
+    0,
+    16,
+    269
+   ],
+   [
+    465,
+    0,
+    479,
+    269
+   ],
+   [
+    0,
+    256,
+    479,
+    269
+   ],
+   [
+    208,
+    0,
+    274,
+    45
+   ]
+  ],
+  "also_match": [
+   {
+    "source": "refs/siege_room_1x.png",
+    "rects": [
+     [
+      225,
+      46,
+      257,
+      214
+     ]
+    ]
+   }
+  ],
+  "note": "Barracks = guard room (f397fa63) with the carpet strip replaced by the siege room's bare floor (33b43b24). Only the north wall band (x17-207 and x275-464, y0-45) may change: banners recoloured, lance_rack (f0e12503) and armor_stand (49efabe4) placed there, cool tint."
+ },
+ "result": "PASS",
+ "checks": [
+  {
+   "check": "size",
+   "result": "pass",
+   "detail": "480x270 (want 480x270)"
+  },
+  {
+   "check": "true 1x",
+   "result": "pass",
+   "detail": "ok"
+  },
+  {
+   "check": "fully opaque",
+   "result": "pass",
+   "detail": "0 see-through px"
+  },
+  {
+   "check": "protected [17,46,224,255] identical",
+   "result": "pass",
+   "detail": "0 px differ"
+  },
+  {
+   "check": "protected [258,46,464,255] identical",
+   "result": "pass",
+   "detail": "0 px differ"
+  },
+  {
+   "check": "protected [225,215,257,255] identical",
+   "result": "pass",
+   "detail": "0 px differ"
+  },
+  {
+   "check": "protected [0,0,16,269] identical",
+   "result": "pass",
+   "detail": "0 px differ"
+  },
+  {
+   "check": "protected [465,0,479,269] identical",
+   "result": "pass",
+   "detail": "0 px differ"
+  },
+  {
+   "check": "protected [0,256,479,269] identical",
+   "result": "pass",
+   "detail": "0 px differ"
+  },
+  {
+   "check": "protected [208,0,274,45] identical",
+   "result": "pass",
+   "detail": "0 px differ"
+  },
+  {
+   "check": "[225,46,257,214] identical to siege_room_1x.png",
+   "result": "pass",
+   "detail": "0 px differ"
+  }
+ ],
+ "scope": "technical only; visual approval is separate"
+}
