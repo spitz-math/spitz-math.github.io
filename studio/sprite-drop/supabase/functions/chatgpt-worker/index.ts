@@ -1,4 +1,5 @@
-// chatgpt-worker (spitz.dev): does ChatGPT's turn on a Task Drop task by itself, through the OpenAI API.
+// chatgpt-worker (spitz.dev): the openai_worker identity. Does a Task Drop turn by itself, through the OpenAI API,
+// only when the task's turn is openai_worker (never for chatgpt_chat, Kody's interactive ChatGPT).
 // Woken by the database (trigger on studio_tasks, or the dashboard's "run ChatGPT now") with a Vault secret.
 //
 // Supabase stops a function 150 s after it starts, so a turn is split into steps, one OpenAI call per function call:
@@ -35,7 +36,7 @@ Decide ONE action:
 - "image": the task needs new pictures from you (a sprite, sheet, icon, background). Put one entry in images for each picture the brief asks for this turn (at most 3). For each, write a precise image_prompt for an image model. For pixel art give the exact sheet size in art pixels (art_width, art_height), the delivery scale from the brief (default 4), and max_colours (usually 6-12). The worker turns the picture into exact hard-edged pixel art at that size, so describe the art filling the canvas the same way the cells are laid out, on a fully transparent background, no labels or grid lines. If the brief lists exact hex colours, put ALL of them in palette (the worker snaps every pixel to them); if it asks for a 1 pixel outline, put that colour in outline (the worker closes the outline itself). Ask the image model for big chunky blocks, bold flat shading and a thick dark outline, so it survives shrinking. If it is NOT pixel art, set art_width/art_height to 0 and set size to the brief's shape (1536x1024 wide, 1024x1536 tall, 1024x1024 square). Set background to "opaque" when the brief wants a background colour or scene (say the colour in image_prompt), "transparent" for sprites and cut-outs. Set priority to "default" unless the brief or Kody asks for quality, speed or cost. Give each picture a quality: "high" for final assets, environments, backgrounds, scenes, concept sheets and sheets with many frames, or when Kody asks for final or high quality; "low" for throwaway tests, quick experiments and rough ideas; "medium" for everyday work and whenever you are unsure.
 - Mechanical changes to an existing picture are NOT new drawings: resizing, nearest-neighbour scaling, palette or colour swaps, splitting, merging or arranging frames, moving things, transparency cleanup, format conversion. For those choose "reply", say exactly what to change (sizes, colours, frame order), and hand the turn to Claude, who does it in code and runs the same pixel checks.
 - "reply": the turn needs words only (a review of screenshots, an answer, a decision). Be concrete and short.
-Then choose next_turn: "claude" when Claude should act next (wire art in, build, fix), "kody" when Kody must decide or approve something, and done=true only when the brief's goal is fully met and nothing is left.
+Then choose next_turn: "claude" when Claude should act next (wire art in, build, fix), "spitz" when Kody (spitz) must decide or approve something, and done=true only when the brief's goal is fully met and nothing is left.
 Never claim to have tested a game or approved a deploy: only Kody approves merges and deploys.`
 
 const PLAN_SCHEMA = {
@@ -63,7 +64,7 @@ const PLAN_SCHEMA = {
         },
       },
     },
-    next_turn: { type: 'string', enum: ['claude', 'kody'] },
+    next_turn: { type: 'string', enum: ['claude', 'spitz'], description: 'claude = the Claude worker, spitz = Kody. Never yourself.' },
     done: { type: 'boolean' },
   },
 }
@@ -167,7 +168,7 @@ const loadTask = async (id: string) => (await db.from('studio_tasks').select('*'
 const loadRun = async (id: number) => (await db.from('studio_worker_runs').select('*').eq('id', id).maybeSingle()).data as Run | null
 
 // one line in the task's activity feed (real execution events only)
-async function ev(t: Task, runId: number | null, kind: string, detail: string, actor = 'chatgpt') {
+async function ev(t: Task, runId: number | null, kind: string, detail: string, actor = 'openai_worker') {
   const r = await db.from('studio_run_events').insert({ task_id: t.id, user_id: t.user_id, run_id: runId, task_version: t.version, actor, kind, detail: detail.slice(0, 600) })
   if (r.error) console.error('event', kind, r.error.message)
 }
@@ -186,7 +187,7 @@ function heartbeat(runId: number) {
 async function post(t: Task, args: Record<string, unknown>) {
   let r = await db.rpc('studio_worker_post', { p_task_id: t.id, p_request_key: `worker-${t.id}-v${t.version}`, p_expected_version: t.version, ...args })
   const nt = r.data?.conflict ? r.data.task : null
-  if (nt && nt.turn === 'chatgpt' && nt.status === 'open') r = await db.rpc('studio_worker_post', { p_task_id: t.id, p_request_key: `worker-${t.id}-v${nt.version}`, p_expected_version: nt.version, ...args })
+  if (nt && nt.turn === 'openai_worker' && nt.status === 'open') r = await db.rpc('studio_worker_post', { p_task_id: t.id, p_request_key: `worker-${t.id}-v${nt.version}`, p_expected_version: nt.version, ...args })
   return r as { data?: { conflict?: boolean }; error?: { message: string } | null }
 }
 const finish = (runId: number, status: string, detail: string, extra: Record<string, unknown> = {}) =>
@@ -219,9 +220,9 @@ async function failToKody(t: Task, run: Run, kind: string, msg: string, where: s
   await finish(run.id, 'error', text, { error_kind: kind })
   await ev(t, run.id, 'error', text)
   const cur = await loadTask(t.id)
-  if (!cur || cur.status !== 'open' || cur.turn !== 'chatgpt') return
+  if (!cur || cur.status !== 'open' || cur.turn !== 'openai_worker') return
   await post(cur, {
-    p_kind: 'question', p_set_turn: 'kody',
+    p_kind: 'question', p_set_turn: 'spitz',
     p_refs: saved.map(s => ({ type: 'asset', id: s.id })),
     p_body: `${text}${saved.length ? '\n\nSaved before it stopped:\n' + saved.map(s => s.note).join('\n') : ''}\n\nFix the cause, then hand the task back to ChatGPT (or press "Run ChatGPT now") to try again.`,
   })
@@ -230,7 +231,7 @@ async function failToKody(t: Task, run: Run, kind: string, msg: string, where: s
 // ---------- step 1: read the task and plan ----------
 async function startTurn(taskId: string): Promise<string> {
   const t = await loadTask(taskId)
-  if (!t || t.turn !== 'chatgpt' || t.status !== 'open') return 'not ChatGPT\'s turn'
+  if (!t || t.turn !== 'openai_worker' || t.status !== 'open') return 'not ChatGPT\'s turn'
   if (!OPENAI_KEY) { await ev(t, null, 'error', 'The worker has no OpenAI key yet, so it did not start.', 'system'); return 'no OPENAI_API_KEY' }
   // a step of a run on this task is alive right now: let it finish (it re-posts on the newer version)
   const live = await db.from('studio_worker_runs').select('id').eq('task_id', t.id).eq('status', 'started').gte('heartbeat_at', new Date(Date.now() - LIVE_MS).toISOString()).limit(1)
@@ -268,7 +269,7 @@ async function startTurn(taskId: string): Promise<string> {
     if (usd >= Number(st.monthly_limit_usd) || pics >= st.monthly_image_cap) throw new Stop(`Monthly limit reached: about $${usd.toFixed(2)} of $${st.monthly_limit_usd} and ${pics} of ${st.monthly_image_cap} pictures this month. Raise the limit in the worker settings or wait for next month.`, 'spend_cap')
     const { data: msgs } = await db.from('studio_messages').select('seq,author,kind,body,refs,set_turn,set_status,created_at').eq('task_id', t.id).order('seq')
     const tail = (msgs || []).slice(-3)
-    if (tail.length === 3 && tail.every(m => m.author === 'chatgpt')) throw new Stop('ChatGPT already posted 3 times in a row on this task, so the worker stopped to avoid a loop.', 'loop')
+    if (tail.length === 3 && tail.every(m => m.author === 'openai_worker')) throw new Stop('ChatGPT already posted 3 times in a row on this task, so the worker stopped to avoid a loop.', 'loop')
 
     // newest images on the task (dropped there or referenced), up to 4, shown to the model
     const refIds = [...(t.refs || []), ...(msgs || []).flatMap(m => m.refs || [])].filter((r: { type: string }) => r.type === 'asset').map((r: { id: string }) => r.id)
@@ -279,7 +280,7 @@ async function startTurn(taskId: string): Promise<string> {
       if (s.data?.signedUrl) images.push({ type: 'input_text', text: `Image ${a.id} (${a.file_name}, ${a.width}x${a.height}): ${a.note || ''}` }, { type: 'input_image', image_url: s.data.signedUrl })
     }
     const history = (msgs || []).map(m => `#${m.seq} ${m.author} [${m.kind}]${m.set_turn ? ' -> ' + m.set_turn : ''}${m.set_status ? ' (' + m.set_status + ')' : ''}:\n${m.body}`).join('\n\n')
-    const kodyText = (msgs || []).filter(m => m.author === 'kody').map(m => m.body).join('\n')
+    const kodyText = (msgs || []).filter(m => m.author === 'spitz').map(m => m.body).join('\n')
     const eff = planEffort(t.brief || '', kodyText, msgs?.length || 0, own?.length || 0)
     await step(t, run.id, `planning (read ${msgs?.length || 0} messages and ${own?.length || 0} pictures; asking ${MODEL}, ${eff.effort} reasoning: ${eff.why})`)
     const planned = await openai('responses', {
@@ -294,7 +295,7 @@ async function startTurn(taskId: string): Promise<string> {
     const p = JSON.parse(raw)
     p.images = (p.images || []).slice(0, MAX_IMAGES)
     // quality per picture: explicit wish > the earlier picture's quality on this task (a revision) > the plan's pick > medium
-    const wish = explicitQuality([t.brief || '', ...(msgs || []).filter(m => m.author === 'kody').map(m => m.body)])
+    const wish = explicitQuality([t.brief || '', ...(msgs || []).filter(m => m.author === 'spitz').map(m => m.body)])
     const parent = wish ? null : (await db.from('studio_worker_runs').select('image_quality').eq('task_id', t.id).eq('status', 'ok').not('image_quality', 'is', null).order('id', { ascending: false }).limit(1)).data?.[0]?.image_quality
     for (const q of p.images) {
       const [lvl, src] = wish ? [wish, 'asked'] : isQ(parent) ? [parent, 'same as the earlier picture'] : isQ(q.quality) ? [q.quality, 'planner'] : [DEFAULT_QUALITY, 'default']
@@ -305,12 +306,12 @@ async function startTurn(taskId: string): Promise<string> {
     if (p.action === 'reply') {
       await step(t, run.id, 'posting the reply', costCols)
       const cur = await loadTask(t.id)
-      if (!cur || cur.turn !== 'chatgpt' || cur.status !== 'open') { await finish(run.id, 'skipped', 'Not posted: the task changed hands while the worker was working.'); await ev(t, run.id, 'skip', 'Not posted: the task changed hands while ChatGPT was working.'); return 'task changed' }
+      if (!cur || cur.turn !== 'openai_worker' || cur.status !== 'open') { await finish(run.id, 'skipped', 'Not posted: the task changed hands while the worker was working.'); await ev(t, run.id, 'skip', 'Not posted: the task changed hands while ChatGPT was working.'); return 'task changed' }
       const r = await post(cur, { p_kind: 'review', p_body: p.body, p_refs: [], ...(p.done ? { p_set_status: 'done' } : { p_set_turn: p.next_turn }) })
       if (r.error) throw new Error('Posting the reply failed: ' + r.error.message)
       if (r.data?.conflict) { await finish(run.id, 'skipped', 'Not posted: the task changed hands while the worker was working.'); await ev(t, run.id, 'skip', 'Not posted: the task changed hands while ChatGPT was working.'); return 'task changed' }
       await finish(run.id, 'ok', 'reply', { step: 'done' })
-      await ev(t, run.id, p.done ? 'done' : 'handoff', p.done ? 'Replied and marked the task done.' : `Replied and handed the task to ${p.next_turn === 'kody' ? 'Kody' : 'Claude'}.`)
+      await ev(t, run.id, p.done ? 'done' : 'handoff', p.done ? 'Replied and marked the task done.' : `Replied and handed the task to ${p.next_turn === 'spitz' ? 'Kody' : 'Claude'}.`)
       return 'replied'
     }
     if (!p.images.length) throw new Stop('The plan said "image" but listed no pictures.', 'plan')
@@ -338,7 +339,7 @@ async function continueRun(runId: number): Promise<string> {
   if (!run || run.status !== 'started' || !run.plan) return 'run is not waiting for a step'
   const t = await loadTask(run.task_id)
   if (!t) return 'task gone'
-  if (t.turn !== 'chatgpt' || t.status !== 'open') {
+  if (t.turn !== 'openai_worker' || t.status !== 'open') {
     await finish(run.id, 'skipped', 'Stopped: the task changed hands while the worker was working.' + (run.done_assets.length ? ` Saved pictures: ${run.done_assets.map(s => s.id).join(', ')}.` : ''))
     await ev(t, run.id, 'skip', 'Stopped: the task changed hands while ChatGPT was working.')
     return 'task changed hands'
@@ -417,8 +418,8 @@ async function continueRun(runId: number): Promise<string> {
 
 async function handOff(t: Task, run: Run): Promise<string> {
   const p = run.plan
-  const to = p.next_turn === 'kody' ? 'kody' : 'claude'
-  await ev(t, run.id, 'step', `Handing off to ${to === 'kody' ? 'Kody' : 'Claude'}`)
+  const to = p.next_turn === 'spitz' ? 'spitz' : 'claude'
+  await ev(t, run.id, 'step', `Handing off to ${to === 'spitz' ? 'Kody' : 'Claude'}`)
   // new art is never self-approved: it always goes to Claude (or Kody) for a check, even if the plan said done.
   const r = await post(t, { p_kind: 'report', p_body: `${p.body}\n\n${run.done_assets.map(s => s.note).join('\n')}`, p_refs: run.done_assets.map(s => ({ type: 'asset', id: s.id })), p_set_turn: to })
   if (r.error) throw new Error('Posting the pictures failed: ' + r.error.message)
@@ -428,7 +429,7 @@ async function handOff(t: Task, run: Run): Promise<string> {
     return 'task changed, not posted'
   }
   await finish(run.id, 'ok', 'images ' + run.done_assets.map(s => s.id).join(', '), { step: 'done' })
-  await ev(t, run.id, 'handoff', `Posted ${run.done_assets.length} picture${run.done_assets.length > 1 ? 's' : ''} and handed the task to ${to === 'kody' ? 'Kody' : 'Claude'}.`)
+  await ev(t, run.id, 'handoff', `Posted ${run.done_assets.length} picture${run.done_assets.length > 1 ? 's' : ''} and handed the task to ${to === 'spitz' ? 'Kody' : 'Claude'}.`)
   return 'handed off'
 }
 
