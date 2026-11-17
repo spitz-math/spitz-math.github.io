@@ -12,13 +12,13 @@
 const http = require('http'), fs = require('fs'), path = require('path');
 const ROOT = path.resolve(__dirname, '..', '..'), PORT = 8198, BASE = 'http://localhost:' + PORT;
 const BASELINE = path.join(__dirname, 'readability-baseline.json');
-const MIN_PX = 11, AA = 4.5, AA_LARGE = 3;
+const MIN_PX = 11, AA = 4.5, AA_LARGE = 3, MAX_H = 16000;   // Chrome can photograph about 16,000px in one go
 const TYPES = { '.html': 'text/html', '.js': 'text/javascript', '.css': 'text/css', '.json': 'application/json', '.png': 'image/png', '.webp': 'image/webp',
   '.jpg': 'image/jpeg', '.svg': 'image/svg+xml', '.ico': 'image/x-icon', '.woff2': 'font/woff2', '.mp3': 'audio/mpeg', '.txt': 'text/plain' };
 
 function serve() {
   return http.createServer((req, res) => {
-    let p = decodeURIComponent(req.url.split('?')[0]); if (p.endsWith('/')) p += 'index.html';
+    let p; try { p = decodeURIComponent(req.url.split('?')[0]); } catch (e) { res.writeHead(400); return res.end('400'); } if (p.endsWith('/')) p += 'index.html';
     const f = path.join(ROOT, p); if (!f.startsWith(ROOT)) { res.writeHead(403); return res.end(); }
     fs.readFile(f, (e, b) => { if (e) { res.writeHead(404); return res.end('404'); } res.writeHead(200, { 'Content-Type': TYPES[path.extname(f)] || 'application/octet-stream' }); res.end(b); });
   }).listen(PORT);
@@ -88,27 +88,33 @@ const HIDE = [':is(#qa#qa#qa#qa,*)', ':is(#qa#qa#qa#qa,*)::before', ':is(#qa#qa#
 
 async function measure(p) {
   /* make the window as tall as the page, so one screenshot holds everything and nothing moves between measuring and the photo */
-  const tall = await p.evaluate(() => Math.min(4000, Math.max(document.documentElement.scrollHeight, document.body.scrollHeight)));
-  if (tall > 620) { await p.setViewportSize({ width: 1366, height: tall }); await p.waitForTimeout(300); }
+  const full = await p.evaluate(() => Math.max(document.documentElement.scrollHeight, document.body.scrollHeight)), tall = Math.min(MAX_H, full);
+  if (tall > 620) { await p.setViewportSize({ width: 1366, height: tall }); await p.waitForTimeout(300); await p.evaluate(settle); }   // games rescale on resize
   const items = await p.evaluate(collect), rows = [], seen = new Set();
   const add = r => { const k = r.key; if (!seen.has(k)) { seen.add(k); rows.push(r); } };
   items.forEach(it => { if (it.px < MIN_PX - 0.01) add({ key: it.key + ' | size', rule: 'size', got: it.px.toFixed(1) + 'px', need: MIN_PX + 'px', text: it.text }); });
   /* contrast: hide all text, photograph the page, read the colour that was behind each text */
   const judged = items.filter(it => it.fg && it.fg[3] > 0.05 && !it.clip);
   const style = await p.addStyleTag({ content: HIDE });
-  await p.waitForTimeout(80);
+  await p.evaluate(settle);
   const png = (await p.screenshot({ animations: 'disabled' })).toString('base64');
   await style.evaluate(s => s.remove());
   const bgs = await p.evaluate(behind, { png, items: judged.map(it => ({ rects: it.rects })) });
+  let unjudged = 0;
   judged.forEach((it, i) => {
-    const bg = bgs[i]; if (!bg) return;
+    const bg = bgs[i]; if (!bg) { unjudged++; return; }
     const a = it.fg[3], fg = [0, 1, 2].map(j => it.fg[j] * a + bg[j] * (1 - a));
     const r = ratio(fg, bg), large = it.px >= 24 || (it.bold && it.px >= 18.66), need = large ? AA_LARGE : AA;
     if (r < need - 0.005) add({ key: it.key + ' | contrast', rule: 'contrast', got: r.toFixed(2) + ':1', need: need + ':1', text: it.text });
   });
   if (process.env.QA_DEBUG) console.error(p.url(), 'texts', items.length, 'judged', judged.length, 'worst', judged.map((it, i) => bgs[i] && ratio(it.fg, bgs[i])).filter(Boolean).sort((a, b) => a - b).slice(0, 3).map(x => x.toFixed(2)).join(' '));
+  rows.unjudged = unjudged + items.length - judged.length;   // text whose colour can't be compared (gradient-filled, see-through, off the photo)
+  rows.cut = full > MAX_H ? full : 0;
   return rows;
 }
+
+/* wait for web fonts, then two painted frames, so the photo shows the page as styled */
+async function settle() { await document.fonts.ready; await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r))); }
 
 (async () => {
   const argv = process.argv.slice(2), update = argv.includes('--update-baseline');
@@ -122,7 +128,7 @@ async function measure(p) {
     const p = await ctx.newPage();
     try {
       await p.goto(BASE + u + (u.startsWith('/games/') ? '?set=mult' : ''), { waitUntil: 'load', timeout: 30000 });
-      await p.waitForTimeout(900);   // fonts and fade-ins settle
+      await p.evaluate(settle); await p.waitForTimeout(600);   // fonts, then fade-ins
       found[u] = await measure(p);
     } catch (e) { broke.push(u + ': ' + String(e.message || e).split('\n')[0].slice(0, 160)); }
     await p.close();
@@ -131,6 +137,7 @@ async function measure(p) {
 
   let base = {}; try { base = JSON.parse(fs.readFileSync(BASELINE, 'utf8')); } catch (e) {}
   if (update) {
+    if (broke.length) { console.log('Not rewriting the known list: some pages could not be checked, and their known problems would be lost.\n' + broke.join('\n')); process.exit(1); }
     const out = {}; for (const [u, rows] of Object.entries(found)) if (rows.length) out[u] = rows.map(r => r.key).sort();
     if (only.length) Object.entries(base).forEach(([u, k]) => { if (!(u in found)) out[u] = k; });
     fs.writeFileSync(BASELINE, JSON.stringify(out, null, 1) + '\n');
@@ -150,6 +157,10 @@ async function measure(p) {
   if (fresh.length) { lines.push('| Page | Where | Rule | Got | Needs | Text |', '|---|---|---|---|---|---|');
     fresh.forEach(f => lines.push(`| ${f.page} | \`${f.key.split(' | ')[0]}\` | ${f.rule} | ${f.got} | ${f.need} | ${f.text.replace(/\|/g, '/')} |`)); lines.push(''); }
   if (fixed.length) lines.push(`${fixed.length} known problem(s) are fixed now; run with --update-baseline to drop them from the list.`, '');
+  const unj = Object.entries(found).filter(([u, r]) => r.unjudged).map(([u, r]) => `${u} (${r.unjudged})`);
+  if (unj.length) lines.push(`Contrast not judged (gradient-filled or see-through text, or nothing to compare): ${unj.join(', ')}. Size was still checked.`, '');
+  const cut = Object.entries(found).filter(([u, r]) => r.cut).map(([u, r]) => `${u} (${r.cut}px)`);
+  if (cut.length) lines.push(`**Only the top ${MAX_H}px was checked** on: ${cut.join(', ')}. Text below that is not tested.`, '');
   if (broke.length) lines.push('**Could not check:** ' + broke.join('; '), '');
   const md = lines.join('\n'); console.log(md);
   if (process.env.GITHUB_STEP_SUMMARY) fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY, md + '\n');
