@@ -11,6 +11,9 @@
     ".github/workflows/": "CI: permissions, triggers, secrets, untrusted PR code",
     "tools/qa/lib/": "the shared gameplay test runner: tests that pass while a game is broken (false greens)",
     "tools/qa/run.js": "the shared gameplay test runner",
-    ".claude/settings.json": "what Claude sessions may run or push"
+    ".claude/settings.json": "what Claude sessions may run or push",
+    "tools/qa/readability.js": "readability check in the Safety check: false greens (problems it can't see), or false reds that block every PR",
+    "tools/qa/readability-baseline.json": "known readability problems: adding entries hides new problems",
+    ".github/smoke/": "the Safety check: false greens let broken pages reach students"
   }
 }
