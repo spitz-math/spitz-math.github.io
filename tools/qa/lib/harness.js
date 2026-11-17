@@ -60,7 +60,7 @@ class Run {
       if (t.status === 'pass' || attempt >= retry) break;
       attempt++;
     }
-    if (t.status === 'pass' && t.attempts > 1) t.status = 'flaky';
+    if (t.status === 'pass' && (t.attempts > 1 || t.flaky)) t.status = 'flaky';
     // coverage per capability: a capability with checks is pass/fail (flaky if the test only passed on retry);
     // one that was never checked must have been marked unsupported or unimplemented, so a gap can't read as a pass
     const caps = [...new Set(t.checks.filter(c => c.cap).map(c => c.cap))];
@@ -82,6 +82,8 @@ class Run {
   note(text) { this.cur.log.push('note: ' + text); }
   /* which capability the next checks belong to (start, question, movement...) */
   cap(name) { this.cur.cap = name; }
+  /* something inside this test only passed on a second try (e.g. one of a game's own tests): the test can be flaky, never a plain pass */
+  flaky(why) { this.cur.flaky = true; this.note('flaky: ' + why); }
   /* a capability this test did not check: 'unsupported' (the app has no such thing, adapter says why) or 'unimplemented' (no test written yet) */
   cover(cap, status, why) { const c = { cap, status, why }; if (this.cur) this.cur.cover.push(c); else this.coverage.push({ test: '(app)', ...c }); }
   async shot(pg, name) {

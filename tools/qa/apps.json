@@ -25,7 +25,8 @@
       "suite": {
         "about": "The game's own 18 regression tests (games/new/bladebound/rook_and_ruin/src/run_tests.sh)",
         "quick": "bash games/new/bladebound/rook_and_ruin/src/run_tests.sh",
-        "full": "bash games/new/bladebound/rook_and_ruin/src/run_tests.sh full"
+        "full": "bash games/new/bladebound/rook_and_ruin/src/run_tests.sh full",
+        "one": "cd games/new/bladebound/rook_and_ruin/src && timeout 400 node tests/{test}.js \"$PWD/out\""
       }
     },
     {

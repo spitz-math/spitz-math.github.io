@@ -39,13 +39,23 @@ function uncovered(files) {
 async function ownSuite(run, app) {
   const cmd = app.suite && app.suite[lane]; if (!cmd || argv.includes('--no-suite')) return;
   await run.test(`${app.name} own suite (${lane})`, async (r) => {
+    r.cap('own suite');
     const t0 = Date.now(); const p = spawnSync('bash', ['-c', cmd], { cwd: ROOT, encoding: 'utf8', timeout: 25 * 60 * 1000 });
     const out = (p.stdout || '') + (p.stderr || '');
     const lines = out.split('\n'), pass = lines.filter(l => /^PASS /.test(l)).map(l => l.slice(5)), fail = lines.filter(l => /^FAIL /.test(l)).map(l => l.slice(5));
     r.note(`${pass.length} passed: ${pass.join(', ')}`);
     lines.filter(l => /^BOT /.test(l)).forEach(l => r.note(l));
-    fail.forEach(f => { const i = lines.indexOf('FAIL ' + f); r.check(`own test ${f}`, 'errors []', lines.slice(i + 1, i + 4).join(' ').slice(0, 300) || 'failed'); });
-    r.check('own suite finished', 0, p.status === null ? 'timed out' : p.status);
+    // a failed own test gets one rerun on its own (app.suite.one); passing then makes the whole test "flaky", never a plain pass
+    for (const f of fail) {
+      const i = lines.indexOf('FAIL ' + f), tail = lines.slice(i + 1, i + 6), errs = tail.find(l => /errors \[/.test(l));
+      const first = (errs ? errs.slice(errs.indexOf('errors [')) : tail.join(' ')).slice(0, 300) || 'failed';
+      let again = null;
+      if (app.suite.one) { const q = spawnSync('bash', ['-c', app.suite.one.replace('{test}', f)], { cwd: ROOT, encoding: 'utf8', timeout: 10 * 60 * 1000 });
+        again = (((q.stdout || '') + (q.stderr || '')).match(/errors \[.*\]/g) || ['no result']).pop(); }
+      if (again === 'errors []') r.flaky(`own test ${f} failed once (${first}), passed on its rerun`);
+      else r.check(`own test ${f}`, 'errors []', again ? first + '; rerun: ' + again : first);
+    }
+    r.check('own suite finished', 0, p.status === null ? 'timed out' : fail.length ? 0 : p.status);   // failed tests are reported one by one above
     r.check('own suite ran tests', true, pass.length + fail.length > 0);
     r.note('took ' + Math.round((Date.now() - t0) / 1000) + ' s');
   }, { retry: 0 });
@@ -75,10 +85,10 @@ async function runApp(app, i) {
     console.log(`Would play: ${ids || 'nothing'} (${why})`); if (process.env.GITHUB_OUTPUT) fs.appendFileSync(process.env.GITHUB_OUTPUT, `apps=${ids}\n`); process.exit(0); }
   fs.mkdirSync(path.join(ROOT, 'qa-out'), { recursive: true });
   console.log(`QA ${lane} lane: ${apps.map(a => a.id).join(', ') || 'nothing to run'} (${why})`);
-  let code = 0, gaps = 0; const parts = [`## Gameplay checks (${lane} lane)`, `Apps run: ${apps.map(a => a.name).join(', ') || 'none'} (${why}).`, ''];
+  let code = 0, gaps = 0, flaky = 0; const parts = [`## Gameplay checks (${lane} lane)`, `Apps run: ${apps.map(a => a.name).join(', ') || 'none'} (${why}).`, ''];
   for (const [i, app] of apps.entries()) {
     try { code = Math.max(code, await runApp(app, i));
-      gaps += JSON.parse(fs.readFileSync(path.join(ROOT, 'qa-out', app.id, 'results.json'), 'utf8')).unimplemented || 0;
+      const res = JSON.parse(fs.readFileSync(path.join(ROOT, 'qa-out', app.id, 'results.json'), 'utf8')); gaps += res.unimplemented || 0; flaky += res.flaky || 0;
       parts.push(fs.readFileSync(path.join(ROOT, 'qa-out', app.id, 'summary.md'), 'utf8')); }
     catch (e) { code = 2; parts.push(`### ${app.name}: the test runner broke`, '```', String(e.stack || e).slice(0, 1500), '```'); console.error(e); }
   }
@@ -86,6 +96,7 @@ async function runApp(app, i) {
   if (bare.length) { gaps += bare.length; parts.push('### Changed pages with no gameplay tests yet', 'These get the Safety check only (loads, starts, no errors). Untested, not passed:', ...bare.map(f => '- `' + f + '`'), ''); }
   if (!apps.length && !bare.length) parts.push('No page with gameplay tests was changed, so there was nothing to play. The Safety check still applies.');
   if (argv.includes('--strict') && gaps && code === 0) code = 1;
+  if (flaky) parts.splice(1, 0, `**${flaky} test(s) only passed on a second try (flaky).** They count as warnings, not passes: see the rows marked flaky.`);
   parts.splice(1, 0, code === 2 ? '**The test runner itself broke.**' : code === 1 && !gaps ? '**A gameplay check failed.**'
     : code === 1 ? `**A gameplay check failed** (or --strict and ${gaps} untested).` : gaps ? `**Nothing failed, but ${gaps} thing(s) are not tested yet** (listed below as "not tested yet").` : '**Everything that ran passed, and nothing is untested.**');
   const md = parts.join('\n');
