@@ -13,7 +13,7 @@ export DIG_OUT="$PWD/out" PORT="${PORT:-8791}"; export DIG_URL="http://localhost
 fail=0
 run(){ local t="$1"; shift; local log="out/$t.log"; ( cd out && timeout 900 node "../tests/$t.js" "$@" ) >"$log" 2>&1; local rc=$?
   if [ $rc -ne 0 ] || grep -q "ERR" "$log"; then echo "FAIL $t (see $log)"; grep "ERR" "$log" | head -3; fail=1; else echo "ok   $t"; fi; }
-for t in smoke upgrades allpro_bonus score_code fall_jump_keys no_webgl; do run $t; done
+for t in smoke upgrades allpro_bonus score_code fall_jump_keys no_webgl caves; do run $t; done
 run sets_fit; if grep -q '"cut":[1-9]' out/sets_fit.log; then echo "FAIL sets_fit: a question set is cut off"; grep '"cut":[1-9]' out/sets_fit.log; fail=1; fi
 if [ "${1:-}" = "full" ]; then run speed; run music_level dig_buds.html; run bot 4242 3500 0.85; run bot 31337 2500 0.95; tail -n 1 out/bot.log | cut -c1-300; fi
 exit $fail

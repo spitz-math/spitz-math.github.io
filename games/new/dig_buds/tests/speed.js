@@ -19,6 +19,6 @@ await p.close();
 // speed at 6x CPU slowdown (software graphics here, so compare runs with each other, not with a real Chromebook)
 for(const f of ['dig_buds_mult.html']){ p=await open(f,true);await p.waitForTimeout(4000);const a=await p.evaluate(()=>__G.fps());
  const m=await p.evaluate(async()=>{const S=__G.state(),P=__G.P();P.pit=-1.5;const t=[];for(let i=0;i<6;i++){__G.update(0.016);__G.mine();const n=S.mined;const t0=performance.now();for(let k=0;k<200&&S.mined<=n;k++)__G.update(0.05);t.push(Math.round(performance.now()-t0));}return t});
- if(f==='dig_buds_mult.html'){await p.evaluate(()=>__G.night(100));await p.waitForTimeout(4000);}
+
  console.log(f,'fps@6x',a.toFixed(1),'mine ms',m, 'night fps',(await p.evaluate(()=>__G.fps())).toFixed(1));await p.close();}
 await b.close()})()

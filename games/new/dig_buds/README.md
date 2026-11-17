@@ -18,6 +18,7 @@ Live at the hidden address `/games/dig_buds.html`. It stays off the hub and lead
 | `upgrades.js` | shop fits; Drill, Ore Magnet, Lucky Pick, Ore Scanner; ore cash, crystals, Star Power |
 | `allpro_bonus.js` | All-Pro mode, all six Buds, Star Bud, Bonus Buds, save and reload, end screen at 1366x620 |
 | `score_code.js` | answers questions and checks the end screen shows a score code |
+| `caves.js` | 12 seeds: all 7 named caves placed, every Bud on a real floor inside its cave, the Mossy Hollow mouth, walk-in discovery and the glow trail |
 | `fall_jump_keys.js` | no hop when sliding along a wall, step-hop on a real step, cave fall, R hop back, H and R buttons |
 | `no_webgl.js` | opens with and without WebGL; no script errors either way |
 | `sets_fit.js` | every question set fits the question menu (`"cut":0`) |
@@ -35,6 +36,10 @@ Live at the hidden address `/games/dig_buds.html`. It stays off the hub and lead
 
 ## Rules Kody set for this game
 - 5-minute rescue run. No crafting, building, torches, night or fall damage.
+- The caves are the heart (Kody 2026-11-17: kids should leave saying "the caves were cool"). Seven named caves
+  (Mossy Hollow, Crystal Grotto, Mushroom Grove, Old Mine, Magma Hall, Gloom Nest, Star Geode), one Bud in each,
+  beams mark the caves, finding a cave is a bonus, a fall into a cave is a discovery (never a failure message),
+  and a glow trail shows the way back. Saves from before the caves (no `gen:2`) start fresh.
 - Never an animated hand or a held tool.
 - Every key a student needs is shown on screen during play.
 - Original name, art, critters and music; never copy Minecraft.

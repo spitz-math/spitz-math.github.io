@@ -262,11 +262,11 @@ button:disabled{ cursor:default; }
 
   <div class="dg-over" id="dg-start"><div class="dg-box">
     <div class="sz-eyebrow">Spitz <b>Arcade</b></div><h2 class="dg-big"><span class="dg-crown" aria-hidden="true"></span><span><b>DIG</b> <i>BUDS</i></span></h2>
-    <p class="dg-sub"><span class="sz-setname">Slope-intercept form.</span> Six little Buds are lost under your island. You have 5 minutes to dig down and bring them home.</p>
+    <p class="dg-sub"><span class="sz-setname">Slope-intercept form.</span> Six little Buds are lost in the caves under your island. You have 5 minutes to find them and bring them home.</p>
     <div class="dg-steps">
       <div class="dg-step"><b>1. Answer</b>Press Q for questions. Each right answer charges your energy and earns cash.</div>
-      <div class="dg-step"><b>2. Dig</b>Walk to a glowing beam and hold X to dig straight down. A lost Bud is waiting right under every beam.</div>
-      <div class="dg-step"><b>3. Rescue</b>Walk up to a lost Bud and it hops home to camp. Ore you dig pays cash for the shop (B).</div>
+      <div class="dg-step"><b>2. Explore</b>Each glowing beam marks a hidden cave. Hold X to dig down into it, or find the way in.</div>
+      <div class="dg-step"><b>3. Rescue</b>A lost Bud is somewhere in every cave. Find it and it hops home. Ore pays cash for the shop (B).</div>
     </div>
     <div class="dg-row"><input class="dg-input" id="dg-nameinput" maxlength="24" placeholder="First name + last initial" autocomplete="off" aria-label="Your name"><button class="sz-mus" id="sz-mus" aria-label="Music on or off, key N">♪ Music on</button></div>
     <p class="dg-nogl" id="dg-nogl" hidden>This Chromebook can't draw the 3D world right now. Close your other tabs and reload the page, or pick another game.</p>
@@ -353,7 +353,10 @@ var SND={
   rescue:function(){ [E5,G5,C6,E6,G6].forEach(function(f,i){ tone(f,f,i*0.08,0.22,'triangle',0.09); }); tone(C7,C7,0.42,0.4,'sine',0.05); },
   goal:function(){ tone(G5,G5,0,0.12,'triangle',0.09); tone(C6,C6,0.1,0.14,'triangle',0.09); tone(E6,E6,0.2,0.3,'sine',0.08); },
   sizzle:function(){ noise(0,0.07,280,3200); },
-  dusk:function(){ tone(392,392,0,0.5,'sine',0.08); tone(293.66,293.66,0.35,0.8,'sine',0.08); },
+  discover:function(){ [G5/2,D6/2,G5,B5,D6].forEach(function(f,i){ tone(f,f,i*0.11,0.5,'sine',0.07); }); tone(G6,G6,0.55,0.9,'sine',0.035); },   // a soft open chord: you found a cave
+  drip:function(){ var f=1500+Math.random()*700; tone(f,f*0.55,0,0.09,'sine',0.03); tone(f*1.3,f*0.7,0.18,0.07,'sine',0.012); },
+  shimmer:function(){ [E6,G6,B5*2].forEach(function(f,i){ tone(f,f,i*0.09,0.4,'sine',0.014); }); },
+  rumble:function(){ noise(0,0.05,900,0,140); },
   win:function(){ var t=0.1; [G5/2,C5,E5,G5].forEach(function(f,i){ tone(f,f,t+i*0.1,0.16,'triangle',0.11); });
     [C5,E5,G5].forEach(function(f){ tone(f,f,t+0.5,1.2,'triangle',0.07); tone(f/2,f/2,t+0.5,1.2,'sine',0.06); }); tone(130.81,130.81,t+0.5,1.1,'triangle',0.2); }
 };
@@ -422,13 +425,18 @@ var B=[null,
   {n:'Glass',      t:[23,23,23],cost:1, tier:0, drop:20, see:1},
   {n:'Dynamite',   t:[25,24,25],cost:1, tier:0, drop:21},
   {n:'Treasure chest',t:[43,42,43],cost:1,tier:0, drop:0, light:5},
-  {n:'Magma',      t:[44,44,44],cost:3, tier:3, pts:15, drop:0, light:10, ore:'#FF8A3C'}];
+  {n:'Magma',      t:[44,44,44],cost:3, tier:3, pts:15, drop:0, light:10, ore:'#FF8A3C'},
+  /* blocks that only grow in the named caves */
+  {n:'Glow moss',  t:[64,64,64],cost:1, tier:0, drop:0, light:7},
+  {n:'Mushroom stem',t:[65,65,65],cost:1,tier:0, drop:0},
+  {n:'Glow cap',   t:[66,67,66],cost:1, tier:0, drop:0, light:9},
+  {n:'Nest stone', t:[68,68,68],cost:2, tier:1, drop:0, light:3},
+  {n:'Geode',      t:[69,69,69],cost:3, tier:2, drop:0, light:5}];
 /* items that are not blocks */
 var ITEMS={30:{n:'Sticks',t:26},31:{n:'Copper bar',t:27},32:{n:'Iron bar',t:28},33:{n:'Gold bar',t:29},34:{n:'Coal',t:30},
   8:{n:'Raw copper',t:9},9:{n:'Raw iron',t:10},10:{n:'Raw gold',t:11},11:{n:'Glow gem',t:31},17:{n:'Star shard',t:19}};
 function iname(b){ return ITEMS[b]?ITEMS[b].n:B[b].n; }
 function itile(b){ return ITEMS[b]?ITEMS[b].t:B[b].t[1]; }
-var PLACE=[2,3,7,14,20,19,13,21];
 var TIERS=['your hands','a wood pick','a stone pick','an iron pick','a gem pick'];
 var PICKS=[{n:'Hands',x:0.8},{n:'Wood pick',x:1.2},{n:'Stone pick',x:1.6},{n:'Iron pick',x:2.2},{n:'Gem pick',x:3}];
 function rng(seed){ return function(){ seed|=0; seed=seed+0x6D2B79F5|0; var t=Math.imul(seed^seed>>>15,1|seed); t=t+Math.imul(t^t>>>7,61|t)^t; return ((t^t>>>14)>>>0)/4294967296; }; }
@@ -436,7 +444,7 @@ function rng(seed){ return function(){ seed|=0; seed=seed+0x6D2B79F5|0; var t=Ma
 /* ---- textures: our own 16 x 16 tiles, drawn in code (soft, chunky, candy-bright) ---- */
 var BUDINFO=[{n:'Pip',c:'#FFC857',hi:'#FFE29A',lo:'#E0A030'},{n:'Dot',c:'#FF8FC8',hi:'#FFC2E2',lo:'#E0609E'},{n:'Moss',c:'#7BE08E',hi:'#B4F2C0',lo:'#4FB866'},{n:'Ember',c:'#FF9A5C',hi:'#FFC59E',lo:'#E0703A'},
   {n:'Sky',c:'#6FC3FF',hi:'#B4E0FF',lo:'#3F97E0'},{n:'Plum',c:'#B48CFF',hi:'#D9C4FF',lo:'#8A5CE0'},{n:'Star Bud',c:'#FFF2B0',hi:'#FFFFFF',lo:'#FFC93C'}];
-var ATL=document.createElement('canvas'); ATL.width=128; ATL.height=128;
+var ATL=document.createElement('canvas'); ATL.width=128; ATL.height=256;   // 8 x 16 tiles of 16 px
 (function(){ var c=ATL.getContext('2d'), R=rng(42);
   function tile(i,base,f){ var ox=(i%8)*16, oy=Math.floor(i/8)*16; c.save(); c.translate(ox,oy); c.beginPath(); c.rect(0,0,16,16); c.clip(); if(base){ c.fillStyle=base; c.fillRect(0,0,16,16); } f&&f(c); c.restore(); }
   function px(c,x,y,col,w,h){ c.fillStyle=col; c.fillRect(x,y,w||1,h||1); }
@@ -487,6 +495,13 @@ var ATL=document.createElement('canvas'); ATL.width=128; ATL.height=128;
     tile(49+i*2,o.c,function(c){ px(c,0,0,o.hi,16,2); px(c,0,14,o.lo,16,2); px(c,3,5,'#3A2A20',3,4); px(c,10,5,'#3A2A20',3,4); px(c,3,5,'#FFFFFF',1,1); px(c,10,5,'#FFFFFF',1,1); px(c,1,10,'#FF8FA3',2,2); px(c,13,10,'#FF8FA3',2,2); px(c,6,11,'#3A2A20',4,1); px(c,5,10,'#3A2A20',1,1); px(c,10,10,'#3A2A20',1,1);
       if(i===6){ px(c,7,1,'#FFFFFF',2,1); px(c,6,2,'#FFFFFF',4,1); px(c,7,3,'#FFFFFF',2,1); } });
     tile(50+i*2,o.c,function(c){ dots(c,o.hi,6,2); dots(c,o.lo,4,2); }); });
+  tile(64,'#3E6B4A',function(c){ dots(c,'#2E5238',6,2); for(var k=0;k<9;k++) px(c,Math.floor(R()*14),Math.floor(R()*14),k%3?'#7CF0A0':'#C6FFD2',2,2); });   // glow moss
+  tile(65,'#E8DCC4',function(c){ for(var x=2;x<16;x+=4) px(c,x,0,'#D2C3A6',1,16); dots(c,'#F6EEDC',4); });   // mushroom stem
+  tile(66,'#E25A9A',function(c){ [[3,3],[10,4],[6,10],[12,11],[2,12]].forEach(function(p){ px(c,p[0],p[1],'#FFD6EC',3,3); px(c,p[0],p[1],'#FFFFFF',1,1); }); bevel(c,'#F58ABD','#B83E78'); });   // glow cap top
+  tile(67,'#E25A9A',function(c){ px(c,0,11,'#B83E78',16,5); [[3,4],[10,3],[7,8]].forEach(function(p){ px(c,p[0],p[1],'#FFD6EC',2,2); }); px(c,0,0,'#F58ABD',16,1); });   // glow cap side
+  tile(68,'#2C1F3E',function(c){ slate(c,'#1E1530'); for(var k=0;k<5;k++) px(c,Math.floor(R()*14),Math.floor(R()*14),'#8A5CE0',2,1); });   // nest stone
+  tile(69,'#5B3E8C',function(c){ for(var k=0;k<7;k++){ var x=Math.floor(R()*13), y=Math.floor(R()*13); px(c,x,y,'#B58CF5',3,2); px(c,x+1,y,'#E6D4FF',1,1); } bevel(c,'#7A58B0','#3E2866'); });   // geode
+  tile(70,'#CFFFF6',function(c){ px(c,4,4,'#FFFFFF',8,8); });   // glow trail dot
   [34,35,36,37].forEach(function(t,k){ tile(t,null,function(c){ var L=[[8,8,3,2],[8,8,13,4],[8,8,5,13],[8,8,14,12],[3,2,1,6],[13,4,15,1],[5,13,2,15],[14,12,11,15]]; c.strokeStyle='rgba(20,10,30,.85)'; c.lineWidth=1.2; L.slice(0,2+k*2).forEach(function(l){ c.beginPath(); c.moveTo(l[0],l[1]); c.lineTo(l[2],l[3]); c.stroke(); }); }); });   // cracks
 })();
 
@@ -523,10 +538,13 @@ function genWorld(seed){ var R=rng(seed), n2=noise2(R), n3=noise3(R), n3b=noise3
     if(V[idx(tx,ty,tz)]!==1||ty+7>=SY||Math.abs(tx-SX/2)<3&&Math.abs(tz-SZ/2)<3||(tx>=SX/2+1&&tx<=SX/2+10&&tz>=SZ/2-5&&tz<=SZ/2+4)) continue;
     var th=4+Math.floor(R()*2); for(var q=1;q<=th;q++) V[idx(tx,ty+q,tz)]=5;
     for(var lx=-2;lx<=2;lx++) for(var lz=-2;lz<=2;lz++) for(var ly=th-1;ly<=th+1;ly++){ if(Math.abs(lx)+Math.abs(lz)+(ly-th)>3) continue; var X2=tx+lx, Y2=ty+ly, Z2=tz+lz; if(get(X2,Y2,Z2)===0&&Y2<SY) V[idx(X2,Y2,Z2)]=6; } }
-  /* treasure chests and lost Buds: each gets a spot on a cave floor in its depth band (a small nook is dug when no cave fits) */
-  var R2=rng(seed^0x51ED); BUDSPOT=[];
+  /* ---- the named caves (2026-11-17, Kody: kids should leave saying "the caves were cool") ----
+     Seven hand-shaped caves, each with its own blocks and light, one lost Bud inside each (the Star Bud waits in the Star Geode under camp).
+     A beam over each cave shows where it is: dig down into it (hold X), or walk into the Mossy Hollow through its cave mouth. */
+  var R2=rng(seed^0x51ED), n3c=noise3(R2); BUDSPOT=[]; CAVES=[];
   function colTop(x,z){ for(var y=SY-1;y>0;y--){ var b=V[idx(x,y,z)]; if(b&&b!==5&&b!==6) return y; } return 0; }
   function floorOk(x,y,z){ var f=V[idx(x,y-1,z)]; return f&&f!==18&&f!==22&&f!==23; }
+  function inside(x,z){ return x>=2&&z>=2&&x<SX-2&&z<SZ-2; }
   function nook(lo,hi,far){ var X,Y,Z,k;
     for(k=0;k<5000;k++){ X=6+Math.floor(R2()*(SX-12)); Z=6+Math.floor(R2()*(SZ-12)); Y=lo+Math.floor(R2()*(hi-lo+1));
       if(V[idx(X,Y,Z)]===0&&V[idx(X,Y+1,Z)]===0&&floorOk(X,Y,Z)&&Y<colTop(X,Z)-4&&far(X,Z)) return [X,Y,Z]; }
@@ -534,13 +552,75 @@ function genWorld(seed){ var R=rng(seed), n2=noise2(R), n3=noise3(R), n3b=noise3
     for(var a=-1;a<=1;a++) for(var c=-1;c<=1;c++){ for(var d=0;d<2;d++) V[idx(X+a,Y+d,Z+c)]=0; if(!floorOk(X+a,Y,Z+c)&&Y>1) V[idx(X+a,Y-1,Z+c)]=Y<DUSK?15:3; }
     return [X,Y,Z]; }
   var spots=[]; function farFrom(m){ return function(X,Z){ return spots.every(function(p){ return Math.abs(p[0]-X)+Math.abs(p[2]-Z)>=m; }); }; }
-  [[30,38,150],[30,38,150],[20,27,300],[20,27,300],[8,14,500],[8,14,500]].forEach(function(bd){ var ff=farFrom(18), p=nook(bd[0],bd[1],function(X,Z){ return ff(X,Z)&&colTop(X,Z)>WATER+3&&Math.hypot(X-SX/2,Z-SZ/2)<27&&Math.hypot(X-SX/2,Z-SZ/2)>6; }); spots.push(p); BUDSPOT.push([p[0]+.5,p[1],p[2]+.5,bd[2]]); });
-  BUDSPOT.forEach(function(bp){ var X=Math.floor(bp[0]), Z=Math.floor(bp[2]), top=colTop(X,Z), Y=Math.round((top+bp[1])/2); if(Y-bp[1]<4||top-Y<4) return;      // a treasure pocket halfway down to each Bud
-    for(var a=-1;a<=1;a++) for(var c=-1;c<=1;c++){ for(var d=0;d<2;d++) V[idx(X+a,Y+d,Z+c)]=0; if(!floorOk(X+a,Y,Z+c)) V[idx(X+a,Y-1,Z+c)]=Y<DUSK?15:3; } V[idx(X+1,Y,Z)]=22; V[idx(X-1,Y,Z+1)]=18; });
-  for(var sa=-1;sa<=1;sa++) for(var sc=-1;sc<=1;sc++){ V[idx(SX/2+sa,1,SZ/2+sc)]=15; V[idx(SX/2+sa,2,SZ/2+sc)]=0; V[idx(SX/2+sa,3,SZ/2+sc)]=0; }
-  V[idx(SX/2+1,2,SZ/2+1)]=18; V[idx(SX/2-1,2,SZ/2-1)]=18; BUDSPOT.push([SX/2+.5,2,SZ/2+.5,1000]);                                            // the Star Bud waits at the very bottom, right under camp
+  function fits(d,cx,cz,fy){ var rx=d.r[0], ry=d.r[1], rz=d.r[2], need=fy+Math.ceil(ry*1.75)+4;
+    if(!inside(cx-rx-1,cz-rz-1)||!inside(cx+rx+1,cz+rz+1)) return false;
+    return [[0,0],[rx,0],[-rx,0],[0,rz],[0,-rz],[rx,rz],[-rx,-rz],[rx,-rz],[-rx,rz]].every(function(o){ var t=colTop(cx+o[0],cz+o[1]); return t>=need&&t>WATER+2; }); }
+  function carve(c){ var A=[];
+    for(var x=c.x-c.rx-2;x<=c.x+c.rx+2;x++) for(var z=c.z-c.rz-2;z<=c.z+c.rz+2;z++) for(var y=c.fy;y<=c.fy+Math.ceil(c.ry*1.9);y++){ if(!inside(x,z)||y<1) continue;
+      var nx=(x+.5-c.x-.5)/c.rx, ny=(y+.5-c.cy)/c.ry, nz=(z+.5-c.z-.5)/c.rz, d=nx*nx+ny*ny+nz*nz+(n3c(x/3.5,y/3,z/3.5)-0.5)*0.55;
+      if(d<1){ V[idx(x,y,z)]=0; A.push([x,y,z]); } }
+    var F=[], Wl=[], seen={};
+    A.forEach(function(p){ var x=p[0], y=p[1], z=p[2];
+      if(y-1>=1&&!V[idx(x,y-1,z)]&&y-1<c.fy) V[idx(x,y-1,z)]=c.fy<DUSK?15:3;            // the floor is solid all the way across
+      if(V[idx(x,y-1,z)]&&!V[idx(x,y+1,z)]) F.push([x,y,z]);
+      [[1,0,0],[-1,0,0],[0,1,0],[0,-1,0],[0,0,1],[0,0,-1]].forEach(function(o){ var X=x+o[0], Y=y+o[1], Z=z+o[2], k=idx(X,Y,Z); if(Y<1||Y>=SY||!inside(X,Z)||seen[k]) return; var b=V[k]; if(b&&b!==12&&b!==18&&b!==22){ seen[k]=1; Wl.push([X,Y,Z]); } }); });
+    c.F=F; c.W=Wl; }
+  function setW(p,b){ var k=idx(p[0],p[1],p[2]), w=V[k]; if(w&&w!==12&&w!==22&&!(B[w]&&B[w].pts)) V[k]=b; }
+  function far(c,list,from){ var best=null, bd=-1; list.forEach(function(p){ var dd=Math.hypot(p[0]-from[0],p[2]-from[1]); if(dd>bd&&V[idx(p[0],p[1]-1,p[2])]!==23&&!V[idx(p[0],p[1],p[2])]&&!V[idx(p[0],p[1]+1,p[2])]){ bd=dd; best=p; } }); return best; }
+  function decorate(c){ var F=c.F, Wl=c.W, R=R2;
+    if(c.kind==='moss'){ Wl.forEach(function(p){ if(R()<0.42) setW(p,24); }); F.forEach(function(p){ var u=idx(p[0],p[1]-1,p[2]); if(V[u]!==22&&R()<0.6) V[u]=1; }); }
+    if(c.kind==='crystal'){ F.forEach(function(p){ if(R()<0.33) V[idx(p[0],p[1],p[2])]=18; }); Wl.forEach(function(p){ if(R()<0.025) setW(p,11); }); }
+    if(c.kind==='mush'){ var made=[]; F.forEach(function(p){ var u=idx(p[0],p[1]-1,p[2]); V[u]=R()<0.25?24:2; });
+      F.slice().sort(function(){ return R()-0.5; }).forEach(function(p){ if(made.length>=4) return; var x=p[0], y=p[1], z=p[2], h=2+Math.floor(R()*2);
+        if(made.some(function(m){ return Math.hypot(m[0]-x,m[2]-z)<3.6; })) return; for(var k=0;k<=h+1;k++) if(get(x,y+k,z)) return;
+        for(k=0;k<h;k++) V[idx(x,y+k,z)]=25; for(var a=-1;a<=1;a++) for(var b2=-1;b2<=1;b2++) if(!get(x+a,y+h,z+b2)) V[idx(x+a,y+h,z+b2)]=26; if(!get(x,y+h+1,z)) V[idx(x,y+h+1,z)]=26; made.push(p); }); }
+    if(c.kind==='mine'){ var lamps=0; F.forEach(function(p){ var x=p[0], y=p[1], z=p[2]; V[idx(x,y-1,z)]=7;
+        var side=solidAt(x+1,y,z)||solidAt(x-1,y,z)||solidAt(x,y,z+1)||solidAt(x,y,z-1);
+        if(side&&(x+z)%4===0){ for(var k=0;k<3;k++){ if(get(x,y+k,z)) break; V[idx(x,y+k,z)]=5; } }   // wooden props along the walls
+        else if(side&&lamps<3&&(x*7+z*3)%11===0){ V[idx(x,y,z)]=13; lamps++; } });
+      Wl.forEach(function(p){ var r=R(); if(r<0.06) setW(p,9); else if(r<0.085) setW(p,10); }); }
+    if(c.kind==='magma'){ var alongX=c.rx>=c.rz;
+      F.forEach(function(p){ var x=p[0], z=p[2], off=alongX?Math.abs(z+.5-c.z-.5):Math.abs(x+.5-c.x-.5), along=alongX?Math.abs(x+.5-c.x-.5):Math.abs(z+.5-c.z-.5);
+        if(off<1.6&&along>1.1) V[idx(x,p[1]-1,z)]=23; });                                                     // a magma river with a stone bridge across the middle
+      Wl.forEach(function(p){ if(R()<0.04) setW(p,11); }); }
+    if(c.kind==='nest'){ Wl.forEach(function(p){ var r=R(); if(r<0.45) setW(p,27); else if(r<0.475) setW(p,10); }); F.forEach(function(p){ if(R()<0.3) V[idx(p[0],p[1]-1,p[2])]=27; }); }
+    if(c.kind==='geode'){ var sh=0; Wl.forEach(function(p){ var r=R(); if(r<0.05&&sh<4){ setW(p,17); sh++; } else if(r<0.75||V[idx(p[0],p[1],p[2])]===23) V[idx(p[0],p[1],p[2])]=V[idx(p[0],p[1],p[2])]===12?12:28; }); F.forEach(function(p){ if(R()<0.2) V[idx(p[0],p[1],p[2])]=18; }); } }
+  /* the Mossy Hollow opens to the surface through a sloping cave mouth, so the first cave is a walk-in */
+  function mouth(c){ var best=null;
+    [[1,0],[-1,0],[0,1],[0,-1]].forEach(function(d){ var ok=true, end=null;
+      for(var k=1;k<44&&ok;k++){ var x=c.x+d[0]*k, z=c.z+d[1]*k, fl=c.fy+Math.max(0,Math.floor((k-Math.max(c.rx,c.rz)+1)*0.5));
+        for(var w=-1;w<=1;w++){ var X=x+d[1]*w, Z=z+d[0]*w; if(!inside(X,Z)||colTop(X,Z)<=WATER+2||Math.hypot(X-SX/2,Z-SZ/2)<6) ok=false; }
+        if(ok&&fl>=colTop(x,z)){ end=k; break; } }
+      if(ok&&end&&(!best||end<best.k)) best={d:d,k:end}; });
+    if(!best) return null;
+    for(var k=1;k<=best.k;k++){ var x=c.x+best.d[0]*k, z=c.z+best.d[1]*k, fl=c.fy+Math.max(0,Math.floor((k-Math.max(c.rx,c.rz)+1)*0.5));
+      for(var w=-1;w<=1;w++){ var X=x+best.d[1]*w, Z=z+best.d[0]*w; for(var y=fl;y<=fl+3;y++) if(y<SY) V[idx(X,y,Z)]=0; if(!solidAt(X,fl-1,Z)) V[idx(X,fl-1,Z)]=2; } }
+    return [c.x+best.d[0]*best.k+.5, c.z+best.d[1]*best.k+.5]; }
+  CAVE_DEF.forEach(function(d,ci){ var c=null;
+    for(var k=0;k<900&&!c;k++){ var cx, cz, fy=d.y[0]+Math.floor(R2()*(d.y[1]-d.y[0]+1));
+      if(d.camp){ cx=SX/2; cz=SZ/2; } else { var a=R2()*6.283, r=8+R2()*15; cx=Math.floor(SX/2+Math.cos(a)*r); cz=Math.floor(SZ/2+Math.sin(a)*r); }
+      var sep=k<600?1:0.7, clear=CAVES.every(function(o){ return Math.hypot(o.x-cx,o.z-cz)>=(Math.max(o.rx,o.rz)+Math.max(d.r[0],d.r[2]))*sep+2; });
+      if(d.camp||(clear&&fits(d,cx,cz,fy))) c={i:ci,n:d.n,col:d.c,kind:d.kind,pts:d.pts,x:cx,z:cz,fy:fy,rx:d.r[0],ry:d.r[1],rz:d.r[2],cy:fy+d.r[1]*0.75}; }
+    if(!c) return; carve(c); decorate(c); c.bx=c.x+.5; c.bz=c.z+.5; c.mouth=false;
+    if(d.mouth){ var m=mouth(c); if(m){ c.bx=m[0]; c.bz=m[1]; c.mouth=true; } }
+    var bp=far(c,c.F,[c.bx,c.bz])||[c.x,c.fy,c.z]; c.bud=[bp[0]+.5,bp[1],bp[2]+.5];
+    var cp=far(c,c.F,[bp[0],bp[2]]); if(cp&&Math.hypot(cp[0]-bp[0],cp[2]-bp[2])>2) V[idx(cp[0],cp[1],cp[2])]=22;                     // a treasure chest at the other end of the cave
+    if(c.kind==='nest'){ var cp2=far(c,c.F,[c.x,c.z+0.01]); if(cp2&&cp2!==cp&&Math.hypot(cp2[0]-bp[0],cp2[2]-bp[2])>2) V[idx(cp2[0],cp2[1],cp2[2])]=22; }
+    delete c.F; delete c.W; CAVES.push(c); spots.push([c.x,c.fy,c.z]);
+    BUDSPOT[ci]=[c.bud[0],c.bud[1],c.bud[2],d.bud,ci]; });
+  for(var bi=0;bi<CAVE_DEF.length;bi++) if(!BUDSPOT[bi]){ var np=nook(CAVE_DEF[bi].y[0],CAVE_DEF[bi].y[1]+3,farFrom(10)); BUDSPOT[bi]=[np[0]+.5,np[1],np[2]+.5,CAVE_DEF[bi].bud,-1]; }   // (a cave that found no room: its Bud waits in a nook)
+  CAVES.forEach(function(c){ if(c.mouth||c.kind==='geode') return; var X=Math.floor(c.bx), Z=Math.floor(c.bz), top=colTop(X,Z), Y=Math.round((top+c.fy+c.ry*1.9)/2); if(top-Y<4||Y-(c.fy+c.ry*1.9)<3) return;      // a treasure pocket on the way down to each cave
+    for(var a=-1;a<=1;a++) for(var b2=-1;b2<=1;b2++){ for(var d=0;d<2;d++) V[idx(X+a,Y+d,Z+b2)]=0; if(!floorOk(X+a,Y,Z+b2)) V[idx(X+a,Y-1,Z+b2)]=Y<DUSK?15:3; } V[idx(X+1,Y,Z)]=22; V[idx(X-1,Y,Z+1)]=18; });
   [[30,38,4],[22,29,4],[11,21,4],[2,10,3]].forEach(function(bd){ for(var i=0;i<bd[2];i++){ var p=nook(bd[0],bd[1],farFrom(5)); spots.push(p); V[idx(p[0],p[1],p[2])]=22; } }); }
-var BUDSPOT=[], PADY=44;
+var BUDSPOT=[], CAVES=[], PADY=44;
+var CAVE_DEF=[
+  {n:'Mossy Hollow',   c:'#7CF0A0', y:[30,33], r:[6,3,5], pts:50,  bud:150,  kind:'moss', mouth:1},
+  {n:'Crystal Grotto', c:'#7FE8FF', y:[28,32], r:[5,3,6], pts:50,  bud:150,  kind:'crystal'},
+  {n:'Mushroom Grove', c:'#FF8FC8', y:[20,24], r:[7,4,6], pts:100, bud:300,  kind:'mush'},
+  {n:'Old Mine',       c:'#FFC93C', y:[19,23], r:[8,3,4], pts:100, bud:300,  kind:'mine'},
+  {n:'Magma Hall',     c:'#FF8A3C', y:[9,12],  r:[7,4,6], pts:150, bud:500,  kind:'magma'},
+  {n:'Gloom Nest',     c:'#B48CFF', y:[9,13],  r:[6,3,6], pts:150, bud:500,  kind:'nest'},
+  {n:'Star Geode',     c:'#FF6FD8', y:[2,2],   r:[4,3,4], pts:250, bud:1000, kind:'geode', camp:1}];
 function see(b){ return !b||(B[b]&&B[b].see); }
 function skyCol(x,z){ var y=SY-1; while(y>0&&see(V[idx(x,y,z)])) y--; HM[x+z*SX]=y+1; }
 function topY(x,z){ for(var y=SY-1;y>0;y--) if(solidAt(x,y,z)) return y+1; return 1; }
@@ -578,7 +658,7 @@ function buildAll(){ for(var i=0;i<NCX;i++) for(var j=0;j<NCZ;j++) buildChunk(i,
 function touch(x,z,extra){ var a=extra||{}; [[0,0],[1,0],[-1,0],[0,1],[0,-1]].forEach(function(d){ var X=x+d[0], Z=z+d[1]; if(X<0||Z<0||X>=SX||Z>=SZ) return; a[Math.floor(X/CH)+','+Math.floor(Z/CH)]=1; });
   Object.keys(a).forEach(function(k){ var p=k.split(','); buildChunk(+p[0],+p[1]); }); }
 var LIGHTS=0;
-function setBlock(x,y,z,b,quiet){ var was=V[idx(x,y,z)]; V[idx(x,y,z)]=b; skyCol(x,z); S.edits.push([x,y,z,b]); if(HSET[idx(x,y,z)]) houseDirty=true; if(quiet) return;
+function setBlock(x,y,z,b,quiet){ var was=V[idx(x,y,z)]; V[idx(x,y,z)]=b; skyCol(x,z); S.edits.push([x,y,z,b]); if(quiet) return;
   var d=null; if((B[b]&&B[b].light)||(B[was]&&B[was].light)||LIGHTS) d=relightBox(x,y,z); touch(x,z,d); }
 /* one block changed: light can only change within 15 blocks of it, so only that box is filled again (fast enough for a Chromebook) */
 var DX=[1,-1,0,0,0,0], DY=[0,0,1,-1,0,0], DZ=[0,0,0,0,1,-1];
@@ -602,7 +682,7 @@ function glInit(){ if(!gl) return false;
   PROG=gl.createProgram();
   gl.attachShader(PROG,sh(gl.VERTEX_SHADER,'attribute vec4 a;attribute vec4 b;uniform mat4 M;uniform vec3 eye;uniform float day;varying vec2 vuv;varying float vl;varying float vd;varying float vg;'+
     'void main(){ vec3 p=a.xyz/16.0; gl_Position=M*vec4(p,1.0); float t=b.x; float k=a.w; vec2 c=vec2(k==1.0||k==2.0?1.0:0.0, k>=2.0?0.0:1.0);'+
-    ' vuv=(vec2(mod(t,8.0),floor(t/8.0))*16.0+vec2(0.05)+c*15.9)/vec2(128.0,128.0); vl=max(b.y,b.w*day)/255.0; vg=b.z/255.0; vd=distance(p,eye); }'));
+    ' vuv=(vec2(mod(t,8.0),floor(t/8.0))*16.0+vec2(0.05)+c*15.9)/vec2(128.0,256.0); vl=max(b.y,b.w*day)/255.0; vg=b.z/255.0; vd=distance(p,eye); }'));
   gl.attachShader(PROG,sh(gl.FRAGMENT_SHADER,'precision mediump float;uniform sampler2D tex;uniform vec3 fog;uniform float lamp;uniform float lampR;uniform float fogN;uniform float fogF;uniform vec4 tint;varying vec2 vuv;varying float vl;varying float vd;varying float vg;'+
     'void main(){ vec4 c=texture2D(tex,vuv); if(tint.a>0.0) c=vec4(tint.rgb,1.0); if(c.a<0.5) discard; float lit=max(vl, max(vg, lamp*(1.0-smoothstep(lampR*0.35,lampR,vd))*0.9)); vec3 col=c.rgb*lit; float f=smoothstep(fogN,fogF,vd); gl_FragColor=vec4(mix(col,fog,f),1.0); }'));
   gl.linkProgram(PROG); gl.useProgram(PROG);
@@ -644,7 +724,6 @@ function pickX(){ return (1.7+0.4*budsHome())*(S.buff.super>0?1.5:1); }
 function mineTime(b){ return (0.25+0.2*B[b].cost)/pickX(); }
 function startMine(){ if(!TGT||PL.mine) return; var b=TGT.b, bd=B[b];
   if(b===12){ if(now()-msgT>1500){ say('Bedrock is the bottom of the world'); SND.thunk(); } return; }
-  if(bd.tier>tier()){ if(now()-msgT>1500){ say(bd.n+' needs '+TIERS[bd.tier]+' (press C to craft)'); SND.thunk(); } return; }
   var cost=S.buff.super>0?0:1; if(S.energy<cost){ nudge(); return; }
   PL.mine={x:TGT.x,y:TGT.y,z:TGT.z,b:b,t:0,cost:cost,n:TGT.n}; }
 function give(id,n){ S.inv[id]=(S.inv[id]||0)+n; }
@@ -661,13 +740,13 @@ function collect(b,quiet){ var bd=B[b]; if(bd.drop) give(bd.drop,1); if(!val(b))
 /* shop upgrades that change how you dig: the Drill digs deeper with every hit, the Magnet pulls in ore near your dig */
 function drillOn(m){ var lv=S.lv.drill||0, n=m.n; if(!lv||!n||(!n[0]&&!n[1]&&!n[2])) return;
   for(var k=1;k<=lv;k++){ var x=m.x-n[0]*k, y=m.y-n[1]*k, z=m.z-n[2]*k, b=get(x,y,z); if(b===12||b===21||y<=0||y>=SY) return; if(!b) continue;
-    setBlock(x,y,z,0); unbuilt(x,y,z); S.mined++; burst(x+.5,y+.5,z+.5,B[b].t[1],8,3); if(b===22) openChest(y,false); else if(val(b)) collect(b); else S.score+=1; if(y<S.deep) S.deep=y; } }
+    setBlock(x,y,z,0); S.mined++; burst(x+.5,y+.5,z+.5,B[b].t[1],8,3); if(b===22) openChest(y,false); else if(val(b)) collect(b); else S.score+=1; if(y<S.deep) S.deep=y; } }
 function magnetOn(m){ var R=S.lv.magnet||0, n=0; if(!R) return;
   for(var x=m.x-R;x<=m.x+R;x++) for(var y=m.y-R;y<=m.y+R;y++) for(var z=m.z-R;z<=m.z+R;z++){ if(x<0||z<0||x>=SX||z>=SZ||y<=0||y>=SY) continue; var b=V[idx(x,y,z)]; if(!b||b===23||!val(b)) continue;
     setBlock(x,y,z,0); S.mined++; collect(b,n>=3); dropFx(x+.5,y+.5,z+.5,B[b].t[1]); n++; }
   if(n) SND.cash(); }
 function finishMine(){ var m=PL.mine; PL.mine=null; if(get(m.x,m.y,m.z)!==m.b) return;
-  S.energy-=m.cost; setBlock(m.x,m.y,m.z,0); unbuilt(m.x,m.y,m.z); S.mined++; var bd=B[m.b]; burst(m.x+.5,m.y+.5,m.z+.5,bd.t[1],16,3.2);
+  S.energy-=m.cost; setBlock(m.x,m.y,m.z,0); S.mined++; var bd=B[m.b]; burst(m.x+.5,m.y+.5,m.z+.5,bd.t[1],16,3.2);
   if(val(m.b)) collect(m.b); else { S.score+=1; if(bd.drop) give(bd.drop,1); SND.dig(bd.cost); }
   var fy0=Math.floor(PL.y+0.01); if((m.x!==Math.floor(PL.x)||m.z!==Math.floor(PL.z))&&(m.y===fy0||m.y===fy0+1)){ var oy=m.y===fy0?fy0+1:fy0, ob=get(m.x,oy,m.z);      // digging sideways opens a doorway two blocks tall for the price of one
     if(ob&&ob!==12&&oy>0&&oy<SY){ setBlock(m.x,oy,m.z,0); S.mined++; burst(m.x+.5,oy+.5,m.z+.5,B[ob].t[1],10,3); if(ob===22) openChest(oy,false); else if(val(ob)) collect(ob); } }
@@ -686,18 +765,10 @@ function loot(y){ var m=mult(); return [y>=30?{pts:50,en:10,tnt:0}:y>=22?{pts:15
 function openChest(y,quiet){ var l=loot(y); S.energy+=l.en; if(l.tnt) give(21,l.tnt); S.score+=l.pts; S.chests=(S.chests||0)+1;
   if(!quiet){ pops.push({t:0,txt:'Treasure! +'+l.pts,col:'#FFC93C'}); say('In the chest: '+[l.en?'+'+l.en+' energy':'',l.tnt?l.tnt+' dynamite (right-click or E throws it)':''].filter(Boolean).join(' and ')); SND.deposit(); hud(); }
   return l.pts; }
-/* ---- building: blocks you place score while they stand, and the Bud House outline at camp gives building a job ----
-   Fill in the teal outline (any blocks work; look at an outline square and place). Walls done and roof done each pay a bonus, and a finished house
-   lets every rescued Bud give +1 energy per answer. A finished house also keeps Glooms out (its doorway counts as closed to them). */
-var BV={7:2,14:4,20:4,13:8,19:1,3:1}, HOUSE=[], HSET={}, HN=0, HWALL=0, houseDirty=false, GHOSTBUF=null, GHOSTN=0;
-function unbuilt(x,y,z){ var i=idx(x,y,z); if(S.pb[i]==null) return; S.score=Math.max(0,S.score-S.pb[i]); delete S.pb[i]; }
-function houseBoot(){ HOUSE=[]; HSET={}; }
-function doorShut(x,y,z){ return S.houseSt>=2&&x===SX/2+4&&z===SZ/2-1&&(y===PADY+1||y===PADY+2); }
-function houseEnergy(){ return S.houseSt>=2?budsHome():0; }
 function boom(f){ if(get(f.x,f.y,f.z)!==21) return; var R2=2.6, got=0, chunks={};
   for(var x=f.x-3;x<=f.x+3;x++) for(var y=f.y-3;y<=f.y+3;y++) for(var z=f.z-3;z<=f.z+3;z++){ var d=(x-f.x)*(x-f.x)+(y-f.y)*(y-f.y)+(z-f.z)*(z-f.z); if(d>R2*R2) continue;
     var b=get(x,y,z); if(!b||b===12||y<=0) continue; if(b===22) got+=openChest(y,true); else if(val(b)) got+=collect(b,true); else if(b!==21&&B[b].drop&&Math.random()<.5) give(B[b].drop,1);
-    setBlock(x,y,z,0,true); unbuilt(x,y,z); chunks[Math.floor(x/CH)+','+Math.floor(z/CH)]=1; S.mined++; }
+    setBlock(x,y,z,0,true); chunks[Math.floor(x/CH)+','+Math.floor(z/CH)]=1; S.mined++; }
   for(x=f.x-4;x<=f.x+4;x++) for(z=f.z-4;z<=f.z+4;z++) if(x>=0&&z>=0&&x<SX&&z<SZ) chunks[Math.floor(x/CH)+','+Math.floor(z/CH)]=1;
   countLights(); var d2=relight(); Object.keys(d2).forEach(function(k){ chunks[k]=1; }); Object.keys(chunks).forEach(function(k){ var p=k.split(','); buildChunk(+p[0],+p[1]); });
   SND.boom(); if(!document.documentElement.classList.contains('sz-reduce')) SHAKE=0.35;
@@ -709,8 +780,6 @@ function hopBack(){ var f=PL.fell; if(!f){ say('R hops you back up after a fall.
   if(!solidAt(x,y-1,z)&&y-1>0) setBlock(x,y-1,z,7); for(var d=0;d<2;d++){ var b=get(x,y+d,z); if(b&&b!==12&&b!==18) setBlock(x,y+d,z,0); }
   PL.x=x+.5; PL.z=z+.5; PL.y=y+0.01; PL.vy=0; PL.peak=PL.y; PL.kx=PL.kz=0; PL.ground=true; PL.fell=null; PL.s0=PL.s1=[PL.x,PL.y,PL.z]; burst(PL.x,PL.y+.5,PL.z,7,12,3); say('Back up top!'); SND.poof(); }
 function goHome(){ PL.fell=null; if(now()-homeT<3000) return; homeT=now(); PL.mine=null; spawn(); PL.kx=PL.kz=0; say('Back at camp'); SND.poof(); }
-function cycleSel(dir){ dir=dir||1; for(var k=1;k<=PLACE.length;k++){ var s=(S.sel+dir*k+PLACE.length*9)%PLACE.length; if((S.inv[PLACE[s]]||0)>0||k===PLACE.length){ S.sel=s; break; } } SND.tick(); }
-function pickSlot(i){ if(i>=0&&i<PLACE.length){ S.sel=i; SND.tick(); } }
 function update(dt){
   var fw=(HELD.up?1:0)-(HELD.down?1:0), st=(HELD.right?1:0)-(HELD.left?1:0), nn=Math.hypot(fw,st)||1;   // the mouse turns and looks; the keys walk and strafe
   var wet=inWater(PL.x,PL.y+0.5,PL.z), sp=4.3*(S.boots?1.15:1)*(wet?0.55:1)/nn*dt, sy=Math.sin(PL.yaw), cy=Math.cos(PL.yaw), mx=(sy*fw+cy*st)*sp, mz=(-cy*fw+sy*st)*sp;
@@ -731,15 +800,15 @@ function update(dt){
   if(blocked&&PL.ground&&(fw||st)){ var hx=(sy*fw+cy*st)/nn*0.45, hz=(-cy*fw+sy*st)/nn*0.45;                                                         // auto hop up one block: only a real step in the direction you are walking
     if(hits(PL.x+hx,PL.y,PL.z+hz)&&!hits(PL.x+hx,PL.y+1.05,PL.z+hz)&&!hits(PL.x,PL.y+1.05,PL.z)) PL.vy=7.4; }
   if(wet){ PL.vy-=9*dt; PL.vy=Math.max(PL.vy,-2.6); } else PL.vy-=24*dt; var ny=PL.y+PL.vy*dt;
-  if(hits(PL.x,ny,PL.z)){ if(PL.vy<0){ PL.y=Math.floor(ny)+1; if(!PL.ground){ var drop=(PL.peak||PL.y)-PL.y; if(drop>=4&&PL.s0&&!PL.fell){ PL.fell=PL.s0.slice(); say('You fell into a cave: press R to hop back up'); } } PL.ground=true; } PL.vy=0; } else { PL.y=ny; PL.ground=false; }
+  if(hits(PL.x,ny,PL.z)){ if(PL.vy<0){ PL.y=Math.floor(ny)+1; if(!PL.ground){ var drop=(PL.peak||PL.y)-PL.y; if(drop>=4&&PL.s0&&!PL.fell){ PL.fell=PL.s0.slice(); if(caveAt(PL.x,PL.y,PL.z)<0) say('Long drop! R hops you back up if you want'); } } PL.ground=true; } PL.vy=0; } else { PL.y=ny; PL.ground=false; }
   if(PL.ground||wet) PL.peak=PL.y; else PL.peak=Math.max(PL.peak||PL.y,PL.y);   // falls of 5+ blocks hurt
   if(PL.y<-4) spawn();
   if(PL.ground&&!(PL.inv>0)){ var fy=Math.floor(PL.y-0.2), hot=false; [[-RAD,-RAD],[RAD,-RAD],[-RAD,RAD],[RAD,RAD]].forEach(function(o){ if(get(Math.floor(PL.x+o[0]),fy,Math.floor(PL.z+o[1]))===23) hot=true; });
     if(hot){ PL.vy=6.5; PL.ground=false; SND.sizzle(); say('Ouch, magma burns! Walk around the glowing orange'); hurt(1); } }
   PL.inv=Math.max(0,(PL.inv||0)-dt); PL.hurtT=Math.max(0,(PL.hurtT||0)-dt); PL.calm=(PL.calm||0)+dt;
   if(hp()<5&&PL.calm>9){ S.hp=hp()+1; PL.calm=0; hud(); }   // hearts come back slowly
-  updGlooms(dt); updBuds(dt); updDrops(dt); checkGoal(dt); updParts(dt);
-  if(NK>0&&!S.nightSaid){ S.nightSaid=1; say('Sunset! Glooms come out at night'); SND.dusk(); toast('Night is coming: torches keep Glooms away'); } ATK=Math.max(0,ATK-dt); updSwing(dt); if(PL.mine) swingNow();
+  updGlooms(dt); updBuds(dt); updDrops(dt); updCaves(dt); checkGoal(dt); updParts(dt);
+  ATK=Math.max(0,ATK-dt); updSwing(dt); if(PL.mine) swingNow();
   TGT=ray();
   if(HELD.digdown){ var uy=Math.floor(PL.y-0.5); [[0,0],[-RAD,-RAD],[RAD,-RAD],[-RAD,RAD],[RAD,RAD]].some(function(o){ var ux=Math.floor(PL.x+o[0]), uz=Math.floor(PL.z+o[1]), ub=get(ux,uy,uz); if(!ub||ub===18||uy<0) return false; TGT={x:ux,y:uy,z:uz,b:ub,n:[0,1,0]}; return true; }); }   // hold X: dig the block under your feet, no aiming needed
   for(var qx=Math.floor(PL.x-0.9);qx<=Math.floor(PL.x+0.9);qx++) for(var qz=Math.floor(PL.z-0.9);qz<=Math.floor(PL.z+0.9);qz++) for(var qy=Math.floor(PL.y);qy<=Math.floor(PL.y)+1;qy++) if(get(qx,qy,qz)===22&&qx>=0&&qz>=0&&qx<SX&&qz<SZ){ setBlock(qx,qy,qz,0); burst(qx+.5,qy+.5,qz+.5,42,18,3.4); openChest(qy,false); }   // chests open when you walk up to them
@@ -767,8 +836,7 @@ function inWater(x,y,z){ var X=Math.floor(x), Z=Math.floor(z); if(y>=WATER+0.85)
 
 /* ---- hearts, falls and Glooms (shy cave critters: they only live in the dark, and torchlight scares them off) ---- */
 var GL=[], spawnT=4, PARTS=[], ATK=0, DUSTT=0;
-var NK=0, SKYL=15, NIGHT_AT=-1;   // the rescue run has no night (set to seconds-left to bring one back);   // NK: 0 = day, 1 = night (the last few minutes of the round); SKYL: how bright the open sky is, 0-15
-function nightNow(){ if(!S||!S.started) return 0; var left=S.over?0:(S.endAt-now())/1000; return Math.max(0,Math.min(1,(NIGHT_AT-left)/45)); }
+var NK=0, SKYL=15;   // the rescue run is always day (NK stays 0); SKYL: how bright the open sky is, 0-15
 function dayL(){ return 1-0.82*NK; }
 function lightAt(x,y,z){ var X=Math.floor(x), Y=Math.floor(y), Z=Math.floor(z); if(X<0||Z<0||X>=SX||Z>=SZ||Y<0||Y>=SY) return SKYL; if(Y>=HM[X+Z*SX]) return Math.max(SKYL,LT[idx(X,Y,Z)]); return LT[idx(X,Y,Z)]; }
 function hp(){ return S.hp==null?5:S.hp; }
@@ -776,11 +844,11 @@ function hurt(n,src){ if(PL.inv>0||S.over) return; S.hp=Math.max(0,hp()-n); PL.i
   if(src){ var dx=PL.x-src.x, dz=PL.z-src.z, d=Math.hypot(dx,dz)||1; PL.kx=dx/d*7; PL.kz=dz/d*7; PL.vy=Math.max(PL.vy,4); src.hit=1.6; src.kx=-dx/d*3; src.kz=-dz/d*3; }   // the Gloom backs off after a bump
   if(S.hp<=0) knockout(); hud(); save(); }
 function knockout(){ var lost=Math.min(S.score,50); S.score-=lost; S.hp=5; S.kos=(S.kos||0)+1; GL=[]; spawn(); PL.kx=PL.kz=0; say('Knocked out! Back to the surface'+(lost?' (−'+lost+' pts)':'')); SND.empty(); }
-function spawnGloom(){ var under=PL.y<(S.surf||44)-5; if(!(under||NK>0.7)||GL.length>=(under?(PL.y<DUSK?3:2):4)+(S.pro?1:0)) return;   // underground any time; on the surface only at night
+function spawnGloom(){ var under=PL.y<(S.surf||44)-5; var nest=(caveById(CAVENOW)||{}).kind==='nest'; if(!under||GL.length>=(PL.y<DUSK?3:2)+(S.pro?1:0)+(nest?2:0)) return;   // underground any time; on the surface only at night
   for(var k=0;k<14;k++){ var a=Math.random()*6.283, r=8+Math.random()*8, x=Math.floor(PL.x+Math.cos(a)*r), z=Math.floor(PL.z+Math.sin(a)*r);
     if(x<1||z<1||x>=SX-1||z>=SZ-1) continue;
     for(var y=Math.max(1,Math.floor(PL.y)-4);y<=Math.floor(PL.y)+4;y++){ if(get(x,y,z)===0&&get(x,y+1,z)===0&&solidAt(x,y-1,z)&&lightAt(x+.5,y,z+.5)<4){ GL.push({x:x+.5,y:y,z:z+.5,vy:0,hp:3,t:Math.random()*6,hit:0,ground:false}); return; } } } }
-function gHits(x,y,z){ var r=0.34; for(var X=Math.floor(x-r);X<=Math.floor(x+r);X++) for(var Y=Math.floor(y);Y<=Math.floor(y+0.78);Y++) for(var Z=Math.floor(z-r);Z<=Math.floor(z+r);Z++) if(solidAt(X,Y,Z)||doorShut(X,Y,Z)) return true; return false; }
+function gHits(x,y,z){ var r=0.34; for(var X=Math.floor(x-r);X<=Math.floor(x+r);X++) for(var Y=Math.floor(y);Y<=Math.floor(y+0.78);Y++) for(var Z=Math.floor(z-r);Z<=Math.floor(z+r);Z++) if(solidAt(X,Y,Z)) return true; return false; }
 function poof(g,won){ burst(g.x,g.y+.4,g.z,33,won?16:8,3); if(won){ var gp=Math.round(25*mult()); S.score+=gp; S.glooms=(S.glooms||0)+1; pops.push({t:0,txt:'+'+gp+' Gloom bopped',col:'#B48CFF'}); SND.poof(); hud(); } }
 function updGlooms(dt){ spawnT-=dt; if(spawnT<=0){ spawnT=3.5+Math.random()*3.5; spawnGloom(); }
   GL=GL.filter(function(g){ g.t+=dt; g.hit=Math.max(0,g.hit-dt);
@@ -805,15 +873,29 @@ function rayGloom(maxd){ var cp=Math.cos(PL.pit), f=[Math.sin(PL.yaw)*cp,Math.si
 function bop(g){ g.hp-=1+tier()*0.5; g.hit=0.4; var dx=g.x-PL.x, dz=g.z-PL.z, d=Math.hypot(dx,dz)||1; g.kx=dx/d*9; g.kz=dz/d*9; g.vy=4;
   burst(g.x,g.y+.5,g.z,33,6,2.5); SND.bop(); if(g.hp<=0){ poof(g,true); GL.splice(GL.indexOf(g),1); } }
 
+/* ---- the named caves at play time: where you are, finding a new one, the glow trail back, and each cave's sounds ---- */
+var CAVENOW=-1, CTITLE=null, TRAIL=[], dripT=3;
+function caveById(i){ for(var k=0;k<CAVES.length;k++) if(CAVES[k].i===i) return CAVES[k]; return null; }
+function caveAt(x,y,z){ for(var k=0;k<CAVES.length;k++){ var c=CAVES[k], nx=(x-c.x-.5)/(c.rx+0.8), ny=(y+0.9-c.cy)/(c.ry+1.2), nz=(z-c.z-.5)/(c.rz+0.8); if(y>=c.fy-0.6&&nx*nx+ny*ny+nz*nz<1.1) return c.i; } return -1; }
+function cavesFound(){ return Object.keys(S.caves||{}).length; }
+function discover(i){ var c=caveById(i); if(!c||S.caves[i]) return; S.caves[i]=1; var pts=Math.round(c.pts*mult()); S.score+=pts;
+  CTITLE={c:c,t:now()}; pops.push({t:0,txt:'Cave found! +'+pts,col:c.col}); SND.discover();
+  if(!S.tipTrail){ S.tipTrail=1; setTimeout(function(){ say('Your glow trail shows the way back up'); },3400); } save(); hud(); }
+function updCaves(dt){ var ci=caveAt(PL.x,PL.y,PL.z); CAVENOW=ci; if(ci>=0&&!S.caves[ci]) discover(ci);
+  var under=PL.y<(S.surf||44)-4;
+  if(under&&PL.ground){ var last=TRAIL[TRAIL.length-1];                                                    // the glow trail: a soft dot every couple of steps underground
+    if(!last||Math.hypot(last[0]-PL.x,last[1]-PL.y,last[2]-PL.z)>2.3){ var near=false; for(var k=Math.max(0,TRAIL.length-40);k<TRAIL.length;k++) if(Math.hypot(TRAIL[k][0]-PL.x,TRAIL[k][1]-PL.y,TRAIL[k][2]-PL.z)<1.5){ near=true; break; }
+      if(!near){ TRAIL.push([+PL.x.toFixed(2),+(PL.y+0.12).toFixed(2),+PL.z.toFixed(2)]); if(TRAIL.length>90) TRAIL.shift(); S.trail=TRAIL; } } }
+  dripT-=dt; if(dripT<=0){ dripT=3+Math.random()*4; if(under){ var c=caveById(ci); if(c&&c.kind==='magma') SND.rumble(); else if(c&&(c.kind==='crystal'||c.kind==='geode')) SND.shimmer(); else SND.drip(); } } }
 /* ---- lost Buds: six little glowing friends are lost in the caves. Walk up to one and it hops home to your camp (deeper Buds are worth more) ---- */
 var BUDS=[], chirpT=2, DROPS=[];
 function sendHome(b){ b.home=true; b.x=SX/2+2.6+(b.i%2)*0.9; b.z=SZ/2-2.4+Math.floor(b.i/2)*1.4; if(b.i===6){ b.x=SX/2+6; b.z=SZ/2; }      // by the door of the Bud house; the Star Bud sits on its roof
   var hx0=Math.floor(b.x), hz0=Math.floor(b.z), hy=SY-1; while(hy>1){ var hb=get(hx0,hy-1,hz0); if(hb&&hb!==5&&hb!==6&&hb!==18) break; hy--; } b.y=hy+0.01; b.vy=0; }
-function budsBoot(){ if(!S.buds||S.buds.length<7) S.buds=[0,0,0,0,0,0,0]; BUDS=BUDSPOT.map(function(p,i){ var b={i:i,x:p[0],y:p[1],z:p[2],val:p[3],home:false,t:i*1.3,vy:0,ground:false}; if(S.buds[i]) sendHome(b); return b; }); addBonus(); }
+function budsBoot(){ if(!S.buds||S.buds.length<7) S.buds=[0,0,0,0,0,0,0]; BUDS=BUDSPOT.map(function(p,i){ var cv=caveById(p[4]), b={i:i,x:p[0],y:p[1],z:p[2],val:p[3],home:false,t:i*1.3,vy:0,ground:false,cave:cv?cv.i:-1,bx:cv?cv.bx:p[0],bz:cv?cv.bz:p[2]}; if(S.buds[i]) sendHome(b); return b; }); addBonus(); }
 function bl(b){ return b.i<7?b.i:(S.bonus||0)%6; }
 function binfo(b){ return b.i<7?BUDINFO[b.i]:{n:'Bonus Bud',c:BUDINFO[bl(b)].c}; }
 /* after the Star Bud is home, Bonus Buds keep turning up one at a time in new spots, so there is always someone to rescue */
-function addBonus(){ BUDS=BUDS.filter(function(b){ return b.i<7; }); if(S.bspot) BUDS.push({i:7,x:S.bspot[0],y:S.bspot[1],z:S.bspot[2],val:400,home:false,t:0,vy:0,ground:false}); }
+function addBonus(){ BUDS=BUDS.filter(function(b){ return b.i<7; }); if(S.bspot) BUDS.push({i:7,x:S.bspot[0],y:S.bspot[1],z:S.bspot[2],val:400,home:false,t:0,vy:0,ground:false,cave:-1,bx:S.bspot[0],bz:S.bspot[2]}); }
 function spawnBonus(){ var X=0, Z=0, k=0; do{ var a=Math.random()*6.283, r=8+Math.random()*20; X=Math.floor(SX/2+Math.cos(a)*r); Z=Math.floor(SZ/2+Math.sin(a)*r); k++; }
   while(k<80&&(X<3||Z<3||X>SX-4||Z>SZ-4||topY(X,Z)-1<=WATER+3||Math.hypot(X+.5-PL.x,Z+.5-PL.z)<10));
   var Y=8+Math.floor(Math.random()*20);
@@ -838,7 +920,7 @@ function rescue(b){
   S.buds[b.i]=1; var n=budsReg(), val=Math.round(b.val*mult()), o=BUDINFO[b.i]; S.score+=val; S.hp=5; burst(b.x,b.y+.4,b.z,50+bl(b)*2,22,3.6); sendHome(b); b.vy=6; b.ground=false;
   pops.push({t:0,txt:o.n+' rescued! +'+val+(b.i<6?'  ('+n+' of 6)':''),col:o.c}); pops.push({t:-0.5,txt:'Your pick digs faster!',col:'#3EE6D0'}); SND.rescue(); confetti(960,520,60,1.8);
   if(b.i===6){ toast('You found the Star Bud! +'+val); SND.win(); confetti(500,600,70,1.6); confetti(1420,600,70,1.6); spawnBonus(); say('More Buds are lost! Press H for camp, then follow the new beam'); }
-  else if(n===6){ S.score+=1000; toast('All 6 Buds are home! +1,000'); SND.win(); say('A Star Bud is waiting at the very bottom, right under camp!'); }
+  else if(n===6){ S.score+=1000; toast('All 6 Buds are home! +1,000'); SND.win(); say('A Star Bud is waiting in the Star Geode, deep under camp!'); }
   else say(o.n+' hopped home. Hearts refilled!');
   save(); hud(); }
 function updBuds(dt){ BUDS.forEach(function(b){ b.t+=dt;
@@ -854,12 +936,13 @@ function updDrops(dt){ DROPS=DROPS.filter(function(d){ d.t+=dt; if(d.t<0.22){ d.
     var tx=PL.x-d.x, ty=PL.y+0.9-d.y, tz=PL.z-d.z, dd=Math.hypot(tx,ty,tz); if(dd<0.45||d.t>1.2) return false; var sp=Math.min(dd,(6+d.t*16)*dt); d.x+=tx/dd*sp; d.y+=ty/dd*sp; d.z+=tz/dd*sp; return true; }); }
 /* ---- goals: one clear next step at a time, each with a small bonus ---- */
 var GOALS=[
-  {t:'Walk to a glowing beam, then dig straight down',  p:20,  ok:function(){ return S.mined>=3; }},
-  {t:'Rescue your first lost Bud',                      p:75,  ok:function(){ return budsHome()>=1; }},
+  {t:'Follow the glowing beam to a hidden cave',        p:20,  ok:function(){ return cavesFound()>=1; }},
+  {t:'Find the lost Bud somewhere in the cave',         p:75,  ok:function(){ return budsHome()>=1; }},
   {t:'Open a treasure chest',                           p:50,  ok:function(){ return (S.chests||0)>=1; }},
   {t:'Bring 3 Buds home',                               p:150, ok:function(){ return budsHome()>=3; }},
+  {t:'Discover 4 caves',                                p:150, ok:function(){ return cavesFound()>=4; }},
   {t:'Bring all 6 Buds home',                           p:250, ok:function(){ return budsReg()>=6; }},
-  {t:'Find the Star Bud at the very bottom, under camp', p:500, ok:function(){ return !!S.buds[6]; }}];
+  {t:'Find the Star Bud in the Star Geode, under camp', p:500, ok:function(){ return !!S.buds[6]; }}];
 var goalT=1;
 function checkGoal(dt){ goalT-=dt; if(goalT>0||S.goal>=GOALS.length) return; goalT=0.6; var g=GOALS[S.goal]; if(!g.ok()) return;
   S.goal++; S.score+=g.p; pops.push({t:0,txt:'Goal done! +'+g.p,col:'#7BE08E'}); SND.goal(); goalT=1.5; hud(); save(); }
@@ -874,12 +957,13 @@ function drawDyn(){ var L=[];
   if(PL.mine){ var st=34+Math.min(3,Math.floor(PL.mine.t*4)); cube(L,PL.mine.x+.5,PL.mine.y+.5,PL.mine.z+.5,1.02,st,st,st,1,0); }
   GL.forEach(function(g){ var b=Math.abs(Math.sin(g.t*5))*0.12, sq=g.hit>0?0.75:0.82; cube(L,g.x,g.y+0.42+b,g.z,sq,33,32,33,0.8,0); });
   BUDS.forEach(function(b){ if(hiddenBud(b)) return; var s=(b.i===6?0.72:0.6)+(b.home?0:0.03*Math.sin(b.t*4)), bt=50+bl(b)*2; cube(L,b.x,b.y+s/2+0.01,b.z,s,bt,bt-1,bt,1,1); });
+  if(PL.y<(S.surf||44)-3){ var tb=now()/600; TRAIL.forEach(function(p,k){ if(Math.abs(p[0]-PL.x)+Math.abs(p[2]-PL.z)>40) return; cube(L,p[0],p[1]+0.05*Math.sin(tb+k),p[2],0.13,70,70,70,1,1); }); }   // the glow trail back
   DROPS.forEach(function(d){ var li=Math.max(0.3,Math.min(1,lightAt(d.x,d.y,d.z)/10)); cube(L,d.x,d.y,d.z,0.26,d.tile,d.tile,d.tile,li,0); });
   PARTS.forEach(function(p){ var li=Math.max(0.25,Math.min(1,lightAt(p.x,p.y,p.z)/10)); cube(L,p.x,p.y,p.z,0.14,p.tile,p.tile,p.tile,li,0); });
   if(!DYNBUF) DYNBUF=gl.createBuffer(); if(L.length){ gl.bindBuffer(gl.ARRAY_BUFFER,DYNBUF); gl.bufferData(gl.ARRAY_BUFFER,vbuf(L),gl.DYNAMIC_DRAW); bindAttrs(); gl.drawArrays(gl.TRIANGLES,0,L.length); }
   drawScan();
   if(PL.y<(S.surf||44)-8) return; L=[];                                                         // dotted beams over every lost Bud: where to dig
-  var gb=nearBud(); BUDS.forEach(function(b){ if(b.home||hiddenBud(b)) return; var X=Math.floor(b.x), Z=Math.floor(b.z), ty=topY(X,Z), bt=50+bl(b)*2, big=gb&&gb.b===b; for(var k=0;k<(big?16:8);k++){ var by=ty+0.7+k*1.6+((b.t*1.3)%1.6); cube(L,X+.5,by,Z+.5,(big?0.5:0.24)+(big?0.22:0.08)*(k%2),bt,bt,bt,1,1); } });   // the Bud the guide points at gets the tall, bold beam
+  var gb=nearBud(); BUDS.forEach(function(b){ if(b.home||hiddenBud(b)) return; var X=Math.floor(b.bx), Z=Math.floor(b.bz), ty=topY(X,Z), bt=50+bl(b)*2, big=gb&&gb.b===b; for(var k=0;k<(big?16:8);k++){ var by=ty+0.7+k*1.6+((b.t*1.3)%1.6); cube(L,X+.5,by,Z+.5,(big?0.5:0.24)+(big?0.22:0.08)*(k%2),bt,bt,bt,1,1); } });   // the Bud the guide points at gets the tall, bold beam
   if(!L.length) return; gl.uniform1f(LOC.fogN,300); gl.uniform1f(LOC.fogF,400); gl.bindBuffer(gl.ARRAY_BUFFER,DYNBUF); gl.bufferData(gl.ARRAY_BUFFER,vbuf(L),gl.DYNAMIC_DRAW); bindAttrs(); gl.drawArrays(gl.TRIANGLES,0,L.length);
   gl.uniform1f(LOC.fogN,FOG[0]); gl.uniform1f(LOC.fogF,FOG[1]); }
 var FOG=[30,56];
@@ -931,7 +1015,6 @@ function drawClouds(M,e,sky){ var dr=(now()/1000*0.9)%120, k=0.08+0.72*Math.pow(
 var RS=0.5;   // the 3D view draws at half size (960 x 540) and the browser scales it up: blocky looks fine and Chromebooks stay smooth
 function draw(){ if(!gl) return drawHud(); var w=Math.round(W*RS), h=Math.round(H*RS); if(gcv.width!==w){ gcv.width=w; gcv.height=h; }
   gl.viewport(0,0,w,h);
-  NK=nightNow(); SKYL=Math.round(15*dayL());
   var under=Math.max(0,Math.min(1,((S.surf||44)-4-PL.y)/10)), gw=Math.sin(Math.PI*NK), top=[0.55+(0.03-0.55)*NK+0.42*gw,0.78+(0.04-0.78)*NK+0.1*gw,Math.max(0.1,0.98+(0.11-0.98)*NK-0.14*gw)];
   var sky=[top[0]*(1-under)+0.03*under,top[1]*(1-under)+0.02*under,top[2]*(1-under)+0.06*under];
   gl.clearColor(sky[0],sky[1],sky[2],1); gl.clear(gl.COLOR_BUFFER_BIT|gl.DEPTH_BUFFER_BIT);
@@ -960,14 +1043,19 @@ function drawHud(){ var c=hx; c.clearRect(0,0,W,H); c.textAlign='center'; var rb
   if(TGT){ var bd=B[TGT.b], lock=bd.tier>tier(), t=bd.n+(TGT.b===12?'':lock?' · needs '+TIERS[bd.tier]:' · '+(S.buff.super>0?0:1)+' ⚡'+(bd.pts?' · '+bd.pts+' pts':'')+(bd.cash?' · $'+oreCash(TGT.b):'')+(bd.en?' · +'+bd.en+' energy':'')+(bd.star?' · STAR POWER':''));
     c.font=FONT(30); var tw=c.measureText(t).width; c.fillStyle='rgba(12,9,25,.72)'; rr(c,W/2-tw/2-18,H/2+44,tw+36,48,14); c.fill(); c.fillStyle=lock?'#FF9A9A':(bd.ore||'#FBF5EC'); c.fillText(t,W/2,H/2+79); }
   /* depth, pick and fuse */
-  var dep=Math.max(0,(S.surf||44)-Math.floor(PL.y)); c.textAlign='left'; c.fillStyle='rgba(12,9,25,.72)'; rr(c,24,120,330,150,16); c.fill();
-  drawHearts(c); c.font=FONT(34); c.fillStyle='#FFE0A3'; c.fillText(dep>0?'Depth '+dep:'Surface',44,162); c.font=FONT(24); c.fillStyle='#B3A6C4'; c.imageSmoothingEnabled=false; for(var bi=0;bi<(budsReg()>=6?7:6);bi++){ var btl=49+bi*2; c.globalAlpha=S.buds&&S.buds[bi]?1:0.22; c.drawImage(ATL,(btl%8)*16,Math.floor(btl/8)*16,16,16,44+bi*40,174,32,32); } c.globalAlpha=1;
+  var dep=Math.max(0,(S.surf||44)-Math.floor(PL.y)); c.textAlign='left'; c.fillStyle='rgba(12,9,25,.72)'; rr(c,24,120,400,150,16); c.fill();
+  drawHearts(c); c.font=FONT(34); c.fillStyle='#FFE0A3'; var here=caveById(CAVENOW); if(here){ c.fillStyle=here.col; c.fillText(here.n,44,162); } else c.fillText(dep>0?'Depth '+dep:'Surface',44,162); c.textAlign='right'; c.font=FONT(24); c.fillStyle='#B3A6C4'; c.fillText('Caves '+cavesFound()+' / '+CAVES.length,404,256); c.textAlign='left'; c.font=FONT(24); c.fillStyle='#B3A6C4'; c.imageSmoothingEnabled=false; for(var bi=0;bi<(budsReg()>=6?7:6);bi++){ var btl=49+bi*2; c.globalAlpha=S.buds&&S.buds[bi]?1:0.22; c.drawImage(ATL,(btl%8)*16,Math.floor(btl/8)*16,16,16,44+bi*40,174,32,32); } c.globalAlpha=1;
   if(S.started&&!S.over){ var gy=284, gtxt=S.goal<GOALS.length?GOALS[S.goal].t:(S.bspot?'Rescue Bonus Buds: +400 each':'All goals done: dig up ore for more points!'), gpts=S.goal<GOALS.length?'+'+GOALS[S.goal].p:'';
     c.font=FONT(26); var gwid=c.measureText(gtxt).width, pw=gpts?c.measureText(gpts).width+16:0; c.fillStyle='rgba(12,9,25,.72)'; rr(c,24,gy,118+gwid+pw+22,52,14); c.fill();
     c.fillStyle='#3EE6D0'; c.font=FONT(22); c.fillText('GOAL',42,gy+35); c.font=FONT(26); c.fillStyle='#FBF5EC'; c.fillText(gtxt,118,gy+36); c.fillStyle='#FFC93C'; c.fillText(gpts,118+gwid+16,gy+36); gy+=60;
-    var nb=nearBud(); if(nb){ var dyb=nb.b.y-PL.y, hdb=Math.hypot(nb.b.x-PL.x,nb.b.z-PL.z), bn=binfo(nb.b).n, bt=hdb<2.5&&dyb<-2?bn+': right below you, dig down '+Math.round(-dyb)+' (hold X)':hdb<2.5&&dyb>2?bn+': right above you, '+Math.round(dyb)+' up':bn+': '+Math.max(1,Math.round(hdb))+' blocks away'+(hdb<2.5?'':dyb<-3?', '+Math.round(-dyb)+' deep':dyb>3?', above you':''); c.font=FONT(26);
+    var nb=nearBud(); if(nb){ var gc=caveById(nb.b.cave), inC=gc&&CAVENOW===gc.i, tx=gc&&!inC?gc.bx:nb.b.x, tz=gc&&!inC?gc.bz:nb.b.z, ty=gc&&!inC?gc.fy:nb.b.y,
+        dyb=ty-PL.y, hdb=Math.hypot(tx-PL.x,tz-PL.z), bn=binfo(nb.b).n, away=Math.max(1,Math.round(hdb))+' blocks away', bt;
+      if(gc&&!inC){ bt=gc.mouth&&PL.y>ty+2?(hdb<3?'Walk down into the '+gc.n:bn+' is in the '+gc.n+': '+away+', walk in')
+          : hdb<2.5&&dyb<-2?gc.n+' is right below you: hold X to dig '+Math.round(-dyb):bn+' is in the '+gc.n+': '+away+(dyb<-3?', '+Math.round(-dyb)+' deep':dyb>3?', above you':''); }
+      else bt=hdb<2.5&&dyb<-2?bn+': right below you, dig down '+Math.round(-dyb)+' (hold X)':hdb<2.5&&dyb>2?bn+': right above you, '+Math.round(dyb)+' up':bn+': '+away+(hdb<2.5?'':dyb<-3?', '+Math.round(-dyb)+' deep':dyb>3?', above you':'');
+      c.font=FONT(26);
       c.fillStyle='rgba(12,9,25,.72)'; rr(c,24,gy,c.measureText(bt).width+96,52,14); c.fill();
-      c.save(); c.translate(52,gy+26); c.rotate(Math.atan2(nb.b.x-PL.x,-(nb.b.z-PL.z))-PL.yaw); c.fillStyle=binfo(nb.b).c; c.beginPath(); c.moveTo(0,-17); c.lineTo(12,12); c.lineTo(0,5); c.lineTo(-12,12); c.closePath(); c.fill(); c.restore();
+      c.save(); c.translate(52,gy+26); c.rotate(Math.atan2(tx-PL.x,-(tz-PL.z))-PL.yaw); c.fillStyle=gc&&!inC?gc.col:binfo(nb.b).c; c.beginPath(); c.moveTo(0,-17); c.lineTo(12,12); c.lineTo(0,5); c.lineTo(-12,12); c.closePath(); c.fill(); c.restore();
       c.fillStyle='#FFE29A'; c.fillText(bt,84,gy+36); gy+=60; }
     if(dep>4){ var ht='Hold Space by a wall to climb'; c.font=FONT(24); c.fillStyle='rgba(12,9,25,.72)'; rr(c,24,gy,c.measureText(ht).width+40,48,14); c.fill(); c.fillStyle=PL.fell?'#FFE0A3':'#B3A6C4'; c.fillText(ht,44,gy+33); } }
   c.textAlign='center';
@@ -978,8 +1066,11 @@ function drawHud(){ var c=hx; c.clearRect(0,0,W,H); c.textAlign='center'; var rb
   var noE=S.started&&!S.over&&S.energy<1&&S.buff.super<=0;
   if(S.started&&!S.over&&!LOCKED&&canPlay()&&!noE){ c.fillStyle='rgba(12,9,25,.8)'; rr(c,W/2-380,H/2+120,760,150,20); c.fill(); c.fillStyle='#FFB547'; c.font=FONT(44); c.fillText('Click here to look around',W/2,H/2+180);
     c.fillStyle='#fff'; c.font=FONT(28); c.fillText('Move the mouse to look · Esc frees the mouse',W/2,H/2+230); }
-  else if(S.started&&!S.over&&S.mined===0&&!noE){ c.fillStyle='rgba(12,9,25,.78)'; rr(c,W/2-400,H/2+120,800,112,18); c.fill(); c.fillStyle='#fff'; c.font=FONT(30); c.fillText('Walk to a glowing beam: a lost Bud is under it',W/2,H/2+164); c.fillText('Stand on that spot and hold X to dig straight down',W/2,H/2+208); }
-  else if(S.started&&!S.over&&GL.length&&!S.glooms&&(PL.y<(S.surf||44)-5||NK>0.7)){ c.fillStyle='rgba(12,9,25,.78)'; rr(c,W/2-420,190,840,70,18); c.fill(); c.fillStyle='#C9B3FF'; c.font=FONT(30); c.fillText('Glooms creep around in the dark: click one to bop it',W/2,236); }
+  else if(S.started&&!S.over&&S.mined===0&&!cavesFound()&&!noE){ c.fillStyle='rgba(12,9,25,.78)'; rr(c,W/2-420,H/2+120,840,112,18); c.fill(); c.fillStyle='#fff'; c.font=FONT(30); c.fillText('Follow the glowing beam: a hidden cave is under it',W/2,H/2+164); c.fillText('Walk in where there is a way in, or hold X to dig down',W/2,H/2+208); }
+  else if(S.started&&!S.over&&!CTITLE&&GL.length&&!S.glooms&&PL.y<(S.surf||44)-5){ c.fillStyle='rgba(12,9,25,.78)'; rr(c,W/2-420,190,840,70,18); c.fill(); c.fillStyle='#C9B3FF'; c.font=FONT(30); c.fillText('Glooms creep around in the dark: click one to bop it',W/2,236); }
+  if(CTITLE){ var ca=(now()-CTITLE.t)/1000; if(ca>3.4) CTITLE=null; else { c.globalAlpha=Math.min(1,ca*3,(3.4-ca)*2); c.textAlign='center'; c.lineWidth=10; c.strokeStyle='rgba(12,9,25,.85)';
+      c.font=FONT(34); c.strokeText('You found',W/2,236); c.fillStyle='#FBF5EC'; c.fillText('You found',W/2,236);
+      c.font=FONT(84); c.strokeText(CTITLE.c.n,W/2,320); c.fillStyle=CTITLE.c.col; c.fillText(CTITLE.c.n,W/2,320); c.globalAlpha=1; } }
   if(finalRush()){ c.font=FONT(34); var ft='FINAL 30: DOUBLE POINTS', fw=c.measureText(ft).width; c.fillStyle='rgba(12,9,25,.8)'; rr(c,W-fw-72,112,fw+48,56,16); c.fill(); c.fillStyle='#FFC93C'; c.fillText(ft,W-fw/2-48,151); }
   if(LOCKED){ c.textAlign='left'; c.font=FONT(24); c.fillStyle='rgba(255,255,255,.85)'; c.fillText('Esc frees the mouse',26,H-30); c.textAlign='center'; }
   if(noE&&canPlay()){ c.fillStyle='rgba(12,9,25,.72)'; c.fillRect(0,H/2+130,W,110); c.fillStyle='#fff'; c.font=FONT(54); c.fillText('Out of energy: press Q for questions',W/2,H/2+202); }
@@ -1012,7 +1103,7 @@ function worldBoot(){ genWorld(S.seed); for(var x0=0;x0<SX;x0++) for(var z0=0;z0
   if(!S.surf) S.surf=surfaceY(); countLights(); relight();
   try{ if(!glInit()) gl=null; }catch(err){ gl=null; window.__glerr=String(err); }
   if(gl){ buildAll(); buildWater(); } if(S.pl){ PL.x=S.pl[0]; PL.y=S.pl[1]; PL.z=S.pl[2]; PL.yaw=S.pl[3]; PL.pit=S.pl[4]; } else { spawn(); S.surf=Math.floor(PL.y); }
-  houseBoot(); budsBoot(); DROPS=[];
+  budsBoot(); DROPS=[]; TRAIL=(S.trail||[]).slice(); CAVENOW=-1; CTITLE=null;
   FUSES=[]; for(var i=0;i<V.length;i++) if(V[i]===21) FUSES.push({x:i%SX,y:Math.floor(i/(SX*SZ)),z:Math.floor(i/SX)%SZ,t:1}); }
 
 /* ================= GAME STATE ================= */
@@ -1033,9 +1124,9 @@ var POW=[
 ];
 var S;
 function fresh(){ return { name:'', len:5, started:false, over:false, endAt:0, score:0, energy:0, cash:0, streak:0, best:0, answered:0, correct:0, mined:0, ores:0, placed:0, seed:Math.floor(Math.random()*1e9), edits:[], pl:null, inv:{}, sel:0,
-  topics:QS?QS.topicTable():{}, lv:{bucket:0,cash:0,drill:0,magnet:0,luck:0,scan:0}, pick:4, crafts:0, furnace:0, helmet:1, boots:0, beacon:0, found:{}, deep:99, surf:0, hp:5, glooms:0, kos:0, buds:[0,0,0,0,0,0,0], finalSaid:0, bonus:0, bspot:null, pro:proPick(), chests:0, goal:0, shelter:0, made:{}, houseSt:0, pb:{}, nightSaid:0, buff:{double:0,super:0}, q:null, qDone:false, picked:-1 }; }
+  topics:QS?QS.topicTable():{}, lv:{bucket:0,cash:0,drill:0,magnet:0,luck:0,scan:0}, pick:4, crafts:0, furnace:0, helmet:1, boots:0, beacon:0, found:{}, deep:99, surf:0, hp:5, glooms:0, kos:0, buds:[0,0,0,0,0,0,0], finalSaid:0, bonus:0, bspot:null, pro:proPick(), chests:0, goal:0, shelter:0, made:{}, houseSt:0, pb:{}, nightSaid:0, buff:{double:0,super:0}, q:null, qDone:false, picked:-1, gen:2, caves:{}, trail:[] }; }
 function save(){ try{ localStorage.setItem(KEY,JSON.stringify(S)); localStorage.setItem(KEY+'_mute',muted?'1':'0'); }catch(e){} }
-function load(){ try{ var v=JSON.parse(localStorage.getItem(KEY)||'null'); muted=localStorage.getItem(KEY+'_mute')==='1'; if(v&&v.topics&&v.lv&&v.buff&&v.edits&&v.inv&&v.buds&&v.made&&v.pb) return v; }catch(e){} return null; }
+function load(){ try{   /* gen 2 = the named-caves world (2026-11-17): older saved runs start fresh */ var v=JSON.parse(localStorage.getItem(KEY)||'null'); muted=localStorage.getItem(KEY+'_mute')==='1'; if(v&&v.gen===2&&v.topics&&v.lv&&v.buff&&v.edits&&v.inv&&v.buds&&v.caves) return v; }catch(e){} return null; }
 function U(id){ var u=UPG.filter(function(x){ return x.id===id; })[0]; return u.vals[S.lv[id]]; }
 function now(){ return Date.now(); }
 var MODAL=null, RELOCK=false;
@@ -1054,8 +1145,8 @@ $('dg-qbtn').addEventListener('click',function(){ openModal('q'); });
 function streakBonus(st){ return FAST? Math.min(Math.floor(st/5),4) : Math.min(Math.max(st-1,0),5)*2; }
 function hud(){ $('dg-score').textContent=S.score.toLocaleString(); $('dg-paint').textContent=S.energy; $('dg-cash').textContent='$'+S.cash; $('dg-streak').textContent=S.streak;
   var empty=S.started&&!S.over&&S.energy<1; $('dg-paintchip').classList.toggle('empty',empty); $('dg-qbtn').classList.toggle('need',empty&&MODAL!=='q');
-  $('dg-qsub').textContent='+'+(U('bucket')+houseEnergy())+' energy each';
-  $('dg-reward').innerHTML='+'+(U('bucket')+houseEnergy())+' energy · +$'+(U('cash')+streakBonus(S.streak+1));
+  $('dg-qsub').textContent='+'+U('bucket')+' energy each';
+  $('dg-reward').innerHTML='+'+U('bucket')+' energy · +$'+(U('cash')+streakBonus(S.streak+1));
   $('dg-shopcash').textContent='$'+S.cash; if(MODAL==='shop') drawShop(); }
 function timerDraw(){ var left=S.started? Math.max(0,S.endAt-now()) : S.len*60000, s=Math.ceil(left/1000);
   $('dg-time').textContent=Math.floor(s/60)+':'+('0'+(s%60)).slice(-2); $('dg-timerchip').classList.toggle('low',S.started&&s<=30);
@@ -1077,7 +1168,7 @@ function markAnswered(i,fresh){ var q=S.q, btns=$('dg-choices').querySelectorAll
 function answer(i){ if(!S.started||S.over||S.qDone||!S.q) return; var c=S.q.choices[i]; if(!c) return; S.qDone=true; S.picked=i; S.answered++;
   if(!S.topics[S.q.topic]) S.topics[S.q.topic]=[0,0]; S.topics[S.q.topic][1]++;
   var btn=$('dg-choices').querySelectorAll('.dg-ch')[i];
-  if(c.ok){ S.correct++; S.topics[S.q.topic][0]++; S.streak++; S.best=Math.max(S.best,S.streak); var np=U('bucket')+houseEnergy(), ca=U('cash')+streakBonus(S.streak);
+  if(c.ok){ S.correct++; S.topics[S.q.topic][0]++; S.streak++; S.best=Math.max(S.best,S.streak); var np=U('bucket'), ca=U('cash')+streakBonus(S.streak);
     S.energy+=np; S.cash+=ca; SND.correct(); markAnswered(i,true);
     if(FAST) nextT=setTimeout(function(){ if(S.qDone&&!S.over) newQ(); },150);
     else { var p=stagePoint(btn,60,40); confetti(p[0],p[1],40,2.2); toast('+'+np+' energy · +$'+ca); nextT=setTimeout(function(){ if(S.qDone&&!S.over) newQ(); },1600); } }
@@ -1113,7 +1204,7 @@ $('dg-go').addEventListener('click',function(){ var n=$('dg-nameinput').value.tr
 function endRun(){ freeMouse(); S.over=true; HELD={}; clearTimeout(nextT); Object.keys(MID).forEach(function(k){ $(MID[k]).hidden=true; }); MODAL=null; save(); showEnd(true); }
 function showEnd(celebrate){ $('dg-endname').textContent=S.name+(S.pro?'  ★ All-Pro':''); $('dg-endscore').textContent=S.score.toLocaleString();
   var acc=S.answered?Math.round(100*S.correct/S.answered):0;
-  $('dg-endstats').innerHTML=[['Correct',S.correct+' / '+S.answered],['Accuracy',acc+'%'],['Best streak',S.best],['Ore found',S.ores],['Chests',S.chests||0],['Deepest',Math.max(0,(S.surf||44)-(S.deep>90?S.surf||44:S.deep))],['Buds home',budsReg()+' / 6'+(S.buds[6]?' ★':'')+(S.bonus?' +'+S.bonus:'')]].map(function(a){ return '<div class="dg-stat"><div class="l">'+a[0]+'</div><div class="v">'+a[1]+'</div></div>'; }).join('');
+  $('dg-endstats').innerHTML=[['Correct',S.correct+' / '+S.answered],['Accuracy',acc+'%'],['Best streak',S.best],['Ore found',S.ores],['Caves',cavesFound()+' / '+CAVES.length],['Chests',S.chests||0],['Deepest',Math.max(0,(S.surf||44)-(S.deep>90?S.surf||44:S.deep))],['Buds home',budsReg()+' / 6'+(S.buds[6]?' ★':'')+(S.bonus?' +'+S.bonus:'')]].map(function(a){ return '<div class="dg-stat"><div class="l">'+a[0]+'</div><div class="v">'+a[1]+'</div></div>'; }).join('');
   $('dg-endtopics').innerHTML=Object.keys(S.topics).map(function(k){ var t=S.topics[k]; return '<div class="dg-stat"><div class="l">'+k+'</div><div class="v">'+t[0]+' / '+t[1]+'</div></div>'; }).join('');
   /* LEADERBOARD HOOK: the shared score code (scorecode.js) shows the student's code here.
      RENAME: 'starter' must become the game's id in GAMES in scorecode.js (the sharing thread adds it at go-live); until then no code shows. */
@@ -1163,7 +1254,7 @@ else { $('dg-nameinput').value=S.name||''; $('dg-go').disabled=!S.name; }
 hud(); timerDraw(); setInterval(timerDraw,250); setInterval(function(){ if(S.started&&!S.over) save(); },1000); requestAnimationFrame(loop);
 
 /* test hooks */
-window.__G={ state:function(){ return S; }, song:function(){ return SONG; }, mg:function(c,d){ return musGraph(c,d); }, P:function(){ return PL; }, tgt:function(){ return TGT; }, hold:function(d,on){ HELD[d]=on; }, look:look, locked:function(){ return LOCKED; }, mine:function(){ MINEQ=true; }, place:function(){ PLACEQ=true; }, sel:cycleSel, modal:openModal, GL:function(){ return GL; }, sw:function(v){ SW=v; PL.mine=null; HELD.mine=false; }, rg:function(){ return rayGloom(9); }, atk:function(){ return ATK; }, spawnG:spawnGloom, wet:function(){ return inWater(PL.x,PL.y+0.5,PL.z); }, hp:hp, M:function(){ return MODAL; }, get:get, fps:function(){ var s=0; FPS.forEach(function(d){ s+=d; }); return FPS.length/s; }, glerr:function(){ return window.__glerr||(gl?'':'nogl'); }, answer:answer, update:update, canPlay:canPlay, end:function(){ S.endAt=now()-1; timerDraw(); }, fast:FAST, house:function(){ return {cells:HOUSE,n:HN,st:S.houseSt,pady:PADY}; }, reseed:function(n){ S=fresh(); S.seed=n; save(); }, buds:function(){ return BUDS; }, nk:function(){ return NK; }, night:function(left){ S.endAt=now()+left*1000; }, goals:GOALS, relightBox:relightBox, setBlock:setBlock, topY:topY, lightAt:lightAt, drops:function(){ return DROPS; } };
+window.__G={ state:function(){ return S; }, song:function(){ return SONG; }, mg:function(c,d){ return musGraph(c,d); }, P:function(){ return PL; }, tgt:function(){ return TGT; }, hold:function(d,on){ HELD[d]=on; }, look:look, locked:function(){ return LOCKED; }, mine:function(){ MINEQ=true; }, place:function(){ PLACEQ=true; }, modal:openModal, GL:function(){ return GL; }, sw:function(v){ SW=v; PL.mine=null; HELD.mine=false; }, rg:function(){ return rayGloom(9); }, atk:function(){ return ATK; }, spawnG:spawnGloom, wet:function(){ return inWater(PL.x,PL.y+0.5,PL.z); }, hp:hp, M:function(){ return MODAL; }, get:get, fps:function(){ var s=0; FPS.forEach(function(d){ s+=d; }); return FPS.length/s; }, glerr:function(){ return window.__glerr||(gl?'':'nogl'); }, answer:answer, update:update, canPlay:canPlay, end:function(){ S.endAt=now()-1; timerDraw(); }, fast:FAST, reseed:function(n){ S=fresh(); S.seed=n; save(); }, buds:function(){ return BUDS; }, goals:GOALS, relightBox:relightBox, setBlock:setBlock, topY:topY, lightAt:lightAt, drops:function(){ return DROPS; }, caves:function(){ return CAVES; }, cave:function(){ return CAVENOW; }, trail:function(){ return TRAIL; } };
 })();
 </script>
 <!-- ================= FULL SCREEN REMINDER: shows until the game is full screen; click it or press F ================= -->
