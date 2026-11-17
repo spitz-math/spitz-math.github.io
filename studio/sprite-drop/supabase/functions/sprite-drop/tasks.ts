@@ -201,7 +201,7 @@ export function registerTaskTools(server: any, db: TaskDb) {
     title: 'Record a validator result for an image',
     description: 'Store the JSON record from tools/art_check/validate.py for one saved image. sha256 must be the stored image\'s checksum. ' +
       'The server stores the result as submitted (it does not re-run the validator). A result other than PASS marks the image failed. ' +
-      'This is technical validation only; visual approval is separate and only spitz gives it, from the dashboard.',
+      'This is technical validation only; visual approval is separate: Kody gives it in the Claude thread that puts the art in the game (review_asset).',
     inputSchema: z.object({
       asset_id: z.string(), sha256: z.string(), result: z.enum(['PASS', 'FAIL', 'INDETERMINATE', 'SPEC ERROR']),
       spec: z.record(z.string(), z.unknown()), record: z.record(z.string(), z.unknown()), validator: z.string().describe('e.g. "art_check@<commit>"'), as: As,
@@ -214,9 +214,23 @@ export function registerTaskTools(server: any, db: TaskDb) {
     } catch (e) { return tdFail(e) }
   })
 
+  server.registerTool('review_asset', {
+    title: "Record Kody's approval or rejection of one image",
+    description: 'Claude project threads only (as "claude_thread"); the Claude worker, ChatGPT and the dashboard are refused. ' +
+      'Before calling: fetch the image with get_asset, show Kody that exact file in the thread with its sha256, and wait for his own reply. ' +
+      'note = his words, quoted exactly. sha256 = the checksum of the file you showed him; refused if it is not the stored file. Never call it on your own judgement.',
+    inputSchema: z.object({ asset_id: z.string(), verdict: z.enum(['approved', 'rejected']), note: z.string().min(2), sha256: z.string(), as: As }),
+  }, async (a: any) => {
+    try {
+      const { data, error } = await db.rpc('studio_review_asset', { p_asset_id: a.asset_id, p_verdict: a.verdict, p_note: a.note, p_sha256: a.sha256, p_as: a.as ?? null })
+      if (error) throw tdErr(error)
+      return tdText(data)
+    } catch (e) { return tdFail(e) }
+  })
+
   server.registerTool('mark_ready', {
     title: 'Mark an image ready',
-    description: 'Allowed only when the newest validation of this exact file is PASS and spitz approved this exact file on the dashboard. Otherwise refused with what is missing.',
+    description: 'Allowed only when the newest validation of this exact file is PASS and Kody approved this exact file (review_asset). Otherwise refused with what is missing.',
     inputSchema: z.object({ asset_id: z.string() }),
   }, async (a: any) => {
     try {

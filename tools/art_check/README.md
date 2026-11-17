@@ -44,3 +44,19 @@ live on the task so this claim is visible and reviewable.
 - Whether the art looks right or fits the game. That is a separate visual
   approval, recorded separately.
 - Whether the image model actually saw the references.
+
+## Same pixels in the game (the approval lesson)
+
+Kody approves art in the Claude thread that wires it in. After wiring, prove the
+game carries exactly what he approved:
+
+```
+python3 tools/art_check/same_pixels.py approved.png games/<game>.html --sha256 <approved sha256>
+```
+
+It decodes every PNG it finds (a file, a folder, or `data:image/png;base64` inside
+.html/.js) and compares RGBA pixels (fully transparent pixels count as equal).
+SAME exits 0; DIFFERENT exits 1 and names the closest picture and how many pixels
+differ. Re-saved PNGs with different bytes still match if the pixels match. Art that
+the game slices, scales or recolours on purpose will not match as a whole picture:
+keep sheets intact in the game file, or check the processed copy Kody approved.

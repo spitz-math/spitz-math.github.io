@@ -20,7 +20,10 @@
 --   * studio_assets.status: draft | failed | approved | ready.
 --   * studio_validations: validator results as submitted (sha256 must match the stored asset). The server stores
 --     the result; it does not re-run the validator, and says so.
---   * studio_approvals: visual approval, by spitz only (the dashboard).
+--   * studio_approvals: visual approval, by spitz only. Kody approves IN THE CLAUDE THREAD that puts the art in the
+--     game (his choice, 2026-11-17): the thread shows him the exact file, he says approve, and the thread records it
+--     with his own words and the file's sha256. Only claude.ai acting as claude_thread may record it; the Claude worker,
+--     ChatGPT and the dashboard cannot. The server cannot see who typed the words, so it stores them as quoted.
 --   * "ready" is refused unless the newest validation for the asset's exact sha256 is PASS and spitz approved that
 --     same sha256. Enforced by a trigger, so no code path can skip it.
 
@@ -210,17 +213,28 @@ begin
   return jsonb_build_object('validation', to_jsonb(v), 'note', 'Stored as submitted. The server does not re-run the validator.');
 end $$;
 
-create or replace function public.studio_review_asset(p_asset_id uuid, p_verdict text, p_note text default null)
+drop function if exists public.studio_review_asset(uuid, text, text, text, text);
+create or replace function public.studio_review_asset(p_asset_id uuid, p_verdict text, p_note text, p_sha256 text, p_as text default null)
 returns jsonb language plpgsql security definer set search_path = '' as $$
-declare a public.studio_assets;
+declare app text := public.studio_current_app(); me text; a public.studio_assets;
 begin
-  if public.studio_current_app() <> 'dashboard' then
-    raise exception 'Only spitz approves art, from the dashboard.' using errcode = '42501'; end if;
+  if app <> 'claude.ai' then
+    raise exception 'Kody approves art in the Claude thread that puts it in the game, not here.' using errcode = '42501'; end if;
+  me := public.studio_resolve_author(p_as);
+  if me <> 'claude_thread' then
+    raise exception 'Only a Claude project thread records Kody''s approval; the Claude worker cannot.' using errcode = '42501'; end if;
+  if p_verdict is null or p_verdict not in ('approved', 'rejected') then
+    raise exception 'verdict must be approved or rejected' using errcode = '22023'; end if;
+  if length(trim(coalesce(p_note, ''))) < 2 then
+    raise exception 'Quote Kody''s own words in note (for example: "approve").' using errcode = '22023'; end if;
   select * into a from public.studio_assets where id = p_asset_id and user_id = auth.uid() for update;
   if not found then raise exception 'No Sprite Drop asset with id %', p_asset_id using errcode = '22023'; end if;
-  insert into public.studio_approvals (asset_id, sha256, verdict, note, by_agent, by_app) values (a.id, a.sha256, p_verdict, p_note, 'spitz', 'dashboard');
+  if p_sha256 is distinct from a.sha256 then
+    raise exception 'Kody saw a different file (sha256 %), the stored asset is %. Show him this exact file first.', left(coalesce(p_sha256, '?'), 12), left(a.sha256, 12) using errcode = '22023'; end if;
+  insert into public.studio_approvals (asset_id, sha256, verdict, note, by_agent, by_app) values (a.id, a.sha256, p_verdict, p_note, 'spitz', 'claude_thread');
   update public.studio_assets set status = case when p_verdict = 'approved' then (case when status = 'ready' then 'ready' else 'approved' end) else 'failed' end where id = a.id;
-  return jsonb_build_object('status', (select status from public.studio_assets where id = a.id));
+  return jsonb_build_object('status', (select status from public.studio_assets where id = a.id), 'sha256', a.sha256,
+    'note', 'Recorded as Kody''s words, quoted by the Claude thread. The server cannot see who typed them.');
 end $$;
 
 create or replace function public.studio_mark_ready(p_asset_id uuid)
@@ -291,10 +305,10 @@ revoke all on function public.studio_create_task(text, text, text, text, text, j
 grant execute on function public.studio_create_task(text, text, text, text, text, jsonb, text, text, jsonb, jsonb) to authenticated, service_role;
 revoke all on function public.studio_task_readiness(uuid), public.studio_attach_ref(uuid, uuid, text, boolean, text), public.studio_detach_ref(uuid, uuid, text),
   public.studio_log_fetch(uuid, uuid, text), public.studio_record_validation(uuid, text, text, jsonb, jsonb, text, text),
-  public.studio_review_asset(uuid, text, text), public.studio_mark_ready(uuid) from public, anon;
+  public.studio_review_asset(uuid, text, text, text, text), public.studio_mark_ready(uuid) from public, anon;
 grant execute on function public.studio_task_readiness(uuid), public.studio_attach_ref(uuid, uuid, text, boolean, text), public.studio_detach_ref(uuid, uuid, text),
   public.studio_log_fetch(uuid, uuid, text), public.studio_record_validation(uuid, text, text, jsonb, jsonb, text, text),
-  public.studio_review_asset(uuid, text, text), public.studio_mark_ready(uuid) to authenticated, service_role;
+  public.studio_review_asset(uuid, text, text, text, text), public.studio_mark_ready(uuid) to authenticated, service_role;
 revoke all on function public.studio_tasks_gate(), public.studio_assets_gate(), public.studio_assets_status_guard() from public, anon, authenticated;
 
 create or replace function public.studio_schema()

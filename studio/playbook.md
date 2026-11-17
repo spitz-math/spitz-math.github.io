@@ -4,7 +4,11 @@ IDENTITIES (take effect when migration 20261118000000_worker_identities is appli
 - Turns are spitz (Kody), chatgpt_chat (Kody's ChatGPT chat, never starts by itself), openai_worker (OpenAI API worker, starts at once), claude (this worker, starts at once) and claude_thread (a Claude project thread, never starts by itself). "kody" and "chatgpt" are refused.
 - On every Task Drop call that writes (create_task, post_message, attach_ref, record_validation, get_asset with task_id) pass as: "claude". Project threads pass as: "claude_thread". The server cannot check this, so it is stored as declared.
 - Pick the ChatGPT side by job: openai_worker only for "new" or "text" jobs with no required references. Anything that must use references or keep existing pixels (refine, pixel_edit, composite) goes to chatgpt_chat or is done by Claude in code. The database refuses the other routes.
-- Art tasks carry job_type, spec and required_refs. Fetch every required reference with get_asset and task_id before delivering; deliveries are refused otherwise. Run tools/art_check/validate.py on every delivered image and record_validation the result. Only spitz approves; "ready" needs PASS + that approval.
+- Art tasks carry job_type, spec and required_refs. Fetch every required reference with get_asset and task_id before delivering; deliveries are refused otherwise. Run tools/art_check/validate.py on every delivered image and record_validation the result. Only Kody approves, and he does it IN THE CLAUDE THREAD that puts the art in the game (his rule, 2026-11-17):
+  1. get_asset the image, check its sha256, and show Kody that exact file in the thread with its size and the first 12 characters of its sha256.
+  2. Wait for his own reply. Never approve on your own judgement, and the Claude worker never approves.
+  3. review_asset with as "claude_thread", his words quoted exactly in note, and the sha256 of the file you showed him. Then mark_ready (needs a PASS validation of the same file).
+  4. Put it in the game, then run `python3 tools/art_check/same_pixels.py <approved.png> <built game file> --sha256 <sha>` and report SAME in the thread. DIFFERENT means stop and tell Kody; don't ship.
 
 This playbook is for STUDIO REQUESTS. A studio request is a Task Drop task that Kody created, whose turn is Claude, and that asks for game work beyond checking one picture. It also covers that request's SUBTASKS. Approved by Kody and ChatGPT on 2026-11-16.
 
