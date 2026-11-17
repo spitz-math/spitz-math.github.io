@@ -1,5 +1,5 @@
 {
- "updated": "2026-11-09T18:12:30.822Z",
+ "updated": "2026-11-16T21:40:15.506Z",
  "games": {
   "splat_range": {
    "name": "Splat Range",
@@ -145,6 +145,14 @@
    "name": "Shift Racer",
    "top": [
     {
+     "name": "Saulo G",
+     "score": "131,694",
+     "acc": 100,
+     "set": "Slide and Slice · Slide",
+     "date": "2026-11-09",
+     "bonus": 1
+    },
+    {
      "name": "tanix.b",
      "score": "35,460",
      "acc": 96,
@@ -172,6 +180,13 @@
      "acc": 88,
      "set": "Multiplication facts",
      "date": "2026-10-16"
+    },
+    {
+     "name": "william e",
+     "score": "9,844",
+     "acc": 83,
+     "set": "Multiplication facts",
+     "date": "2026-11-16"
     },
     {
      "name": "A. De Leon",
@@ -480,6 +495,14 @@
      "bonus": 1
     },
     {
+     "name": "damian S",
+     "score": "24,478",
+     "acc": 26,
+     "set": "Slide and Slice",
+     "date": "2026-11-16",
+     "bonus": 1
+    },
+    {
      "name": "Charlotte E",
      "score": "7,666",
      "acc": 82,
@@ -692,10 +715,10 @@
     },
     {
      "name": "melanie guerra",
-     "score": "6,909",
-     "acc": 96,
+     "score": "7,307",
+     "acc": 100,
      "set": "Multiplication facts",
-     "date": "2026-10-16"
+     "date": "2026-11-16"
     },
     {
      "name": "Ann A",
@@ -799,6 +822,26 @@
     }
    ]
   },
+  "paint_royale": {
+   "name": "Paint Royale",
+   "top": [
+    {
+     "name": "Saulo G",
+     "score": "119,100",
+     "acc": 95,
+     "set": "Slide and Slice · Slide",
+     "date": "2026-11-09",
+     "bonus": 1
+    },
+    {
+     "name": "tanix.b",
+     "score": "41,166",
+     "acc": 96,
+     "set": "Multiplication facts",
+     "date": "2026-11-09"
+    }
+   ]
+  },
   "snake_arena": {
    "name": "Snake Arena",
    "top": [
@@ -877,8 +920,8 @@
     }
    ]
   },
-  "pinball": {
-   "name": "Pinball",
+  "pinball_v1": {
+   "name": "Pinball (classic)",
    "top": [
     {
      "name": "Saulo G",
@@ -955,6 +998,19 @@
      "acc": 46,
      "set": "HOY & VUX",
      "date": "2026-10-30"
+    }
+   ]
+  },
+  "hill_climb": {
+   "name": "Hill Climb",
+   "top": [
+    {
+     "name": "Saulo G",
+     "score": "73,245",
+     "acc": 100,
+     "set": "Slide and Slice · Slide",
+     "date": "2026-11-09",
+     "bonus": 1
     }
    ]
   },
@@ -1046,6 +1102,13 @@
      "acc": 98,
      "set": "Multiplication facts",
      "date": "2026-10-30"
+    },
+    {
+     "name": "william e",
+     "score": "24,860",
+     "acc": 93,
+     "set": "Multiplication facts",
+     "date": "2026-11-14"
     }
    ]
   },
@@ -1079,6 +1142,60 @@
      "set": "Parallel & perpendicular · Parallel slopes",
      "date": "2026-11-03",
      "bonus": 1
+    }
+   ]
+  },
+  "pinball": {
+   "name": "Pinball",
+   "top": [
+    {
+     "name": "tanix.b",
+     "score": "703,000",
+     "acc": 97,
+     "set": "Multiplication facts",
+     "date": "2026-11-13"
+    },
+    {
+     "name": "Grace W",
+     "score": "371,830",
+     "acc": 100,
+     "set": "Slide and Slice · Slide",
+     "date": "2026-11-13",
+     "bonus": 1
+    },
+    {
+     "name": "Eliud M",
+     "score": "229,640",
+     "acc": 93,
+     "set": "Multiplication facts",
+     "date": "2026-11-16"
+    },
+    {
+     "name": "Ozzy G",
+     "score": "49,730",
+     "acc": 37,
+     "set": "Slide and Slice",
+     "date": "2026-11-16",
+     "bonus": 1
+    }
+   ]
+  },
+  "rook_and_ruin": {
+   "name": "Rook & Ruin",
+   "top": [
+    {
+     "name": "Zach S",
+     "score": "43,389",
+     "acc": 90,
+     "set": "Multiplication facts",
+     "date": "2026-11-16"
+    },
+    {
+     "name": "David.V",
+     "score": "31,059",
+     "acc": 95,
+     "set": "HOY & VUX · Find the slope",
+     "date": "2026-11-16"
     }
    ]
   }

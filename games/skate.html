@@ -299,7 +299,7 @@ var szm=/[?&]set=([a-z]+)/.exec(location.search); if(szm) document.documentEleme
   </div><span class="sk-credit sz-credit">Made by Spitz <i class="sz-burger" aria-hidden="true"></i></span></div>
 
   <div class="sk-over" id="sk-end" hidden><div class="sk-box"><div class="sz-eyebrow">Spitz <b>Arcade</b></div>
-    <p class="sk-sub" style="margin:0">Time! Show this screen to your teacher.</p>
+    <p class="sk-sub" style="margin:0">Time!</p>
     <div class="sk-name" id="sk-endname"></div>
     <div class="sk-final" id="sk-endscore">0</div>
     <div class="sk-result" id="sk-endres"></div>
@@ -604,6 +604,8 @@ $('sk-choices').addEventListener('click',function(e){ var b=e.target.closest('.s
 /* v4 (Oct 2026): real terrain (kickers, gaps, ledges with stair sets and handrails), momentum, hold-to-backflip,
    Tony Hawk style combos that chain across landings (a manual keeps them alive), and one goal per line. */
 var cv=$('sk-canvas'), cx=cv.getContext('2d'), W=1054, H=936, DF="'Permanent Marker', Inter, sans-serif";
+var RK=1;   /* canvas resolution: follows the stage scale so slow Chromebooks paint only the pixels they show (audit 2026-11-16) */
+function setRes(sc){ var k=Math.min(1,Math.max(0.4,Math.ceil(sc*(window.devicePixelRatio||1)*20)/20)); if(k===RK) return; RK=k; cv.width=Math.round(W*k); cv.height=Math.round(H*k); }
 var GY=760, SX=300, GRAV=2000, JV=800, KICKV=950, POPV=380, V0=430, VMAX=780, PUSH=520, DRAG=140, SLOPEG=900,
     RAILH=52, LEDGEH=120, GRINDPS=240, MANPS=120, CLEAR=50, CLEANB=300, WORDB=1000, GOALB=500, SKETCH=0.75,
     ROT=8, EASE=2.4, HOLDT=0.15, COYOTE=0.12, WIN=1.1, MANMAX=4, FLIPP=500, NMAX=10, BREAK=0.45;
@@ -903,7 +905,7 @@ function drawSkater(){ var x=SX, y=GY-PL.h, T=PL.trick, k=T?T.k:'', u=T?Math.min
   if(PL.air&&(PL.rot||Math.abs(wrap(PL.r))>0.5)&&PL.tumble<=0){ var a=PL.r, d=Math.abs(wrap(a-Math.atan(slope(PL.x)))), ok=d<0.9, cy=y-48;
     cx.lineWidth=7; cx.strokeStyle='rgba(8,9,13,.55)'; cx.beginPath(); cx.arc(x,cy,74,0,6.28); cx.stroke();
     cx.strokeStyle=ok?(d<0.2?LIME:'#FFF04D'):'#FF7A7A'; cx.beginPath(); cx.arc(x,cy,74,-Math.PI/2,-Math.PI/2-Math.min(6.28,(a%(2*Math.PI)+2*Math.PI)%(2*Math.PI)),true); cx.stroke(); } }
-function render(){ var live=S.started&&!S.over, i, f, sx, MX=W/2, L=PL.letter, on=PL.live||PL.dead>0, cam=PL.x-SX, sk=shake>0?(Math.random()-0.5)*16*shake/0.3:0;
+function render(){ cx.setTransform(RK,0,0,RK,0,0); var live=S.started&&!S.over, i, f, sx, MX=W/2, L=PL.letter, on=PL.live||PL.dead>0, cam=PL.x-SX, sk=shake>0?(Math.random()-0.5)*16*shake/0.3:0;
   cx.save(); if(sk) cx.translate(sk,sk*0.5);
   drawBack(); drawTerrain(cam);
   for(i=0;i<PL.f.length;i++){ f=PL.f[i]; sx=f.x-cam; if(sx>W+30||sx+f.w<-30) continue; drawObs(f,sx); }
@@ -994,7 +996,7 @@ document.addEventListener('keydown',function(e){ if(e.metaKey||e.ctrlKey||e.altK
   if(d){ e.preventDefault(); if(d==='j') keyJ=true; if(d==='grab') keyM=true; if(!S.started||S.over||e.repeat) return; if(d==='j') jumpQ=true; else trickQ=d; return; }
   if(/^[1-4]$/.test(e.key)) answer(+e.key-1); });
 document.addEventListener('keyup',function(e){ var d=keyAct(e); if(d==='j') keyJ=false; if(d==='grab') keyM=false; });
-function fit(){ var s=Math.min(innerWidth/1920,innerHeight/1080), y=$('stage').style; y.transform='scale('+s+')'; y.left=((innerWidth-1920*s)/2)+'px'; y.top=((innerHeight-1080*s)/2)+'px'; }
+function fit(){ var s=Math.min(innerWidth/1920,innerHeight/1080), y=$('stage').style; setRes(s); y.transform='scale('+s+')'; y.left=((innerWidth-1920*s)/2)+'px'; y.top=((innerHeight-1080*s)/2)+'px'; }
 addEventListener('resize',fit);
 
 var SZ_VOICE=function(f,t0,dur){ tone(f*0.5,f*0.5,t0,dur,'sawtooth',0.05); tone(f,f,t0,dur,'triangle',0.11); };
