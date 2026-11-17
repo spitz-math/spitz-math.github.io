@@ -2591,7 +2591,7 @@ var NEARAT=0;
 function buy(it){ var w=S.w, p=w.p; if(it.id==='max'&&p.max>=MAXH){ toast('Hearts are maxed ('+MAXH+')'); SND.deny(); return; }
   if(w.coins<it.cost){ toast('Not enough coins ('+w.coins+' / '+it.cost+')'); SND.deny(); say('poor'); return; }
   w.coins-=it.cost; it.hold=1; if(it.next&&it.next.length) it.cost=it.next.shift(); else it.sold=1; SND.buy(); w.mA='nod'; w.mAt=w.t; say('bought');
-  if(it.id==='heal'){ p.hp=p.max; toast('Healed!'); } else if(it.id==='max'){ p.max=Math.min(MAXH,p.max+0); p.hp=p.max; toast('+1 max heart!'); } else if(it.id==='arm'){ p.arm=(p.arm||0)+3; toast('Armor on: blocks the next 3 hits'); } else if(it.id==='rev'){ S.revExtra=1; toast('Second Wind: one more chance if you are knocked out'); } else if(it.id==='card'){ openPick('shop',3,0.25); } else if(it.id==='gold'){ openPick('gold',3,1); } }
+  if(it.id==='heal'){ p.hp=p.max; toast('Healed!'); } else if(it.id==='max'){ p.max=Math.min(MAXH,p.max+1); p.hp=p.max; toast('+1 max heart!'); } else if(it.id==='arm'){ p.arm=(p.arm||0)+3; toast('Armor on: blocks the next 3 hits'); } else if(it.id==='rev'){ S.revExtra=1; toast('Second Wind: one more chance if you are knocked out'); } else if(it.id==='card'){ openPick('shop',3,0.25); } else if(it.id==='gold'){ openPick('gold',3,1); } }
 var trans=0;
 function transTick(dt){ var w=S.w, p=w.p, d=w.tdir||[0,-1], was=trans; trans-=dt; if(w.bub&&w.bub.t>0) w.bub.t-=dt;
   if(was>TH&&trans<=TH&&w.next){ var n=w.next; w.next=null; loadRoom(n[0],n[1]); save(); p.x-=d[0]*54; p.y-=d[1]*54; p.fx=d[0]; p.fy=d[1]; }
@@ -3115,7 +3115,7 @@ function showEnd(celebrate){ var w=S.w; endShownAt=performance.now(); $('dn-toas
     +(w&&!(w.won&&w.lastDone)?'<p class="dn-tip">'+endTip(w)+'</p>':'');   /* the one combat tip sits under the math column, which has room */
   if(window.SpitzCode&&SpitzCode.show) try{ SpitzCode.show('dn','rook_and_ruin',S); }catch(e){}
   $('dn-end').hidden=false; if(celebrate) auSting(S.win); if(celebrate&&S.win){ [0,350,700,1100].forEach(function(ms,i){ setTimeout(function(){ sparks(360+i*400,1000,18,1); sparks(1560-i*400,1000,18,1); },ms); }); } }
-function playAgain(){ if(performance.now()-endShownAt<1200) return; var keepName=S.name; var _keepHp=S.w&&S.w.p?S.w.p.hp:5; S=fresh(); S.name=keepName; startRun(); if(S.w&&S.w.p) S.w.p.hp=Math.min(S.w.p.hp,_keepHp||1); timerDraw(); }
+function playAgain(){ if(performance.now()-endShownAt<1200) return; var keepName=S.name; S=fresh(); S.name=keepName; startRun(); timerDraw(); }
 $('dn-again').addEventListener('click',playAgain);
 
 /* ================= KEYS ================= */
