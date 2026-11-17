@@ -19,7 +19,7 @@ if (require.main !== module) return;
 const files = reviewFiles(base);
 if (!files.length) { console.log('No ChatGPT review needed: no shared file changed.'); process.exit(0); }
 
-const LIMIT = 8000, HEAD = 2300;   // room for the instructions; the rest is diff
+const LIMIT = 8000;
 const head = (part, of) => `Independent code review${of > 1 ? ` (part ${part} of ${of})` : ''}. You are the reviewer: read-only, you did not write this code.
 Repo: spitz-math/spitz-arcade (Spitz Arcade: HTML math games for middle schoolers on Chromebooks, plus Checkpoint practice tests). ${pr ? 'PR: ' + pr + '. ' : ''}Commit ${git('rev-parse --short HEAD').trim()} vs ${base}.
 These files are shared: one mistake can break every game or every student's saved scores. What each file is for:
@@ -36,14 +36,26 @@ Then hand the task back to KODY's turn.
 
 === DIFF ===
 `;
-// one chunk per file where possible; split a long file's diff by hunks; cut a single huge hunk with a note
+const HEAD = head(9, 9).length + 20;   // room for the instructions (measured); the rest is diff
+// one chunk per file where possible; split a long file's diff by hunks, and a huge hunk by lines
 const chunks = [];
 for (const f of files) {
   const d = git(`diff -U2 ${base}...HEAD -- "${f}"`).replace(/^index .*\n/m, '');
   const hunks = d.split(/(?=^@@ )/m), room = LIMIT - HEAD - 200;
   let cur = '';
-  for (let h of hunks) {
-    if (h.length > room) h = h.slice(0, room - 120) + `\n[... ${h.length - room + 120} more characters of this hunk cut ...]\n`;
+  /* a hunk too big for one part (a new file) is split on line boundaries, so the reviewer still sees every line */
+  const pieces = [];
+  for (const h of hunks) {
+    if (h.length <= room - 60) { pieces.push(h); continue; }
+    let part = '';
+    for (const line of h.split('\n')) {
+      const l = line.length > room - 200 ? line.slice(0, room - 260) + ' [line cut]' : line;
+      if (part.length + l.length + 1 > room - 60) { pieces.push(part); part = '(same hunk continued)\n'; }
+      part += l + '\n';
+    }
+    pieces.push(part);
+  }
+  for (const h of pieces) {
     if (cur.length + h.length > room) { chunks.push(cur); cur = `(${f} continued)\n`; }
     cur += h;
   }

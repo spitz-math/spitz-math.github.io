@@ -85,3 +85,9 @@ Rule of thumb: **hooks set the scene, real input does the action.** Use `__G` to
 ## A game's own suite
 
 `apps.json` can name a game's existing suite (`suite.quick`, `suite.full`). Its `PASS`/`FAIL` lines become one test in the same report. Rook & Ruin's 18 tests run this way (`run_tests.sh`).
+
+## Readability (text size and contrast)
+
+`tools/qa/readability.js` runs inside the Safety check. It opens the site pages, the Checkpoint player and every game's start screen, hides all text, photographs the page, and compares each text colour with what was really behind it. It fails on text smaller than **11px** or below **4.5:1** contrast (**3:1** for large text, 24px+ or 18.7px+ bold). Text covered by something else (the HUD under a start screen) and text drawn on a game canvas are not checked.
+
+Problems that already existed are listed in `readability-baseline.json` and only reported; a new one turns the check red. After fixing a known one, run `node tools/qa/readability.js --update-baseline` and commit the shorter list. Never add a new problem to the list to get green without Kody's OK.
