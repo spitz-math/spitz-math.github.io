@@ -1,0 +1,41 @@
+name: Open PR for Claude branches
+# When a claude/* branch is pushed, opens a DRAFT pull request into main if that
+# branch doesn't have one yet. It never merges, approves or deploys anything:
+# Kody still reviews and merges every PR himself.
+# Needs: Settings > Actions > General > "Allow GitHub Actions to create and approve pull requests".
+on:
+  push:
+    branches: ['claude/**']
+permissions:
+  contents: read
+  pull-requests: write
+concurrency:
+  group: claude-pr-${{ github.ref_name }}
+  cancel-in-progress: false
+jobs:
+  open-pr:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Open a draft PR if this branch has none
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_REPO: ${{ github.repository }}
+          BRANCH: ${{ github.ref_name }}
+          SUBJECT: ${{ github.event.head_commit.message }}
+        run: |
+          set -euo pipefail
+          existing=$(gh pr list --head "$BRANCH" --state open --json number --jq 'length')
+          if [ "$existing" != "0" ]; then
+            echo "Branch $BRANCH already has an open PR. Nothing to do."
+            exit 0
+          fi
+          ahead=$(gh api "repos/$GH_REPO/compare/main...$BRANCH" --jq '.ahead_by')
+          if [ "$ahead" = "0" ]; then
+            echo "Branch $BRANCH has no commits beyond main. Nothing to do."
+            exit 0
+          fi
+          title=$(printf '%s\n' "$SUBJECT" | head -n 1 | cut -c1-200)
+          [ -n "$title" ] || title="$BRANCH"
+          body=$(printf 'Opened automatically for the Claude branch `%s`.\n\nDraft until Kody reviews it. Nothing is merged or deployed until Kody says so.\n' "$BRANCH")
+          gh pr create --draft --base main --head "$BRANCH" --title "$title" --body "$body"
