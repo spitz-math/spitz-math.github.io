@@ -37,6 +37,16 @@
         "games/burger_blaster.html",
         "tools/qa/adapters/burger_blaster.js"
       ]
+    },
+    {
+      "id": "rocket_buds",
+      "name": "Rocket Buds",
+      "tier": 1,
+      "adapter": "adapters/rocket_buds.js",
+      "paths": [
+        "games/rocket_buds.html",
+        "tools/qa/adapters/rocket_buds.js"
+      ]
     }
   ]
 }

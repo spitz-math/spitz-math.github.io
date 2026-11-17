@@ -4,7 +4,7 @@ One test runner for every Spitz Arcade game, and later the hub, Checkpoint and t
 
 > **after restart, hp is reset**: expected 5, got 1
 
-Started 2026-11-17 as the pilot from the "spitz.dev tooling evaluation". Rook & Ruin was the first game, Burger Blaster the second.
+Started 2026-11-17 as the pilot from the "spitz.dev tooling evaluation". Rook & Ruin was the first game; Burger Blaster and Rocket Buds were added with an adapter each and no runner changes. Rook & Ruin is the first testing ground, not the boundary: the same runner, report and review loop are meant for every Arcade game, the hub, Checkpoint and other spitz.dev apps.
 
 ## Run it
 
@@ -20,11 +20,23 @@ Needs Playwright (`npm install --no-save playwright@1.49.1 && npx playwright ins
 
 Output goes to `qa-out/` (ignored by git): `qa-out/summary.md` for everything, and per game `results.json`, `summary.md` and screenshots of each step.
 
-Exit codes: **0** all passed, **1** a game check failed, **2** the runner itself broke. A test that fails and then passes on its one retry is reported as **flaky**, never as a plain pass.
+Exit codes: **0** nothing failed, **1** a game check failed, **2** the runner itself broke. Add `--strict` to also fail when something is untested.
+
+## Every result has one of five labels
+
+| Label | Means |
+| --- | --- |
+| pass | checked and worked |
+| fail | checked and broke (the reason reads like a sentence) |
+| flaky | failed, then passed on its one retry. Never shown as a plain pass |
+| unsupported | the game has no such thing (Burger Blaster has no arrow-key movement). The adapter must say why in `unsupported` |
+| not tested yet (unimplemented) | nothing tests it: an adapter part is missing, a tier 1 game has no scenarios, or a changed page has no adapter at all |
+
+Missing coverage never counts as passing: the headline says "Nothing failed, but N things are not tested yet" and lists them.
 
 ## In GitHub
 
-`.github/workflows/qa.yml` ("Gameplay checks") runs on every push to a `claude/*` branch and on other pull requests. It only plays the games whose files changed. A change to a shared file (`kit.js`, `scorecode.js`, `catalog.js`, `questions.js`, `sw.js`, or this folder) plays every game that has an adapter. Results show on the run's Summary page, with screenshots in the `qa-results` artifact (kept 7 days). It has read-only permissions and never comments, merges or deploys.
+`.github/workflows/qa.yml` ("Gameplay checks") runs on every push to a `claude/*` branch and on other pull requests. It only plays the games whose files changed, and it **always reports a status** (a change with nothing to play passes in about a minute and says so), so it can be a required check. `--plan` prints what would run; CI uses it to skip installing Chrome when nothing needs playing. A change to a shared file (`kit.js`, `scorecode.js`, `catalog.js`, `questions.js`, `sw.js`, or this folder) plays every game that has an adapter. Results show on the run's Summary page, with screenshots in the `qa-results` artifact (kept 7 days). It has read-only permissions and never comments, merges or deploys.
 
 ## The baseline every game gets (tier 1)
 
@@ -56,6 +68,7 @@ Copy `adapters/burger_blaster.js` (a tier 1 game that only has `__G.state()`) an
 | `act(pg)`, `actName`, `acted(a, b)` | Real input for the main action when it isn't a key (a drag, a click) and how to tell it happened |
 | `dirty(pg)`, `forceEnd(pg)`, `endShown(pg)`, `restart(pg)` | Set up a scene, end the run, wait for the end screen, press Play again the way a student does |
 | `resetKeys` | Which `snapshot` values must be back to their first-start value after Play again |
+| `unsupported` | `{ movement: 'why' }` for things the game doesn't have. Anything else missing is reported as not tested yet |
 | `scenarios` | Tier 2 only: extra tests for things only this game has (Rook & Ruin's shop) |
 
 Rule of thumb: **hooks set the scene, real input does the action.** Use `__G` to put the player in the shop with 100 coins; press the real E key to buy.

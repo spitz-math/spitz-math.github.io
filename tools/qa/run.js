@@ -6,7 +6,9 @@
      node tools/qa/run.js --all                         every app in apps.json
    Lanes: quick (baseline at Chromebook size, scenarios, app's own quick suite) | full (+ 1920x1080, full suite).
    Output: qa-out/<app>/results.json, qa-out/<app>/summary.md, screenshots, and qa-out/summary.md for everything.
-   Exit codes: 0 all passed, 1 a test failed, 2 the runner itself broke (so "game broken" and "test broken" look different). */
+   Every result is one of: pass, fail, flaky (passed only on retry), unsupported (the app has no such thing, and the adapter says why)
+   or unimplemented (nothing tests it yet). Untested is never reported as passed: the headline names the gaps.
+   Exit codes: 0 nothing failed, 1 a test failed (or, with --strict, something is untested), 2 the runner itself broke. */
 const fs = require('fs'), path = require('path'), { execSync, spawnSync } = require('child_process');
 const { Run, ROOT, git } = require('./lib/harness');
 const { tier1 } = require('./lib/tier1');
@@ -25,6 +27,12 @@ function changedApps(ref) {
   if (shared.length) return { apps: CFG.apps, why: 'shared files changed: ' + shared.slice(0, 5).join(', '), files };
   const apps = CFG.apps.filter(a => files.some(f => hit(f, a.paths)));
   return { apps, why: apps.length ? 'app files changed' : 'no app with tests was touched', files };
+}
+
+/* Changed pages that no adapter covers: a game page, the hub, Checkpoint... They get the Safety check only, and the report says so. */
+function uncovered(files) {
+  const covered = f => CFG.apps.some(a => a.paths.some(p => f === p || f.startsWith(p)));
+  return [...new Set((files || []).filter(f => /\.html$/.test(f) && !covered(f) && !/^(tools|\.github)\//.test(f)))];
 }
 
 /* The app's own suite (e.g. Rook & Ruin's run_tests.sh): each PASS/FAIL line becomes a test in the same report. */
@@ -49,29 +57,40 @@ async function runApp(app, i) {
   await run.open();
   try {
     if (app.tier >= 1) { await tier1(run, A, 'chromebook'); if (lane === 'full') await tier1(run, A, 'board'); }
-    if (app.tier >= 2) for (const s of A.scenarios || []) await run.test(s.name, r => s.run(r));
+    if (app.tier >= 2 && (A.scenarios || []).length) for (const s of A.scenarios) { await run.test(s.name, r => { r.cap('scenario: ' + s.name); return s.run(r); }); }
+    else run.cover('game-specific scenarios', 'unimplemented', app.tier >= 2 ? 'tier 2 but no scenarios written' : 'tier ' + app.tier + ': only the shared baseline so far');
   } finally { await run.close(); }
   await ownSuite(run, app);
   return run.write();
 }
 
 (async () => {
-  let apps, why = 'asked for by name';
-  if (flag('--changed')) ({ apps, why } = changedApps(flag('--changed')));
+  let apps, why = 'asked for by name', files = [];
+  if (flag('--changed')) ({ apps, why, files } = changedApps(flag('--changed')));
   else if (argv.includes('--all')) { apps = CFG.apps; why = 'all apps'; }
   else { const ids = argv.filter(a => !a.startsWith('--') && a !== lane); apps = CFG.apps.filter(a => ids.includes(a.id));
     const unknown = ids.filter(id => !CFG.apps.some(a => a.id === id)); if (unknown.length) { console.error('Unknown app: ' + unknown.join(', ') + '. Known: ' + CFG.apps.map(a => a.id).join(', ')); process.exit(2); } }
+  /* --plan: only say what would run (CI uses it to skip installing Chrome when nothing needs playing) */
+  if (argv.includes('--plan')) { const ids = apps.map(a => a.id).join(' ');
+    console.log(`Would play: ${ids || 'nothing'} (${why})`); if (process.env.GITHUB_OUTPUT) fs.appendFileSync(process.env.GITHUB_OUTPUT, `apps=${ids}\n`); process.exit(0); }
   fs.mkdirSync(path.join(ROOT, 'qa-out'), { recursive: true });
   console.log(`QA ${lane} lane: ${apps.map(a => a.id).join(', ') || 'nothing to run'} (${why})`);
-  let code = 0; const parts = [`## Gameplay checks (${lane} lane)`, `Apps run: ${apps.map(a => a.name).join(', ') || 'none'} (${why}).`, ''];
+  let code = 0, gaps = 0; const parts = [`## Gameplay checks (${lane} lane)`, `Apps run: ${apps.map(a => a.name).join(', ') || 'none'} (${why}).`, ''];
   for (const [i, app] of apps.entries()) {
-    try { code = Math.max(code, await runApp(app, i)); parts.push(fs.readFileSync(path.join(ROOT, 'qa-out', app.id, 'summary.md'), 'utf8')); }
+    try { code = Math.max(code, await runApp(app, i));
+      gaps += JSON.parse(fs.readFileSync(path.join(ROOT, 'qa-out', app.id, 'results.json'), 'utf8')).unimplemented || 0;
+      parts.push(fs.readFileSync(path.join(ROOT, 'qa-out', app.id, 'summary.md'), 'utf8')); }
     catch (e) { code = 2; parts.push(`### ${app.name}: the test runner broke`, '```', String(e.stack || e).slice(0, 1500), '```'); console.error(e); }
   }
-  if (!apps.length) parts.push('No app with gameplay tests was changed, so only the Safety check applies.');
+  const bare = uncovered(files);
+  if (bare.length) { gaps += bare.length; parts.push('### Changed pages with no gameplay tests yet', 'These get the Safety check only (loads, starts, no errors). Untested, not passed:', ...bare.map(f => '- `' + f + '`'), ''); }
+  if (!apps.length && !bare.length) parts.push('No page with gameplay tests was changed, so there was nothing to play. The Safety check still applies.');
+  if (argv.includes('--strict') && gaps && code === 0) code = 1;
+  parts.splice(1, 0, code === 2 ? '**The test runner itself broke.**' : code === 1 && !gaps ? '**A gameplay check failed.**'
+    : code === 1 ? `**A gameplay check failed** (or --strict and ${gaps} untested).` : gaps ? `**Nothing failed, but ${gaps} thing(s) are not tested yet** (listed below as "not tested yet").` : '**Everything that ran passed, and nothing is untested.**');
   const md = parts.join('\n');
   fs.writeFileSync(path.join(ROOT, 'qa-out', 'summary.md'), md);
   if (process.env.GITHUB_STEP_SUMMARY) fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY, md + '\n');
-  console.log(code === 0 ? '\nAll gameplay checks passed.' : code === 1 ? '\nA gameplay check failed. See qa-out/summary.md.' : '\nThe test runner itself broke. See qa-out/summary.md.');
+  console.log(!apps.length && code === 0 && !gaps ? '\nNothing to play for this change.' : code === 0 && gaps ? `\nNothing failed. ${gaps} thing(s) not tested yet (see qa-out/summary.md).` : code === 0 ? '\nAll gameplay checks passed.' : code === 1 ? '\nA gameplay check failed. See qa-out/summary.md.' : '\nThe test runner itself broke. See qa-out/summary.md.');
   process.exit(code);
 })().catch(e => { console.error(e); process.exit(2); });

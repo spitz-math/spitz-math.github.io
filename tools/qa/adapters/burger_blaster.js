@@ -3,7 +3,8 @@
 const { sleep } = require('../lib/harness');
 
 const A = {
-  intents: {},                                     // no arrow-key movement in this game
+  intents: {},
+  unsupported: { movement: 'the burger cannon stays put; you aim with a slingshot drag' },
   actName: 'mouse drag fires a burger',
   resetKeys: ['score', 'burgers', 'cash', 'answered', 'correct', 'shots', 'level', 'over'],
 
