@@ -22,7 +22,7 @@ const IMAGE_MODEL_ENV = Deno.env.get('OPENAI_IMAGE_MODEL') || '' // optional ove
 const MAX_IMAGE_ATTEMPTS = 3 // per picture, all models together; a paid generation is never retried in a loop
 const MAX_IMAGES = 3 // pictures per turn
 const CACHE_HOURS = 24
-const DAILY_CAP = Number(Deno.env.get('WORKER_DAILY_CAP') || 20)
+const DAILY_CAP = Number(Deno.env.get('WORKER_DAILY_CAP') || 30) // finished (ok) runs in 24 h; failed, stalled and capped runs don't count
 const BUCKET = 'studio-assets'
 const HEARTBEAT_MS = 10_000
 const STEP_BUDGET_MS = Number(Deno.env.get('WORKER_STEP_BUDGET_MS') || 125_000) // stop an OpenAI call before Supabase's 150 s limit
@@ -32,7 +32,8 @@ const db = createClient(Deno.env.get('SUPABASE_URL')!, Deno.env.get('SUPABASE_SE
 const SYSTEM = `You are ChatGPT, the artist and reviewer in spitz.dev, a small studio where ChatGPT and Claude make HTML math games for Kody's middle-school students.
 You are running as an automatic worker: nobody is chatting with you. Read the task brief and every message, then do ChatGPT's next turn.
 Decide ONE action:
-- "image": the task needs new pictures from you (a sprite, sheet, icon, background). Put one entry in images for each picture the brief asks for this turn (at most 3). For each, write a precise image_prompt for an image model. For pixel art give the exact sheet size in art pixels (art_width, art_height), the delivery scale from the brief (default 4), and max_colours (usually 6-12). The worker turns the picture into exact hard-edged pixel art at that size, so describe the art filling the canvas the same way the cells are laid out, on a fully transparent background, no labels or grid lines. If the brief lists exact hex colours, put ALL of them in palette (the worker snaps every pixel to them); if it asks for a 1 pixel outline, put that colour in outline (the worker closes the outline itself). Ask the image model for big chunky blocks, bold flat shading and a thick dark outline, so it survives shrinking. If it is NOT pixel art, set art_width/art_height to 0 and set size to the brief's shape (1536x1024 wide, 1024x1536 tall, 1024x1024 square). Set background to "opaque" when the brief wants a background colour or scene (say the colour in image_prompt), "transparent" for sprites and cut-outs. Set priority to "default" unless the brief or Kody asks for quality, speed or cost.
+- "image": the task needs new pictures from you (a sprite, sheet, icon, background). Put one entry in images for each picture the brief asks for this turn (at most 3). For each, write a precise image_prompt for an image model. For pixel art give the exact sheet size in art pixels (art_width, art_height), the delivery scale from the brief (default 4), and max_colours (usually 6-12). The worker turns the picture into exact hard-edged pixel art at that size, so describe the art filling the canvas the same way the cells are laid out, on a fully transparent background, no labels or grid lines. If the brief lists exact hex colours, put ALL of them in palette (the worker snaps every pixel to them); if it asks for a 1 pixel outline, put that colour in outline (the worker closes the outline itself). Ask the image model for big chunky blocks, bold flat shading and a thick dark outline, so it survives shrinking. If it is NOT pixel art, set art_width/art_height to 0 and set size to the brief's shape (1536x1024 wide, 1024x1536 tall, 1024x1024 square). Set background to "opaque" when the brief wants a background colour or scene (say the colour in image_prompt), "transparent" for sprites and cut-outs. Set priority to "default" unless the brief or Kody asks for quality, speed or cost. Give each picture a quality: "high" for final assets, environments, backgrounds, scenes, concept sheets and sheets with many frames, or when Kody asks for final or high quality; "low" for throwaway tests, quick experiments and rough ideas; "medium" for everyday work and whenever you are unsure.
+- Mechanical changes to an existing picture are NOT new drawings: resizing, nearest-neighbour scaling, palette or colour swaps, splitting, merging or arranging frames, moving things, transparency cleanup, format conversion. For those choose "reply", say exactly what to change (sizes, colours, frame order), and hand the turn to Claude, who does it in code and runs the same pixel checks.
 - "reply": the turn needs words only (a review of screenshots, an answer, a decision). Be concrete and short.
 Then choose next_turn: "claude" when Claude should act next (wire art in, build, fix), "kody" when Kody must decide or approve something, and done=true only when the brief's goal is fully met and nothing is left.
 Never claim to have tested a game or approved a deploy: only Kody approves merges and deploys.`
@@ -48,9 +49,10 @@ const PLAN_SCHEMA = {
       type: 'array', description: 'One entry per picture to make this turn (1 to 3); [] for a reply.',
       items: {
         type: 'object', additionalProperties: false,
-        required: ['image_prompt', 'size', 'background', 'art_width', 'art_height', 'scale', 'max_colours', 'palette', 'outline', 'file_name'],
+        required: ['image_prompt', 'quality', 'size', 'background', 'art_width', 'art_height', 'scale', 'max_colours', 'palette', 'outline', 'file_name'],
         properties: {
           image_prompt: { type: 'string' },
+          quality: { type: 'string', enum: ['high', 'medium', 'low'], description: 'high: final assets, environments, scenes, concept or many-frame sheets, or Kody asked; low: throwaway tests; medium: everyday and unsure.' },
           size: { type: 'string', enum: ['1024x1024', '1536x1024', '1024x1536'], description: 'Canvas shape. Pixel art: the worker picks it from art_width/art_height.' },
           background: { type: 'string', enum: ['transparent', 'opaque'], description: 'opaque when the brief wants a background colour or scene; pixel art is always transparent.' },
           art_width: { type: 'integer' }, art_height: { type: 'integer' },
@@ -67,6 +69,33 @@ const PLAN_SCHEMA = {
 }
 
 class TimeoutError extends Error {}
+
+// ---------- cost rules (approved 2026-11-16) ----------
+type Quality = 'high' | 'medium' | 'low'
+const DEFAULT_QUALITY: Quality = 'medium' // everyday default; the plan picks high for finals/scenes, low for throwaway tests
+const isQ = (q: unknown): q is Quality => q === 'high' || q === 'medium' || q === 'low'
+// Kody's (or the brief's) explicit wish wins: "high quality", "quality: low", ... The newest one counts.
+export function explicitQuality(texts: string[]): Quality | null {
+  for (let i = texts.length - 1; i >= 0; i--) {
+    const m = /\b(high|medium|low)[- ]quality\b|\bquality\s*[:=]?\s*(high|medium|low)\b/i.exec(texts[i] || '')
+    if (m) return (m[1] || m[2]).toLowerCase() as Quality
+  }
+  return null
+}
+// How hard the planner thinks. Low for one simple asset; normal for anything bigger or unclear.
+// Signals, not brief length: what is asked for, how many pictures are in play, how long the task has gone on.
+const SIMPLE = /\b(sprite|icon|pickup|coin|gem|key|heart|badge|button|particle|effect|spark|recolou?r|single)\b/i
+const COMPLEX = /\b(sheet|frames?|animat\w*|tileset|tiles|environment|background|backdrop|scene|concept|level|map|ui|screen|hud|menu|several|multiple|set of|variants|options|compare|review|critique|feedback|redesign|style|direction)\b/i
+export function planEffort(brief: string, kodyText: string, messages: number, pictures: number): { effort: 'low' | 'medium'; why: string } {
+  const ask = brief + '\n' + kodyText
+  if (/\breasoning\s*[:=]?\s*(normal|medium|high)\b/i.test(ask)) return { effort: 'medium', why: 'asked for normal reasoning' }
+  if (/\breasoning\s*[:=]?\s*low\b/i.test(ask)) return { effort: 'low', why: 'asked for low reasoning' }
+  if (COMPLEX.test(ask)) return { effort: 'medium', why: 'bigger or open-ended request' }
+  if (pictures > 1) return { effort: 'medium', why: `${pictures} pictures to look at` }
+  if (messages > 4) return { effort: 'medium', why: `${messages} messages of history` }
+  if (SIMPLE.test(ask)) return { effort: 'low', why: 'one simple asset' }
+  return { effort: 'medium', why: 'not clearly simple' }
+}
 
 // One OpenAI call, stopped after ms so it can never run into the platform's hard limit unnoticed.
 async function openai(path: string, body: unknown, ms: number) {
@@ -99,8 +128,7 @@ async function available(st: Settings, fresh: boolean): Promise<string[] | null>
 
 // Preferred model for the priority first; on a model/permission/compatibility error, the next compatible one.
 // Rate limits and server errors get ONE more try on the same model. At most MAX_IMAGE_ATTEMPTS calls per run.
-async function drawImage(body: Record<string, unknown>, priority: Priority, st: Settings, tr: Track, deadline: number) {
-  const quality = st.quality_level?.[priority] || 'high'
+async function drawImage(body: Record<string, unknown>, priority: Priority, quality: Quality, st: Settings, tr: Track, deadline: number) {
   const preferred = st.preferred?.[priority] || IMAGE_MODEL_ENV || null
   let list_ = st.model_cache && st.model_cache_at && Date.now() - Date.parse(st.model_cache_at) < CACHE_HOURS * 36e5 ? st.model_cache : null
   let list = candidates(preferred && (!list_ || list_.includes(preferred)) ? preferred : null, list_, priority)
@@ -219,7 +247,7 @@ async function startTurn(taskId: string): Promise<string> {
     return 'resumed run ' + prev.id
   }
   const since = new Date(Date.now() - 864e5).toISOString()
-  const { count } = await db.from('studio_worker_runs').select('id', { count: 'exact', head: true }).gte('created_at', since).neq('status', 'skipped')
+  const { count } = await db.from('studio_worker_runs').select('id', { count: 'exact', head: true }).gte('created_at', since).eq('status', 'ok')
   const fresh = { status: 'started', step: 'reading the task', heartbeat_at: nowIso(), model: MODEL, finished_at: null, detail: null, error_kind: null, plan: null, done_assets: [], next_part: 0, part_started_at: null, alerted: false }
   const runRow = prev
     ? await db.from('studio_worker_runs').update(fresh).eq('id', prev.id).eq('status', prev.status).select('*').maybeSingle()
@@ -231,7 +259,7 @@ async function startTurn(taskId: string): Promise<string> {
   const tr: Track = { attempts: 0, kinds: [], tried: [] }
   try {
     const { data: st } = await db.from('studio_worker_settings').select('*').eq('id', 1).single() as { data: Settings }
-    if ((count ?? 0) >= DAILY_CAP) throw new Stop(`Daily cap reached (${DAILY_CAP} runs in 24 hours). Raise WORKER_DAILY_CAP or wait.`, 'spend_cap')
+    if ((count ?? 0) >= DAILY_CAP) throw new Stop(`Daily cap reached (${DAILY_CAP} finished runs in 24 hours). Raise WORKER_DAILY_CAP or wait.`, 'spend_cap')
     // monthly spending limit (estimated) and picture cap, so a retry loop can never drain the credits
     const month = new Date(); month.setUTCDate(1); month.setUTCHours(0, 0, 0, 0)
     const { data: spent } = await db.from('studio_worker_runs').select('est_cost_usd,attempts,image_model').gte('created_at', month.toISOString())
@@ -251,9 +279,12 @@ async function startTurn(taskId: string): Promise<string> {
       if (s.data?.signedUrl) images.push({ type: 'input_text', text: `Image ${a.id} (${a.file_name}, ${a.width}x${a.height}): ${a.note || ''}` }, { type: 'input_image', image_url: s.data.signedUrl })
     }
     const history = (msgs || []).map(m => `#${m.seq} ${m.author} [${m.kind}]${m.set_turn ? ' -> ' + m.set_turn : ''}${m.set_status ? ' (' + m.set_status + ')' : ''}:\n${m.body}`).join('\n\n')
-    await step(t, run.id, `planning (read ${msgs?.length || 0} messages and ${own?.length || 0} pictures; asking ${MODEL})`)
+    const kodyText = (msgs || []).filter(m => m.author === 'kody').map(m => m.body).join('\n')
+    const eff = planEffort(t.brief || '', kodyText, msgs?.length || 0, own?.length || 0)
+    await step(t, run.id, `planning (read ${msgs?.length || 0} messages and ${own?.length || 0} pictures; asking ${MODEL}, ${eff.effort} reasoning: ${eff.why})`)
     const planned = await openai('responses', {
       model: MODEL,
+      reasoning: { effort: eff.effort },
       instructions: SYSTEM,
       input: [{ role: 'user', content: [{ type: 'input_text', text: `PROJECT: ${t.project}\nTITLE: ${t.title}\n\nBRIEF:\n${t.brief}\n\nMESSAGES SO FAR:\n${history || '(none)'}` }, ...images] }],
       text: { format: { type: 'json_schema', name: 'turn', strict: true, schema: PLAN_SCHEMA } },
@@ -262,7 +293,14 @@ async function startTurn(taskId: string): Promise<string> {
     const raw = planned.output_text ?? (planned.output || []).flatMap((o: { content?: { text?: string }[] }) => o.content || []).map((c: { text?: string }) => c.text || '').join('')
     const p = JSON.parse(raw)
     p.images = (p.images || []).slice(0, MAX_IMAGES)
-    const costCols = { usage: { plan: planned.usage || null, images: [] }, est_cost_usd: planCost === null ? null : Number(planCost.toFixed(4)) }
+    // quality per picture: explicit wish > the earlier picture's quality on this task (a revision) > the plan's pick > medium
+    const wish = explicitQuality([t.brief || '', ...(msgs || []).filter(m => m.author === 'kody').map(m => m.body)])
+    const parent = wish ? null : (await db.from('studio_worker_runs').select('image_quality').eq('task_id', t.id).eq('status', 'ok').not('image_quality', 'is', null).order('id', { ascending: false }).limit(1)).data?.[0]?.image_quality
+    for (const q of p.images) {
+      const [lvl, src] = wish ? [wish, 'asked'] : isQ(parent) ? [parent, 'same as the earlier picture'] : isQ(q.quality) ? [q.quality, 'planner'] : [DEFAULT_QUALITY, 'default']
+      q.quality = lvl; q.quality_source = src
+    }
+    const costCols = { usage: { plan: planned.usage || null, plan_effort: eff.effort, images: [] }, est_cost_usd: planCost === null ? null : Number(planCost.toFixed(4)) }
 
     if (p.action === 'reply') {
       await step(t, run.id, 'posting the reply', costCols)
@@ -326,7 +364,8 @@ async function continueRun(runId: number): Promise<string> {
     const size = pixel ? (ratio > 1.25 ? '1536x1024' : ratio < 0.8 ? '1024x1536' : '1024x1024') : (['1024x1024', '1536x1024', '1024x1536'].includes(q.size) ? q.size : '1024x1024')
     const background = pixel || q.background !== 'opaque' ? 'transparent' : 'opaque'
     let drawn
-    try { drawn = await drawImage({ prompt: q.image_prompt, size, background, output_format: 'png', n: 1 }, priority, st, tr, deadline) }
+    const level: Quality = isQ(q.quality) ? q.quality : DEFAULT_QUALITY
+    try { drawn = await drawImage({ prompt: q.image_prompt, size, background, output_format: 'png', n: 1 }, priority, level, st, tr, deadline) }
     finally { await db.from('studio_worker_runs').update({ attempts: tr.attempts }).eq('id', run.id) }
     const { img, model: imageModel, quality } = drawn
     const c = imageCost(img.usage, st.rates || {})
@@ -336,7 +375,7 @@ async function continueRun(runId: number): Promise<string> {
     const b64 = img?.data?.[0]?.b64_json
     if (!b64) throw new Stop('The image model returned no picture.', 'other')
     let bytes = Uint8Array.from(atob(b64), c => c.charCodeAt(0))
-    let note = `Made by the ChatGPT worker (${imageModel}, ${priority}, ${size}, ${background}).`
+    let note = `Made by the ChatGPT worker (${imageModel}, ${quality} quality${q.quality_source ? ' [' + q.quality_source + ']' : ''}, ${priority}, ${size}, ${background}).`
     await step(t, run.id, `checking picture ${k + 1} of ${n}`)
     const Image = await loadImage()
     if (pixel) {
