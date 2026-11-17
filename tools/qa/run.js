@@ -31,7 +31,7 @@ function changedApps(ref) {
 
 /* list files, folding a folder with more than 3 changed pages into one line */
 function group(fs_) { const by = {}; fs_.forEach(f => { const d = f.includes('/') ? f.slice(0, f.lastIndexOf('/') + 1) : ''; (by[d] = by[d] || []).push(f); });
-  return Object.entries(by).flatMap(([d, l]) => l.length > 3 ? ['- `' + d + '` (' + l.length + ' pages)'] : l.map(f => '- `' + f + '`')); }
+  return Object.entries(by).flatMap(([d, l]) => d && l.length > 3 ? ['- `' + d + '` (' + l.length + ' pages)'] : l.map(f => '- `' + f + '`')); }
 
 /* Changed pages that no adapter covers: a game page, the hub, Checkpoint... They get the Safety check only, and the report says so. */
 function uncovered(files) {
