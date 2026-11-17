@@ -272,7 +272,8 @@ details.tcard[open]>summary{margin-bottom:10px}
 .badge.rep{background:#fff1cc;color:#7a5600} .badge.hid{background:#eceff3;color:#4b5563}
 .row{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:10px}
 .stats{display:flex;gap:6px 18px;flex-wrap:wrap;font-size:13px;color:var(--mut);margin:4px 0 6px} .stats b{color:var(--ink)}
-.msg2{font-size:13px;color:var(--mut);margin-top:8px} .msg2.err{color:var(--no);font-weight:600} .msg2.ok{color:var(--ok);font-weight:600}
+.msg2{font-size:13px;color:var(--mut);margin-top:8px}
+#bkMsg:empty{display:none} .msg2.err{color:var(--no);font-weight:600} .msg2.ok{color:var(--ok);font-weight:600}
 .pv{position:fixed;inset:0;z-index:60;background:#fff;display:flex;flex-direction:column}
 .pv[hidden]{display:none}
 .pvbar{display:flex;align-items:center;gap:10px;background:#3a2f63;color:#fff;padding:5px 12px;font-size:13px;flex:0 0 auto}
@@ -4637,7 +4638,7 @@ $('#bkFileBtn').onclick=()=>$('#bkFile').click();
 $('#bkFile').onchange=async e=>{ const f=e.target.files[0]; e.target.value=''; if(!f) return; bankSay('Loading '+esc(f.name)+'…');
   try{ await bankLoad(await f.text(),f.name); bankReady(); QB.bankCache={}; QB.ready=true; fillFilters(); $('#bkFilters').hidden=false; refreshView(); }catch(x){ bankSay(errText(x),'err'); } };
 function bankReady(){ const n=BK.cat.reduce((a,t)=>a+t.bank.length,0);
-  bankSay(`Question bank loaded (${n} released questions, ${BK.cat.length} standards).`+(QB.testYears.size?` ${[...QB.testYears].sort().join(' and ')} use${QB.testYears.size===1?'s':''} your published full test${QB.testYears.size===1?'':'s'}.`:''));
+  bankSay(/GitHub/.test(BK.from)?'':`Question bank loaded from ${esc(BK.from)}.`);   /* teachers see one number: the question count under the filters (setup details stay out of their way) */
   $('#bkFileRow').hidden=/GitHub/.test(BK.from); }
 /* full released tests already published (tests/alg1-<year>/): their questions replace the bank's version of that year */
 async function loadTests(){ const ids=[...new Set(TP.index.map(t=>t.id).concat(testFolders()))].filter(id=>Object.values(COURSES).some(c=>c.re.test(id))||PRACTICE_FULL[id]).sort();
