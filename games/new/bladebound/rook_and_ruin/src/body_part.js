@@ -3,7 +3,7 @@ var CSPK={every:[0,3.0,2.6,2.2], jumps:[0,1,2,3], dmg:[0,2,4,6]}, VOLD=[0,1,2,3]
 /* ---------- the castle: one run = these rooms ---------- */
 /* exits: n/w/e -> next room. Rooms lock while there are enemies; clearing opens every exit. */
 var ROOMS={
-  entry:  {name:'Entry Hall',     kind:'start',    exits:{n:'guard'},   waves:[[['gob',3]],[['gob',4]],[['gob',4],['bat',2]]], sub:'Hold Space to attack. Move to face enemies. X to dodge.'},
+  entry:  {name:'Entry Hall',     kind:'start',    exits:{n:'guard'},   waves:[[['gob',3]],[['gob',4]],[['gob',4],['bat',2]]], sub:'Hold Space to attack. Move to face enemies. X or K to dodge.'},
   guard:  {name:'Guard Room',     kind:'guard',    exits:{n:'cross'},   m:1.0,  waves:[[['gob',4],['bat',2]],[['bat',5],['gob',3]],[['gob',6],['bat',3]],[['gob',5],['bat',4],['gob',1,1]]], sub:'Bats hover, then dive. Dodge through!'},
   cross:  {name:'Crossroads',     kind:'crossr',   exits:{w:'vault',e:'arena'}, m:1.0, waves:[[['skel',1]],[['skel',1],['gob',4],['bat',3]],[['skel',2],['gob',6],['bat',2]]], intro:1, sub:'A shield knight guards this hall. Learn his shield first.'},
   vault:  {name:'Treasure Vault', kind:'vault',    exits:{n:'library'}, m:1.1, waves:[[['slime',4]],[['slime',3],['bat',5]]], chest:'treasure', sub:'A quiet room... mostly.'},
@@ -174,6 +174,7 @@ function killE(e,opt){ var w=S.w, t=ET[e.type]; e.dead=true; w.kills++; SND.die(
   if(!(w.last>0)&&!late&&Math.random()<t.coin*0.6*(e.small?0.5:1)) for(var c=0;c<(t.coin>=1?2:1);c++) w.coinsF.push({x:e.x+rnd(-10,10),y:e.y+rnd(-10,10),m:0});
   if(w.fx.length<100) for(var j=0;j<(RM||w.fx.length>50?3:7);j++) w.fx.push({k:'bit',x:e.x,y:e.y-8,vx:rnd(-110,110),vy:rnd(-140,30),t:0,c:t.col});
   if(!(w.last>0)&&Math.random()<(w.p.hp<=2?0.15:0.045)&&w.p.hp<w.p.max&&w.hearts.length<4) w.hearts.push({x:e.x,y:e.y,t:0});
+  else if(w.last>0&&w.p.hp<w.p.max&&!w.hearts.length&&(w.t-(w.lsHeartT||-99))>25&&Math.random()<0.004){ w.lsHeartT=w.t; w.hearts.push({x:e.x,y:e.y,t:0}); }   /* Kody 2026-11-16: Last Stand hearts are back but insanely rare (0.4% a kill, one at a time, 25 s apart) */
   if(e.type==='slime'&&w.fx.length<130) w.fx.push({k:'splat',x:e.x,y:e.y+e.r+2,sm:e.small?1:0,t:0});   /* goo splat on the floor, also when a big one splits */
   if(e.type==='slime'&&!e.small){ for(var s2=0;s2<2;s2++){ var a=Math.random()*6.28, sm=spawnEnemy('slime',e.x+Math.cos(a)*10,e.y+Math.sin(a)*10,1,true); sm.kx=Math.cos(a)*220; sm.ky=Math.sin(a)*220; sm.cd=0.6; } }
   if(L('volatile')&&w.booms.length<40&&(DSRC!=='volatile'||(L('volatile')>=3&&!BGEN))){ var lv=L('volatile'); w.booms.push({x:e.x,y:e.y,r:[0,40,48,58][lv],dmg:VOLD[lv],t:0.06,g:DSRC==='volatile'?1:0}); }   /* level 3 chains one step, never forever */
@@ -395,13 +396,13 @@ function bossAI(e,dt,p,d,ux,uy){ var w=S.w, half=e.hp<e.max/2, sp=half?0.85:1;
       else if(r<0.88||!half){ e.st=3; e.cd=0.8*sp; e.fa=Math.atan2(p.y-e.y,p.x-e.x); }
       else { e.st=6; e.cd=0.7*sp; }
       SND.btele(); } }
-  else if(e.st===1){ if(e.cd>e.c0*0.4) e.fa=Math.atan2(p.y-e.y,p.x-e.x); if(e.cd<=0){ e.st=2; e.cd=1.4; e.cdist=0; } }
-  else if(e.st===2){ v=560; mx=Math.cos(e.fa); my=Math.sin(e.fa); if(half){ e.cdist=(e.cdist||0)+v*dt; if(e.cdist>=130){ e.cdist=0; addFire(e.x,e.y,p); } }   /* an enraged charge leaves a trail of fire */
+  else if(e.st===1){ if(e.cd>e.c0*0.4) e.fa=Math.atan2(p.y-e.y,p.x-e.x); if(e.cd<=0){ e.st=2; e.cd=1.4; e.cdist=0; e.cnext=40; e.cfn=0; } }
+  else if(e.st===2){ v=560; mx=Math.cos(e.fa); my=Math.sin(e.fa); if(half){ e.cdist=(e.cdist||0)+v*dt; if(e.cdist>=e.cnext&&e.cfn<4){ if(addFire(e.x-mx*30,e.y-my*30,p,0.12)){ e.cfn++; e.cnext+=85; } else e.cnext+=20; } }   /* Kody 2026-11-16: an enraged charge drops 3-4 fires right along its path, almost at once */
     if(e.cd<=0){ e.lastA='charge'; e.st=5; e.cd=0.5; } }
-  else if(e.st===3){ if(e.cd<=0){ if(!RM) w.shake=0.25; SND.slam(); if(Math.hypot(p.x-e.x,p.y-e.y)<120) hurtP(e); w.fx.push({k:'boom',x:e.x,y:e.y,r:120,t:0}); e.lastA='slam'; if(half) slamFire(e,p);   /* Kody 2026-11-16: first Warden fight makes fire only once he is enraged; the Last Stand always */ if(half&&!(w.ringT>0)){ var ga=Math.random()*6.283; w.ringT=1.5; w.rings=(w.rings||[]).concat([{x:e.x,y:e.y,r:120,hit:0,ls:w.last>0?1:0,g:[ga,ga+Math.PI+rnd(-0.5,0.5)]}]); } e.st=5; e.cd=0.7; } }
+  else if(e.st===3){ if(e.cd<=0){ if(!RM) w.shake=0.25; SND.slam(); if(Math.hypot(p.x-e.x,p.y-e.y)<120) hurtP(e); w.fx.push({k:'boom',x:e.x,y:e.y,r:120,t:0}); e.lastA='slam'; if(half&&!e.wallSlam) slamFire(e,p); e.wallSlam=0;   /* Kody 2026-11-16: first Warden fight makes fire only once he is enraged; the Last Stand always */ if(half&&!(w.last>0)&&!(w.ringT>0)){ var ga=Math.random()*6.283; w.ringT=1.5; w.rings=(w.rings||[]).concat([{x:e.x,y:e.y,r:120,hit:0,ls:w.last>0?1:0,g:[ga,ga+Math.PI+rnd(-0.5,0.5)]}]); } e.st=5; e.cd=0.7; } }
   else if(e.st===4){ if(e.cd<=0){ var pa=Math.atan2(p.y-e.y,p.x-e.x); w.fx.push({k:'slash',x:e.x,y:e.y-10,a:e.fa,t:0,big:1}); if(Math.hypot(p.x-e.x,p.y-e.y)<130&&angDiff(pa,e.fa)<1.25) hurtP(e); e.lastA='swipe'; e.st=5; e.cd=half?0.35:0.6; } }
   else if(e.st===6){ if(e.cd<=0){ e.lastA='orbs'; for(var k=0;k<10;k++){ var a=k*Math.PI/5+e.t; w.orbs.push({x:e.x,y:e.y-20,vx:Math.cos(a)*140,vy:Math.sin(a)*140,t:0}); } SND.orb(); e.st=5; e.cd=0.6; } }
-  else if(e.st===9){ if(e.cd<=0){ e.st=3; e.cd=0.6; e.fa=Math.atan2(p.y-e.y,p.x-e.x); SND.btele(); } }
+  else if(e.st===9){ if(e.cd<=0){ e.wallSlam=1; e.st=3; e.cd=0.6; e.fa=Math.atan2(p.y-e.y,p.x-e.x); SND.btele(); } }
   else if(e.st===5){ if(e.cd<=0){ if(e.chains>0){ e.chains--; e.st=1; e.cd=0.7*sp; e.c0=e.cd; e.fa=Math.atan2(p.y-e.y,p.x-e.x); SND.btele(); } else { e.st=0; e.cd=rnd(0.6,1.1)*sp; } } }
   e.mv=v; e.wd=(e.wd||0)+v*dt;
   e.x+=(mx*v+e.kx)*dt; e.y+=(my*v+e.ky)*dt; e.kx*=Math.max(0,1-8*dt); e.ky*=Math.max(0,1-8*dt);
@@ -413,11 +414,11 @@ function bossAI(e,dt,p,d,ux,uy){ var w=S.w, half=e.hp<e.max/2, sp=half?0.85:1;
    (straight through armor and Aegis). Kody 2026-11-16: a dodge roll does NOT put it out (too free); rolling across a patch
    still doesn't light you. One burn at a time, no stacking.
    Enemies standing in fire take 4 damage every 0.5 s (Wardens are immune). */
-var FIRE={r:38, warn:0.5, life:6, max:6, burn:6, tick:3};   /* max 6 (was 4): enraged charges add a fire trail */   /* Kody 2026-11-16: burn ticks health down over a longer time: 1 heart every 3 s for 6 s (2 hearts) */
-function addFire(x,y,p){ var w=S.w; w.fires=w.fires||[]; if(w.fires.length>=FIRE.max) return false;
+var FIRE={r:38, warn:0.5, life:6, max:8, burn:6, tick:3};   /* max 8: enraged charges drop 3-4 fires along their path */   /* Kody 2026-11-16: burn ticks health down over a longer time: 1 heart every 3 s for 6 s (2 hearts) */
+function addFire(x,y,p,warn){ var w=S.w; w.fires=w.fires||[]; if(w.fires.length>=FIRE.max) return false;
   if(x<FLR[0]+60||x>FLR[2]-60||y<FLR[1]+60||y>FLR[3]-60||wallAt(x,y)||Math.hypot(x-p.x,y-p.y)<FIRE.r+40) return false;
   if(w.fires.some(function(f){ return Math.hypot(f.x-x,f.y-y)<FIRE.r*1.6; })) return false;
-  w.fires.push({x:x,y:y,t:-FIRE.warn,s:Math.random()*9}); return true; }
+  w.fires.push({x:x,y:y,t:-(warn==null?FIRE.warn:warn),s:Math.random()*9}); return true; }
 function slamFire(e,p){ var w=S.w; w.fires=w.fires||[]; var made=0;
   for(var k=0;k<12&&made<2&&w.fires.length<FIRE.max;k++){ var a=Math.random()*6.283, d=rnd(70,130), x=e.x+Math.cos(a)*d, y=e.y+Math.sin(a)*d;
     if(x<FLR[0]+60||x>FLR[2]-60||y<FLR[1]+60||y>FLR[3]-60||wallAt(x,y)) continue;
@@ -430,20 +431,36 @@ function fireTick(dt,p){ var w=S.w, F=w.fires; if(!F||(!F.length&&!(p.burn>0))) 
     f.hT=(f.hT||0)-dt; if(f.hT<=0){ f.hT=0.5; DSRC='fire'; for(var j=0;j<w.en.length;j++){ var e=w.en[j]; if(!e.dead&&e.type!=='boss'&&Math.hypot(e.x-f.x,(e.y-f.y)*1.6)<FIRE.r+e.r*0.5) hurtE(e,4,0,0,0); } } }
   if(p.burn>0){ p.burn-=dt; p.bseg=(p.bseg||FIRE.tick)-dt; if(p.bseg<=0){ p.bseg=FIRE.tick; p.bn=(p.bn||1)-1; hurtP({x:p.x,y:p.y+1,fire:1},1); if(p.bn<=0||S.mode!=='play'){ p.burn=0; return; } } if(p.burn<0.05) p.burn=0.05; } }
 /* fire patch: a low ember glow and pixel flames that rise and fall (gentle, never flashing). Outline only during the warning. */
+/* flame sprites inside a fire patch: [dx, dy (feet), scale], back to front */
+var FLAMES=[[-24,-4,1],[22,-6,1],[-10,-2,2],[12,2,2],[-28,10,1],[0,12,2],[27,12,1]];
 function drawFire(c,f,t){ var rx=FIRE.r, ry=Math.round(FIRE.r*0.62), x=Math.round(f.x), y=Math.round(f.y);
   var fade=f.t<0?0:Math.min(1,f.t/0.25)*Math.min(1,(FIRE.life-f.t)/0.6);
   c.save();
   if(f.t<0){ c.globalAlpha=0.35+0.5*(1+f.t/FIRE.warn); c.strokeStyle='#FF8A2A'; c.lineWidth=2; c.beginPath(); c.ellipse(x,y,rx,ry,0,0,7); c.stroke(); c.restore(); return; }
-  c.globalAlpha=0.30*fade; c.fillStyle='#E0461C'; c.beginPath(); c.ellipse(x,y,rx,ry,0,0,7); c.fill();
-  c.globalAlpha=0.55*fade; c.fillStyle='#FF8A2A'; c.beginPath(); c.ellipse(x,y,rx*0.6,ry*0.6,0,0,7); c.fill();
-  c.globalAlpha=fade; var n=LITE?4:7;
-  for(var k=0;k<n;k++){ var ang=k/n*6.283+f.s, fx=x+Math.round(Math.cos(ang)*rx*0.55), fy=y+Math.round(Math.sin(ang)*ry*0.55),
-      h=RM?10:Math.round(9+5*Math.sin(t*6+k*1.7+f.s));
-    c.fillStyle='#3A0E06'; c.fillRect(fx-4,fy-h-1,8,h+2); c.fillStyle='#FF6A1E'; c.fillRect(fx-3,fy-h,6,h); c.fillStyle='#FFC23A'; c.fillRect(fx-1,fy-Math.round(h*0.6),2,Math.round(h*0.6)); }
+  /* scorched ember floor = the full danger oval */
+  c.globalAlpha=0.55*fade; c.fillStyle='#3A1214'; c.beginPath(); c.ellipse(x,y,rx,ry,0,0,7); c.fill();
+  c.globalAlpha=0.35*fade; c.fillStyle='#B33B1B'; c.beginPath(); c.ellipse(x,y,rx*0.72,ry*0.72,0,0,7); c.fill();
+  c.globalAlpha=0.9*fade; c.strokeStyle='#6E1D14'; c.lineWidth=2; c.beginPath(); c.ellipse(x,y,rx,ry,0,0,7); c.stroke();
+  c.globalAlpha=fade;
+  if(RRI.fire_patch){ /* ChatGPT's flame strip (Task Drop 1110ba38): a back row and a front row inside the oval */
+    var k=RM?0:Math.floor(t*7+f.s*3)%3, k2=(k+1)%3, im=RRI.fire_patch; c.imageSmoothingEnabled=false;
+    c.drawImage(im,k2*80+8,0,64,48,x-32,Math.round(y-ry*0.55)-31,64,48);
+    if(RRI.burn_flame){ var bf=RRI.burn_flame;
+      for(var q=0;q<FLAMES.length;q++){ var F=FLAMES[q], kb=RM?q%3:(Math.floor(t*8+f.s*3)+q)%3, sc=F[2];
+        c.drawImage(bf,kb*12,0,12,20,x+F[0]-6*sc,y+F[1]-17*sc,12*sc,20*sc); } }
+    c.drawImage(im,k*80,0,80,48,x-40,y+ry-5-31,80,48);
+  } else {
+    var n=LITE?4:7;
+    for(var q=0;q<n;q++){ var ang=q/n*6.283+f.s, fx=x+Math.round(Math.cos(ang)*rx*0.55), fy=y+Math.round(Math.sin(ang)*ry*0.55),
+        h=RM?10:Math.round(9+5*Math.sin(t*6+q*1.7+f.s));
+      c.fillStyle='#3A0E06'; c.fillRect(fx-4,fy-h-1,8,h+2); c.fillStyle='#FF6A1E'; c.fillRect(fx-3,fy-h,6,h); c.fillStyle='#FFC23A'; c.fillRect(fx-1,fy-Math.round(h*0.6),2,Math.round(h*0.6)); }
+  }
   c.restore(); }
 /* Rook on fire: two small flames on his shoulders and a draining orange bar over his head */
 function drawBurn(c,p,t){ if(!(p.burn>0)) return; var x=Math.round(p.x), y=Math.round(p.y), k=p.burn/FIRE.burn;
-  for(var s2=-1;s2<=1;s2+=2){ var h=RM?8:Math.round(7+3*Math.sin(t*9+s2)); c.fillStyle='#3A0E06'; c.fillRect(x+s2*9-3,y-30-h,6,h+2); c.fillStyle='#FF6A1E'; c.fillRect(x+s2*9-2,y-29-h,4,h); }
+  for(var s2=-1;s2<=1;s2+=2){
+    if(RRI.burn_flame){ var kb=RM?1:(Math.floor(t*9)+(s2>0?1:0))%3; c.imageSmoothingEnabled=false; c.drawImage(RRI.burn_flame,kb*12,0,12,20,x+s2*15-6,y-16-17,12,20); }
+    else { var h=RM?8:Math.round(7+3*Math.sin(t*9+s2)); c.fillStyle='#3A0E06'; c.fillRect(x+s2*9-3,y-30-h,6,h+2); c.fillStyle='#FF6A1E'; c.fillRect(x+s2*9-2,y-29-h,4,h); } }
   c.fillStyle='#141026'; c.fillRect(x-20,y-58,40,7); c.fillStyle='#FF8A2A'; c.fillRect(x-19,y-57,Math.round(38*k),5); }
 var RGAP=0.4;   /* half-width of the safe gaps in a slam ring */
 function telegraphs(dt,p){ var w=S.w; if(!w.rings) return;
@@ -513,7 +530,7 @@ var LSCAP=105;   /* seconds into the Last Stand where the difficulty ramp stops 
 /* Kody's classroom test 2026-11-16: "people are getting through last stand way too easily, especially with all their upgrades".
    The horde scales with how built-up Rook is: every upgrade level adds 4% enemy health (Wardens too), capped at +60%.
    It changes health and rubble, never how many enemies are on screen, so the frame rate stays where it was. */
-function lsHard(){ var b=S.w.b||{}, n=0; for(var k in b) n+=(+b[k]||0); return Math.min(1.6,1+0.04*n); }
+function lsHard(){ var b=S.w.b||{}, n=0; for(var k in b) n+=(+b[k]||0); return Math.min(1.3,1+0.02*n); }   /* Kody 2026-11-16: eased from +4% (max +60%) after the Spark/Volatile nerf */
 var LSW=[[15,1,'ANOTHER WARDEN!'],[50,2,'TWO WARDENS?!'],[85,3,'THREE WARDENS!!']];   /* [time, Wardens alive from then on, banner] */
 function lastTick(dt){ var w=S.w, T=w.lastT; w.lastT+=dt; w.last-=dt;
   /* the survive clock follows the music while the Last Stand track plays (Kody's playtest 2026-11-15: the music skipped).

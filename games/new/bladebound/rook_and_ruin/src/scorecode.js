@@ -16,7 +16,7 @@
 
 var GAMES={                     /* id: [number in the code, display name, how it is ranked, optional score unit] — never renumber */
   splat_range:[1,'Splat Range','points'],
-  star_swarm:[2,'Star Swarm','points'],
+  star_swarm_v1:[2,'Star Swarm','points',1,'star_swarm'],   /* codes from before 2026-11-17: points capped at 1,048,575 and the #1 run hit it. A 5th entry = the board it joins (teacher.html), so old and new codes share one Star Swarm board */
   shift_racer:[3,'Shift Racer','points'],
   jump_man_multiplication:[4,'Jump Man','points'],
   football_buds_v1:[5,'Football Buds (classic)','versus'],   /* codes from before 2026-10-30, when Football Buds scored Buds vs Rivals */
@@ -40,12 +40,13 @@ var GAMES={                     /* id: [number in the code, display name, how it
   rocket_buds:[23,'Rocket Buds','points'],   /* points since 2026-11-02 (id 14 was the Buds vs Rivals score) */
   brawl_buds:[24,'Brawl Buds','points'],   /* points since 2026-11-02 (id 17 was the Buds vs Rivals score) */
   pinball:[25,'Pinball','points',10],   /* since 2026-11-07 the code holds the score in tens (a 4th entry = score unit), so runs up to 10,485,750 fit (id 18 capped at 1,048,575) */
-  rook_and_ruin:[26,'Rook & Ruin','points']   /* 2026-11-15; best bot runs score about 210,000, well under the 1,048,575 cap */
+  rook_and_ruin:[26,'Rook & Ruin','points'],   /* 2026-11-15; best bot runs score about 210,000, well under the 1,048,575 cap */
+  star_swarm:[27,'Star Swarm','points',10]   /* since 2026-11-17 the code holds the score in tens, so runs up to 10,485,750 fit (id 2 capped at 1,048,575) */
 };
 /* question sets in the order questions.js lists them; 0 means the game's own questions. Add new sets at the end.
    New codes (layout C, since Oct 21 2026) have 6 bits for the set and 5 for topics, so up to 63 sets with up to 5 topics each fit. */
-var SETS=[null,'mult','slope','point','hoy','shift','func','int','sq','plot0','plot','fam','fslope','stdform','slide','perp','solve','evalf'];
-var SET_NAMES={ mult:'Multiplication facts', slope:'Slope-intercept form', point:'Point-slope form', hoy:'HOY & VUX', shift:'Linear transformations', func:'Functions', int:'Integers', sq:'Squares & roots', plot0:'Graphing y = mx', plot:'Graphing y = mx + b', fam:'Function families', fslope:'Finding slope', stdform:'Standard form', slide:'Slide and Slice', perp:'Parallel & perpendicular', solve:'Solving equations', evalf:'Evaluating functions' };
+var SETS=[null,'mult','slope','point','hoy','shift','func','int','sq','plot0','plot','fam','fslope','stdform','slide','perp','solve','evalf','dr','rate','icpt'];
+var SET_NAMES={ mult:'Multiplication facts', slope:'Slope-intercept form', point:'Point-slope form', hoy:'HOY & VUX', shift:'Linear transformations', func:'Functions', int:'Integers', sq:'Squares & roots', plot0:'Graphing y = mx', plot:'Graphing y = mx + b', fam:'Function families', fslope:'Finding slope', stdform:'Standard form', slide:'Slide and Slice', perp:'Parallel & perpendicular', solve:'Solving equations', evalf:'Evaluating functions', dr:'Domain & range', rate:'Rate of change', icpt:'Intercepts' };
 /* SET_TOPICS = topics on offer now. A topic's bit is its position, so never reorder; a dropped topic keeps its slot in TOPIC_NAMES
    (graphing's 'Plot it' and 'Points on the line', dropped Oct 10 2026) so older codes still name it. A dropped topic in the middle is null in
    SET_TOPICS (slope's 'yint', merged into 'slope' Oct 19 2026: bit 1 is now "Find slope or y-intercept", bit 2 only appears in older codes).
@@ -56,13 +57,14 @@ var TOPIC_ALIAS={ slope:{ yint:'slope' } };
 var TOPIC_SHARE={ shift:{ fl:'st', af:'st' } };
 /* codes made before a topic change read with the names and topics on offer then */
 var TOPIC_BEFORE={ slope:{ until:'2026-10-19', names:['Write the equation','Find the slope','Find the y-intercept','Read a graph'], topics:['write','slope','yint','graph'] } };
-var SET_TOPICS={ mult:['f03','f46','f79','f1012'], slope:['write','slope',null,'graph'], point:['write','point','slope'], hoy:['describe','graph','slope'], shift:['vs','hs','gr','ne','st'], func:['points','table','map','graph'], int:['add','sub','mult'], sq:['square','root','neg','est'], plot0:['match','eq'], plot:['match','eq'], fam:['eq','graph'], fslope:['pts','graph','table','eq'], stdform:['x','y'], slide:['slide','slice','both','slope'], perp:['par','perp','pair'], solve:['two','dist','both','comb'], evalf:['eq','sq','graph','table'] };
+var SET_TOPICS={ mult:['f03','f46','f79','f1012'], slope:['write','slope',null,'graph'], point:['write','point','slope'], hoy:['describe','graph','slope'], shift:['vs','hs','gr','ne','st'], func:['points','table','map','graph'], int:['add','sub','mult'], sq:['square','root','neg','est'], plot0:['match','eq'], plot:['match','eq'], fam:['eq','graph'], fslope:['pts','graph','table','eq'], stdform:['x','y'], slide:['slide','slice','both','slope'], perp:['par','perp','pair'], solve:['two','dist','both','comb'], evalf:['eq','sq','graph','table'], dr:['pts','graph','story'], rate:['table','graph','story','compare'], icpt:['graph','table','eq','mean'] };
 var TOPIC_NAMES={ mult:['Facts 0–3','Facts 4–6','Facts 7–9','Facts 10–12'], slope:['Write the equation','Find slope or y-intercept','Find the y-intercept','Read a graph'],
   point:['Write the equation','Find the point','Find the slope'], hoy:['Describe the line','Match the graph','Find the slope'], shift:['Vertical shifts','Horizontal shifts','Graphs','New equations','Stretches & reflections'],
   func:['Ordered pairs','Tables','Mapping diagrams','Graphs'], int:['Adding','Subtracting','Multiplying'],
   sq:['Squaring','Square roots','Negatives','Estimating roots'],
   plot0:['Pick the line','Write the equation','Plot it','Points on the line'], plot:['Pick the line','Write the equation','Plot it','Points on the line'],
-  fam:['From the equation','From the graph'], fslope:['From two points','From a graph','From a table','From an equation'], stdform:['x-intercept','y-intercept'], slide:['Slide','Slice','Both steps','Find the slope'], perp:['Parallel slopes','Perpendicular slopes','Spot the pair'], solve:['Two-step','Distributing','Both sides','Combine like terms'], evalf:['From an equation','With x²','From a graph','From a table'] };
+  fam:['From the equation','From the graph'], fslope:['From two points','From a graph','From a table','From an equation'], stdform:['x-intercept','y-intercept'], slide:['Slide','Slice','Both steps','Find the slope'], perp:['Parallel slopes','Perpendicular slopes','Spot the pair'], solve:['Two-step','Distributing','Both sides','Combine like terms'], evalf:['From an equation','With x²','From a graph','From a table'],
+  dr:['Pairs and tables','From a graph','Word problems'], rate:['From a table','From a graph','Word problems','Compare rates'], icpt:['From a graph','From a table','From y = mx + b','What it means'] };
 
 /* Google Form for score submissions. With only url, the button copies the code and opens the form.
    Add the entry.NNNN ids of the Name and Score code questions (from a pre-filled link) to fill both in for the student. */
@@ -146,7 +148,8 @@ function fields(P,W,recent){ var f=unpack(P,W), set=SETS[f.set]; f.W=W; f.id=nul
 function read(code,name,any){ var c=String(code||'').toUpperCase().replace(/[^A-Z0-9]/g,''); if(c.length!==16) return null;
   var full=0n; for(var i=0;i<16;i++){ var v=ALPH.indexOf(c[i]); if(v<0) return null; full=(full<<5n)|BigInt(v); }
   full^=MASK; var chk=full&0xFFFFn, P=(full>>16n)^stream(chk), prev=(P>>62n)===0n?LAYOUT_B:LAYOUT_A, f=null, bonus=false, salt;
-  for(salt=0;salt<16&&!f;salt++) if(check(P,name,salt)===chk){ f=fields(P,salt<8?prev:LAYOUT_C); bonus=!!f&&salt%8>=4; }
+  /* layout C salts (8–15) first: nearly every code is layout C now, so a rare check-sum clash with an older salt can't misread it (2026-11-17: a Star Swarm code read as Burger Shop) */
+  for(var si=0;si<16&&!f;si++){ salt=(si+8)%16; if(check(P,name,salt)===chk){ f=fields(P,salt<8?prev:LAYOUT_C); bonus=!!f&&salt%8>=4; } }
   if(!f&&any){ f=fields(P,LAYOUT_C,true)||fields(P,prev,true); }   /* no name to tell the layout by: take the one that reads as a real recent run */
   if(!f) return null; var id=f.id, W=f.W;
   var g=GAMES[id], set=SETS[f.set], r={ code:c.slice(0,4)+'-'+c.slice(4,8)+'-'+c.slice(8,12)+'-'+c.slice(12), game:id, gameName:g[1], kind:g[2],
@@ -271,6 +274,8 @@ function boardLine(gameId,S){ var g=GAMES[gameId]; if(!BOARD||!g||g[2]!=='points
   var b=BOARD[gameId], top=(b&&b.top||[]).map(function(e){ return { n:normName(e.name), v:+String(e.score).replace(/[^0-9]/g,'')||0 }; }),
     mine=boost(S.score,bonusPct()), name=g[1], me=normName(S.name), rank=1, mineOn=null;
   if(!(mine>0)) return '';
+  /* no rank brag for a run that is mostly guesses (2026-11-17 health check: a bot with 18% right was told "#3" on boards with 1-2 names) */
+  if((+S.answered||0)>=5&&(+S.correct||0)/S.answered<0.5) return '';
   top.forEach(function(e,i){ if(e.v>=mine) rank++; if(e.n&&e.n===me&&!mineOn) mineOn={ v:e.v, r:i+1 }; });
   if(mineOn&&mineOn.v>=mine) return '🏆 You\'re #'+mineOn.r+' on the '+name+' board with '+mineOn.v.toLocaleString()+(mineOn.r===1?'. Beat your own record!':'. Beat it to move up!');
   if(!top.length) return '🏆 Nobody is on the '+name+' board yet. Send your score to be the first!';
