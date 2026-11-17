@@ -90,7 +90,7 @@ body:has(.door.b:hover,.door.b:focus-visible) .patty{translate:10px 0;rotate:6de
 .door h2{font-family:var(--display);font-weight:400;margin:0;line-height:.95;text-transform:uppercase;letter-spacing:.04em;font-size:min(54px,10cqi);color:#fff;text-shadow:0 0 8px var(--c),0 0 22px var(--c)}
 .door p{margin:4px 0 10px;font-family:var(--pixel);font-size:min(12px,3.6cqi);line-height:1.6;letter-spacing:.08em;text-transform:uppercase;white-space:nowrap;color:var(--c);text-shadow:0 0 8px var(--c)}
 /* PRESS START: an arcade button on a darker base that sinks when pressed (same as the hub's) */
-.btn{font-family:var(--pixel);font-size:clamp(10px,1vw,13px);letter-spacing:.06em;text-transform:uppercase;background:var(--c);color:var(--bg);padding:12px 18px;border-radius:6px;
+.btn{font-family:var(--pixel);font-size:clamp(11px,1vw,13px);letter-spacing:.06em;text-transform:uppercase;background:var(--c);color:var(--bg);padding:12px 18px;border-radius:6px;
   box-shadow:0 4px 0 color-mix(in srgb,var(--c) 55%,#000);transition:transform .1s ease-out,box-shadow .1s ease-out}
 .door:active .btn{transform:translateY(4px);box-shadow:0 0 0 color-mix(in srgb,var(--c) 55%,#000)}
 /* insert coin (same as the hub's Press Start): the button stays sunk, the picked door zooms toward you, the rest fades, then the page loads */
@@ -100,7 +100,7 @@ body.going main > :not(.go){opacity:0;transition:opacity .3s .1s ease-in}
 
 /* teacher sign-in, pinned to the bottom-right corner in the Checkpoint door's cyan */
 .teach{--c:var(--cyan);position:fixed;z-index:2;right:max(16px,env(safe-area-inset-right,0px));bottom:max(16px,env(safe-area-inset-bottom,0px));display:flex;align-items:center;justify-content:center;gap:10px;
-  font-family:var(--pixel);font-size:clamp(9px,.9vw,11px);line-height:1.5;letter-spacing:.08em;text-transform:uppercase;text-decoration:none;color:var(--c);text-shadow:0 0 6px var(--c);
+  font-family:var(--pixel);font-size:11px;line-height:1.5;letter-spacing:.08em;text-transform:uppercase;text-decoration:none;color:var(--c);text-shadow:0 0 6px var(--c);
   padding:10px 14px;border-radius:6px;border:2px solid var(--c);background:rgba(4,6,28,.85);transition:transform .2s ease-out,box-shadow .2s}
 .teach b{font-weight:400;color:#fff}
 .teach:hover,.teach:focus-visible{transform:translateY(-3px);outline:none;box-shadow:0 0 14px color-mix(in srgb,var(--c) 60%,transparent)}
