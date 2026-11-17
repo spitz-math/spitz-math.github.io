@@ -50,15 +50,15 @@ room(0,'The first Waystone',{right:[11,14]},function(m){ box(m,0,15,15,17); box(
   { way:'dash' });
 
 /* ---------- chapter 2: Falls Cliffs (the Ember Dash) ---------- */
-room(1,'Across the falls',{right:[9,12]},function(m){ box(m,0,15,6,17); spikes(m,7,16,16); box(m,17,13,30,17); },
+room(1,'Across the falls',{right:[9,12]},function(m){ box(m,0,15,6,17); spikes(m,7,15,16); box(m,16,13,30,17); },
   { hint:'Jump, then <kbd>Shift</kbd>, <kbd>X</kbd> or <kbd>K</kbd> to dash. Your move keys aim it.' });
-room(1,'Dash up',{up:[26,29]},function(m){ box(m,0,13,6,17); box(m,7,15,13,17); box(m,14,7,30,17); },
+room(1,'Dash up',{up:[26,29]},function(m){ box(m,0,13,6,17); box(m,7,15,13,17); box(m,14,8,30,17); },
   { hint:'Hold <kbd>↑</kbd> or <kbd>W</kbd>, then dash to go straight up' });
-room(1,'Springs',{up:[2,5]},function(m){ box(m,22,15,30,17); spikes(m,1,21,16); box(m,13,15,15,16); put(m,14,14,'p'); box(m,1,6,7,17); box(m,8,0,30,2); },
+room(1,'Springs',{up:[2,5]},function(m){ box(m,22,15,30,17); spikes(m,1,21,16); box(m,13,15,15,16); box(m,13,14,15,14,'p'); box(m,1,6,7,17); box(m,8,0,30,2); },
   { hint:'A spring throws you high and gives your dash back' });
 room(1,'Ember chain',{right:[6,9]},function(m){ box(m,0,15,1,17); box(m,6,15,9,17); spikes(m,10,26,16); box(m,16,12,18,17); box(m,27,10,30,17); put(m,13,10,'o'); put(m,22,9,'o'); },
   { hint:'Touch an ember to get your dash back in the air' });
-room(1,'Brittle rock',{right:[11,14]},function(m){ box(m,0,10,5,17); box(m,6,15,15,17); box(m,10,1,11,14,'b'); spikes(m,16,24,16); box(m,20,1,21,13,'b'); box(m,25,15,30,17); },
+room(1,'Brittle rock',{right:[11,14]},function(m){ box(m,0,10,5,17); box(m,6,15,15,17); box(m,10,1,11,14,'b'); spikes(m,16,22,16); box(m,19,1,20,13,'b'); box(m,23,15,30,17); },
   { hint:'Dash into brittle rock to smash it' });
 room(1,'Spring, then fly',{up:[25,28]},function(m){ box(m,0,15,4,17); spikes(m,5,30,16); box(m,8,14,10,15); put(m,9,13,'p'); put(m,16,6,'o'); box(m,22,6,30,15); },
   {});
@@ -66,13 +66,13 @@ room(1,'The second Waystone',{right:[11,14]},function(m){ box(m,0,15,24,17); box
   { way:'twin' });
 
 /* ---------- chapter 3: Windy Ruins (wind and the Twin Dash) ---------- */
-room(2,'Twin Dash',{right:[4,7]},function(m){ box(m,0,15,5,17); spikes(m,6,21,16); box(m,22,8,30,17); },
+room(2,'Twin Dash',{right:[4,7]},function(m){ box(m,0,15,5,17); spikes(m,6,18,16); box(m,19,10,22,17); box(m,23,8,30,17); },
   { hint:'Dash, then dash again: two dashes before you land' });
 room(2,'Headwind',{right:[4,7]},function(m){ box(m,0,8,6,17); spikes(m,7,25,16); box(m,10,10,13,15); box(m,17,9,20,15); box(m,24,8,30,17); },
-  { wind:-140, hint:'The wind pushes you back. Dashes cut right through it.' });
+  { wind:-180, hint:'The wind pushes you back. Dashes cut right through it.' });
 room(2,'Tailwind',{right:[6,9]},function(m){ box(m,0,8,4,17); spikes(m,5,25,16); put(m,15,7,'o'); box(m,26,10,30,17); box(m,12,1,13,4,'b'); },
   { wind:190, hint:'A tailwind: ride it, but don\'t overshoot' });
-room(2,'Crumbling stairs',{up:[25,28]},function(m){ box(m,0,10,5,17); spikes(m,6,30,16); box(m,9,12,10,12,'c'); box(m,14,10,15,10,'c'); box(m,19,8,20,8,'c'); box(m,24,6,30,15); },
+room(2,'Crumbling stairs',{up:[25,28]},function(m){ box(m,0,10,5,17); spikes(m,6,30,16); box(m,9,12,11,12,'c'); box(m,14,10,16,10,'c'); box(m,19,8,21,8,'c'); box(m,24,6,30,15); },
   { hint:'Don\'t stop on the cracked rock' });
 room(2,'Smash upward',{right:[4,7]},function(m){ box(m,0,15,24,17); box(m,29,15,30,17); box(m,18,10,24,10,'b'); box(m,25,8,30,9); box(m,13,0,17,10); },
   { sx:21, sy:14, hint:'A dash up smashes brittle rock too' });
@@ -84,7 +84,7 @@ room(2,'The third Waystone',{right:[3,6]},function(m){ box(m,0,7,30,17); put(m,8
 /* ---------- chapter 4: Beacon Summit ---------- */
 room(3,'Icy steps',{up:[26,29]},function(m){ box(m,0,7,4,17); spikes(m,5,24,16); box(m,9,13,11,15); put(m,10,12,'p'); box(m,16,6,19,15); box(m,25,4,30,17); },
   {});
-room(3,'Thorn tunnel',{up:[2,5]},function(m){ box(m,20,15,25,17); box(m,30,15,30,17); box(m,6,16,19,17); box(m,6,15,19,15,'^'); box(m,6,8,19,10); box(m,6,11,19,11,'v'); put(m,12,13,'o'); box(m,1,8,5,9,'b'); box(m,1,15,5,17); box(m,6,1,30,7); box(m,20,8,30,10); },
+room(3,'Thorn tunnel',{up:[2,5]},function(m){ box(m,20,15,25,17); box(m,30,15,30,17); box(m,6,16,19,17); box(m,6,15,19,15,'^'); box(m,6,8,19,9); box(m,6,10,19,10,'v'); put(m,12,13,'o'); box(m,1,8,5,9,'b'); box(m,1,15,5,17); box(m,6,1,30,7); box(m,20,8,30,10); },
   { hint:'Keep low: thorns above and below' });
 room(3,'Spring line',{right:[4,7]},function(m){ spikes(m,6,27,16); box(m,0,15,5,17); box(m,9,14,10,15); put(m,9,13,'p'); box(m,17,14,18,15); put(m,18,13,'p'); box(m,28,8,30,17); },
   { wind:150 });

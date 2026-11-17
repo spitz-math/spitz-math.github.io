@@ -25,14 +25,14 @@ function solve(def,dash,limit,o){ o=o||{}; const K=o.K||8, maxDash=o.maxDash||1;
   const H=new Heap(), seen=new Set(); H.push({P:P0,R:snap(R),t:0,jh:!!o.jh,path:[],f:h(P0)});
   let n=0;
   while(H.size&&n<limit){ const nd=H.pop(); n++;
-    const acts=[]; for(const d of [-1,0,1]) for(const j of [false,true]){ acts.push({d,j,ds:null}); if(nd.P.dashOk&&dash&&nd.P.dashT<=0) for(const v of DIRS8) acts.push({d,j,ds:v}); }
+    const acts=[]; for(const d of [-1,0,1]) for(const j of [false,true]){ acts.push({d,j,ds:null}); if(nd.P.dashOk&&dash&&nd.P.dashT<=0&&(!o.chain||(nd.P.chain||0)<o.chain)) for(const v of DIRS8) acts.push({d,j,ds:v}); }
     for(const a of acts){ load(R,nd.R); const P=JSON.parse(JSON.stringify(nd.P)); let t=nd.t, ok=true;
       for(let k=0;k<K;k++){ t+=DT; const u=a.ds?a.ds[1]<0:false, dn=a.ds?a.ds[1]>0:false, l=a.ds?(a.ds[0]<0):(a.d<0), r=a.ds?(a.ds[0]>0):(a.d>0);
         const inp={ l:k===0&&a.ds?l:a.d<0, r:k===0&&a.ds?r:a.d>0, u:k===0&&u, d:k===0&&dn, jumpHeld:a.j, jumpPressed:k===0&&a.j&&!nd.jh, dashPressed:k===0&&!!a.ds };
         step(P,inp,DT,R,t); if(P.dead){ ok=false; break; } if(done(P,R,g)) break; }
-      if(!ok) continue; const path=nd.path.concat([a]);
+      if(!ok) continue; if(o.chain){ if(a.ds) P.chain=(nd.P.onG?0:(nd.P.chain||0))+1; if(P.onG) P.chain=0; } const path=nd.path.concat([a]);
       if(done(P,R,g)) return {n,path,t};
-      const key=[Math.round(P.x/5),Math.round(P.y/5),Math.round(P.vx/45),Math.round(P.vy/60),P.onG?1:0,P.dashN,a.j?1:0,P.dashT>0?1:0,P.lock>0?1:0,Object.keys(JSON.parse(snap(R).cr)).length,Object.keys(R.br||{}).length,R.orbs.map(o=>o.gone===undefined?0:1).join('')].join(',');
+      const key=[Math.round(P.x/5),Math.round(P.y/5),Math.round(P.vx/45),Math.round(P.vy/60),P.onG?1:0,P.dashN,a.j?1:0,P.dashT>0?1:0,P.lock>0?1:0,P.chain||0,Object.keys(JSON.parse(snap(R).cr)).length,Object.keys(R.br||{}).length,R.orbs.map(o=>o.gone===undefined?0:1).join('')].join(',');
       if(seen.has(key)) continue; seen.add(key);
       H.push({P,R:snap(R),t,jh:a.j,path,f:h(P)+path.length*0.012}); } }
   return {n,path:null}; }
@@ -64,4 +64,4 @@ if(require.main===module){
   require('fs').writeFileSync(PATH.join(__dirname,'solutions.json'),JSON.stringify(out));
   console.log(bad?bad+' PROBLEMS':'ALL ROOMS BEATABLE'); process.exit(bad?1:0); }
 function fsOld(){ try{ return JSON.parse(require('fs').readFileSync(PATH.join(__dirname,'solutions.json'),'utf8')); }catch(e){ return []; } }
-module.exports={solve,goalOf,kit,entryOf};
+module.exports={solve,goalOf,kit,entryOf,Heap,done,snap,load,DIRS8};
