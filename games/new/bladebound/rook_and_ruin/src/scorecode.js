@@ -16,7 +16,7 @@
 
 var GAMES={                     /* id: [number in the code, display name, how it is ranked, optional score unit] — never renumber */
   splat_range:[1,'Splat Range','points'],
-  star_swarm:[2,'Star Swarm','points'],
+  star_swarm_v1:[2,'Star Swarm','points',1,'star_swarm'],   /* codes from before 2026-11-17: points capped at 1,048,575 and the #1 run hit it. A 5th entry = the board it joins (teacher.html), so old and new codes share one Star Swarm board */
   shift_racer:[3,'Shift Racer','points'],
   jump_man_multiplication:[4,'Jump Man','points'],
   football_buds_v1:[5,'Football Buds (classic)','versus'],   /* codes from before 2026-10-30, when Football Buds scored Buds vs Rivals */
@@ -40,7 +40,8 @@ var GAMES={                     /* id: [number in the code, display name, how it
   rocket_buds:[23,'Rocket Buds','points'],   /* points since 2026-11-02 (id 14 was the Buds vs Rivals score) */
   brawl_buds:[24,'Brawl Buds','points'],   /* points since 2026-11-02 (id 17 was the Buds vs Rivals score) */
   pinball:[25,'Pinball','points',10],   /* since 2026-11-07 the code holds the score in tens (a 4th entry = score unit), so runs up to 10,485,750 fit (id 18 capped at 1,048,575) */
-  rook_and_ruin:[26,'Rook & Ruin','points']   /* 2026-11-15; best bot runs score about 210,000, well under the 1,048,575 cap */
+  rook_and_ruin:[26,'Rook & Ruin','points'],   /* 2026-11-15; best bot runs score about 210,000, well under the 1,048,575 cap */
+  star_swarm:[27,'Star Swarm','points',10]   /* since 2026-11-17 the code holds the score in tens, so runs up to 10,485,750 fit (id 2 capped at 1,048,575) */
 };
 /* question sets in the order questions.js lists them; 0 means the game's own questions. Add new sets at the end.
    New codes (layout C, since Oct 21 2026) have 6 bits for the set and 5 for topics, so up to 63 sets with up to 5 topics each fit. */
@@ -147,7 +148,8 @@ function fields(P,W,recent){ var f=unpack(P,W), set=SETS[f.set]; f.W=W; f.id=nul
 function read(code,name,any){ var c=String(code||'').toUpperCase().replace(/[^A-Z0-9]/g,''); if(c.length!==16) return null;
   var full=0n; for(var i=0;i<16;i++){ var v=ALPH.indexOf(c[i]); if(v<0) return null; full=(full<<5n)|BigInt(v); }
   full^=MASK; var chk=full&0xFFFFn, P=(full>>16n)^stream(chk), prev=(P>>62n)===0n?LAYOUT_B:LAYOUT_A, f=null, bonus=false, salt;
-  for(salt=0;salt<16&&!f;salt++) if(check(P,name,salt)===chk){ f=fields(P,salt<8?prev:LAYOUT_C); bonus=!!f&&salt%8>=4; }
+  /* layout C salts (8–15) first: nearly every code is layout C now, so a rare check-sum clash with an older salt can't misread it (2026-11-17: a Star Swarm code read as Burger Shop) */
+  for(var si=0;si<16&&!f;si++){ salt=(si+8)%16; if(check(P,name,salt)===chk){ f=fields(P,salt<8?prev:LAYOUT_C); bonus=!!f&&salt%8>=4; } }
   if(!f&&any){ f=fields(P,LAYOUT_C,true)||fields(P,prev,true); }   /* no name to tell the layout by: take the one that reads as a real recent run */
   if(!f) return null; var id=f.id, W=f.W;
   var g=GAMES[id], set=SETS[f.set], r={ code:c.slice(0,4)+'-'+c.slice(4,8)+'-'+c.slice(8,12)+'-'+c.slice(12), game:id, gameName:g[1], kind:g[2],
@@ -272,6 +274,8 @@ function boardLine(gameId,S){ var g=GAMES[gameId]; if(!BOARD||!g||g[2]!=='points
   var b=BOARD[gameId], top=(b&&b.top||[]).map(function(e){ return { n:normName(e.name), v:+String(e.score).replace(/[^0-9]/g,'')||0 }; }),
     mine=boost(S.score,bonusPct()), name=g[1], me=normName(S.name), rank=1, mineOn=null;
   if(!(mine>0)) return '';
+  /* no rank brag for a run that is mostly guesses (2026-11-17 health check: a bot with 18% right was told "#3" on boards with 1-2 names) */
+  if((+S.answered||0)>=5&&(+S.correct||0)/S.answered<0.5) return '';
   top.forEach(function(e,i){ if(e.v>=mine) rank++; if(e.n&&e.n===me&&!mineOn) mineOn={ v:e.v, r:i+1 }; });
   if(mineOn&&mineOn.v>=mine) return '🏆 You\'re #'+mineOn.r+' on the '+name+' board with '+mineOn.v.toLocaleString()+(mineOn.r===1?'. Beat your own record!':'. Beat it to move up!');
   if(!top.length) return '🏆 Nobody is on the '+name+' board yet. Send your score to be the first!';

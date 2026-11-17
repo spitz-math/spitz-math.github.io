@@ -210,6 +210,7 @@ function parse(text){ entries=[]; problems=[]; var seen={};
       else if(any){ problems.push('<b>'+esc(name)+'</b>: '+esc(m[0].toUpperCase())+' doesn’t match this name. It reads <b>'+esc(any.gameName)+' · '+esc(any.display)+'</b> ('+any.correct+' of '+any.answered+' correct'+(any.date?', '+fmtDate(any.date):'')+'). If this is their own score and they just typed their name differently, <button class="okbtn" data-ok="'+esc(id)+'" data-name="'+esc(name)+'">Count it</button>'); return; } }
     if(!r){ problems.push('<b>'+esc(name)+'</b>: '+esc(m[0].toUpperCase())+' isn’t a real score code (a typo in the code itself)'); return; }
     var k=r.code; if(seen[k]){ if(seen[k]!==C.normName(name)) problems.push('<b>'+esc(name)+'</b>: same code as '+esc(seen[k])); return; } seen[k]=C.normName(name);
+    var gj=C.GAMES[r.game]; if(gj&&gj[4]) r.game=gj[4];   /* an older id that shares a board (Star Swarm codes from before 2026-11-17) */
     r.name=name; r.who=C.normName(name); if(!r.date) r.date=stampDate(fields); entries.push(r); });
   var ids=Object.keys(C.GAMES).filter(function(id){ return entries.some(function(e){ return e.game===id; }); });
   if(ids.indexOf(st.game)<0) st.game=ids[0]||null;
