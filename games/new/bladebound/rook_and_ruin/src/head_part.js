@@ -139,7 +139,7 @@ function pillar(x,y){ tset(x,y,2); tset(x+1,y,2); tset(x,y+1,2); tset(x+1,y+1,2)
 var ROOMRECTS=null, ROOMART=null, FLR=[30,30,930,510];   /* FLR = the walkable floor box of the current room, in px */
 function inR(x,y,r){ return x>=r[0]&&x<r[2]&&y>=r[1]&&y<r[3]; }
 /* ---------- art rooms: every room is drawn from the Entry Hall kit (rooms_art.js), native 480x270 shown 2x ---------- */
-var KIMG={}, KP={}, KMAP={start:'entry',guard:'guard',crossr:'cross',vault:'vault',arena:'arena',library:'library',shop:'shop',siege:'siege',bossroom:'boss',kiln:'guard',barracks:'siege'};
+var KIMG={}, KP={}, KMAP={start:'entry',guard:'guard',crossr:'cross',vault:'vault',arena:'arena',library:'library',shop:'shop',siege:'siege',bossroom:'boss',kiln:window.KROOMS&&KROOMS.kiln?'kiln':'guard',barracks:window.KROOMS&&KROOMS.barracks?'barracks':'siege'};
 /* the two new fork rooms reuse room art with a tint until they get their own (Kody 2026-11-17) */
 var KTINT={kiln:['multiply','rgba(255,150,90,.55)'],barracks:['multiply','rgba(150,175,230,.5)']};
 (function(){ if(!window.KROOMS) return; Object.keys(KROOMS).forEach(function(n){ var im=new Image(); im.src=KROOMS[n].src; KIMG[n]=im; }); Object.keys(KPATCH).forEach(function(n){ var im=new Image(); im.src=KPATCH[n]; KP[n]=im; }); })();
@@ -162,7 +162,7 @@ function buildArtRoom(K){ var d=KROOMS[K], Z=2, fl=d.floor.map(function(v){ retu
     if(ex.w&&x===0&&cym>DOORS[0]-15&&cym<DOORS[1]+15) v=9;
     if(ex.e&&x===COLS-1&&cym>DOORS[0]-15&&cym<DOORS[1]+15) v=10;
     MAP[y*COLS+x]=v; }
-  ROOMC=mk(W,H,function(c){ c.imageSmoothingEnabled=false; c.drawImage(KIMG[K],0,0,W,H); var tn=KTINT[R.kind]; if(tn){ c.globalCompositeOperation=tn[0]; c.fillStyle=tn[1]; c.fillRect(0,0,W,H); c.globalCompositeOperation='source-over'; }
+  ROOMC=mk(W,H,function(c){ c.imageSmoothingEnabled=false; c.drawImage(KIMG[K],0,0,W,H); var tn=K!==R.kind&&KTINT[R.kind]; if(tn){ c.globalCompositeOperation=tn[0]; c.fillStyle=tn[1]; c.fillRect(0,0,W,H); c.globalCompositeOperation='source-over'; }
     if(dw) c.drawImage(KP.doorw,0,126*Z,27*Z,44*Z); if(de) c.drawImage(KP.doore,453*Z,126*Z,27*Z,44*Z);
     if(R.secret){ var sx=secretX();
       if(w.secretOpen){ c.drawImage(KP.alcove,sx-64,8,128,86); c.fillStyle='#3A3350'; [[-70,84,8,6],[-52,88,6,4],[58,86,8,5],[40,89,5,3]].forEach(function(q){ c.fillRect(sx+q[0],q[1],q[2],q[3]); }); }
