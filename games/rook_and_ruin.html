@@ -537,7 +537,7 @@ body.dn-cine .dn-top, body.dn-cine .dn-side{ opacity:0; pointer-events:none; tra
     <div class="dn-side">
       <div class="dn-panel" id="dn-build" role="button" tabindex="-1" aria-label="Your build. Press B for details (pauses the game)"><h3>Your build</h3><div id="dn-buildlist"></div><div class="dn-buildmore" id="dn-buildmore" hidden><kbd>B</kbd>Details (pauses)</div></div>
       <div class="dn-panel dn-keys"><h3>Keys</h3>
-        <div><kbd>↑↓←→</kbd>Move</div><div><kbd>WASD</kbd>Move</div><div><kbd>Space</kbd>Attack (hold)</div><div><kbd>X</kbd>Dodge roll</div>
+        <div><kbd>↑↓←→</kbd>Move</div><div><kbd>WASD</kbd>Move</div><div><kbd>Space</kbd>Attack (hold)</div><div><kbd>X</kbd><kbd>K</kbd>Dodge roll</div>
         <div><kbd>1–4</kbd>Answer</div><div><kbd>P</kbd>Pause</div><div><kbd>F</kbd>Full screen</div><div><kbd>N</kbd>Music</div><div><kbd>M</kbd>Mute</div><div><kbd>⇧R</kbd>New game</div></div>
     </div>
     <div id="dn-bigbg"></div>
@@ -574,11 +574,11 @@ body.dn-cine .dn-top, body.dn-cine .dn-side{ opacity:0; pointer-events:none; tra
     <div class="dn-row"><input class="dn-input" id="dn-nameinput" maxlength="24" placeholder="First name, last initial" autocomplete="off"><button class="sz-mus" id="sz-mus" aria-label="Music on or off, key N">♪ Music on</button></div>
     <button class="dn-go dn-next" id="dn-go" disabled><span>Start</span></button>
     <p class="dn-gohint" id="dn-gohint">Type your name to unlock Start.</p>
-    <div class="dn-keyline"><div class="sz-ctl" data-ctl="ARROWS/WASD=Move | Hold Space=Attack | X=Dodge | 1234=Answer"></div>
+    <div class="dn-keyline"><div class="sz-ctl" data-ctl="ARROWS/WASD=Move | Hold Space=Attack | X/K=Dodge | 1234=Answer"></div>
 </div>
 <details class="dn-allkeys"><summary>All controls</summary><div class="dn-keygrid">
         <div><kbd>Arrows</kbd> or <kbd>WASD</kbd> Move</div><div><kbd>Space</kbd> Swing your sword (hold to keep swinging)</div>
-        <div><kbd>X</kbd> Dodge roll (K or right-click work too)</div><div><kbd>1</kbd>–<kbd>4</kbd> Answer · <kbd>Enter</kbd> Continue</div>
+        <div><kbd>X</kbd> or <kbd>K</kbd> Dodge roll (right-click works too)</div><div><kbd>1</kbd>–<kbd>4</kbd> Answer · <kbd>Enter</kbd> Continue</div>
         <div><kbd>P</kbd> or <kbd>Esc</kbd> Pause and see your build</div><div><kbd>B</kbd> Build details (pauses)</div>
         <div><kbd>F</kbd> Full screen · <kbd>N</kbd> Music · <kbd>M</kbd> Mute</div><div><kbd>Shift</kbd>+<kbd>R</kbd> Start a new game</div>
         <p class="dn-cred">Music rendered with the Fluid (R3) GM SoundFont, (c) Frank Wen, MIT licence.</p>
@@ -2097,7 +2097,7 @@ var STORMD={spark:1,overcharge:1,tcharge:1,thunder:1,stormcall:1,volatile:1,spit
 function hurtE(e,d,fx,fy,kb,opt){ if(e.dead) return; opt=opt||{}; var w=S.w;
   if(e.type==='skel'&&STORMD[DSRC]&&d>0) d=Math.max(1,Math.round(d/3));
   /* skeleton knights block sword hits from the front, unless they are recovering or you crit */
-  if(e.type==='skel'&&(opt.melee||opt.proj||opt.orb)&&!opt.crit&&!opt.bash&&e.st!==3){ var pa=opt.proj?Math.atan2(-fy,-fx):Math.atan2(w.p.y-e.y,w.p.x-e.x); if(angDiff(pa,e.fa)<1.3){ d=0; SND.clang(); if(!(w.t-(e.blkAt||-9)<0.9)){ e.blkAt=w.t; w.fx.push({k:'txt',x:e.x,y:e.y-34,t:0,v:'BLOCKED',c:'#CFE0FF'}); if(opt.melee){ w.p.kx-=fx*70; w.p.ky-=fy*70; } }   /* a small push back, once per knight per 0.9 s (was 220 on every blocked hit: Rook pinballed in crowds, Kody's playtest 2026-11-15) */ kb=40; if(!opt.melee) return; } }
+  if(e.type==='skel'&&(opt.melee||opt.proj||opt.orb)&&!opt.crit&&!opt.bash&&e.st!==3){ var pa=opt.proj?Math.atan2(-fy,-fx):Math.atan2(w.p.y-e.y,w.p.x-e.x); if(angDiff(pa,e.fa)<1.3){ d=0; SND.clang(); if(!(w.t-(e.blkAt||-9)<0.9)){ e.blkAt=w.t; if(!(w.t-(w.blkTxt||-9)<0.7)){ w.blkTxt=w.t; w.fx.push({k:'txt',x:e.x,y:e.y-34,t:0,v:'BLOCKED',c:'#CFE0FF'}); } if(opt.melee){ w.p.kx-=fx*70; w.p.ky-=fy*70; } }   /* a small push back, once per knight per 0.9 s (was 220 on every blocked hit: Rook pinballed in crowds, Kody's playtest 2026-11-15) */ kb=40; if(!opt.melee) return; } }
   if(e.type==='boss'&&e.st===9) d=Math.round(d*1.6);   /* stunned boss takes more */
   tally(Math.min(d,Math.max(0,e.hp))); e.hp-=d; e.fl=0.09; if(kb){ var k=kb/(ET[e.type].heavy?5:1); e.kx+=fx*k; e.ky+=fy*k; }
   if(d>0&&w.fx.length<80) w.fx.push({k:'num',x:e.x+rnd(-4,4),y:e.y-e.r-6,t:0,v:d,c:opt.crit?'#FFC93C':'#FFFFFF'});
@@ -2863,6 +2863,7 @@ function draw(){ var c=cx, w=S&&S.w; c.setTransform(1,0,0,1,0,0);
   for(i=0;i<w.fx.length;i++) if(w.fx[i].k==='splat'&&!LITE) drawSplat(c,w.fx[i]);
   if(w.fires) for(i=0;i<w.fires.length;i++) drawFire(c,w.fires[i],t);
   /* bodies, top to bottom */
+  var openSk=null, od=170; w.en.forEach(function(e){ if(!e.dead&&e.type==='skel'&&e.st===3){ var dd=Math.hypot(e.x-p.x,e.y-p.y); if(dd<od){ od=dd; openSk=e; } } });   /* Kody 2026-11-17: only the nearest open knight gets the label, so crowds stay readable */
   var list=w.en.filter(function(e){ return !e.dead; }); list.push({hero:1,y:p.y}); if(w.shop&&rrReady('merchant')) list.push({merch:1,y:MERCH[1]-14}); if(w.pots) w.pots.forEach(function(pt){ if(pt.st<2) list.push({pot:pt,y:pt.y}); }); list.sort(function(a,b){ return a.y-b.y; });
   list.forEach(function(e){ if(e.hero){ drawHero(c,p,t); drawBurn(c,p,t); return; } if(e.merch){ drawMerchant(c,w); return; } if(e.pot){ drawPot(c,e.pot); return; }
     var T2=ET[e.type], nm=T2.spr; if(e.type==='bat') nm=Math.floor(e.t*10)%2?'batU':'batD';
@@ -2875,7 +2876,7 @@ function draw(){ var c=cx, w=S&&S.w; c.setTransform(1,0,0,1,0,0);
     var flip=e.type==='skel'?Math.cos(e.fa)<0:(p.x<e.x&&e.type!=='boss'&&e.type!=='slime');
     var top=drawEnemyRR(c,e,p,t), hh=top==null?im.height*sc:foot-top; if(top==null) sprF(e.fl>0&&!RM?nm+'W':nm,e.x+jx,foot+bob,flip&&e.type!=='bat',sc);
     if(e.el&&!(e.st===1&&e.type!=='slime')) c.drawImage(FX.crown,Math.round(e.x-7),Math.round(foot-hh-12));
-    if(e.type==='skel'&&e.st===3) dtx(c,'Open: strike!',e.x,foot-hh-6,13,'#FFE08A',0,'#141026');
+    if(e===openSk) dtx(c,'Open: strike!',e.x,foot-hh-6,13,'#FFE08A',0,'#141026');
     if((e.st===1&&e.type!=='slime'&&e.type!=='boss')) dtx(c,'!',e.x,foot-hh-4,22,'#FF5A6E',0,'#1A0A12');
     if(e.stun>0){ for(var sz=0;sz<2;sz++){ var ab=t*5+sz*3.1; dtx(c,'★',e.x+Math.cos(ab)*12,foot-hh-2+Math.sin(ab)*4,12,'#FFC93C'); } }
     if(e.type==='boss'&&e.st===9){ for(var st=0;st<3;st++){ var aa=t*4+st*2.1; dtx(c,'★',e.x+Math.cos(aa)*26,foot-hh-4+Math.sin(aa)*6,16,'#FFC93C'); } } });
