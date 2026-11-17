@@ -29,7 +29,7 @@ def swap(t, old, new):
 
 t = src
 # 1. the climber, the ledges and the new art helpers (drawMan .. panel)
-t = cut(t, 'function drawMan(x,y,ghost){', 'function panel(', parts['ART'] + parts['MAN'] + parts['BACK'] + parts['FLOOR'] + parts['GEM'])
+t = cut(t, 'function drawMan(x,y,ghost){', 'function panel(', parts['ART'] + parts['MAN'] + parts['BACK'] + parts['FLOOR'] + parts['GEM'] + parts['FOG'])
 # 2. the sky: stepped pixel bands instead of a smooth gradient
 t = swap(t, "var c=SKYS.c.getContext('2d'), g=c.createLinearGradient(0,0,0,H); g.addColorStop(0,sk[0]); g.addColorStop(1,sk[1]); c.fillStyle=g; c.fillRect(0,0,1,H);",
          "bandStrip(SKYS.c.getContext('2d'),sk);")
@@ -55,6 +55,112 @@ css = ('.jmr-hero{ width:%dpx; height:%dpx; margin:0 auto 6px; background:url(%s
 t = swap(t, '</style>\n</head>', css + '</style>\n</head>') if t.count('</style>\n</head>') == 1 else swap(t, '<script src="kit.js"></script>', '<style>' + css + '</style>\n<script src="kit.js"></script>')
 t = swap(t, '<div class="sz-eyebrow">Spitz <b>Arcade</b></div><h2 class="jm-big">', '<div class="sz-eyebrow">Spitz <b>Arcade</b></div><div class="jmr-hero" aria-hidden="true"></div><h2 class="jm-big">')
 assert 'createLinearGradient(0,0,0,H)' not in t
+
+V2CSS = """#jm-shopbtn,#jm-cashchip{ display:none !important; }
+.jmr-offer{ position:absolute; inset:0; z-index:6; background:rgba(8,16,40,.9); display:flex; flex-direction:column; align-items:center; justify-content:center; gap:26px; }
+.jmr-offer[hidden]{ display:none; }
+.jmr-offer h2{ margin:0; font:700 64px/1 var(--display); color:#7CF0FF; text-shadow:6px 6px 0 var(--px); }
+.jmr-picks{ display:flex; gap:30px; }
+.jmr-pick{ width:560px; min-height:260px; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:14px; padding:22px; background:var(--panel); color:#fff; border:6px solid var(--px); box-shadow:0 0 0 4px var(--accent), 10px 10px 0 4px var(--px); cursor:pointer; font:inherit; }
+.jmr-pick:hover,.jmr-pick:focus-visible{ background:var(--panel-2); outline:none; }
+.jmr-pick .k{ width:56px; height:56px; display:grid; place-items:center; background:var(--paper); font:400 32px/1 var(--display); color:var(--accent); }
+.jmr-pick b{ font:700 42px/1.1 var(--display); color:var(--accent); } .jmr-pick b small{ font-size:24px; color:var(--muted); }
+.jmr-pick .d{ font:700 26px/1.3 var(--body); color:#fff; text-align:center; }
+.jmr-how{ font:700 28px/1 var(--display); color:#7CF0FF; padding:10px 16px; background:var(--paper); }
+.jmr-ofoot{ margin:0; font:700 26px/1 var(--body); color:var(--muted); }
+.jmr-idle{ display:block; font:800 40px/1.25 var(--body); white-space:normal; } .jmr-idle b{ color:#7CF0FF; }
+.jmr-moves{ display:flex; flex-direction:column; gap:8px; }
+.jmr-mh{ font:800 22px/1 var(--body); letter-spacing:.12em; text-transform:uppercase; color:var(--muted); margin-bottom:4px; }
+.jmr-mv{ display:flex; justify-content:space-between; gap:16px; padding:12px 18px; background:var(--panel-2); border:3px solid var(--border); font:800 32px/1.1 var(--body); }
+.jmr-mv span{ color:var(--accent); font-weight:700; }
+"""
+
+# ---------------- v2 gameplay (Kody 2026-11-17): free movement, Waystones every full floor, a new move after each ----------------
+t = cut(t, '/* ================= START / END', '/* ================= START / END', parts['PLAY'] + '\n')
+t = t.replace(parts['FLOOR'], parts['FLOOR'] + parts['WAYDRAW'])
+for old, new in [
+  # state: version 3, moves, Waystones
+  ("function fresh(){ return { ver:2,", "function fresh(){ return { ver:3,"),
+  ("lv:{energy:0,cash:0,jump:0,combo:0}, buff:", "lv:{energy:0,cash:0,jump:0,combo:0,speed:0,magnet:0}, mv:{}, way:null, offer:null, ways:0, nextWay:FLOOR_EVERY, learned:[], buff:"),
+  ("if(v&&v.ver===2&&v.topics", "if(v&&v.ver===3&&v.topics"),
+  ("jumpQ=false, shk=0,", "jumpQ=false, dashQ=false, shk=0,"),
+  # movement is free
+  ("function tryMove(){ if(S.started&&!S.over&&S.energy<=0&&!buffOn('free')) noEnergy(); }", "function tryMove(){}"),
+  ("function spend(n){ if(buffOn('free')) return; S.energy=Math.max(0,S.energy-n); if(S.energy===0) noEnergy(); }", "function spend(n){}"),
+  ("function vmax(){ return VMAX*(1+0.1*turbo()); }", "function vmax(){ return VMAX*(1+0.1*turbo()+0.07*S.lv.speed); }"),
+  # update: the tower freezes at a Waystone and while a move is picked
+  ("function update(dt){ var t=now(); if(!S.started||S.over) return; gt+=dt;",
+   "function update(dt){ var t=now(); if(!S.started||S.over) return; if(S.way||S.offer){ cam+=(P.h-cam)*Math.min(1,dt*6); return; } gt+=dt;"),
+  ("var open=!$('jm-shop').hidden, free=buffOn('free'), can=free||S.energy>0, vm=vmax(),", "var open=false, can=true, vm=vmax(),"),
+  ("P.vx=Math.max(-vm,Math.min(vm,P.vx)); if(mv) P.face=mv;", "var vcap=P.dashT>0?vm*1.8:vm; P.vx=Math.max(-vcap,Math.min(vcap,P.vx)); if(mv&&!(P.dashT>0)) P.face=mv;"),
+  ("var side=P.x<PW/2?1:-1; P.x=side>0?PW/2:W-PW/2;", "var side=P.x<PW/2?1:-1; P.x=side>0?PW/2:W-PW/2; if(!on){ P.wallT=gt; P.wallSide=side; }"),
+  ("if(!P.on){ var oh=P.h; P.vy=Math.max(-1500,P.vy-GRAV*dt);",
+   "if(!P.on){ var oh=P.h; P.vy=Math.max(-1500,P.vy-GRAV*dt); if(P.dashT>0){ P.dashT-=dt; P.vy=Math.max(P.vy,0); }\n    P.glide=!!S.mv.glide&&(keys.j||ptrJ())&&P.vy<-200; if(P.glide) P.vy=-200;"),
+  ("Math.abs(P.x-(cxAt(g,gt)+g.gem))<46&&Math.abs((P.h+PH/2)-(g.h+74))<58", "Math.abs(P.x-(cxAt(g,gt)+g.gem))<46+45*S.lv.magnet&&Math.abs((P.h+PH/2)-(g.h+74))<58+45*S.lv.magnet"),
+  ("  checkGoals();\n  cam+=", "  if(P.on&&P.on.i>=S.nextWay&&!S.way&&!S.offer) openWay();\n  checkGoals();\n  cam+="),
+  ("P.on=p; P.dbl=false;", "P.on=p; P.dbl=false; P.airJ=0; P.dashed=false; P.dashT=0; P.glide=false;"),
+  # answering only happens at a Waystone; 3 right passes it
+  ("function answer(i){ if(!S.started||S.over||S.qDone||!S.q) return;", "function answer(i){ if(!S.started||S.over||S.qDone||!S.q||!S.way) return;"),
+  ("var pa=U('energy'), ca=U('cash')+streakBonus(S.streak);\n    S.energy+=pa; S.cash+=ca; SND.correct(); var p=stagePoint(btn,60,40);  \n    markAnswered(i,true); nextT=setTimeout(function(){ if(S.qDone&&!S.over) newQ(); },140); }",
+   "S.bonus+=10; S.way.got++; SND.correct();\n    markAnswered(i,true); if(S.way.got>=3) nextT=setTimeout(function(){ if(!S.over&&S.way) closeWay(); },700); else nextT=setTimeout(function(){ if(S.qDone&&!S.over) newQ(); },450); }"),
+  ("else { S.streak=0; S.cash=Math.max(0,S.cash-3); SND.miss(); markAnswered(i,true); }", "else { S.streak=0; SND.miss(); markAnswered(i,true); }"),
+  ("function newQ(){ clearTimeout(nextT); S.q=nextQuestion();", "function newQ(){ clearTimeout(nextT); if(!S.way){ S.q=null; S.qDone=false; S.picked=-1; showQ(); return; } S.q=nextQuestion();"),
+  ("function showQ(){ var q=S.q;", "function showQ(){ var q=S.q; if(!S.way||!q){ idleQ(); return; }"),
+  ("fb.innerHTML='Answer correctly to add energy and earn cash.';", "fb.innerHTML='Answer 3 right to pass the Waystone.';"),
+  # HUD: the Energy chip becomes Waystones; cash and the shop go away
+  ("function hud(){ hudLive(); $('jm-cash').textContent='$'+S.cash; $('jm-streak').textContent=S.streak;\n  $('jm-shopcash').textContent='$'+S.cash; $('jm-reward').textContent='+'+U('energy')+' energy · +$'+(U('cash')+streakBonus(S.streak+1)); if(!$('jm-shop').hidden) drawShop(); }",
+   "function hud(){ hudLive(); $('jm-en').textContent=S.ways; $('jm-streak').textContent=S.streak; $('jm-reward').textContent=S.way?'Waystone · '+S.way.got+' of 3 right':''; }"),
+  ("var a=S.score.toLocaleString(), b=buffOn('free')?'∞':''+Math.ceil(S.energy), e=$('jm-score'), f=$('jm-en');\n  if(e.textContent!==a) e.textContent=a; if(f.textContent!==b) f.textContent=b; $('jm-enchip').classList.toggle('empty',S.started&&!S.over&&S.energy<=0&&!buffOn('free')); }",
+   "var a=S.score.toLocaleString(), e=$('jm-score'); if(e.textContent!==a) e.textContent=a; }"),
+  ('<div class="jm-chip" id="jm-enchip"><span class="l">Energy</span><span class="v" id="jm-en">0</span></div>', '<div class="jm-chip" id="jm-enchip"><span class="l">Waystones</span><span class="v" id="jm-en">0</span></div>'),
+  ('<div class="jm-shop" id="jm-shop" hidden>', '<div class="jmr-offer" id="jmr-offer" hidden><h2 id="jmr-offerh">New move!</h2><div class="jmr-picks" id="jmr-picks"></div><p class="jmr-ofoot">Press Enter or click to keep climbing</p></div>\n      <div class="jm-shop" id="jm-shop" hidden>'),
+  # keys: Shift, X or K dash; 1 or 2 picks a move
+  ("  if(d){ e.preventDefault(); if(!S.started||S.over) return;", "  if(k==='shift'||k==='x'||k==='k'){ e.preventDefault(); if(S.started&&!S.over&&!e.repeat) dashQ=true; return; }\n  if(d){ e.preventDefault(); if(!S.started||S.over) return;"),
+  ("if(/^[1-4]$/.test(e.key)){ answer(+e.key-1); return; }", "if(/^[1-4]$/.test(e.key)){ if(S.offer) pickOffer(+e.key-1); else answer(+e.key-1); return; }"),
+  ("jumpQ=false;\n  if(P.on&&(!solid(P.on)", "jumpQ=false; doDash(mv,vm);\n  if(P.on&&(!solid(P.on)"),
+  # touch: a dash button once Air Dash is learned
+  ("var BTN={ l:{x:92,y:H-86,r:64}, r:{x:244,y:H-86,r:64}, j:{x:W-104,y:H-86,r:72} };", "var BTN={ l:{x:92,y:H-86,r:64}, r:{x:244,y:H-86,r:64}, j:{x:W-104,y:H-86,r:72}, d:{x:W-262,y:H-86,r:58} };"),
+  ("[['l','◀'],['r','▶'],['j','▲']].forEach(function(b){", "[['l','◀'],['r','▶'],['j','▲']].concat(S.mv&&S.mv.dash?[['d','»']]:[]).forEach(function(b){"),
+  ("if(b==='j') jumpQ=true; tryMove();", "if(b==='d'&&!S.mv.dash){ delete ptr[e.pointerId]; return; } if(b==='j') jumpQ=true; if(b==='d') dashQ=true; tryMove();"),
+  # start screen
+  ("You have 5 minutes: answer to charge up, then run, jump and combo your way up the tower.", "You have 5 minutes: climb the tower, answer 3 questions at each Waystone, and learn a new move every time."),
+  ('data-ctl="1234=Answer | LR=Run | Space=Jump"', 'data-ctl="LR=Run | Space=Jump | Shift/X/K=Dash | 1234=Answer"'),
+  ("<b>Answer</b>Right answers add energy and cash. 5 in a row turns on Turbo shoes. A wrong answer costs $3 and your streak.", "<b>Climb</b>Run fast to jump higher. Skip 2+ floors per jump for a combo. Running and jumping are free."),
+  ("<b>Climb</b>Run fast to jump higher. Skip 2+ floors per jump for a combo. Finish goals for bonus points.", "<b>Waystones</b>Every full floor has a Waystone: answer 3 questions right to pass. 5 in a row turns on Turbo shoes."),
+  ("<b>Upgrade</b>Spend cash in the Shop on jump boots, a longer combo clock, bigger energy packs and power-ups.", "<b>New moves</b>After each Waystone, pick a new move: double jump, wall kick, glide, air dash and more."),
+  # canvas: tutorial line, test hooks, boot
+  ("'Every step and jump uses energy'", "'A Waystone waits on every full floor'"),
+  ("types:Object.keys(GEN) };", "types:Object.keys(GEN), dash:function(){ dashQ=true; }, pick:function(){ pickOffer(0); }, airMax:airMax, ans:function(i){ answer(i); }, newQ:function(){ newQ(); }, closeWay:function(){ closeWay(); } };"),
+  ("else if(S.q){ showQ(); } else newQ(); }", "else if(S.way&&S.q){ showQ(); } else newQ(); showOffer(); }"),
+]:
+    t = swap(t, old, new)
+t = cut(t, "  if(want&&!open){ var dbl=", "  jumpQ=false;", "  if(want&&!open) doJump(vm);\n")
+t = swap(t, "if(/^[1-4]$/.test(e.key)){ if(S.offer)", "if(S.offer&&e.key==='Enter'){ e.preventDefault(); pickOffer(0); return; }\n  if(/^[1-4]$/.test(e.key)){ if(S.offer)")
+for old, new in [
+  ("ways:0, nextWay:FLOOR_EVERY, learned:[], buff:", "ways:0, nextWay:FLOOR_EVERY, learned:[], hearts:3, fog:-800, fogOut:false, buff:"),
+  ("  if(P.on&&P.on.i>=S.nextWay&&!S.way&&!S.offer) openWay();", "  fogStep(dt); if(S.over) return;\n  if(P.on&&P.on.i>=S.nextWay&&!S.way&&!S.offer) openWay();"),
+  ("  cx.restore();\n  // zone banner", "  drawFog();\n  cx.restore();\n  drawHearts();\n  // zone banner"),
+  ('<p class="jm-sub" style="margin:0">Time!</p>', '<p class="jm-sub" style="margin:0" id="jmr-endwhy">Time!</p>'),
+  ("function showEnd(celebrate){", "function showEnd(celebrate){ $('jmr-endwhy').textContent=S.fogOut?'The fog caught you!':'Time!';"),
+  ("'A Waystone waits on every full floor'", "'Waystones teach new moves. Then the fog rises!'"),
+  ("<b>Climb</b>Run fast to jump higher. Skip 2+ floors per jump for a combo. Running and jumping are free.", "<b>Climb</b>Run fast to jump higher. Skip 2+ floors per jump for a combo. Stay above the rising fog: you have 3 hearts."),
+  ("answer 3 questions right to pass. 5 in a row turns on Turbo shoes.", "answer 3 right to pass, get a heart back and stop the fog."),
+]:
+    t = swap(t, old, new)
+# the energy gauge becomes a Waystone meter; the out-of-energy box becomes the Waystone box
+t = cut(t, "  var cap=40, fh=420, fy=220,", "  // Turbo chip",
+  "  var fh=420, fy=220, lvl=Math.max(0,Math.min(1,((S.pi||0)-(S.nextWay-FLOOR_EVERY))/FLOOR_EVERY)), left=Math.max(0,S.nextWay-(S.pi||0)); panel(W-108,fy-58,94,fh+112);\n"
+  "  cx.fillStyle='#242936'; cx.fillRect(W-76,fy,30,fh); cx.fillStyle='#7CF0FF'; cx.fillRect(W-76,fy+fh*(1-lvl),30,fh*lvl);\n"
+  "  cx.fillStyle='#1B1328'; cx.fillRect(W-71,fy-46,20,32); cx.fillStyle='#8A8FA6'; cx.fillRect(W-69,fy-44,16,28); cx.fillStyle='#7CF0FF'; cx.fillRect(W-63,fy-40,4,18);\n"
+  "  cx.fillStyle='#fff'; cx.font='400 34px '+DF; cx.fillText(left,W-61,fy+fh+44);\n")
+t = cut(t, "  if(live&&S.energy<=0&&!buffOn('free')){", "  else if(live&&S.jumps<3){",
+  "  if(live&&S.way){ cx.fillStyle='rgba(8,9,13,.82)'; cx.fillRect(W/2-360,250,720,190); cx.strokeStyle='#7CF0FF'; cx.lineWidth=4; cx.strokeRect(W/2-360,250,720,190);\n"
+  "    cx.fillStyle='#fff'; cx.font='400 60px '+DF; cx.fillText('WAYSTONE',W/2,330); cx.font='700 34px Inter, sans-serif'; cx.fillStyle='#7CF0FF'; cx.fillText('Answer 3 questions right  →',W/2,384);\n"
+  "    for(var wk=0;wk<3;wk++){ cx.fillStyle=wk<S.way.got?'#FFC23D':'#3A3550'; cx.fillRect(W/2-58+wk*42,404,32,20); } }\n"
+  "  else if(live&&S.offer){ }\n")
+t = swap(t, '</style>\n</head>', V2CSS + '</style>\n</head>') if t.count('</style>\n</head>') == 1 else swap(t, '<script src="kit.js"></script>', '<style>' + V2CSS + '</style>\n<script src="kit.js"></script>')
+for gone in ['S.energy+=', "U('energy')"]:
+    assert gone not in t, gone
 open(os.path.join(O, 'jump_man_multiplication.html'), 'w', encoding='utf-8').write(t)
 
 # ---- the self-contained test copy ----
