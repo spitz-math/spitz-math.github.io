@@ -76,4 +76,3 @@ textarea:focus,input:focus,select:focus{ border-color:var(--cyan); box-shadow:0 
 @media (max-width:640px){ .tnav a{ padding:10px; font-size:11px; } }
 /* placeholders a little brighter than Chrome's grey, so they pass 4.5:1 on the dark inputs */
 ::placeholder{ color:#8b90b4; opacity:1; }
-/* TEST ONLY, reverted next commit */ .tnav a{ color:#3a3f60; } .tag{ font-size:9px; }
