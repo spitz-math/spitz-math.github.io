@@ -1132,6 +1132,7 @@ html[data-theme="dark"] .rtbox{background:var(--card);color:var(--ink)}
 </div>
 <div class="main">
   <div class="bulk" id="bulk" hidden><b id="bulkN"></b><button class="btn" data-bulk="pause">Pause</button><button class="btn" data-bulk="resume">Resume</button><button class="btn warn" data-bulk="lock">Stop</button><button class="btn" data-bulk="unlock">Unlock</button><button class="btn" data-bulk="reopen" title="Give submitted tests back so the students can keep working">Reopen</button><button class="btn warn" data-bulk="retake" title="Erase the answers so the students start over">Retake</button><button class="btn" id="bulkClear">Clear selection</button></div>
+  <div class="gbusy" id="codeOld" role="status" hidden><b>Apps Script has an older Code.gs than this page.</b> Paste the newest Code.gs (project files, checkpoint-workspace), then Deploy › Manage deployments › Edit › New version. Only admins see this.</div>
   <div class="gbusy" id="gbusy" role="status" hidden><b>Google is busy right now, so answers may show up a minute or two late.</b> Nothing is lost: every answer is saved on the student’s Chromebook and sent as soon as Google catches up.</div>
   <div class="card" id="card"></div>
 </div>
@@ -1466,13 +1467,14 @@ function load(quiet){ if(loading){ if(quiet===true) return loading; return again
   loading=load1(quiet===true).finally(()=>{ loading=null; }); return loading; }
 /* Google busy notice (Kody 11/5): on a school-wide test day Google slows down and the test pages save less often, so Live runs late.
    A refresh over 8 s (or one that gets no answer) shows the notice; two quick refreshes in a row take it away. */
+const NEED_CODE=20261117;   /* the Code.gs this page needs (CODE_VER in Code.gs); older: admins get a notice to paste it */
 const GB={on:false,fast:0,set(slow){ if(slow){ GB.fast=0; GB.on=true; } else if(GB.on&&++GB.fast>=2) GB.on=false; const n=$('#gbusy'); if(n) n.hidden=!GB.on; }};
 async function load1(quiet){ busy=true; const gt0=Date.now();
   if(!quiet) $('#upd').textContent=DATA?'Refreshing…':'Loading…';
   try{ const wantAns=view==='ques'||view==='wr'||(view==='live'&&(cellMode==='ans'||RG.ansWanted)),
       ask=selSes?[...selSes]:(arc?[]:(store('ses')||[]).filter(x=>typeof x==='string')),   // first load: ask for the saved sessions straight away
       r=await call('stcDash',{sessions:ask,answers:wantAns,archive:arc});
-    DATA=r; DATA.skew=Date.now()-r.now; DATA.ansReq=wantAns;
+    DATA=r; { const co=$('#codeOld'); if(co) co.hidden=!(r.me&&r.me.admin&&(+r.codeVer||0)<NEED_CODE); } DATA.skew=Date.now()-r.now; DATA.ansReq=wantAns;
     DATA.cov=new Set(ask.length?ask:r.sessions.filter(s=>s.open).map(s=>s.id));
     if((r.archive||'')!==arc) return;   // the Results from choice changed while this was loading
     if(!selSes){ const saved=arc?[]:store('ses'); const ids=new Set(r.sessions.map(s=>s.id));
