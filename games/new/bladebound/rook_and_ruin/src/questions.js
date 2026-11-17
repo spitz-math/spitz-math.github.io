@@ -1610,7 +1610,7 @@ function makeIcpt(PFX){
   function eq(h){ return '<span class="'+PFX+'-eq">'+h+'</span>'; }
   function P(x,y,why){ var h=pt(x,y); return {html:h,val:{x:x,y:y},why:why||'',key:h}; }
   function T(h,val,why){ return {html:h,val:val,why:why||'',key:h}; }
-  function W(h){ return '<span class="c-m">'+h+'</span>'; }
+  function W(h){ return '<span class="c-m" style="white-space:nowrap">'+h+'</span>'; }
   var FONT=' font-family="Inter,sans-serif" font-weight="800"';
   function fill(out,cand){ var seen={}; out.forEach(function(c){ seen[c.key]=1; });
     shuffle(cand).forEach(function(c){ if(c&&out.length<4&&!seen[c.key]){ seen[c.key]=1; out.push(c); } }); return out; }
@@ -1659,7 +1659,7 @@ function makeIcpt(PFX){
     var lo=Math.min(0,a)-ri(0,3-Math.abs(a)), rows=[]; for(var i=0;i<4;i++){ var x=lo+i; rows.push([x,m*(x-a)]); }
     var stray=rows.filter(function(r){ return r[0]!==0&&r[1]!==0; })[0];
     var extra=stray? [P(stray[0],stray[1],'That point isn’t on an axis. Find the row where '+(which==='x'?'y':'x')+' is 0.')] : [];
-    return pointQ(which,a,b,'From a table','What is the '+W(which+'-intercept')+' of the line in the table?',tableSVG(rows),extra,
+    return pointQ(which,a,b,'From a table','What is the '+W(which+'-intercept')+'?',tableSVG(rows),extra,
       'Find the row where '+(which==='x'?'y':'x')+' is 0.'); },
   icEq:function(){ var m=nz(-5,5), a=nz(-6,6), b=-m*a, which=pick(['x','y','y']);
     if(Math.abs(b)>15||Math.abs(m)===1&&Math.random()<0.5) return null;
