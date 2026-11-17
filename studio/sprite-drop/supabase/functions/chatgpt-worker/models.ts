@@ -2,7 +2,7 @@
 // Small on purpose: a preferred model per priority, a cached list of what the account has, safe fallback.
 
 export type Priority = 'quality' | 'speed' | 'cost'
-export type ErrorKind = 'no_credits' | 'bad_key' | 'permission' | 'invalid_model' | 'incompatible' | 'rate_limit' | 'server' | 'other'
+export type ErrorKind = 'no_credits' | 'bad_key' | 'permission' | 'invalid_model' | 'incompatible' | 'rate_limit' | 'server' | 'content' | 'other'
 
 export class OpenAIError extends Error {
   constructor(public status: number, public code: string, message: string) { super(message) }
@@ -17,6 +17,7 @@ export function classify(e: unknown): { kind: ErrorKind; fallback: boolean; retr
   if (status === 401) return { kind: 'bad_key', fallback: false, retrySame: false, plain: 'OpenAI rejected the API key. Check OPENAI_API_KEY in the Supabase Edge Function secrets.' }
   if (status === 404 || code === 'model_not_found' || /does not exist|not found/i.test(msg)) return { kind: 'invalid_model', fallback: true, retrySame: false, plain: 'That image model is not available (renamed or retired).' }
   if (status === 403 || /verif|permission|not allowed|do not have access/i.test(msg)) return { kind: 'permission', fallback: true, retrySame: false, plain: 'The API key or organization is not allowed to use that model (key permissions or organization verification).' }
+  if (status === 400 && (code === 'moderation_blocked' || /safety system|moderation|content policy/i.test(msg))) return { kind: 'content', fallback: false, retrySame: false, plain: "OpenAI's safety filter refused this picture. Change the description in the brief, then hand the task back." }
   if (status === 429) return { kind: 'rate_limit', fallback: false, retrySame: true, plain: 'OpenAI rate limit: too many requests at once.' }
   if (status >= 500) return { kind: 'server', fallback: false, retrySame: true, plain: 'OpenAI had a server error.' }
   if (status === 400 && /background|transparen|size|quality|output_format|unsupported|invalid value/i.test(msg)) return { kind: 'incompatible', fallback: true, retrySame: false, plain: 'That model does not support what this picture needs (transparent PNG at this size).' }
