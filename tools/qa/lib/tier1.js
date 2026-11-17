@@ -4,6 +4,13 @@
    so a failure says exactly which promise broke ("hearts after restart: expected 5, got 1"). */
 const { sleep } = require('./harness');
 
+/* Poll a snapshot until ok(snapshot) is true or ms pass; returns the last snapshot. Avoids fixed waits that flake on slow runners. */
+async function settle(A, pg, ok, ms = 3000) {
+  const t0 = Date.now(); let s = await A.snapshot(pg);
+  while (!ok(s) && Date.now() - t0 < ms) { await sleep(100); s = await A.snapshot(pg); }
+  return s;
+}
+
 async function tier1(run, A, viewport = 'chromebook') {
   await run.test(`baseline play-through (${viewport})`, async (r) => {
     const pg = await r.page(viewport);
@@ -18,9 +25,11 @@ async function tier1(run, A, viewport = 'chromebook') {
       r.check('a question opens', true, !!q && q.open);
       if (q && q.open) {
         await r.shot(pg, `${viewport}_2_question`);
-        await pg.keyboard.press(String(q.right + 1)); await sleep(400);
+        // adapters can answer their own way (A.answer); the default is the real number key for the right choice
+        if (A.answer) await A.answer(pg, q); else await pg.keyboard.press('Digit' + (q.right + 1));
+        await sleep(400);
         if (A.continueQuestion) await A.continueQuestion(pg);
-        const after = await A.snapshot(pg);
+        const after = await settle(A, pg, s => A.answeredRight(q.before, s));
         r.check('right answer is accepted', true, !!A.answeredRight(q.before, after));
       }
     }
@@ -36,8 +45,8 @@ async function tier1(run, A, viewport = 'chromebook') {
     if (A.act || A.intents.action) {
       const a0 = await A.snapshot(pg);
       if (A.act) await A.act(pg); else await A.press(pg, 'action');
-      await sleep(250);
-      r.check('the main action works (' + (A.actName || (A.intents.action === ' ' ? 'Space' : A.intents.action)) + ')', true, !!A.acted(a0, await A.snapshot(pg)));
+      const a1 = await settle(A, pg, s => A.acted(a0, s));
+      r.check('the main action works (' + (A.actName || (A.intents.action === ' ' ? 'Space' : A.intents.action)) + ')', true, !!A.acted(a0, a1));
     }
 
     // make the run "dirty" (coins, score, upgrades) so the restart check proves something
@@ -53,8 +62,9 @@ async function tier1(run, A, viewport = 'chromebook') {
     // restart resets
     await A.restart(pg);
     const fresh = await A.snapshot(pg);
+    r.check('adapter lists values that Play again must reset', true, Array.isArray(A.resetKeys) && A.resetKeys.length > 0);
     const want = {}, got = {};
-    for (const k of A.resetKeys) { want[k] = s0[k]; got[k] = fresh[k]; }
+    for (const k of A.resetKeys || []) { want[k] = s0[k]; got[k] = fresh[k]; }
     for (const k of Object.keys(want)) r.check(`after restart, ${k} is reset`, want[k], got[k]);
     r.check('after restart the run is playable again', true, !fresh.over && A.playable(fresh));
     await r.shot(pg, `${viewport}_4_restart`);

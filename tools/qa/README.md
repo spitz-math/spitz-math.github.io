@@ -51,6 +51,7 @@ Copy `adapters/burger_blaster.js` (a tier 1 game that only has `__G.state()`) an
 | `playable(s)` | Is the run in normal play right now? |
 | `openQuestion(pg)` | Make a question appear (or find the open one); return `{open, right, before}` |
 | `answeredRight(before, after)`, `continueQuestion(pg)` | Did the right answer count; how to move on (optional) |
+| `answer(pg, q)` | Optional: answer the open question your own way (a click, a different key). Default: the real number key for the right choice |
 | `intents` + `moved(a, b)` | Keys for left/right/up/down/action and how to tell the player moved (omit for games without movement) |
 | `act(pg)`, `actName`, `acted(a, b)` | Real input for the main action when it isn't a key (a drag, a click) and how to tell it happened |
 | `dirty(pg)`, `forceEnd(pg)`, `endShown(pg)`, `restart(pg)` | Set up a scene, end the run, wait for the end screen, press Play again the way a student does |
