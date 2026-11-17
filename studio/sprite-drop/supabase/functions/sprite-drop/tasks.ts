@@ -31,6 +31,15 @@ const As = z.enum(['claude', 'claude_thread']).optional().describe(
   'Claude only, required for Claude: "claude" if you are the automated Claude worker, "claude_thread" if you are a Claude project thread. ' +
   'The server cannot check this, so it is stored as declared. ChatGPT and the dashboard leave it out.')
 
+const JobType = z.enum(['new', 'refine', 'pixel_edit', 'composite', 'text']).describe(
+  'new = fresh art. refine = change existing art (needs a source ref and a spec). pixel_edit = exact edit of existing pixels (source + spec; never the API worker). ' +
+  'composite = build from existing pieces (base + at least one more ref, spec; never the API worker). text = no art.')
+const RequiredRef = z.object({
+  asset_id: z.string().describe('Sprite Drop asset id'),
+  role: z.enum(['source', 'style', 'size', 'layout', 'other']).describe('source = the image the job starts from'),
+  required: z.boolean().optional().describe('Default true'),
+})
+
 function nextStep(task: Record<string, unknown>) {
   if (task.status === 'done') return 'This task is done.'
   if (task.status === 'blocked') return `Blocked. Turn: ${task.turn ?? 'nobody'}.`
@@ -53,12 +62,16 @@ export function registerTaskTools(server: any, db: TaskDb) {
       turn: Who.optional().describe('Who should act next'),
       refs: z.array(Ref).max(20).optional(),
       as: As,
+      job_type: JobType.optional(),
+      spec: z.record(z.string(), z.unknown()).optional().describe('What the validator checks (tools/art_check spec): size, cell, feet_y, body, protected areas...'),
+      required_refs: z.array(RequiredRef).max(20).optional().describe('References the job cannot be done without. Attached with their checksum; the task cannot be handed to a worker or the chat until they are complete.'),
     }),
   }, async (a: any) => {
     try {
       const { data, error } = await db.rpc('studio_create_task', {
         p_request_key: a.request_key, p_project: a.project.trim(), p_title: a.title.trim(), p_brief: a.brief,
         p_turn: a.turn ?? null, p_refs: a.refs ?? [], p_as: a.as ?? null,
+        p_job_type: a.job_type ?? null, p_spec: a.spec ?? null, p_required_refs: a.required_refs ?? [],
       })
       if (error) throw tdErr(error)
       return tdText({ ...data, next: data.duplicate ? 'Already created by an earlier call with this request_key; nothing new was added.' : nextStep(data.task) })
@@ -123,7 +136,11 @@ export function registerTaskTools(server: any, db: TaskDb) {
         assets = r.data ?? []
       }
       const { request_key: _k, user_id: _u, ...task } = t.data
-      return tdText({ trust: TRUST_NOTE, task, messages, assets, next: nextStep(task) })
+      const rd = await db.rpc('studio_task_readiness', { p_task_id: a.id })
+      const readiness = rd.error ? undefined : rd.data
+      const fetchNote = readiness && (readiness.required_refs ?? []).length
+        ? ' Before delivering anything on this task, fetch EVERY required reference with get_asset and task_id set to this task; deliveries are refused until you have.' : ''
+      return tdText({ trust: TRUST_NOTE, task, readiness, messages, assets, next: nextStep(task) + fetchNote })
     } catch (e) { return tdFail(e) }
   })
 
@@ -153,6 +170,59 @@ export function registerTaskTools(server: any, db: TaskDb) {
       if (error) throw tdErr(error)
       if (data.conflict) return tdText({ ...data, next: `Nothing was posted. Read the task again (get_task), then retry with expected_version ${data.task.version} and a new request_key.` })
       return tdText({ ...data, next: data.duplicate ? 'Already posted by an earlier call with this request_key; nothing new was added.' : nextStep(data.task) })
+    } catch (e) { return tdFail(e) }
+  })
+
+  server.registerTool('attach_ref', {
+    title: 'Attach a required reference to a task',
+    description: 'Add (or update) a reference image on a task, with its role. Its checksum is recorded now. Only possible while the task is with spitz or claude_thread. Returns what the task still needs before it can be handed on.',
+    inputSchema: z.object({ task_id: z.string(), asset_id: z.string(), role: RequiredRef.shape.role, required: z.boolean().optional(), as: As }),
+  }, async (a: any) => {
+    try {
+      const { data, error } = await db.rpc('studio_attach_ref', { p_task_id: a.task_id, p_asset_id: a.asset_id, p_role: a.role, p_required: a.required ?? true, p_as: a.as ?? null })
+      if (error) throw tdErr(error)
+      return tdText({ readiness: data, next: data.ready ? 'Complete. You can hand the task on.' : 'Still missing: ' + (data.missing ?? []).join('; ') })
+    } catch (e) { return tdFail(e) }
+  })
+
+  server.registerTool('detach_ref', {
+    title: 'Remove a reference from a task',
+    description: 'Only possible while the task is with spitz or claude_thread.',
+    inputSchema: z.object({ task_id: z.string(), asset_id: z.string(), as: As }),
+  }, async (a: any) => {
+    try {
+      const { data, error } = await db.rpc('studio_detach_ref', { p_task_id: a.task_id, p_asset_id: a.asset_id, p_as: a.as ?? null })
+      if (error) throw tdErr(error)
+      return tdText({ readiness: data })
+    } catch (e) { return tdFail(e) }
+  })
+
+  server.registerTool('record_validation', {
+    title: 'Record a validator result for an image',
+    description: 'Store the JSON record from tools/art_check/validate.py for one saved image. sha256 must be the stored image\'s checksum. ' +
+      'The server stores the result as submitted (it does not re-run the validator). A result other than PASS marks the image failed. ' +
+      'This is technical validation only; visual approval is separate and only spitz gives it, from the dashboard.',
+    inputSchema: z.object({
+      asset_id: z.string(), sha256: z.string(), result: z.enum(['PASS', 'FAIL', 'INDETERMINATE', 'SPEC ERROR']),
+      spec: z.record(z.string(), z.unknown()), record: z.record(z.string(), z.unknown()), validator: z.string().describe('e.g. "art_check@<commit>"'), as: As,
+    }),
+  }, async (a: any) => {
+    try {
+      const { data, error } = await db.rpc('studio_record_validation', { p_asset_id: a.asset_id, p_sha256: a.sha256, p_result: a.result, p_spec: a.spec, p_record: a.record, p_validator: a.validator, p_as: a.as ?? null })
+      if (error) throw tdErr(error)
+      return tdText(data)
+    } catch (e) { return tdFail(e) }
+  })
+
+  server.registerTool('mark_ready', {
+    title: 'Mark an image ready',
+    description: 'Allowed only when the newest validation of this exact file is PASS and spitz approved this exact file on the dashboard. Otherwise refused with what is missing.',
+    inputSchema: z.object({ asset_id: z.string() }),
+  }, async (a: any) => {
+    try {
+      const { data, error } = await db.rpc('studio_mark_ready', { p_asset_id: a.asset_id })
+      if (error) throw tdErr(error)
+      return tdText(data)
     } catch (e) { return tdFail(e) }
   })
 }

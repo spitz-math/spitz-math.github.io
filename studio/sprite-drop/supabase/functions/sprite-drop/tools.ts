@@ -153,9 +153,17 @@ export function handlerFor(supabase: Db, userId: string, who?: Who) {
       inputSchema: z.object({
         id: z.string().describe('Asset id from drop_asset or list_assets'),
         include_base64: z.boolean().optional(),
+        task_id: z.string().optional().describe('The Task Drop task you are fetching this for. Required for required references: deliveries on that task are refused until each one was fetched this way.'),
+        as: z.enum(['claude', 'claude_thread']).optional().describe('Claude only: "claude" (worker) or "claude_thread". Recorded as declared.'),
       }),
-    }, async ({ id, include_base64 }) => {
+    }, async ({ id, include_base64, task_id, as }) => {
       try {
+        let fetchNote: string | undefined
+        if (task_id) {
+          const lg = await supabase.rpc('studio_log_fetch', { p_asset_id: id, p_task_id: task_id, p_as: as ?? null })
+          if (lg.error) throw new Error('Could not record this fetch for the task: ' + lg.error.message)
+          fetchNote = `Fetch recorded for task ${task_id}. This shows the image reached you, not that it reached an image model; say which references you used before generating.`
+        }
         const { data: a, error } = await supabase.from('studio_assets').select('*').eq('id', id).maybeSingle()
         if (error) throw new Error(error.message)
         if (!a) throw new Error(`No asset with id ${id}. Use list_assets.`)
@@ -169,6 +177,7 @@ export function handlerFor(supabase: Db, userId: string, who?: Who) {
           size_bytes: bytes.length, sha256: sha, checksum_matches: sha === a.sha256 && bytes.length === a.size_bytes,
           note: a.note, created_at: a.created_at, download_url_10min: signed.data?.signedUrl ?? null,
           base64: include_base64 && bytes.length <= INLINE_LIMIT ? toBase64(bytes) : undefined,
+          fetch: fetchNote,
         }
         const content: ({ type: 'text'; text: string } | { type: 'image'; data: string; mimeType: string })[] = [{ type: 'text', text: JSON.stringify(info, null, 2) }]
         if (bytes.length <= INLINE_LIMIT) content.push({ type: 'image', data: info.base64 ?? toBase64(bytes), mimeType: a.mime_type })

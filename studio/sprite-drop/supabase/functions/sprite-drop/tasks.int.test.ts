@@ -112,3 +112,19 @@ Deno.test('bad input is refused before the database', async () => {
   assert(badAs.err, 'only claude or claude_thread can be declared')
   assertEquals(f.calls.length, 0)
 })
+
+Deno.test('typed task fields and reference tools reach the database unchanged', async () => {
+  const f = fakeDb('claude')
+  const h = handlerFor(f.db as never, 'u')
+  await call(h, 'create_task', { request_key: 'claude-typed-0001', project: 'rook-and-ruin', title: 'Barracks', brief: 'b', as: 'claude_thread', turn: 'claude_thread',
+    job_type: 'composite', spec: { kind: 'room', size: [480, 270] }, required_refs: [{ asset_id: 'asset-1', role: 'source' }] })
+  const c = f.calls.find((x) => x.fn === 'studio_create_task')!.args!
+  assertEquals(c.p_job_type, 'composite')
+  assertEquals(c.p_required_refs, [{ asset_id: 'asset-1', role: 'source' }])
+  assertEquals(c.p_spec, { kind: 'room', size: [480, 270] })
+  await call(h, 'attach_ref', { task_id: 'task-1', asset_id: 'asset-2', role: 'other', as: 'claude_thread' })
+  assertEquals(f.calls.at(-1)!.fn, 'studio_attach_ref')
+  assertEquals(f.calls.at(-1)!.args!.p_required, true)
+  const v = await call(h, 'record_validation', { asset_id: 'a', sha256: 'x', result: 'MAYBE', spec: {}, record: {}, validator: 'v' })
+  assert(v.err, 'only the validator\'s four results are accepted')
+})
