@@ -1,0 +1,145 @@
+{
+ "image": "studio/reliability/kiln/out/kiln_r2_1x.png",
+ "sha256": "1968a87e6b2d9d7cb7026996f60b4efb6be195d12974578ad5afef75aa3d6ca2",
+ "spec": {
+  "kind": "room",
+  "size": [
+   480,
+   270
+  ],
+  "alpha": "opaque",
+  "source": "refs/barracks_1x.png",
+  "protected": [
+   [
+    0,
+    0,
+    16,
+    269
+   ],
+   [
+    465,
+    0,
+    479,
+    269
+   ],
+   [
+    208,
+    0,
+    274,
+    45
+   ],
+   [
+    17,
+    68,
+    207,
+    269
+   ],
+   [
+    272,
+    68,
+    464,
+    269
+   ],
+   [
+    208,
+    46,
+    271,
+    117
+   ],
+   [
+    208,
+    162,
+    271,
+    269
+   ],
+   [
+    17,
+    56,
+    346,
+    67
+   ],
+   [
+    144,
+    46,
+    346,
+    55
+   ],
+   [
+    373,
+    46,
+    464,
+    67
+   ]
+  ],
+  "note": "Ember Kiln round 2 (smithy): round 1's wall band without the kiln mouths, plus five props from Sprite Drop task d4cb944f pasted 1:1 (forge 42e24189, quench_barrel ac71255d, tool_rack 8adf4148, anvil c8de30ae, fire_pit 43150676). Everything outside the north wall band and the four floor-prop boxes (barrel x74-91 y34-55, forge x96-143 y8-51, anvil x347-372 y50-67, fire pit x208-271 y118-161) stays identical to the approved Barracks."
+ },
+ "result": "PASS",
+ "checks": [
+  {
+   "check": "size",
+   "result": "pass",
+   "detail": "480x270 (want 480x270)"
+  },
+  {
+   "check": "true 1x",
+   "result": "pass",
+   "detail": "ok"
+  },
+  {
+   "check": "fully opaque",
+   "result": "pass",
+   "detail": "0 see-through px"
+  },
+  {
+   "check": "protected [0,0,16,269] identical",
+   "result": "pass",
+   "detail": "0 px differ"
+  },
+  {
+   "check": "protected [465,0,479,269] identical",
+   "result": "pass",
+   "detail": "0 px differ"
+  },
+  {
+   "check": "protected [208,0,274,45] identical",
+   "result": "pass",
+   "detail": "0 px differ"
+  },
+  {
+   "check": "protected [17,68,207,269] identical",
+   "result": "pass",
+   "detail": "0 px differ"
+  },
+  {
+   "check": "protected [272,68,464,269] identical",
+   "result": "pass",
+   "detail": "0 px differ"
+  },
+  {
+   "check": "protected [208,46,271,117] identical",
+   "result": "pass",
+   "detail": "0 px differ"
+  },
+  {
+   "check": "protected [208,162,271,269] identical",
+   "result": "pass",
+   "detail": "0 px differ"
+  },
+  {
+   "check": "protected [17,56,346,67] identical",
+   "result": "pass",
+   "detail": "0 px differ"
+  },
+  {
+   "check": "protected [144,46,346,55] identical",
+   "result": "pass",
+   "detail": "0 px differ"
+  },
+  {
+   "check": "protected [373,46,464,67] identical",
+   "result": "pass",
+   "detail": "0 px differ"
+  }
+ ],
+ "scope": "technical only; visual approval is separate"
+}

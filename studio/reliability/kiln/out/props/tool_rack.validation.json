@@ -1,0 +1,32 @@
+{
+ "image": "studio/reliability/kiln/refs/props/tool_rack.png",
+ "sha256": "df2bc9f703b86ad15dc34b064853a667e7f493fd28ecc381a60cd18904b13215",
+ "spec": {
+  "kind": "prop",
+  "size": [
+   28,
+   34
+  ],
+  "alpha": "hard",
+  "note": "tool_rack.png from Sprite Drop task d4cb944f, true 1x"
+ },
+ "result": "PASS",
+ "checks": [
+  {
+   "check": "size",
+   "result": "pass",
+   "detail": "28x34 (want 28x34)"
+  },
+  {
+   "check": "true 1x",
+   "result": "pass",
+   "detail": "ok"
+  },
+  {
+   "check": "alpha 0/255",
+   "result": "pass",
+   "detail": "0 partial-alpha px"
+  }
+ ],
+ "scope": "technical only; visual approval is separate"
+}
