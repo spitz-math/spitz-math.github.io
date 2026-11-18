@@ -1,0 +1,152 @@
+{
+ "image": "out/barracks_1x.png",
+ "sha256": "dae09c670a9be2e8ff060a379c61fdbec7e079c8ed4e2a894ddafb3b4ed905fe",
+ "spec": {
+  "kind": "room",
+  "size": [
+   480,
+   270
+  ],
+  "alpha": "opaque",
+  "source": "refs/guard_room_1x.png",
+  "protected": [
+   [
+    17,
+    46,
+    224,
+    48
+   ],
+   [
+    258,
+    46,
+    464,
+    48
+   ],
+   [
+    17,
+    46,
+    37,
+    255
+   ],
+   [
+    442,
+    46,
+    464,
+    255
+   ],
+   [
+    17,
+    229,
+    464,
+    255
+   ],
+   [
+    0,
+    0,
+    16,
+    269
+   ],
+   [
+    465,
+    0,
+    479,
+    269
+   ],
+   [
+    0,
+    256,
+    479,
+    269
+   ],
+   [
+    208,
+    0,
+    274,
+    45
+   ]
+  ],
+  "note": "Round 2 (Kody 2026-11-17: no pillars, floor looked odd). Barracks = guard room (f397fa63) with the open floor x38-441, y49-228 re-laid on one even grid from clean tiles of the same room (no pillars, no carpet, no stains). Floor edges, wall shadow, walls and the north arch stay identical to the guard room. The north wall band (x17-207 and x275-464, y0-45) also changes: banners recoloured, lance_rack (f0e12503) and armor_stand (49efabe4) placed there, cool tint. Only the 3 rows under the north door still come from the siege room's bare floor (33b43b24).",
+  "also_match": [
+   {
+    "source": "refs/siege_room_1x.png",
+    "rects": [
+     [
+      225,
+      46,
+      257,
+      48
+     ]
+    ]
+   }
+  ]
+ },
+ "result": "PASS",
+ "checks": [
+  {
+   "check": "size",
+   "result": "pass",
+   "detail": "480x270 (want 480x270)"
+  },
+  {
+   "check": "true 1x",
+   "result": "pass",
+   "detail": "ok"
+  },
+  {
+   "check": "fully opaque",
+   "result": "pass",
+   "detail": "0 see-through px"
+  },
+  {
+   "check": "protected [17,46,224,48] identical",
+   "result": "pass",
+   "detail": "0 px differ"
+  },
+  {
+   "check": "protected [258,46,464,48] identical",
+   "result": "pass",
+   "detail": "0 px differ"
+  },
+  {
+   "check": "protected [17,46,37,255] identical",
+   "result": "pass",
+   "detail": "0 px differ"
+  },
+  {
+   "check": "protected [442,46,464,255] identical",
+   "result": "pass",
+   "detail": "0 px differ"
+  },
+  {
+   "check": "protected [17,229,464,255] identical",
+   "result": "pass",
+   "detail": "0 px differ"
+  },
+  {
+   "check": "protected [0,0,16,269] identical",
+   "result": "pass",
+   "detail": "0 px differ"
+  },
+  {
+   "check": "protected [465,0,479,269] identical",
+   "result": "pass",
+   "detail": "0 px differ"
+  },
+  {
+   "check": "protected [0,256,479,269] identical",
+   "result": "pass",
+   "detail": "0 px differ"
+  },
+  {
+   "check": "protected [208,0,274,45] identical",
+   "result": "pass",
+   "detail": "0 px differ"
+  },
+  {
+   "check": "[225,46,257,48] identical to siege_room_1x.png",
+   "result": "pass",
+   "detail": "0 px differ"
+  }
+ ],
+ "scope": "technical only; visual approval is separate"
+}

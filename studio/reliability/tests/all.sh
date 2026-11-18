@@ -1,0 +1,19 @@
+#!/bin/bash
+# Runs every spitz.dev reliability database test. Exit 0 only if all pass.
+set -o pipefail; cd "$(dirname "$0")"; M=../../sprite-drop/supabase/migrations; RB=../../sprite-drop/supabase/rollback; ok=0
+echo "== baseline: today's live functions (bugs reproduced)"; ./run.sh baseline_routing_bug.sql | tail -1 || ok=1
+echo "== phase 1: identities"; ./run.sh phase1_identities.sql seed_history.sql $M/20261118000000_worker_identities.sql | tail -1 || ok=1
+echo "== phase 1 + 2: identities still hold with typed tasks on top"; ./run.sh phase1_identities.sql seed_history.sql $M/20261118000000_worker_identities.sql $M/20261118010000_typed_tasks_refs_status.sql | tail -1 || ok=1
+echo "== phase 2 + 3: typed tasks, references, asset status"; ./run.sh phase2_typed_tasks.sql $M/20261118000000_worker_identities.sql $M/20261118010000_typed_tasks_refs_status.sql | tail -1 || ok=1
+echo "== M1: locked approvals (held pictures, Kody-only approval, gates)"; ./run.sh m1_locked_approvals.sql $M/20261118000000_worker_identities.sql $M/20261118010000_typed_tasks_refs_status.sql m1_legacy_seed.sql m1_sessions_stub.sql $M/20261118020000_locked_approvals.sql | tail -1 || ok=1
+echo "== phase 1 identities still hold with M1 on top"; ./run.sh phase1_identities.sql seed_history.sql $M/20261118000000_worker_identities.sql $M/20261118010000_typed_tasks_refs_status.sql m1_sessions_stub.sql $M/20261118020000_locked_approvals.sql | tail -1 || ok=1
+echo "== rollback of M1: phase 2+3 tests pass again"; ./run.sh phase2_typed_tasks.sql $M/20261118000000_worker_identities.sql $M/20261118010000_typed_tasks_refs_status.sql m1_sessions_stub.sql m1_legacy_seed.sql $M/20261118020000_locked_approvals.sql $RB/20261118020000_locked_approvals_rollback.sql | tail -1 || ok=1
+echo "== M3: parents and proofs"; ./run.sh m3_parents_proofs.sql $M/20261118000000_worker_identities.sql $M/20261118010000_typed_tasks_refs_status.sql m1_legacy_seed.sql m1_sessions_stub.sql $M/20261118020000_locked_approvals.sql $M/20261118030000_parents_and_proofs.sql | tail -1 || ok=1
+echo "== M1 tests still pass with M3 on top"; ./run.sh m1_locked_approvals.sql $M/20261118000000_worker_identities.sql $M/20261118010000_typed_tasks_refs_status.sql m1_legacy_seed.sql m1_sessions_stub.sql $M/20261118020000_locked_approvals.sql $M/20261118030000_parents_and_proofs.sql | tail -1 || ok=1
+echo "== rollback of M3: M1 tests pass again"; ./run.sh m1_locked_approvals.sql $M/20261118000000_worker_identities.sql $M/20261118010000_typed_tasks_refs_status.sql m1_legacy_seed.sql m1_sessions_stub.sql $M/20261118020000_locked_approvals.sql $M/20261118030000_parents_and_proofs.sql $RB/20261118030000_parents_and_proofs_rollback.sql | tail -1 || ok=1
+B5="$M/20261118000000_worker_identities.sql $M/20261118010000_typed_tasks_refs_status.sql m1_legacy_seed.sql legacy_failed_seed.sql m1_sessions_stub.sql $M/20261118020000_locked_approvals.sql $M/20261118030000_parents_and_proofs.sql $M/20261118040000_hold_legacy_drafts.sql"
+echo "== old drafts held for Kody"; ./run.sh m5_legacy_hold.sql $B5 | tail -1 || ok=1
+echo "== rollback of old-draft hold"; ./run.sh m5_after_rollback.sql $B5 $RB/20261118040000_hold_legacy_drafts_rollback.sql | tail -1 || ok=1
+echo "== rollback of phase 1"; ./run.sh rollback_after.sql seed_history.sql $M/20261118000000_worker_identities.sql post_migration_activity.sql $RB/20261118000000_worker_identities_rollback.sql ../live_snapshot/functions_2026-11-17.sql | tail -1 || ok=1
+echo "== migration refuses while an API worker run is live"; out=$(./run.sh noop.sql active_run_guard.sql $M/20261118000000_worker_identities.sql 2>&1); grep -q "An API worker run is still active" <<<"$out" && echo "--- refused as expected" || { echo FAIL; ok=1; }
+exit $ok

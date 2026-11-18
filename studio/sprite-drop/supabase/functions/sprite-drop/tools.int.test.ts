@@ -24,7 +24,7 @@ function fakeDb() {
     const q: Record<string, unknown> = {
       select: () => q, eq: (k: string, v: unknown) => (filters.push([k, v]), q), order: (_: string, o: { ascending: boolean }) => (desc = !o.ascending, q),
       limit: (l: number) => (lim = l, q),
-      insert: (row: Record<string, unknown>) => { inserted = { id: crypto.randomUUID(), created_at: new Date(++n * 1000).toISOString(), ...row }; rows.push(inserted); return q },
+      insert: (row: Record<string, unknown>) => { inserted = { id: crypto.randomUUID(), created_at: new Date(++n * 1000).toISOString(), ...row, ...(t === 'studio_assets' ? { status: 'held' } : {}) }; rows.push(inserted); return q },
       maybeSingle: () => Promise.resolve({ data: run()[0] ?? null, error: null }),
       single: () => Promise.resolve({ data: run()[0], error: null }),
       then: (res: (v: unknown) => unknown) => res({ data: run(), error: null }),
@@ -81,6 +81,22 @@ Deno.test('ChatGPT file -> stored bytes -> Claude gets the same bytes back', asy
   const list = JSON.parse((await call(h, 'list_assets', {})).content[0].text!)
   assertEquals(list.assets.length, 1)
 
+  // held until Kody approves: the stored file is shown as a preview, but no bytes, no link, no fetch for a task
+  assertEquals(out.asset.status, 'held')
+  assertEquals(out.approve_url, `https://dev.spitzmath.com/approve/?id=${out.asset.id}`)
+  const p = await call(h, 'get_asset', { id: out.asset.id, include_base64: true, task_id: 'task-9' })
+  const pinfo = JSON.parse(p.content[0].text!)
+  assertEquals(pinfo.status, 'held')
+  assertEquals(pinfo.base64, undefined)
+  assertEquals(pinfo.download_url_10min, null)
+  assert(pinfo.approval.startsWith('PREVIEW ONLY'), pinfo.approval)
+  assert(pinfo.fetch.startsWith('NOT recorded'), pinfo.fetch)
+  assertEquals(pinfo.sha256, out.asset.sha256)
+  assertEquals(p.content[1].type, 'image', 'the preview is the stored file itself')
+  assertEquals(fromBase64(p.content[1].data!), PNG)
+
+  // after Kody approves (the database does that, from his own sign-in) the bytes are available
+  tables.studio_assets[0].status = 'approved'
   const g = await call(h, 'get_asset', { id: out.asset.id, include_base64: true })
   const info = JSON.parse(g.content[0].text!)
   assertEquals(info.checksum_matches, true)
@@ -110,4 +126,30 @@ Deno.test('failures are logged with the step that broke', async () => {
   const b64 = btoa(String.fromCharCode(...PNG))
   const ok = JSON.parse((await call(h, 'drop_asset', { task_id: 't1', image_base64: b64 })).content[0].text!)
   assertEquals(ok.asset.source, 'base64')
+})
+
+Deno.test('M3: a child made from an approved parent gets a pixel proof; only a pixel-preserving one is approved', async () => {
+  const { encode } = await import('npm:fast-png@6.3.0')
+  const png = (w: number, h: number, f: (x: number, y: number) => number[]) => {
+    const d = new Uint8Array(w * h * 4); for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) d.set(f(x, y), (y * w + x) * 4)
+    return encode({ width: w, height: h, data: d, channels: 4, depth: 8 })
+  }
+  const art = (x: number, y: number) => (x + y) % 3 === 0 ? [200, 40, 40, 255] : x > 1 ? [40, 200, 60, 255] : [0, 0, 0, 0]
+  const parent = png(4, 4, art), twice = png(8, 8, (x, y) => art(x >> 1, y >> 1)), redrawn = png(4, 4, (x, y) => art(y, x))
+  const f = fakeDb(), calls: Record<string, unknown>[] = []
+  const recordProof = (a: Record<string, unknown>) => { calls.push(a); return Promise.resolve({ data: { status: a.p_pixel_preserving ? 'approved' : 'held', auto_approved: a.p_pixel_preserving }, error: null }) }
+  const h = handlerFor(f.db as never, 'u', undefined, { recordProof })
+  const b64 = (b: Uint8Array) => btoa(String.fromCharCode(...b))
+  const p = JSON.parse((await call(h, 'drop_asset', { task_id: 't', image_base64: b64(parent), file_name: 'p.png' })).content[0].text!)
+  f.tables.studio_assets.find((x) => x.id === p.asset.id)!.status = 'approved'   // Kody approved it (the database's job)
+
+  const up = JSON.parse((await call(h, 'drop_asset', { task_id: 't', image_base64: b64(twice), file_name: 'p2x.png', made_from: p.asset.id })).content[0].text!)
+  assertEquals([up.proof.kind, up.proof.pixel_preserving, up.asset.status], ['scale', true, 'approved'])
+  assert(up.next.startsWith('APPROVED by pixel proof'))
+  assertEquals([calls[0].p_kind, calls[0].p_pixel_preserving, calls[0].p_parent_sha256], ['scale', true, p.asset.sha256])
+
+  const re = JSON.parse((await call(h, 'drop_asset', { task_id: 't', image_base64: b64(redrawn), file_name: 'redraw.png', made_from: p.asset.id, frames: '{"frame_w":4,"frame_h":4,"frame_ms":120}' })).content[0].text!)
+  assertEquals([re.proof.kind, re.proof.pixel_preserving, re.asset.status], ['none', false, 'held'])
+  assert(re.approve_url.includes(re.asset.id), 'a held child gets the approve link')
+  assertEquals(f.tables.studio_assets.find((x) => x.id === re.asset.id)!.anim, { frame_w: 4, frame_h: 4, frame_ms: 120 }, 'frames sent as a JSON string are accepted')
 })
