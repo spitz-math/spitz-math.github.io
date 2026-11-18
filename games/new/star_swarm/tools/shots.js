@@ -1,0 +1,26 @@
+const { chromium } = require('playwright');
+(async()=>{ const b=await chromium.launch(); const pg=await b.newPage({viewport:{width:1366,height:768}});
+  const errs=[]; pg.on('pageerror',e=>errs.push(e.message)); pg.on('console',m=>{ if(m.type()==='error') errs.push('console: '+m.text().slice(0,200)); });
+  const set=process.argv[2]||'slope';
+  await pg.goto('file://'+__dirname+'/../out/star_swarm.html?set='+set); await pg.waitForTimeout(600);
+  await pg.evaluate(()=>{ localStorage.clear(); window.__noBlurDock=1; }); await pg.reload(); await pg.waitForTimeout(600); await pg.evaluate(()=>{ window.__noBlurDock=1; });
+  await pg.screenshot({path:'shots/start.png'});
+  await pg.fill('#sw-nameinput','Test T'); await pg.click('#sw-go'); await pg.waitForTimeout(2600);
+  await pg.keyboard.down(' '); await pg.keyboard.down('ArrowRight'); await pg.waitForTimeout(1200); await pg.keyboard.up('ArrowRight'); await pg.keyboard.down('ArrowLeft'); await pg.waitForTimeout(1500);
+  await pg.screenshot({path:'shots/play1.png'}); await pg.keyboard.up('ArrowLeft'); await pg.keyboard.up(' ');
+  await pg.evaluate(()=>{ __G.state().fuel=0.01; }); await pg.waitForTimeout(500);
+  await pg.screenshot({path:'shots/card.png'});
+  // answer right
+  const right=async()=>{ const i=await pg.evaluate(()=>{ const q=__G.state().q; return q.choices.findIndex(c=>c.ok); }); await pg.evaluate(()=>__G.noWait()); await pg.keyboard.press(String(i+1)); };
+  await right(); await pg.waitForTimeout(200); await pg.screenshot({path:'shots/card_right.png'}); await pg.waitForTimeout(900);
+  const wrong=async()=>{ const i=await pg.evaluate(()=>{ const q=__G.state().q; return q.choices.findIndex(c=>!c.ok); }); await pg.evaluate(()=>__G.noWait()); await pg.keyboard.press(String(i+1)); };
+  await wrong(); await pg.waitForTimeout(400); await pg.screenshot({path:'shots/card_wrong.png'});
+  await pg.evaluate(()=>{ __G.launch(); __G.state().sinceDraft=99; __G.dock(); }); await pg.waitForTimeout(300); await right(); await pg.waitForTimeout(1100);
+  await pg.screenshot({path:'shots/draft.png'}); await pg.evaluate(()=>{ __G.noWait(); }); await pg.keyboard.press('1'); await pg.waitForTimeout(500);
+  await pg.evaluate(()=>{ const s=__G.state(); s.fuel=19; ['gun','drone','missile','shield'].forEach(k=>s.lv[k]=3); if(__G.cardOpen()) __G.launch(); __G.setWave(4); }); await pg.waitForTimeout(3000);
+  await pg.keyboard.down(' '); await pg.waitForTimeout(2500); await pg.screenshot({path:'shots/wave5.png'});
+  await pg.evaluate(()=>{ __G.state().fuel=19; __G.setWave(5); }); await pg.waitForTimeout(7000); await pg.screenshot({path:'shots/boss.png'});
+  await pg.evaluate(()=>{ __G.state().fuel=19; const B=__G.state().bossHp; __G.hitPart('l',B.l); __G.hitPart('r',B.r); }); await pg.waitForTimeout(4600); await pg.screenshot({path:'shots/boss_core.png'});
+  await pg.evaluate(()=>{ __G.state().fuel=19; __G.setWave(2); }); await pg.waitForTimeout(5000); await pg.screenshot({path:'shots/rush.png'}); await pg.keyboard.up(' ');
+  await pg.evaluate(()=>__G.end()); await pg.waitForTimeout(2500); await pg.screenshot({path:'shots/end.png'});
+  console.log('errors',JSON.stringify(errs.slice(0,8))); await b.close(); })();

@@ -1,0 +1,54 @@
+<div id="stage">
+  <canvas id="sw-canvas" width="1280" height="720" aria-label="Space. Arrow keys move the ship, hold Space to fire at the swarm, Shift dashes. Or hold a finger or the mouse on the space."></canvas>
+  <div class="sw-top" id="sw-top" hidden>
+    <div class="sw-chip" id="sw-timerchip"><span class="l">Time</span><span class="v" id="sw-time">5:00</span></div>
+    <div class="sw-chip"><span class="l">Score</span><span class="v" id="sw-score">0</span></div>
+    <div class="sw-chip"><span class="l">Best today</span><span class="v" id="sw-best">—</span></div>
+    <span class="sw-sp"></span>
+    <span class="sw-credit sz-credit">Made by Spitz <i class="sz-burger" aria-hidden="true"></i></span>
+    <span class="sw-sp"></span>
+    <div class="sw-chip" id="sw-multchip"><span class="l">Multiplier</span><span class="v" id="sw-mult">×1</span></div>
+    <div class="sw-chip"><span class="l">Answer streak</span><span class="v" id="sw-streak">0</span></div>
+  </div>
+  <div class="sw-keysbar" id="sw-keysbar" hidden><span><b>←</b><b>→</b>Move</span><span><b>Space</b>Fire</span><span><b>Shift</b>Dash</span></div>
+
+  <div class="sw-dim" id="sw-dim" hidden></div>
+  <div class="sw-q" id="sw-q" hidden role="dialog" aria-label="Question. Your ship is docked and safe.">
+    <div class="sw-qhead"><span class="sw-safe">SHIP DOCKED · YOU ARE SAFE</span><span class="sw-sp"></span><span class="sw-tag" id="sw-tag"></span><span class="sw-tank" id="sw-tank"></span></div>
+    <div class="sw-qp" id="sw-prompt"></div>
+    <div id="sw-body"><div id="sw-visual"></div><div class="sw-choices" id="sw-choices"></div></div>
+    <div class="sw-fb" id="sw-fb"></div>
+    <div class="sw-qfoot"><button class="sw-next" id="sw-next" disabled><kbd>Enter</kbd>Next question</button><button class="sw-launch" id="sw-launch" disabled><kbd>Space</kbd>Launch</button></div>
+  </div>
+  <div class="sw-draft" id="sw-draft" hidden role="dialog" aria-label="Pick an upgrade. The game is paused.">
+    <h2>Upgrade!</h2><p>Pick one. It lasts the whole run.</p>
+    <div class="sw-cards" id="sw-cards"></div>
+  </div>
+
+  <div class="sw-over" id="sw-start"><div class="sw-box">
+    <div class="sz-eyebrow">Spitz <b>Arcade</b></div><h2 class="sw-big"><b>STAR</b> <i>SWARM</i></h2>
+    <p class="sw-sub"><span class="sz-setname">Slope-intercept form, point-slope form, graphs, HOY and VUX.</span> Right answers fuel your ship. Blast the swarm and take down the Mothership.</p>
+    <div class="sw-row"><input class="sw-input" id="sw-nameinput" maxlength="24" placeholder="First name + last initial" autocomplete="off" aria-label="Your name"><button class="sz-mus" id="sz-mus" aria-label="Music on or off, key N">♪ Music on</button></div>
+    <button class="sw-go" id="sw-go" disabled>Start</button>
+    <div class="sw-keys"><div class="sz-ctl" data-ctl="LR=Move | Space=Hold to fire | Shift=Dash | 1234=Answer"></div>N music · M mute · Shift+R new game · F full screen</div>
+  </div><span class="sw-credit sz-credit">Made by Spitz <i class="sz-burger" aria-hidden="true"></i></span></div>
+
+  <div class="sw-over" id="sw-end" hidden><div class="sw-box"><div class="sz-eyebrow">Spitz <b>Arcade</b></div>
+    <div class="sw-name" id="sw-endname"></div>
+    <div class="sw-final" id="sw-endscore">0</div>
+    <div class="sw-medal" id="sw-endmedal"></div>
+    <div class="sw-stats" id="sw-endstats"></div>
+    <div class="sw-topics" id="sw-endtopics"></div>
+    <div class="sw-code"><span class="l">Your score code</span><span id="sw-endcode"></span></div>
+    <p class="sw-note">Tap the button, then paste the code into the form with your name.</p>
+    <button class="sw-again" id="sw-again"><kbd>Enter</kbd> Play again</button>
+  </div><span class="sw-credit sz-credit">Made by Spitz <i class="sz-burger" aria-hidden="true"></i></span></div>
+
+  <div class="sw-over" id="sw-confirm" hidden><div class="sw-box sw-ask" role="dialog" aria-modal="true" aria-labelledby="sw-asktitle">
+    <h2 id="sw-asktitle">Start a new game?</h2>
+    <p class="sw-sub">This erases the current run: score, fuel and upgrades.</p>
+    <div class="sw-row"><button class="sw-again" id="sw-askno">No, keep playing (N)</button><button class="sw-go" id="sw-askyes">Yes, new game (Y)</button></div>
+  </div></div>
+  <canvas id="sw-confetti" width="960" height="540" aria-hidden="true"></canvas>
+  <div class="sw-toast" id="sw-toast" hidden></div>
+</div>

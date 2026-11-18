@@ -48,6 +48,17 @@
         "games/rocket_buds.html",
         "tools/qa/adapters/rocket_buds.js"
       ]
+    },
+    {
+      "id": "star_swarm",
+      "name": "Star Swarm",
+      "tier": 2,
+      "adapter": "adapters/star_swarm.js",
+      "paths": [
+        "games/star_swarm.html",
+        "games/new/star_swarm/",
+        "tools/qa/adapters/star_swarm.js"
+      ]
     }
   ]
 }
