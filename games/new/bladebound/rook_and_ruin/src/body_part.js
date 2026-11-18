@@ -230,7 +230,7 @@ function fireWave(a,l,x,y,child){ var w=S.w, p=w.p, ux=Math.cos(a), uy=Math.sin(
 var BUF={s:0,r:0};
 function roll(){ var w=S.w, p=w.p, s=stat(); if(p.roll>0||p.rollCd>0||S.mode!=='play'){ if(S.mode==='play') BUF.r=0.15; return; }
   var mx=(HELD.arrowright||HELD.d?1:0)-(HELD.arrowleft||HELD.a?1:0), my=(HELD.arrowdown||HELD.s?1:0)-(HELD.arrowup||HELD.w?1:0), ml=Math.hypot(mx,my);
-  p.rx=ml?mx/ml:p.fx; p.ry=ml?my/ml:p.fy; p.roll=0.24; p.rollCd=s.rollCd; p.inv=Math.max(p.inv,0.3); p.rolling=1; p.rollHit=[]; SND.dodge();
+  p.rx=ml?mx/ml:p.fx; p.ry=ml?my/ml:p.fy; p.roll=0.24; p.rollCd=s.rollCd; p.inv=Math.max(p.inv,0.3); p.rolling=1; p.rollHit=[]; SND.dodge(); if(p.burn>0){ p.burn=0; p.bn=0; S.w.fx.push({k:'txt',x:p.x,y:p.y-56,t:0,v:'Fire out!',c:'#7DF5FF'}); }   /* Kody 2026-11-18: a dodge roll puts the fire out again */
   if(HAS('thunder')) thunderGuard(); }
 function thunderGuard(){ var w=S.w, p=w.p, near=w.en.filter(function(e){ return !e.dead&&Math.hypot(e.x-p.x,e.y-p.y)<220; }).sort(function(a,b){ return Math.hypot(a.x-p.x,a.y-p.y)-Math.hypot(b.x-p.x,b.y-p.y); }).slice(0,4);
   DSRC='thunder'; near.forEach(function(e){ w.fx.push({k:'zap',x:e.x,y:e.y,t:0}); hurtE(e,5+2*L('spark'),0,0,0); }); if(near.length) SND.zap(); }
@@ -441,8 +441,8 @@ function bossAI(e,dt,p,d,ux,uy){ var w=S.w, half=e.hp<e.max/2, sp=half?0.85:1;
 /* ---------- Warden fire (Kody's classroom test 2026-11-16: a student asked for poison / damage over time) ----------
    Every Last Stand Warden slam, and every slam once the first Warden is enraged (below half health), leaves 2 fire patches. Each shows a dim outline for 0.5 s, burns 6 s, then dies out.
    At most 4 burn at once; never on a door, never under Rook. Stepping in sets Rook on fire for 6 s: his last heart visibly drains and he loses 1 heart every 3 s (2 in all),
-   (straight through armor and Aegis). Kody 2026-11-16: a dodge roll does NOT put it out (too free); rolling across a patch
-   still doesn't light you. One burn at a time, no stacking.
+   (straight through armor and Aegis). Kody 2026-11-18: a dodge roll puts it out again, and fire never takes the last heart
+   (it can't light you, and stops burning, at 1 heart); rolling across a patch still doesn't light you. One burn at a time, no stacking.
    Enemies standing in fire take 4 damage every 0.5 s (Wardens are immune). */
 var FIRE={r:38, warn:0.5, life:6, max:8, burn:6, tick:3};   /* max 8: enraged charges drop 3-4 fires along their path */   /* Kody 2026-11-16: burn ticks health down over a longer time: 1 heart every 3 s for 6 s (2 hearts) */
 function addFire(x,y,p,warn,o){ var w=S.w; w.fires=w.fires||[]; if(w.fires.length>=FIRE.max) return false;
@@ -457,8 +457,9 @@ function slamFire(e,p){ var w=S.w; w.fires=w.fires||[]; var made=0;
     w.fires.push({x:x,y:y,t:-FIRE.warn,s:Math.random()*9}); made++; } }
 function fireTick(dt,p){ var w=S.w, F=w.fires; if(!F||(!F.length&&!(p.burn>0))) return;
   for(var i=F.length-1;i>=0;i--){ var f=F[i]; f.t+=dt; if(f.t>=(f.life||FIRE.life)){ F.splice(i,1); continue; } if(f.t<0) continue;
-    if(!(p.burn>0)&&p.roll<=0&&Math.hypot(p.x-f.x,(p.y-f.y)*1.6)<FIRE.r){ if(f.lite){ p.burn=p.bmax=FIRE.tick; p.bn=1; } else { p.burn=p.bmax=FIRE.burn; p.bn=Math.round(FIRE.burn/FIRE.tick); } p.bseg=FIRE.tick; SND.tele(); if(!w.fireTold){ w.fireTold=1; w.fx.push({k:'txt',x:p.x,y:p.y-56,t:0,v:'On fire! Stay out of the flames',c:'#FF9A3C'}); } }
+    if(!(p.burn>0)&&p.roll<=0&&p.hp>1&&Math.hypot(p.x-f.x,(p.y-f.y)*1.6)<FIRE.r){ if(f.lite){ p.burn=p.bmax=FIRE.tick; p.bn=1; } else { p.burn=p.bmax=FIRE.burn; p.bn=Math.round(FIRE.burn/FIRE.tick); } p.bseg=FIRE.tick; SND.tele(); if(!w.fireTold){ w.fireTold=1; w.fx.push({k:'txt',x:p.x,y:p.y-56,t:0,v:'On fire! Stay out of the flames',c:'#FF9A3C'}); } }
     f.hT=(f.hT||0)-dt; if(f.hT<=0){ f.hT=0.5; DSRC='fire'; for(var j=0;j<w.en.length;j++){ var e=w.en[j]; if(!e.dead&&e.type!=='boss'&&e.type!=='imp'&&Math.hypot(e.x-f.x,(e.y-f.y)*1.6)<FIRE.r+e.r*0.5) hurtE(e,4,0,0,0); } } }
+  if(p.burn>0&&p.hp<=1){ p.burn=0; return; }   /* Kody 2026-11-18: fire never takes the last heart */
   if(p.burn>0){ p.burn-=dt; p.bseg=(p.bseg||FIRE.tick)-dt; if(p.bseg<=0){ p.bseg=FIRE.tick; p.bn=(p.bn||1)-1; hurtP({x:p.x,y:p.y+1,fire:1},1); if(p.bn<=0||S.mode!=='play'){ p.burn=0; return; } } if(p.burn<0.05) p.burn=0.05; } }
 /* fire patch: a low ember glow and pixel flames that rise and fall (gentle, never flashing). Outline only during the warning. */
 /* flame sprites inside a fire patch: [dx, dy (feet), scale], back to front */
