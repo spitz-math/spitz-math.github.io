@@ -1,7 +1,9 @@
 // Sprite Drop tools (see index.ts for the sign-in wiring).
 import { createMcpHandler, McpServer } from 'npm:@modelcontextprotocol/server@^2.4.0'
 import { z } from 'npm:zod@^4.3.6'
+import { decode as decodePngLib } from 'npm:fast-png@6.3.0'
 import { registerTaskTools } from './tasks.ts'
+import { decodePng, type Frames, prove, type Proof } from './proof.ts'
 import { assetPath, BUCKET, cleanTaskId, describeFile, dimensions, fromBase64, INLINE_LIMIT, MAX_BYTES, sniff, toBase64 } from './image.ts'
 
 // deno-lint-ignore no-explicit-any
@@ -44,7 +46,26 @@ async function download(url: string): Promise<{ bytes: Uint8Array; status: numbe
 // What the server verified about the caller, from the signed token (never from tool arguments).
 export type Who = { user_id: string; email: string | null; client_id: string | null; session_id: string | null; owner_lock: 'off' | 'match' }
 
-export function handlerFor(supabase: Db, userId: string, who?: Who) {
+// Records a pixel proof with the server key (studio_record_proof). Only Sprite Drop's own proof code calls it.
+export type RecordProof = (args: Record<string, unknown>) => Promise<{ data: unknown; error: { message?: string } | null }>
+export const PROOF_CHECKER = 'sprite-drop proof.ts v1'
+
+/** Compare a just-stored child with its approved parent's stored bytes. Never throws: a failure means "no proof". */
+async function proofFor(supabase: Db, child: { id: string; sha256: string; bytes: Uint8Array; mime: string; frames: Frames }, parentId: string): Promise<Proof & { parent_sha256?: string }> {
+  const none = (summary: string): Proof => ({ kind: 'none', pixel_preserving: false, summary, details: {} })
+  const { data: p } = await supabase.from('studio_assets').select('id, sha256, size_bytes, path, mime_type, anim').eq('id', parentId).maybeSingle()
+  if (!p) return none('The parent picture could not be read.')
+  if (child.mime !== 'image/png' || p.mime_type !== 'image/png') return { ...none('Proofs only compare PNG files, so Kody approves this one.'), parent_sha256: p.sha256 }
+  const dl = await supabase.storage.from(BUCKET).download(p.path)
+  if (dl.error || !dl.data) return { ...none('The parent picture\'s file could not be opened.'), parent_sha256: p.sha256 }
+  const pb = new Uint8Array(await dl.data.arrayBuffer())
+  if (await sha256Hex(pb) !== p.sha256 || pb.length !== p.size_bytes) return { ...none('The parent picture\'s stored bytes do not match its checksum.'), parent_sha256: p.sha256 }
+  const pi = decodePng(pb, decodePngLib), ci = decodePng(child.bytes, decodePngLib)
+  if (typeof pi === 'string' || typeof ci === 'string') return { ...none(`Could not compare: ${typeof pi === 'string' ? pi : ci}.`), parent_sha256: p.sha256 }
+  return { ...prove(pi, ci, p.anim, child.frames), parent_sha256: p.sha256 }
+}
+
+export function handlerFor(supabase: Db, userId: string, who?: Who, opts: { recordProof?: RecordProof } = {}) {
   // Every drop attempt is logged, success or not, so we can see exactly where a transfer broke.
   const log = (row: { task_id: string | null; stage: string; ok: boolean; detail: Record<string, unknown> }) =>
     Promise.resolve(supabase.from('studio_drop_log').insert({ user_id: userId, ...row })).catch(() => {})
@@ -72,7 +93,9 @@ export function handlerFor(supabase: Db, userId: string, who?: Who) {
         file_name: z.string().max(100).optional().describe('Name to save it as, e.g. "second_wind_64x32.png"'),
         note: z.string().max(1000).optional().describe('Anything Claude should know: what it is, intended size, what to fix'),
         made_from: z.string().optional().describe('Asset id of the APPROVED picture this one was made from (a 1x conversion, an animation, an edit). Kody sees them side by side.'),
-        frames: z.object({ frame_w: z.number().int().min(1), frame_h: z.number().int().min(1), frame_ms: z.number().int().min(16).max(5000) }).optional()
+        // some clients send the object as a JSON string; accept both
+        frames: z.preprocess((v) => { if (typeof v !== 'string') return v; try { return JSON.parse(v) } catch { return v } },
+          z.object({ frame_w: z.number().int().min(1), frame_h: z.number().int().min(1), frame_ms: z.number().int().min(16).max(5000) })).optional()
           .describe('For a sprite sheet: one frame\'s width and height in pixels and how long each frame shows. Kody\'s preview plays it at that speed.'),
       }),
       _meta: { 'openai/fileParams': ['file'] },
@@ -126,7 +149,25 @@ export function handlerFor(supabase: Db, userId: string, who?: Who) {
         stored = null
         const asset = { id: ins.data.id, task_id: tid, file_name: row.file_name, mime_type: kind.mime, size_bytes: bytes.length, width: row.width, height: row.height, sha256, source, created_at: ins.data.created_at, status: ins.data.status, made_from: made_from ?? null }
         await log({ task_id: tid, stage: 'saved', ok: true, detail: { received, ...http, asset } })
-        return text({ saved: true, asset, approve_url: APPROVE(asset.id),
+
+        // M3: a picture made from an approved one gets a pixel proof. Only a pixel-preserving change is approved by it.
+        let proof: Record<string, unknown> | undefined
+        if (made_from) {
+          const pr = await proofFor(supabase, { id: asset.id, sha256, bytes, mime: kind.mime, frames: frames ?? null }, made_from)
+          proof = { kind: pr.kind, pixel_preserving: pr.pixel_preserving, summary: pr.summary }
+          if (opts.recordProof && pr.parent_sha256) {
+            const rec = await opts.recordProof({ p_asset_id: asset.id, p_asset_sha256: sha256, p_parent_sha256: pr.parent_sha256, p_kind: pr.kind,
+              p_pixel_preserving: pr.pixel_preserving, p_summary: pr.summary, p_details: pr.details, p_checker: PROOF_CHECKER }).catch((e) => ({ data: null, error: { message: String(e) } }))
+            if (rec.error) proof.recorded = 'not recorded: ' + rec.error.message
+            else { const d = rec.data as { status?: string; auto_approved?: boolean; why_not?: string }; proof.recorded = true; proof.auto_approved = !!d?.auto_approved; if (d?.status) asset.status = d.status }
+          } else proof.recorded = 'not recorded: proofs are not available here'
+          await log({ task_id: tid, stage: 'proof', ok: true, detail: { assetId: asset.id, parent: made_from, ...proof } })
+        }
+        if (asset.status === 'approved')
+          return text({ saved: true, asset, proof,
+            next: 'APPROVED by pixel proof: every pixel of the approved parent is kept exactly, so it is usable now. Kody sees the proof on spitz.dev.',
+            tell_claude: `Asset ${asset.id} on task ${tid}: ${asset.width}x${asset.height} ${kind.mime}, sha256 ${sha256}, approved by pixel proof from ${made_from}` })
+        return text({ saved: true, asset, approve_url: APPROVE(asset.id), proof,
           next: 'HELD until Kody approves it. Now call get_asset on this id and show Kody the stored file, then give him approve_url. You cannot approve it, and nobody can use it before he does.',
           tell_claude: `Asset ${asset.id} on task ${tid}: ${asset.width}x${asset.height} ${kind.mime}, ${bytes.length} bytes, sha256 ${sha256}, held for Kody's approval` })
       } catch (e) {

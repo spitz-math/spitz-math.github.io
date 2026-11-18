@@ -1,10 +1,12 @@
 // Sprite Drop, ONE-FILE copy for pasting into the Supabase dashboard editor.
-// Generated from index.ts + tools.ts + tasks.ts + image.ts in spitz-arcade/studio/sprite-drop by make_bundle.py. Edit those, not this.
+// Generated from index.ts + tools.ts + tasks.ts + proof.ts + image.ts in spitz-arcade/studio/sprite-drop by make_bundle.py. Edit those, not this.
 import 'jsr:@supabase/functions-js/edge-runtime.d.ts'
 import { pipeline } from 'npm:@supabase/middleware@1'
 import { withOAuthProtectedResource, withSupabase } from 'npm:@supabase/server@^1.9.0'
 import { createMcpHandler, McpServer } from 'npm:@modelcontextprotocol/server@^2.4.0'
 import { z } from 'npm:zod@^4.3.6'
+import { decode as decodePngLib } from 'npm:fast-png@6.3.0'
+import { createClient } from 'npm:@supabase/supabase-js@2.119.0'
 
 // ---------- image.ts ----------
 // Pure helpers for Sprite Drop. No Deno or Supabase imports, so they can be
@@ -112,6 +114,136 @@ export function fromBase64(s: string): Uint8Array {
   const out = new Uint8Array(bin.length)
   for (let i = 0; i < bin.length; i++) out[i] = bin.charCodeAt(i)
   return out
+}
+
+// ---------- proof.ts ----------
+// Pixel proofs for spitz.dev (M3). Given an APPROVED parent picture and a new child made from it, decide from the
+// stored bytes alone whether the child keeps every pixel of the parent exactly. Only such "pixel-preserving" changes
+// may be approved without Kody: re-save, trim, pad or shift, whole-number scale, and cutting one frame out of a sheet.
+// Anything else (1x conversion of an illustration, recolour, redraw, new animation frames) is held for Kody.
+// Pure functions on decoded pixels; decoding is the only part that touches a library.
+
+export type Img = { w: number; h: number; px: Uint32Array } // one RGBA value per pixel; fully transparent pixels are 0
+export type Frames = { frame_w: number; frame_h: number } | null | undefined
+export type Proof = {
+  kind: 'identical' | 'same_content' | 'scale' | 'frame_of' | 'sheet_of' | 'none'
+  pixel_preserving: boolean
+  summary: string
+  details: Record<string, unknown>
+}
+
+/** RGBA bytes (w*h*4) to an Img. Every fully transparent pixel becomes 0 whatever colour it carries. */
+export function fromRgba(w: number, h: number, rgba: Uint8Array): Img {
+  const px = new Uint32Array(w * h)
+  for (let i = 0; i < w * h; i++) {
+    const a = rgba[i * 4 + 3]
+    px[i] = a === 0 ? 0 : ((rgba[i * 4] << 24) | (rgba[i * 4 + 1] << 16) | (rgba[i * 4 + 2] << 8) | a) >>> 0
+  }
+  return { w, h, px }
+}
+
+type Box = { x: number; y: number; w: number; h: number }
+
+/** Smallest rectangle holding every visible pixel inside `r` (null when nothing is visible). */
+export function bbox(img: Img, r: Box = { x: 0, y: 0, w: img.w, h: img.h }): Box | null {
+  let x0 = Infinity, y0 = Infinity, x1 = -1, y1 = -1
+  for (let y = r.y; y < r.y + r.h; y++) for (let x = r.x; x < r.x + r.w; x++) {
+    if (img.px[y * img.w + x] !== 0) { if (x < x0) x0 = x; if (x > x1) x1 = x; if (y < y0) y0 = y; if (y > y1) y1 = y }
+  }
+  return x1 < 0 ? null : { x: x0, y: y0, w: x1 - x0 + 1, h: y1 - y0 + 1 }
+}
+
+/** a's box equals b's box scaled up by k (k = 1: equal). */
+function eqScaled(a: Img, ab: Box, b: Img, bb: Box, k: number): boolean {
+  if (ab.w !== bb.w * k || ab.h !== bb.h * k) return false
+  for (let y = 0; y < ab.h; y++) {
+    const ra = (ab.y + y) * a.w + ab.x, rb = (bb.y + Math.floor(y / k)) * b.w + bb.x
+    for (let x = 0; x < ab.w; x++) if (a.px[ra + x] !== b.px[rb + Math.floor(x / k)]) return false
+  }
+  return true
+}
+
+/** How content `c` (box cb) relates to content `p` (box pb): same, or one is the other scaled by a whole number. */
+function relate(p: Img, pb: Box, c: Img, cb: Box): { scale: number; dir: 'same' | 'down' | 'up' } | null {
+  if (pb.w === cb.w && pb.h === cb.h) return eqScaled(c, cb, p, pb, 1) ? { scale: 1, dir: 'same' } : null
+  if (pb.w > cb.w && pb.w % cb.w === 0 && pb.h % cb.h === 0 && pb.w / cb.w === pb.h / cb.h) {
+    const k = pb.w / cb.w
+    return eqScaled(p, pb, c, cb, k) ? { scale: k, dir: 'down' } : null
+  }
+  if (cb.w > pb.w && cb.w % pb.w === 0 && cb.h % pb.h === 0 && cb.w / pb.w === cb.h / pb.h) {
+    const k = cb.w / pb.w
+    return eqScaled(c, cb, p, pb, k) ? { scale: k, dir: 'up' } : null
+  }
+  return null
+}
+
+function cells(img: Img, f: Frames): Box[] {
+  if (!f || f.frame_w <= 0 || f.frame_h <= 0 || img.w % f.frame_w || img.h % f.frame_h) return []
+  const out: Box[] = []
+  for (let y = 0; y < img.h; y += f.frame_h) for (let x = 0; x < img.w; x += f.frame_w) out.push({ x, y, w: f.frame_w, h: f.frame_h })
+  return out
+}
+
+const none = (summary: string, details: Record<string, unknown> = {}): Proof => ({ kind: 'none', pixel_preserving: false, summary, details })
+const how = (r: { scale: number; dir: string }) => r.dir === 'same' ? 'same pixels' : `same pixels scaled ${r.dir === 'down' ? 'down' : 'up'} exactly ${r.scale}x`
+
+/** The proof. `parentFrames`/`childFrames` are the sheets' frame sizes when they are animations. */
+export function prove(parent: Img, child: Img, parentFrames?: Frames, childFrames?: Frames): Proof {
+  if (parent.w === child.w && parent.h === child.h && parent.px.every((v, i) => v === child.px[i]))
+    return { kind: 'identical', pixel_preserving: true, summary: 'Every pixel is identical to the approved parent (only the file bytes differ).', details: {} }
+  const pb = bbox(parent), cb = bbox(child)
+  if (!pb || !cb) return none('One of the pictures is fully transparent.')
+
+  const r = relate(parent, pb, child, cb)
+  if (r) {
+    const moved = { parent_box: pb, child_box: cb, canvas: { parent: [parent.w, parent.h], child: [child.w, child.h] } }
+    if (r.dir === 'same') return { kind: 'same_content', pixel_preserving: true, summary: 'Same visible pixels as the approved parent; only the empty border changed (trim, pad or shift).', details: moved }
+    return { kind: 'scale', pixel_preserving: true, summary: `The approved parent's ${how(r)} (nearest neighbour, nothing invented or lost).`, details: { ...moved, scale: r.scale, direction: r.dir } }
+  }
+
+  // one frame cut out of an approved sheet
+  for (const [i, cell] of cells(parent, parentFrames).entries()) {
+    const fb = bbox(parent, cell); if (!fb) continue
+    const rf = relate(parent, fb, child, cb)
+    if (rf) return { kind: 'frame_of', pixel_preserving: true, summary: `Frame ${i + 1} of the approved sheet: ${how(rf)}.`, details: { frame: i, scale: rf.scale, direction: rf.dir } }
+  }
+
+  // a new sheet: which of its frames are the approved parent exactly (evidence only, unless every frame is)
+  const cc = cells(child, childFrames)
+  if (cc.length) {
+    const match: number[] = []
+    cc.forEach((cell, i) => { const fb = bbox(child, cell); if (fb && relate(parent, pb, child, fb)?.dir === 'same') match.push(i) })
+    const all = match.length === cc.length
+    return {
+      kind: all ? 'sheet_of' : 'none', pixel_preserving: all,
+      summary: all ? 'Every frame is the approved parent, pixel for pixel.'
+        : match.length ? `Frame${match.length > 1 ? 's' : ''} ${match.map((i) => i + 1).join(', ')} of ${cc.length} ${match.length > 1 ? 'are' : 'is'} the approved parent pixel for pixel. The other frames are new, so Kody approves this sheet.`
+        : `None of the ${cc.length} frames is the approved parent pixel for pixel. Kody approves this sheet.`,
+      details: { frames: cc.length, frames_equal_to_parent: match },
+    }
+  }
+  return none('Not a pixel-for-pixel copy, trim, shift, whole-number scale or frame of the approved parent, so Kody approves it.')
+}
+
+/** Decode PNG bytes to an Img with the given decoder (fast-png's decode). Returns a reason string when it can't. */
+// deno-lint-ignore no-explicit-any
+export function decodePng(bytes: Uint8Array, decode: (b: Uint8Array) => any): Img | string {
+  let p
+  try { p = decode(bytes) } catch (e) { return 'could not decode PNG: ' + (e instanceof Error ? e.message : String(e)) }
+  const { width: w, height: h, channels: ch, depth } = p
+  if (depth !== 8) return `PNG bit depth ${depth} is not supported for proofs`
+  const src = p.data as Uint8Array, out = new Uint8Array(w * h * 4)
+  for (let i = 0; i < w * h; i++) {
+    if (p.palette) {
+      const e = p.palette[src[i]] ?? [0, 0, 0, 0]
+      out.set([e[0], e[1], e[2], e.length > 3 ? e[3] : 255], i * 4)
+    } else if (ch === 4) out.set(src.subarray(i * 4, i * 4 + 4), i * 4)
+    else if (ch === 3) out.set([src[i * 3], src[i * 3 + 1], src[i * 3 + 2], 255], i * 4)
+    else if (ch === 2) out.set([src[i * 2], src[i * 2], src[i * 2], src[i * 2 + 1]], i * 4)
+    else if (ch === 1) out.set([src[i], src[i], src[i], 255], i * 4)
+    else return `PNG with ${ch} channels is not supported for proofs`
+  }
+  return fromRgba(w, h, out)
 }
 
 // ---------- tasks.ts ----------
@@ -389,7 +521,26 @@ async function download(url: string): Promise<{ bytes: Uint8Array; status: numbe
 // What the server verified about the caller, from the signed token (never from tool arguments).
 export type Who = { user_id: string; email: string | null; client_id: string | null; session_id: string | null; owner_lock: 'off' | 'match' }
 
-export function handlerFor(supabase: Db, userId: string, who?: Who) {
+// Records a pixel proof with the server key (studio_record_proof). Only Sprite Drop's own proof code calls it.
+export type RecordProof = (args: Record<string, unknown>) => Promise<{ data: unknown; error: { message?: string } | null }>
+export const PROOF_CHECKER = 'sprite-drop proof.ts v1'
+
+/** Compare a just-stored child with its approved parent's stored bytes. Never throws: a failure means "no proof". */
+async function proofFor(supabase: Db, child: { id: string; sha256: string; bytes: Uint8Array; mime: string; frames: Frames }, parentId: string): Promise<Proof & { parent_sha256?: string }> {
+  const none = (summary: string): Proof => ({ kind: 'none', pixel_preserving: false, summary, details: {} })
+  const { data: p } = await supabase.from('studio_assets').select('id, sha256, size_bytes, path, mime_type, anim').eq('id', parentId).maybeSingle()
+  if (!p) return none('The parent picture could not be read.')
+  if (child.mime !== 'image/png' || p.mime_type !== 'image/png') return { ...none('Proofs only compare PNG files, so Kody approves this one.'), parent_sha256: p.sha256 }
+  const dl = await supabase.storage.from(BUCKET).download(p.path)
+  if (dl.error || !dl.data) return { ...none('The parent picture\'s file could not be opened.'), parent_sha256: p.sha256 }
+  const pb = new Uint8Array(await dl.data.arrayBuffer())
+  if (await sha256Hex(pb) !== p.sha256 || pb.length !== p.size_bytes) return { ...none('The parent picture\'s stored bytes do not match its checksum.'), parent_sha256: p.sha256 }
+  const pi = decodePng(pb, decodePngLib), ci = decodePng(child.bytes, decodePngLib)
+  if (typeof pi === 'string' || typeof ci === 'string') return { ...none(`Could not compare: ${typeof pi === 'string' ? pi : ci}.`), parent_sha256: p.sha256 }
+  return { ...prove(pi, ci, p.anim, child.frames), parent_sha256: p.sha256 }
+}
+
+export function handlerFor(supabase: Db, userId: string, who?: Who, opts: { recordProof?: RecordProof } = {}) {
   // Every drop attempt is logged, success or not, so we can see exactly where a transfer broke.
   const log = (row: { task_id: string | null; stage: string; ok: boolean; detail: Record<string, unknown> }) =>
     Promise.resolve(supabase.from('studio_drop_log').insert({ user_id: userId, ...row })).catch(() => {})
@@ -417,7 +568,9 @@ export function handlerFor(supabase: Db, userId: string, who?: Who) {
         file_name: z.string().max(100).optional().describe('Name to save it as, e.g. "second_wind_64x32.png"'),
         note: z.string().max(1000).optional().describe('Anything Claude should know: what it is, intended size, what to fix'),
         made_from: z.string().optional().describe('Asset id of the APPROVED picture this one was made from (a 1x conversion, an animation, an edit). Kody sees them side by side.'),
-        frames: z.object({ frame_w: z.number().int().min(1), frame_h: z.number().int().min(1), frame_ms: z.number().int().min(16).max(5000) }).optional()
+        // some clients send the object as a JSON string; accept both
+        frames: z.preprocess((v) => { if (typeof v !== 'string') return v; try { return JSON.parse(v) } catch { return v } },
+          z.object({ frame_w: z.number().int().min(1), frame_h: z.number().int().min(1), frame_ms: z.number().int().min(16).max(5000) })).optional()
           .describe('For a sprite sheet: one frame\'s width and height in pixels and how long each frame shows. Kody\'s preview plays it at that speed.'),
       }),
       _meta: { 'openai/fileParams': ['file'] },
@@ -471,7 +624,25 @@ export function handlerFor(supabase: Db, userId: string, who?: Who) {
         stored = null
         const asset = { id: ins.data.id, task_id: tid, file_name: row.file_name, mime_type: kind.mime, size_bytes: bytes.length, width: row.width, height: row.height, sha256, source, created_at: ins.data.created_at, status: ins.data.status, made_from: made_from ?? null }
         await log({ task_id: tid, stage: 'saved', ok: true, detail: { received, ...http, asset } })
-        return text({ saved: true, asset, approve_url: APPROVE(asset.id),
+
+        // M3: a picture made from an approved one gets a pixel proof. Only a pixel-preserving change is approved by it.
+        let proof: Record<string, unknown> | undefined
+        if (made_from) {
+          const pr = await proofFor(supabase, { id: asset.id, sha256, bytes, mime: kind.mime, frames: frames ?? null }, made_from)
+          proof = { kind: pr.kind, pixel_preserving: pr.pixel_preserving, summary: pr.summary }
+          if (opts.recordProof && pr.parent_sha256) {
+            const rec = await opts.recordProof({ p_asset_id: asset.id, p_asset_sha256: sha256, p_parent_sha256: pr.parent_sha256, p_kind: pr.kind,
+              p_pixel_preserving: pr.pixel_preserving, p_summary: pr.summary, p_details: pr.details, p_checker: PROOF_CHECKER }).catch((e) => ({ data: null, error: { message: String(e) } }))
+            if (rec.error) proof.recorded = 'not recorded: ' + rec.error.message
+            else { const d = rec.data as { status?: string; auto_approved?: boolean; why_not?: string }; proof.recorded = true; proof.auto_approved = !!d?.auto_approved; if (d?.status) asset.status = d.status }
+          } else proof.recorded = 'not recorded: proofs are not available here'
+          await log({ task_id: tid, stage: 'proof', ok: true, detail: { assetId: asset.id, parent: made_from, ...proof } })
+        }
+        if (asset.status === 'approved')
+          return text({ saved: true, asset, proof,
+            next: 'APPROVED by pixel proof: every pixel of the approved parent is kept exactly, so it is usable now. Kody sees the proof on spitz.dev.',
+            tell_claude: `Asset ${asset.id} on task ${tid}: ${asset.width}x${asset.height} ${kind.mime}, sha256 ${sha256}, approved by pixel proof from ${made_from}` })
+        return text({ saved: true, asset, approve_url: APPROVE(asset.id), proof,
           next: 'HELD until Kody approves it. Now call get_asset on this id and show Kody the stored file, then give him approve_url. You cannot approve it, and nobody can use it before he does.',
           tell_claude: `Asset ${asset.id} on task ${tid}: ${asset.width}x${asset.height} ${kind.mime}, ${bytes.length} bytes, sha256 ${sha256}, held for Kody's approval` })
       } catch (e) {
@@ -574,7 +745,7 @@ export function handlerFor(supabase: Db, userId: string, who?: Who) {
 //
 // Runs in its OWN Supabase project (never Off the Clock). Signed in through Supabase's
 // OAuth 2.1 server, so every query runs under the owner's row-level security.
-// No service-role key is used.
+// The server key is used for one thing only: recording pixel proofs (studio_record_proof), see below.
 //
 // Tools: drop_asset, list_assets, get_asset, whoami, and Task Drop's create_task, list_tasks, get_task, post_message
 
@@ -589,6 +760,12 @@ function whoFrom(req: Request, userId: string, email: string): Who {
   return { user_id: userId, email: email || null, client_id: s(c.client_id), session_id: s(c.session_id), owner_lock: OWNER ? 'match' : 'off' }
 }
 
+// Proofs are recorded with the server key: studio_record_proof refuses every signed-in caller, including the AIs.
+// Only the fixed proof code in tools.ts uses this client, and only for that one call.
+const SERVICE = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY'), URL_ = Deno.env.get('SUPABASE_URL')
+const prover = SERVICE && URL_ ? createClient(URL_, SERVICE, { auth: { persistSession: false } }) : null
+const recordProof: RecordProof | undefined = prover ? async (args) => { const r = await prover.rpc('studio_record_proof', args); return { data: r.data, error: r.error } } : undefined
+
 Deno.serve(pipeline(
   [withOAuthProtectedResource(), withSupabase({ auth: 'user' })],
   (req, { supabase, userClaims }) => {
@@ -597,6 +774,6 @@ Deno.serve(pipeline(
     // deno-lint-ignore no-explicit-any
     const email = String((userClaims as any)?.email ?? '').toLowerCase()
     if (OWNER && email !== OWNER) return Promise.resolve(new Response('This bridge belongs to someone else.', { status: 403 }))
-    return handlerFor(supabase as unknown as Db, userId, whoFrom(req, userId, email)).fetch(req)
+    return handlerFor(supabase as unknown as Db, userId, whoFrom(req, userId, email), { recordProof }).fetch(req)
   },
 ))

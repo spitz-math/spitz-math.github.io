@@ -60,3 +60,29 @@ SAME exits 0; DIFFERENT exits 1 and names the closest picture and how many pixel
 differ. Re-saved PNGs with different bytes still match if the pixels match. Art that
 the game slices, scales or recolours on purpose will not match as a whole picture:
 keep sheets intact in the game file, or check the processed copy Kody approved.
+
+## Parents and proofs (spitz.dev M3)
+
+A picture made from an approved one names it (`drop_asset` with `made_from`). Sprite Drop then compares the two
+stored files pixel by pixel. Only a **pixel-preserving** change is approved without Kody:
+
+| Change | Proof kind | Approved automatically? |
+| --- | --- | --- |
+| re-save, same pixels | `identical` | yes |
+| trim, pad or shift the empty border | `same_content` | yes |
+| whole-number nearest-neighbour scale (e.g. a 4x block picture to 1x) | `scale` | yes |
+| one frame cut out of an approved sheet | `frame_of` | yes |
+| 1x conversion of an illustration, recolour, redraw, new animation frames | `none` | **no, Kody approves** |
+
+Similarity is never a reason to approve. The same rules run locally:
+
+```
+python3 tools/art_check/proof.py parent.png child.png [--parent-frames WxH] [--child-frames WxH]
+python3 tools/art_check/still_parts.py sheet.png --frame 48x44 --base approved_sprite.png --still x,y,w,h
+python3 tools/art_check/to_1x.py original.png out_1x.png --size 48x44 [--palette '#..,#..'] [--outline '#..']
+python3 tools/art_check/test_m3.py
+```
+
+`still_parts.py` proves an animation keeps its still parts (a forge's stone and hood) identical in every frame and
+that frame 1 is the approved sprite. `to_1x.py` is the shared converter (same steps as the worker's `pixel.ts`);
+its report is information only and the result always goes to Kody.
