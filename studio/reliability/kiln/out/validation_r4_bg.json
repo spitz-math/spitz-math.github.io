@@ -1,0 +1,79 @@
+{
+ "image": "out/kiln_r3_bg_1x.png",
+ "sha256": "1b300e9e264fd4fafad21700020f04aa77771e43886265f5184a62ed52abded7",
+ "spec": {
+  "kind": "room",
+  "size": [
+   480,
+   270
+  ],
+  "alpha": "opaque",
+  "source": "out/kiln_r4_1x.png",
+  "protected": [
+   [
+    0,
+    0,
+    479,
+    101
+   ],
+   [
+    0,
+    170,
+    479,
+    269
+   ],
+   [
+    0,
+    102,
+    199,
+    169
+   ],
+   [
+    280,
+    102,
+    479,
+    169
+   ]
+  ],
+  "note": "Ember Kiln round 4 game background: the approved round 4 still (2d2a9b4f) with the fire pit box x200-279 y102-169 left as plain floor; the game draws the 8-frame pit (99b9b0a3) there. Identical to the still everywhere outside that box."
+ },
+ "result": "PASS",
+ "checks": [
+  {
+   "check": "size",
+   "result": "pass",
+   "detail": "480x270 (want 480x270)"
+  },
+  {
+   "check": "true 1x",
+   "result": "pass",
+   "detail": "ok"
+  },
+  {
+   "check": "fully opaque",
+   "result": "pass",
+   "detail": "0 see-through px"
+  },
+  {
+   "check": "protected [0,0,479,101] identical",
+   "result": "pass",
+   "detail": "0 px differ"
+  },
+  {
+   "check": "protected [0,170,479,269] identical",
+   "result": "pass",
+   "detail": "0 px differ"
+  },
+  {
+   "check": "protected [0,102,199,169] identical",
+   "result": "pass",
+   "detail": "0 px differ"
+  },
+  {
+   "check": "protected [280,102,479,169] identical",
+   "result": "pass",
+   "detail": "0 px differ"
+  }
+ ],
+ "scope": "technical only; visual approval is separate"
+}
