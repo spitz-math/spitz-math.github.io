@@ -8,12 +8,15 @@ var ROOMS={
   cross:  {name:'Crossroads',     kind:'crossr',   exits:{w:'vault',e:'arena'}, m:1.0, waves:[[['skel',1]],[['skel',1],['gob',4],['bat',3]],[['skel',2],['gob',6],['bat',2]]], intro:1, sub:'A shield knight guards this hall. Learn his shield first.'},
   vault:  {name:'Treasure Vault', kind:'vault',    exits:{n:'library'}, m:1.1, waves:[[['slime',4]],[['slime',3],['bat',5]]], chest:'treasure', sub:'A quiet room... mostly.'},
   arena:  {name:'Proving Ground', kind:'arena',    exits:{n:'library'}, m:1.1,  waves:[[['skel',2],['gob',6]],[['wiz',2],['bat',6]],[['skel',2],['wiz',2],['gob',7]],[['gob',12],['bat',5],['skel',1,1]]], chest:'gold', sub:'The doors lock behind you. Win for a GOLD reward.'},
+  /* Kody 2026-11-17: each side of the fork gets a second room with its own new enemy. Which side has the Ember Imps and which the Lancers is random every run (w.impV, see applyFork). */
+  kiln:   {name:'Ember Kiln',     kind:'kiln',     exits:{n:'library'}, m:1.15, waves:[[['imp',1],['gob',4],['bat',2]],[['imp',2],['gob',4]],[['imp',2],['bat',4],['slime',2]],[['gob',8],['bat',3],['imp',2],['imp',1,1]]], sub:'Ember Imps throw fire. Only sword hits hurt them, and one hit kills. Step out of the orange ring!'},
+  barracks:{name:'Barracks',      kind:'barracks', exits:{n:'library'}, m:1.15, waves:[[['lance',1],['gob',4],['bat',2]],[['lance',2],['gob',4]],[['lance',2],['skel',1],['bat',4]],[['gob',8],['bat',3],['lance',2],['lance',1,1]]], sub:'Lancers charge in a straight line. Sidestep and let them hit the wall!'},
   library:{name:'Library',        kind:'library',  exits:{n:'shop'},    m:1.2,  waves:[[['wiz',2],['slime',3],['gob',3]],[['skel',2],['slime',2],['bat',6]],[['wiz',3],['gob',7]],[['gob',10],['slime',2],['wiz',1],['skel',1,1]]], secret:true, sub:'Wizards aim first. Swing at orbs to bat them back!'},
   shop:   {name:'Shop',           kind:'shop',     exits:{n:'siege'},   waves:[], shop:true, sub:'Walk up to an item and press E to buy'},
   siege:  {name:'Siege Hall',     kind:'siege',    exits:{n:'boss'},    siege:50, sub:'The doors slam shut. Survive!'},
   boss:   {name:'The Iron Warden',kind:'bossroom', exits:{},            boss:true, sub:"Bait his charge into a wall. Strike while he's stunned."}
 };
-var MAPPOS={entry:[0,8],guard:[0,7],cross:[0,6],vault:[-1,5],arena:[1,5],library:[0,4],shop:[0,3],siege:[0,2],boss:[0,1]};
+var MAPPOS={entry:[0,9],guard:[0,8],cross:[0,7],vault:[-1,6],arena:[1,6],kiln:[-1,5],barracks:[1,5],library:[0,4],shop:[0,3],siege:[0,2],boss:[0,1]};
 
 /* ---------- enemies ---------- */
 var ET={
@@ -22,9 +25,13 @@ var ET={
   skel: {r:13, hp:16,  spd:48,  xp:3, spr:'skel', coin:1, col:'#EDE6D6'},
   wiz:  {r:11, hp:9,   spd:62,  xp:3, spr:'wisp', coin:1, col:'#B56BFF'},
   slime:{r:14, hp:9,   spd:0,   xp:2, spr:'slime', coin:0.4, col:'#FF7AB0'},
+  imp:  {r:10, hp:8,   spd:80,  xp:3, spr:'wisp', coin:0.8, col:'#FF8A2A'},   /* Ember Imp: keeps away and lobs small fires at Rook's spot */
+  lance:{r:14, hp:20,  spd:52,  xp:4, spr:'gremlin', coin:1, col:'#9AB0D0'},  /* Lancer: aims a red lane, charges straight, stuns itself on a wall */
   boss: {r:30, hp:950, spd:58,  xp:0, spr:'king', heavy:1, col:'#B56BFF'}
 };
 /* goblin pounce: starts inside GOBT, covers GOBL. COMBOT = seconds a combo lasts without a kill */
+var LANCEV=430, LANCEL=322;   /* Lancer charge speed; LANCEL = fallback lane length. The lane is drawn to the first wall (laneLen) */
+function laneLen(x,y,a){ var cx=Math.cos(a), cy=Math.sin(a); for(var d=16;d<1200;d+=8){ if(wallAt(x+cx*d,y+cy*d)) return d; } return 1200; }
 var GOBT=106, GOBL=100, GOBLOCK=0.24, COMBOT=2.5;
 /* only a few goblins may wind up at once, so a crowd attacks in beats you can read instead of all together */
 function gobSlots(w){ return w.last>0||ROOMS[w.rid].siege?4:(w.rid==='entry'||w.rid==='guard'||early(w))?2:3; }
@@ -104,10 +111,13 @@ function freshWorld(){
     b:{}, picks:0, xp:0, lv:1, need:7,   /* 7 (was 5): the starter relic is free now, so the Entry Hall pays one level instead of two */
     pend:0, coins:0, kills:0, combo:0, comboT:0, bestCombo:0, flawless:0, last:0, en:[], spawns:[], gems:[], coinsF:[], hearts:[], shots:[], orbs:[], fx:[], booms:[], tele:[],
     waves:[], wave:0, waveT:0.9, cleared:false, open:false, door:false, chest:null, resolve:0, siegeT:0, crack:0, shop:null, boss:null, victory:0,
-    tm:{spark:1.5, rico:1, spawn:0.5, swarm:22}, oa:0, banner:null, fork:Math.random()<0.5?1:0, secL:Math.random()<0.5?1:0, batch:null }; }
+    tm:{spark:1.5, rico:1, spawn:0.5, swarm:22}, oa:0, banner:null, fork:Math.random()<0.5?1:0, impV:Math.random()<0.5?1:0, secL:Math.random()<0.5?1:0, batch:null }; }
 function loadRoom(id,from){ var w=S.w, R=ROOMS[id]; applyFork(); w.bannerQ=[]; w.batch=null; w.aeg=0; w.hurtRoom=0; w.roomT0=w.runT; w.rid=id; w.from=from||'s'; w.seen[id]=1; buildMap(R.kind);
   w.en=[]; w.spawns=[]; w.gems=[]; w.coinsF=[]; w.hearts=[]; w.shots=[]; w.orbs=[]; w.fx=[]; w.booms=[]; w.tele=[]; w.t=0; w.fires=[]; w.p.burn=0;
-  w.waves=(R.waves||[]).slice(); w.wave=0; w.waveT=0.9; w.chest=null; w.resolve=0; w.siegeT=R.siege||0; w.crack=0; w.boss=null; w.shop=null;
+  w.waves=(R.waves||[]).map(function(v){ return v.slice(); });
+  var pe=pathE(id); if(pe&&!R.after){ var wi=1+Math.floor(Math.random()*(w.waves.length-1)); w.waves[wi].push([pe,1]); if(id==='arena') w.waves[w.waves.length-1].push([pe,1]); }   /* a taste of this side's new enemy in its first room */
+  if(R.after==='arena') w.waves.shift();   /* the Proving Ground side already fought 4 waves, so its second room has 3: both paths stay about even */
+  w.wave=0; w.waveT=0.9; w.chest=null; w.resolve=0; w.siegeT=R.siege||0; w.crack=0; w.boss=null; w.shop=null;
   w.cleared=!w.waves.length&&!R.siege&&!R.boss; w.open=w.door=w.cleared;
   if(R.shop){ w.mA='wave'; w.mAt=0; }   /* the merchant waves hello as you walk in */
   if(R.shop) w.shop=[{id:'heal',ic:'🧪',n:'Potion',d:'Heal to full',cost:10},{id:'max',ic:'❤️',n:'Heart Container',d:'+1 max heart',cost:18},{id:'card',ic:'📜',n:'Upgrade Scroll',d:'Pick 1 of 3 powers',cost:22,next:[34,48]},{id:'gold',ic:'🌟',n:'Gold Scroll',d:'Pick 1 of 3 gold powers (+2 levels)',cost:48},{id:'arm',ic:'🪖',n:'Armor',d:'Blocks the next 3 hits',cost:26},{id:'rev',ic:'💙',n:'Second Wind',d:'One more chance if you are knocked out again',cost:30}].map(function(it,k){ it.x=W/2+(k-2.5)*130; it.y=322; return it; });
@@ -120,7 +130,11 @@ function loadRoom(id,from){ var w=S.w, R=ROOMS[id]; applyFork(); w.bannerQ=[]; w
   w.banner={txt:R.name.toUpperCase(),sub:R.sub||'',t:2.4};
   if(R.boss){ w.bossIntro=1.6; SND.boss(); } }
 function openSecret(noDraw){ if(ROOMART){ if(!noDraw) buildMap(ROOMS[S.w.rid].kind); return; } var x0=S.w.secL?1:25, x, y; for(y=1;y<=3;y++) for(x=x0+1;x<=x0+4;x++) tset(x,y,0); tset(x0+2,4,0); tset(x0+3,4,0); if(!noDraw) ROOMC=drawRoom(ROOMS[S.w.rid].kind); }
-function applyFork(){ var f=S.w&&S.w.fork; ROOMS.cross.exits=f?{w:'arena',e:'vault'}:{w:'vault',e:'arena'}; MAPPOS.vault=[f?1:-1,5]; MAPPOS.arena=[f?-1:1,5]; }
+function applyFork(){ var f=S.w&&S.w.fork, iv=S.w&&S.w.impV, vs=f?1:-1, vn=iv?'kiln':'barracks', an=iv?'barracks':'kiln';
+  ROOMS.cross.exits=f?{w:'arena',e:'vault'}:{w:'vault',e:'arena'}; MAPPOS.vault=[vs,6]; MAPPOS.arena=[-vs,6];
+  /* equal rewards: each path gets one treasure chest and one gold chest */
+  ROOMS.vault.exits={n:vn}; ROOMS.arena.exits={n:an}; MAPPOS[vn]=[vs,5]; MAPPOS[an]=[-vs,5]; ROOMS[vn].chest='gold'; ROOMS[an].chest='treasure'; ROOMS[vn].after='vault'; ROOMS[an].after='arena'; }
+function pathE(id){ var n=id==='kiln'||id==='barracks'?id:(id==='vault'||id==='arena')?(ROOMS[id].exits||{}).n:null; return n==='kiln'?'imp':n==='barracks'?'lance':null; }
 function restoreMap(){ applyFork(); buildMap(ROOMS[S.w.rid].kind); var w=S.w; if(w.boss) w.boss=w.en.filter(function(e){ return e.type==='boss'&&!e.dead; })[0]||null; }
 
 /* ---------- collision ---------- */
@@ -152,10 +166,13 @@ function angDiff(a,b){ var d=a-b; while(d>Math.PI) d-=2*Math.PI; while(d<-Math.P
    Shield knights' shields ground lightning and blunt blasts: they take a third of any storm damage, so the sword is still the answer. */
 var STORMD={spark:1,overcharge:1,tcharge:1,thunder:1,stormcall:1,volatile:1,spite:1};
 function hurtE(e,d,fx,fy,kb,opt){ if(e.dead) return; opt=opt||{}; var w=S.w;
+  /* Kody 2026-11-18: Ember Imps ignore everything except a real sword slash (powers, storms, blasts, fire, rubble, bash, riposte), and one slash always kills */
+  if(e.type==='imp'){ if(!(DSRC==='sword'&&opt.melee)){ if(!(e.t-(e.immT||-9)<1.2)&&w.fx.length<90){ e.immT=e.t; w.fx.push({k:'txt',x:e.x,y:e.y-30,t:0,v:'IMMUNE',c:'#FFB36B'}); } return; } d=Math.max(d,e.hp); }
   if(e.type==='skel'&&STORMD[DSRC]&&d>0) d=Math.max(1,Math.round(d/3));
   /* skeleton knights block sword hits from the front, unless they are recovering or you crit */
-  if(e.type==='skel'&&(opt.melee||opt.proj||opt.orb)&&!opt.crit&&!opt.bash&&e.st!==3){ var pa=opt.proj?Math.atan2(-fy,-fx):Math.atan2(w.p.y-e.y,w.p.x-e.x); if(angDiff(pa,e.fa)<1.3){ d=0; SND.clang(); if(!(w.t-(e.blkAt||-9)<0.9)){ e.blkAt=w.t; w.fx.push({k:'txt',x:e.x,y:e.y-34,t:0,v:'BLOCKED',c:'#CFE0FF'}); if(opt.melee){ w.p.kx-=fx*70; w.p.ky-=fy*70; } }   /* a small push back, once per knight per 0.9 s (was 220 on every blocked hit: Rook pinballed in crowds, Kody's playtest 2026-11-15) */ kb=40; if(!opt.melee) return; } }
+  if(e.type==='skel'&&(opt.melee||opt.proj||opt.orb)&&!opt.crit&&!opt.bash&&e.st!==3){ var pa=opt.proj?Math.atan2(-fy,-fx):Math.atan2(w.p.y-e.y,w.p.x-e.x); if(angDiff(pa,e.fa)<1.3){ d=0; SND.clang(); if(!(w.t-(e.blkAt||-9)<0.9)){ e.blkAt=w.t; if(!(w.t-(w.blkTxt||-9)<0.7)){ w.blkTxt=w.t; w.fx.push({k:'txt',x:e.x,y:e.y-34,t:0,v:'BLOCKED',c:'#CFE0FF'}); } if(opt.melee){ w.p.kx-=fx*70; w.p.ky-=fy*70; } }   /* a small push back, once per knight per 0.9 s (was 220 on every blocked hit: Rook pinballed in crowds, Kody's playtest 2026-11-15) */ kb=40; if(!opt.melee) return; } }
   if(e.type==='boss'&&e.st===9) d=Math.round(d*1.6);   /* stunned boss takes more */
+  if(e.type==='lance'&&e.st===9) d=Math.round(d*1.5);   /* so does a Lancer stuck in a wall */
   tally(Math.min(d,Math.max(0,e.hp))); e.hp-=d; e.fl=0.09; if(kb){ var k=kb/(ET[e.type].heavy?5:1); e.kx+=fx*k; e.ky+=fy*k; }
   if(d>0&&w.fx.length<80) w.fx.push({k:'num',x:e.x+rnd(-4,4),y:e.y-e.r-6,t:0,v:d,c:opt.crit?'#FFC93C':'#FFFFFF'});
   if(e.type==='slime'&&opt.melee&&d>0){ e.sq=0.1; for(var gd=0;gd<(RM?3:4)&&w.fx.length<90;gd++) w.fx.push({k:'goo',x:e.x+rnd(-4,4),y:e.y-6,vx:fx*rnd(40,110)+rnd(-50,50),vy:rnd(-130,-50),t:0,c:['#FD63AF','#C63A80','#FEE6F3','#FD63AF'][gd]}); }   /* goo droplets and a quick squash */
@@ -213,7 +230,7 @@ function fireWave(a,l,x,y,child){ var w=S.w, p=w.p, ux=Math.cos(a), uy=Math.sin(
 var BUF={s:0,r:0};
 function roll(){ var w=S.w, p=w.p, s=stat(); if(p.roll>0||p.rollCd>0||S.mode!=='play'){ if(S.mode==='play') BUF.r=0.15; return; }
   var mx=(HELD.arrowright||HELD.d?1:0)-(HELD.arrowleft||HELD.a?1:0), my=(HELD.arrowdown||HELD.s?1:0)-(HELD.arrowup||HELD.w?1:0), ml=Math.hypot(mx,my);
-  p.rx=ml?mx/ml:p.fx; p.ry=ml?my/ml:p.fy; p.roll=0.24; p.rollCd=s.rollCd; p.inv=Math.max(p.inv,0.3); p.rolling=1; p.rollHit=[]; SND.dodge();
+  p.rx=ml?mx/ml:p.fx; p.ry=ml?my/ml:p.fy; p.roll=0.24; p.rollCd=s.rollCd; p.inv=Math.max(p.inv,0.3); p.rolling=1; p.rollHit=[]; SND.dodge(); if(p.burn>0){ p.burn=0; p.bn=0; S.w.fx.push({k:'txt',x:p.x,y:p.y-56,t:0,v:'Fire out!',c:'#7DF5FF'}); }   /* Kody 2026-11-18: a dodge roll puts the fire out again */
   if(HAS('thunder')) thunderGuard(); }
 function thunderGuard(){ var w=S.w, p=w.p, near=w.en.filter(function(e){ return !e.dead&&Math.hypot(e.x-p.x,e.y-p.y)<220; }).sort(function(a,b){ return Math.hypot(a.x-p.x,a.y-p.y)-Math.hypot(b.x-p.x,b.y-p.y); }).slice(0,4);
   DSRC='thunder'; near.forEach(function(e){ w.fx.push({k:'zap',x:e.x,y:e.y,t:0}); hurtE(e,5+2*L('spark'),0,0,0); }); if(near.length) SND.zap(); }
@@ -287,7 +304,7 @@ function update(dt){ var w=S.w, p=w.p, s=stat(), i, e;
       for(var a=-1;a<=1;a++) for(var b=-1;b<=1;b++){ var cell=grid[gx+a+1+(gy+b+1)*28]; if(!cell.length) continue;
         for(var c=0;c<cell.length;c++){ var o=cell[c]; if(o===e||o.type==='boss') continue; var dx=e.x-o.x, dy=e.y-o.y, rr=e.r+o.r-2, d2=dx*dx+dy*dy;
           if(d2<rr*rr&&d2>0.01){ var d=Math.sqrt(d2), push=(rr-d)*0.5; e.x+=dx/d*push; e.y+=dy/d*push; } } } }
-    if(!ET[e.type].fly) collide(e,solidE); else { e.x=clamp(e.x,FLR[0]+10,FLR[2]-10); e.y=clamp(e.y,FLR[1]+6,FLR[3]-10); }
+    if(!ET[e.type].fly){ collide(e,solidE); if(e.type==='lance'&&e.st===2&&e.hitWall){ e.st=9; e.cd=1.4; SND.boom(); w.fx.push({k:'txt',x:e.x,y:e.y-50,t:0,v:'STUNNED!',c:'#FFC93C'}); } } else { e.x=clamp(e.x,FLR[0]+10,FLR[2]-10); e.y=clamp(e.y,FLR[1]+6,FLR[3]-10); }
     if(e.fl>0) e.fl-=dt; if(e.thT>0) e.thT-=dt; if(e.wh>0) e.wh-=dt; if(e.oh>0) e.oh-=dt; if(e.rh>0) e.rh-=dt; if(e.eh>0) e.eh-=dt;
     /* touching only hurts while an enemy is attacking (lunge, dive, hop, boss); otherwise bodies just shove you */
     var pdx=p.x-e.x, pdy=p.y-e.y, cr=p.r+e.r-5, pd2=pdx*pdx+pdy*pdy;
@@ -327,7 +344,7 @@ var TT=0.9, TH=0.45;   /* doorway walk: 0.45 s out through the door, 0.45 s in t
 function goRoom(id,from){ var w=S.w, p=w.p; if(w.shop) say('leave'); w.next=[id,from]; w.tdir=from==='w'?[-1,0]:from==='e'?[1,0]:[0,-1]; p.fx=w.tdir[0]; p.fy=w.tdir[1]; SND.door(); p.sw=0; p.roll=0; p.kx=p.ky=0; S.mode='trans'; trans=TT; HELD={}; save(); }
 
 /* ---------- enemy behaviour: every attack is shown before it lands ---------- */
-function attacking(e){ var t=e.type; return (t==='boss'&&e.st!==5&&e.st!==9)||((t==='gob'||t==='bat')&&e.st===2)||(t==='slime'&&e.st===1); }
+function attacking(e){ var t=e.type; return (t==='boss'&&e.st!==5&&e.st!==9)||((t==='gob'||t==='bat'||t==='lance')&&e.st===2)||(t==='slime'&&e.st===1); }
 /* flow field toward Rook, rebuilt when he moves to a new tile. Tiles are blocked if a wall or prop touches them. */
 var NAV={key:'',dist:null,block:null,room:''};
 function navBlock(){ var b=new Uint8Array(COLS*ROWS), x, y; for(y=0;y<ROWS;y++) for(x=0;x<COLS;x++){ var X=x*TS, Y=y*TS; if(solidE(x,y)||wallAt(X+15,Y+15)||wallAt(X+4,Y+4)||wallAt(X+26,Y+4)||wallAt(X+4,Y+26)||wallAt(X+26,Y+26)) b[y*COLS+x]=1; } return b; }
@@ -376,6 +393,19 @@ function enemyAI(e,dt,p){ var w=S.w, dx=p.x-e.x, dy=p.y-e.y, d=Math.hypot(dx,dy)
     var cyc=(e.t%1.0), cn=Math.floor(e.t), hv=e.small?150:120;
     if(cyc>=0.15&&e.lk!==cn){ e.lk=cn; e.sx=ux; e.sy=uy; var hd=hv*(e.el?1.2:1)*0.6; e.tx=e.x+ux*hd; e.ty=e.y+uy*hd; e.mk=d<200?1:0; }   /* direction locks when the wind-up starts */
     if(cyc<0.4){ v=0; e.st=0; e.wu=cyc>=0.15?1:0; } else { v=hv; e.st=1; e.wu=0; mx=e.sx; my=e.sy; } }
+  else if(e.type==='imp'){   /* keeps its distance, marks Rook's spot with an orange ring (locks halfway through), lobs a small fire there, then waits */
+    if(e.st===0){ if(d>300){ } else if(d<180){ mx=-ux; my=-uy; } else { var sd=e.x>W/2?1:-1; mx=-uy*sd; my=ux*sd; v*=0.6; }
+      if(e.cd<=0&&d<460){ e.st=1; e.cd=early(w)?0.8:0.65; e.c0=e.cd; e.tx=p.x; e.ty=p.y; SND.tele(); } }
+    else if(e.st===1){ v=0; if(e.cd>e.c0*0.5){ e.tx=p.x; e.ty=p.y; } if(e.cd<=0){ e.st=2; e.cd=0.3;
+        var fx0=clamp(e.tx,FLR[0]+60,FLR[2]-60), fy0=clamp(e.ty,FLR[1]+60,FLR[3]-60);
+        if(addFire(fx0,fy0,null,0.6,{lite:1,life:4})&&w.fx.length<90) w.fx.push({k:'lob',x:e.x,y:e.y-14,x2:fx0,y2:fy0,t:0}); } }
+    else if(e.st===2){ v=0; if(e.cd<=0){ e.st=0; e.cd=rnd(3.0,4.0); } } }
+  else if(e.type==='lance'){   /* walks in, aims a red lane (follows Rook for the first half, then locks), charges straight; a wall stuns it (st 9) */
+    if(e.st===0){ if(d<60) v=0; if(e.cd<=0&&d<330&&lineClear(e.x,e.y,p.x,p.y)){ e.st=1; e.cd=early(w)?0.95:0.8; e.c0=e.cd; e.fa=Math.atan2(dy,dx); SND.tele(); } }
+    else if(e.st===1){ v=0; if(e.cd>e.c0*0.45){ e.fa=Math.atan2(dy,dx); e.lane=laneLen(e.x,e.y,e.fa); } if(e.cd<=0){ e.st=2; e.cd=3.0; } }   /* Kody 2026-11-18: the charge runs until a wall stops it (3 s is only a safety cap) */
+    else if(e.st===2){ v=LANCEV; mx=Math.cos(e.fa); my=Math.sin(e.fa); if(e.cd<=0){ e.st=3; e.cd=0.7; } }
+    else { v=0; if(e.cd<=0){ e.st=0; e.cd=rnd(1.4,2.2); } }
+    e.sx=Math.cos(e.fa); e.sy=Math.sin(e.fa); }
   else if(e.type==='boss'){ bossAI(e,dt,p,d,ux,uy); return; }
   if(e.el&&(e.st===0||e.type==='slime')) v*=1.2;
   e.mv=v; e.wd=(e.wd||0)+v*dt;   /* walk cycle advances with distance */
@@ -385,8 +415,8 @@ function enemyAI(e,dt,p){ var w=S.w, dx=p.x-e.x, dy=p.y-e.y, d=Math.hypot(dx,dy)
    0 walk · 1 charge warning (red lane) · 2 charging · 9 stunned after hitting a wall
    3 slam warning (red circle) · 4 sweep warning (red wedge) · 5 recover · 6 volley warning */
 function bossAI(e,dt,p,d,ux,uy){ var w=S.w, half=e.hp<e.max/2, sp=half?0.85:1;
-  if(w.last>0){ half=true; sp=0.7; e.raged=0; }   /* Last Stand Wardens: quicker wind-ups (was 0.8) */ else if(half&&!e.raged){ e.raged=1; e.addT=10; w.banner={txt:'THE WARDEN IS ENRAGED',sub:'Faster attacks. Reinforcements incoming!',t:1.8}; SND.boss(); var n0=w.spawns.length; spawnWave([['gob',4],['skel',2]],1,true); for(var si=n0;si<w.spawns.length;si++) w.spawns[si].t+=0.9; }
-  if(e.raged){ e.addT-=dt; if(e.addT<=0){ e.addT=10; spawnWave([['gob',3],['bat',2]],1,true); } }
+  if(w.last>0){ half=true; sp=0.7; e.raged=0; }   /* Last Stand Wardens: quicker wind-ups (was 0.8) */ else if(half&&!e.raged){ e.raged=1; e.addT=10; w.banner={txt:'THE WARDEN IS ENRAGED',sub:'Faster attacks. Reinforcements incoming!',t:1.8}; SND.boss(); var n0=w.spawns.length; spawnWave([['gob',3],['skel',1],['imp',1],['lance',1]],1,true); for(var si=n0;si<w.spawns.length;si++) w.spawns[si].t+=0.9; }
+  if(e.raged){ e.addT-=dt; if(e.addT<=0){ e.addT=10; e.addN=(e.addN||0)+1; spawnWave([['gob',2],['bat',2],[capNew(e.addN%2?'lance':'imp',2),1]],1,true); } }   /* every wave of adds brings an Imp or a Lancer (Kody 2026-11-18) */
   var v=0, mx=0, my=0;
   if(e.st===0&&e.cd<=0&&w.last>0){ var busy=0; for(var bi=0;bi<w.en.length;bi++){ var o2=w.en[bi]; if(o2!==e&&!o2.dead&&o2.type==='boss'&&o2.st!==0&&o2.st!==5&&o2.st!==9) busy++; } if(busy>=2) e.cd=0.3; }
   if(e.st===0){ v=ET.boss.spd*(half?1.25:1); mx=ux; my=uy; if(e.cd<=0){ var r=Math.random();
@@ -411,14 +441,14 @@ function bossAI(e,dt,p,d,ux,uy){ var w=S.w, half=e.hp<e.max/2, sp=half?0.85:1;
 /* ---------- Warden fire (Kody's classroom test 2026-11-16: a student asked for poison / damage over time) ----------
    Every Last Stand Warden slam, and every slam once the first Warden is enraged (below half health), leaves 2 fire patches. Each shows a dim outline for 0.5 s, burns 6 s, then dies out.
    At most 4 burn at once; never on a door, never under Rook. Stepping in sets Rook on fire for 6 s: his last heart visibly drains and he loses 1 heart every 3 s (2 in all),
-   (straight through armor and Aegis). Kody 2026-11-16: a dodge roll does NOT put it out (too free); rolling across a patch
-   still doesn't light you. One burn at a time, no stacking.
+   (straight through armor and Aegis). Kody 2026-11-18: a dodge roll puts it out again, and fire never takes the last heart
+   (it can't light you, and stops burning, at 1 heart); rolling across a patch still doesn't light you. One burn at a time, no stacking.
    Enemies standing in fire take 4 damage every 0.5 s (Wardens are immune). */
 var FIRE={r:38, warn:0.5, life:6, max:8, burn:6, tick:3};   /* max 8: enraged charges drop 3-4 fires along their path */   /* Kody 2026-11-16: burn ticks health down over a longer time: 1 heart every 3 s for 6 s (2 hearts) */
-function addFire(x,y,p,warn){ var w=S.w; w.fires=w.fires||[]; if(w.fires.length>=FIRE.max) return false;
-  if(x<FLR[0]+60||x>FLR[2]-60||y<FLR[1]+60||y>FLR[3]-60||wallAt(x,y)||Math.hypot(x-p.x,y-p.y)<FIRE.r+40) return false;
+function addFire(x,y,p,warn,o){ var w=S.w; w.fires=w.fires||[]; if(w.fires.length>=FIRE.max) return false;
+  if(x<FLR[0]+60||x>FLR[2]-60||y<FLR[1]+60||y>FLR[3]-60||wallAt(x,y)||(p&&Math.hypot(x-p.x,y-p.y)<FIRE.r+40)) return false;
   if(w.fires.some(function(f){ return Math.hypot(f.x-x,f.y-y)<FIRE.r*1.6; })) return false;
-  w.fires.push({x:x,y:y,t:-(warn==null?FIRE.warn:warn),s:Math.random()*9}); return true; }
+  var f={x:x,y:y,t:-(warn==null?FIRE.warn:warn),s:Math.random()*9}; if(o&&o.lite){ f.lite=1; f.life=o.life; } w.fires.push(f); return true; }
 function slamFire(e,p){ var w=S.w; w.fires=w.fires||[]; var made=0;
   for(var k=0;k<12&&made<2&&w.fires.length<FIRE.max;k++){ var a=Math.random()*6.283, d=rnd(70,130), x=e.x+Math.cos(a)*d, y=e.y+Math.sin(a)*d;
     if(x<FLR[0]+60||x>FLR[2]-60||y<FLR[1]+60||y>FLR[3]-60||wallAt(x,y)) continue;
@@ -426,15 +456,16 @@ function slamFire(e,p){ var w=S.w; w.fires=w.fires||[]; var made=0;
     if(w.fires.some(function(f){ return Math.hypot(f.x-x,f.y-y)<FIRE.r*1.6; })) continue;
     w.fires.push({x:x,y:y,t:-FIRE.warn,s:Math.random()*9}); made++; } }
 function fireTick(dt,p){ var w=S.w, F=w.fires; if(!F||(!F.length&&!(p.burn>0))) return;
-  for(var i=F.length-1;i>=0;i--){ var f=F[i]; f.t+=dt; if(f.t>=FIRE.life){ F.splice(i,1); continue; } if(f.t<0) continue;
-    if(!(p.burn>0)&&p.roll<=0&&Math.hypot(p.x-f.x,(p.y-f.y)*1.6)<FIRE.r){ p.burn=FIRE.burn; p.bseg=FIRE.tick; p.bn=Math.round(FIRE.burn/FIRE.tick); SND.tele(); if(!w.fireTold){ w.fireTold=1; w.fx.push({k:'txt',x:p.x,y:p.y-56,t:0,v:'On fire! Stay out of the flames',c:'#FF9A3C'}); } }
-    f.hT=(f.hT||0)-dt; if(f.hT<=0){ f.hT=0.5; DSRC='fire'; for(var j=0;j<w.en.length;j++){ var e=w.en[j]; if(!e.dead&&e.type!=='boss'&&Math.hypot(e.x-f.x,(e.y-f.y)*1.6)<FIRE.r+e.r*0.5) hurtE(e,4,0,0,0); } } }
+  for(var i=F.length-1;i>=0;i--){ var f=F[i]; f.t+=dt; if(f.t>=(f.life||FIRE.life)){ F.splice(i,1); continue; } if(f.t<0) continue;
+    if(!(p.burn>0)&&p.roll<=0&&p.hp>1&&Math.hypot(p.x-f.x,(p.y-f.y)*1.6)<FIRE.r){ if(f.lite){ p.burn=p.bmax=FIRE.tick; p.bn=1; } else { p.burn=p.bmax=FIRE.burn; p.bn=Math.round(FIRE.burn/FIRE.tick); } p.bseg=FIRE.tick; SND.tele(); if(!w.fireTold){ w.fireTold=1; w.fx.push({k:'txt',x:p.x,y:p.y-56,t:0,v:'On fire! Stay out of the flames',c:'#FF9A3C'}); } }
+    f.hT=(f.hT||0)-dt; if(f.hT<=0){ f.hT=0.5; DSRC='fire'; for(var j=0;j<w.en.length;j++){ var e=w.en[j]; if(!e.dead&&e.type!=='boss'&&e.type!=='imp'&&Math.hypot(e.x-f.x,(e.y-f.y)*1.6)<FIRE.r+e.r*0.5) hurtE(e,4,0,0,0); } } }
+  if(p.burn>0&&p.hp<=1){ p.burn=0; return; }   /* Kody 2026-11-18: fire never takes the last heart */
   if(p.burn>0){ p.burn-=dt; p.bseg=(p.bseg||FIRE.tick)-dt; if(p.bseg<=0){ p.bseg=FIRE.tick; p.bn=(p.bn||1)-1; hurtP({x:p.x,y:p.y+1,fire:1},1); if(p.bn<=0||S.mode!=='play'){ p.burn=0; return; } } if(p.burn<0.05) p.burn=0.05; } }
 /* fire patch: a low ember glow and pixel flames that rise and fall (gentle, never flashing). Outline only during the warning. */
 /* flame sprites inside a fire patch: [dx, dy (feet), scale], back to front */
 var FLAMES=[[-24,-4,1],[22,-6,1],[-10,-2,2],[12,2,2],[-28,10,1],[0,12,2],[27,12,1]];
 function drawFire(c,f,t){ var rx=FIRE.r, ry=Math.round(FIRE.r*0.62), x=Math.round(f.x), y=Math.round(f.y);
-  var fade=f.t<0?0:Math.min(1,f.t/0.25)*Math.min(1,(FIRE.life-f.t)/0.6);
+  var fade=f.t<0?0:Math.min(1,f.t/0.25)*Math.min(1,((f.life||FIRE.life)-f.t)/0.6);
   c.save();
   if(f.t<0){ c.globalAlpha=0.35+0.5*(1+f.t/FIRE.warn); c.strokeStyle='#FF8A2A'; c.lineWidth=2; c.beginPath(); c.ellipse(x,y,rx,ry,0,0,7); c.stroke(); c.restore(); return; }
   /* scorched ember floor = the full danger oval */
@@ -457,7 +488,7 @@ function drawFire(c,f,t){ var rx=FIRE.r, ry=Math.round(FIRE.r*0.62), x=Math.roun
   }
   c.restore(); }
 /* Rook on fire: two small flames on his shoulders and a draining orange bar over his head */
-function drawBurn(c,p,t){ if(!(p.burn>0)) return; var x=Math.round(p.x), y=Math.round(p.y), k=p.burn/FIRE.burn;
+function drawBurn(c,p,t){ if(!(p.burn>0)) return; var x=Math.round(p.x), y=Math.round(p.y), k=Math.min(1,p.burn/(p.bmax||FIRE.burn));
   for(var s2=-1;s2<=1;s2+=2){
     if(RRI.burn_flame){ var kb=RM?1:(Math.floor(t*9)+(s2>0?1:0))%3; c.imageSmoothingEnabled=false; c.drawImage(RRI.burn_flame,kb*12,0,12,20,x+s2*15-6,y-16-17,12,20); }
     else { var h=RM?8:Math.round(7+3*Math.sin(t*9+s2)); c.fillStyle='#3A0E06'; c.fillRect(x+s2*9-3,y-30-h,6,h+2); c.fillStyle='#FF6A1E'; c.fillRect(x+s2*9-2,y-29-h,4,h); } }
@@ -546,9 +577,9 @@ function lastTick(dt){ var w=S.w, T=w.lastT; w.lastT+=dt; w.last-=dt;
   /* Kody 2026-11-15 asked for "a tiny bit easier" (10% slower growth, cap at 1:30); the 2026-11-16 classroom test showed it was too easy, so full-speed growth is back, the cap moved to 1:45, and H scales with upgrades */
   var Te=Math.min(T,LSCAP), H=w.lsHard||(w.lsHard=lsHard());
   w.tm.spawn-=dt; if(w.tm.spawn<=0&&w.en.length+w.spawns.length<(LITE?60:90)){ w.tm.spawn=Math.max(0.13,0.5-Te*0.003);
-    var pool=['gob','gob','bat','slime','gob']; if(T>8) pool.push('skel','gob','bat'); if(T>25) pool.push('wiz','skel','bat','slime'); if(T>60) pool.push('skel','wiz','gob');
+    var pool=['gob','gob','bat','slime','gob']; if(T>8) pool.push('skel','gob','bat'); if(T>25) pool.push('wiz','skel','bat','slime'); if(T>60) pool.push('skel','wiz','gob'); if(T>15) pool.push('imp','lance');
     var pos=edgePos(Math.floor(Math.random()*4)), grp=2+Math.floor(Te/20);
-    for(var g=0;g<grp;g++){ var lt=pool[Math.floor(Math.random()*pool.length)]; w.spawns.push({type:lt,x:clamp(pos[0]+rnd(-40,40),FLR[0]+16,FLR[2]-16),y:clamp(pos[1]+rnd(-40,40),FLR[1]+16,FLR[3]-16),t:0.6+g*0.08,m:(1+Te/28)*H,el:T>20&&lt!=='bat'&&Math.random()<0.05+0.08*(H-1)?1:0}); } }
+    for(var g=0;g<grp;g++){ var lt=capNew(pool[Math.floor(Math.random()*pool.length)],3); w.spawns.push({type:lt,x:clamp(pos[0]+rnd(-40,40),FLR[0]+16,FLR[2]-16),y:clamp(pos[1]+rnd(-40,40),FLR[1]+16,FLR[3]-16),t:0.6+g*0.08,m:(1+Te/28)*H,el:T>20&&lt!=='bat'&&Math.random()<0.05+0.08*(H-1)?1:0}); } }
   w.tm.swarm-=dt; if(w.tm.swarm<=0&&T-(w.lsWT==null?-99:w.lsWT)<7) w.tm.swarm=7-(T-w.lsWT);   /* playtest handoff: big threats are staggered, a swarm never lands within 7 s of a Warden */
   if(w.tm.swarm<=0){ w.tm.swarm=20; w.banner={txt:'BAT SWARM!',sub:'',t:1.0}; var sd=Math.floor(Math.random()*4); for(var k=0;k<20;k++){ var p2=edgePos(sd); w.spawns.push({type:'bat',x:p2[0],y:p2[1],t:0.6+k*0.04,m:1+T/60}); } }
   /* falling rubble: a red circle, then a rock. Aimed near Rook, hurts enemies too */
@@ -565,10 +596,13 @@ function siegeTick(dt){ var w=S.w, R=ROOMS[w.rid], T=R.siege-w.siegeT; w.siegeT-
   if(!w.rally&&w.siegeT>0&&w.siegeT<=R.siege/2){ w.rally=1; openAsk('rally'); return; }
   if(w.siegeT<=0){ w.siegeT=0; if(!w.siegeDone){ w.siegeDone=1; w.spawns=[]; DSRC='siege'; w.en.forEach(function(e){ if(!e.dead){ w.fx.push({k:'puff',x:e.x,y:e.y,t:0}); killE(e,{}); } }); w.banner={txt:'YOU HELD THE HALL',sub:'',t:1.4}; } if(!w.en.filter(function(e){ return !e.dead; }).length) roomClear(); return; }
   w.tm.spawn-=dt; if(w.tm.spawn<=0&&w.en.length+w.spawns.length<50){ w.tm.spawn=Math.max(0.4,1.0-T*0.012);
-    var pool=['gob','gob','bat']; if(T>8) pool.push('slime','bat'); if(T>16) pool.push('skel','gob'); if(T>26) pool.push('wiz','skel','slime');
+    var pool=['gob','gob','bat']; if(T>8) pool.push('slime','bat'); if(T>16) pool.push('skel','gob'); if(T>26) pool.push('wiz','skel','slime'); if(T>12) pool.push('imp','lance');
     var side=Math.floor(Math.random()*4), pos=edgePos(side), grp=1+Math.floor(T/20);
-    for(var g=0;g<grp;g++){ w.spawns.push({type:pool[Math.floor(Math.random()*pool.length)],x:clamp(pos[0]+rnd(-30,30),FLR[0]+16,FLR[2]-16),y:clamp(pos[1]+rnd(-30,30),FLR[1]+16,FLR[3]-16),t:0.7+g*0.12,m:1.15+T/80,el:T>18&&g===0&&Math.random()<0.12?1:0}); } }
+    for(var g=0;g<grp;g++){ w.spawns.push({type:capNew(pool[Math.floor(Math.random()*pool.length)],2),x:clamp(pos[0]+rnd(-30,30),FLR[0]+16,FLR[2]-16),y:clamp(pos[1]+rnd(-30,30),FLR[1]+16,FLR[3]-16),t:0.7+g*0.12,m:1.15+T/80,el:T>18&&g===0&&Math.random()<0.12?1:0}); } }
   w.tm.swarm-=dt; if(w.tm.swarm<=0){ w.tm.swarm=99; w.banner={txt:'BAT SWARM!',sub:'',t:1.2}; var sd=Math.floor(Math.random()*4); for(var k=0;k<12;k++){ var p2=edgePos(sd); w.spawns.push({type:'bat',x:p2[0],y:p2[1],t:0.6+k*0.05,m:1}); } } }
+/* Kody 2026-11-18: after the Library, Ember Imps and Lancers join the Siege Hall, the Warden's reinforcements and the Last Stand.
+   A few at a time so fire rings and charge lanes stay readable. */
+function capNew(t,n){ if(t!=='imp'&&t!=='lance') return t; var w=S.w, k=w.en.filter(function(e){ return !e.dead&&e.type===t; }).length+w.spawns.filter(function(q){ return q.type===t; }).length; return k<n?t:'gob'; }
 function edgePos(side){ var p=S.w.p, f=FLR; for(var k=0;k<30;k++){ var x, y; if(side===0){ x=rnd(f[0]+30,f[2]-30); y=f[1]+26; } else if(side===1){ x=rnd(f[0]+30,f[2]-30); y=f[3]-24; } else if(side===2){ x=f[0]+24; y=rnd(f[1]+34,f[3]-30); } else { x=f[2]-24; y=rnd(f[1]+34,f[3]-30); }
     if(!wallAt(x,y)&&Math.hypot(x-p.x,y-p.y)>200) return [x,y]; side=(side+1)%4; } return [W/2,80]; }
 /* ---------- smashable pots (rooms before the Shop) ----------
@@ -870,7 +904,7 @@ function draw(){ var c=cx, w=S&&S.w; c.setTransform(1,0,0,1,0,0);
   if(!w||!ROOMC){ c.fillStyle='#07080F'; c.fillRect(0,0,W,H); return; }
   var t=performance.now()/1000, sk=w.shake&&!RM?w.shake*16:0; if(CUT&&CUT.shake) sk=CUT.shake*16; var cam=S.mode==='cut'?cutCam():S.mode==='endcut'?endCam():null;
   if(cam) c.setTransform(cam.z,0,0,cam.z,W/2-cam.x*cam.z+(sk?rnd(-sk,sk):0),H/2-cam.y*cam.z+(sk?rnd(-sk,sk):0)); else if(sk) c.setTransform(1,0,0,1,Math.round(rnd(-sk,sk)),Math.round(rnd(-sk,sk)));
-  c.drawImage(ROOMC,0,0); var R=ROOMS[w.rid], i, p=w.p;
+  c.drawImage(ROOMC,0,0); var R=ROOMS[w.rid], i, p=w.p; if(ROOMART&&window.KANIM&&KANIM[ROOMART.key]&&KANIM[ROOMART.key].im.complete){ var ka=KANIM[ROOMART.key], kf=(typeof RM!=="undefined"&&RM)?0:Math.floor(performance.now()/ka.ms)%ka.n; c.imageSmoothingEnabled=false; c.drawImage(ka.im,kf*ka.fw,0,ka.fw,ka.fh,ka.x*2,ka.y*2,ka.fw*2,ka.fh*2); }
   /* doors */
   if(ROOMART) drawArtDoors(c,w,R,t);
   else { Object.keys(R.exits).forEach(function(sd){ drawDoor(c,sd,w.open,t,!w.open); });
@@ -902,6 +936,8 @@ function draw(){ var c=cx, w=S&&S.w; c.setTransform(1,0,0,1,0,0);
     if(e.type==='skel'&&e.st===1){ wedge(c,e.x,e.y-4,e.fa,1.2,100,0.12+0.3*(1-e.cd/(e.c0||0.7))); }
     if(e.type==='gob'&&e.st===1){ c.fillStyle='rgba(255,60,80,.6)'; dotLine(c,e.x,e.y,e.sx,e.sy,GOBL,12,4); }
     if(e.type==='bat'&&e.st===1){ c.fillStyle='rgba(255,60,80,.5)'; dotLine(c,e.x,e.y,e.sx,e.sy,140,12,3); }
+    if(e.type==='lance'&&e.st===1){ var kL=1-e.cd/(e.c0||0.8); c.save(); c.translate(e.x,e.y); c.rotate(e.fa); c.fillStyle='rgba(255,60,80,'+(0.12+0.3*kL)+')'; c.fillRect(0,-e.r,e.lane||LANCEL,e.r*2); c.restore(); }
+    if(e.type==='imp'&&e.st===1){ var kI=1-e.cd/(e.c0||0.65); c.strokeStyle='rgba(255,138,42,'+(0.45+0.5*kI)+')'; c.lineWidth=2; c.beginPath(); c.ellipse(e.tx,e.ty,FIRE.r,FIRE.r*0.62,0,0,7); c.stroke(); c.fillStyle='rgba(255,138,42,'+(0.1*kI)+')'; c.fill(); }
     if(e.type==='wiz'&&e.st===1){ c.fillStyle='rgba(181,107,255,'+(0.4+0.5*(1-e.cd/0.85))+')'; for(var wo=-1;wo<=1;wo++) dotLine(c,e.x,e.y-8,Math.cos(e.aim+wo*0.28),Math.sin(e.aim+wo*0.28),170,11,3); }
     if(e.type==='boss'){ var k=e.st===1?1-e.cd/0.85:e.st===3?1-e.cd/0.8:e.st===4?1-e.cd/0.6:0;
       if(e.st===1){ var L3=900; c.save(); c.translate(e.x,e.y); c.rotate(e.fa); c.fillStyle='rgba(255,60,80,'+(0.12+0.3*k)+')'; c.fillRect(0,-e.r,L3,e.r*2); c.restore(); }
@@ -920,6 +956,7 @@ function draw(){ var c=cx, w=S&&S.w; c.setTransform(1,0,0,1,0,0);
   for(i=0;i<w.fx.length;i++) if(w.fx[i].k==='splat'&&!LITE) drawSplat(c,w.fx[i]);
   if(w.fires) for(i=0;i<w.fires.length;i++) drawFire(c,w.fires[i],t);
   /* bodies, top to bottom */
+  var openSk=null, od=170; w.en.forEach(function(e){ if(!e.dead&&e.type==='skel'&&e.st===3){ var dd=Math.hypot(e.x-p.x,e.y-p.y); if(dd<od){ od=dd; openSk=e; } } });   /* Kody 2026-11-17: only the nearest open knight gets the label, so crowds stay readable */
   var list=w.en.filter(function(e){ return !e.dead; }); list.push({hero:1,y:p.y}); if(w.shop&&rrReady('merchant')) list.push({merch:1,y:MERCH[1]-14}); if(w.pots) w.pots.forEach(function(pt){ if(pt.st<2) list.push({pot:pt,y:pt.y}); }); list.sort(function(a,b){ return a.y-b.y; });
   list.forEach(function(e){ if(e.hero){ drawHero(c,p,t); drawBurn(c,p,t); return; } if(e.merch){ drawMerchant(c,w); return; } if(e.pot){ drawPot(c,e.pot); return; }
     var T2=ET[e.type], nm=T2.spr; if(e.type==='bat') nm=Math.floor(e.t*10)%2?'batU':'batD';
@@ -932,9 +969,10 @@ function draw(){ var c=cx, w=S&&S.w; c.setTransform(1,0,0,1,0,0);
     var flip=e.type==='skel'?Math.cos(e.fa)<0:(p.x<e.x&&e.type!=='boss'&&e.type!=='slime');
     var top=drawEnemyRR(c,e,p,t), hh=top==null?im.height*sc:foot-top; if(top==null) sprF(e.fl>0&&!RM?nm+'W':nm,e.x+jx,foot+bob,flip&&e.type!=='bat',sc);
     if(e.el&&!(e.st===1&&e.type!=='slime')) c.drawImage(FX.crown,Math.round(e.x-7),Math.round(foot-hh-12));
-    if(e.type==='skel'&&e.st===3) dtx(c,'Open: strike!',e.x,foot-hh-6,13,'#FFE08A',0,'#141026');
+    if(e===openSk) dtx(c,'Open: strike!',e.x,foot-hh-6,13,'#FFE08A',0,'#141026');
     if((e.st===1&&e.type!=='slime'&&e.type!=='boss')) dtx(c,'!',e.x,foot-hh-4,22,'#FF5A6E',0,'#1A0A12');
     if(e.stun>0){ for(var sz=0;sz<2;sz++){ var ab=t*5+sz*3.1; dtx(c,'★',e.x+Math.cos(ab)*12,foot-hh-2+Math.sin(ab)*4,12,'#FFC93C'); } }
+    if(e.type==='lance'&&e.st===9){ for(var sl=0;sl<2;sl++){ var al2=t*5+sl*3.1; dtx(c,'★',e.x+Math.cos(al2)*14,foot-hh-2+Math.sin(al2)*4,13,'#FFC93C'); } }
     if(e.type==='boss'&&e.st===9){ for(var st=0;st<3;st++){ var aa=t*4+st*2.1; dtx(c,'★',e.x+Math.cos(aa)*26,foot-hh-4+Math.sin(aa)*6,16,'#FFC93C'); } } });
   /* orbs */
   for(i=0;i<w.orbs.length;i++){ var o0=w.orbs[i]; c.drawImage(o0.fr?FX.orbR:FX.orb,Math.round(o0.x-12),Math.round(o0.y-12)); }
@@ -971,6 +1009,7 @@ function draw(){ var c=cx, w=S&&S.w; c.setTransform(1,0,0,1,0,0);
       else { c.fillStyle='rgba(255,170,60,'+(0.45*(1-bk))+')'; c.beginPath(); c.arc(f.x,f.y-6,f.r*(0.5+0.5*bk),0,7); c.fill(); c.strokeStyle='rgba(255,230,160,'+(1-bk)+')'; c.lineWidth=3; c.stroke(); } }
     else if(fk==='puff'){ var pr=12+f.t*40; c.globalAlpha=Math.max(0,0.5*(1-f.t/0.4)); c.drawImage(FX.puff,Math.round(f.x-pr),Math.round(f.y-12-pr),Math.round(pr*2),Math.round(pr*2)); c.globalAlpha=1; }
     else if(fk==='wout'){ if(f.t<0.3){ c.globalAlpha=1-f.t/0.3; rrDraw(c,f.row===2?'wizb':'wiz',f.row===2?0:f.row,2,f.x,f.y,f.row===1&&f.fl); c.globalAlpha=1; } }
+    else if(fk==='lob'){ if(f.t<0.45){ var lk=f.t/0.45, lx=f.x+(f.x2-f.x)*lk, ly=f.y+(f.y2-f.y)*lk-Math.sin(lk*Math.PI)*70; c.fillStyle='#3A0E06'; c.fillRect(Math.round(lx)-5,Math.round(ly)-5,10,10); c.fillStyle='#FF8A2A'; c.fillRect(Math.round(lx)-4,Math.round(ly)-4,8,8); c.fillStyle='#FFE08A'; c.fillRect(Math.round(lx)-2,Math.round(ly)-2,4,4); } }
     else if(fk==='ring'){ c.strokeStyle='rgba(77,224,192,'+(1-f.t/0.35)+')'; c.lineWidth=4; c.beginPath(); c.arc(f.x,f.y,30+f.t*360,0,7); c.stroke(); } }
   if(nbolt){ c.lineJoin='bevel'; for(var bp=0;bp<2;bp++){ var any=0; c.beginPath(); for(i=0;i<w.fx.length;i++){ var fb=w.fx[i]; if((fb.k!=='zap'&&fb.k!=='arc')||(fb.t<0.1)!==(bp===0)) continue; any=1; var jz=RM?0:7;
         if(fb.k==='zap'){ c.moveTo(fb.x+rnd(-jz,jz),fb.y-110); for(var z=1;z<5;z++) c.lineTo(fb.x+rnd(-jz,jz),fb.y-110+z*22); c.lineTo(fb.x,fb.y); }
@@ -1038,7 +1077,7 @@ function drawHUD(t){ var c=cx, w=S.w, p=w.p, i, R=ROOMS[w.rid], na=p.arm||0, low
   if(pend) dtx(c,ptx,12,72,14,'#FFE08A','left');
   /* the castle map (the room name is in the top bar now) */
   plate(c,W-46,4,42,94,false);
-  for(var id in MAPPOS){ var m=MAPPOS[id], X=W-25+m[0]*12, Y=4+m[1]*10; c.fillStyle=id===w.rid?'#FFC93C':w.seen[id]?'#8E86B4':'rgba(142,134,180,.3)'; c.fillRect(X-5,Y-4,10,8); }
+  for(var id in MAPPOS){ var m=MAPPOS[id], X=W-25+m[0]*12, Y=6+m[1]*9; c.fillStyle=id===w.rid?'#FFC93C':w.seen[id]?'#8E86B4':'rgba(142,134,180,.3)'; c.fillRect(X-5,Y-4,10,7); }
   if(w.shop){ var cst='Your coins: '+w.coins, csw=tspr(cst,15,'#FFE07A').width+40; plate(c,4,ph+8,csw,28,false); c.drawImage(SPR.coin2,12,ph+15); dtx(c,cst,32,ph+28,15,'#FFE07A','left'); }
   /* the Warden's health is in the top bar now (lsTop) */
   /* combo: top right, under the room plate (never over Rook). A new multiplier pops there too. */
@@ -1051,11 +1090,10 @@ function drawHUD(t){ var c=cx, w=S.w, p=w.p, i, R=ROOMS[w.rid], na=p.arm||0, low
   var obj=''; if(S.mode==='play'&&w.cleared&&!w.pend){ if(w.chest&&!w.chest.open) obj='Walk into the chest to open it'; else if(Object.keys(R.exits).length) obj=Object.keys(R.exits).length>1?'Choose a door: west or east':'The door is open ↑'; }
   if(obj){ var os=tspr(obj,18,'#FFE08A'), tw=os.width+30; c.fillStyle='rgba(7,8,18,.75)'; c.fillRect(Math.round(W/2-tw/2),H-58,tw,28); dtx(c,obj,W/2,H-38,18,'#FFE08A'); }
   /* Kody 2026-11-16: teaching notes are a small plate along the top wall, not a full-width banner */
-  if(w.banner&&w.banner.tip){ var tb=w.banner, ga2=c.globalAlpha, pw=660, ph=54, px=Math.round(W/2-pw/2), py=64; c.globalAlpha=ga2*Math.min(1,tb.t*2);
+  /* Kody 2026-11-18: every on-screen notice (room names, Room Clear, starter relic, swarms, Wardens...) uses this same plate, size and spot as the Shield Knight tip */
+  if(w.banner){ var tb=w.banner, ga2=c.globalAlpha, pw=Math.max(660,Math.min(W-40,Math.max(tspr(tb.txt,17,'#FFC23A').width,tb.sub?tspr(tb.sub,14,'#F4ECD8').width:0)+48)), ph=tb.sub?54:34, px=Math.round(W/2-pw/2), py=64; c.globalAlpha=ga2*Math.min(1,tb.t*2);
     c.fillStyle='#120A1F'; c.fillRect(px-2,py-2,pw+4,ph+4); c.fillStyle='#1E1233'; c.fillRect(px,py,pw,ph); c.fillStyle='#FFC23A'; c.fillRect(px,py,4,ph);
-    dtx(c,tb.txt,W/2,py+17,17,'#FFC23A'); dtx(c,tb.sub,W/2,py+39,14,'#F4ECD8'); c.globalAlpha=ga2; }
-  else if(w.banner){ var bt=w.banner, ga=c.globalAlpha; c.globalAlpha=ga*Math.min(1,bt.t*2); c.fillStyle='rgba(7,8,18,.7)'; c.fillRect(0,H/2-70,W,bt.sub?104:72);
-    dtx(c,bt.txt,W/2,H/2-20,44,'#FFC93C'); if(bt.sub) dtx(c,bt.sub,W/2,H/2+16,20,'#E8ECFF'); c.globalAlpha=ga; }
+    dtx(c,tb.txt,W/2,py+17,17,'#FFC23A'); if(tb.sub) dtx(c,tb.sub,W/2,py+39,14,'#F4ECD8'); c.globalAlpha=ga2; }
   if(w.victory){ dtx(c,'VICTORY!',W/2,H/2,64,'#FFC93C',0,'#141026'); dtx(c,'The Warden is beaten. You win!',W/2,H/2+46,24,'#F4ECD8',0,'#141026'); }
   /* back from a knockout: what came back, then a short count-in before enemies move again */
   if(S.mode==='reentry'){ var rn=Math.max(1,Math.ceil(S.reT/(REENTRY/3))); c.fillStyle='rgba(18,10,31,.72)'; c.fillRect(0,H/2-78,W,140);
@@ -1067,7 +1105,7 @@ function lsSet(id,k,v){ if(LSV[id+k]===v) return; LSV[id+k]=v; var el=$(id); if(
 function lsTop(w){ var live=!!(w&&S.started&&!S.over&&S.mode!=='endcut'&&S.mode!=='cut'), R=live?ROOMS[w.rid]||{}:{}, ls=live&&w.last>0;
   /* the room: name and number, except in the Last Stand (that space goes to the timer and the Wardens) */
   var showRoom=live&&!ls&&!(R.boss&&w.boss&&!w.boss.dead); lsSet('dn-roomchip','hidden',!showRoom);   /* the Warden bar names the room in the boss fight */
-  if(showRoom){ var n=0; for(var sk in w.seen) n++; lsSet('dn-roomn','text','Room '+Math.max(1,Math.min(8,n))+' of 8'); lsSet('dn-roomv','text',R.name||''); }
+  if(showRoom){ var n=0; for(var sk in w.seen) n++; lsSet('dn-roomn','text','Room '+Math.max(1,Math.min(9,n))+' of 9'); lsSet('dn-roomv','text',R.name||''); }
   /* the timer: Last Stand or the Siege Hall */
   var gl=null; if(ls) gl=['Last Stand',w.last,LAST]; else if(live&&R.siege&&!w.cleared&&w.siegeT>0) gl=['Hold the gate',w.siegeT,R.siege];
   lsSet('dn-goal','hidden',!gl);

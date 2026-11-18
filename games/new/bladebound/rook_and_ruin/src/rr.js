@@ -2,8 +2,13 @@
    RRART (rr_art.js) holds the processed sheets. Every frame shares one fixed box per sheet with the
    feet on (px,py), so bodies never jump between frames. Left = right row mirrored around the pivot.
    Hitboxes are untouched: the art is drawn around the same foot point the old sprites used. */
-var RRI={}, RRSH={wiz:18,wizw:18,wizb:18,gobw:19,goba:19,skelw:21,skela:21,bossw:48,bossa:48};
-(function(){ Object.keys(RRART).forEach(function(n){ var im=new Image(); im.onload=function(){ var sh=RRSH[n], m=RRART[n]; RRI[n]=sh?mk(im.width,im.height,function(x){ x.drawImage(im,0,0); x.globalCompositeOperation='destination-over'; x.fillStyle='rgba(0,0,0,.32)'; for(var r=0;r<m.rows;r++) for(var q=0;q<m.cols;q++) x.fillRect(q*m.fw+m.px-Math.round(sh/2),r*m.fh+m.py-3,sh,3); }):im; RRI[n+'W']=white(im); RRI[n+'K']=mk(im.width,im.height,function(x){ x.drawImage(im,0,0); x.globalCompositeOperation='source-in'; x.fillStyle='#06060C'; x.fillRect(0,0,im.width,im.height); }); }; im.src=RRART[n].src; }); })();
+/* stand-in looks for the two fork enemies until they get their own art: Ember Imp = a fire-tinted wizard (F), Lancer = a steel-tinted goblin (S) */
+var RRTINT={wiz:['F','#FF7A1E'],wizw:['F','#FF7A1E'],wizb:['F','#FF7A1E'],goba:['S','#6F8FC8'],gobw:['S','#6F8FC8']};
+var RRALIAS={imp:{as:'wiz',tint:'F',own:'imp'},lance:{as:'gob',tint:'S',st:{9:3},own:'lancea'}};   /* used only while the enemy has no art of its own */
+function rrAlias(t){ var A=RRALIAS[t]; return A&&!RRART[A.own]?A:null; }
+var RRI={}, RRSH={imp:16,impw:16,impb:16,lancea:22,lancew:22,wiz:18,wizw:18,wizb:18,gobw:19,goba:19,skelw:21,skela:21,bossw:48,bossa:48};
+(function(){ Object.keys(RRART).forEach(function(n){ var im=new Image(); im.onload=function(){ var sh=RRSH[n], m=RRART[n]; RRI[n]=sh?mk(im.width,im.height,function(x){ x.drawImage(im,0,0); x.globalCompositeOperation='destination-over'; x.fillStyle='rgba(0,0,0,.32)'; for(var r=0;r<m.rows;r++) for(var q=0;q<m.cols;q++) x.fillRect(q*m.fw+m.px-Math.round(sh/2),r*m.fh+m.py-3,sh,3); }):im; RRI[n+'W']=white(im); RRI[n+'K']=mk(im.width,im.height,function(x){ x.drawImage(im,0,0); x.globalCompositeOperation='source-in'; x.fillStyle='#06060C'; x.fillRect(0,0,im.width,im.height); });
+    var tt=RRTINT[n]; if(tt) RRI[n+tt[0]]=mk(im.width,im.height,function(x){ x.drawImage(im,0,0); x.globalCompositeOperation='color'; x.fillStyle=tt[1]; x.fillRect(0,0,im.width,im.height); x.globalCompositeOperation='destination-in'; x.drawImage(im,0,0); if(sh){ x.globalCompositeOperation='destination-over'; x.fillStyle='rgba(0,0,0,.32)'; for(var r=0;r<m.rows;r++) for(var q=0;q<m.cols;q++) x.fillRect(q*m.fw+m.px-Math.round(sh/2),r*m.fh+m.py-3,sh,3); } }); }; im.src=RRART[n].src; }); })();
 function rrReady(n){ return !!RRI[n]; }
 var RRF={};
 function rrDraw(c,n,row,col,x,fy,flip,wh){ var m=RRART[n], k=wh?n+(wh===true?'W':wh):n, im=RRI[k]; if(!im) return false; var sy=row*m.fh; x=Math.round(x); fy=Math.round(fy);
@@ -46,10 +51,11 @@ function drawHeroRR(c,p,t){ var pose=heroPose(p), foot=p.y+p.r+3; invRing(c,p);
    Down/side action poses use the original sheets; facing up uses the back sheets (*b, same column meaning);
    walking/floating uses the cycle sheets (*w), advanced by distance walked (e.wd) so the feet match the speed
    and stop when the enemy stops. Bats and slimes have their own sheets (bat2, slime2). ---------- */
-var RRE={gob:'goba',skel:'skela',wiz:'wiz',boss:'bossa'}, RRBASE={gob:'gob',skel:'skel',boss:'boss'}, RRSTEP={gob:9,skel:8,boss:12};
-var RRH={gob:44,skel:56,wiz:58,boss:96};
+var RRE={gob:'goba',skel:'skela',wiz:'wiz',boss:'bossa',imp:'wiz',lance:'goba'}, RRBASE={gob:'gob',skel:'skel',boss:'boss',lance:'lance'}, RRSTEP={gob:9,skel:8,boss:12,lance:9};
+var RRH={gob:44,skel:56,wiz:58,boss:96,imp:50,lance:56};
 function enemyPose(e,p){ var dx=p.x-e.x, dy=p.y-e.y, fx=dx, fy=dy, col=0, t=e.type;
-  if(t==='gob'){ if(e.st===1||e.st===2){ fx=e.sx; fy=e.sy; } col=e.stun>0?3:[0,1,2,3][e.st]||0; }
+  if(t==='gob'||t==='lance'){ if(e.st===1||e.st===2){ fx=e.sx; fy=e.sy; } col=e.stun>0||e.st===9?3:[0,1,2,3][e.st]||0; }
+  else if(t==='imp'){ col=e.st===1||e.st===2?1:0; if(e.stun>0) col=3; }
   else if(t==='skel'){ fx=Math.cos(e.fa); fy=Math.sin(e.fa); col=e.stun>0?3:[0,1,2,3][e.st]||0; }
   else if(t==='wiz'){ col=e.st===1?1:0; if(e.bkT!=null&&e.t-e.bkT<0.28) col=3; if(e.stun>0) col=0; }
   else if(t==='boss'){ if(e.st>=1&&e.st<=4){ fx=Math.cos(e.fa); fy=Math.sin(e.fa); }
@@ -59,18 +65,21 @@ function enemyPose(e,p){ var dx=p.x-e.x, dy=p.y-e.y, fx=dx, fy=dy, col=0, t=e.ty
   var row=e.rrRow==null?1:e.rrRow; if(fy>0.62) row=0; else if(fy<-0.62) row=2; else if((row===0&&fy<0.52)||(row===2&&fy>-0.52)) row=1;
   if(fx<-0.08) e.rrFl=true; else if(fx>0.08) e.rrFl=false; e.rrRow=row;
   return [col,row,row===1?!!e.rrFl:false]; }
-function enemyFrame(e,p){ var pz=enemyPose(e,p), t=e.type, n, col=pz[0], row=pz[1], walk=0, idle=e.st===0&&col===0&&!(e.stun>0);
-  if(t==='wiz'){ n='wiz'; if(idle){ walk=1; n='wizw'; col=Math.floor(e.t*4)%4; } else if(row===2){ n='wizb'; row=0; } }
+function enemyFrame(e,p){ var A=rrAlias(e.type); if(A){ var t0=e.type, s0=e.st; e.type=A.as; if(A.st&&A.st[s0]!=null) e.st=A.st[s0]; try{ return enemyFrame(e,p); } finally{ e.type=t0; e.st=s0; } }
+  var pz=enemyPose(e,p), t=e.type, n, col=pz[0], row=pz[1], walk=0, idle=e.st===0&&col===0&&!(e.stun>0);
+  if(t==='imp'){ n='imp'; if(idle){ walk=1; n='impw'; col=Math.floor(e.t*5)%4; } else if(row===2){ n='impb'; row=0; } }
+  else if(t==='wiz'){ n='wiz'; if(idle){ walk=1; n='wizw'; col=Math.floor(e.t*4)%4; } else if(row===2){ n='wizb'; row=0; } }
   else if(idle&&(e.mv||0)>0.5){ walk=1; n=RRBASE[t]+'w'; col=Math.floor((e.wd||0)/RRSTEP[t])%4; }
   else n=RRBASE[t]+'a';   /* v16 action sheets: rows down / side / up, same scale as the walk */
   return {n:n,row:row,col:col,fl:pz[2],walk:walk}; }
-function drawEnemyRR(c,e,p,t){ var ty=e.type;
+function drawEnemyRR(c,e,p,t){ var A=rrAlias(e.type); if(A){ var t0=e.type, s0=e.st; e.type=A.as; if(A.st&&A.st[s0]!=null) e.st=A.st[s0]; e.tint=A.tint; try{ return drawEnemyRR(c,e,p,t); } finally{ e.type=t0; e.st=s0; e.tint=null; } }
+  var ty=e.type;
   if(ty==='bat') return drawBatRR(c,e,p); if(ty==='slime') return drawSlimeRR(c,e);
   if(!RRE[ty]||e.small) return null; var f=enemyFrame(e,p); if(!rrReady(f.n)) return null;
-  var bob=ty==='wiz'?Math.sin(e.t*3)*2-3:0;   /* the wizard hovers; walkers get their bounce from the cycle itself */
-  var jx=((e.st===1&&(ty==='gob'||ty==='skel'))||(ty==='boss'&&e.st===3))?rnd(-1.5,1.5):0;
+  var bob=ty==='wiz'||ty==='imp'?Math.sin(e.t*3)*2-3:0;   /* the wizard hovers; walkers get their bounce from the cycle itself */
+  var jx=((e.st===1&&(ty==='gob'||ty==='skel'||ty==='lance'))||(ty==='boss'&&e.st===3))?rnd(-1.5,1.5):0;
   var foot=e.y+e.r+2;
-  rrDraw(c,f.n,f.row,f.col,e.x+jx,foot+bob,f.fl,e.fl>0&&!RM);
+  rrDraw(c,f.n,f.row,f.col,e.x+jx,foot+bob,f.fl,e.fl>0&&!RM?true:(e.tint||false));
   return foot-RRH[ty]+bob; }
 /* bat: rows front / side (left mirrored); wings up, down, spread, dive */
 function drawBatRR(c,e,p){ if(!rrReady('bat2')) return null; var fx=e.st===2?e.sx:p.x-e.x, fy=e.st===2?e.sy:p.y-e.y, ax=Math.abs(fx), ay=Math.abs(fy);
