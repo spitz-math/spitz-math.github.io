@@ -1,0 +1,10 @@
+#!/bin/bash
+# Runs every spitz.dev reliability database test. Exit 0 only if all pass.
+set -o pipefail; cd "$(dirname "$0")"; M=../../sprite-drop/supabase/migrations; RB=../../sprite-drop/supabase/rollback; ok=0
+echo "== baseline: today's live functions (bugs reproduced)"; ./run.sh baseline_routing_bug.sql | tail -1 || ok=1
+echo "== phase 1: identities"; ./run.sh phase1_identities.sql seed_history.sql $M/20261118000000_worker_identities.sql | tail -1 || ok=1
+echo "== phase 1 + 2: identities still hold with typed tasks on top"; ./run.sh phase1_identities.sql seed_history.sql $M/20261118000000_worker_identities.sql $M/20261118010000_typed_tasks_refs_status.sql | tail -1 || ok=1
+echo "== phase 2 + 3: typed tasks, references, asset status"; ./run.sh phase2_typed_tasks.sql $M/20261118000000_worker_identities.sql $M/20261118010000_typed_tasks_refs_status.sql | tail -1 || ok=1
+echo "== rollback of phase 1"; ./run.sh rollback_after.sql seed_history.sql $M/20261118000000_worker_identities.sql post_migration_activity.sql $RB/20261118000000_worker_identities_rollback.sql ../live_snapshot/functions_2026-11-17.sql | tail -1 || ok=1
+echo "== migration refuses while an API worker run is live"; out=$(./run.sh noop.sql active_run_guard.sql $M/20261118000000_worker_identities.sql 2>&1); grep -q "An API worker run is still active" <<<"$out" && echo "--- refused as expected" || { echo FAIL; ok=1; }
+exit $ok

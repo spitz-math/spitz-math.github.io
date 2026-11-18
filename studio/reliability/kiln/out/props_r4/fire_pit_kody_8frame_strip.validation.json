@@ -1,0 +1,41 @@
+{
+ "image": "out/props_r4/fire_pit_kody_8frame_strip.png",
+ "sha256": "0e4dabf455d89265b65d25517cef5be2b2ce7f7aa67ed7cd0f35435b9c57c89f",
+ "spec": {
+  "kind": "sheet",
+  "size": [
+   640,
+   68
+  ],
+  "alpha": "hard",
+  "cell": [
+   80,
+   68
+  ],
+  "note": "Kody's fire pit design, 8 frames 80x68, true 1x, made by make_fire_pit_kody.py"
+ },
+ "result": "PASS",
+ "checks": [
+  {
+   "check": "size",
+   "result": "pass",
+   "detail": "640x68 (want 640x68)"
+  },
+  {
+   "check": "true 1x",
+   "result": "pass",
+   "detail": "ok"
+  },
+  {
+   "check": "alpha 0/255",
+   "result": "pass",
+   "detail": "0 partial-alpha px"
+  },
+  {
+   "check": "inside cell",
+   "result": "pass",
+   "detail": "ok"
+  }
+ ],
+ "scope": "technical only; visual approval is separate"
+}

@@ -1,0 +1,41 @@
+{
+ "image": "refs/props_r3/floor_coal_decal_variants.png",
+ "sha256": "2f44a3621aaac3095c3d104a09077eb945bd6a7e79cfff9abd8605e6d665cf8e",
+ "spec": {
+  "kind": "sheet",
+  "size": [
+   64,
+   16
+  ],
+  "alpha": "hard",
+  "cell": [
+   16,
+   16
+  ],
+  "note": "4 decals 16x16, Sprite Drop 8bb07de7, true 1x"
+ },
+ "result": "PASS",
+ "checks": [
+  {
+   "check": "size",
+   "result": "pass",
+   "detail": "64x16 (want 64x16)"
+  },
+  {
+   "check": "true 1x",
+   "result": "pass",
+   "detail": "ok"
+  },
+  {
+   "check": "alpha 0/255",
+   "result": "pass",
+   "detail": "0 partial-alpha px"
+  },
+  {
+   "check": "inside cell",
+   "result": "pass",
+   "detail": "ok"
+  }
+ ],
+ "scope": "technical only; visual approval is separate"
+}

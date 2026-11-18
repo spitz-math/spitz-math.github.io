@@ -1,0 +1,32 @@
+{
+ "image": "studio/reliability/kiln/refs/props/anvil.png",
+ "sha256": "18bc0126445e09f70ddc20bacf8ef7e6d07e5f696aa40b7166ce239bfbbc8d85",
+ "spec": {
+  "kind": "prop",
+  "size": [
+   26,
+   18
+  ],
+  "alpha": "hard",
+  "note": "anvil.png from Sprite Drop task d4cb944f, true 1x"
+ },
+ "result": "PASS",
+ "checks": [
+  {
+   "check": "size",
+   "result": "pass",
+   "detail": "26x18 (want 26x18)"
+  },
+  {
+   "check": "true 1x",
+   "result": "pass",
+   "detail": "ok"
+  },
+  {
+   "check": "alpha 0/255",
+   "result": "pass",
+   "detail": "0 partial-alpha px"
+  }
+ ],
+ "scope": "technical only; visual approval is separate"
+}

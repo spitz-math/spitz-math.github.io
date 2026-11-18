@@ -1,0 +1,32 @@
+{
+ "image": "refs/props_r3/floor_soot_coal_overlay.png",
+ "sha256": "3b997164320581551a8bc7613487a7f6de074b1c1c589d060b83d0bed0731cee",
+ "spec": {
+  "kind": "prop",
+  "size": [
+   480,
+   270
+  ],
+  "alpha": "hard",
+  "note": "Sprite Drop f7b8b750, true 1x"
+ },
+ "result": "PASS",
+ "checks": [
+  {
+   "check": "size",
+   "result": "pass",
+   "detail": "480x270 (want 480x270)"
+  },
+  {
+   "check": "true 1x",
+   "result": "pass",
+   "detail": "ok"
+  },
+  {
+   "check": "alpha 0/255",
+   "result": "pass",
+   "detail": "0 partial-alpha px"
+  }
+ ],
+ "scope": "technical only; visual approval is separate"
+}

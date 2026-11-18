@@ -1,0 +1,32 @@
+{
+ "image": "studio/reliability/kiln/refs/props/fire_pit.png",
+ "sha256": "47697cd8c136343080cc9bf814d03e42d5ea88b3ade4623b3fa07d271d650439",
+ "spec": {
+  "kind": "prop",
+  "size": [
+   64,
+   44
+  ],
+  "alpha": "hard",
+  "note": "fire_pit.png from Sprite Drop task d4cb944f, true 1x"
+ },
+ "result": "PASS",
+ "checks": [
+  {
+   "check": "size",
+   "result": "pass",
+   "detail": "64x44 (want 64x44)"
+  },
+  {
+   "check": "true 1x",
+   "result": "pass",
+   "detail": "ok"
+  },
+  {
+   "check": "alpha 0/255",
+   "result": "pass",
+   "detail": "0 partial-alpha px"
+  }
+ ],
+ "scope": "technical only; visual approval is separate"
+}

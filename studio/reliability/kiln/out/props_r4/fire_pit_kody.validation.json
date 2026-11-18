@@ -1,0 +1,32 @@
+{
+ "image": "out/props_r4/fire_pit_kody.png",
+ "sha256": "c98eac824f66a1730b2101acce464a03338ca80b26e98c6eb413733e6ad2faed",
+ "spec": {
+  "kind": "prop",
+  "size": [
+   80,
+   68
+  ],
+  "alpha": "hard",
+  "note": "Kody's fire pit design, still / frame 0, true 1x"
+ },
+ "result": "PASS",
+ "checks": [
+  {
+   "check": "size",
+   "result": "pass",
+   "detail": "80x68 (want 80x68)"
+  },
+  {
+   "check": "true 1x",
+   "result": "pass",
+   "detail": "ok"
+  },
+  {
+   "check": "alpha 0/255",
+   "result": "pass",
+   "detail": "0 partial-alpha px"
+  }
+ ],
+ "scope": "technical only; visual approval is separate"
+}

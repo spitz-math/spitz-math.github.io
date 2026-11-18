@@ -1,0 +1,32 @@
+{
+ "image": "studio/reliability/kiln/refs/props/forge.png",
+ "sha256": "09e1d50396da4cd485d3058a6a56248e35bbe984fbc7ac985223296cebc622e7",
+ "spec": {
+  "kind": "prop",
+  "size": [
+   48,
+   44
+  ],
+  "alpha": "hard",
+  "note": "forge.png from Sprite Drop task d4cb944f, true 1x"
+ },
+ "result": "PASS",
+ "checks": [
+  {
+   "check": "size",
+   "result": "pass",
+   "detail": "48x44 (want 48x44)"
+  },
+  {
+   "check": "true 1x",
+   "result": "pass",
+   "detail": "ok"
+  },
+  {
+   "check": "alpha 0/255",
+   "result": "pass",
+   "detail": "0 partial-alpha px"
+  }
+ ],
+ "scope": "technical only; visual approval is separate"
+}

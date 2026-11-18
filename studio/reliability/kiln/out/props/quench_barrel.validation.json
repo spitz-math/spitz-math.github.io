@@ -1,0 +1,32 @@
+{
+ "image": "studio/reliability/kiln/refs/props/quench_barrel.png",
+ "sha256": "2e3eeb263d3aa8d67bb8e82e13cb73ffda8743b164f11efe9e98d24440234724",
+ "spec": {
+  "kind": "prop",
+  "size": [
+   18,
+   22
+  ],
+  "alpha": "hard",
+  "note": "quench_barrel.png from Sprite Drop task d4cb944f, true 1x"
+ },
+ "result": "PASS",
+ "checks": [
+  {
+   "check": "size",
+   "result": "pass",
+   "detail": "18x22 (want 18x22)"
+  },
+  {
+   "check": "true 1x",
+   "result": "pass",
+   "detail": "ok"
+  },
+  {
+   "check": "alpha 0/255",
+   "result": "pass",
+   "detail": "0 partial-alpha px"
+  }
+ ],
+ "scope": "technical only; visual approval is separate"
+}
