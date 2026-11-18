@@ -1,0 +1,710 @@
+{
+ "game": "games/rook_and_ruin.html",
+ "about": "Every picture in the built game. New pictures need asset_id (an approved spitz.dev asset).",
+ "pictures": [
+  {
+   "name": null,
+   "sha256": "937ede3a8e815817ce287cc558593b3863a93e1d78f335cc0b409927c95f84a5",
+   "type": "png",
+   "bytes": 164,
+   "asset_id": null,
+   "approval": "legacy: in the game before spitz.dev approvals"
+  },
+  {
+   "name": null,
+   "sha256": "3525936c3e1c1756e9ec6d3738e0752f7ebd72b3ff79a4325ace0c1e2c5c6d61",
+   "type": "png",
+   "bytes": 164,
+   "asset_id": null,
+   "approval": "legacy: in the game before spitz.dev approvals"
+  },
+  {
+   "name": null,
+   "sha256": "d2253159ad3e30c314c3cfb60e5020556f6e024574417162693103e45ce9476f",
+   "type": "png",
+   "bytes": 143,
+   "asset_id": null,
+   "approval": "legacy: in the game before spitz.dev approvals"
+  },
+  {
+   "name": null,
+   "sha256": "28d45ec86df8d41e1aff4c15635040f476fce4d0a1dad26d3dd602afe4706c1b",
+   "type": "png",
+   "bytes": 143,
+   "asset_id": null,
+   "approval": "legacy: in the game before spitz.dev approvals"
+  },
+  {
+   "name": null,
+   "sha256": "b5fa1f1a7cff7833220e6dd628ada027b1328a4673d92cad5714f960765a1b8b",
+   "type": "png",
+   "bytes": 143,
+   "asset_id": null,
+   "approval": "legacy: in the game before spitz.dev approvals"
+  },
+  {
+   "name": null,
+   "sha256": "a0528654a96dd124cc2204a370a43c31e016a41b1d4ea6a3d54c744b61dd8874",
+   "type": "png",
+   "bytes": 117,
+   "asset_id": null,
+   "approval": "legacy: in the game before spitz.dev approvals"
+  },
+  {
+   "name": null,
+   "sha256": "4a342f9e333dc96906ab0ae7d610668a2bf5b2ff0e450c024787b1044764b794",
+   "type": "png",
+   "bytes": 143,
+   "asset_id": null,
+   "approval": "legacy: in the game before spitz.dev approvals"
+  },
+  {
+   "name": null,
+   "sha256": "81082992368437aff9a5ee0eaf8ac8a231f47b60a465eedc0bcee66bdca142e7",
+   "type": "png",
+   "bytes": 143,
+   "asset_id": null,
+   "approval": "legacy: in the game before spitz.dev approvals"
+  },
+  {
+   "name": null,
+   "sha256": "313346a10633f03291cf1486f767d04d1af38a7e69458188b63e75510a2c1901",
+   "type": "png",
+   "bytes": 197,
+   "asset_id": null,
+   "approval": "legacy: in the game before spitz.dev approvals"
+  },
+  {
+   "name": null,
+   "sha256": "ecbc1d6e5d0e9f37f9e1f6515bc8306d72118d5adec4438a4f7d81007de5efa0",
+   "type": "png",
+   "bytes": 168,
+   "asset_id": null,
+   "approval": "legacy: in the game before spitz.dev approvals"
+  },
+  {
+   "name": null,
+   "sha256": "89f4ba3b2070496c065e9a433b92e120ddbb4fbea299abed23dabc7d1ca23276",
+   "type": "png",
+   "bytes": 168,
+   "asset_id": null,
+   "approval": "legacy: in the game before spitz.dev approvals"
+  },
+  {
+   "name": null,
+   "sha256": "809616ec52a4efbc6a921b140fa933ba9c388ac369e8c8ceef21088af40701cf",
+   "type": "png",
+   "bytes": 163,
+   "asset_id": null,
+   "approval": "legacy: in the game before spitz.dev approvals"
+  },
+  {
+   "name": null,
+   "sha256": "979caeabaf5ea79a92d06cb0dfa8c48e444a510cc5dac03ee48fa6997fa3415d",
+   "type": "png",
+   "bytes": 189,
+   "asset_id": null,
+   "approval": "legacy: in the game before spitz.dev approvals"
+  },
+  {
+   "name": null,
+   "sha256": "fd8a62c194f58e71de3641d08add7743b08fdbeec8dcf23a71ceb06e15eb2dd1",
+   "type": "png",
+   "bytes": 190,
+   "asset_id": null,
+   "approval": "legacy: in the game before spitz.dev approvals"
+  },
+  {
+   "name": null,
+   "sha256": "ad077304ce79ceeb0b4cef36fc018be83fae796ee4308908dcd3cada67dbbfc5",
+   "type": "png",
+   "bytes": 187,
+   "asset_id": null,
+   "approval": "legacy: in the game before spitz.dev approvals"
+  },
+  {
+   "name": null,
+   "sha256": "0f49aa6470c3cfc8dc8754cf054e12053ea5ee4399794998e94d99c06a63cacd",
+   "type": "png",
+   "bytes": 190,
+   "asset_id": null,
+   "approval": "legacy: in the game before spitz.dev approvals"
+  },
+  {
+   "name": null,
+   "sha256": "ae31c618ebf6405ae3c9632717d69b4afbe8e02fdf47a0134c897bb4592a6b4f",
+   "type": "png",
+   "bytes": 190,
+   "asset_id": null,
+   "approval": "legacy: in the game before spitz.dev approvals"
+  },
+  {
+   "name": null,
+   "sha256": "1ca07f820245cb0ddc60c4894054729330f68d7ba3a2a7456dd1741e0a390b82",
+   "type": "png",
+   "bytes": 182,
+   "asset_id": null,
+   "approval": "legacy: in the game before spitz.dev approvals"
+  },
+  {
+   "name": null,
+   "sha256": "59496729d5f9ea3698d2ac98b0411937f18db0ec598f77550452505117ca3763",
+   "type": "png",
+   "bytes": 188,
+   "asset_id": null,
+   "approval": "legacy: in the game before spitz.dev approvals"
+  },
+  {
+   "name": null,
+   "sha256": "772a9f20a3d3a41c8b174769eb3fef998ae441997705408077182db1aebe74fc",
+   "type": "png",
+   "bytes": 288,
+   "asset_id": null,
+   "approval": "legacy: in the game before spitz.dev approvals"
+  },
+  {
+   "name": null,
+   "sha256": "54eec12f294b224347d2c2e527786d0aea5f96fd8e328e0eb6028fd74f08460f",
+   "type": "png",
+   "bytes": 144,
+   "asset_id": null,
+   "approval": "legacy: in the game before spitz.dev approvals"
+  },
+  {
+   "name": null,
+   "sha256": "0a292f45700b2dcedea385f28c07cbfbbc28dd077069549690bb3614946ba275",
+   "type": "png",
+   "bytes": 142,
+   "asset_id": null,
+   "approval": "legacy: in the game before spitz.dev approvals"
+  },
+  {
+   "name": null,
+   "sha256": "a03f6e29f3ad70c42519283c71e1d7ccf1c8f745811bd477f2af606cc4732377",
+   "type": "png",
+   "bytes": 144,
+   "asset_id": null,
+   "approval": "legacy: in the game before spitz.dev approvals"
+  },
+  {
+   "name": null,
+   "sha256": "88e1a21f576d3695d38b1f232fe2fd61e2199d77208842ca2125857736828101",
+   "type": "png",
+   "bytes": 165,
+   "asset_id": null,
+   "approval": "legacy: in the game before spitz.dev approvals"
+  },
+  {
+   "name": null,
+   "sha256": "be823d4f59d9632867bcbc521ee2dafb7099a248916f2857a630603231f287e9",
+   "type": "png",
+   "bytes": 114,
+   "asset_id": null,
+   "approval": "legacy: in the game before spitz.dev approvals"
+  },
+  {
+   "name": "entry",
+   "sha256": "8667040adbaa77065ce66cb343e762e3e8cf55ae95dcd444e68f2377148685ae",
+   "type": "webp",
+   "bytes": 24202,
+   "asset_id": null,
+   "approval": "legacy: in the game before spitz.dev approvals"
+  },
+  {
+   "name": "guard",
+   "sha256": "d5c66c1e7b131b2406b7a879d2c143ad37046c1308bc1f53cb2116ec8296eda0",
+   "type": "webp",
+   "bytes": 18766,
+   "asset_id": null,
+   "approval": "legacy: in the game before spitz.dev approvals"
+  },
+  {
+   "name": "cross",
+   "sha256": "dd383534c3b5320de05d376e0d1ead0afa3ae450247203bca4cf5ebfbb4241e7",
+   "type": "webp",
+   "bytes": 18538,
+   "asset_id": null,
+   "approval": "legacy: in the game before spitz.dev approvals"
+  },
+  {
+   "name": "vault",
+   "sha256": "ce0cf841df23cd0123457fdbefd5bbcfcef04203d97ece46f0fcdbbb6d9279e9",
+   "type": "webp",
+   "bytes": 18828,
+   "asset_id": null,
+   "approval": "legacy: in the game before spitz.dev approvals"
+  },
+  {
+   "name": "arena",
+   "sha256": "c6ef53c506ec30e7f19da4aec258b7cc2399ed424b382500e325a8fd3a7fae55",
+   "type": "webp",
+   "bytes": 17380,
+   "asset_id": null,
+   "approval": "legacy: in the game before spitz.dev approvals"
+  },
+  {
+   "name": "library",
+   "sha256": "df7f238c09b0e4bd51db8bb510e9009b88421ce617fed096591f7ebd2cee5ec3",
+   "type": "webp",
+   "bytes": 19688,
+   "asset_id": null,
+   "approval": "legacy: in the game before spitz.dev approvals"
+  },
+  {
+   "name": "shop",
+   "sha256": "ed3758d22a47da7d7155cd3a2eeb54915ea121b41b64f1745af894e44e3964bc",
+   "type": "webp",
+   "bytes": 19354,
+   "asset_id": null,
+   "approval": "legacy: in the game before spitz.dev approvals"
+  },
+  {
+   "name": "siege",
+   "sha256": "c3d305a0a37338ad584e9fab06c524af9eb42e063f2da934bb84de09eff5bc71",
+   "type": "webp",
+   "bytes": 19634,
+   "asset_id": null,
+   "approval": "legacy: in the game before spitz.dev approvals"
+  },
+  {
+   "name": "boss",
+   "sha256": "c0045e966b466299e4e56a77e43eb22f51ad7f0b064cdaf122958f59e12d182f",
+   "type": "webp",
+   "bytes": 19018,
+   "asset_id": null,
+   "approval": "legacy: in the game before spitz.dev approvals"
+  },
+  {
+   "name": null,
+   "sha256": "8bf935b0cbf9c92b5224f91c2ee7d271871abad9fdeff8c62c4fa43f11fd70f6",
+   "type": "webp",
+   "bytes": 414,
+   "asset_id": null,
+   "approval": "legacy: in the game before spitz.dev approvals"
+  },
+  {
+   "name": null,
+   "sha256": "879f8edea164b65253a8ec7d2550c705f80d51375d81e121eeb2af510c8b90cf",
+   "type": "webp",
+   "bytes": 464,
+   "asset_id": null,
+   "approval": "legacy: in the game before spitz.dev approvals"
+  },
+  {
+   "name": null,
+   "sha256": "767fd3d19e45a263d3601ea1c8e61a71c67b9a9aff1e54ad4cd11d3d26bd54dd",
+   "type": "webp",
+   "bytes": 884,
+   "asset_id": null,
+   "approval": "legacy: in the game before spitz.dev approvals"
+  },
+  {
+   "name": "wiz",
+   "sha256": "7bd2dff6cc1a9aba29e9edf8d584e01f2600d6e82a0f961549a6c7c9068f2488",
+   "type": "png",
+   "bytes": 21716,
+   "asset_id": null,
+   "approval": "legacy: in the game before spitz.dev approvals"
+  },
+  {
+   "name": null,
+   "sha256": "831708c4b614c0c6130face82b4d6b1c71fe0749ede69b17dcace0ef1686d192",
+   "type": "png",
+   "bytes": 14357,
+   "asset_id": null,
+   "approval": "legacy: in the game before spitz.dev approvals"
+  },
+  {
+   "name": null,
+   "sha256": "089f48c234d26cb8a7a1ce09b5a4ebd4902c2a08fd8024f701ed37d07b501ae6",
+   "type": "png",
+   "bytes": 8329,
+   "asset_id": null,
+   "approval": "legacy: in the game before spitz.dev approvals"
+  },
+  {
+   "name": null,
+   "sha256": "eb3e87394ef786bf695a50062b71237584b88410f42fc91d428395e58ee7a361",
+   "type": "png",
+   "bytes": 43316,
+   "asset_id": null,
+   "approval": "legacy: in the game before spitz.dev approvals"
+  },
+  {
+   "name": null,
+   "sha256": "67efd401df59994caeece25bc6a8303ce428cf27b7321ae7bbe3c3372933c351",
+   "type": "png",
+   "bytes": 14002,
+   "asset_id": null,
+   "approval": "legacy: in the game before spitz.dev approvals"
+  },
+  {
+   "name": null,
+   "sha256": "b0f8c6911a9e6632c232c19e5f35cb61dbe0aa2359668dd5a7daa5fb40caf8c1",
+   "type": "png",
+   "bytes": 51938,
+   "asset_id": null,
+   "approval": "legacy: in the game before spitz.dev approvals"
+  },
+  {
+   "name": null,
+   "sha256": "a731a3c394c8bb613a1668240b3456883df28c7f707632435a8217ab946c9a05",
+   "type": "png",
+   "bytes": 69072,
+   "asset_id": null,
+   "approval": "legacy: in the game before spitz.dev approvals"
+  },
+  {
+   "name": null,
+   "sha256": "0f86d4883a95b583685caa857141ad3fa1b46b00207816eb516d7a90f4ff8ecd",
+   "type": "png",
+   "bytes": 59237,
+   "asset_id": null,
+   "approval": "legacy: in the game before spitz.dev approvals"
+  },
+  {
+   "name": null,
+   "sha256": "3cf62a554af8a85e2cb74b328ea8195c782dae0688987dc3db7940df2bf04cc3",
+   "type": "png",
+   "bytes": 27397,
+   "asset_id": null,
+   "approval": "legacy: in the game before spitz.dev approvals"
+  },
+  {
+   "name": null,
+   "sha256": "d22e6d34bca7ee44a48f1b27b5df7495d7897b148c83e2e42c6edf5060a328b5",
+   "type": "png",
+   "bytes": 21580,
+   "asset_id": null,
+   "approval": "legacy: in the game before spitz.dev approvals"
+  },
+  {
+   "name": null,
+   "sha256": "6307f6eb908b8503b311a849365922729ca96eb128de047f6efee2c84a5eaa70",
+   "type": "png",
+   "bytes": 39906,
+   "asset_id": null,
+   "approval": "legacy: in the game before spitz.dev approvals"
+  },
+  {
+   "name": null,
+   "sha256": "3da64918fe8f05ed8df22d862607452c6ac40fb75049b62adc7764a559cb7668",
+   "type": "png",
+   "bytes": 37876,
+   "asset_id": null,
+   "approval": "legacy: in the game before spitz.dev approvals"
+  },
+  {
+   "name": null,
+   "sha256": "b205bd88f48d74da6cf6c335f221cc07549d50b64d8b847c61d1cb8a280bdc2c",
+   "type": "png",
+   "bytes": 53539,
+   "asset_id": null,
+   "approval": "legacy: in the game before spitz.dev approvals"
+  },
+  {
+   "name": null,
+   "sha256": "ecf7e542b0744ea269adb37bce1df769c81922073e729c59276e5dda4f46e491",
+   "type": "png",
+   "bytes": 57190,
+   "asset_id": null,
+   "approval": "legacy: in the game before spitz.dev approvals"
+  },
+  {
+   "name": null,
+   "sha256": "9d5c177b691195dbbf279b52c3c1c4c805652b47961466960a1fdbd90972ba96",
+   "type": "png",
+   "bytes": 148070,
+   "asset_id": null,
+   "approval": "legacy: in the game before spitz.dev approvals"
+  },
+  {
+   "name": null,
+   "sha256": "8e049b49c6660c70adaf8578fb5e7c028e03b27e73a039aa2042e506f5a76e5f",
+   "type": "png",
+   "bytes": 154299,
+   "asset_id": null,
+   "approval": "legacy: in the game before spitz.dev approvals"
+  },
+  {
+   "name": null,
+   "sha256": "3fb17322c82fd37bedf0038e6da1aaa6e70216687392fcb109e7427f1ecf9efa",
+   "type": "png",
+   "bytes": 67817,
+   "asset_id": null,
+   "approval": "legacy: in the game before spitz.dev approvals"
+  },
+  {
+   "name": null,
+   "sha256": "27780c156f283caa939b49b1475fcb998c7fc47f769e2886bd2af5e1ffbb166c",
+   "type": "png",
+   "bytes": 20813,
+   "asset_id": null,
+   "approval": "legacy: in the game before spitz.dev approvals"
+  },
+  {
+   "name": null,
+   "sha256": "96ccfd11077f3c1163125af82b279a979bad0747ac4c8679fe18f6f9ffe7cc42",
+   "type": "png",
+   "bytes": 7591,
+   "asset_id": null,
+   "approval": "legacy: in the game before spitz.dev approvals"
+  },
+  {
+   "name": null,
+   "sha256": "b1f4d0c564aca10c0ae0733d57d54cfb4e599f2997a64cd9400a0f54f4ada868",
+   "type": "png",
+   "bytes": 975,
+   "asset_id": null,
+   "approval": "legacy: in the game before spitz.dev approvals"
+  },
+  {
+   "name": null,
+   "sha256": "5b8528dfb2371cab3d5b820a883a011ec252ecae4adc35eef36971ea9d2f8880",
+   "type": "png",
+   "bytes": 955,
+   "asset_id": null,
+   "approval": "legacy: in the game before spitz.dev approvals"
+  },
+  {
+   "name": null,
+   "sha256": "6556cca0e03f72ed5f596f6ef742039991ba971688e9140ed4af30199b2fb880",
+   "type": "png",
+   "bytes": 781,
+   "asset_id": null,
+   "approval": "legacy: in the game before spitz.dev approvals"
+  },
+  {
+   "name": null,
+   "sha256": "5420c12bdc9adad8c9008dc95e6fd8b54f54d18bc82e4aee41c8576c8d4d3f71",
+   "type": "png",
+   "bytes": 871,
+   "asset_id": null,
+   "approval": "legacy: in the game before spitz.dev approvals"
+  },
+  {
+   "name": null,
+   "sha256": "caa52119fd36ed0ad60a33351d5c956608f05312a94cdb888f5db4e861e61795",
+   "type": "png",
+   "bytes": 914,
+   "asset_id": null,
+   "approval": "legacy: in the game before spitz.dev approvals"
+  },
+  {
+   "name": null,
+   "sha256": "b4589da08caac7099128abdb58fcfd3a3abb52deede20af5b5f799b8e543d95b",
+   "type": "png",
+   "bytes": 849,
+   "asset_id": null,
+   "approval": "legacy: in the game before spitz.dev approvals"
+  },
+  {
+   "name": null,
+   "sha256": "37fa3a0154d1c7f3f6064ca3e07d62067c6adeb121d87f6aa0560a9195a8fed2",
+   "type": "png",
+   "bytes": 770,
+   "asset_id": null,
+   "approval": "legacy: in the game before spitz.dev approvals"
+  },
+  {
+   "name": null,
+   "sha256": "e8b9417e52ed4ccae06c8c6e31dee284e7b58938e1333f572338b4bb4b94620c",
+   "type": "png",
+   "bytes": 613,
+   "asset_id": null,
+   "approval": "legacy: in the game before spitz.dev approvals"
+  },
+  {
+   "name": null,
+   "sha256": "447488c51ca5fd0a57d15063fd57b4cfd8be811d82b0404b9e7839aa651407be",
+   "type": "png",
+   "bytes": 984,
+   "asset_id": null,
+   "approval": "legacy: in the game before spitz.dev approvals"
+  },
+  {
+   "name": null,
+   "sha256": "b71e37556e2d44b22a37bbf535884987a0eabec17edf0b1dbbce7b6a27224e25",
+   "type": "png",
+   "bytes": 977,
+   "asset_id": null,
+   "approval": "legacy: in the game before spitz.dev approvals"
+  },
+  {
+   "name": null,
+   "sha256": "da4eb9a4248d01fca73538032df1cdc1d5826dce8ed0dcbd9c5cc4a6a2c64906",
+   "type": "png",
+   "bytes": 970,
+   "asset_id": null,
+   "approval": "legacy: in the game before spitz.dev approvals"
+  },
+  {
+   "name": null,
+   "sha256": "e69a1cf2470cbae9ce69c3908e865733c59f02f3c0f6aff3ef5068f96f83225d",
+   "type": "png",
+   "bytes": 734,
+   "asset_id": null,
+   "approval": "legacy: in the game before spitz.dev approvals"
+  },
+  {
+   "name": null,
+   "sha256": "cbbc36f57604127800880ee8d405c6876457b2de9c50e5e725e7a24953cc08ab",
+   "type": "png",
+   "bytes": 851,
+   "asset_id": null,
+   "approval": "legacy: in the game before spitz.dev approvals"
+  },
+  {
+   "name": null,
+   "sha256": "252c23b96efc31fa15ec89583e9d337d0726a70a6af7b3fe3895f75b8bf2f1ff",
+   "type": "png",
+   "bytes": 886,
+   "asset_id": null,
+   "approval": "legacy: in the game before spitz.dev approvals"
+  },
+  {
+   "name": null,
+   "sha256": "261546c841de8fe77599a618e418f64dca320aa4365c55112fd214be10fc622b",
+   "type": "png",
+   "bytes": 1114,
+   "asset_id": null,
+   "approval": "legacy: in the game before spitz.dev approvals"
+  },
+  {
+   "name": null,
+   "sha256": "7b0f997103140626d22f769d378154dbb00396e11f5fffe2c717a4daf0f3bbc6",
+   "type": "png",
+   "bytes": 1192,
+   "asset_id": null,
+   "approval": "legacy: in the game before spitz.dev approvals"
+  },
+  {
+   "name": null,
+   "sha256": "01b8bd97bd430b33a9907373a47f52c90b6c1fbd2712a9e87399abc47094a582",
+   "type": "png",
+   "bytes": 888,
+   "asset_id": null,
+   "approval": "legacy: in the game before spitz.dev approvals"
+  },
+  {
+   "name": null,
+   "sha256": "b5d8790659698ddedc0f8ecd997fe34ea3bc292dec5e222ea78154fe1632223f",
+   "type": "png",
+   "bytes": 947,
+   "asset_id": null,
+   "approval": "legacy: in the game before spitz.dev approvals"
+  },
+  {
+   "name": null,
+   "sha256": "bdcb4725a9f12843deb3b28a708148110af3e4d188f499e93d713a32663709dc",
+   "type": "png",
+   "bytes": 898,
+   "asset_id": null,
+   "approval": "legacy: in the game before spitz.dev approvals"
+  },
+  {
+   "name": null,
+   "sha256": "995a781f89b6a6c264ac609cc22a4222ae751c883a9f07af198c287bc3ee1469",
+   "type": "png",
+   "bytes": 1048,
+   "asset_id": null,
+   "approval": "legacy: in the game before spitz.dev approvals"
+  },
+  {
+   "name": null,
+   "sha256": "b8faad0198e59ee3dc607a23e915859fdab2d23a661dc3c086c39c13f8c13070",
+   "type": "png",
+   "bytes": 1047,
+   "asset_id": null,
+   "approval": "legacy: in the game before spitz.dev approvals"
+  },
+  {
+   "name": null,
+   "sha256": "2e974ce1b6151180ca52f6edb5e8e8902bb7b5ef90710b12450b06bc4e3e5c12",
+   "type": "png",
+   "bytes": 1137,
+   "asset_id": null,
+   "approval": "legacy: in the game before spitz.dev approvals"
+  },
+  {
+   "name": null,
+   "sha256": "e1aba01c21dbd96b52e9946b70cd7e24bc2280a3b3cc8fe99aa032d8e51b6c5d",
+   "type": "png",
+   "bytes": 960,
+   "asset_id": null,
+   "approval": "legacy: in the game before spitz.dev approvals"
+  },
+  {
+   "name": null,
+   "sha256": "70420905de6ebbfc9e4d20cd95ffaeff5ddf52da6b41f4ecda34c0c4ecc9fddb",
+   "type": "png",
+   "bytes": 976,
+   "asset_id": null,
+   "approval": "legacy: in the game before spitz.dev approvals"
+  },
+  {
+   "name": null,
+   "sha256": "b7ec1792ea600cf880b3a5ce2292ce1e1838987a4d4617c7da4902023450fe09",
+   "type": "png",
+   "bytes": 891,
+   "asset_id": null,
+   "approval": "legacy: in the game before spitz.dev approvals"
+  },
+  {
+   "name": null,
+   "sha256": "20150b65a7cc4ab6574d6b7e6872ea629d06ed849e0a46a2317134bc2346f5bc",
+   "type": "png",
+   "bytes": 865,
+   "asset_id": null,
+   "approval": "legacy: in the game before spitz.dev approvals"
+  },
+  {
+   "name": null,
+   "sha256": "25ea0907cd9963b9ed4f3d3c465e1e7ecff986ceb846a8b2624f69cb425054b8",
+   "type": "png",
+   "bytes": 18619,
+   "asset_id": null,
+   "approval": "legacy: in the game before spitz.dev approvals"
+  },
+  {
+   "name": null,
+   "sha256": "1d32ed7c84da1e8b64b28bd0e5f85dbb6aa98c35c701f9b3a45650091587c59f",
+   "type": "png",
+   "bytes": 373,
+   "asset_id": null,
+   "approval": "legacy: in the game before spitz.dev approvals"
+  },
+  {
+   "name": null,
+   "sha256": "52219da3822dc2f2c24fe7659dc633074867d90951a69f81335ae16c2fa8d66c",
+   "type": "png",
+   "bytes": 1305,
+   "asset_id": null,
+   "approval": "legacy: in the game before spitz.dev approvals"
+  },
+  {
+   "name": null,
+   "sha256": "8370477b9eace91a8c90132f2a7015f17337f5e29278a243929eb2dcd74d76bc",
+   "type": "png",
+   "bytes": 344,
+   "asset_id": null,
+   "approval": "legacy: in the game before spitz.dev approvals"
+  },
+  {
+   "name": null,
+   "sha256": "a13e1438561712752d3ca357679a683c28c3adb1c5cbc48ef9194d9b4dae1271",
+   "type": "webp",
+   "bytes": 213004,
+   "asset_id": null,
+   "approval": "legacy: in the game before spitz.dev approvals"
+  },
+  {
+   "name": null,
+   "sha256": "5cbe2ed1e52462ecfa1287895bcfdbbb589c93e42530b6a8b71d5364d7ff5823",
+   "type": "png",
+   "bytes": 1224,
+   "asset_id": null,
+   "approval": "legacy: in the game before spitz.dev approvals"
+  }
+ ]
+}
