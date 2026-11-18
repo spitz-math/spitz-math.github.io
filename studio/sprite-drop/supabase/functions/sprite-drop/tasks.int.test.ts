@@ -127,9 +127,9 @@ Deno.test('typed task fields and reference tools reach the database unchanged', 
   assertEquals(f.calls.at(-1)!.args!.p_required, true)
   const v = await call(h, 'record_validation', { asset_id: 'a', sha256: 'x', result: 'MAYBE', spec: {}, record: {}, validator: 'v' })
   assert(v.err, 'only the validator\'s four results are accepted')
-  await call(h, 'review_asset', { asset_id: 'asset-1', verdict: 'approved', note: 'Kody: "approve"', sha256: 'x', as: 'claude_thread' })
-  assertEquals(f.calls.at(-1)!.fn, 'studio_review_asset')
-  assertEquals(f.calls.at(-1)!.args, { p_asset_id: 'asset-1', p_verdict: 'approved', p_note: 'Kody: "approve"', p_sha256: 'x', p_as: 'claude_thread' })
-  const r = await call(h, 'review_asset', { asset_id: 'asset-1', verdict: 'approved', note: '', sha256: 'x', as: 'claude_thread' })
-  assert(r.err, 'an empty note (no words from Kody) is refused before the database')
+  // approvals moved to spitz.dev (Kody signed in himself): no AI tool can record one any more
+  let gone = ''
+  try { await call(h, 'review_asset', { asset_id: 'asset-1', verdict: 'approved', note: 'Kody: "approve"', sha256: 'x', as: 'claude_thread' }) } catch (e) { gone = String(e) }
+  assert(gone.includes('not found'), 'review_asset is no longer offered')
+  assert(!f.calls.some((x) => x.fn === 'studio_review_asset' || x.fn === 'studio_approve'), 'no approval call reaches the database from a tool')
 })

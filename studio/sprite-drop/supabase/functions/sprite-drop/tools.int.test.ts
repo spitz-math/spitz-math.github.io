@@ -24,7 +24,7 @@ function fakeDb() {
     const q: Record<string, unknown> = {
       select: () => q, eq: (k: string, v: unknown) => (filters.push([k, v]), q), order: (_: string, o: { ascending: boolean }) => (desc = !o.ascending, q),
       limit: (l: number) => (lim = l, q),
-      insert: (row: Record<string, unknown>) => { inserted = { id: crypto.randomUUID(), created_at: new Date(++n * 1000).toISOString(), ...row }; rows.push(inserted); return q },
+      insert: (row: Record<string, unknown>) => { inserted = { id: crypto.randomUUID(), created_at: new Date(++n * 1000).toISOString(), ...row, ...(t === 'studio_assets' ? { status: 'held' } : {}) }; rows.push(inserted); return q },
       maybeSingle: () => Promise.resolve({ data: run()[0] ?? null, error: null }),
       single: () => Promise.resolve({ data: run()[0], error: null }),
       then: (res: (v: unknown) => unknown) => res({ data: run(), error: null }),
@@ -81,6 +81,22 @@ Deno.test('ChatGPT file -> stored bytes -> Claude gets the same bytes back', asy
   const list = JSON.parse((await call(h, 'list_assets', {})).content[0].text!)
   assertEquals(list.assets.length, 1)
 
+  // held until Kody approves: the stored file is shown as a preview, but no bytes, no link, no fetch for a task
+  assertEquals(out.asset.status, 'held')
+  assertEquals(out.approve_url, `https://dev.spitzmath.com/approve/?id=${out.asset.id}`)
+  const p = await call(h, 'get_asset', { id: out.asset.id, include_base64: true, task_id: 'task-9' })
+  const pinfo = JSON.parse(p.content[0].text!)
+  assertEquals(pinfo.status, 'held')
+  assertEquals(pinfo.base64, undefined)
+  assertEquals(pinfo.download_url_10min, null)
+  assert(pinfo.approval.startsWith('PREVIEW ONLY'), pinfo.approval)
+  assert(pinfo.fetch.startsWith('NOT recorded'), pinfo.fetch)
+  assertEquals(pinfo.sha256, out.asset.sha256)
+  assertEquals(p.content[1].type, 'image', 'the preview is the stored file itself')
+  assertEquals(fromBase64(p.content[1].data!), PNG)
+
+  // after Kody approves (the database does that, from his own sign-in) the bytes are available
+  tables.studio_assets[0].status = 'approved'
   const g = await call(h, 'get_asset', { id: out.asset.id, include_base64: true })
   const info = JSON.parse(g.content[0].text!)
   assertEquals(info.checksum_matches, true)
