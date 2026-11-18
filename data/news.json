@@ -1,0 +1,52 @@
+{
+ "posts": [
+  {
+   "id": "rr-v74",
+   "type": "patch",
+   "game": "rook_and_ruin",
+   "title": "The fork just got bigger",
+   "date": "2026-11-18",
+   "text": "Every run now has 9 rooms. Each side of the fork leads to a second room, and which side is which changes every run.\n- Ember Kiln: Ember Imps only go down to your sword.\n- Barracks: Lancers charge in a straight line all the way to the wall. Step out of the way.\n- On fire? Roll to put it out.\n- Fire hurts, but it can never knock you out on its own.",
+   "show": true
+  },
+  {
+   "id": "rr-trailer",
+   "type": "trailer",
+   "game": "rook_and_ruin",
+   "title": "Rook & Ruin teaser",
+   "date": "2026-11-16",
+   "text": "Sword runs through the dungeon. Right answers power your strikes.",
+   "video": "arcade/news/rook_and_ruin_teaser.mp4",
+   "image": "arcade/news/rook_and_ruin_teaser.jpg",
+   "show": true
+  },
+  {
+   "id": "swarm-dev",
+   "type": "dev",
+   "game": "star_swarm",
+   "title": "Star Swarm is getting rebuilt",
+   "date": "2026-11-18",
+   "text": "A brand new Star Swarm is in the works.\n- More flying, fewer stops for questions.\n- A dash to slip through the swarm.\n- Pick upgrades as you go.\nA few students will test it first. It shows up here when it's ready.",
+   "show": true
+  },
+  {
+   "id": "snake-arena",
+   "type": "patch",
+   "game": "snake_arena",
+   "title": "Snake Arena: full-screen arena",
+   "date": "2026-11-17",
+   "text": "- The arena fills your whole screen.\n- Every Rival hunts its own way: Cutters cut across your path, Coilers circle you, Snackers grow fast and run, Lurkers wait by an egg and pounce.\n- A red ! means a Rival is coming for you.\n- All-Pro mode: 1.5x points, but a wrong answer costs energy.\n- 3 challenges every game, worth +1,000 each.\n- Double points in the final 30 seconds.\n- New events: Turbo Time and Bounty Blitz.",
+   "show": true
+  },
+  {
+   "id": "guide-leaderboard",
+   "type": "guide",
+   "game": "",
+   "title": "How to get on the leaderboard",
+   "date": "2026-11-18",
+   "text": "- Finish a run. The end screen tells you where you'd land on the leaderboard.\n- Want to be on it? Send your score with your first name and last initial, like Levi S.\n- Mr. Spitz checks every name before it shows up.\n- Question sets marked ⭐ Suggested earn bonus points.",
+   "show": true
+  }
+ ],
+ "updated": "2026-11-18T23:55:00.000Z"
+}
