@@ -1,0 +1,32 @@
+{
+ "image": "refs/props_r3/fire_pit_large.png",
+ "sha256": "e4dd892a7b9c99f887f50e59b1d04c3377b0c64b0922d340ee9af962ef2ad7af",
+ "spec": {
+  "kind": "prop",
+  "size": [
+   88,
+   60
+  ],
+  "alpha": "hard",
+  "note": "frame 0 / still, Sprite Drop 598373ce, true 1x"
+ },
+ "result": "PASS",
+ "checks": [
+  {
+   "check": "size",
+   "result": "pass",
+   "detail": "88x60 (want 88x60)"
+  },
+  {
+   "check": "true 1x",
+   "result": "pass",
+   "detail": "ok"
+  },
+  {
+   "check": "alpha 0/255",
+   "result": "pass",
+   "detail": "0 partial-alpha px"
+  }
+ ],
+ "scope": "technical only; visual approval is separate"
+}

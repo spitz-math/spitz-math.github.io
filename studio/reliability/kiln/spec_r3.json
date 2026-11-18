@@ -1,0 +1,36 @@
+{
+ "kind": "room",
+ "size": [
+  480,
+  270
+ ],
+ "alpha": "opaque",
+ "source": "refs/barracks_1x.png",
+ "protected": [
+  [
+   0,
+   0,
+   16,
+   269
+  ],
+  [
+   465,
+   0,
+   479,
+   269
+  ],
+  [
+   208,
+   0,
+   274,
+   45
+  ],
+  [
+   17,
+   232,
+   464,
+   269
+  ]
+ ],
+ "note": "Ember Kiln round 3: round 2 without the old 64x44 pit, soot/coal overlay f7b8b750 + 6 decals 8bb07de7 on the floor under the props, animated 88x60 pit 232deb03 at x196-283 y110-169. Side walls, north arch and south wall/door band identical to the approved Barracks. Full per-pixel check (only wall band, prop boxes, soot/decal pixels and pit box differ) is in make_kiln_r3 validation notes."
+}

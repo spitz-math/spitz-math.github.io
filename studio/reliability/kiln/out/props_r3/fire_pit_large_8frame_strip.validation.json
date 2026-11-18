@@ -1,0 +1,41 @@
+{
+ "image": "refs/props_r3/fire_pit_large_8frame_strip.png",
+ "sha256": "8132d77e41cfe3e3596ebdd1f03ee7499def920d18f04b47aab8ffe7ceee6b7e",
+ "spec": {
+  "kind": "sheet",
+  "size": [
+   704,
+   60
+  ],
+  "alpha": "hard",
+  "cell": [
+   88,
+   60
+  ],
+  "note": "8 frames 88x60, Sprite Drop 232deb03, true 1x"
+ },
+ "result": "PASS",
+ "checks": [
+  {
+   "check": "size",
+   "result": "pass",
+   "detail": "704x60 (want 704x60)"
+  },
+  {
+   "check": "true 1x",
+   "result": "pass",
+   "detail": "ok"
+  },
+  {
+   "check": "alpha 0/255",
+   "result": "pass",
+   "detail": "0 partial-alpha px"
+  },
+  {
+   "check": "inside cell",
+   "result": "pass",
+   "detail": "ok"
+  }
+ ],
+ "scope": "technical only; visual approval is separate"
+}
