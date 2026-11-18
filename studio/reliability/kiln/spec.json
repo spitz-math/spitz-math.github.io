@@ -1,0 +1,8 @@
+{
+  "kind": "room",
+  "size": [480, 270],
+  "alpha": "opaque",
+  "source": "refs/barracks_1x.png",
+  "protected": [[0, 46, 479, 269], [0, 0, 16, 269], [465, 0, 479, 269], [208, 0, 274, 45]],
+  "note": "Ember Kiln = the approved Barracks (6897a748, round 2: no pillars, even floor) with only the north wall band (x17-207 and x275-464, y0-45) changed: the guard room's wall band (f397fa63) as the plain start, banners recoloured ember, kiln_mouth (9c242603) and wall_brazier (bbcab573) placed there, warm tint. Floor, side and south walls and the north arch stay identical to the Barracks."
+}
