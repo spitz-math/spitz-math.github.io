@@ -6,7 +6,7 @@
 var RRTINT={wiz:['F','#FF7A1E'],wizw:['F','#FF7A1E'],wizb:['F','#FF7A1E'],goba:['S','#6F8FC8'],gobw:['S','#6F8FC8']};
 var RRALIAS={imp:{as:'wiz',tint:'F',own:'imp'},lance:{as:'gob',tint:'S',st:{9:3},own:'lancea'}};   /* used only while the enemy has no art of its own */
 function rrAlias(t){ var A=RRALIAS[t]; return A&&!RRART[A.own]?A:null; }
-var RRI={}, RRSH={imp:16,impw:16,impb:16,lancea:19,lancew:19,wiz:18,wizw:18,wizb:18,gobw:19,goba:19,skelw:21,skela:21,bossw:48,bossa:48};
+var RRI={}, RRSH={imp:16,impw:16,impb:16,lancea:22,lancew:22,wiz:18,wizw:18,wizb:18,gobw:19,goba:19,skelw:21,skela:21,bossw:48,bossa:48};
 (function(){ Object.keys(RRART).forEach(function(n){ var im=new Image(); im.onload=function(){ var sh=RRSH[n], m=RRART[n]; RRI[n]=sh?mk(im.width,im.height,function(x){ x.drawImage(im,0,0); x.globalCompositeOperation='destination-over'; x.fillStyle='rgba(0,0,0,.32)'; for(var r=0;r<m.rows;r++) for(var q=0;q<m.cols;q++) x.fillRect(q*m.fw+m.px-Math.round(sh/2),r*m.fh+m.py-3,sh,3); }):im; RRI[n+'W']=white(im); RRI[n+'K']=mk(im.width,im.height,function(x){ x.drawImage(im,0,0); x.globalCompositeOperation='source-in'; x.fillStyle='#06060C'; x.fillRect(0,0,im.width,im.height); });
     var tt=RRTINT[n]; if(tt) RRI[n+tt[0]]=mk(im.width,im.height,function(x){ x.drawImage(im,0,0); x.globalCompositeOperation='color'; x.fillStyle=tt[1]; x.fillRect(0,0,im.width,im.height); x.globalCompositeOperation='destination-in'; x.drawImage(im,0,0); if(sh){ x.globalCompositeOperation='destination-over'; x.fillStyle='rgba(0,0,0,.32)'; for(var r=0;r<m.rows;r++) for(var q=0;q<m.cols;q++) x.fillRect(q*m.fw+m.px-Math.round(sh/2),r*m.fh+m.py-3,sh,3); } }); }; im.src=RRART[n].src; }); })();
 function rrReady(n){ return !!RRI[n]; }
@@ -52,7 +52,7 @@ function drawHeroRR(c,p,t){ var pose=heroPose(p), foot=p.y+p.r+3; invRing(c,p);
    walking/floating uses the cycle sheets (*w), advanced by distance walked (e.wd) so the feet match the speed
    and stop when the enemy stops. Bats and slimes have their own sheets (bat2, slime2). ---------- */
 var RRE={gob:'goba',skel:'skela',wiz:'wiz',boss:'bossa',imp:'wiz',lance:'goba'}, RRBASE={gob:'gob',skel:'skel',boss:'boss',lance:'lance'}, RRSTEP={gob:9,skel:8,boss:12,lance:9};
-var RRH={gob:44,skel:56,wiz:58,boss:96,imp:50,lance:44};
+var RRH={gob:44,skel:56,wiz:58,boss:96,imp:50,lance:56};
 function enemyPose(e,p){ var dx=p.x-e.x, dy=p.y-e.y, fx=dx, fy=dy, col=0, t=e.type;
   if(t==='gob'||t==='lance'){ if(e.st===1||e.st===2){ fx=e.sx; fy=e.sy; } col=e.stun>0||e.st===9?3:[0,1,2,3][e.st]||0; }
   else if(t==='imp'){ col=e.st===1||e.st===2?1:0; if(e.stun>0) col=3; }

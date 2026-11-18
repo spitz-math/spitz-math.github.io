@@ -904,7 +904,7 @@ function draw(){ var c=cx, w=S&&S.w; c.setTransform(1,0,0,1,0,0);
   if(!w||!ROOMC){ c.fillStyle='#07080F'; c.fillRect(0,0,W,H); return; }
   var t=performance.now()/1000, sk=w.shake&&!RM?w.shake*16:0; if(CUT&&CUT.shake) sk=CUT.shake*16; var cam=S.mode==='cut'?cutCam():S.mode==='endcut'?endCam():null;
   if(cam) c.setTransform(cam.z,0,0,cam.z,W/2-cam.x*cam.z+(sk?rnd(-sk,sk):0),H/2-cam.y*cam.z+(sk?rnd(-sk,sk):0)); else if(sk) c.setTransform(1,0,0,1,Math.round(rnd(-sk,sk)),Math.round(rnd(-sk,sk)));
-  c.drawImage(ROOMC,0,0); var R=ROOMS[w.rid], i, p=w.p;
+  c.drawImage(ROOMC,0,0); var R=ROOMS[w.rid], i, p=w.p; if(ROOMART&&window.KANIM&&KANIM[ROOMART.key]&&KANIM[ROOMART.key].im.complete){ var ka=KANIM[ROOMART.key], kf=(typeof RM!=="undefined"&&RM)?0:Math.floor(performance.now()/ka.ms)%ka.n; c.imageSmoothingEnabled=false; c.drawImage(ka.im,kf*ka.fw,0,ka.fw,ka.fh,ka.x*2,ka.y*2,ka.fw*2,ka.fh*2); }
   /* doors */
   if(ROOMART) drawArtDoors(c,w,R,t);
   else { Object.keys(R.exits).forEach(function(sd){ drawDoor(c,sd,w.open,t,!w.open); });
