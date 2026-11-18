@@ -1,0 +1,13 @@
+{
+ "kind": "sheet",
+ "size": [
+  640,
+  68
+ ],
+ "alpha": "hard",
+ "cell": [
+  80,
+  68
+ ],
+ "note": "Kody's fire pit design, 8 frames 80x68, true 1x, made by make_fire_pit_kody.py"
+}

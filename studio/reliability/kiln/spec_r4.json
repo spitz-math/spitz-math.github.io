@@ -1,0 +1,36 @@
+{
+ "kind": "room",
+ "size": [
+  480,
+  270
+ ],
+ "alpha": "opaque",
+ "source": "refs/barracks_1x.png",
+ "protected": [
+  [
+   0,
+   0,
+   16,
+   269
+  ],
+  [
+   465,
+   0,
+   479,
+   269
+  ],
+  [
+   208,
+   0,
+   274,
+   45
+  ],
+  [
+   17,
+   232,
+   464,
+   269
+  ]
+ ],
+ "note": "Ember Kiln round 4: round 3's pit-free background + Kody's fire pit design (80x68, 8 frames) at x200-279 y102-169. Side walls, north arch and south wall/door band identical to the approved Barracks."
+}
