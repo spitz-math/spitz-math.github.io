@@ -30,7 +30,8 @@ var ET={
   boss: {r:30, hp:950, spd:58,  xp:0, spr:'king', heavy:1, col:'#B56BFF'}
 };
 /* goblin pounce: starts inside GOBT, covers GOBL. COMBOT = seconds a combo lasts without a kill */
-var LANCEV=430, LANCEL=322;   /* Lancer charge speed and lane length (0.75 s) */
+var LANCEV=430, LANCEL=322;   /* Lancer charge speed; LANCEL = fallback lane length. The lane is drawn to the first wall (laneLen) */
+function laneLen(x,y,a){ var cx=Math.cos(a), cy=Math.sin(a); for(var d=16;d<1200;d+=8){ if(wallAt(x+cx*d,y+cy*d)) return d; } return 1200; }
 var GOBT=106, GOBL=100, GOBLOCK=0.24, COMBOT=2.5;
 /* only a few goblins may wind up at once, so a crowd attacks in beats you can read instead of all together */
 function gobSlots(w){ return w.last>0||ROOMS[w.rid].siege?4:(w.rid==='entry'||w.rid==='guard'||early(w))?2:3; }
@@ -165,6 +166,8 @@ function angDiff(a,b){ var d=a-b; while(d>Math.PI) d-=2*Math.PI; while(d<-Math.P
    Shield knights' shields ground lightning and blunt blasts: they take a third of any storm damage, so the sword is still the answer. */
 var STORMD={spark:1,overcharge:1,tcharge:1,thunder:1,stormcall:1,volatile:1,spite:1};
 function hurtE(e,d,fx,fy,kb,opt){ if(e.dead) return; opt=opt||{}; var w=S.w;
+  /* Kody 2026-11-18: Ember Imps ignore everything except a real sword slash (powers, storms, blasts, fire, rubble, bash, riposte), and one slash always kills */
+  if(e.type==='imp'){ if(!(DSRC==='sword'&&opt.melee)){ if(!(e.t-(e.immT||-9)<1.2)&&w.fx.length<90){ e.immT=e.t; w.fx.push({k:'txt',x:e.x,y:e.y-30,t:0,v:'IMMUNE',c:'#FFB36B'}); } return; } d=Math.max(d,e.hp); }
   if(e.type==='skel'&&STORMD[DSRC]&&d>0) d=Math.max(1,Math.round(d/3));
   /* skeleton knights block sword hits from the front, unless they are recovering or you crit */
   if(e.type==='skel'&&(opt.melee||opt.proj||opt.orb)&&!opt.crit&&!opt.bash&&e.st!==3){ var pa=opt.proj?Math.atan2(-fy,-fx):Math.atan2(w.p.y-e.y,w.p.x-e.x); if(angDiff(pa,e.fa)<1.3){ d=0; SND.clang(); if(!(w.t-(e.blkAt||-9)<0.9)){ e.blkAt=w.t; if(!(w.t-(w.blkTxt||-9)<0.7)){ w.blkTxt=w.t; w.fx.push({k:'txt',x:e.x,y:e.y-34,t:0,v:'BLOCKED',c:'#CFE0FF'}); } if(opt.melee){ w.p.kx-=fx*70; w.p.ky-=fy*70; } }   /* a small push back, once per knight per 0.9 s (was 220 on every blocked hit: Rook pinballed in crowds, Kody's playtest 2026-11-15) */ kb=40; if(!opt.melee) return; } }
@@ -399,7 +402,7 @@ function enemyAI(e,dt,p){ var w=S.w, dx=p.x-e.x, dy=p.y-e.y, d=Math.hypot(dx,dy)
     else if(e.st===2){ v=0; if(e.cd<=0){ e.st=0; e.cd=rnd(3.0,4.0); } } }
   else if(e.type==='lance'){   /* walks in, aims a red lane (follows Rook for the first half, then locks), charges straight; a wall stuns it (st 9) */
     if(e.st===0){ if(d<60) v=0; if(e.cd<=0&&d<330&&lineClear(e.x,e.y,p.x,p.y)){ e.st=1; e.cd=early(w)?0.95:0.8; e.c0=e.cd; e.fa=Math.atan2(dy,dx); SND.tele(); } }
-    else if(e.st===1){ v=0; if(e.cd>e.c0*0.45) e.fa=Math.atan2(dy,dx); if(e.cd<=0){ e.st=2; e.cd=0.75; } }
+    else if(e.st===1){ v=0; if(e.cd>e.c0*0.45){ e.fa=Math.atan2(dy,dx); e.lane=laneLen(e.x,e.y,e.fa); } if(e.cd<=0){ e.st=2; e.cd=3.0; } }   /* Kody 2026-11-18: the charge runs until a wall stops it (3 s is only a safety cap) */
     else if(e.st===2){ v=LANCEV; mx=Math.cos(e.fa); my=Math.sin(e.fa); if(e.cd<=0){ e.st=3; e.cd=0.7; } }
     else { v=0; if(e.cd<=0){ e.st=0; e.cd=rnd(1.4,2.2); } }
     e.sx=Math.cos(e.fa); e.sy=Math.sin(e.fa); }
@@ -412,8 +415,8 @@ function enemyAI(e,dt,p){ var w=S.w, dx=p.x-e.x, dy=p.y-e.y, d=Math.hypot(dx,dy)
    0 walk · 1 charge warning (red lane) · 2 charging · 9 stunned after hitting a wall
    3 slam warning (red circle) · 4 sweep warning (red wedge) · 5 recover · 6 volley warning */
 function bossAI(e,dt,p,d,ux,uy){ var w=S.w, half=e.hp<e.max/2, sp=half?0.85:1;
-  if(w.last>0){ half=true; sp=0.7; e.raged=0; }   /* Last Stand Wardens: quicker wind-ups (was 0.8) */ else if(half&&!e.raged){ e.raged=1; e.addT=10; w.banner={txt:'THE WARDEN IS ENRAGED',sub:'Faster attacks. Reinforcements incoming!',t:1.8}; SND.boss(); var n0=w.spawns.length; spawnWave([['gob',4],['skel',2]],1,true); for(var si=n0;si<w.spawns.length;si++) w.spawns[si].t+=0.9; }
-  if(e.raged){ e.addT-=dt; if(e.addT<=0){ e.addT=10; spawnWave([['gob',3],['bat',2]],1,true); } }
+  if(w.last>0){ half=true; sp=0.7; e.raged=0; }   /* Last Stand Wardens: quicker wind-ups (was 0.8) */ else if(half&&!e.raged){ e.raged=1; e.addT=10; w.banner={txt:'THE WARDEN IS ENRAGED',sub:'Faster attacks. Reinforcements incoming!',t:1.8}; SND.boss(); var n0=w.spawns.length; spawnWave([['gob',3],['skel',1],['imp',1],['lance',1]],1,true); for(var si=n0;si<w.spawns.length;si++) w.spawns[si].t+=0.9; }
+  if(e.raged){ e.addT-=dt; if(e.addT<=0){ e.addT=10; e.addN=(e.addN||0)+1; spawnWave([['gob',2],['bat',2],[capNew(e.addN%2?'lance':'imp',2),1]],1,true); } }   /* every wave of adds brings an Imp or a Lancer (Kody 2026-11-18) */
   var v=0, mx=0, my=0;
   if(e.st===0&&e.cd<=0&&w.last>0){ var busy=0; for(var bi=0;bi<w.en.length;bi++){ var o2=w.en[bi]; if(o2!==e&&!o2.dead&&o2.type==='boss'&&o2.st!==0&&o2.st!==5&&o2.st!==9) busy++; } if(busy>=2) e.cd=0.3; }
   if(e.st===0){ v=ET.boss.spd*(half?1.25:1); mx=ux; my=uy; if(e.cd<=0){ var r=Math.random();
@@ -573,9 +576,9 @@ function lastTick(dt){ var w=S.w, T=w.lastT; w.lastT+=dt; w.last-=dt;
   /* Kody 2026-11-15 asked for "a tiny bit easier" (10% slower growth, cap at 1:30); the 2026-11-16 classroom test showed it was too easy, so full-speed growth is back, the cap moved to 1:45, and H scales with upgrades */
   var Te=Math.min(T,LSCAP), H=w.lsHard||(w.lsHard=lsHard());
   w.tm.spawn-=dt; if(w.tm.spawn<=0&&w.en.length+w.spawns.length<(LITE?60:90)){ w.tm.spawn=Math.max(0.13,0.5-Te*0.003);
-    var pool=['gob','gob','bat','slime','gob']; if(T>8) pool.push('skel','gob','bat'); if(T>25) pool.push('wiz','skel','bat','slime'); if(T>60) pool.push('skel','wiz','gob');
+    var pool=['gob','gob','bat','slime','gob']; if(T>8) pool.push('skel','gob','bat'); if(T>25) pool.push('wiz','skel','bat','slime'); if(T>60) pool.push('skel','wiz','gob'); if(T>15) pool.push('imp','lance');
     var pos=edgePos(Math.floor(Math.random()*4)), grp=2+Math.floor(Te/20);
-    for(var g=0;g<grp;g++){ var lt=pool[Math.floor(Math.random()*pool.length)]; w.spawns.push({type:lt,x:clamp(pos[0]+rnd(-40,40),FLR[0]+16,FLR[2]-16),y:clamp(pos[1]+rnd(-40,40),FLR[1]+16,FLR[3]-16),t:0.6+g*0.08,m:(1+Te/28)*H,el:T>20&&lt!=='bat'&&Math.random()<0.05+0.08*(H-1)?1:0}); } }
+    for(var g=0;g<grp;g++){ var lt=capNew(pool[Math.floor(Math.random()*pool.length)],3); w.spawns.push({type:lt,x:clamp(pos[0]+rnd(-40,40),FLR[0]+16,FLR[2]-16),y:clamp(pos[1]+rnd(-40,40),FLR[1]+16,FLR[3]-16),t:0.6+g*0.08,m:(1+Te/28)*H,el:T>20&&lt!=='bat'&&Math.random()<0.05+0.08*(H-1)?1:0}); } }
   w.tm.swarm-=dt; if(w.tm.swarm<=0&&T-(w.lsWT==null?-99:w.lsWT)<7) w.tm.swarm=7-(T-w.lsWT);   /* playtest handoff: big threats are staggered, a swarm never lands within 7 s of a Warden */
   if(w.tm.swarm<=0){ w.tm.swarm=20; w.banner={txt:'BAT SWARM!',sub:'',t:1.0}; var sd=Math.floor(Math.random()*4); for(var k=0;k<20;k++){ var p2=edgePos(sd); w.spawns.push({type:'bat',x:p2[0],y:p2[1],t:0.6+k*0.04,m:1+T/60}); } }
   /* falling rubble: a red circle, then a rock. Aimed near Rook, hurts enemies too */
@@ -592,10 +595,13 @@ function siegeTick(dt){ var w=S.w, R=ROOMS[w.rid], T=R.siege-w.siegeT; w.siegeT-
   if(!w.rally&&w.siegeT>0&&w.siegeT<=R.siege/2){ w.rally=1; openAsk('rally'); return; }
   if(w.siegeT<=0){ w.siegeT=0; if(!w.siegeDone){ w.siegeDone=1; w.spawns=[]; DSRC='siege'; w.en.forEach(function(e){ if(!e.dead){ w.fx.push({k:'puff',x:e.x,y:e.y,t:0}); killE(e,{}); } }); w.banner={txt:'YOU HELD THE HALL',sub:'',t:1.4}; } if(!w.en.filter(function(e){ return !e.dead; }).length) roomClear(); return; }
   w.tm.spawn-=dt; if(w.tm.spawn<=0&&w.en.length+w.spawns.length<50){ w.tm.spawn=Math.max(0.4,1.0-T*0.012);
-    var pool=['gob','gob','bat']; if(T>8) pool.push('slime','bat'); if(T>16) pool.push('skel','gob'); if(T>26) pool.push('wiz','skel','slime');
+    var pool=['gob','gob','bat']; if(T>8) pool.push('slime','bat'); if(T>16) pool.push('skel','gob'); if(T>26) pool.push('wiz','skel','slime'); if(T>12) pool.push('imp','lance');
     var side=Math.floor(Math.random()*4), pos=edgePos(side), grp=1+Math.floor(T/20);
-    for(var g=0;g<grp;g++){ w.spawns.push({type:pool[Math.floor(Math.random()*pool.length)],x:clamp(pos[0]+rnd(-30,30),FLR[0]+16,FLR[2]-16),y:clamp(pos[1]+rnd(-30,30),FLR[1]+16,FLR[3]-16),t:0.7+g*0.12,m:1.15+T/80,el:T>18&&g===0&&Math.random()<0.12?1:0}); } }
+    for(var g=0;g<grp;g++){ w.spawns.push({type:capNew(pool[Math.floor(Math.random()*pool.length)],2),x:clamp(pos[0]+rnd(-30,30),FLR[0]+16,FLR[2]-16),y:clamp(pos[1]+rnd(-30,30),FLR[1]+16,FLR[3]-16),t:0.7+g*0.12,m:1.15+T/80,el:T>18&&g===0&&Math.random()<0.12?1:0}); } }
   w.tm.swarm-=dt; if(w.tm.swarm<=0){ w.tm.swarm=99; w.banner={txt:'BAT SWARM!',sub:'',t:1.2}; var sd=Math.floor(Math.random()*4); for(var k=0;k<12;k++){ var p2=edgePos(sd); w.spawns.push({type:'bat',x:p2[0],y:p2[1],t:0.6+k*0.05,m:1}); } } }
+/* Kody 2026-11-18: after the Library, Ember Imps and Lancers join the Siege Hall, the Warden's reinforcements and the Last Stand.
+   A few at a time so fire rings and charge lanes stay readable. */
+function capNew(t,n){ if(t!=='imp'&&t!=='lance') return t; var w=S.w, k=w.en.filter(function(e){ return !e.dead&&e.type===t; }).length+w.spawns.filter(function(q){ return q.type===t; }).length; return k<n?t:'gob'; }
 function edgePos(side){ var p=S.w.p, f=FLR; for(var k=0;k<30;k++){ var x, y; if(side===0){ x=rnd(f[0]+30,f[2]-30); y=f[1]+26; } else if(side===1){ x=rnd(f[0]+30,f[2]-30); y=f[3]-24; } else if(side===2){ x=f[0]+24; y=rnd(f[1]+34,f[3]-30); } else { x=f[2]-24; y=rnd(f[1]+34,f[3]-30); }
     if(!wallAt(x,y)&&Math.hypot(x-p.x,y-p.y)>200) return [x,y]; side=(side+1)%4; } return [W/2,80]; }
 /* ---------- smashable pots (rooms before the Shop) ----------
@@ -929,7 +935,7 @@ function draw(){ var c=cx, w=S&&S.w; c.setTransform(1,0,0,1,0,0);
     if(e.type==='skel'&&e.st===1){ wedge(c,e.x,e.y-4,e.fa,1.2,100,0.12+0.3*(1-e.cd/(e.c0||0.7))); }
     if(e.type==='gob'&&e.st===1){ c.fillStyle='rgba(255,60,80,.6)'; dotLine(c,e.x,e.y,e.sx,e.sy,GOBL,12,4); }
     if(e.type==='bat'&&e.st===1){ c.fillStyle='rgba(255,60,80,.5)'; dotLine(c,e.x,e.y,e.sx,e.sy,140,12,3); }
-    if(e.type==='lance'&&e.st===1){ var kL=1-e.cd/(e.c0||0.8); c.save(); c.translate(e.x,e.y); c.rotate(e.fa); c.fillStyle='rgba(255,60,80,'+(0.12+0.3*kL)+')'; c.fillRect(0,-e.r,LANCEL,e.r*2); c.restore(); }
+    if(e.type==='lance'&&e.st===1){ var kL=1-e.cd/(e.c0||0.8); c.save(); c.translate(e.x,e.y); c.rotate(e.fa); c.fillStyle='rgba(255,60,80,'+(0.12+0.3*kL)+')'; c.fillRect(0,-e.r,e.lane||LANCEL,e.r*2); c.restore(); }
     if(e.type==='imp'&&e.st===1){ var kI=1-e.cd/(e.c0||0.65); c.strokeStyle='rgba(255,138,42,'+(0.45+0.5*kI)+')'; c.lineWidth=2; c.beginPath(); c.ellipse(e.tx,e.ty,FIRE.r,FIRE.r*0.62,0,0,7); c.stroke(); c.fillStyle='rgba(255,138,42,'+(0.1*kI)+')'; c.fill(); }
     if(e.type==='wiz'&&e.st===1){ c.fillStyle='rgba(181,107,255,'+(0.4+0.5*(1-e.cd/0.85))+')'; for(var wo=-1;wo<=1;wo++) dotLine(c,e.x,e.y-8,Math.cos(e.aim+wo*0.28),Math.sin(e.aim+wo*0.28),170,11,3); }
     if(e.type==='boss'){ var k=e.st===1?1-e.cd/0.85:e.st===3?1-e.cd/0.8:e.st===4?1-e.cd/0.6:0;
@@ -1083,11 +1089,10 @@ function drawHUD(t){ var c=cx, w=S.w, p=w.p, i, R=ROOMS[w.rid], na=p.arm||0, low
   var obj=''; if(S.mode==='play'&&w.cleared&&!w.pend){ if(w.chest&&!w.chest.open) obj='Walk into the chest to open it'; else if(Object.keys(R.exits).length) obj=Object.keys(R.exits).length>1?'Choose a door: west or east':'The door is open ↑'; }
   if(obj){ var os=tspr(obj,18,'#FFE08A'), tw=os.width+30; c.fillStyle='rgba(7,8,18,.75)'; c.fillRect(Math.round(W/2-tw/2),H-58,tw,28); dtx(c,obj,W/2,H-38,18,'#FFE08A'); }
   /* Kody 2026-11-16: teaching notes are a small plate along the top wall, not a full-width banner */
-  if(w.banner&&w.banner.tip){ var tb=w.banner, ga2=c.globalAlpha, pw=660, ph=54, px=Math.round(W/2-pw/2), py=64; c.globalAlpha=ga2*Math.min(1,tb.t*2);
+  /* Kody 2026-11-18: every on-screen notice (room names, Room Clear, starter relic, swarms, Wardens...) uses this same plate, size and spot as the Shield Knight tip */
+  if(w.banner){ var tb=w.banner, ga2=c.globalAlpha, pw=Math.max(660,Math.min(W-40,Math.max(tspr(tb.txt,17,'#FFC23A').width,tb.sub?tspr(tb.sub,14,'#F4ECD8').width:0)+48)), ph=tb.sub?54:34, px=Math.round(W/2-pw/2), py=64; c.globalAlpha=ga2*Math.min(1,tb.t*2);
     c.fillStyle='#120A1F'; c.fillRect(px-2,py-2,pw+4,ph+4); c.fillStyle='#1E1233'; c.fillRect(px,py,pw,ph); c.fillStyle='#FFC23A'; c.fillRect(px,py,4,ph);
-    dtx(c,tb.txt,W/2,py+17,17,'#FFC23A'); dtx(c,tb.sub,W/2,py+39,14,'#F4ECD8'); c.globalAlpha=ga2; }
-  else if(w.banner){ var bt=w.banner, ga=c.globalAlpha; c.globalAlpha=ga*Math.min(1,bt.t*2); c.fillStyle='rgba(7,8,18,.7)'; c.fillRect(0,H/2-70,W,bt.sub?104:72);
-    dtx(c,bt.txt,W/2,H/2-20,44,'#FFC93C'); if(bt.sub) dtx(c,bt.sub,W/2,H/2+16,20,'#E8ECFF'); c.globalAlpha=ga; }
+    dtx(c,tb.txt,W/2,py+17,17,'#FFC23A'); if(tb.sub) dtx(c,tb.sub,W/2,py+39,14,'#F4ECD8'); c.globalAlpha=ga2; }
   if(w.victory){ dtx(c,'VICTORY!',W/2,H/2,64,'#FFC93C',0,'#141026'); dtx(c,'The Warden is beaten. You win!',W/2,H/2+46,24,'#F4ECD8',0,'#141026'); }
   /* back from a knockout: what came back, then a short count-in before enemies move again */
   if(S.mode==='reentry'){ var rn=Math.max(1,Math.ceil(S.reT/(REENTRY/3))); c.fillStyle='rgba(18,10,31,.72)'; c.fillRect(0,H/2-78,W,140);
