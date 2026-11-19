@@ -1,7 +1,7 @@
 /* Spitz Math safety check (2026-11-06). Runs on every pull request and every update to main (.github/workflows/smoke.yml).
    It serves the site on this machine and opens, in a real Chrome:
    - the launch pad, the arcade hub, the leaderboard and the teacher pages
-   - every game in games/ (with multiplication questions), then presses its start button if it has one
+   - every game in games/ (with multiplication questions): types a name, presses Start, checks the run started, plays ~6 s
    - every Checkpoint test in practice mode, steps through every question and checks each picture shows
    Any script error, missing file (404) or broken picture fails the check, so the update can't reach students broken.
    Run it yourself: node .github/smoke/smoke.js   (needs Playwright; serves the repo folder on port 8199) */
@@ -37,10 +37,33 @@ function serve() {
     await visit('page ' + u, u);
 
   const games = fs.readdirSync(path.join(ROOT, 'games')).filter(f => f.endsWith('.html') && !/leaderboard/.test(f)).sort();
-  for (const g of games) await visit('game ' + g, '/games/' + g + '?set=mult', async (p) => {
-    const name = await p.$('input[type=text]:visible'); if (name) await name.fill('Test S').catch(() => {});
-    const go = await p.$('[id$=-go-start]:visible, [id$=-start] button:visible, button:has-text("Press Start"):visible, button:has-text("Start"):visible');
-    if (go) { await go.click({ timeout: 2000 }).catch(() => {}); await p.waitForTimeout(1200); }
+  /* Each game: type a name, press its real Start button, check the run really started (__G.state().started),
+     then play about 6 seconds the way a student does (right answer by number key when a question is open,
+     arrows, Space, a click) so a crash during play fails the check, not just a crash on load.
+     Before 2026-11-19 the Start press landed on the music button and no game ever started. */
+  for (const g of games) await visit('game ' + g, '/games/' + g + '?set=mult', async (p, errs) => {
+    const name = await p.$('[id$=-nameinput]:visible, input[type=text]:visible'); if (name) await name.fill('Test S').catch(() => {});
+    await p.waitForTimeout(150);
+    const go = await p.$('[id$=-go-start]:visible') || await p.$('button[id$=-go]:visible');
+    if (!go) { errs.push('no Start button found (looked for #xx-go-start, then #xx-go)'); return; }
+    const ready = await p.waitForFunction(b => !b.disabled, go, { timeout: 3000 }).then(() => true).catch(() => false);
+    if (!ready) { errs.push('Start button stayed disabled for 3 s after typing a name'); return; }
+    await go.click({ timeout: 3000 });
+    const hasG = await p.evaluate(() => !!(window.__G && __G.state));
+    if (!hasG) { console.log('       note: no __G.state(), so only the Start click is checked'); await p.waitForTimeout(2000); return; }
+    const started = await p.waitForFunction(() => __G.state().started, null, { timeout: 8000 }).then(() => true).catch(() => false);
+    if (!started) { errs.push('pressing Start did not start the game (__G.state().started stayed false)'); return; }
+    const box = await p.locator('canvas').first().boundingBox().catch(() => null);
+    const keys = ['ArrowRight', 'ArrowUp', 'Space', 'ArrowLeft', 'ArrowDown', 'Space'];
+    const t0 = Date.now();
+    for (let i = 0; Date.now() - t0 < 6000; i++) {
+      const right = await p.evaluate(() => { const S = __G.state(); return S.q && !S.qDone && S.q.choices ? S.q.choices.findIndex(c => c.ok) : -1; }).catch(() => -1);
+      if (right >= 0 && i % 2 === 0) { await p.keyboard.press(String(right + 1)); await p.waitForTimeout(250); }
+      else { const k = keys[i % keys.length]; await p.keyboard.down(k); await p.waitForTimeout(250); await p.keyboard.up(k); }
+      if (i === 6 && box) await p.mouse.click(box.x + box.width * 0.5, box.y + box.height * 0.5).catch(() => {});
+      await p.waitForTimeout(150);
+    }
+    if (!await p.evaluate(() => !!__G.state().started).catch(() => false)) errs.push('the run stopped being "started" during 6 seconds of play');
   });
 
   const list = fs.readFileSync(path.join(ROOT, 'checkpoint/tests/index.js'), 'utf8');
