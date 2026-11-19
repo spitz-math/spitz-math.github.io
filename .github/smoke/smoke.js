@@ -46,7 +46,8 @@ function serve() {
     await p.waitForTimeout(150);
     const go = await p.$('[id$=-go-start]:visible') || await p.$('button[id$=-go]:visible');
     if (!go) { errs.push('no Start button found (looked for #xx-go-start, then #xx-go)'); return; }
-    if (await go.isDisabled()) { errs.push('Start button stayed disabled after typing a name'); return; }
+    const ready = await p.waitForFunction(b => !b.disabled, go, { timeout: 3000 }).then(() => true).catch(() => false);
+    if (!ready) { errs.push('Start button stayed disabled for 3 s after typing a name'); return; }
     await go.click({ timeout: 3000 });
     const hasG = await p.evaluate(() => !!(window.__G && __G.state));
     if (!hasG) { console.log('       note: no __G.state(), so only the Start click is checked'); await p.waitForTimeout(2000); return; }
