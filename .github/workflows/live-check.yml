@@ -1,0 +1,37 @@
+name: Live site check
+# After every GitHub Pages deploy, opens the real https://spitzmath.com and checks that the deploy actually landed:
+# the hub, the launch pad, the leaderboard, every game page, catalog.js, kit.js, questions.js, scorecode.js and the
+# two offline caches must answer, and the files that changed in this deploy must match main byte for byte.
+# A failed Pages deploy (like the "Internal server error" runs of Nov 7-9) or a site that still serves the old files
+# after 10 minutes turns this run red, and GitHub emails the repo owner about the failed run.
+# Read-only: it never comments, merges, deploys or uses secrets. It can also be run by hand (Actions > Live site check).
+on:
+  deployment_status:
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: live-check
+  cancel-in-progress: true
+jobs:
+  live:
+    name: Live site check
+    # Pages reports success or failure on its own deployment; skip the in-progress updates.
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      (github.event.deployment.environment == 'github-pages' &&
+       contains(fromJSON('["success","failure","error"]'), github.event.deployment_status.state))
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Stop if the deploy itself failed
+        if: github.event_name == 'deployment_status' && github.event.deployment_status.state != 'success'
+        run: |
+          echo "::error::The GitHub Pages deploy reported '${{ github.event.deployment_status.state }}'. spitzmath.com still shows the old version. Re-run the 'pages build and deployment' run in Actions."
+          exit 1
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.deployment.sha || github.sha }}
+          fetch-depth: 2
+      - name: Check spitzmath.com
+        run: bash .github/live/check.sh

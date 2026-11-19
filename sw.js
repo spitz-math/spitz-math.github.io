@@ -3,10 +3,12 @@
    - the launch pad (/), the hub (/arcade/), the leaderboard, games/catalog.js, data/topics.json, data/leaderboard.json:
      asked from the site first, so a change shows up on the very next visit. If the site hasn't answered in 2.5 s
      (crawling school Wi-Fi) or fails, the saved copy opens instead.
-   - fonts and pictures: kept once fetched.
+   - fonts: kept once fetched (a changed font gets a new file name).
+   - pictures (game cards, launch pad art): the saved copy opens at once and a fresh copy is fetched behind it, so a replaced
+     picture shows on the next visit without bumping VERSION (2026-11-19: a replaced card picture used to stay old forever).
    Everything else (Checkpoint, teacher pages, the answer log, Google) goes straight to the network.
    Bump VERSION to throw away every old copy at once. */
-var VERSION = 'spitz-root-v1', CACHE = VERSION;
+var VERSION = 'spitz-root-v2', CACHE = VERSION;
 
 self.addEventListener('install', function(){ self.skipWaiting(); });
 self.addEventListener('activate', function(e){
@@ -14,8 +16,16 @@ self.addEventListener('activate', function(e){
     .then(function(){ return self.clients.claim(); }));
 });
 
-function put(key, res){ if(res && res.ok && res.type === 'basic'){ var c = res.clone(); caches.open(CACHE).then(function(ca){ ca.put(key, c); }); } return res; }
+function put(key, res){ if(res && res.status === 200 && res.type === 'basic'){ var c = res.clone(); caches.open(CACHE).then(function(ca){ ca.put(key, c); }); } return res; }
 function cacheFirst(req){ return caches.open(CACHE).then(function(ca){ return ca.match(req).then(function(hit){ return hit || fetch(req).then(function(res){ return put(req, res); }); }); }); }
+/* saved copy now, fresh copy saved for next time (pictures) */
+function staleWhileRevalidate(req){
+  return caches.open(CACHE).then(function(ca){ return ca.match(req).then(function(hit){
+    var net = fetch(req).then(function(res){ return put(req, res); });
+    if(hit){ net.catch(function(){}); return hit; }
+    return net;
+  }); });
+}
 var WAIT = 2500;
 function networkFirst(req, key){
   var net = fetch(req).then(function(res){ return put(key, res); });
@@ -34,5 +44,6 @@ self.addEventListener('fetch', function(e){
   var p = u.pathname;
   if(/^\/(checkpoint|teacher|topics|stats|board|warmup)/.test(p)) return;
   if(PAGES.test(p)) return e.respondWith(networkFirst(req, u.origin + p));      // one copy per page, whatever ?v= it was asked with
-  if(/^\/(fonts\/|games\/cards\/)|^\/[^\/]+\.(png|webp|jpg|svg|ico)$/.test(p)) return e.respondWith(cacheFirst(req));
+  if(/^\/fonts\//.test(p)) return e.respondWith(cacheFirst(req));
+  if(/^\/games\/cards\/|^\/[^\/]+\.(png|webp|jpg|svg|ico)$/.test(p)) return e.respondWith(staleWhileRevalidate(req));
 });
