@@ -62,7 +62,7 @@ function serve() {
       if (i === 6 && box) await p.mouse.click(box.x + box.width * 0.5, box.y + box.height * 0.5).catch(() => {});
       await p.waitForTimeout(150);
     }
-    if (await p.evaluate(() => __G.state().started).catch(() => false) !== true) errs.push('the run stopped being "started" during 6 seconds of play');
+    if (!await p.evaluate(() => !!__G.state().started).catch(() => false)) errs.push('the run stopped being "started" during 6 seconds of play');
   });
 
   const list = fs.readFileSync(path.join(ROOT, 'checkpoint/tests/index.js'), 'utf8');
