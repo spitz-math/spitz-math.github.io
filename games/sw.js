@@ -17,10 +17,10 @@ self.addEventListener('activate', function(e){
 
 function put(req, res){ if(res && res.status === 200 && res.type === 'basic'){ var c = res.clone(); caches.open(CACHE).then(function(ca){ ca.put(req, c); }); } return res; }
 function cacheFirst(req){ return caches.match(req).then(function(hit){ return hit || fetch(req).then(function(res){ return put(req, res); }); }); }
-function staleWhileRevalidate(req){
+function staleWhileRevalidate(req, e){
   return caches.match(req).then(function(hit){
     var net = fetch(req).then(function(res){ return put(req, res); });
-    if(hit){ net.catch(function(){}); return hit; }
+    if(hit){ e.waitUntil(net.catch(function(){})); return hit; }   // keeps the worker alive until the fresh copy is saved
     return net;
   });
 }
@@ -41,6 +41,6 @@ self.addEventListener('fetch', function(e){
   var u = new URL(req.url); if(u.origin !== location.origin) return;          // Google Forms, the answer log etc. go straight to the network
   var p = u.pathname;
   if(/\/fonts\/|\.woff2$/.test(p)) return e.respondWith(cacheFirst(req));
-  if(/\.(png|webp|jpg|svg|ico|ogg|mp3|wav|m4a)$/.test(p)) return e.respondWith(staleWhileRevalidate(req));
+  if(/\.(png|webp|jpg|svg|ico|ogg|mp3|wav|m4a)$/.test(p)) return e.respondWith(staleWhileRevalidate(req, e));
   if(/\/games\/[^\/]+\.(html|js)$/.test(p) && !/\/sw\.js$/.test(p)) return e.respondWith(networkFirst(req, u.origin + p));   // one copy per game, whatever ?set= it opened with
 });

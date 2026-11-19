@@ -19,10 +19,10 @@ self.addEventListener('activate', function(e){
 function put(key, res){ if(res && res.status === 200 && res.type === 'basic'){ var c = res.clone(); caches.open(CACHE).then(function(ca){ ca.put(key, c); }); } return res; }
 function cacheFirst(req){ return caches.open(CACHE).then(function(ca){ return ca.match(req).then(function(hit){ return hit || fetch(req).then(function(res){ return put(req, res); }); }); }); }
 /* saved copy now, fresh copy saved for next time (pictures) */
-function staleWhileRevalidate(req){
+function staleWhileRevalidate(req, e){
   return caches.open(CACHE).then(function(ca){ return ca.match(req).then(function(hit){
     var net = fetch(req).then(function(res){ return put(req, res); });
-    if(hit){ net.catch(function(){}); return hit; }
+    if(hit){ e.waitUntil(net.catch(function(){})); return hit; }   // keeps the worker alive until the fresh copy is saved
     return net;
   }); });
 }
@@ -45,5 +45,5 @@ self.addEventListener('fetch', function(e){
   if(/^\/(checkpoint|teacher|topics|stats|board|warmup)/.test(p)) return;
   if(PAGES.test(p)) return e.respondWith(networkFirst(req, u.origin + p));      // one copy per page, whatever ?v= it was asked with
   if(/^\/fonts\//.test(p)) return e.respondWith(cacheFirst(req));
-  if(/^\/games\/cards\/|^\/[^\/]+\.(png|webp|jpg|svg|ico)$/.test(p)) return e.respondWith(staleWhileRevalidate(req));
+  if(/^\/games\/cards\/|^\/[^\/]+\.(png|webp|jpg|svg|ico)$/.test(p)) return e.respondWith(staleWhileRevalidate(req, e));
 });
