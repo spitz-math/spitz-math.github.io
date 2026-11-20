@@ -1,6 +1,16 @@
 {
  "posts": [
   {
+   "id": "football-buds-blitz-dev",
+   "type": "dev",
+   "game": "",
+   "title": "Football Buds BLITZ is coming",
+   "date": "2026-11-20",
+   "text": "Football Buds is getting a full rebuild, and a new name: Football Buds BLITZ. It's still Buds vs Rivals, but faster, wilder and way more fun to play.\n- The field fills your whole screen. You can see 70 yards at once, so your deep throws stay on screen.\n- Every down deals you a fresh hand of plays. Slants, Draw, Reverse, Flea Flicker, even a Hail Mary.\n- Run like a boss: hit → + Space to truck right through a tackler, or spin out of the way.\n- Tap Space for a bullet pass. Hold it to lob one over the defense.\n- Fumbles are live. Big hits knock the ball loose, and then it's a scramble.\n- Power-ups get dealt in the huddle: Turbo, Giant Bud, Freeze, Wrecking Ball and more. Answer right to unlock the strongest ones.\n- Your points come from the football. Every point on the scoreboard is worth 1,000, so touchdowns are everything.\nIt shows up here when it's ready.",
+   "image": "arcade/news/football_buds_blitz.webp",
+   "show": true
+  },
+  {
    "id": "rr-v74",
    "type": "patch",
    "game": "rook_and_ruin",
@@ -48,5 +58,5 @@
    "show": true
   }
  ],
- "updated": "2026-11-18T23:55:00.000Z"
+ "updated": "2026-11-20T15:30:00.000Z"
 }
