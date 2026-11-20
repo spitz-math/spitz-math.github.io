@@ -1,10 +1,11 @@
 # Jump Man, remastered
 
-The live Jump Man tower (games/jump_man_multiplication.html) with the Lantern Peak climber and pixel art, and v2 rules
-(Kody 2026-11-17): running and jumping are free; a Waystone on every full floor freezes the tower for 3 right answers and
-then gives a fixed reward (Double Jump, Wall Kick, Glide, Air Dash, Triple Jump, then boosts); 3 hearts and a fog that
-rises after the first Waystone (sinking in costs a heart, 0 hearts ends the run). No shop or cash. build.py patches the
-live file; remaster.js holds the new code. Score key stays jump_man_multiplication; save ver 3.
+The live Jump Man tower (games/jump_man_multiplication.html) with the Lantern Peak climber and pixel art, and v3 rules
+(Kody 2026-11-17/19): running and jumping are free and tight; a Waystone on floor 10, then every 30 ledges, freezes the
+tower for exactly 3 questions (2 right teaches the next move, 3 of 3 also gives a heart; math well = a better game, never a
+wall). Moves in a fixed order: Wall Kick, Double Jump, Glide, Air Dash, Triple Jump, then boosts. Visible side walls.
+3 hearts and a fog that rises after the first Waystone (sinking in costs a heart, 0 hearts ends the run). No shop or cash.
+build.py patches the live file; remaster.js holds the new code. Score key stays jump_man_multiplication; save ver 3.
 
     python3 games/src/jump_man_remaster/build.py      # writes out/jump_man_multiplication.html (site candidate) and out/jump_man_remaster_mult.html (test copy)
 
