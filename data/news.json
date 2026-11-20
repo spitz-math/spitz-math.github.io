@@ -1,6 +1,16 @@
 {
  "posts": [
   {
+   "id": "football-buds-blitz-dev",
+   "type": "dev",
+   "game": "",
+   "title": "Football Buds BLITZ is coming",
+   "date": "2026-11-20",
+   "text": "Football Buds is getting a full rebuild and a new name: Football Buds BLITZ. Forget real football. It's Buds vs Rivals, arcade style: loud, fast and totally ridiculous.\n- Mystery powers. Answer right in the huddle to unlock power cards, then flip them to see what you got.\n- Wild powers on the way, like Giant Bud, Rocket Cleats, Banana Peel and Freeze Ray.\n- Get ON FIRE: string big plays together and the ball bursts into flames.\n- Monster hits that send Rivals flying, and superhero dives into the end zone.\n- Fumbles are live. Big hits knock the ball loose, and then it's a scramble.\n- The field fills your whole screen, and every down deals you a new hand of plays.\n- Your points come from the football. Every point on the scoreboard is worth 1,000, so touchdowns are everything.\nComing later: multiplayer. Play against your friends (or your enemies).\nIt's still in the lab, so it might get even crazier. It shows up here when it's ready.",
+   "image": "arcade/news/football_buds_blitz.webp",
+   "show": true
+  },
+  {
    "id": "rr-v74",
    "type": "patch",
    "game": "rook_and_ruin",
@@ -48,5 +58,5 @@
    "show": true
   }
  ],
- "updated": "2026-11-18T23:55:00.000Z"
+ "updated": "2026-11-20T15:30:00.000Z"
 }
