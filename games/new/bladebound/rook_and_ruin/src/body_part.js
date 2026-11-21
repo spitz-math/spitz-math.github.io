@@ -37,9 +37,14 @@ var GOBT=106, GOBL=100, GOBLOCK=0.24, COMBOT=2.5;
 function gobSlots(w){ return w.last>0||ROOMS[w.rid].siege?4:(w.rid==='entry'||w.rid==='guard'||early(w))?2:3; }
 /* early(w): Rook has fewer than 4 powers, so the build is not online yet. Enemies wind up a little longer until it is. */
 function early(w){ return (w.picks||0)<4&&!(w.last>0); }
-/* elite: a tougher, faster version with a gold ring under it. Worth more gems, coins and points. */
+/* elite: a tougher, faster version with a gold ring under it, a gold outline and a big crown. Worth more gems, coins and points. */
+var ELSC=1.15;   /* elites drawn 15% bigger (hit box unchanged) */
+var EOW=180, EOH=180, EOY=160, EOC=null, EOG=null;   /* side canvases for the elite outline: the elite's feet sit at (90,160) */
+function elOC(){ if(!EOC){ EOC=document.createElement('canvas'); EOC.width=EOW; EOC.height=EOH; } return EOC; }
+function elGold(src,x,y,w,h){ if(!EOG){ EOG=document.createElement('canvas'); EOG.width=EOW; EOG.height=EOH; } var g=EOG.getContext('2d'); g.globalCompositeOperation='copy'; g.drawImage(src,x,y,w,h,0,0,w,h); g.globalCompositeOperation='source-in'; g.fillStyle='#FFC93C'; g.fillRect(0,0,w,h); g.globalCompositeOperation='source-over'; return EOG; }
 function spawnEnemy(type,x,y,mult,small,elite){ var t=ET[type], e={type:type,x:x,y:y,r:small?9:t.r,hp:Math.round(t.hp*(mult||1)*(small?0.4:1)*(elite?3:1)),max:0,t:Math.random()*5,kx:0,ky:0,fl:0,st:0,sx:0,sy:0,cd:rnd(0.6,1.4),oh:0,rh:0,eh:0,fa:0,small:!!small};
-  if(elite) e.el=1; e.max=e.hp; S.w.en.push(e); return e; }
+  if(elite){ e.el=1; if(!S.w.eliteTold){ S.w.eliteTold=1; (S.w.bannerQ=S.w.bannerQ||[]).push({txt:'ELITE ENEMY',sub:'Gold glow and crown = 3x health and faster. Take it down for big gems and coins!',t:3.6,tip:1}); } }   /* Kody 2026-11-21: explain elites the first time one shows up in a run */
+  e.max=e.hp; S.w.en.push(e); return e; }
 
 /* ---------- powers ---------- */
 /* path: blade (your sword does more), storm (things happen on their own), guard (survive).
@@ -955,8 +960,19 @@ function draw(){ var c=cx, w=S&&S.w; c.setTransform(1,0,0,1,0,0);
     if(e.el) c.drawImage(FX.elite,Math.round(e.x-22),Math.round(e.y+e.r-9+(T2.fly?8:0)));
     if(e.type==='wiz'&&e.st===1) c.drawImage(FX.wizGlow,Math.round(e.x-24),Math.round(e.y-44));
     var flip=e.type==='skel'?Math.cos(e.fa)<0:(p.x<e.x&&e.type!=='boss'&&e.type!=='slime');
-    var top=drawEnemyRR(c,e,p,t), hh=top==null?im.height*sc:foot-top; if(top==null) sprF(e.fl>0&&!RM?nm+'W':nm,e.x+jx,foot+bob,flip&&e.type!=='bat',sc);
-    if(e.el&&!(e.st===1&&e.type!=='slime')) c.drawImage(FX.crown,Math.round(e.x-7),Math.round(foot-hh-12));
+    /* Kody 2026-11-21: elites must read at a glance: a steady gold outline (no pulse), a little bigger, and a big crown.
+       The elite is drawn into a small side canvas, a gold copy is stamped 4 times around it, then the elite on top (canvas filters were far too slow on Chromebooks) */
+    var elG=e.el&&e.type!=='boss', elO=elG&&!LITE&&w.en.length<=30, top, hh;   /* the outline is skipped in big crowds (Last Stand) to keep Chromebooks smooth; size, ring and crown stay */
+    if(elO){ var oc=elOC(), o=oc.getContext('2d'), sv=cx, bw=e.type==='lance'?90:e.type==='wiz'?50:46, bh=e.type==='lance'?150:e.type==='wiz'?92:80, sx0=EOW/2-bw, sy0=EOY-bh+12, sw=bw*2, sh=bh;
+      o.setTransform(1,0,0,1,0,0); o.clearRect(sx0,sy0,sw,sh); o.setTransform(1,0,0,1,EOW/2-Math.round(e.x),EOY-Math.round(foot)); o.imageSmoothingEnabled=false; cx=o;
+      try{ top=drawEnemyRR(o,e,p,t); hh=top==null?im.height*sc:foot-top; if(top==null) sprF(e.fl>0&&!RM?nm+'W':nm,e.x+jx,foot+bob,flip&&e.type!=='bat',sc); } finally{ cx=sv; o.setTransform(1,0,0,1,0,0); }
+      var dw=Math.round(sw*ELSC), dh=Math.round(sh*ELSC), dx=Math.round(e.x-bw*ELSC), dy=Math.round(foot-(EOY-sy0)*ELSC); c.imageSmoothingEnabled=false;
+      { var g=elGold(oc,sx0,sy0,sw,sh); c.drawImage(g,0,0,sw,sh,dx-2,dy,dw,dh); c.drawImage(g,0,0,sw,sh,dx+2,dy,dw,dh); c.drawImage(g,0,0,sw,sh,dx,dy-2,dw,dh); c.drawImage(g,0,0,sw,sh,dx,dy+2,dw,dh); }
+      c.drawImage(oc,sx0,sy0,sw,sh,dx,dy,dw,dh); hh*=ELSC; }
+    else { if(elG){ c.save(); c.translate(e.x,foot); c.scale(ELSC,ELSC); c.translate(-e.x,-foot); }
+      top=drawEnemyRR(c,e,p,t); hh=top==null?im.height*sc:foot-top; if(top==null) sprF(e.fl>0&&!RM?nm+'W':nm,e.x+jx,foot+bob,flip&&e.type!=='bat',sc);
+      if(elG){ c.restore(); hh*=ELSC; } }
+    if(e.el&&!(e.st===1&&e.type!=='slime')){ c.imageSmoothingEnabled=false; c.drawImage(FX.crown,Math.round(e.x-14),Math.round(foot-hh-24),28,20); }
     if(e===openSk) dtx(c,'Open: strike!',e.x,foot-hh-6,13,'#FFE08A',0,'#141026');
     if((e.st===1&&e.type!=='slime'&&e.type!=='boss')) dtx(c,'!',e.x,foot-hh-4,22,'#FF5A6E',0,'#1A0A12');
     if(e.stun>0){ for(var sz=0;sz<2;sz++){ var ab=t*5+sz*3.1; dtx(c,'★',e.x+Math.cos(ab)*12,foot-hh-2+Math.sin(ab)*4,12,'#FFC93C'); } }
