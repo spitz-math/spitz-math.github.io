@@ -457,28 +457,22 @@ function slamFire(e,p){ var w=S.w; w.fires=w.fires||[]; var made=0;
     w.fires.push({x:x,y:y,t:-FIRE.warn,s:Math.random()*9}); made++; } }
 function fireTick(dt,p){ var w=S.w, F=w.fires; if(!F||(!F.length&&!(p.burn>0))) return;
   for(var i=F.length-1;i>=0;i--){ var f=F[i]; f.t+=dt; if(f.t>=(f.life||FIRE.life)){ F.splice(i,1); continue; } if(f.t<0) continue;
-    if(!(p.burn>0)&&p.roll<=0&&p.hp>1&&Math.hypot(p.x-f.x,(p.y-f.y)*1.6)<FIRE.r){ if(f.lite){ p.burn=p.bmax=FIRE.tick; p.bn=1; } else { p.burn=p.bmax=FIRE.burn; p.bn=Math.round(FIRE.burn/FIRE.tick); } p.bseg=FIRE.tick; SND.tele(); if(!w.fireTold){ w.fireTold=1; w.fx.push({k:'txt',x:p.x,y:p.y-56,t:0,v:'On fire! Stay out of the flames',c:'#FF9A3C'}); } }
+    if(!(p.burn>0)&&p.roll<=0&&p.hp>1&&Math.hypot(p.x-f.x,(p.y-f.y)*1.6)<FIRE.r){ if(f.lite){ p.burn=p.bmax=FIRE.tick; p.bn=1; } else { p.burn=p.bmax=FIRE.burn; p.bn=Math.round(FIRE.burn/FIRE.tick); } p.bseg=FIRE.tick; SND.tele(); if(!w.fireTold){ w.fireTold=1; w.fx.push({k:'txt',x:p.x,y:p.y-56,t:0,v:'On fire! Stay out of the lava',c:'#FF9A3C'}); } }
     f.hT=(f.hT||0)-dt; if(f.hT<=0){ f.hT=0.5; DSRC='fire'; for(var j=0;j<w.en.length;j++){ var e=w.en[j]; if(!e.dead&&e.type!=='boss'&&e.type!=='imp'&&Math.hypot(e.x-f.x,(e.y-f.y)*1.6)<FIRE.r+e.r*0.5) hurtE(e,4,0,0,0); } } }
   if(p.burn>0&&p.hp<=1){ p.burn=0; return; }   /* Kody 2026-11-18: fire never takes the last heart */
   if(p.burn>0){ p.burn-=dt; p.bseg=(p.bseg||FIRE.tick)-dt; if(p.bseg<=0){ p.bseg=FIRE.tick; p.bn=(p.bn||1)-1; hurtP({x:p.x,y:p.y+1,fire:1},1); if(p.bn<=0||S.mode!=='play'){ p.burn=0; return; } } if(p.burn<0.05) p.burn=0.05; } }
-/* fire patch: a low ember glow and pixel flames that rise and fall (gentle, never flashing). Outline only during the warning. */
+/* fire patch = a lava pool (gentle, never flashing). Outline only during the warning. */
 function drawFire(c,f,t){ var rx=FIRE.r, ry=Math.round(FIRE.r*0.62), x=Math.round(f.x), y=Math.round(f.y);
   var fade=f.t<0?0:Math.min(1,f.t/0.25)*Math.min(1,((f.life||FIRE.life)-f.t)/0.6);
   c.save();
   if(f.t<0){ c.globalAlpha=0.35+0.5*(1+f.t/FIRE.warn); c.strokeStyle='#FF8A2A'; c.lineWidth=2; c.beginPath(); c.ellipse(x,y,rx,ry,0,0,7); c.stroke(); c.restore(); return; }
-  /* scorched ember floor = the full danger oval */
-  c.globalAlpha=0.55*fade; c.fillStyle='#3A1214'; c.beginPath(); c.ellipse(x,y,rx,ry,0,0,7); c.fill();
-  c.globalAlpha=0.35*fade; c.fillStyle='#B33B1B'; c.beginPath(); c.ellipse(x,y,rx*0.72,ry*0.72,0,0,7); c.fill();
-  c.globalAlpha=0.9*fade; c.strokeStyle='#6E1D14'; c.lineWidth=2; c.beginPath(); c.ellipse(x,y,rx,ry,0,0,7); c.stroke();
-  c.globalAlpha=fade;
-  if(RRI.fire_patch){ /* Kody 2026-11-21: repainted flames (Sprite Drop task 91eb6660, approved 896993ca), one curling cluster on the scorched oval */
-    var k=RM?0:Math.floor(t*7+f.s*3)%3, k2=(k+1)%3, im=RRI.fire_patch; c.imageSmoothingEnabled=false;
-    c.drawImage(im,k*80,0,80,48,x-40,y+ry-48,80,48);
-  } else {
-    var n=LITE?4:7;
-    for(var q=0;q<n;q++){ var ang=q/n*6.283+f.s, fx=x+Math.round(Math.cos(ang)*rx*0.55), fy=y+Math.round(Math.sin(ang)*ry*0.55),
-        h=RM?10:Math.round(9+5*Math.sin(t*6+q*1.7+f.s));
-      c.fillStyle='#3A0E06'; c.fillRect(fx-4,fy-h-1,8,h+2); c.fillStyle='#FF6A1E'; c.fillRect(fx-3,fy-h,6,h); c.fillStyle='#FFC23A'; c.fillRect(fx-1,fy-Math.round(h*0.6),2,Math.round(h*0.6)); }
+  if(RRI.fire_patch){ /* Kody 2026-11-21: fire patches are now LAVA POOLS (Sprite Drop task f21d2bcc, approved painting 7fdb236d); the crust rim is the danger edge. Slow 4 fps, same brightness every frame */
+    var k=RM?0:Math.floor(t*4+f.s*3)%3; c.globalAlpha=fade; c.imageSmoothingEnabled=false;
+    c.drawImage(RRI.fire_patch,k*80,0,80,48,x-40,y-24,80,48);
+  } else { /* fallback: scorched ember oval */
+    c.globalAlpha=0.55*fade; c.fillStyle='#3A1214'; c.beginPath(); c.ellipse(x,y,rx,ry,0,0,7); c.fill();
+    c.globalAlpha=0.35*fade; c.fillStyle='#B33B1B'; c.beginPath(); c.ellipse(x,y,rx*0.72,ry*0.72,0,0,7); c.fill();
+    c.globalAlpha=0.9*fade; c.strokeStyle='#6E1D14'; c.lineWidth=2; c.beginPath(); c.ellipse(x,y,rx,ry,0,0,7); c.stroke();
   }
   c.restore(); }
 /* Rook on fire: two small flames on his shoulders and a draining orange bar over his head */
