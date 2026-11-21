@@ -954,7 +954,7 @@ function draw(){ var c=cx, w=S&&S.w; c.setTransform(1,0,0,1,0,0);
     var bob=e.type==='slime'?(e.st===1?-Math.abs(Math.sin((e.t%1)*Math.PI/0.6))*10:0):T2.fly?Math.sin(e.t*5)*3:-Math.abs(Math.sin(e.t*7))*1.5;
     var foot=T2.fly?e.y+im.height-4:e.y+e.r+2;
     if(!RRE[e.type]||e.small){ c.fillStyle='rgba(0,0,0,.32)'; c.fillRect(Math.round(e.x-e.r*0.8),Math.round(e.y+e.r-1+(T2.fly?8:0)),Math.round(e.r*1.6),3); }
-    if(e.el) c.drawImage(FX.elite,Math.round(e.x-22),Math.round(e.y+e.r-9+(T2.fly?8:0)));
+    if(e.el&&e.type==='boss') c.drawImage(FX.elite,Math.round(e.x-22),Math.round(e.y+e.r-9+(T2.fly?8:0)));
     if(e.type==='wiz'&&e.st===1) c.drawImage(FX.wizGlow,Math.round(e.x-24),Math.round(e.y-44));
     var flip=e.type==='skel'?Math.cos(e.fa)<0:(p.x<e.x&&e.type!=='boss'&&e.type!=='slime');
     /* Kody 2026-11-21: elites must read at a glance: a steady gold outline (no pulse), 15% bigger, and a big crown.
