@@ -92,8 +92,8 @@ function efire(x,y,n,fan,down){ if(gt<resumeAt+0.6||y>SHIP_Y-190) return; var sp
 function hurt(){ if(shipSafe()) return false; lastHurtPrev=lastHurt; lastHurt=gt; S.hurts++; if(wv) wv.noHit=false; shake(0.5); stop(60);
   if(gt-lastHurtPrev<20) S.heat=Math.max(1,S.heat-1);
   shots=shots.filter(function(b){ return Math.hypot(b.x-ship.x,b.y-SHIP_Y)>330; });
-  if(ship.shield){ ship.shield=0; ship.shieldAt=gt; ship.safeUntil=gt+1.0; pop(ship.x,SHIP_Y-80,'SHIELD!',''); ring(ship.x,SHIP_Y,'#4ADE80',140,0.35); SND.hit(); return true; }
-  ship.safeUntil=gt+CFG.hitSafe; breakChain(); S.fuel=Math.max(0.1,S.fuel-CFG.hitFuel); burst(ship.x,SHIP_Y,'#FF4F6D',14,300);
+  if(ship.shield){ ship.shield=0; ship.shieldAt=gt; ship.safeUntil=gt+1.0; pop(ship.x,SHIP_Y-80,'SHIELD!',''); ring(ship.x,SHIP_Y,'#4ADE80',140,0.35); pfx('cap_S',ship.x,SHIP_Y+40,2.5,0,{follow:1}); SND.hit(); return true; }
+  ship.safeUntil=gt+CFG.hitSafe; breakChain(); S.fuel=Math.max(0.1,S.fuel-CFG.hitFuel); burst(ship.x,SHIP_Y,'#FF4F6D',14,300); pfx('hurt',ship.x,SHIP_Y+20,3,0,{follow:1});
   pop(ship.x,SHIP_Y-80,'HIT!',MINUS+CFG.hitFuel+' FUEL'); SND.hurt(); return true; }
 var lastHurtPrev=-99, chainUntil=0;
 function chainSecs(){ return [2.5,3.5,4.5,6][L('chain')]; }
@@ -120,20 +120,20 @@ function fireMissile(){ var l=L('missile'); if(!l||gt<resumeAt||gt-lastMissile<[
 
 /* ---------- hits, kills, power-ups ---------- */
 function hitEnemy(a,dmg){ if(a.dead) return; a.hp-=dmg||1; S.dmg+=dmg||1; a.flash=gt;
-  if(a.hp>0){ addScore(pts(10)); SND.hit(); burst(a.x,a.y,'#FFFFFF',4,160,5); return; }
+  if(a.hp>0){ addScore(pts(10)); SND.hit(); burst(a.x,a.y,'#FFFFFF',4,160,5); pfx('spark',a.x,a.y+8,2.5); return; }
   a.dead=true; S.kills++; tutKills++; addChain(); var gold=a.gold, dive=a.state==='dive'||a.state==='bomb', p=pts(BASE[a.type]*(gold?5:1)*(dive?2:1)); addScore(p);
-  var col=gold?'#FFC82E':a.type==='cmd'?'#4ADE80':a.type==='fly'?'#FF4F6D':a.type==='bomber'?'#C77DFF':'#FFD23D'; burst(a.x,a.y,col,gold||a.type!=='bee'?16:10,gold?340:260); flashes.push({x:a.x,y:a.y,c:col,t0:gt});
+  var col=gold?'#FFC82E':a.type==='cmd'?'#4ADE80':a.type==='fly'?'#FF4F6D':a.type==='bomber'?'#C77DFF':'#FFD23D'; burst(a.x,a.y,col,gold||a.type!=='bee'?16:10,gold?340:260); flashes.push({x:a.x,y:a.y,c:col,t0:gt}); pfx(gold?'k_gold':KILL_FX[a.type]||'k_bee',a.x,a.y,gold||a.type==='cmd'||a.type==='bomber'?3:2.5);
   pop(a.x,a.y-34,'+'+p,gold?'GOLD!':dive?'DIVE ×2':'',0.8);
   if(gold||a.type==='cmd'||a.type==='bomber'){ SND.bull(); stop(40); shake(0.3); } else { SND.kill(S.chain); shake(0.12); }
   var ch=0.05+0.04*L('magnet'); if(gold||a.type==='cmd'||a.type==='bomber') ch=0.5+0.12*L('magnet'); if(!novaing&&Math.random()<ch) dropCap(a.x,a.y);
   if(wv&&wv.def.k!=='boss'&&!wv.done&&!(rush&&!rush.done)&&!enemies.some(function(o){ return !o.dead&&o.state!=='flee'; })) waveOver(true); hud(); }
 var flashes=[];
 function dropCap(x,y,k){ if(caps.length>=4) return; var r=Math.random(); var kk=k||(r<0.15?'N':r<0.6?'O':'S'); if(kk==='N'&&(gt-novaAt<20||caps.some(function(c){ return c.k==='N'; }))) kk='O'; caps.push({x:x,y:y,k:kk,t0:gt}); }   /* v2: Nova is rare (15%, one at a time, 20 s apart): Kody found it cleared the screen constantly */
-function grab(c){ SND.power();
+function grab(c){ SND.power(); if(c.k!=='N') pfx('cap_'+c.k,ship.x,SHIP_Y+40,2.5,0,{follow:1});
   if(c.k==='S'){ if(ship.shield){ var p=pts(200); addScore(p); pop(c.x,SHIP_Y-90,'+'+p,'SHIELD FULL'); } else { ship.shield=1; pop(c.x,SHIP_Y-90,'SHIELD','BLOCKS ONE HIT'); } }
   else if(c.k==='O'){ ship.over=gt+7; pop(c.x,SHIP_Y-90,'OVERDRIVE!','7 SECONDS'); }
   else nova(); hud(); }
-function nova(){ S.novas=(S.novas||0)+1; shots=[]; ring(ship.x,SHIP_Y,'#FF9A2E',560,0.6); pop(W/2,520,'NOVA BLAST!',''); shake(0.7); SND.nova(); novaAt=gt;
+function nova(){ S.novas=(S.novas||0)+1; shots=[]; ring(ship.x,SHIP_Y,'#FF9A2E',560,0.6); pop(W/2,520,'NOVA BLAST!',''); shake(0.7); SND.nova(); novaAt=gt; pfx('nova',ship.x,SHIP_Y-150,5.5); pfx('nova',ship.x-260,SHIP_Y-330,3,0.08); pfx('nova',ship.x+260,SHIP_Y-330,3,0.14);
   novaing=true; enemies.slice().forEach(function(a){ if(!a.dead&&a.state!=='flee'&&!(a.state==='in'&&a.t<0)&&Math.abs(a.x-ship.x)<520&&a.y>SHIP_Y-640) hitEnemy(a,1); }); novaing=false;   /* v2: 1 damage in a big ring, not the whole screen at 2 */
   if(boss&&!boss.dead&&boss.enter>=1){ var p=bossTarget(); if(p) hitPart(p,Math.ceil(S.bossHp.mc*0.08)); }
   if(rush) rush.bugs.forEach(function(b){ if(!b.dead&&b.on) rushHit(b); }); }
@@ -158,15 +158,16 @@ function startBoss(){ if(!S.bossHp){ var rate=S.dmg/Math.max(25,S.flown), total=
   boss={t:0,x:W/2,y:-220,enter:0,flash:-9,cool:{l:1.8,r:2.9,c:3.2},beam:0,beamT:2.5,drone:3,dead:false}; calmUntil=gt+3.2; SND.warn(); enemies=enemies.filter(function(a){ return a.state==='flee'; }); }
 function hitPart(p,dmg){ var B=S.bossHp; if(!B||B[p]<=0||!boss||boss.dead) return; dmg=dmg||1; B[p]=Math.max(0,B[p]-dmg); S.dmg+=dmg; boss.flash=gt; addScore(pts(5*dmg));
   var px=boss.x+MOMP[p][0], py=boss.y+MOMP[p][1];
-  if(B[p]>0){ if(Math.random()<0.3) SND.hit(); burst(px,py+20,'#FFFFFF',2,140,5); return; }
-  if(p!=='c'){ var b=pts(500); addScore(b); burst(px,py,'#FF9A2E',26,380,9); ring(px,py,'#FF9A2E',200,0.45); pop(px,py-60,'+'+b,'TURRET DOWN',1.4); SND.bull(); SND.thunk(); addChain(); stop(90); shake(0.6); dropCap(px,py+40);
+  if(B[p]>0){ if(Math.random()<0.3) SND.hit(); burst(px,py+20,'#FFFFFF',2,140,5); if(Math.random()<0.35) pfx('spark',px+(Math.random()-0.5)*40,py+20,2.5); return; }
+  if(p!=='c'){ var b=pts(500); addScore(b); burst(px,py,'#FF9A2E',26,380,9); ring(px,py,'#FF9A2E',200,0.45); pfx('nova',px,py,3.5); pop(px,py-60,'+'+b,'TURRET DOWN',1.4); SND.bull(); SND.thunk(); addChain(); stop(90); shake(0.6); dropCap(px,py+40);
     if(momOpen()){ banner('CORE OPEN!','BLAST IT · DODGE THE BEAM','#FF4F6D'); boss.beamT=3; } save(); hud(); return; }
   bossDeath(); }
 function bossDeath(){ var b=boss; b.dead=true; b.deadAt=gt; S.bossDown++; shots=[]; S.bossHp=null; S.wave=WAVES.length; if(wv) wv.done=true; var big=pts(4000)+Math.round(S.score*0.1); addScore(big);
   enemies.forEach(function(a){ if(!a.dead){ a.state='flee'; a.fire=[]; } }); stop(250); shake(1); SND.bigboom(); addChain();
-  for(var i=0;i<12;i++) (function(i){ later(i*0.1,function(){ var x=b.x+(Math.random()-0.5)*520, y=b.y+(Math.random()-0.5)*120; burst(x,y,i%2?'#C77DFF':'#FFF04D',14,340,9); flashes.push({x:x,y:y,c:'#FFF04D',t0:gt}); shake(0.5); }); })(i);
+  for(var i=0;i<12;i++) (function(i){ later(i*0.1,function(){ var x=b.x+(Math.random()-0.5)*520, y=b.y+(Math.random()-0.5)*120; burst(x,y,i%2?'#C77DFF':'#FFF04D',14,340,9); pfx(i%2?'k_bomb':'k_gold',x,y,3.5); flashes.push({x:x,y:y,c:'#FFF04D',t0:gt}); shake(0.5); }); })(i);
   later(0.5,function(){ ring(b.x,b.y,'#FFFFFF',900,0.6); });
-  later(1.3,function(){ pop(W/2,440,'+'+big.toLocaleString(),'MOTHERSHIP DESTROYED!',2.4); var s=cvPoint(b.x,b.y); confetti(s[0],s[1],170,3); SND.goal(); hud(); });
+  for(var j=0;j<5;j++) pfx(j%2?'fw_cyan':'fw_gold',W*(0.16+0.17*j),300+(j%2)*90,3,1.0+j*0.22);
+  later(1.3,function(){ pop(W/2,440,'+'+big.toLocaleString(),'MOTHERSHIP DESTROYED!',1.25); var s=cvPoint(b.x,b.y); confetti(s[0],s[1],170,3); SND.goal(); hud(); });
   later(2.6,function(){ boss=null; S.heat=Math.min(5,S.heat+1); startWave(); save(); }); save(); }
 function overcharge(n){ for(var i=0;i<n;i++) (function(i){ later(0.5+i*0.22,function(){ if(!boss||boss.dead) return; var p=bossTarget(); if(!p) return; var tx=boss.x+MOMP[p][0], ty=boss.y+MOMP[p][1];
   bolts.push({x:ship.x,y:SHIP_Y-40,tx:tx,ty:ty,t0:gt}); pop(tx,ty+110,'OVERCHARGE!','RIGHT ANSWER',0.9); SND.bull(); shake(0.4); burst(tx,ty,'#A6FF4D',16,320,8); hitPart(p,Math.ceil(S.bossHp.mc*0.1)); }); })(i); }
@@ -192,7 +193,7 @@ function updateRush(dt){ var r=rush; r.T+=dt;
     else pop(W/2,440,r.hit+' of '+r.total,'SWARM RUSH',1.6);
     if(wv&&timeLeft(wv.def)>4){ var w1=wv; later(1.6,function(){ if(wv===w1) reinforce(); }); } else { if(wv) wv.done=true; S.wave++; later(1.6,startWave); } save(); hud(); } }
 function rushHit(b){ if(!rush||b.dead) return; b.dead=true; rush.hit++; S.kills++; S.dmg++; addChain(); var p=pts(40); addScore(p); SND.kill(S.chain); shake(0.1);
-  burst(b.x,b.y,b.type==='fly'?'#FF4F6D':'#FFD23D',10,260); pop(b.x,b.y-34,'+'+p,rush.hit===rush.total?'ALL 24!':'',0.7); hud(); }
+  burst(b.x,b.y,b.type==='fly'?'#FF4F6D':'#FFD23D',10,260); pfx(b.type==='fly'?'k_fly':'k_bee',b.x,b.y,2.5); pop(b.x,b.y-34,'+'+p,rush.hit===rush.total?'ALL 24!':'',0.7); hud(); }
 
 /* ================= UPDATE ================= */
 function update(dt){ if(!S.started||S.over||frozen) return;

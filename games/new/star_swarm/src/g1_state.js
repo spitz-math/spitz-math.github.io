@@ -108,7 +108,7 @@ function nextOrLaunch(){ if(!cardOpen()||!S.qDone||$('sw-next').disabled) return
    during the Mothership fight each banked right answer also fires an Overcharge bolt, so the math lands the big hits */
 function launch(){ if(!S.started||S.over||draftOpen()||S.fuel<=0.05||!$('sw-confirm').hidden) return; if(cardOpen()&&S.qDone&&S.q.choices[S.picked].ok&&S.sinceDraft>=CFG.draftEvery&&draftPool().length){ openDraft(); return; }
   closeCard(); frozen=false; resumeAt=cardGood?gt+0.45:gt; letGo();
-  if(cardGood){ shots=[]; ship.safeUntil=Math.max(ship.safeUntil,gt+1.45); ring(ship.x,SHIP_Y,'#3DE0FF',320,0.45); SND.launch();
+  if(cardGood){ shots=[]; ship.safeUntil=Math.max(ship.safeUntil,gt+1.45); ring(ship.x,SHIP_Y,'#3DE0FF',320,0.45); pfx('warp',ship.x,SHIP_Y+46,2.5,0,{back:1,follow:1}); SND.launch();
     if(boss&&!boss.dead&&boss.enter>=1){ overcharge(Math.min(4,banked)); } }
   banked=0; cardGood=false; save(); hud(); }
 $('sw-choices').addEventListener('click',function(e){ var b=e.target.closest('.sw-ch'); if(b) answer(+b.dataset.i); });

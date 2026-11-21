@@ -1,0 +1,22 @@
+// Screens of the PixelFX effects in Star Swarm: node tools/fxshots.js [file in out/]
+const { chromium } = require('playwright');
+(async()=>{ const b=await chromium.launch(); const pg=await b.newPage({viewport:{width:1366,height:768}});
+  const errs=[]; pg.on('pageerror',e=>errs.push(e.message));
+  await pg.goto('file://'+__dirname+'/../out/'+(process.argv[2]||'star_swarm_mult.html')); await pg.waitForTimeout(500);
+  await pg.evaluate(()=>{ localStorage.clear(); window.__noBlurDock=1; }); await pg.reload(); await pg.waitForTimeout(500); await pg.evaluate(()=>{ window.__noBlurDock=1; });
+  await pg.fill('#sw-nameinput','Test T'); await pg.click('#sw-go'); await pg.waitForTimeout(3500);
+  const adv=(s)=>pg.evaluate(s=>{ __G.pause(true); for(let t=0;t<s;t+=1/60) __G.step(1/60); __G.render(); },s);
+  const shot=async(n)=>{ await pg.screenshot({path:'shots/fx_'+n+'.png',clip:{x:0,y:0,width:1366,height:768}}); };
+  await pg.evaluate(()=>{ __G.state().fuel=19; __G.pause(true); }); await adv(1.5);
+  await pg.evaluate(()=>{ const E=__G.enemies().filter(a=>!a.dead); E.slice(0,4).forEach(a=>{ a.hp=1; __G.hitEnemy(a,1); }); if(E[5]){ E[5].hp=3; __G.hitEnemy(E[5],1);} }); await adv(0.12); await shot('kills_a');
+  await adv(0.25); await shot('kills_b');
+  await pg.evaluate(()=>{ __G.dropCap(__G.ship().x,__G.consts.SHIP_Y,'O'); __G.grab(__G.caps()[__G.caps().length-1]); }); await adv(0.3); await shot('pickup');
+  await adv(2); await pg.evaluate(()=>{ __G.ship().safeUntil=0; __G.ship().shield=0; __G.ship().dashSafe=0; __G.hurt(); }); await adv(0.1); await shot('hurt');
+  await adv(2); await pg.evaluate(()=>{ __G.nova(); }); await adv(0.2); await shot('nova_a'); await adv(0.35); await shot('nova_b');
+  await adv(2); await pg.evaluate(()=>{ __G.state().fuel=1; __G.dock(); }); await pg.waitForTimeout(300);
+  await pg.evaluate(()=>{ const q=__G.state().q; __G.noWait(); __G.answer(q.choices.findIndex(c=>c.ok)); }); await pg.waitForTimeout(200); await pg.evaluate(()=>{ __G.noWait(); __G.launch(); }); await adv(0.35); await shot('launch');
+  await pg.evaluate(()=>{ __G.state().fuel=19; __G.setWave(5); }); await adv(7);
+  await pg.evaluate(()=>{ const B=__G.state().bossHp; __G.hitPart('l',B.l); }); await adv(0.2); await shot('turret');
+  await adv(3); await pg.evaluate(()=>{ const B=__G.state().bossHp; __G.hitPart('r',B.r); }); await adv(3);
+  await pg.evaluate(()=>{ const B=__G.state().bossHp; if(B) __G.hitPart('c',B.c); }); await adv(0.6); await shot('boss_a'); await adv(1.0); await shot('boss_b');
+  console.log('errors',JSON.stringify(errs.slice(0,8))); await b.close(); })();

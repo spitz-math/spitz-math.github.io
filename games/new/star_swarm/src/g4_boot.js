@@ -15,7 +15,7 @@ function esc(t){ return String(t).replace(/[&<>"]/g,function(c){ return {'&':'&a
 
 /* ================= START / END ================= */
 function playUI(on){ $('sw-top').hidden=!on; $('sw-keysbar').hidden=!on; }
-function resetField(){ enemies=[]; shots=[]; beams=[]; missiles=[]; caps=[]; rings=[]; pops=[]; bolts=[]; laters=[]; flashes=[]; boss=null; rush=null; wv=null; SPK.forEach(function(p){ p.on=false; });
+function resetField(){ PXF.list.length=0; enemies=[]; shots=[]; beams=[]; missiles=[]; caps=[]; rings=[]; pops=[]; bolts=[]; laters=[]; flashes=[]; boss=null; rush=null; wv=null; SPK.forEach(function(p){ p.on=false; });
   gt=0; formT=0; hitStop=0; trauma=0; lastShot=-9; lastMissile=0; lastDrone=0; calmUntil=0; lastHurt=lastHurtPrev=-99; resumeAt=0; chainUntil=0; tipDash=-99; novaAt=-9; stopAt=-9; bannerT={t0:-9}; banked=0; cardGood=false; tutMove=0; tutKills=0;
   ship.x=W/2; ship.safeUntil=0; ship.shield=S&&L('shield')?1:0; ship.shieldAt=0; ship.dashAt=-9; ship.dashSafe=0; ship.over=0; ship.wasDash=false; letGo(); frozen=false; closeCard(); $('sw-draft').hidden=true; $('sw-dim').hidden=true; }
 $('sw-nameinput').addEventListener('input',function(){ $('sw-go').disabled=!this.value.trim(); });

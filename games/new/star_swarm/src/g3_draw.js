@@ -104,6 +104,7 @@ function render(){ var play=S.started&&!S.over, i; cx.setTransform(RS,0,0,RS,0,0
   for(i=0;i<rings.length;i++){ var o=rings[i], u=(gt-o.t0)/o.d; cx.globalAlpha=Math.max(0,1-u); cx.strokeStyle=o.c; cx.lineWidth=10*(1-u)+2; cx.beginPath(); cx.arc(o.x,o.y,o.r*(1-(1-u)*(1-u)),0,6.283); cx.stroke(); } cx.globalAlpha=1;
   for(i=0;i<bolts.length;i++){ var bo=bolts[i], ub=(gt-bo.t0)/0.3; cx.globalAlpha=1-ub; cx.strokeStyle='#A6FF4D'; cx.lineWidth=18; cx.beginPath(); cx.moveTo(bo.x,bo.y); cx.lineTo(bo.tx,bo.ty); cx.stroke(); cx.strokeStyle='#FFFFFF'; cx.lineWidth=6; cx.stroke(); } cx.globalAlpha=1;
   if(play&&gt-novaAt<0.08&&!REDUCE){ cx.fillStyle='rgba(255,255,255,.2)'; cx.fillRect(0,0,W,H); }
+  drawFx(true);
   // the ship: engine glow, a ghost trail while dashing, the shield ring, the dash meter underneath
   if(play){ var blink=gt<ship.safeUntil&&gt>=resumeAt&&Math.floor(gt*12)%2===0, dashing=gt-ship.dashAt<CFG.dashTime;
     if(dashing&&!REDUCE){ for(i=1;i<=3;i++){ cx.globalAlpha=0.3-i*0.07; spr(SPR.ship,ship.x-(ship.dashTo>ship.dashFrom?1:-1)*i*34,SHIP_Y); } cx.globalAlpha=1; }
@@ -115,6 +116,7 @@ function render(){ var play=S.started&&!S.over, i; cx.setTransform(RS,0,0,RS,0,0
     if(ship.shield){ cx.lineWidth=4; cx.strokeStyle='#4ADE80'; cx.beginPath(); cx.arc(ship.x,SHIP_Y,62,0,6.283); cx.stroke(); }
     if(frozen||gt<resumeAt){ cx.lineWidth=5; cx.strokeStyle='#3DE0FF'; cx.beginPath(); cx.arc(ship.x,SHIP_Y,74,0,6.283); cx.stroke(); }
     var dk=clamp((gt-ship.dashAt)/CFG.dashCool,0,1); cx.fillStyle='#1B2338'; cx.fillRect(ship.x-34,SHIP_Y+62,68,7); cx.fillStyle=dk>=1?'#3DE0FF':'#5B6B88'; cx.fillRect(ship.x-34,SHIP_Y+62,68*dk,7); }
+  drawFx(false);
   cx.setTransform(RS,0,0,RS,0,0);
   // score pop-ups: drawn once each, with a small punch as they appear
   for(i=0;i<pops.length;i++){ var pp=pops[i], pu=(gt-pp.t0)/pp.d, al=Math.max(0,Math.min(1,(1-pu)*2.5)), sc=REDUCE?1:1+0.4*Math.max(0,1-(gt-pp.t0)/0.12), y=pp.y-pu*46;
