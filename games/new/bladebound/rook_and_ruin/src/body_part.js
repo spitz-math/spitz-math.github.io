@@ -37,9 +37,11 @@ var GOBT=106, GOBL=100, GOBLOCK=0.24, COMBOT=2.5;
 function gobSlots(w){ return w.last>0||ROOMS[w.rid].siege?4:(w.rid==='entry'||w.rid==='guard'||early(w))?2:3; }
 /* early(w): Rook has fewer than 4 powers, so the build is not online yet. Enemies wind up a little longer until it is. */
 function early(w){ return (w.picks||0)<4&&!(w.last>0); }
-/* elite: a tougher, faster version with a gold ring under it. Worth more gems, coins and points. */
+/* elite: a tougher, faster version with a gold ring under it, a gold outline and a big crown. Worth more gems, coins and points. */
+var ELSC=1.15;   /* elites drawn 15% bigger (hit box unchanged) */
 function spawnEnemy(type,x,y,mult,small,elite){ var t=ET[type], e={type:type,x:x,y:y,r:small?9:t.r,hp:Math.round(t.hp*(mult||1)*(small?0.4:1)*(elite?3:1)),max:0,t:Math.random()*5,kx:0,ky:0,fl:0,st:0,sx:0,sy:0,cd:rnd(0.6,1.4),oh:0,rh:0,eh:0,fa:0,small:!!small};
-  if(elite) e.el=1; e.max=e.hp; S.w.en.push(e); return e; }
+  if(elite){ e.el=1; if(!S.w.eliteTold){ S.w.eliteTold=1; (S.w.bannerQ=S.w.bannerQ||[]).push({txt:'ELITE ENEMY',sub:'Gold glow and crown = 3x health and faster. Take it down for big gems and coins!',t:3.6,tip:1}); } }   /* Kody 2026-11-21: explain elites the first time one shows up in a run */
+  e.max=e.hp; S.w.en.push(e); return e; }
 
 /* ---------- powers ---------- */
 /* path: blade (your sword does more), storm (things happen on their own), guard (survive).
@@ -952,11 +954,17 @@ function draw(){ var c=cx, w=S&&S.w; c.setTransform(1,0,0,1,0,0);
     var bob=e.type==='slime'?(e.st===1?-Math.abs(Math.sin((e.t%1)*Math.PI/0.6))*10:0):T2.fly?Math.sin(e.t*5)*3:-Math.abs(Math.sin(e.t*7))*1.5;
     var foot=T2.fly?e.y+im.height-4:e.y+e.r+2;
     if(!RRE[e.type]||e.small){ c.fillStyle='rgba(0,0,0,.32)'; c.fillRect(Math.round(e.x-e.r*0.8),Math.round(e.y+e.r-1+(T2.fly?8:0)),Math.round(e.r*1.6),3); }
-    if(e.el) c.drawImage(FX.elite,Math.round(e.x-22),Math.round(e.y+e.r-9+(T2.fly?8:0)));
+    if(e.el&&e.type==='boss') c.drawImage(FX.elite,Math.round(e.x-22),Math.round(e.y+e.r-9+(T2.fly?8:0)));
     if(e.type==='wiz'&&e.st===1) c.drawImage(FX.wizGlow,Math.round(e.x-24),Math.round(e.y-44));
     var flip=e.type==='skel'?Math.cos(e.fa)<0:(p.x<e.x&&e.type!=='boss'&&e.type!=='slime');
-    var top=drawEnemyRR(c,e,p,t), hh=top==null?im.height*sc:foot-top; if(top==null) sprF(e.fl>0&&!RM?nm+'W':nm,e.x+jx,foot+bob,flip&&e.type!=='bat',sc);
-    if(e.el&&!(e.st===1&&e.type!=='slime')) c.drawImage(FX.crown,Math.round(e.x-7),Math.round(foot-hh-12));
+    /* Kody 2026-11-21: elites must read at a glance: a steady gold outline (no pulse), 15% bigger, and a big crown.
+       The outline = the same frame drawn 4 times in solid gold, 2 px out each way (pre-made gold sheets, see rrDraw) */
+    var elG=e.el&&e.type!=='boss', top, hh;
+    if(elG){ c.save(); c.translate(e.x,foot); c.scale(ELSC,ELSC); c.translate(-e.x,-foot); var sj=e.t, sf=e.fl;
+      if(RRE[e.type]||e.type==='bat'||e.type==='slime'){ e.fl=0; for(var gq=0;gq<4;gq++){ RR_GOLD=[[2,0],[-2,0],[0,2],[0,-2]][gq]; e.t=sj; try{ drawEnemyRR(c,e,p,t); } finally{ RR_GOLD=null; } } e.t=sj; e.fl=sf; } }
+    top=drawEnemyRR(c,e,p,t); hh=top==null?im.height*sc:foot-top; if(top==null) sprF(e.fl>0&&!RM?nm+'W':nm,e.x+jx,foot+bob,flip&&e.type!=='bat',sc);
+    if(elG){ c.restore(); hh*=ELSC; }
+    if(e.el&&!(e.st===1&&e.type!=='slime')){ c.imageSmoothingEnabled=false; c.drawImage(RRI.crown||FX.crown,Math.round(e.x-14),Math.round(foot-hh-24),28,20); }
     if(e===openSk) dtx(c,'Open: strike!',e.x,foot-hh-6,13,'#FFE08A',0,'#141026');
     if((e.st===1&&e.type!=='slime'&&e.type!=='boss')) dtx(c,'!',e.x,foot-hh-4,22,'#FF5A6E',0,'#1A0A12');
     if(e.stun>0){ for(var sz=0;sz<2;sz++){ var ab=t*5+sz*3.1; dtx(c,'★',e.x+Math.cos(ab)*12,foot-hh-2+Math.sin(ab)*4,12,'#FFC93C'); } }
