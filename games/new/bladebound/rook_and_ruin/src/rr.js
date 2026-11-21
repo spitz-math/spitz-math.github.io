@@ -11,7 +11,10 @@ var RRI={}, RRSH={imp:16,impw:16,impb:16,lancea:22,lancew:22,wiz:18,wizw:18,wizb
     var tt=RRTINT[n]; if(tt) RRI[n+tt[0]]=mk(im.width,im.height,function(x){ x.drawImage(im,0,0); x.globalCompositeOperation='color'; x.fillStyle=tt[1]; x.fillRect(0,0,im.width,im.height); x.globalCompositeOperation='destination-in'; x.drawImage(im,0,0); if(sh){ x.globalCompositeOperation='destination-over'; x.fillStyle='rgba(0,0,0,.32)'; for(var r=0;r<m.rows;r++) for(var q=0;q<m.cols;q++) x.fillRect(q*m.fw+m.px-Math.round(sh/2),r*m.fh+m.py-3,sh,3); } }); }; im.src=RRART[n].src; }); })();
 function rrReady(n){ return !!RRI[n]; }
 var RRF={};
-function rrDraw(c,n,row,col,x,fy,flip,wh){ var m=RRART[n], k=wh?n+(wh===true?'W':wh):n, im=RRI[k]; if(!im) return false; var sy=row*m.fh; x=Math.round(x); fy=Math.round(fy);
+/* Kody 2026-11-21: elite outline. While RR_GOLD=[dx,dy] is set, rrDraw draws a solid gold copy of the frame, shifted. The gold sheets are made once per sheet, so this costs one extra drawImage per pass (no canvas filters) */
+var RR_GOLD=null;
+function rrGoldSheet(k){ var g=RRI[k+'G']; if(g) return g; var im=RRI[k]; if(!im) return null; return RRI[k+'G']=mk(im.width,im.height,function(q){ q.drawImage(im,0,0); q.globalCompositeOperation='source-in'; q.fillStyle='#FFC93C'; q.fillRect(0,0,im.width,im.height); q.globalCompositeOperation='source-over'; }); }
+function rrDraw(c,n,row,col,x,fy,flip,wh){ var m=RRART[n], k=wh?n+(wh===true?'W':wh):n, im=RRI[k]; if(RR_GOLD){ k=n+'G'; im=rrGoldSheet(n); x+=RR_GOLD[0]; fy+=RR_GOLD[1]; } if(!im) return false; var sy=row*m.fh; x=Math.round(x); fy=Math.round(fy);
   if(flip){ var fi=RRF[k]||(RRF[k]=mk(im.width,im.height,function(q){ q.translate(im.width,0); q.scale(-1,1); q.drawImage(im,0,0); })); c.drawImage(fi,im.width-(col+1)*m.fw,sy,m.fw,m.fh,x-(m.fw-m.px),fy-m.py,m.fw,m.fh); }
   else c.drawImage(im,col*m.fw,sy,m.fw,m.fh,x-m.px,fy-m.py,m.fw,m.fh); return true; }
 /* direction with a little stickiness so a diagonal never flickers between rows. rows: 0 down, 1 up, 2 side */
