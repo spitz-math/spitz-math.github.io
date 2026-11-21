@@ -964,7 +964,7 @@ function draw(){ var c=cx, w=S&&S.w; c.setTransform(1,0,0,1,0,0);
       if(RRE[e.type]||e.type==='bat'||e.type==='slime'){ e.fl=0; for(var gq=0;gq<4;gq++){ RR_GOLD=[[2,0],[-2,0],[0,2],[0,-2]][gq]; e.t=sj; try{ drawEnemyRR(c,e,p,t); } finally{ RR_GOLD=null; } } e.t=sj; e.fl=sf; } }
     top=drawEnemyRR(c,e,p,t); hh=top==null?im.height*sc:foot-top; if(top==null) sprF(e.fl>0&&!RM?nm+'W':nm,e.x+jx,foot+bob,flip&&e.type!=='bat',sc);
     if(elG){ c.restore(); hh*=ELSC; }
-    if(e.el&&!(e.st===1&&e.type!=='slime')){ c.imageSmoothingEnabled=false; c.drawImage(FX.crown,Math.round(e.x-14),Math.round(foot-hh-24),28,20); }
+    if(e.el&&!(e.st===1&&e.type!=='slime')){ c.imageSmoothingEnabled=false; c.drawImage(RRI.crown||FX.crown,Math.round(e.x-14),Math.round(foot-hh-24),28,20); }
     if(e===openSk) dtx(c,'Open: strike!',e.x,foot-hh-6,13,'#FFE08A',0,'#141026');
     if((e.st===1&&e.type!=='slime'&&e.type!=='boss')) dtx(c,'!',e.x,foot-hh-4,22,'#FF5A6E',0,'#1A0A12');
     if(e.stun>0){ for(var sz=0;sz<2;sz++){ var ab=t*5+sz*3.1; dtx(c,'★',e.x+Math.cos(ab)*12,foot-hh-2+Math.sin(ab)*4,12,'#FFC93C'); } }
