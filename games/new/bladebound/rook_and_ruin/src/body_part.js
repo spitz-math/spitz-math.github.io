@@ -462,8 +462,6 @@ function fireTick(dt,p){ var w=S.w, F=w.fires; if(!F||(!F.length&&!(p.burn>0))) 
   if(p.burn>0&&p.hp<=1){ p.burn=0; return; }   /* Kody 2026-11-18: fire never takes the last heart */
   if(p.burn>0){ p.burn-=dt; p.bseg=(p.bseg||FIRE.tick)-dt; if(p.bseg<=0){ p.bseg=FIRE.tick; p.bn=(p.bn||1)-1; hurtP({x:p.x,y:p.y+1,fire:1},1); if(p.bn<=0||S.mode!=='play'){ p.burn=0; return; } } if(p.burn<0.05) p.burn=0.05; } }
 /* fire patch: a low ember glow and pixel flames that rise and fall (gentle, never flashing). Outline only during the warning. */
-/* flame sprites inside a fire patch: [dx, dy (feet), scale], back to front */
-var FLAMES=[[-24,-4,1],[22,-6,1],[-10,-2,2],[12,2,2],[-28,10,1],[0,12,2],[27,12,1]];
 function drawFire(c,f,t){ var rx=FIRE.r, ry=Math.round(FIRE.r*0.62), x=Math.round(f.x), y=Math.round(f.y);
   var fade=f.t<0?0:Math.min(1,f.t/0.25)*Math.min(1,((f.life||FIRE.life)-f.t)/0.6);
   c.save();
@@ -473,13 +471,9 @@ function drawFire(c,f,t){ var rx=FIRE.r, ry=Math.round(FIRE.r*0.62), x=Math.roun
   c.globalAlpha=0.35*fade; c.fillStyle='#B33B1B'; c.beginPath(); c.ellipse(x,y,rx*0.72,ry*0.72,0,0,7); c.fill();
   c.globalAlpha=0.9*fade; c.strokeStyle='#6E1D14'; c.lineWidth=2; c.beginPath(); c.ellipse(x,y,rx,ry,0,0,7); c.stroke();
   c.globalAlpha=fade;
-  if(RRI.fire_patch){ /* ChatGPT's flame strip (Task Drop 1110ba38): a back row and a front row inside the oval */
+  if(RRI.fire_patch){ /* Kody 2026-11-21: repainted flames (Sprite Drop task 91eb6660, approved 896993ca), one curling cluster on the scorched oval */
     var k=RM?0:Math.floor(t*7+f.s*3)%3, k2=(k+1)%3, im=RRI.fire_patch; c.imageSmoothingEnabled=false;
-    c.drawImage(im,k2*80+8,0,64,48,x-32,Math.round(y-ry*0.55)-31,64,48);
-    if(RRI.burn_flame){ var bf=RRI.burn_flame;
-      for(var q=0;q<FLAMES.length;q++){ var F=FLAMES[q], kb=RM?q%3:(Math.floor(t*8+f.s*3)+q)%3, sc=F[2];
-        c.drawImage(bf,kb*12,0,12,20,x+F[0]-6*sc,y+F[1]-17*sc,12*sc,20*sc); } }
-    c.drawImage(im,k*80,0,80,48,x-40,y+ry-5-31,80,48);
+    c.drawImage(im,k*80,0,80,48,x-40,y+ry-48,80,48);
   } else {
     var n=LITE?4:7;
     for(var q=0;q<n;q++){ var ang=q/n*6.283+f.s, fx=x+Math.round(Math.cos(ang)*rx*0.55), fy=y+Math.round(Math.sin(ang)*ry*0.55),
