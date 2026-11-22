@@ -78,6 +78,17 @@
         "games/snake_arena.html",
         "tools/qa/adapters/snake_arena.js"
       ]
+    },
+    {
+      "id": "football_buds",
+      "name": "Football Buds BLITZ",
+      "tier": 1,
+      "adapter": "adapters/football_buds.js",
+      "paths": [
+        "games/football_buds.html",
+        "games/cards/football_buds.webp",
+        "tools/qa/adapters/football_buds.js"
+      ]
     }
   ]
 }
