@@ -1,0 +1,83 @@
+{
+  "_about": "Apps the QA runner knows. paths = repo path prefixes that belong to the app (change-aware CI). shared = prefixes that, when changed, run every app with an adapter. tier: 0 smoke only, 1 baseline play-through, 2 scenarios, 3 seeded.",
+  "shared": [
+    "games/kit.js",
+    "games/scorecode.js",
+    "games/catalog.js",
+    "games/questions.js",
+    "games/sw.js",
+    "tools/qa/lib/",
+    "tools/qa/run.js",
+    "tools/qa/apps.json"
+  ],
+  "apps": [
+    {
+      "id": "rook_and_ruin",
+      "name": "Rook & Ruin",
+      "tier": 2,
+      "adapter": "adapters/rook_and_ruin.js",
+      "paths": [
+        "games/rook_and_ruin.html",
+        "games/new/bladebound/rook_and_ruin/",
+        "games/audio/rook_and_ruin/",
+        "tools/qa/adapters/rook_and_ruin.js"
+      ],
+      "suite": {
+        "about": "The game's own 18 regression tests (games/new/bladebound/rook_and_ruin/src/run_tests.sh)",
+        "quick": "bash games/new/bladebound/rook_and_ruin/src/run_tests.sh",
+        "full": "bash games/new/bladebound/rook_and_ruin/src/run_tests.sh full",
+        "one": "cd games/new/bladebound/rook_and_ruin/src && timeout 400 node tests/{test}.js \"$PWD/out\""
+      }
+    },
+    {
+      "id": "burger_blaster",
+      "name": "Burger Blaster",
+      "tier": 1,
+      "adapter": "adapters/burger_blaster.js",
+      "paths": [
+        "games/burger_blaster.html",
+        "tools/qa/adapters/burger_blaster.js"
+      ]
+    },
+    {
+      "id": "rocket_buds",
+      "name": "Rocket Buds",
+      "tier": 1,
+      "adapter": "adapters/rocket_buds.js",
+      "paths": [
+        "games/rocket_buds.html",
+        "tools/qa/adapters/rocket_buds.js"
+      ]
+    },
+    {
+      "id": "splat_range",
+      "name": "Splat Range",
+      "tier": 1,
+      "adapter": "adapters/splat_range.js",
+      "paths": [
+        "games/splat_range.html",
+        "tools/qa/adapters/splat_range.js"
+      ]
+    },
+    {
+      "id": "hoop_buds",
+      "name": "Hoop Buds",
+      "tier": 1,
+      "adapter": "adapters/hoop_buds.js",
+      "paths": [
+        "games/hoop_buds.html",
+        "tools/qa/adapters/hoop_buds.js"
+      ]
+    },
+    {
+      "id": "snake_arena",
+      "name": "Snake Arena",
+      "tier": 1,
+      "adapter": "adapters/snake_arena.js",
+      "paths": [
+        "games/snake_arena.html",
+        "tools/qa/adapters/snake_arena.js"
+      ]
+    }
+  ]
+}

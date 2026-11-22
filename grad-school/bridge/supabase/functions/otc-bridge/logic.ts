@@ -16,7 +16,7 @@ export type Course = { id: string; name: string; description?: string; instructo
 export type Doc = { version: number; courses: Course[]; tasks: Task[]; [k: string]: unknown };
 
 const DATE = /^\d{4}-\d{2}-\d{2}$/;
-const MAX_TASKS = 300, MAX_STEPS = 32;
+const MAX_TASKS = 300, MAX_STEPS = 32, MAX_NOTES = 2500;   // MAX_NOTES matches the site (normalized() and the notes box maxlength in grad-school/index.html)
 
 export function newId(): string {
   return globalThis.crypto?.randomUUID?.() ?? 'task-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2, 11);
@@ -106,8 +106,13 @@ export function updateAssignment(doc: Doc, input: UpdateInput): { doc: Doc; task
   if (input.title !== undefined) { const v = cleanText(input.title, 250); if (!v) throw new Error('title cannot be empty'); t.title = v; }
   if (input.due !== undefined) t.due = cleanDate(input.due, 'due');
   if (input.target !== undefined) t.target = cleanDate(input.target, 'target');
-  if (input.notes !== undefined) t.notes = cleanText(input.notes, 2500);
-  if (input.appendNotes) t.notes = cleanText((t.notes ? t.notes + '\n' : '') + input.appendNotes, 2500);
+  if (input.notes !== undefined) t.notes = cleanText(input.notes, MAX_NOTES);
+  if (input.appendNotes) {
+    // Never cut notes silently: the site and the bridge both keep at most MAX_NOTES characters, and a slice here dropped the newest note.
+    const add = String(input.appendNotes).trim(), joined = (t.notes ? t.notes + '\n' : '') + add;
+    if (joined.length > MAX_NOTES) throw new Error(`Notes are full: ${t.notes.length} of ${MAX_NOTES} characters, and this note adds ${add.length + (t.notes ? 1 : 0)}. Nothing was saved. Shorten the notes with notes (it replaces them), then add the new note.`);
+    t.notes = joined;
+  }
   if (input.submissionRequired !== undefined) t.submissionRequired = input.submissionRequired;
   if (input.addSteps?.length) {
     const added = makeSteps(input.addSteps);

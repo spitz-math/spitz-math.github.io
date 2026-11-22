@@ -38,4 +38,9 @@ jobs:
           title=$(printf '%s\n' "$SUBJECT" | head -n 1 | cut -c1-200)
           [ -n "$title" ] || title="$BRANCH"
           body=$(printf 'Opened automatically for the Claude branch `%s`.\n\nDraft until Kody reviews it. Nothing is merged or deployed until Kody says so.\n' "$BRANCH")
-          gh pr create --draft --base main --head "$BRANCH" --title "$title" --body "$body"
+          # A thread can open its own PR at the same moment; "already exists" means the job is done, not failed.
+          if ! out=$(gh pr create --draft --base main --head "$BRANCH" --title "$title" --body "$body" 2>&1); then
+            if printf '%s' "$out" | grep -q "already exists"; then echo "A PR for $BRANCH was opened at the same moment. Nothing to do."; exit 0; fi
+            printf '%s\n' "$out"; exit 1
+          fi
+          printf '%s\n' "$out"

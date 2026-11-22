@@ -67,20 +67,19 @@ h1{font-family:var(--display);font-weight:400;margin:0;line-height:1;text-align:
   background:linear-gradient(180deg,#fff27a 0%,var(--yellow) 22%,#ff9d14 50%,var(--orange) 100%);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;
   -webkit-text-stroke:.07em #140800;paint-order:stroke fill;
   filter:drop-shadow(.05em .06em 0 #140800) drop-shadow(0 0 3px #fff7b0) drop-shadow(0 0 12px #ffb21f) drop-shadow(0 0 26px rgba(255,122,26,.75));animation:sway var(--ms) ease-in-out infinite;will-change:transform}
-.sub{margin:8px 0 0;text-align:center;font:400 clamp(8px,.9vw,11px)/1.4 var(--pixel);letter-spacing:.14em;text-transform:uppercase;color:var(--pink);text-shadow:0 0 8px var(--pink)}
+.sub{margin:8px 0 0;text-align:center;font:400 clamp(10px,.9vw,12px)/1.4 var(--pixel);letter-spacing:.14em;text-transform:uppercase;color:var(--pink);text-shadow:0 0 8px var(--pink)}
 .lb{justify-self:end;--c:var(--cyan);display:inline-flex;align-items:center;gap:10px;font-family:var(--pixel);font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:#fff;text-decoration:none;
   padding:12px 16px;border-radius:var(--r-s);border:2px solid var(--c);background:rgba(4,6,28,.72);transition:transform .18s ease-out,box-shadow .18s}
 .lb span{font-size:18px}
 .lb:hover,.lb:focus-visible{transform:translateY(-2px);box-shadow:0 0 14px color-mix(in srgb,var(--c) 60%,transparent);outline:none}
 
 /* section labels: small pixel eyebrows, so the page title and the game names stay the loudest things */
-.lab2{display:flex;align-items:baseline;gap:12px;margin:0 0 var(--s3);font:400 11px/1.4 var(--pixel);letter-spacing:.1em;text-transform:uppercase;color:var(--pink)}
+.lab2{display:flex;align-items:baseline;gap:12px;margin:0 0 var(--s3);font:400 12px/1.4 var(--pixel);letter-spacing:.1em;text-transform:uppercase;color:var(--pink)}
 .lab2 small{font:700 14px/1.3 var(--body);letter-spacing:0;text-transform:none;color:var(--dim)}
 #all .lab2{color:var(--cyan)}
 
 /* game cards: the only framed things on the page, because they're what you pick */
 .games{display:grid;grid-template-columns:repeat(auto-fill,minmax(196px,1fr));gap:var(--s3)}
-.games.feat{grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:var(--s4)}
 /* the button is a still hit area; only its .face moves, so tilting or lifting never slides the card out from under the pointer (no hover flicker) */
 .game{all:unset;box-sizing:border-box;display:block;cursor:pointer;min-width:0;border-radius:var(--r-l)}
 .face{box-sizing:border-box;position:relative;height:100%;display:flex;flex-direction:column;gap:4px;min-width:0;padding:8px 8px 12px;border-radius:var(--r-l);
@@ -95,13 +94,12 @@ h1{font-family:var(--display);font-weight:400;margin:0;line-height:1;text-align:
 }
 .art{display:block;width:100%;height:auto;aspect-ratio:200/110;border-radius:var(--r-s);overflow:hidden;background:var(--gpanel)}
 .game b{margin-top:4px;font:900 16px/1.2 var(--body);letter-spacing:.04em;text-transform:uppercase;color:var(--acc);padding:2px 4px 0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.feat .game b{font:400 20px/1.15 var(--display);letter-spacing:.02em;text-transform:none}
 .game small{font:700 13.5px/1.25 var(--body);color:var(--dim);padding-inline:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .game small.what{color:var(--cyan)}
 .game:hover .face,.game:focus-visible .face{transform:translateY(-3px);border-color:var(--acc);box-shadow:0 6px 18px color-mix(in srgb,var(--acc) 35%,transparent)}
 .game:focus-visible{outline:none}
 .game:active .face{transform:translateY(0);transition-duration:.08s}
-.game .new{position:absolute;top:2px;right:2px;z-index:1;font:400 10px/1 var(--pixel);letter-spacing:.06em;color:var(--bg);background:var(--yellow);padding:7px 8px;border-radius:var(--r-s)}
+.game .new{position:absolute;top:2px;right:2px;z-index:1;font:400 12px/1 var(--pixel);letter-spacing:.06em;color:var(--bg);background:var(--yellow);padding:7px 8px;border-radius:var(--r-s)}
 .game .new.upd{background:var(--cyan)}
 
 /* the game sheet: opens when you pick a game. Art and name on the left, questions on the right, Press Start always in view */
@@ -115,11 +113,11 @@ h1{font-family:var(--display);font-weight:400;margin:0;line-height:1;text-align:
 .gside h3{margin:var(--s3) 0 0;font:400 28px/1.05 var(--display);color:var(--acc);text-wrap:balance}
 .gside p{margin:0;color:var(--dim);font-size:15px}
 .gside p.what{color:var(--cyan)}
-.back{all:unset;box-sizing:border-box;cursor:pointer;margin-top:auto;align-self:flex-start;font:400 10px/1 var(--pixel);letter-spacing:.08em;text-transform:uppercase;color:var(--cyan);padding:10px 12px;border-radius:var(--r-s);border:2px solid transparent}
+.back{all:unset;box-sizing:border-box;cursor:pointer;margin-top:auto;align-self:flex-start;font:400 12px/1 var(--pixel);letter-spacing:.08em;text-transform:uppercase;color:var(--cyan);padding:10px 12px;border-radius:var(--r-s);border:2px solid transparent}
 .back:hover,.back:focus-visible{border-color:var(--cyan)}
 .qside{display:flex;flex-direction:column;min-width:0;min-height:0}
 .qlist{flex:1;min-height:0;overflow-y:auto;padding:var(--s4) var(--s4) var(--s3);overscroll-behavior:contain}
-.grp{margin:0 0 var(--s2);font:400 10px/1.5 var(--pixel);letter-spacing:.1em;text-transform:uppercase;color:var(--dim)}
+.grp{margin:0 0 var(--s2);font:400 12px/1.5 var(--pixel);letter-spacing:.1em;text-transform:uppercase;color:var(--dim)}
 .grp.gold{color:var(--yellow)}
 .grp + .rows{margin-bottom:var(--s5)}
 .note{margin:0 0 var(--s3);color:var(--fg);font-size:15px}
@@ -154,7 +152,7 @@ h1{font-family:var(--display);font-weight:400;margin:0;line-height:1;text-align:
 .chip input:focus-visible + span{outline:2px solid color-mix(in srgb,var(--cyan) 70%,transparent);outline-offset:2px}
 .go{display:flex;align-items:center;gap:var(--s3);padding:var(--s3) var(--s4);border-top:1px solid var(--line);background:#070920}
 .go .sum{flex:1;min-width:0;font:800 15px/1.3 var(--body);color:var(--fg)}
-.go .sum small{display:block;font:400 9px/1.6 var(--pixel);letter-spacing:.08em;text-transform:uppercase;color:var(--dim)}
+.go .sum small{display:block;font:400 11px/1.6 var(--pixel);letter-spacing:.08em;text-transform:uppercase;color:var(--dim)}
 .go .sum .bn{color:var(--yellow)}
 /* Press Start: a real arcade button. It sits on a darker base and sinks when pressed (no looping glow) */
 .play{flex:none;font:400 15px/1 var(--pixel);letter-spacing:.06em;text-transform:uppercase;text-decoration:none;color:var(--bg);background:var(--yellow);padding:16px 22px;border-radius:var(--r-s);
@@ -193,7 +191,7 @@ h1{font-family:var(--display);font-weight:400;margin:0;line-height:1;text-align:
 @media (max-width:760px){
   header{grid-template-columns:1fr auto;grid-template-areas:"home lb" "brand brand"}
   .home{grid-area:home}.lb{grid-area:lb;padding:10px 12px;font-size:9px}.brand{grid-area:brand;justify-self:center}
-  .games,.games.feat{grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px}
+  .games{grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px}
   .sheet{width:100vw;height:calc(100dvh - 24px);margin:auto 0 0;max-width:100vw}
   .sheet .box{grid-template-columns:1fr;grid-template-rows:auto minmax(0,1fr);border-radius:var(--r-l) var(--r-l) 0 0;border-bottom:0}
   .gside{display:grid;grid-template-columns:120px 1fr;align-items:center;gap:4px 12px;padding:12px 16px}
@@ -206,7 +204,7 @@ h1{font-family:var(--display);font-weight:400;margin:0;line-height:1;text-align:
   .play{padding:14px 14px;font-size:12px}
 }
 /* page buttons look and press like Press Start (2026-11-05): a colored arcade button on a darker base that sinks when pressed */
-.navbtn{--c:var(--cyan);display:inline-flex;align-items:center;gap:10px;font:400 11px/1 var(--pixel);letter-spacing:.06em;text-transform:uppercase;text-decoration:none;color:var(--bg);background:var(--c);
+.navbtn{--c:var(--cyan);display:inline-flex;align-items:center;gap:10px;font:400 12px/1 var(--pixel);letter-spacing:.06em;text-transform:uppercase;text-decoration:none;color:var(--bg);background:var(--c);
   padding:12px 16px;border:0;border-radius:6px;box-shadow:0 5px 0 color-mix(in srgb,var(--c) 55%,#000);transition:transform .1s ease-out,box-shadow .1s ease-out}
 .navbtn:hover{transform:translateY(-1px);box-shadow:0 6px 0 color-mix(in srgb,var(--c) 55%,#000),0 8px 18px color-mix(in srgb,var(--c) 30%,transparent)}
 .navbtn:focus-visible{outline:2px solid color-mix(in srgb,var(--c) 60%,transparent);outline-offset:4px}
@@ -220,6 +218,48 @@ h1{font-family:var(--display);font-weight:400;margin:0;line-height:1;text-align:
 /* magnetic Press Start: it leans a few px toward the pointer (translate, so the sink and hover transforms still work) */
 .play{translate:var(--mx,0) var(--my,0);transition:transform .1s ease-out,box-shadow .1s ease-out,translate .25s cubic-bezier(.2,.7,.2,1)}
 @keyframes pg-in{from{opacity:0}}
+/* Arcade news (2026-11-18): Mr. Spitz's posts (patch notes, in development, trailers, guides) from data/news.json, written on news.html.
+   One short row of post cards above the games, so the games stay in view; a card opens the whole post. */
+.news{min-width:0}
+.news[hidden]{display:none}
+/* one row only: as many cards as fit; nfit() hides the ones that wrap ("See all posts" lists every post) */
+.nrow{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:var(--s3)}
+.post[hidden]{display:none}
+.post{all:unset;box-sizing:border-box;cursor:pointer;scroll-snap-align:start;display:grid;grid-template-columns:76px minmax(0,1fr);gap:var(--s3);align-items:center;min-width:0;padding:8px 12px 8px 8px;border-radius:var(--r-l);
+  background:#0a0d29;border:2px solid #1b2155;transition:border-color .18s,transform .18s ease-out}
+.post:hover,.post:focus-visible{border-color:var(--k);transform:translateY(-2px)}
+.post:focus-visible{outline:none}
+.post .th{position:relative;width:76px;height:52px;border-radius:var(--r-s);overflow:hidden;background:var(--gpanel,#11163f);display:grid;place-items:center;font-size:26px}
+.post .th svg,.post .th img{display:block;width:100%;height:100%;object-fit:cover}
+.post .th .pl{position:absolute;inset:auto auto 4px 4px;font:400 11px/1 var(--pixel);color:var(--bg);background:var(--yellow);padding:4px 5px;border-radius:4px}
+.post .tx{min-width:0;display:flex;flex-direction:column;gap:3px}
+.post .k{white-space:nowrap;font:400 12px/1.3 var(--pixel);letter-spacing:.04em;text-transform:uppercase;color:var(--k)}
+.post b{font:800 15px/1.25 var(--body);color:#fff;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.post small{font:700 13px/1.2 var(--body);color:var(--dim);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.post .dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--yellow);margin-left:6px;vertical-align:1px}
+/* the post itself */
+.pdlg{padding:0;border:0;background:transparent;color:var(--fg);width:min(720px,calc(100vw - 32px));max-height:calc(100vh - 32px);overflow:visible}
+.pdlg::backdrop{background:rgba(2,3,12,.78)}
+.pdlg .pbox{max-height:calc(100vh - 32px);overflow-y:auto;overscroll-behavior:contain;border-radius:var(--r-l);background:#0a0d29;border:2px solid var(--k,var(--line));padding:var(--s4);display:flex;flex-direction:column;gap:var(--s3);box-shadow:0 20px 60px rgba(0,0,0,.6)}
+@media (prefers-reduced-motion:no-preference){ .pdlg[open] .pbox{animation:fade .22s ease-out} .pdlg[open]::backdrop{animation:fade .2s ease-out} }
+.pdlg .k{margin:0;font:400 12px/1.4 var(--pixel);letter-spacing:.06em;text-transform:uppercase;color:var(--k)}
+.pdlg h3{margin:0;font:400 clamp(22px,3.2vw,30px)/1.1 var(--display);color:#fff;text-wrap:balance}
+.pdlg .pt p{margin:0 0 var(--s2);font-size:16px}
+.pdlg .pt ul{margin:0 0 var(--s2);padding-left:22px;font-size:16px}
+.pdlg .pt li{margin:0 0 6px}
+.pdlg .pt li::marker{color:var(--k)}
+.pdlg video,.pdlg iframe,.pdlg .pimg{display:block;width:100%;aspect-ratio:16/9;height:auto;border:0;border-radius:var(--r-s);background:#000}
+.pdlg .pimg{object-fit:cover}
+.pdlg .pbar{display:flex;flex-wrap:wrap;align-items:center;gap:var(--s3);margin-top:var(--s2)}
+.pdlg .pbar .back{margin:0}
+.pdlg .pbar .navbtn{margin-left:auto}
+/* every post, from the last card in the row */
+.plist{display:flex;flex-direction:column;gap:var(--s2)}
+.plist .post{grid-template-columns:76px minmax(0,1fr)}
+@media (max-width:760px){ .nrow{grid-template-columns:repeat(auto-fill,minmax(220px,1fr))} #news-h small{display:none} }
+.lab2 .nall{all:unset;cursor:pointer;margin-left:auto;font:800 14px/1.3 var(--body);letter-spacing:0;text-transform:none;color:var(--fg);text-decoration:underline;text-decoration-color:var(--yellow);text-underline-offset:4px;text-decoration-thickness:2px}
+.lab2 .nall:hover,.lab2 .nall:focus-visible{color:var(--yellow)}
+@media (prefers-reduced-motion:reduce){ .post{transition:none} }
 </style>
 </head>
 <body>
@@ -236,9 +276,9 @@ h1{font-family:var(--display);font-weight:400;margin:0;line-height:1;text-align:
     <a class="lb navbtn" href="../leaderboard.html" style="--c:var(--pink)"><span aria-hidden="true">🏆</span>Leaderboard</a>
   </header>
 
-  <section id="feat" hidden>
-    <h2 class="lab2">New and updated</h2>
-    <div class="games feat" id="games-feat"></div>
+  <section class="news" id="news" hidden aria-labelledby="news-h">
+    <h2 class="lab2" id="news-h" style="color:var(--yellow)">Arcade news <small>Patch notes, trailers and what's coming next.</small><button class="nall" id="nall" type="button" aria-haspopup="dialog" hidden>See all posts ▶</button></h2>
+    <div class="nrow" id="nrow"></div>
   </section>
 
   <section id="all">
@@ -267,6 +307,10 @@ h1{font-family:var(--display);font-weight:400;margin:0;line-height:1;text-align:
       </div>
     </div>
   </div>
+</dialog>
+
+<dialog class="pdlg" id="post" aria-labelledby="p-title">
+  <div class="pbox" id="pbox"></div>
 </dialog>
 
 <script src="../games/catalog.js"></script>
@@ -344,10 +388,10 @@ function save(){ try{ localStorage.setItem('spitz_hub2',JSON.stringify(st)); }ca
 function esc(v){ return String(v).replace(/[&<>"]/g,function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]; }); }
 
 function card(g){ return '<button class="game" type="button" style="--acc:'+g.acc+';--gpanel:'+g.panel+'" data-g="'+g.id+'" aria-haspopup="dialog">'+'<span class="face">'+(g.isNew?'<span class="new">NEW</span>':g.isUpd?'<span class="new upd">UPDATED</span>':'')+'<svg class="art" viewBox="0 0 200 110" aria-hidden="true">'+g.art+'</svg><b>'+g.name+'</b>'+(g.isUpd?'<small class="what" title="'+esc(g.more)+'">'+esc(g.what)+'</small>':'<small>'+g.d+'</small>')+'</span></button>'; }
-/* new and updated games get their own bigger row (they are never shown twice) */
+/* new and updated games lead the one grid with their badge (2026-11-19: the separate bigger row pushed All games below
+   the first screen on a 1366x620 Chromebook, so students scrolled every visit) */
 var FEAT=GAMES.filter(function(g){ return g.isNew||g.isUpd; });
-$('games-feat').innerHTML=FEAT.map(card).join(''); $('feat').hidden=!FEAT.length;
-$('games').innerHTML=GAMES.filter(function(g){ return !(g.isNew||g.isUpd); }).map(card).join('');
+$('games').innerHTML=FEAT.concat(GAMES.filter(function(g){ return !(g.isNew||g.isUpd); })).map(card).join('');
 
 /* does this pick earn the score bonus? Same rule as scorecode.js bonusPct: the set is suggested or assigned, and every topic played is one it names */
 function bonusFor(id,ts){ if(!(TOPICS.bonus>0)) return 0;
@@ -451,6 +495,62 @@ render();
 var SUGGEST={ url:'https://docs.google.com/forms/d/e/1FAIpQLSfJp4VJRFwsSnooAHdo0IaZJ6xIkwfvS65QXhhmjwP0glgwQQ/viewform', bug:'entry.93708501=Bug+Report', idea:'entry.634051978=New+game' };
 (function(){ if(!SUGGEST.url) return;
   $('idea-bug').href=SUGGEST.url+'?usp=pp_url&'+SUGGEST.bug; $('idea-game').href=SUGGEST.url+'?usp=pp_url&'+SUGGEST.idea; $('ideas').hidden=false; })();
+/* Arcade news (2026-11-18): posts from data/news.json, which Mr. Spitz writes on news.html. Shows the copy this browser already has right
+   away, then fetches the current file in the background (same as the teacher settings). Posts show in the file's order (newest first).
+   A post's text is plain: a line that starts with "- " is a bullet, a blank line starts a new paragraph. */
+var NK='spitz_news', NSEEN='spitz_news_seen', NUSED='', NEWS=[],
+  KIND={ patch:{l:'Patch notes',c:'var(--cyan)',i:'🛠️'}, dev:{l:'In development',c:'var(--pink)',i:'🚧'}, trailer:{l:'Trailer',c:'var(--yellow)',i:'🎬'}, guide:{l:'Guide',c:'#7dff8a',i:'📘'} };
+function nseen(){ try{ return JSON.parse(localStorage.getItem(NSEEN)||'[]')||[]; }catch(e){ return []; } }
+function nmedia(u){ u=String(u||'').trim(); if(!u) return ''; if(/^https:\/\//i.test(u)) return u; if(/^[\w\-\/\.]+$/.test(u)&&!/\.\./.test(u)) return '../'+u.replace(/^\/+/,''); return ''; }
+function ntube(u){ var m=/^https:\/\/(?:www\.|m\.)?(?:youtube\.com\/(?:watch\?v=|shorts\/|embed\/)|youtu\.be\/)([\w-]{11})/i.exec(u||''); return m?m[1]:''; }
+function nday(d){ var t=Date.parse(d+'T12:00:00'); return isNaN(t)?'':new Date(t).toLocaleDateString([], {month:'short',day:'numeric'}); }
+function ngame(id){ return id?GAMES.filter(function(g){ return g.id===id; })[0]:null; }
+function nsetup(raw){ var j=null; try{ j=JSON.parse(raw); }catch(e){} NUSED=raw||'';
+  NEWS=(j&&Array.isArray(j.posts)?j.posts:[]).filter(function(p){ return p&&p.show!==false&&typeof p.title==='string'&&p.title.trim()&&KIND[p.type]; }).slice(0,30); }
+function nthumb(p){ var g=ngame(p.game), img=nmedia(p.image), k=KIND[p.type];
+  return '<span class="th" aria-hidden="true"'+(g?' style="--gpanel:'+g.panel+'"':'')+'>'+(img?'<img src="'+esc(img)+'" alt="" loading="lazy">':g?'<svg viewBox="0 0 200 110" preserveAspectRatio="xMidYMid slice">'+g.art+'</svg>':k.i)+
+    (p.type==='trailer'?'<span class="pl">▶</span>':'')+'</span>'; }
+function ncard(p,i){ var g=ngame(p.game), k=KIND[p.type], fresh=Date.now()-Date.parse(p.date+'T12:00:00')<14*864e5&&nseen().indexOf(p.id)<0;
+  return '<button class="post" type="button" data-p="'+i+'" style="--k:'+k.c+'" aria-haspopup="dialog">'+nthumb(p)+'<span class="tx"><span class="k">'+k.l+(fresh?'<span class="dot" title="New"></span>':'')+'</span><b>'+esc(p.title)+'</b><small>'+esc((g?g.name+' · ':'')+nday(p.date))+'</small></span></button>'; }
+function nrender(){ $('nrow').innerHTML=NEWS.slice(0,6).map(ncard).join(''); $('news').hidden=!NEWS.length; nfit(); }
+/* "See all posts" shows only when some cards don't fit in the one row */
+function nfit(){ var r=$('nrow'), cs=[].slice.call(r.children), cut=false; if(!cs.length) return;
+  cs.forEach(function(c){ c.hidden=false; }); var top=cs[0].offsetTop;
+  cs.forEach(function(c){ if(c.offsetTop>top){ c.hidden=true; cut=true; } }); $('nall').hidden=!(cut||NEWS.length>6); }
+addEventListener('resize',function(){ if(NEWS.length) nfit(); });
+$('nall').addEventListener('click',function(){ nopen('all'); });
+function nbody(t){ var out='', ul=false;
+  String(t||'').split(/\r?\n/).forEach(function(l){ l=l.trim(); var b=/^[-•*]\s+/.test(l);
+    if(ul&&!b){ out+='</ul>'; ul=false; }
+    if(b){ if(!ul){ out+='<ul>'; ul=true; } out+='<li>'+esc(l.replace(/^[-•*]\s+/,''))+'</li>'; }
+    else if(l) out+='<p>'+esc(l)+'</p>'; });
+  return out+(ul?'</ul>':''); }
+var pdlg=$('post');
+function nopen(i){ var box=$('pbox'), h;
+  if(i==='all'){ box.style.setProperty('--k','var(--yellow)');
+    h='<p class="k">Arcade news</p><h3 id="p-title">All posts</h3><div class="plist">'+NEWS.map(ncard).join('')+'</div>'; }
+  else { var p=NEWS[+i]; if(!p) return; var k=KIND[p.type], g=ngame(p.game), v=nmedia(p.video), yt=ntube(p.video), img=nmedia(p.image);
+    box.style.setProperty('--k',k.c);
+    h='<p class="k">'+k.l+esc(g?' · '+g.name:'')+esc(p.date?' · '+nday(p.date):'')+'</p><h3 id="p-title">'+esc(p.title)+'</h3>'+
+      (yt?'<iframe src="https://www.youtube-nocookie.com/embed/'+yt+'" title="'+esc(p.title)+'" allow="encrypted-media; picture-in-picture; fullscreen" allowfullscreen loading="lazy"></iframe>':
+       v?'<video controls playsinline preload="metadata" src="'+esc(v)+'"'+(img?' poster="'+esc(img)+'"':'')+'></video>':
+       img?'<img class="pimg" src="'+esc(img)+'" alt="">':'')+
+      '<div class="pt">'+nbody(p.text)+'</div>';
+    try{ var s=nseen(); if(s.indexOf(p.id)<0){ s.push(p.id); localStorage.setItem(NSEEN,JSON.stringify(s.slice(-60))); } }catch(e){} }
+  h+='<div class="pbar"><button class="back" type="button" data-close>◀ Back to games</button>'+(i!=='all'&&ngame(NEWS[+i].game)?'<button class="navbtn" type="button" data-play="'+esc(NEWS[+i].game)+'" style="--c:var(--yellow)">Play '+esc(ngame(NEWS[+i].game).name)+' ▶</button>':'')+'</div>';
+  box.innerHTML=h; if(!pdlg.open){ if(pdlg.showModal) pdlg.showModal(); else pdlg.setAttribute('open',''); }
+  box.scrollTop=0; var f=box.querySelector('[data-play]')||box.querySelector('[data-close]'); if(f) f.focus({preventScroll:true,focusVisible:false}); }
+function nshut(){ var v=pdlg.querySelector('video'); if(v) v.pause(); $('pbox').innerHTML=''; if(pdlg.close) pdlg.close(); else pdlg.removeAttribute('open'); nrender(); }
+$('nrow').addEventListener('click',function(e){ var b=e.target.closest('.post'); if(b) nopen(b.dataset.p); });
+pdlg.addEventListener('click',function(e){ if(e.target===pdlg||e.target.closest('[data-close]')){ nshut(); return; }
+  var c=e.target.closest('.post'); if(c){ nopen(c.dataset.p); return; }
+  var pl=e.target.closest('[data-play]'); if(pl){ var id=pl.dataset.play; nshut(); open(id); } });
+pdlg.addEventListener('cancel',function(e){ e.preventDefault(); nshut(); });
+nsetup((function(){ try{ return localStorage.getItem(NK)||''; }catch(e){ return ''; } })()); nrender();
+(function(){ var x=new XMLHttpRequest(); x.open('GET','../data/news.json?v='+Math.floor(Date.now()/60000)); x.timeout=15000;
+  x.onload=function(){ if(x.status!==200) return; var txt=x.responseText; try{ JSON.parse(txt); }catch(e){ return; }
+    try{ localStorage.setItem(NK,txt); }catch(e){} if(txt!==NUSED){ nsetup(txt); nrender(); } };
+  x.send(); })();
 </script>
 <script>
 /* page buttons: the soft two-note chime, the button stays sunk, the page fades out, then the next page loads (same as Press Start) */

@@ -535,7 +535,7 @@ body.dn-cine .dn-top, body.dn-cine .dn-side{ opacity:0; pointer-events:none; tra
     <div class="dn-side">
       <div class="dn-panel" id="dn-build" role="button" tabindex="-1" aria-label="Your build. Press B for details (pauses the game)"><h3>Your build</h3><div id="dn-buildlist"></div><div class="dn-buildmore" id="dn-buildmore" hidden><kbd>B</kbd>Details (pauses)</div></div>
       <div class="dn-panel dn-keys"><h3>Keys</h3>
-        <div><kbd>↑↓←→</kbd>Move</div><div><kbd>WASD</kbd>Move</div><div><kbd>Space</kbd>Attack (hold)</div><div><kbd>X</kbd>Dodge roll</div>
+        <div><kbd>↑↓←→</kbd>Move</div><div><kbd>WASD</kbd>Move</div><div><kbd>Space</kbd>Attack (hold)</div><div><kbd>X</kbd><kbd>K</kbd>Dodge roll</div>
         <div><kbd>1–4</kbd>Answer</div><div><kbd>P</kbd>Pause</div><div><kbd>F</kbd>Full screen</div><div><kbd>N</kbd>Music</div><div><kbd>M</kbd>Mute</div><div><kbd>⇧R</kbd>New game</div></div>
     </div>
     <div id="dn-bigbg"></div>
@@ -572,11 +572,11 @@ body.dn-cine .dn-top, body.dn-cine .dn-side{ opacity:0; pointer-events:none; tra
     <div class="dn-row"><input class="dn-input" id="dn-nameinput" maxlength="24" placeholder="First name, last initial" autocomplete="off"><button class="sz-mus" id="sz-mus" aria-label="Music on or off, key N">♪ Music on</button></div>
     <button class="dn-go dn-next" id="dn-go" disabled><span>Start</span></button>
     <p class="dn-gohint" id="dn-gohint">Type your name to unlock Start.</p>
-    <div class="dn-keyline"><div class="sz-ctl" data-ctl="ARROWS/WASD=Move | Hold Space=Attack | X=Dodge | 1234=Answer"></div>
+    <div class="dn-keyline"><div class="sz-ctl" data-ctl="ARROWS/WASD=Move | Hold Space=Attack | X/K=Dodge | 1234=Answer"></div>
 </div>
 <details class="dn-allkeys"><summary>All controls</summary><div class="dn-keygrid">
         <div><kbd>Arrows</kbd> or <kbd>WASD</kbd> Move</div><div><kbd>Space</kbd> Swing your sword (hold to keep swinging)</div>
-        <div><kbd>X</kbd> Dodge roll (K or right-click work too)</div><div><kbd>1</kbd>–<kbd>4</kbd> Answer · <kbd>Enter</kbd> Continue</div>
+        <div><kbd>X</kbd> or <kbd>K</kbd> Dodge roll (right-click works too)</div><div><kbd>1</kbd>–<kbd>4</kbd> Answer · <kbd>Enter</kbd> Continue</div>
         <div><kbd>P</kbd> or <kbd>Esc</kbd> Pause and see your build</div><div><kbd>B</kbd> Build details (pauses)</div>
         <div><kbd>F</kbd> Full screen · <kbd>N</kbd> Music · <kbd>M</kbd> Mute</div><div><kbd>Shift</kbd>+<kbd>R</kbd> Start a new game</div>
         <p class="dn-cred">Music rendered with the Fluid (R3) GM SoundFont, (c) Frank Wen, MIT licence.</p>

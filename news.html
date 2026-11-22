@@ -1,0 +1,218 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Spitz Arcade - News</title>
+<meta name="robots" content="noindex,nofollow">
+<link rel="icon" href="trophy.svg" type="image/svg+xml">
+<link href="fonts/bungee-lexend-jetbrainsmono-66c61e.css" rel="stylesheet" onerror="this.onerror=null;this.href='https://fonts.googleapis.com/css2?family=Bungee&family=Lexend:wght@400;600;800&family=JetBrains+Mono:wght@500;700&display=swap'">
+<style>
+/* Teacher page: Arcade news (2026-11-18). Mr. Spitz writes the posts students see at the top of the Arcade hub (arcade/index.html):
+   patch notes, in development, trailers and guides. Saves data/news.json in the repo with the same GitHub key as Spitz Scores
+   (teacher.html) and Topics, and can upload a video or picture into arcade/news/. Not linked from student pages. */
+:root{
+  --paper:#0E1016; --panel:#191C25; --panel2:#222634; --line:#2E3344;
+  --ink:#F3F5FA; --muted:#9AA3B8; --brand:#FFB020; --ok:#7CE04A; --no:#FF7A7A; --pin:#6FB7FF;
+  --display:'Bungee','Arial Black',system-ui,sans-serif;
+  --body:'Lexend',system-ui,sans-serif;
+  color-scheme:dark;
+}
+*{ box-sizing:border-box; }
+[hidden]{ display:none !important; }
+html,body{ background:var(--paper); color:var(--ink); margin:0; }
+body{ font:400 16px/1.5 var(--body); padding-inline:16px; padding-block:0 120px; }
+.wrap{ max-width:1180px; margin:0 auto; display:flex; flex-direction:column; gap:24px; }
+header{ display:flex; flex-wrap:wrap; align-items:flex-end; justify-content:space-between; gap:12px; padding-top:28px; }
+.tag{ font:600 14px/1 var(--body); color:var(--muted); letter-spacing:.14em; text-transform:uppercase; }
+h1{ font:400 clamp(30px,5.4vw,52px)/1 var(--display); margin:6px 0 0; }
+h1 span{ color:var(--brand); }
+header a{ color:var(--muted); font-weight:600; }
+h2{ font:400 20px/1.1 var(--display); margin:0 0 12px; }
+.card{ background:var(--panel); border:1px solid var(--line); border-radius:16px; padding:18px; }
+.hint{ color:var(--muted); font-size:14px; margin:0 0 10px; }
+button{ font:800 15px/1 var(--body); border-radius:12px; padding:12px 16px; cursor:pointer; border:2px solid var(--line); background:var(--panel2); color:var(--ink); }
+button.primary{ background:var(--brand); color:var(--paper); border-color:var(--brand); }
+button.small{ padding:8px 12px; font-size:14px; border-radius:10px; }
+button.del{ color:var(--no); }
+button:disabled{ opacity:.45; cursor:default; }
+button:focus-visible{ outline:3px solid var(--ink); outline-offset:2px; }
+input[type=text],input[type=password],input[type=date],select,textarea{ width:100%; background:var(--paper); color:var(--ink); border:2px solid var(--line); border-radius:12px; padding:10px 12px; font:500 15px/1.4 var(--body); }
+textarea{ min-height:150px; resize:vertical; }
+input:focus,select:focus,textarea:focus{ outline:none; border-color:var(--brand); }
+.top{ display:flex; flex-wrap:wrap; gap:12px; align-items:center; justify-content:space-between; }
+.posts{ display:flex; flex-direction:column; gap:14px; }
+.post{ background:var(--panel); border:2px solid var(--line); border-radius:16px; padding:16px; display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:12px 18px; }
+.post.off{ opacity:.6; }
+.post .bar{ grid-column:1/-1; display:flex; flex-wrap:wrap; gap:8px; align-items:center; }
+.post .bar .n{ font:800 18px/1.2 var(--body); flex:1; min-width:200px; }
+.post .bar .n small{ display:block; font-weight:400; font-size:13px; color:var(--muted); }
+.field{ display:flex; flex-direction:column; gap:6px; }
+.field label{ font-weight:800; font-size:14px; }
+.field.wide{ grid-column:1/-1; }
+.two{ display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+.kinds{ display:grid; grid-template-columns:repeat(4,1fr); gap:6px; }
+.kinds button{ padding:10px 6px; font-size:14px; border-radius:10px; }
+.kinds button[aria-pressed="true"]{ background:var(--ink); color:var(--paper); border-color:var(--ink); }
+.media{ display:flex; gap:8px; } .media input{ flex:1; min-width:0; }
+.showbtn[aria-pressed="true"]{ background:var(--ok); color:var(--paper); border-color:var(--ok); }
+@media (max-width:760px){ .post{ grid-template-columns:1fr; } .kinds{ grid-template-columns:repeat(2,1fr); } }
+.savebar{ position:fixed; left:0; right:0; bottom:0; background:rgba(14,16,22,.96); border-top:1px solid var(--line); padding:12px 16px; z-index:5; }
+.savebar .in{ max-width:1180px; margin:0 auto; display:flex; flex-wrap:wrap; gap:10px; align-items:center; }
+.status{ font-size:15px; flex:1; min-width:220px; }
+.status.good{ color:var(--ok); } .status.bad{ color:var(--no); }
+.tokrow{ display:flex; gap:8px; } .tokrow input{ flex:1; min-width:0; }
+.saved{ color:var(--ok); }
+.keycard ol{ margin:0; padding-left:20px; font-size:14px; color:var(--muted); } .keycard ol li{ margin:4px 0; } .keycard ol b{ color:var(--ink); }
+.keycard a{ color:var(--brand); }
+</style>
+<link href="fonts/bungee-pressstart2p-nunito-5675ec.css" rel="stylesheet">
+<link href="teacher.css" rel="stylesheet">
+</head>
+<body>
+<div class="bgfx" aria-hidden="true"><i style="left:8%;top:12%;animation-delay:0.0s"></i><i style="left:22%;top:30%;animation-delay:0.7s"></i><i style="left:88%;top:18%;animation-delay:1.3s"></i><i style="left:76%;top:40%;animation-delay:0.3s"></i><i style="left:14%;top:55%;animation-delay:1.9s"></i><i style="left:93%;top:52%;animation-delay:1.1s"></i><i style="left:40%;top:8%;animation-delay:2.2s"></i><i style="left:62%;top:6%;animation-delay:0.5s"></i></div>
+<div class="wrap">
+  <header>
+    <div class="brand"><div class="logo" aria-hidden="true"><img class="burst" src="/launchpad_burst.webp" alt="" width="1312" height="1199"><img class="patty" src="/launchpad_patty.webp" alt="" width="1312" height="1199"></div><div><div class="tag">Teacher page · Made by Spitz</div><h1>Arcade <span>News</span></h1></div></div>
+    <nav class="tnav" aria-label="Teacher pages"><a href="teacher.html">Scores</a><a href="topics.html">Topics</a><a href="news.html" aria-current="page">News</a><a href="stats.html">Class stats</a><a href="leaderboard.html" target="_blank" rel="noopener">Leaderboard ↗</a><a href="arcade/" target="_blank" rel="noopener">Arcade ↗</a></nav>
+  </header>
+
+  <section class="card top">
+    <div>
+      <h2>Posts on the Arcade</h2>
+      <p class="hint" style="margin:0" id="loaded">Loading the live posts…</p>
+      <p class="hint" style="margin:6px 0 0">Students see the posts in this order, top first. The hub shows as many as fit in one row; the rest are under “See all posts”. In the text, start a line with <b style="color:var(--ink)">- </b> to make a bullet.</p>
+    </div>
+    <button class="primary" id="add">+ New post</button>
+  </section>
+
+  <div class="posts" id="posts"></div>
+
+  <section class="card keycard">
+    <label for="token" style="font-weight:800;display:block;margin-bottom:6px">GitHub key</label>
+    <div class="tokrow"><input type="password" id="token" autocomplete="off" spellcheck="false" placeholder="github_pat_…"><button id="tok-save">Save</button></div>
+    <p class="hint" style="margin-top:8px" id="tok-state"></p>
+    <details><summary class="hint" style="cursor:pointer;margin:0">How to get the key (one time)</summary>
+      <ol>
+        <li>Open <a href="https://github.com/settings/personal-access-tokens/new" target="_blank" rel="noopener">GitHub's new fine-grained token page</a>.</li>
+        <li>Name it <b>Spitz site</b>, set <b>Resource owner</b> to <b>spitz-math</b>, and pick an expiration (up to a year).</li>
+        <li>Under <b>Repository access</b>, choose <b>Only select repositories</b> and pick <b>spitz-math.github.io</b>.</li>
+        <li>Under <b>Permissions</b>, set <b>Contents</b> to <b>Read and write</b>.</li>
+        <li>Click <b>Generate token</b>, copy it, paste it above and click Save.</li>
+      </ol>
+      <p class="hint" style="margin-top:8px">It's the same key Spitz Scores and Topics use, so if you saved it there in this browser you're already set. It stays in this browser only.</p>
+    </details>
+  </section>
+</div>
+<div class="savebar"><div class="in">
+  <button class="primary" id="save" disabled>Save to the site</button>
+  <button id="undo" disabled>Undo changes</button>
+  <div class="status" id="status" aria-live="polite"></div>
+</div></div>
+<input type="file" id="file" accept="video/mp4,video/webm,image/png,image/jpeg,image/webp,image/gif" hidden>
+<script src="games/catalog.js"></script>
+<script>
+(function(){
+var TKEY='spitz_gh_key', REPO='spitz-math.github.io', BASE='https://api.github.com/repos/spitz-math/'+REPO+'/contents/';
+var API=BASE+'data/news.json', MAXMB=25;
+var KINDS=[['patch','🛠️ Patch notes'],['dev','🚧 In development'],['trailer','🎬 Trailer'],['guide','📘 Guide']];
+/* every game in the catalog, including locked ones (a post about a locked game shows no Play button on the hub) */
+var GAMES=(window.SpitzGames||[]).map(function(g){ return {id:g.id,name:g.name}; });
+(window.SpitzLocked||[]).forEach(function(id){ if(!GAMES.some(function(g){ return g.id===id; })) GAMES.push({id:id,name:id.replace(/_/g,' ')+' (locked)'}); });
+GAMES.sort(function(a,b){ return a.name.localeCompare(b.name); });
+var posts=[], sha=null, base='', busy=false, upFor=-1;
+function $(i){ return document.getElementById(i); }
+function esc(v){ return String(v==null?'':v).replace(/[&<>"]/g,function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]; }); }
+function key(){ try{ return localStorage.getItem(TKEY)||''; }catch(e){ return ''; } }
+function today(){ var d=new Date(); return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
+function str(v){ return typeof v==='string'?v:''; }
+function clean(p){ var o={ id:str(p.id)||('p'+Date.now().toString(36)), type:['patch','dev','trailer','guide'].indexOf(p.type)>=0?p.type:'patch', game:str(p.game), title:str(p.title), date:/^\d{4}-\d\d-\d\d$/.test(p.date)?p.date:today(), text:str(p.text) };
+  if(str(p.video).trim()) o.video=p.video.trim(); if(str(p.image).trim()) o.image=p.image.trim(); o.show=p.show!==false; return o; }
+function data(){ return { posts:posts.map(clean) }; }
+function text(d){ return JSON.stringify(d,null,1); }
+function dirty(){ return text(data())!==base; }
+function say(t,cls){ var o=$('status'); o.className='status'+(cls?' '+cls:''); o.textContent=t; }
+
+function render(){
+  $('posts').innerHTML=posts.length?posts.map(function(p,i){
+    return '<article class="post'+(p.show===false?' off':'')+'" data-i="'+i+'">'+
+      '<div class="bar"><div class="n">'+esc(p.title||'New post')+'<small>'+(p.show===false?'Hidden from students':'Students see this')+'</small></div>'+
+        '<button class="small showbtn" data-a="show" aria-pressed="'+(p.show!==false)+'">'+(p.show!==false?'✓ Showing':'Hidden')+'</button>'+
+        '<button class="small" data-a="up"'+(i?'':' disabled')+' aria-label="Move up">▲</button><button class="small" data-a="down"'+(i<posts.length-1?'':' disabled')+' aria-label="Move down">▼</button>'+
+        '<button class="small del" data-a="del">Delete</button></div>'+
+      '<div class="field"><label>Kind</label><div class="kinds">'+KINDS.map(function(k){ return '<button data-a="type" data-v="'+k[0]+'" aria-pressed="'+(p.type===k[0])+'">'+k[1]+'</button>'; }).join('')+'</div></div>'+
+      '<div class="two"><div class="field"><label for="g'+i+'">Game</label><select id="g'+i+'" data-f="game"><option value="">None</option>'+GAMES.map(function(g){ return '<option value="'+g.id+'"'+(p.game===g.id?' selected':'')+'>'+esc(g.name)+'</option>'; }).join('')+(p.game&&!GAMES.some(function(g){ return g.id===p.game; })?'<option value="'+esc(p.game)+'" selected>'+esc(p.game)+'</option>':'')+'</select></div>'+
+        '<div class="field"><label for="d'+i+'">Date</label><input type="date" id="d'+i+'" data-f="date" value="'+esc(p.date)+'"></div></div>'+
+      '<div class="field wide"><label for="t'+i+'">Title</label><input type="text" id="t'+i+'" data-f="title" maxlength="60" value="'+esc(p.title)+'" placeholder="The fork just got bigger"></div>'+
+      '<div class="field wide"><label for="x'+i+'">Text</label><textarea id="x'+i+'" data-f="text" maxlength="1500" placeholder="One line about the update.&#10;- A bullet&#10;- Another bullet">'+esc(p.text)+'</textarea></div>'+
+      '<div class="field"><label for="v'+i+'">Video (optional)</label><div class="media"><input type="text" id="v'+i+'" data-f="video" value="'+esc(p.video)+'" placeholder="Upload an mp4, or paste a YouTube link"><button class="small" data-a="up-video">Upload</button></div></div>'+
+      '<div class="field"><label for="m'+i+'">Picture (optional)</label><div class="media"><input type="text" id="m'+i+'" data-f="image" value="'+esc(p.image)+'" placeholder="Shown on the card and before the video plays"><button class="small" data-a="up-image">Upload</button></div></div>'+
+    '</article>'; }).join(''):'<p class="hint">No posts yet. Click + New post.</p>';
+  var ch=dirty(); $('save').disabled=busy||!ch; $('undo').disabled=busy||!ch;
+  if(ch&&!busy&&!/bad|good|busy/.test($('status').className)) say('You have changes that aren’t on the site yet.');
+}
+$('posts').addEventListener('input',function(e){ var f=e.target.dataset.f; if(!f) return; var i=+e.target.closest('.post').dataset.i; posts[i][f]=e.target.value;
+  if(f==='title') e.target.closest('.post').querySelector('.n').firstChild.textContent=e.target.value||'New post';
+  var ch=dirty(); $('save').disabled=busy||!ch; $('undo').disabled=busy||!ch; if(ch&&!busy) say('You have changes that aren’t on the site yet.'); });
+$('posts').addEventListener('click',function(e){ var b=e.target.closest('button[data-a]'); if(!b||b.disabled) return; var i=+b.closest('.post').dataset.i, p=posts[i], a=b.dataset.a;
+  if(a==='type') p.type=b.dataset.v;
+  else if(a==='show') p.show=p.show===false;
+  else if(a==='up'&&i>0){ posts.splice(i-1,0,posts.splice(i,1)[0]); }
+  else if(a==='down'&&i<posts.length-1){ posts.splice(i+1,0,posts.splice(i,1)[0]); }
+  else if(a==='del'){ if(!confirm('Delete “'+(p.title||'this post')+'”? It leaves the Arcade when you click Save.')) return; posts.splice(i,1); }
+  else if(a==='up-video'||a==='up-image'){ if(!key()){ say('Paste your GitHub key in the box at the bottom first (steps under it).','bad'); $('token').focus(); return; }
+    upFor=i; $('file').dataset.f=a==='up-video'?'video':'image'; $('file').accept=a==='up-video'?'video/mp4,video/webm':'image/png,image/jpeg,image/webp,image/gif'; $('file').value=''; $('file').click(); return; }
+  if($('status').className!=='status') say(''); render(); });
+$('add').addEventListener('click',function(){ posts.unshift({ id:'p'+Date.now().toString(36), type:'patch', game:'', title:'', date:today(), text:'', show:true }); render(); var t=document.querySelector('.post [data-f="title"]'); if(t) t.focus(); });
+
+/* ---------- upload a video or picture into arcade/news/ ---------- */
+function hdr(k){ return { 'Authorization':'Bearer '+k, 'Accept':'application/vnd.github+json', 'X-GitHub-Api-Version':'2022-11-28' }; }
+$('file').addEventListener('change',function(){ var f=this.files[0], field=this.dataset.f, i=upFor, k=key(); if(!f||i<0) return;
+  if(f.size>MAXMB*1048576){ say('That file is '+(f.size/1048576).toFixed(0)+' MB. Keep uploads under '+MAXMB+' MB (a 30-second 720p clip is about 10 MB), or post it on YouTube and paste the link.','bad'); return; }
+  var ext=(f.name.match(/\.[a-z0-9]+$/i)||[''])[0].toLowerCase(), name=f.name.replace(/\.[^.]+$/,'').toLowerCase().replace(/[^a-z0-9]+/g,'_').replace(/^_+|_+$/g,'').slice(0,40)||'post';
+  var path='arcade/news/'+name+'_'+Date.now().toString(36)+ext;
+  busy=true; render(); say('Uploading '+f.name+'… (big videos take a minute)','busy');
+  var rd=new FileReader(); rd.onload=function(){ var b64=String(rd.result).split(',')[1];
+    fetch(BASE+path,{ method:'PUT', headers:hdr(k), body:JSON.stringify({ message:'Arcade news: upload '+f.name, content:b64, branch:'main' }) })
+    .then(function(r){ if(!r.ok) throw r; busy=false; if(posts[i]) posts[i][field]=path; render();
+      say('Uploaded. Click Save to the site to post it (the file takes a minute or two to show on the site).','good'); })
+    .catch(function(r){ busy=false; render(); var s=r&&r.status; say(s===401?'GitHub didn’t accept the key. It may have expired; make a new one with the steps below.':s===413||s===422?'GitHub turned down that file (too big). Try a smaller one, or a YouTube link.':'Couldn’t upload. Check the internet connection and try again.','bad'); }); };
+  rd.readAsDataURL(f); });
+
+/* ---------- read and save data/news.json in the repo ---------- */
+function b64(s){ return btoa(unescape(encodeURIComponent(s))); }
+function unb64(s){ return decodeURIComponent(escape(atob(String(s).replace(/\s/g,'')))); }
+function when(iso){ var d=new Date(iso); return isNaN(d)?'':d.toLocaleString([], {weekday:'short',month:'short',day:'numeric',hour:'numeric',minute:'2-digit'}); }
+function fresh(){ var k=key();
+  if(k) return fetch(API+'?ref=main&t='+Date.now(),{ headers:hdr(k), cache:'no-store' }).then(function(r){ if(r.status===404) return {t:null,sha:null}; if(!r.ok) throw r; return r.json().then(function(j){ return {t:JSON.parse(unb64(j.content)),sha:j.sha}; }); });
+  return fetch('data/news.json?t='+Date.now(),{ cache:'no-store' }).then(function(r){ if(!r.ok) return {t:null,sha:null}; return r.json().then(function(t){ return {t:t,sha:null}; }); }); }
+function load(t){ posts=(t&&Array.isArray(t.posts)?t.posts:[]).filter(function(p){ return p&&typeof p==='object'; }).map(clean); }
+function start(){ fresh().then(function(r){ sha=r.sha; load(r.t); base=text(data()); say(''); render();
+    $('loaded').textContent=r.t?'These are the live posts'+(r.t.updated&&when(r.t.updated)?', last saved '+when(r.t.updated):'')+'.':'No posts on the site yet.'; })
+  .catch(function(r){ load(null); base=text(data()); render(); $('loaded').textContent='';
+    say(r&&r.status===401?'GitHub didn’t accept the key. It may have expired; make a new one with the steps below.':'Couldn’t load the live posts. Check the internet connection and reload the page.','bad'); }); }
+function save(){ var k=key(); if(!k){ say('Paste your GitHub key in the box at the bottom first (steps under it).','bad'); $('token').focus(); return; }
+  var empty=posts.filter(function(p){ return p.show!==false&&!String(p.title||'').trim(); }); if(empty.length){ say('Every post needs a title (or hide it).','bad'); return; }
+  var d=data(); d.updated=new Date().toISOString(); var body=text(d)+'\n';
+  busy=true; render(); say('Saving…','busy');
+  function put(s){ return fetch(API,{ method:'PUT', headers:hdr(k), body:JSON.stringify({ message:'Arcade news: update posts', content:b64(body), branch:'main', sha:s||undefined }) }); }
+  put(sha).then(function(r){ if(r.status===409||r.status===422) return fresh().then(function(f){ return put(f.sha); }); return r; })
+  .then(function(r){ if(!r.ok) throw r; return r.json(); })
+  .then(function(j){ sha=j.content&&j.content.sha||sha; base=text(data()); busy=false; render();
+    $('loaded').textContent='These are the live posts, last saved '+when(new Date().toISOString())+'.';
+    say('Saved at '+new Date().toLocaleTimeString([], {hour:'numeric',minute:'2-digit'})+'. Students see it in a minute or two.','good'); })
+  .catch(function(r){ busy=false; render(); var s=r&&r.status;
+    say(s===401?'GitHub didn’t accept the key. It may have expired; make a new one with the steps below.':
+      s===403||s===404?'The key can’t change '+REPO+'. Check it has Contents: Read and write on that repository.':
+      'Couldn’t reach GitHub. Check the internet connection and click Save again.','bad'); }); }
+$('save').addEventListener('click',save);
+$('undo').addEventListener('click',function(){ load(JSON.parse(base||'null')); render(); say('Changes undone.'); });
+function tokState(){ $('tok-state').innerHTML=key()?'<span class="saved">Key saved in this browser.</span> <a href="#" id="tok-forget" style="color:var(--muted)">Forget it</a>':'No key saved yet. Steps below.'; }
+$('tok-save').addEventListener('click',function(){ var v=$('token').value.trim(); if(!v) return; try{ localStorage.setItem(TKEY,v); }catch(e){} $('token').value=''; tokState(); if(!dirty()) start(); });
+$('tok-state').addEventListener('click',function(e){ if(e.target.id!=='tok-forget') return; e.preventDefault(); try{ localStorage.removeItem(TKEY); }catch(err){} tokState(); });
+window.addEventListener('beforeunload',function(e){ if(base&&dirty()){ e.preventDefault(); e.returnValue=''; } });
+tokState(); start();
+})();
+</script>
+</body>
+</html>
