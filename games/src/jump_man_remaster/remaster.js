@@ -151,7 +151,7 @@ function drawGem(gx,gy,gold){ var a=gemArt(gold); cx.imageSmoothingEnabled=false
    right or wrong (Kody 2026-11-19: math well = a better game, never a wall). 2 or 3 right teaches the next move; 3 of 3 also
    gives a heart back; 0 or 1 right means no move this time (it is offered again next Waystone). Moves come in a fixed order:
    Wall Kick, Double Jump, Glide, Air Dash, Triple Jump, then boosts that stack up to 3 times. */
-var WAY_FIRST=10, WAY_EVERY=30;
+var WAY_FIRST=10, WAY_EVERY=40;   /* v4: every 40 ledges (v3's 30 left a middling climber standing still ~45% of the round) */
 function isWayFloor(i){ return i>=WAY_FIRST&&(i-WAY_FIRST)%WAY_EVERY===0; }
 function nextWayAfter(i){ return WAY_FIRST+WAY_EVERY*(Math.floor((i-WAY_FIRST)/WAY_EVERY)+1); }
 var MOVES=[ {id:'wall', name:'Wall Kick', d:'Jump just as you hit a side wall to kick up off it', how:'Jump at a side wall'},
@@ -177,9 +177,9 @@ SND.dash=function(){ tone(520,1040,0,0.12,'triangle',0.09); tone(260,520,0.02,0.
 SND.way=function(){ [523.25,783.99,1046.5].forEach(function(f,i){ tone(f,f,i*0.09,0.22,'triangle',0.11); }); };
 function openWay(){ S.way={i:P.on.i,got:0,n:0,res:[]}; keys.l=keys.r=keys.j=false; ptr={}; jumpQ=false; dashQ=false; P.vx=0; SND.way();
   newQ(); save(); hud(); nudge(); }
-function closeWay(){ var w=S.way, r=w.got; S.way=null; S.ways++; S.nextWay=nextWayAfter(w.i); S.q=null; S.qDone=false; S.bonus+=r*20+(r===3?60:0);
+function closeWay(){ var w=S.way, r=w.got; S.way=null; S.ways++; S.nextWay=nextWayAfter(w.i); S.q=null; S.qDone=false; S.bonus+=r*20+(r===3?300:0);
   if(r>=2){ SND.goal(); var q=stagePoint(cv,P.x,sy(P.h)-80); confetti(q[0],q[1],r===3?60:30,2.4); } else SND.miss();
-  if(r===3) wayHeal(); S.fog=Math.min(S.fog,P.h-FOG_GAP); S.offer=makeOffer().concat([r]); showOffer(); showQ(); save(); hud(); }
+  var healed=r>=2&&wayHeal(); S.offer=makeOffer().concat([r,healed?1:0]); showOffer(); showQ(); save(); hud(); }
 /* the reward is fixed: the next move in order, then the boosts in turn (each up to 3 times), then points */
 var BOOST_ORDER=['jump','speed','combo','magnet'];
 function makeOffer(){ var m=MOVES.filter(function(x){ return !S.mv[x.id]&&(!x.need||S.mv[x.need]); })[0]; if(m) return [m.id];
@@ -188,22 +188,22 @@ function isBoost(id){ return BOOSTS.some(function(x){ return x.id===id; }); }
 function showOffer(){ var el=$('jmr-offer'); if(!S.offer){ el.hidden=true; return; } var id=S.offer[0], r=S.offer[1]===undefined?3:S.offer[1], d=moveDef(id), win=r>=2;
   $('jmr-offerh').textContent=!win?'Almost!':isBoost(id)?'Upgrade!':id==='pts'?'Bonus!':'New move!';
   $('jmr-offer').classList.toggle('miss',!win);
-  var score='<span class="jmr-score">'+r+' of 3 right'+(r===3?' · +1 heart':win?'':' · get 2 right next time to learn it')+'</span>';
+  var score='<span class="jmr-score">'+r+' of 3 right'+(S.offer[2]?' · +1 heart':'')+(r===3?' · +300':'')+(win?'':' · get 2 right next time to learn it')+'</span>';
   $('jmr-picks').innerHTML='<button class="jmr-pick'+(win?'':' locked')+'" data-i="0">'+score+'<b>'+d.name+(isBoost(id)?' <small>level '+(S.lv[id]+1)+' of 3</small>':'')+'</b><span class="d">'+d.d+'</span>'+(d.how&&win?'<span class="jmr-how">'+d.how+'</span>':'')+'</button>';
   el.hidden=false; }
 var LASTR=3;
-function pickOffer(i){ if(!S.offer||!S.offer[0]) return; var id=S.offer[0], d=moveDef(id); LASTR=S.offer[1]===undefined?3:S.offer[1]; S.offer=null; $('jmr-offer').hidden=true;
+function pickOffer(i){ if(!S.offer||!S.offer[0]||S.over) return; var id=S.offer[0], d=moveDef(id); LASTR=S.offer[1]===undefined?3:S.offer[1]; S.offer=null; $('jmr-offer').hidden=true;
   var won=LASTR>=2;
   if(won){ if(id==='pts') S.bonus+=150; else if(isBoost(id)) S.lv[id]=Math.min(3,S.lv[id]+1); else S.mv[id]=1; S.learned.push(id); } SND.goal(); keys.l=keys.r=keys.j=false; jumpQ=false; save(); showQ(); hud(); }
 $('jmr-picks').addEventListener('click',function(e){ var b=e.target.closest('.jmr-pick'); if(b) pickOffer(+b.dataset.i); });
 /* between Waystones the question panel shows the moves you have */
 function idleQ(){ $('jm-tag').textContent='Climb'; $('jm-reward').textContent=''; $('jm-q').classList.remove('vis'); $('jm-visual').innerHTML='';
-  var left=Math.max(0,S.nextWay-(S.pi||0)); $('jm-prompt').innerHTML='<span class="jmr-idle">Next Waystone in <b>'+left+'</b> ledge'+(left===1?'':'s')+'</span>';
+  var left=Math.max(0,S.nextWay-(S.pi||0)); $('jm-prompt').innerHTML=S.rush?'<span class="jmr-idle">Summit Rush! Reach the <b class="g">golden lantern</b></span>':'<span class="jmr-idle">Next Waystone in <b>'+left+'</b> ledge'+(left===1?'':'s')+'</span>';
   var rows=[['Run','← →'],['Jump','Space or ↑']]; MOVES.forEach(function(m){ if(S.mv[m.id]) rows.push([m.name,m.how]); });
   BOOSTS.forEach(function(b){ if(S.lv[b.id]) rows.push([b.name,'Level '+S.lv[b.id]]); });
   $('jm-choices').innerHTML='<div class="jmr-moves"><div class="jmr-mh">Your moves</div>'+rows.map(function(r){ return '<div class="jmr-mv"><b>'+r[0]+'</b><span>'+r[1]+'</span></div>'; }).join('')+'</div>';
-  var fb=$('jm-fb'); fb.className='jm-fb'; fb.innerHTML='Each Waystone asks 3 questions. Get 2 or 3 right to learn a new move. 3 of 3 also gives back a heart.'; $('jm-next').disabled=true; }
-var idleLeft=-1; setInterval(function(){ if(S&&S.started&&!S.over&&!S.way){ var l=S.nextWay-(S.pi||0); if(l!==idleLeft){ idleLeft=l; idleQ(); } } },300);
+  var fb=$('jm-fb'); fb.className='jm-fb'; fb.innerHTML='Each Waystone asks 3 questions. Every right answer holds the fog back 3 seconds. 2 right teaches a new move and gives back a heart.'; $('jm-next').disabled=true; }
+var idleLeft=-1; setInterval(function(){ if(S&&S.started&&!S.over&&!S.way){ var l=(S.rush?'r':'')+(S.nextWay-(S.pi||0)); if(l!==idleLeft){ idleLeft=l; idleQ(); } } },300);
 
 //@@ WAYDRAW
 /* a Waystone on every full floor: a stone pillar whose rune glows cyan ahead of you and gold once it is passed */
@@ -219,25 +219,39 @@ function drawWaystone(x,py,done,active){ var L='#1B1328', rune=done?'#FFC23D':'#
    3 hearts. After the first Waystone a fog rises up the tower, a little faster the higher you are, and never more than
    about 5 ledges below you. Sinking into it costs a heart and lifts you to a safe ledge above it; at 0 hearts the run ends.
    The fog stops at every Waystone, and passing one gives a heart back and pushes the fog down. */
-var FOG_GAP=560, HEART_MAX=3;
-function fogSpeed(){ return Math.min(100,30+Math.floor(S.top/20)*0.1); }
-function fogStep(dt){ if(!S.ways){ S.fog=P.h-FOG_GAP; return; }
-  S.fog=Math.max(S.fog+fogSpeed()*dt, P.h-FOG_GAP);
+var FOG_GAP=560, HEART_MAX=3, FOG_START=20, CALM_PER=3, CALM_MAX=12;
+/* v4: the fog also starts 20 s into the climb (so standing still loses), each right answer holds it 3 s (shown under the
+   hearts), combos of 4+ floors hold it too, and it runs 25% faster in the Summit Rush */
+function fogOn(){ return S.ways>0||(S.climbT||0)>=FOG_START; }
+function fogSpeed(){ return Math.min(85,24+Math.floor(S.top/20)*0.07)*(S.rush?1.25:1); }
+function fogCalm(s){ S.calm=Math.min(CALM_MAX,(S.calm||0)+s); }
+function fogStep(dt){ var was=fogOn(); S.climbT=(S.climbT||0)+dt; if(!was&&fogOn()&&!S.ways){ pop(P.x,P.h+260,'THE FOG RISES!','climb up and away','#D6C8F0',true); SND.crash(); }
+  if(!fogOn()){ S.fog=P.h-FOG_GAP; return; }
+  if(S.calm>0){ S.calm=Math.max(0,S.calm-dt); S.fog=Math.max(S.fog,P.h-FOG_GAP); }
+  else S.fog=Math.max(S.fog+fogSpeed()*dt, P.h-FOG_GAP);
   if(P.h+PH*0.45<S.fog) fogHit(); }
 function fogHit(){ S.hearts=Math.max(0,S.hearts-1); SND.crash(); shk=10; endCombo();
   if(S.hearts<=0){ S.fogOut=true; endRun(); return; }
   var tgt=null; for(var i=Math.max(0,S.pi-20);i<plats.length;i++){ var p=plats[i]; if(p.h>S.fog+300&&solid(p)&&p.kind!=='spring'&&p.kind!=='crumble'){ tgt=p; break; } }
   if(tgt){ P.on=tgt; P.h=tgt.h; P.x=tgt.floor?W/2:cxAt(tgt,gt); P.vx=0; P.vy=0; P.lastI=tgt.i; S.pi=tgt.i; P.airJ=0; P.dashed=false; P.glide=false; }
   S.fog=P.h-560; cam=P.h; pop(P.x,P.h+160,'OUCH!',S.hearts+(S.hearts===1?' heart left':' hearts left'),'#FF8FA3',true); hud(); save(); }
-function wayHeal(){ if(S.hearts<HEART_MAX){ S.hearts++; pop(P.x,P.h+230,'+1 HEART','','#FF8FA3'); } if(S.ways) S.fog=Math.min(S.fog,P.h-FOG_GAP); }
+function wayHeal(){ if(S.hearts<HEART_MAX){ S.hearts++; pop(P.x,P.h+230,'+1 HEART','','#FF8FA3'); return true; } return false; }
 var FOGC=null;
 function fogTop(){ return FOGC||(FOGC=pxc(64,8,4,function(g){ for(var x=0;x<64;x++){ var h=3+Math.round(2*Math.sin(x/5)+1.5*Math.sin(x/2.3)); g.fillStyle='rgba(214,200,240,.55)'; g.fillRect(x,8-h-2,1,2); g.fillStyle='rgba(176,156,214,.78)'; g.fillRect(x,8-h,1,h); } })); }
-function drawFog(){ if(!S.started||!S.ways) return; var y=Math.min(Math.round(sy(S.fog)),H-28);   /* it always peeks in at the bottom, so you know it is there */ var ft=fogTop(), off=Math.round((gt*20)%256);
+function drawFog(){ if(!S.started||!fogOn()) return; var y=Math.min(Math.round(sy(S.fog)),H-40);   /* it always peeks in at the bottom, so you know it is there */ var ft=fogTop(), off=Math.round((gt*20)%256);
+  var calm=S.calm>0, edge=calm?'#7CF0FF':'#FF8FA3';
+  cx.fillStyle=calm?'rgba(124,240,255,.22)':'rgba(255,143,163,.25)'; cx.fillRect(0,y-26,W,26);             // a glow just above the edge
   for(var x=-off;x<W;x+=ft.width) cx.drawImage(ft,x,y-ft.height);
-  cx.fillStyle='rgba(176,156,214,.72)'; cx.fillRect(0,y,W,H-y+40); cx.fillStyle='rgba(120,98,168,.45)'; cx.fillRect(0,y+60,W,H-y);
-  var near=P.h-S.fog; if(near<240&&!S.over){ cx.fillStyle='rgba(255,143,163,.10)'; cx.fillRect(0,0,W,H); } }
+  cx.fillStyle='rgba(150,124,200,.9)'; cx.fillRect(0,y,W,H-y+40); cx.fillStyle='rgba(84,60,132,.75)'; cx.fillRect(0,y+50,W,H-y);
+  cx.fillStyle=edge; cx.fillRect(0,y-2,W,4);
+  var near=P.h-S.fog; if(!S.over&&!S.way&&!S.offer){
+    if(near<240){ cx.fillStyle='rgba(255,143,163,.10)'; cx.fillRect(0,0,W,H); }
+    if(near<340&&!calm){ var bob=RM()?0:Math.round(Math.sin(gt*4)*4); panel(W/2-210,y-118+bob,420,62); cx.textAlign='center'; cx.fillStyle='#FF8FA3'; cx.font='400 36px '+DF; cx.fillText('FOG CLOSE! CLIMB ↑',W/2,y-76+bob); } } }
+function RM(){ return !!(window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches); }
 function drawHearts(){ if(!S.started) return; var x0=512, y0=26; panel(x0-14,14,218,72);
-  for(var k=0;k<HEART_MAX;k++){ var x=x0+k*64, on=k<S.hearts; heartPx(x,y0,on); } }
+  for(var k=0;k<HEART_MAX;k++){ var x=x0+k*64, on=k<S.hearts; heartPx(x,y0,on); }
+  if(fogOn()&&!S.over){ var held=S.calm>0, gap=Math.max(0,Math.round((P.h-S.fog)/20)); panel(x0-14,92,218,44); cx.textAlign='center'; cx.font='800 24px Inter, sans-serif';
+    cx.fillStyle=held?'#7CF0FF':gap<17?'#FF8FA3':'#D6C8F0'; cx.fillText(held?'FOG HELD '+Math.ceil(S.calm)+' s':'FOG '+gap+' m BELOW',x0+95,122); } }   /* always says how close the fog is */
 var HEARTS={};
 function heartPx(x,y,on){ var k=on?'on':'off'; if(!HEARTS[k]) HEARTS[k]=pxc(11,10,5,function(g){ var M=['.##...##...','#hh#.#hh#..','#hhffffff#.','#hffffffff#','#ffffffff#.','.#ffffff#..','..#ffff#...','...#ff#....','....##.....','...........'];
     M.forEach(function(r,yy){ for(var xx=0;xx<11;xx++){ var c=r[xx]; if(c==='.') continue; g.fillStyle=c==='#'?'#1B1328':c==='h'?(on?'#FFC2CF':'#7A7590'):(on?'#FF4F6E':'#4A4660'); g.fillRect(xx,yy,1,1); } }); });
@@ -256,3 +270,45 @@ function drawWalls(){ var zi=zoneIx(cam/20), t=wallTile(zi), th=t.height, off=Ma
 /* the first few times you touch a wall in the air after learning Wall Kick, a prompt says what to do */
 function drawKickHint(){ if(!S.started||S.over||!S.mv.wall||(S.kicks||0)>=3||P.on) return; if(!(gt-(P.wallT===undefined?-9:P.wallT)<0.45)) return;
   var x=Math.max(130,Math.min(W-130,P.x+(P.wallSide||1)*90)), y=sy(P.h)-110; panel(x-104,y-34,208,56); cx.textAlign='center'; cx.fillStyle='#7CF0FF'; cx.font='400 34px '+DF; cx.fillText('JUMP!',x,y+6); }
+
+//@@ V4
+/* ================= v4 (Nov 22 remake pass): rockfall stretches and the Summit Rush finale =================
+   Rockfall: halfway between Waystones (ledges 25-34, 65-74, ...) rocks drop from the sky. Each one shows a warning
+   mark at the top for 0.8 s first. A hit knocks you sideways and breaks your combo; it never costs a heart (only the fog does).
+   Summit Rush: the last 60 seconds. A golden lantern waits 40 ledges up; reaching it pays 400, then the next one is 30 higher.
+   No Waystones during the rush, the fog runs 25% faster, and combos pay double. */
+var ROCK_LEN=10, ROCK_FROM=WAY_FIRST+WAY_EVERY/2-ROCK_LEN/2, ROCK_WARN=0.8, ROCK_EVERY=1.15, ROCK_V=560, SUMMIT_UP=40, SUMMIT_NEXT=30, SUMMIT_PTS=400, RUSH_S=60;
+var rocks=[], rockT=0, bonkT=0;
+function inRocks(i){ return i>=ROCK_FROM&&(i-ROCK_FROM)%WAY_EVERY<ROCK_LEN; }
+function rockStep(dt){ var i=P.lastI||0, live=inRocks(i)&&!S.rush;
+  if(live&&!S.rockOn){ S.rockOn=true; banner={t0:now(),txt:'Rockfall!',sub:'watch the sky',kind:'rock'}; SND.crack(); }
+  if(!live&&S.rockOn) S.rockOn=false;
+  rockT-=dt; bonkT-=dt;
+  if(live&&rockT<=0){ rockT=ROCK_EVERY; var x=Math.max(60,Math.min(W-60,P.x+(Math.random()-0.5)*520)); rocks.push({x:x,h:cam+700,warn:ROCK_WARN}); }
+  rocks.forEach(function(r){ if(r.warn>0){ r.warn-=dt; r.h=cam+700; return; } r.h-=ROCK_V*dt;
+    if(bonkT<=0&&Math.abs(r.x-P.x)<PW/2+24&&r.h<P.h+PH+10&&r.h>P.h-10){ r.dead=true; bonk(r); } });
+  rocks=rocks.filter(function(r){ return !r.dead&&sy(r.h)<H+80; }); }
+function bonk(r){ bonkT=1; var d=P.x>=r.x?1:-1; P.vx=d*340; if(P.on){ P.on=null; P.vy=-120; } else P.vy=Math.min(P.vy,-120);
+  endCombo(); CB.on=false; shk=RM()?0:8; SND.crack(); pop(P.x,P.h+160,'BONK!','','#FFB020'); }
+var ROCKC=null;
+function rockPx(){ return ROCKC||(ROCKC=pxc(12,12,5,function(g){ var M=['...####.....','..#bbbb##...','.#bbhbbbb#..','#bbhhbbbbb#.','#bbbbbbbsb#.','#bbbbbbbsbb#','#bsbbbbbbbb#','.#bbbbbbsb#.','.#bbbbbbbb#.','..##bbbb##..','....####....','............'];
+  M.forEach(function(row,y){ for(var x=0;x<12;x++){ var c=row[x]; if(c==='.') continue; g.fillStyle=c==='#'?'#1B1328':c==='h'?'#E8C79A':c==='s'?'#6B3F22':'#A8693A'; g.fillRect(x,y,1,1); } }); })); }
+function drawRocks(){ if(!rocks.length) return; var img=rockPx();
+  rocks.forEach(function(r){ if(r.warn>0){ var a=0.55+0.45*(1-r.warn/ROCK_WARN); cx.globalAlpha=a; cx.fillStyle='#1B1328'; cx.fillRect(r.x-22,150,44,52); cx.fillStyle='#FFB020'; cx.fillRect(r.x-18,154,36,44);
+      cx.fillStyle='#1B1328'; cx.fillRect(r.x-4,160,8,22); cx.fillRect(r.x-4,186,8,8); cx.globalAlpha=1; return; }
+    cx.drawImage(img,Math.round(r.x-img.width/2),Math.round(sy(r.h)-img.height)); }); }
+/* ---- Summit Rush ---- */
+function rushStep(){ var left=S.endAt-now();
+  if(!S.rush&&left<=RUSH_S*1000&&left>0){ S.rush={i:summitAfter(S.pi||0,SUMMIT_UP),n:0}; rocks=[]; banner={t0:now(),txt:'Summit Rush!',sub:'last minute',kind:'rush'}; SND.way(); idleLeft=-1; save(); }
+  if(S.rush){ while(plats.length<=S.rush.i+2) genTo(plats[plats.length-1].h+400);
+    if(P.on&&P.on.i>=S.rush.i){ S.rush.n++; S.bonus+=SUMMIT_PTS; pop(P.x,P.h+240,'SUMMIT!','+'+SUMMIT_PTS,'#FFC23D',true); SND.combo(30);
+      var q=stagePoint(cv,P.x,sy(P.h)-80); confetti(q[0],q[1],80,2.6); S.rush.i=summitAfter(S.rush.i,SUMMIT_NEXT); save(); } } }
+function summitAfter(i,up){ var t=i+up; while(plats.length<=t+3) genTo(plats[plats.length-1].h+400);
+  while(t%FLOOR_EVERY===0||plats[t].amp||plats[t].kind){ t++; while(plats.length<=t+3) genTo(plats[plats.length-1].h+400); } return t; }   /* a plain, still ledge */
+var LANT=null;
+function lanternPx(){ return LANT||(LANT=pxc(12,18,4,function(g){ var M=['....####....','...#....#...','..########..','..#gggggg#..','.#gyyyyyyg#.','.#gywwwwyg#.','.#gywwwwyg#.','.#gyywwyyg#.','.#gyyyyyyg#.','..#gggggg#..','..########..','....#..#....','....####....','............','............','............','............','............'];
+  M.forEach(function(row,y){ for(var x=0;x<12;x++){ var c=row[x]; if(c==='.') continue; g.fillStyle=c==='#'?'#1B1328':c==='g'?'#C8891E':c==='y'?'#FFC23D':'#FFF3C4'; g.fillRect(x,y,1,1); } }); })); }
+function drawRush(){ if(!S.rush||S.over) return; var p=plats[S.rush.i]; if(!p) return; var img=lanternPx(), x=cxAt(p,gt), py=sy(p.h);
+  if(py>40){ var gl=RM()?0.3:0.25+0.1*Math.sin(gt*3); cx.globalAlpha=gl; cx.fillStyle='#FFC23D'; cx.fillRect(x-70,py-150,140,150); cx.globalAlpha=1;
+    cx.drawImage(img,Math.round(x-img.width/2),Math.round(py-img.height-6)); cx.textAlign='center'; cx.fillStyle='#FFC23D'; cx.font='400 30px '+DF; cx.fillText('SUMMIT',x,py-img.height-18); }
+  else if(!banner){ var n=Math.max(0,S.rush.i-(S.pi||0)); panel(W/2-190,150,380,60); cx.textAlign='center'; cx.fillStyle='#FFC23D'; cx.font='400 34px '+DF; cx.fillText('SUMMIT ↑ '+n+' LEDGES',W/2,192); } }

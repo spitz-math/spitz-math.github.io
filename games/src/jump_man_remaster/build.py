@@ -78,7 +78,7 @@ V2CSS = """#jm-shopbtn,#jm-cashchip{ display:none !important; }
 """
 
 # ---------------- v2 gameplay (Kody 2026-11-17): free movement, Waystones every full floor, a new move after each ----------------
-t = cut(t, '/* ================= START / END', '/* ================= START / END', parts['PLAY'] + '\n')
+t = cut(t, '/* ================= START / END', '/* ================= START / END', parts['PLAY'] + parts['V4'] + '\n')
 t = t.replace(parts['FLOOR'], parts['FLOOR'] + parts['WAYDRAW'])
 for old, new in [
   # state: version 3, moves, Waystones
@@ -132,7 +132,7 @@ for old, new in [
   ("<b>Upgrade</b>Spend cash in the Shop on jump boots, a longer combo clock, bigger energy packs and power-ups.", "<b>New moves</b>Moves to learn: wall kick off the sides, double jump, glide, air dash and more."),
   # canvas: tutorial line, test hooks, boot
   ("'Every step and jump uses energy'", "'A Waystone waits on every full floor'"),
-  ("types:Object.keys(GEN) };", "types:Object.keys(GEN), dash:function(){ dashQ=true; }, pick:function(){ pickOffer(0); }, airMax:airMax, ans:function(i){ answer(i); }, newQ:function(){ newQ(); }, closeWay:function(){ closeWay(); } };"),
+  ("types:Object.keys(GEN) };", "types:Object.keys(GEN), dash:function(){ dashQ=true; }, pick:function(){ pickOffer(0); }, airMax:airMax, ans:function(i){ answer(i); }, newQ:function(){ newQ(); }, closeWay:function(){ closeWay(); }, rocks:function(){ return rocks; }, fogOn:function(){ return fogOn(); }, fogSpeed:function(){ return fogSpeed(); } };"),
   ("else if(S.q){ showQ(); } else newQ(); }", "else if(S.way&&S.q){ showQ(); } else newQ(); showOffer(); }"),
 ]:
     t = swap(t, old, new)
@@ -160,16 +160,45 @@ for old, new in [
 t = swap(t, "  drawBack(m);\n", "  drawBack(m); drawWalls();\n")
 # the energy gauge becomes a Waystone meter; the out-of-energy box becomes the Waystone box
 t = cut(t, "  var cap=40, fh=420, fy=220,", "  // Turbo chip",
-  "  var fh=420, fy=220, lvl=Math.max(0,Math.min(1,((S.pi||0)-Math.max(0,S.nextWay-30))/(S.nextWay>10?30:10))), left=Math.max(0,S.nextWay-(S.pi||0)); panel(W-108,fy-58,94,fh+112);\n"
-  "  cx.fillStyle='#242936'; cx.fillRect(W-76,fy,30,fh); cx.fillStyle='#7CF0FF'; cx.fillRect(W-76,fy+fh*(1-lvl),30,fh*lvl);\n"
+  "  var fh=420, fy=220, lvl=Math.max(0,Math.min(1,((S.pi||0)-Math.max(0,S.nextWay-WAY_EVERY))/(S.nextWay>WAY_FIRST?WAY_EVERY:WAY_FIRST))), left=Math.max(0,S.nextWay-(S.pi||0)), mc='#7CF0FF';\n"
+  "  if(S.rush){ left=Math.max(0,S.rush.i-(S.pi||0)); lvl=Math.max(0,Math.min(1,1-left/(S.rush.n?SUMMIT_NEXT:SUMMIT_UP))); mc='#FFC23D'; } panel(W-108,fy-58,94,fh+112);\n"
+  "  cx.fillStyle='#242936'; cx.fillRect(W-76,fy,30,fh); cx.fillStyle=mc; cx.fillRect(W-76,fy+fh*(1-lvl),30,fh*lvl);\n"
   "  cx.fillStyle='#1B1328'; cx.fillRect(W-71,fy-46,20,32); cx.fillStyle='#8A8FA6'; cx.fillRect(W-69,fy-44,16,28); cx.fillStyle='#7CF0FF'; cx.fillRect(W-63,fy-40,4,18);\n"
   "  cx.fillStyle='#fff'; cx.font='400 34px '+DF; cx.fillText(left,W-61,fy+fh+44);\n")
 t = cut(t, "  if(live&&S.energy<=0&&!buffOn('free')){", "  else if(live&&S.jumps<3){",
-  "  if(live&&S.way){ cx.fillStyle='rgba(8,9,13,.82)'; cx.fillRect(W/2-360,250,720,190); cx.strokeStyle='#7CF0FF'; cx.lineWidth=4; cx.strokeRect(W/2-360,250,720,190);\n"
-  "    cx.fillStyle='#fff'; cx.font='400 60px '+DF; cx.fillText('WAYSTONE',W/2,330); cx.font='700 34px Inter, sans-serif'; cx.fillStyle='#7CF0FF'; cx.fillText('3 questions: 2 right learns a new move  →',W/2,384);\n"
-  "    for(var wk=0;wk<3;wk++){ cx.fillStyle=S.way.res[wk]===1?'#FFC23D':S.way.res[wk]===0?'#FF6B6B':'#3A3550'; cx.fillRect(W/2-58+wk*42,404,32,20); } }\n"
+  "  if(live&&S.way){ cx.fillStyle='rgba(8,9,13,.82)'; cx.fillRect(W/2-380,230,760,236); cx.strokeStyle='#7CF0FF'; cx.lineWidth=4; cx.strokeRect(W/2-380,230,760,236);\n"
+  "    cx.fillStyle='#fff'; cx.font='400 60px '+DF; cx.fillText('WAYSTONE',W/2,306); cx.font='700 32px Inter, sans-serif'; cx.fillStyle='#7CF0FF'; cx.fillText('2 right: a new move and a heart back  →',W/2,358);\n"
+  "    cx.font='700 26px Inter, sans-serif'; cx.fillStyle='#D6C8F0'; cx.fillText('Each right answer holds the fog back 3 seconds',W/2,400);\n"
+  "    for(var wk=0;wk<3;wk++){ cx.fillStyle=S.way.res[wk]===1?'#FFC23D':S.way.res[wk]===0?'#FF6B6B':'#3A3550'; cx.fillRect(W/2-58+wk*42,424,32,20); } }\n"
   "  else if(live&&S.offer){ }\n")
 t = swap(t, '</style>\n</head>', V2CSS + '</style>\n</head>') if t.count('</style>\n</head>') == 1 else swap(t, '<script src="kit.js"></script>', '<style>' + V2CSS + '</style>\n<script src="kit.js"></script>')
+# ---------------- v4 (Nov 22 remake pass): Waystones every 50, right answers hold the fog, idle fog, rockfall, Summit Rush ----------------
+for old, new in [
+  ("function fresh(){ return { ver:3,", "function fresh(){ return { ver:4,"),
+  ("if(v&&v.ver===3&&v.topics", "if(v&&v.ver===4&&v.topics"),
+  ("hearts:3, fog:-800, fogOut:false, buff:", "hearts:3, fog:-800, fogOut:false, calm:0, climbT:0, rush:null, rockOn:false, buff:"),
+  ("  fogStep(dt); if(S.over) return;\n  if(P.on&&P.on.i>=S.nextWay&&!S.way&&!S.offer) openWay();",
+   "  fogStep(dt); if(S.over) return; rockStep(dt); rushStep();\n  if(P.on&&P.on.i>=S.nextWay&&!S.way&&!S.offer&&!S.rush) openWay();"),
+  ("  drawKickHint(); drawFog();\n", "  drawRocks(); drawRush(); drawKickHint(); drawFog();\n"),
+  ("  pops.forEach(function(o){", "  if(!S.way) pops.forEach(function(o){"),
+  ("  else if(live&&S.jumps<3){", "  else if(live&&S.jumps<3&&!banner){"),
+  # feel pass (spitz-game-feel): smooth summed-sine shake instead of random jitter, off with reduced motion
+  ("cx.save(); if(shk>0.5) cx.translate((Math.random()-0.5)*shk,(Math.random()-0.5)*shk);", "cx.save(); if(shk>0.5&&!RM()) cx.translate(Math.round(shk*0.6*Math.sin(t*0.051)),Math.round(shk*0.4*Math.sin(t*0.069)));"),
+  ("cx.fillText('NEW ZONE · '+banner.sub,W/2,216);", "cx.fillText(banner.kind?banner.sub.toUpperCase():'NEW ZONE · '+banner.sub,W/2,216);"),
+  ("var w=comboWord(f), pts=comboPts(f); S.bonus+=pts; S.combos++;", "var w=comboWord(f), pts=comboPts(f)*(S.rush?2:1); S.bonus+=pts; S.combos++; if(fogOn()) fogCalm(Math.min(4,Math.floor(f/4)));"),
+  ("S.bonus+=10; S.way.got++; S.way.n++; S.way.res.push(1); SND.correct();", "S.bonus+=10; S.way.got++; S.way.n++; S.way.res.push(1); fogCalm(CALM_PER); SND.correct();"),
+  ("lockT=setTimeout(function(){ $('jm-next').disabled=false; if(S.qDone&&!S.over) newQ(); },1200);", "lockT=setTimeout(function(){ $('jm-next').disabled=false; },2000);"),
+  ("fb.innerHTML='Answer 3 right to pass the Waystone.';", "fb.innerHTML='Waystone: 3 questions. Each right answer holds the fog back.';"),
+  ("function endRun(){ S.over=true;", "function endRun(){ S.over=true; S.offer=null; $('jmr-offer').hidden=true; rocks=[];"),
+  ("if(celebrate){ SND.win();", "$('jm-again').disabled=true; setTimeout(function(){ $('jm-again').disabled=false; },2000); if(celebrate&&!S.fogOut&&S.correct>0){ SND.win();"),
+  ("Every 30 ledges a Waystone stops you: answer 3 questions. 2 right teaches a new move; 3 of 3 also gives back a heart.",
+   "Every 40 ledges: 3 questions. Right answers hold back the fog; 2 right teaches a new move and gives back a heart."),
+  ("<b>New moves</b>Moves to learn: wall kick off the sides, double jump, glide, air dash and more.",
+   "<b>Summit Rush</b>Learn wall kick, double jump, glide and air dash. In the last minute, race the fog to the golden lanterns!"),
+  ("cx.fillText('Waystones teach new moves. Then the fog rises!',W/2,424);",
+   "cx.fillText(S.jumps===0&&(S.climbT||0)>6?'Press ← or → to run, then ↑ to jump!':'Waystones teach new moves. Then the fog rises!',W/2,424);"),
+]:
+    t = swap(t, old, new)
 for gone in ['S.energy+=', "U('energy')"]:
     assert gone not in t, gone
 open(os.path.join(O, 'jump_man_multiplication.html'), 'w', encoding='utf-8').write(t)

@@ -1,4 +1,4 @@
-// Jump Man v2 rules: free movement, Waystones, new moves. NODE_PATH=$(npm root -g) node v2.js <mult copy> [outdir]
+// Jump Man v4 rules: free movement, Waystones every 50, fog held by right answers, rockfall, Summit Rush. NODE_PATH=$(npm root -g) node v4.js <mult copy> [outdir]
 const {chromium}=require('playwright');
 const F=process.argv[2], OUT=(process.argv[3]||'/tmp')+'/'; let fails=0;
 const ok=(c,m,v)=>{ if(!c) fails++; console.log(c?'  ok':'  FAIL',m,v===undefined?'':JSON.stringify(v)); };
@@ -8,7 +8,7 @@ const ok=(c,m,v)=>{ if(!c) fails++; console.log(c?'  ok':'  FAIL',m,v===undefine
   await p.goto('file://'+F); await p.evaluate(()=>localStorage.clear()); await p.reload(); await p.waitForTimeout(700);
   await p.fill('#jm-nameinput','Test K'); await p.click('#jm-go'); await p.waitForTimeout(300);
   const st=()=>p.evaluate(()=>{ const s=__G.state(), m=__G.man(); return {ver:s.ver,way:s.way,offer:s.offer,ways:s.ways,nextWay:s.nextWay,mv:s.mv,lv:s.lv,answered:s.answered,correct:s.correct,streak:s.streak,x:Math.round(m.x),pi:s.pi,q:!!s.q}; });
-  let s=await st(); ok(s.ver===3&&!s.way&&!s.q,'starts climbing with no question up',s);
+  let s=await st(); ok(s.ver===4&&!s.way&&!s.q,'starts climbing with no question up',s);
   await p.keyboard.press('1'); s=await st(); ok(s.answered===0,'number keys do nothing between Waystones',s);
   await p.keyboard.down('ArrowRight'); await p.waitForTimeout(500); await p.keyboard.up('ArrowRight'); await p.keyboard.press('ArrowUp'); await p.waitForTimeout(200);
   s=await st(); ok(s.x>560,'running is free from the start',s);
@@ -21,9 +21,11 @@ const ok=(c,m,v)=>{ if(!c) fails++; console.log(c?'  ok':'  FAIL',m,v===undefine
   if(rm==='no-preference') await p.screenshot({path:OUT+'v2_waystone.png'});
   const idx=(okk)=>p.evaluate(o=>__G.state().q.choices.findIndex(c=>!!c.ok===o),okk);
   await p.keyboard.press(String(await idx(false)+1)); await p.waitForTimeout(100); s=await st(); ok(s.way.got===0&&s.way.n===1&&s.streak===0,'a wrong answer still uses up one of the 3 questions',s);
-  await p.waitForTimeout(1400); s=await st(); ok(s.q,'a new question comes after a miss',s);
+  await p.waitForTimeout(1300); ok(await p.evaluate(()=>__G.state().qDone),'after a miss the answer stays up (no auto-advance)');
+  await p.keyboard.press('Enter'); await p.waitForTimeout(100); ok(await p.evaluate(()=>__G.state().qDone),'Enter is locked for 2 s after a miss');
+  await p.waitForTimeout(800); await p.keyboard.press('Enter'); await p.waitForTimeout(150); s=await st(); ok(s.q&&!(await p.evaluate(()=>__G.state().qDone)),'after 2 s, Enter brings the next question',s);
   for(let k=0;k<2;k++){ await p.waitForTimeout(150); await p.keyboard.press(String(await idx(true)+1)); await p.waitForTimeout(600); }
-  await p.waitForTimeout(500); s=await st(); ok(!s.way&&s.ways===1&&s.offer&&s.offer.join()==='wall,2'&&s.nextWay===40,'2 of 3 right: Wall Kick is learned; next Waystone 30 ledges up',s);
+  await p.waitForTimeout(500); s=await st(); ok(!s.way&&s.ways===1&&s.offer&&s.offer[0]==='wall'&&s.offer[1]===2&&s.nextWay===50,'2 of 3 right: Wall Kick is learned; next Waystone 40 ledges up',s);
   ok(await p.evaluate(()=>!document.getElementById('jmr-offer').hidden),'the pick card shows');
   if(rm==='no-preference') await p.screenshot({path:OUT+'v2_pick.png'});
   await p.keyboard.press('Enter'); await p.waitForTimeout(150); s=await st(); ok(s.mv.wall&&!s.offer,'Enter takes Wall Kick and climbing goes on',s);
@@ -45,21 +47,21 @@ const ok=(c,m,v)=>{ if(!c) fails++; console.log(c?'  ok':'  FAIL',m,v===undefine
   // boosts after the moves run out
   await p.evaluate(()=>{ const S=__G.state(); ['dbl','wall','glide','dash','triple'].forEach(k=>S.mv[k]=1); });
   // reload mid-Waystone keeps the question
-  await land(40); await p.waitForTimeout(150); s=await st(); const q1=await p.evaluate(()=>document.getElementById('jm-prompt').innerHTML);
+  await land(50); await p.waitForTimeout(150); s=await st(); const q1=await p.evaluate(()=>document.getElementById('jm-prompt').innerHTML);
   await p.reload(); await p.waitForTimeout(600); s=await st(); const q2=await p.evaluate(()=>document.getElementById('jm-prompt').innerHTML);
   ok(s.way&&q1===q2,'reload at a Waystone keeps it and the question',{way:s.way});
   for(let k=0;k<3;k++){ await p.keyboard.press(String(await idx(true)+1)); await p.waitForTimeout(800); } await p.waitForTimeout(400);
-  s=await st(); ok(s.offer&&s.offer.length===2&&['jump','speed','combo','magnet'].includes(s.offer[0]),'with every move learned, the reward is a boost',s.offer);
+  s=await st(); ok(s.offer&&s.offer.length===3&&['jump','speed','combo','magnet'].includes(s.offer[0]),'with every move learned, the reward is a boost',s.offer);
   await p.keyboard.press('Enter'); await p.waitForTimeout(150); s=await st(); ok(Object.values(s.lv).some(v=>v===1)&&!s.offer,'a boost goes up a level',s.lv);
   const miss=await p.evaluate(()=>{ const G=__G, S=G.state(), P=G.man(); while(G.plats().length<=S.nextWay+5){ P.on=null; P.h+=2500; P.vy=0; G.step(1/60); } const pl=G.plats(); const q=pl[S.nextWay]; S.fog=q.h-1500; P.on=null; P.x=q.floor?300:G.cxAt(q); P.h=q.h+30; P.vy=-10; P.lastI=q.i-1; for(let k=0;k<20;k++) G.step(1/60);
     const lv0=JSON.stringify(S.lv); [true,false,false].forEach(r=>{ const i=S.q.choices.findIndex(c=>!!c.ok===r); S.qDone=false; G.ans(i); G.newQ(); }); const off=S.offer.slice(); const h=document.getElementById('jmr-offerh').textContent; G.pick(); return {off,h,same:JSON.stringify(S.lv)===lv0,way:!!S.way}; });
   ok(miss.off[1]===1&&miss.h==='Almost!'&&miss.same&&!miss.way,'1 of 3 right: no new move this time, climbing goes on',miss);
   // hearts and fog
-  const fg=await p.evaluate(()=>{ const G=__G, S=G.state(), P=G.man(), out={}; while(G.plats().length<=S.nextWay+5){ P.on=null; P.h+=2500; P.vy=0; G.step(1/60); } const pl=G.plats(); const q=pl[S.nextWay-3]; S.fog=q.h-1500; P.on=q; P.h=q.h; P.x=G.cxAt(q); P.vx=0; P.vy=0; P.lastI=q.i; S.pi=q.i;
+  const fg=await p.evaluate(()=>{ const G=__G, S=G.state(), P=G.man(), out={}; while(G.plats().length<=S.nextWay+5){ P.on=null; P.h+=2500; P.vy=0; G.step(1/60); } const pl=G.plats(); const q=pl[S.nextWay-3]; S.fog=q.h-1500; S.calm=0; P.on=q; P.h=q.h; P.x=G.cxAt(q); P.vx=0; P.vy=0; P.lastI=q.i; S.pi=q.i;
     G.step(1/60); const f0=S.fog; for(let i=0;i<60;i++) G.step(1/60); out.rose=Math.round(S.fog-f0); out.gap=Math.round(P.h-S.fog);
     const h0=S.hearts; S.fog=P.h+100; G.step(1/60); out.lost=h0-S.hearts; out.safe=Math.round(P.h-S.fog); out.onLedge=!!P.on;
     return out; });
-  ok(fg.rose>30&&fg.rose<150&&fg.gap<=560,'after the first Waystone the fog rises below you',fg);
+  ok(fg.rose>20&&fg.rose<120&&fg.gap<=560,'after the first Waystone the fog rises below you',fg);
   ok(fg.lost===1&&fg.safe>=500&&fg.onLedge,'sinking into the fog costs a heart and lifts you to a safe ledge',fg);
   const hl=await p.evaluate(()=>{ const G=__G, S=G.state(), P=G.man(); while(G.plats().length<=S.nextWay+5){ P.on=null; P.h+=2500; P.vy=0; G.step(1/60); } const h0=S.hearts, pl=G.plats(), q=pl[S.nextWay]; S.fog=q.h-1500; P.on=null; P.x=q.floor?300:G.cxAt(q); P.h=q.h+30; P.vy=-10; P.lastI=q.i-1; for(let k=0;k<20;k++) G.step(1/60);
     const f0=S.fog; for(let k=0;k<60;k++) G.step(1/60); const frozen=S.fog===f0; for(let k=0;k<3;k++){ const i=S.q.choices.findIndex(c=>c.ok); S.qDone=false; G.ans(i); G.newQ(); } G.pick(); return {h0,h1:S.hearts,frozen}; });
@@ -67,10 +69,45 @@ const ok=(c,m,v)=>{ if(!c) fails++; console.log(c?'  ok':'  FAIL',m,v===undefine
   const go=await p.evaluate(()=>{ const G=__G, S=G.state(), P=G.man(); S.hearts=1; S.fog=P.h+100; G.step(1/60); return {over:S.over,why:document.getElementById('jmr-endwhy').textContent}; });
   ok(go.over&&go.why==='The fog caught you!','0 hearts ends the run',go);
   if(rm==='no-preference') await p.screenshot({path:OUT+'v2_fogend.png'});
+
+  // v4: 2 right heals, right answers hold the fog, rockfall, Summit Rush
+  const v4=await p.evaluate(()=>{ const G=__G, S=G.state(), P=G.man(), out={}; S.over=false; S.fogOut=false; S.hearts=2; S.calm=0;
+    while(G.plats().length<=S.nextWay+60){ P.on=null; P.h+=2500; P.vy=0; G.step(1/60); }
+    let pl=G.plats(), q=pl[S.nextWay]; S.fog=q.h-1500; P.on=null; P.x=q.floor?300:G.cxAt(q); P.h=q.h+30; P.vy=-10; P.lastI=q.i-1; for(let k=0;k<20;k++) G.step(1/60);
+    out.opened=!!S.way; [true,true,false].forEach(r=>{ const i=S.q.choices.findIndex(c=>!!c.ok===r); S.qDone=false; G.ans(i); G.newQ(); });
+    out.calm=S.calm; out.hearts=S.hearts; out.offer=S.offer&&S.offer.slice(); G.pick();
+    // the fog is held while calm > 0
+    const f0=S.fog; P.on=null; P.h=S.fog+700; P.vy=0; G.step(1/60); out.heldGap=Math.round(P.h-S.fog); for(let k=0;k<30;k++){ P.h=S.fog+700; P.vy=0; G.step(1/60); } out.calmAfter=+S.calm.toFixed(2);
+    // rockfall: stand in a rock stretch for 4 s; rocks fall and a hit never costs a heart
+    pl=G.plats(); let ri=S.nextWay-25; while(pl[ri].amp||pl[ri].kind) ri++; const rq=pl[ri]; S.calm=99; P.on=rq; P.h=rq.h; P.x=G.cxAt(rq); P.vx=0; P.vy=0; P.lastI=ri; S.pi=ri;
+    S.fog=rq.h-2000; const seenS=new Set(); for(let k=0;k<240;k++){ P.on=rq; P.h=rq.h; P.vy=0; P.vx=0; G.step(1/60); G.rocks().forEach(r=>seenS.add(r)); } const seen=seenS.size; out.rockOn=S.rockOn; out.seen=seen; 
+    return out; });
+  ok(v4.opened&&v4.hearts===3&&v4.offer[1]===2&&v4.offer[2]===1,'2 of 3 right gives a heart back',v4);
+  ok(v4.calm===6,'each right answer holds the fog 3 s',v4);
+  ok(v4.heldGap>=560&&v4.calmAfter<v4.calm,'the fog stays put while it is held, and the hold counts down',v4);
+  ok(v4.rockOn&&v4.seen>=2,'rockfall starts halfway between Waystones',v4);
+  const bk=await p.evaluate(()=>{ const G=__G, S=G.state(), P=G.man(); for(let k=0;k<70;k++){ G.rocks().length=0; G.step(1/60); } G.rocks().length=0; const r={x:P.x,h:P.h+40,warn:0}; G.rocks().push(r); const h0=S.hearts, c0=S.combos; G.step(1/60); return {bonked:G.rocks().indexOf(r)<0, hearts:S.hearts===h0, vx:Math.round(P.vx)}; });
+  ok(bk.bonked&&bk.hearts&&Math.abs(bk.vx)>=300,'a rock hit knocks you sideways, no heart lost',bk);
+  // Summit Rush in the last minute
+  const ru=await p.evaluate(()=>{ const G=__G, S=G.state(), P=G.man(), out={}; G.rocks().length=0; S.calm=99; S.endAt=Date.now()+59000; G.step(1/60); out.rush=!!S.rush; if(!S.rush) return {dbg:{over:S.over,way:!!S.way,offer:S.offer,left:S.endAt-Date.now(),hearts:S.hearts}}; out.ti=S.rush.i-S.pi;
+    out.noWay=true; const pl0=G.plats(); const w=pl0[S.nextWay]; if(w){ P.on=null; P.x=w.floor?300:G.cxAt(w); P.h=w.h+30; P.vy=-10; P.lastI=w.i-1; for(let k=0;k<20;k++) G.step(1/60); out.noWay=!S.way; }
+    const b0=S.bonus, pl=G.plats(), q=pl[S.rush.i]; P.on=null; P.x=G.cxAt(q); P.h=q.h+30; P.vy=-10; P.lastI=q.i-1; for(let k=0;k<20;k++) G.step(1/60);
+    out.paid=S.bonus-b0; out.n=S.rush.n; out.next=S.rush.i-q.i; out.fast=G.fogSpeed(); S.rush=null; out.slow=G.fogSpeed(); return out; });
+  ok(ru.rush&&ru.ti>=40,'the Summit Rush starts with a minute left, lantern 40 ledges up',ru);
+  ok(ru.noWay,'no Waystone stops you during the Summit Rush',ru);
+  ok(ru.paid>=400&&ru.n===1&&ru.next>=30,'reaching the lantern pays 400 and sets the next one 30 higher',ru);
+  ok(Math.abs(ru.fast/ru.slow-1.25)<0.01,'the fog runs 25% faster in the rush',ru);
+  // idle: the fog comes at 20 s even before a Waystone
+  await p.evaluate(()=>{ __G.state().started=false; localStorage.clear(); }); await p.reload(); await p.waitForTimeout(500); await p.fill('#jm-nameinput','Idle K'); await p.click('#jm-go'); await p.waitForTimeout(200);
+  const idl=await p.evaluate(()=>{ const G=__G, S=G.state(), P=G.man(); S.endAt=Date.now()+600000; const out={}; for(let k=0;k<60*19;k++) G.step(1/60); out.on19=G.fogOn(); for(let k=0;k<60*2;k++) G.step(1/60); out.on21=G.fogOn();
+    let t=21; while(!S.over&&t<300){ S.endAt=Date.now()+600000; G.step(1/60); t+=1/60; } out.overAt=Math.round(t); out.score=S.score; out.why=S.fogOut; return out; });
+  ok(!idl.on19&&idl.on21,'standing still: the fog starts at 20 s',idl);
+  ok(idl.why&&idl.overAt<150&&idl.score<150,'standing still loses: the fog ends the run in under 2.5 min',idl);
+  await p.evaluate(()=>{ __G.state().started=false; localStorage.clear(); }); await p.reload(); await p.waitForTimeout(500); await p.fill('#jm-nameinput','Test K'); await p.click('#jm-go'); await p.waitForTimeout(200);
   // bot: climbs for 4 minutes of game time, answering at every Waystone (2 right, 1 wrong) and picking the first card
   await p.evaluate(()=>localStorage.clear()); await p.reload(); await p.waitForTimeout(500); await p.fill('#jm-nameinput','Bot'); await p.click('#jm-go'); await p.waitForTimeout(200);
   const bot=await p.evaluate(()=>{ const G=__G, S=G.state(), P=G.man(), c=G.consts; let stuck=0, lastTop=0, t=0, ways=0, miss=0, qs=0;
-    for(let n=0;n<60*240;n++){ S.endAt=Date.now()+60000; if(S.over) break;
+    for(let n=0;n<60*240;n++){ S.endAt=Date.now()+600000; if(S.over) break;
       if(S.offer){ G.pick(0); continue; }
       if(S.way){ const want=(qs%3!==2); const k=S.q.choices.findIndex(x=>!!x.ok===want); S.qDone=false; G.ans(k); qs++; if(!want) miss++; G.newQ(); continue; }
       const pl=G.plats(), on=P.on; const tgt=pl[P.lastI+1], dx=G.cxAt(tgt)-P.x, vm=c.VMAX; let want;
@@ -81,7 +118,9 @@ const ok=(c,m,v)=>{ if(!c) fails++; console.log(c?'  ok':'  FAIL',m,v===undefine
     G.key('r',false); G.key('l',false); return {hearts:S.hearts,over:S.over,secs:Math.round(t),floors:S.pi,meters:Math.round(S.top/20),waysOpen:!!S.way,ways:S.ways,learned:S.learned,stuck:Math.round(stuck),answered:S.answered,correct:S.correct}; });
   ok(bot.floors>=40&&bot.learned.slice(0,5).join()==='wall,dbl,glide,dash,triple','bot climbs with Waystones on the way (no dead ends)',bot);
   await p.waitForTimeout(1500); const s3=await st(); if(rm==='no-preference') await p.screenshot({path:OUT+'v2_play.png'});
-  await p.evaluate(()=>__G.end()); await p.waitForTimeout(700);
+  await p.evaluate(()=>{ const S=__G.state(); S.offer=['dbl',2,0]; }); await p.evaluate(()=>__G.end()); await p.waitForTimeout(700);
+  const en=await p.evaluate(()=>({offer:!document.getElementById('jmr-offer').hidden, again:document.getElementById('jm-again').disabled})); ok(!en.offer&&en.again,'end: the reward card closes and Play again waits',en);
+  await p.waitForTimeout(2100); ok(!(await p.evaluate(()=>document.getElementById('jm-again').disabled)),'Play again works after 2 s');
   const ov=await p.evaluate(()=>{ const b=document.querySelector('#jm-end .jm-box').getBoundingClientRect(); return {bottom:b.bottom,h:innerHeight}; }); ok(ov.bottom<=ov.h,'end screen fits',ov);
   ok(errs.length===0,'no page errors',errs.slice(0,3)); await ctx.close(); }
  await b.close(); console.log(fails?fails+' FAILED':'ALL PASS'); process.exit(fails?1:0); })();
