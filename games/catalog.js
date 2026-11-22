@@ -30,7 +30,7 @@ window.SpitzGames=[
    '<g transform="translate(150 6)"><path d="M6 0l6 8-6 8-6-8z" fill="#FFC93C"/></g>'+
    '<g transform="translate(88 30)"><rect x="4" y="0" width="16" height="8" fill="#FFC93C"/><rect x="4" y="8" width="16" height="10" fill="#F2C29B"/><rect x="14" y="10" width="3" height="3" fill="#0D1A3A"/>'+
    '<rect x="2" y="18" width="20" height="14" fill="#3E6BC4"/><rect x="-4" y="16" width="6" height="6" fill="#F2C29B"/><rect x="22" y="12" width="6" height="6" fill="#F2C29B"/><rect x="2" y="32" width="8" height="10" fill="#15295A"/><rect x="14" y="30" width="8" height="8" fill="#15295A"/></g>'},
-  {id:'football_buds',name:'Football Buds BLITZ',d:'Arcade football vs the Rivals',font:"'Graduate'",paper:'#0A101E',panel:'#121B30',acc:'#E8344A',
+  {id:'football_buds',name:'Football Buds BLITZ',d:'Arcade football vs the Rivals',font:"'Graduate'",paper:'#0A101E',panel:'#121B30',acc:'#FF6070',
    art:'<rect width="200" height="110" fill="#2E7D3A"/><g fill="#348A41"><rect x="0" y="0" width="40" height="110"/><rect x="80" y="0" width="40" height="110"/><rect x="160" y="0" width="40" height="110"/></g>'+
    '<g stroke="#F7F3E3" stroke-width="2" opacity=".85"><path d="M40 0v110M80 0v110M120 0v110M160 0v110"/></g>'+
    '<g fill="#F7F3E3" font-family="Graduate,serif" font-size="14" text-anchor="middle"><text x="40" y="104">20</text><text x="120" y="104">40</text></g>'+
