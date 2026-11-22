@@ -78,6 +78,23 @@
         "games/snake_arena.html",
         "tools/qa/adapters/snake_arena.js"
       ]
+    },
+    {
+      "id": "dig_buds",
+      "name": "Dig Buds",
+      "tier": 1,
+      "webgl": true,
+      "adapter": "adapters/dig_buds.js",
+      "paths": [
+        "games/dig_buds.html",
+        "games/new/dig_buds/",
+        "tools/qa/adapters/dig_buds.js"
+      ],
+      "suite": {
+        "about": "The game's own checks (games/new/dig_buds/run_tests.sh): smoke, upgrades, All-Pro, score code, falls and keys, no WebGL, caves, all sets fit",
+        "quick": "bash games/new/dig_buds/run_tests.sh",
+        "full": "bash games/new/dig_buds/run_tests.sh full"
+      }
     }
   ]
 }
