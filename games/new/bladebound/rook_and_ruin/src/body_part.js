@@ -37,9 +37,11 @@ var GOBT=106, GOBL=100, GOBLOCK=0.24, COMBOT=2.5;
 function gobSlots(w){ return w.last>0||ROOMS[w.rid].siege?4:(w.rid==='entry'||w.rid==='guard'||early(w))?2:3; }
 /* early(w): Rook has fewer than 4 powers, so the build is not online yet. Enemies wind up a little longer until it is. */
 function early(w){ return (w.picks||0)<4&&!(w.last>0); }
-/* elite: a tougher, faster version with a gold ring under it. Worth more gems, coins and points. */
+/* elite: a tougher, faster version with a gold ring under it, a gold outline and a big crown. Worth more gems, coins and points. */
+var ELSC=1.15;   /* elites drawn 15% bigger (hit box unchanged) */
 function spawnEnemy(type,x,y,mult,small,elite){ var t=ET[type], e={type:type,x:x,y:y,r:small?9:t.r,hp:Math.round(t.hp*(mult||1)*(small?0.4:1)*(elite?3:1)),max:0,t:Math.random()*5,kx:0,ky:0,fl:0,st:0,sx:0,sy:0,cd:rnd(0.6,1.4),oh:0,rh:0,eh:0,fa:0,small:!!small};
-  if(elite) e.el=1; e.max=e.hp; S.w.en.push(e); return e; }
+  if(elite){ e.el=1; if(!S.w.eliteTold){ S.w.eliteTold=1; (S.w.bannerQ=S.w.bannerQ||[]).push({txt:'ELITE ENEMY',sub:'Gold glow and crown = 3x health and faster. Take it down for big gems and coins!',t:3.6,tip:1}); } }   /* Kody 2026-11-21: explain elites the first time one shows up in a run */
+  e.max=e.hp; S.w.en.push(e); return e; }
 
 /* ---------- powers ---------- */
 /* path: blade (your sword does more), storm (things happen on their own), guard (survive).
@@ -457,34 +459,22 @@ function slamFire(e,p){ var w=S.w; w.fires=w.fires||[]; var made=0;
     w.fires.push({x:x,y:y,t:-FIRE.warn,s:Math.random()*9}); made++; } }
 function fireTick(dt,p){ var w=S.w, F=w.fires; if(!F||(!F.length&&!(p.burn>0))) return;
   for(var i=F.length-1;i>=0;i--){ var f=F[i]; f.t+=dt; if(f.t>=(f.life||FIRE.life)){ F.splice(i,1); continue; } if(f.t<0) continue;
-    if(!(p.burn>0)&&p.roll<=0&&p.hp>1&&Math.hypot(p.x-f.x,(p.y-f.y)*1.6)<FIRE.r){ if(f.lite){ p.burn=p.bmax=FIRE.tick; p.bn=1; } else { p.burn=p.bmax=FIRE.burn; p.bn=Math.round(FIRE.burn/FIRE.tick); } p.bseg=FIRE.tick; SND.tele(); if(!w.fireTold){ w.fireTold=1; w.fx.push({k:'txt',x:p.x,y:p.y-56,t:0,v:'On fire! Stay out of the flames',c:'#FF9A3C'}); } }
+    if(!(p.burn>0)&&p.roll<=0&&p.hp>1&&Math.hypot(p.x-f.x,(p.y-f.y)*1.6)<FIRE.r){ if(f.lite){ p.burn=p.bmax=FIRE.tick; p.bn=1; } else { p.burn=p.bmax=FIRE.burn; p.bn=Math.round(FIRE.burn/FIRE.tick); } p.bseg=FIRE.tick; SND.tele(); if(!w.fireTold){ w.fireTold=1; w.fx.push({k:'txt',x:p.x,y:p.y-56,t:0,v:'On fire! Stay out of the lava',c:'#FF9A3C'}); } }
     f.hT=(f.hT||0)-dt; if(f.hT<=0){ f.hT=0.5; DSRC='fire'; for(var j=0;j<w.en.length;j++){ var e=w.en[j]; if(!e.dead&&e.type!=='boss'&&e.type!=='imp'&&Math.hypot(e.x-f.x,(e.y-f.y)*1.6)<FIRE.r+e.r*0.5) hurtE(e,4,0,0,0); } } }
   if(p.burn>0&&p.hp<=1){ p.burn=0; return; }   /* Kody 2026-11-18: fire never takes the last heart */
   if(p.burn>0){ p.burn-=dt; p.bseg=(p.bseg||FIRE.tick)-dt; if(p.bseg<=0){ p.bseg=FIRE.tick; p.bn=(p.bn||1)-1; hurtP({x:p.x,y:p.y+1,fire:1},1); if(p.bn<=0||S.mode!=='play'){ p.burn=0; return; } } if(p.burn<0.05) p.burn=0.05; } }
-/* fire patch: a low ember glow and pixel flames that rise and fall (gentle, never flashing). Outline only during the warning. */
-/* flame sprites inside a fire patch: [dx, dy (feet), scale], back to front */
-var FLAMES=[[-24,-4,1],[22,-6,1],[-10,-2,2],[12,2,2],[-28,10,1],[0,12,2],[27,12,1]];
+/* fire patch = a lava pool (gentle, never flashing). Outline only during the warning. */
 function drawFire(c,f,t){ var rx=FIRE.r, ry=Math.round(FIRE.r*0.62), x=Math.round(f.x), y=Math.round(f.y);
   var fade=f.t<0?0:Math.min(1,f.t/0.25)*Math.min(1,((f.life||FIRE.life)-f.t)/0.6);
   c.save();
   if(f.t<0){ c.globalAlpha=0.35+0.5*(1+f.t/FIRE.warn); c.strokeStyle='#FF8A2A'; c.lineWidth=2; c.beginPath(); c.ellipse(x,y,rx,ry,0,0,7); c.stroke(); c.restore(); return; }
-  /* scorched ember floor = the full danger oval */
-  c.globalAlpha=0.55*fade; c.fillStyle='#3A1214'; c.beginPath(); c.ellipse(x,y,rx,ry,0,0,7); c.fill();
-  c.globalAlpha=0.35*fade; c.fillStyle='#B33B1B'; c.beginPath(); c.ellipse(x,y,rx*0.72,ry*0.72,0,0,7); c.fill();
-  c.globalAlpha=0.9*fade; c.strokeStyle='#6E1D14'; c.lineWidth=2; c.beginPath(); c.ellipse(x,y,rx,ry,0,0,7); c.stroke();
-  c.globalAlpha=fade;
-  if(RRI.fire_patch){ /* ChatGPT's flame strip (Task Drop 1110ba38): a back row and a front row inside the oval */
-    var k=RM?0:Math.floor(t*7+f.s*3)%3, k2=(k+1)%3, im=RRI.fire_patch; c.imageSmoothingEnabled=false;
-    c.drawImage(im,k2*80+8,0,64,48,x-32,Math.round(y-ry*0.55)-31,64,48);
-    if(RRI.burn_flame){ var bf=RRI.burn_flame;
-      for(var q=0;q<FLAMES.length;q++){ var F=FLAMES[q], kb=RM?q%3:(Math.floor(t*8+f.s*3)+q)%3, sc=F[2];
-        c.drawImage(bf,kb*12,0,12,20,x+F[0]-6*sc,y+F[1]-17*sc,12*sc,20*sc); } }
-    c.drawImage(im,k*80,0,80,48,x-40,y+ry-5-31,80,48);
-  } else {
-    var n=LITE?4:7;
-    for(var q=0;q<n;q++){ var ang=q/n*6.283+f.s, fx=x+Math.round(Math.cos(ang)*rx*0.55), fy=y+Math.round(Math.sin(ang)*ry*0.55),
-        h=RM?10:Math.round(9+5*Math.sin(t*6+q*1.7+f.s));
-      c.fillStyle='#3A0E06'; c.fillRect(fx-4,fy-h-1,8,h+2); c.fillStyle='#FF6A1E'; c.fillRect(fx-3,fy-h,6,h); c.fillStyle='#FFC23A'; c.fillRect(fx-1,fy-Math.round(h*0.6),2,Math.round(h*0.6)); }
+  if(RRI.fire_patch){ /* Kody 2026-11-21: fire patches are now LAVA POOLS (Sprite Drop task f21d2bcc, approved painting 7fdb236d); the crust rim is the danger edge. Slow 4 fps, same brightness every frame */
+    var k=RM?0:Math.floor(t*4+f.s*3)%3; c.globalAlpha=fade; c.imageSmoothingEnabled=false;
+    c.drawImage(RRI.fire_patch,k*80,0,80,48,x-40,y-24,80,48);
+  } else { /* fallback: scorched ember oval */
+    c.globalAlpha=0.55*fade; c.fillStyle='#3A1214'; c.beginPath(); c.ellipse(x,y,rx,ry,0,0,7); c.fill();
+    c.globalAlpha=0.35*fade; c.fillStyle='#B33B1B'; c.beginPath(); c.ellipse(x,y,rx*0.72,ry*0.72,0,0,7); c.fill();
+    c.globalAlpha=0.9*fade; c.strokeStyle='#6E1D14'; c.lineWidth=2; c.beginPath(); c.ellipse(x,y,rx,ry,0,0,7); c.stroke();
   }
   c.restore(); }
 /* Rook on fire: two small flames on his shoulders and a draining orange bar over his head */
@@ -964,11 +954,17 @@ function draw(){ var c=cx, w=S&&S.w; c.setTransform(1,0,0,1,0,0);
     var bob=e.type==='slime'?(e.st===1?-Math.abs(Math.sin((e.t%1)*Math.PI/0.6))*10:0):T2.fly?Math.sin(e.t*5)*3:-Math.abs(Math.sin(e.t*7))*1.5;
     var foot=T2.fly?e.y+im.height-4:e.y+e.r+2;
     if(!RRE[e.type]||e.small){ c.fillStyle='rgba(0,0,0,.32)'; c.fillRect(Math.round(e.x-e.r*0.8),Math.round(e.y+e.r-1+(T2.fly?8:0)),Math.round(e.r*1.6),3); }
-    if(e.el) c.drawImage(FX.elite,Math.round(e.x-22),Math.round(e.y+e.r-9+(T2.fly?8:0)));
+    if(e.el&&e.type==='boss') c.drawImage(FX.elite,Math.round(e.x-22),Math.round(e.y+e.r-9+(T2.fly?8:0)));
     if(e.type==='wiz'&&e.st===1) c.drawImage(FX.wizGlow,Math.round(e.x-24),Math.round(e.y-44));
     var flip=e.type==='skel'?Math.cos(e.fa)<0:(p.x<e.x&&e.type!=='boss'&&e.type!=='slime');
-    var top=drawEnemyRR(c,e,p,t), hh=top==null?im.height*sc:foot-top; if(top==null) sprF(e.fl>0&&!RM?nm+'W':nm,e.x+jx,foot+bob,flip&&e.type!=='bat',sc);
-    if(e.el&&!(e.st===1&&e.type!=='slime')) c.drawImage(FX.crown,Math.round(e.x-7),Math.round(foot-hh-12));
+    /* Kody 2026-11-21: elites must read at a glance: a steady gold outline (no pulse), 15% bigger, and a big crown.
+       The outline = the same frame drawn 4 times in solid gold, 2 px out each way (pre-made gold sheets, see rrDraw) */
+    var elG=e.el&&e.type!=='boss', top, hh;
+    if(elG){ c.save(); c.translate(e.x,foot); c.scale(ELSC,ELSC); c.translate(-e.x,-foot); var sj=e.t, sf=e.fl;
+      if(RRE[e.type]||e.type==='bat'||e.type==='slime'){ e.fl=0; for(var gq=0;gq<4;gq++){ RR_GOLD=[[2,0],[-2,0],[0,2],[0,-2]][gq]; e.t=sj; try{ drawEnemyRR(c,e,p,t); } finally{ RR_GOLD=null; } } e.t=sj; e.fl=sf; } }
+    top=drawEnemyRR(c,e,p,t); hh=top==null?im.height*sc:foot-top; if(top==null) sprF(e.fl>0&&!RM?nm+'W':nm,e.x+jx,foot+bob,flip&&e.type!=='bat',sc);
+    if(elG){ c.restore(); hh*=ELSC; }
+    if(e.el&&!(e.st===1&&e.type!=='slime')){ c.imageSmoothingEnabled=false; c.drawImage(RRI.crown||FX.crown,Math.round(e.x-14),Math.round(foot-hh-24),28,20); }
     if(e===openSk) dtx(c,'Open: strike!',e.x,foot-hh-6,13,'#FFE08A',0,'#141026');
     if((e.st===1&&e.type!=='slime'&&e.type!=='boss')) dtx(c,'!',e.x,foot-hh-4,22,'#FF5A6E',0,'#1A0A12');
     if(e.stun>0){ for(var sz=0;sz<2;sz++){ var ab=t*5+sz*3.1; dtx(c,'★',e.x+Math.cos(ab)*12,foot-hh-2+Math.sin(ab)*4,12,'#FFC93C'); } }
