@@ -26,7 +26,7 @@ for r in range(3):
     fg=~bg; lab,n=nd.label(fg); sz=nd.sum(fg,lab,range(1,n+1))
     for k,v in enumerate(sz):
       m=lab==k+1
-      if v<150 or m[:,0].any() or m[:,-1].any(): fg[m]=False
+      if v<150 or (v<3000 and (m[:,0].any() or m[:,-1].any())): fg[m]=False
     bg=~fg
     al=np.where(bg,0,255).astype(np.uint8)
     rgba=np.dstack([t.astype(np.uint8),al]); tile=Image.fromarray(rgba,'RGBA')
