@@ -136,7 +136,7 @@ function drawFloor(p,py,z){ py=Math.round(py); var zi=zKey(z); drawLedge(-12,py,
     if(lit){ cx.fillStyle='rgba(255,200,90,.22)'; cx.fillRect(lx-26,ly-6,52,46); cx.fillStyle='rgba(255,200,90,.18)'; cx.fillRect(lx-36,ly+2,72,30); }
     cx.fillStyle=L; cx.fillRect(lx-12,ly,24,30); cx.fillRect(lx-8,ly-4,16,4);
     cx.fillStyle=lit?'#FFC23D':'#5C5670'; cx.fillRect(lx-9,ly+4,18,22); cx.fillStyle=lit?'#FFF1C2':'#7D7792'; cx.fillRect(lx-3,ly+8,6,12);
-    cx.textAlign='left'; cx.font='400 30px '+DF; cx.lineWidth=6; cx.strokeStyle='rgba(0,0,0,.6)'; cx.strokeText(Math.floor(p.h/20)+' m',22,py-14); cx.fillStyle='#fff'; cx.fillText(Math.floor(p.h/20)+' m',22,py-14); } }
+    cx.textAlign='left'; cx.font='800 26px Inter, sans-serif'; cx.lineWidth=6; cx.strokeStyle='rgba(0,0,0,.6)'; cx.strokeText(Math.floor(p.h/20)+' m',22,py-14); cx.fillStyle='#fff'; cx.fillText(Math.floor(p.h/20)+' m',22,py-14); } }
 
 //@@ GEM
 var GEMS={};
@@ -166,7 +166,7 @@ function airMax(){ return (S.mv.dbl?1:0)+(S.mv.triple?1:0); }
 function doJump(vm){ var nearL=P.x<PW/2+10, nearR=P.x>W-PW/2-10; if(!P.on&&(nearL||nearR)&&!(gt-(P.wallT===undefined?-9:P.wallT)<0.3)){ P.wallT=gt; P.wallSide=nearL?1:-1; }
   var kick=!P.on&&S.mv.wall&&gt-(P.wallT===undefined?-9:P.wallT)<0.3;
   if(kick){ P.vx=P.wallSide*vm*0.95; P.vy=JV*1.12*Math.sqrt(U('jump')); P.face=P.wallSide; P.spin=P.wallSide; P.rot=0; P.wallT=-9; S.kicks=(S.kicks||0)+1;
-    S.jumps++; S.bounces++; SND.boing(); puff(P.x,P.h+40,6); return; }
+    S.jumps++; S.bounces++; SND.boing(); puff(P.x,P.h+40,6); fxAdd('kick',P.x-P.wallSide*PW/2,P.h,P.wallSide); return; }
   var air=!P.on; if(air&&(P.airJ||0)>=airMax()) return;
   if(air){ P.airJ=(P.airJ||0)+1; puff(P.x,P.h,6,'rgba(190,240,255,.9)'); }
   P.on=null; var sp=Math.abs(P.vx); P.vy=(JV+JK*sp)*Math.sqrt(U('jump'))*(air?0.92:1); P.spin=sp>0.78*vm?(P.vx>0?1:-1):0; P.rot=0;
@@ -243,7 +243,7 @@ function drawFog(){ if(!S.started||!fogOn()) return; var y=Math.min(Math.round(s
   cx.fillStyle=calm?'rgba(124,240,255,.22)':'rgba(255,143,163,.25)'; cx.fillRect(0,y-26,W,26);             // a glow just above the edge
   for(var x=-off;x<W;x+=ft.width) cx.drawImage(ft,x,y-ft.height);
   cx.fillStyle='rgba(150,124,200,.9)'; cx.fillRect(0,y,W,H-y+40); cx.fillStyle='rgba(84,60,132,.75)'; cx.fillRect(0,y+50,W,H-y);
-  cx.fillStyle=edge; cx.fillRect(0,y-2,W,4);
+  cx.fillStyle=edge; cx.fillRect(0,y-2,W,4); drawWisps(y);
   var near=P.h-S.fog; if(!S.over&&!S.way&&!S.offer){
     if(near<240){ cx.fillStyle='rgba(255,143,163,.10)'; cx.fillRect(0,0,W,H); }
     if(near<340&&!calm){ var bob=RM()?0:Math.round(Math.sin(gt*4)*4); panel(W/2-210,y-118+bob,420,62); cx.textAlign='center'; cx.fillStyle='#FF8FA3'; cx.font='400 36px '+DF; cx.fillText('FOG CLOSE! CLIMB ↑',W/2,y-76+bob); } } }
@@ -289,7 +289,7 @@ function rockStep(dt){ var i=P.lastI||0, live=inRocks(i)&&!S.rush;
     if(bonkT<=0&&Math.abs(r.x-P.x)<PW/2+24&&r.h<P.h+PH+10&&r.h>P.h-10){ r.dead=true; bonk(r); } });
   rocks=rocks.filter(function(r){ return !r.dead&&sy(r.h)<H+80; }); }
 function bonk(r){ bonkT=1; var d=P.x>=r.x?1:-1; P.vx=d*340; if(P.on){ P.on=null; P.vy=-120; } else P.vy=Math.min(P.vy,-120);
-  endCombo(); CB.on=false; shk=RM()?0:8; SND.crack(); pop(P.x,P.h+160,'BONK!','','#FFB020'); }
+  endCombo(); CB.on=false; shk=RM()?0:8; SND.crack(); pop(P.x,P.h+160,'BONK!','','#FFB020'); fxAdd('bonk',P.x,P.h); }
 var ROCKC=null;
 function rockPx(){ return ROCKC||(ROCKC=pxc(12,12,5,function(g){ var M=['...####.....','..#bbbb##...','.#bbhbbbb#..','#bbhhbbbbb#.','#bbbbbbbsb#.','#bbbbbbbsbb#','#bsbbbbbbbb#','.#bbbbbbsb#.','.#bbbbbbbb#.','..##bbbb##..','....####....','............'];
   M.forEach(function(row,y){ for(var x=0;x<12;x++){ var c=row[x]; if(c==='.') continue; g.fillStyle=c==='#'?'#1B1328':c==='h'?'#E8C79A':c==='s'?'#6B3F22':'#A8693A'; g.fillRect(x,y,1,1); } }); })); }
@@ -301,7 +301,7 @@ function drawRocks(){ if(!rocks.length) return; var img=rockPx();
 function rushStep(){ var left=S.endAt-now();
   if(!S.rush&&left<=RUSH_S*1000&&left>0){ S.rush={i:summitAfter(S.pi||0,SUMMIT_UP),n:0}; rocks=[]; banner={t0:now(),txt:'Summit Rush!',sub:'last minute',kind:'rush'}; SND.way(); idleLeft=-1; save(); }
   if(S.rush){ while(plats.length<=S.rush.i+2) genTo(plats[plats.length-1].h+400);
-    if(P.on&&P.on.i>=S.rush.i){ S.rush.n++; S.bonus+=SUMMIT_PTS; pop(P.x,P.h+240,'SUMMIT!','+'+SUMMIT_PTS,'#FFC23D',true); SND.combo(30);
+    if(P.on&&P.on.i>=S.rush.i){ S.rush.n++; S.bonus+=SUMMIT_PTS; fxAdd('sum',P.x,P.h); pop(P.x,P.h+240,'SUMMIT!','+'+SUMMIT_PTS,'#FFC23D',true); SND.combo(30);
       var q=stagePoint(cv,P.x,sy(P.h)-80); confetti(q[0],q[1],80,2.6); S.rush.i=summitAfter(S.rush.i,SUMMIT_NEXT); save(); } } }
 function summitAfter(i,up){ var t=i+up; while(plats.length<=t+3) genTo(plats[plats.length-1].h+400);
   while(t%FLOOR_EVERY===0||plats[t].amp||plats[t].kind){ t++; while(plats.length<=t+3) genTo(plats[plats.length-1].h+400); } return t; }   /* a plain, still ledge */
@@ -309,6 +309,31 @@ var LANT=null;
 function lanternPx(){ return LANT||(LANT=pxc(12,18,4,function(g){ var M=['....####....','...#....#...','..########..','..#gggggg#..','.#gyyyyyyg#.','.#gywwwwyg#.','.#gywwwwyg#.','.#gyywwyyg#.','.#gyyyyyyg#.','..#gggggg#..','..########..','....#..#....','....####....','............','............','............','............','............'];
   M.forEach(function(row,y){ for(var x=0;x<12;x++){ var c=row[x]; if(c==='.') continue; g.fillStyle=c==='#'?'#1B1328':c==='g'?'#C8891E':c==='y'?'#FFC23D':'#FFF3C4'; g.fillRect(x,y,1,1); } }); })); }
 function drawRush(){ if(!S.rush||S.over) return; var p=plats[S.rush.i]; if(!p) return; var img=lanternPx(), x=cxAt(p,gt), py=sy(p.h);
-  if(py>40){ var gl=RM()?0.3:0.25+0.1*Math.sin(gt*3); cx.globalAlpha=gl; cx.fillStyle='#FFC23D'; cx.fillRect(x-70,py-150,140,150); cx.globalAlpha=1;
+  drawBeam(x,py); if(py>40){ var gl=RM()?0.3:0.25+0.1*Math.sin(gt*3); cx.globalAlpha=gl; cx.fillStyle='#FFC23D'; cx.fillRect(x-70,py-150,140,150); cx.globalAlpha=1;
     cx.drawImage(img,Math.round(x-img.width/2),Math.round(py-img.height-6)); cx.textAlign='center'; cx.fillStyle='#FFC23D'; cx.font='400 30px '+DF; cx.fillText('SUMMIT',x,py-img.height-18); }
   else if(!banner){ var n=Math.max(0,S.rush.i-(S.pi||0)); panel(W/2-190,150,380,60); cx.textAlign='center'; cx.fillStyle='#FFC23D'; cx.font='400 34px '+DF; cx.fillText('SUMMIT ↑ '+n+' LEDGES',W/2,192); } }
+/* ================= v5 pixel effects (Kody 2026-11-22: small and few). Drawn in code on a 4 px grid, PixelFX-style timing:
+   a quick hit, a short hold, a fade. Presentation only: none of this touches the rules. At most 6 at once. */
+var FXS=[], FXMAX=6;
+function fxAdd(k,x,h,d){ if(FXS.length>=FXMAX) FXS.shift(); FXS.push({k:k,x:x,h:h,d:d||1,t0:now(),s:Math.random()*6}); }
+function px4(x,y,s,c){ cx.fillStyle=c; cx.fillRect(Math.round(x/4)*4,Math.round(y/4)*4,s,s); }
+var FXDUR={kick:0.3,land:0.4,sum:0.7,bonk:0.3};
+function drawFx(){ var t=now();
+  FXS=FXS.filter(function(f){ return (t-f.t0)/1000<FXDUR[f.k]; });
+  FXS.forEach(function(f){ var e=(t-f.t0)/1000, k=e/FXDUR[f.k], y=sy(f.h), a=k<0.6?1:1-(k-0.6)/0.4; cx.globalAlpha=a;
+    if(f.k==='kick'){ /* wall-kick sparks: a 4-point star at the wall, then 5 sparks flying off the wall */
+      var r=Math.round(4+k*10); if(k<0.35){ px4(f.x-2,y-46-r,4,'#FFFFFF'); px4(f.x-2,y-42+r,4,'#FFFFFF'); px4(f.x-2-r*f.d*-1,y-44,4,'#7CF0FF'); px4(f.x-2,y-44,8,'#FFF3C4'); }
+      for(var i=0;i<5;i++){ var an=(-0.9+i*0.45), sp=60+i*18; px4(f.x+f.d*Math.cos(an)*sp*e*3,y-44+Math.sin(an)*sp*e*3,4,i%2?'#7CF0FF':'#FFF3C4'); } }
+    else if(f.k==='land'){ /* heavy-landing dust: two low puffs rolling out along the ledge */
+      for(var j=0;j<4;j++){ var dx=(18+j*14)*(0.4+k), sz=k<0.5?8:4, c=j%2?'rgba(236,226,206,.95)':'rgba(255,255,255,.9)'; px4(f.x-dx,y-6-j%2*4-k*6,sz,c); px4(f.x+dx-4,y-6-j%2*4-k*6,sz,c); } }
+    else if(f.k==='sum'){ /* Summit reached: a ring of gold pixels and four rays */
+      var R=20+k*90; for(var q=0;q<12;q++){ var aa=q/12*6.283+f.s; px4(f.x+Math.cos(aa)*R,y-60+Math.sin(aa)*R*0.8,k<0.5?8:4,q%2?'#FFC23D':'#FFF3C4'); }
+      if(k<0.4) [[0,-1],[0,1],[-1,0],[1,0]].forEach(function(v){ for(var s=1;s<4;s++) px4(f.x+v[0]*(R*0.5+s*8),y-60+v[1]*(R*0.4+s*8),4,'#FFFFFF'); }); }
+    else if(f.k==='bonk'){ /* rock hit: a small orange star */
+      var rr=6+k*14; [[1,0],[-1,0],[0,1],[0,-1],[0.7,0.7],[-0.7,0.7],[0.7,-0.7],[-0.7,-0.7]].forEach(function(v,i){ px4(f.x+v[0]*rr,y-70+v[1]*rr,i<4?8:4,i<4?'#FFB020':'#FFF3C4'); }); }
+    cx.globalAlpha=1; }); }
+/* the summit lantern sends a stepped beam of light up the tower, so you can see where to go */
+function drawBeam(x,py){ var g=RM()?0.22:0.18+0.06*Math.sin(gt*2.4); cx.globalAlpha=g; cx.fillStyle='#FFC23D';
+  for(var s=0;s<6;s++){ var w=40-s*6; cx.fillRect(Math.round(x-w/2),py-130-(s+1)*90,w,90); } cx.globalAlpha=1; }
+/* fog edge shimmer: a few light wisps drifting along the top of the fog */
+function drawWisps(y){ for(var i=0;i<7;i++){ var x=((i*157+gt*(18+i*5))%(W+80))-40, yy=y-8-((i*37)%14); cx.fillStyle=i%2?'rgba(255,255,255,.55)':'rgba(230,214,255,.6)'; cx.fillRect(Math.round(x/4)*4,Math.round(yy/4)*4,12+(i%3)*4,4); } }

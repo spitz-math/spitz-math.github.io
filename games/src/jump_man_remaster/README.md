@@ -26,3 +26,8 @@ Balance check first (/mnt/project-files/reviews/balance_jump_man_2026-11-22/RESU
 - Summit Rush (last 60 s): no Waystones, fog 25% faster, combos pay double; golden lantern 40 ledges up pays 400, then one 30 higher.
 - End: reward card closes, no confetti on 0 right or a fog loss, Play again waits 2 s. Shake is smooth and off with reduced motion. Save ver 4.
 Tests: tests/v4.js (rules, replaces v2.js), tests/sets.js, tests/fps.js. Gameplay checks adapter: add it when the remaster replaces the live file (the adapter plays games/jump_man_multiplication.html).
+
+## v5 (2026-11-22, Kody picked 2-4 from the follow-ups)
+- End screen: "Height points" and "Bonus points" replace Best streak and Height · combo (score = height + bonus).
+- Height, the Waystone/summit meter count and the ledge height marks use Inter 800: the pixel digits blurred when the canvas is scaled to a Chromebook screen.
+- Pixel effects drawn in code (PixelFX-style timing, 4 px grid, at most 6 at once): wall-kick sparks, heavy-landing dust (falls faster than 1100 px/s), rock bonk star, summit burst, a stepped light beam above the summit lantern, light wisps along the fog edge. Presentation only: scripted policy scores unchanged.

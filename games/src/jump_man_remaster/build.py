@@ -164,7 +164,7 @@ t = cut(t, "  var cap=40, fh=420, fy=220,", "  // Turbo chip",
   "  if(S.rush){ left=Math.max(0,S.rush.i-(S.pi||0)); lvl=Math.max(0,Math.min(1,1-left/(S.rush.n?SUMMIT_NEXT:SUMMIT_UP))); mc='#FFC23D'; } panel(W-108,fy-58,94,fh+112);\n"
   "  cx.fillStyle='#242936'; cx.fillRect(W-76,fy,30,fh); cx.fillStyle=mc; cx.fillRect(W-76,fy+fh*(1-lvl),30,fh*lvl);\n"
   "  cx.fillStyle='#1B1328'; cx.fillRect(W-71,fy-46,20,32); cx.fillStyle='#8A8FA6'; cx.fillRect(W-69,fy-44,16,28); cx.fillStyle='#7CF0FF'; cx.fillRect(W-63,fy-40,4,18);\n"
-  "  cx.fillStyle='#fff'; cx.font='400 34px '+DF; cx.fillText(left,W-61,fy+fh+44);\n")
+  "  cx.fillStyle='#fff'; cx.font='800 32px Inter, sans-serif'; cx.fillText(left,W-61,fy+fh+44);\n")
 t = cut(t, "  if(live&&S.energy<=0&&!buffOn('free')){", "  else if(live&&S.jumps<3){",
   "  if(live&&S.way){ cx.fillStyle='rgba(8,9,13,.82)'; cx.fillRect(W/2-380,230,760,236); cx.strokeStyle='#7CF0FF'; cx.lineWidth=4; cx.strokeRect(W/2-380,230,760,236);\n"
   "    cx.fillStyle='#fff'; cx.font='400 60px '+DF; cx.fillText('WAYSTONE',W/2,306); cx.font='700 32px Inter, sans-serif'; cx.fillStyle='#7CF0FF'; cx.fillText('2 right: a new move and a heart back  →',W/2,358);\n"
@@ -179,7 +179,11 @@ for old, new in [
   ("hearts:3, fog:-800, fogOut:false, buff:", "hearts:3, fog:-800, fogOut:false, calm:0, climbT:0, rush:null, rockOn:false, buff:"),
   ("  fogStep(dt); if(S.over) return;\n  if(P.on&&P.on.i>=S.nextWay&&!S.way&&!S.offer) openWay();",
    "  fogStep(dt); if(S.over) return; rockStep(dt); rushStep();\n  if(P.on&&P.on.i>=S.nextWay&&!S.way&&!S.offer&&!S.rush) openWay();"),
-  ("  drawKickHint(); drawFog();\n", "  drawRocks(); drawRush(); drawKickHint(); drawFog();\n"),
+  ("  drawKickHint(); drawFog();\n", "  drawRocks(); drawRush(); drawFx(); drawKickHint(); drawFog();\n"),
+  # v5: the end screen shows the score as height + bonus; HUD numbers in a heavy sans so they stay readable when the canvas is scaled down
+  ("['Best streak',S.best],['Height · combo',Math.floor(S.top/20).toLocaleString()+' m · '+S.bestCombo]", "['Height points',Math.floor(S.top/20).toLocaleString()],['Bonus points','+'+S.bonus.toLocaleString()]"),
+  ("cx.fillStyle='#fff'; cx.font='400 52px '+DF; cx.fillText(Math.floor(Math.max(0,P.h)/20)+' m',W-114,104);", "cx.fillStyle='#fff'; cx.font='800 48px Inter, sans-serif'; cx.fillText(Math.floor(Math.max(0,P.h)/20)+' m',W-114,102);"),
+  ("function landOn(p){ var diff=p.i-P.lastI, wasTop=S.top;", "function landOn(p){ if(P.vy<-1100) fxAdd('land',P.x,p.h); var diff=p.i-P.lastI, wasTop=S.top;"),
   ("  pops.forEach(function(o){", "  if(!S.way) pops.forEach(function(o){"),
   ("  else if(live&&S.jumps<3){", "  else if(live&&S.jumps<3&&!banner){"),
   # feel pass (spitz-game-feel): smooth summed-sine shake instead of random jitter, off with reduced motion
