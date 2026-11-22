@@ -245,7 +245,8 @@ function button(link,code){ return '<a href="'+link+'" target="_blank" rel="noop
       inp.addEventListener('change',function(){ put(inp.value); }); inp.addEventListener('blur',function(){ put(inp.value); }); }); }
   /* after the game's own start-up code, which may set the box from a saved run */
   function later(){ setTimeout(hook,0); }
-  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',later); else later(); })();
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',later); else later();
+  addEventListener('load',later); })();   /* once more after load, for games that build their start screen late (each box is only set up once) */
 /* tab icon: each game has its own emoji icon (Kody, 2026-10-11), picked from the file name; unknown pages get the Spitz burger */
 (function(){ if(document.querySelector('link[rel~="icon"]')) return;
   var E={ splat_range:'🎯', star_swarm:'👾', shift_racer:'🏎️', jump_man_multiplication:'👟', football_buds:'🏈', hoop_buds:'🏀', dash:'⚡', skate:'🛹', mini_golf:'⛳',
