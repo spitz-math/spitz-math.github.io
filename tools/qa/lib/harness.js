@@ -36,7 +36,7 @@ class Run {
     /* 3D games ("webgl": true in apps.json, e.g. Dig Buds) need software WebGL in headless Chrome; every other game launches exactly as before. */
     const args = this.app && this.app.webgl ? ['--use-gl=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist'] : [];
     this.browser = await require('playwright').chromium.launch(args.length ? { args } : undefined); }
-  async close() { await this.browser.close().catch(() => {}); this.server.close(); }
+  async close() { if (this.browser) await this.browser.close().catch(() => {}); if (this.server) this.server.close(); }   // guarded: a failed launch must not hide its own error
 
   /* A fresh page that records script errors, missing files and console errors for the current test. */
   async page(viewport = 'chromebook', cpu = 1) {
