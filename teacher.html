@@ -76,6 +76,15 @@ select{ background:var(--paper); color:var(--ink); border:2px solid var(--line);
 .big .board{ display:grid; grid-template-columns:repeat(var(--cols,1),minmax(0,1fr)); gap:1.2vh 2vw; }
 @media (prefers-reduced-motion:no-preference){ .big .lb{ animation:rise .5s both; } @keyframes rise{ from{ opacity:0; transform:translateY(14px); } } }
 .lb.t{ grid-template-columns:56px minmax(0,1fr) auto auto auto; }
+.pending{ margin-top:14px; padding:14px 16px; border:2px solid var(--brand); border-radius:14px; }
+.pending h3{ margin:0 0 4px; font-size:17px; color:var(--brand); }
+.pend{ display:flex; flex-wrap:wrap; gap:8px 10px; align-items:center; margin-top:10px; }
+.pend .who{ flex:1 1 220px; font-size:14px; color:var(--muted); overflow-wrap:anywhere; } .pend .who b{ color:var(--ink); font-family:var(--mono); }
+.pend input[type=text]{ flex:0 1 220px; width:auto; padding:8px 10px; }
+.lb .flag{ display:block; margin-top:3px; font-weight:700; font-size:13px; color:var(--no); }
+.lb .btns{ display:flex; flex-wrap:wrap; gap:6px; justify-content:flex-end; }
+#skipnote:empty{ display:none; }
+
 .lb .hide{ padding:8px 12px; font-size:13px; }
 @media (max-width:560px){ .lb.t{ grid-template-columns:40px minmax(0,1fr) auto auto; } }
 .hidden-names{ margin-top:12px; display:flex; flex-wrap:wrap; gap:8px; align-items:center; font-size:14px; color:var(--muted); }
@@ -109,6 +118,8 @@ select{ background:var(--paper); color:var(--ink); border:2px solid var(--line);
       <p class="hint">Open the form's response sheet, select the rows (or the whole sheet), copy, and paste here. Each row needs the student's name and their score code.</p>
       <textarea id="paste" spellcheck="false" placeholder="10/10/2026 9:14:02	Jake S.	RJKC-9SWH-EEB5-4T8Z"></textarea>
       <div class="row"><button class="primary" id="go">Check codes</button><button id="clear">Clear</button><span class="hint" id="count" style="margin:0"></span></div>
+      <div class="row"><button class="primary" id="load" title="Pulls the score form's responses from your answer-log Google Sheet, then checks them against the answer log">Load new scores</button><button id="logcheck" title="Flags scores that have no matching answers in your answer log">Check answer log</button></div>
+      <div class="status" id="log-status" aria-live="polite"></div>
     </section>
     <section class="card">
       <h2>Check one code</h2>
@@ -132,13 +143,17 @@ select{ background:var(--paper); color:var(--ink); border:2px solid var(--line);
     <div class="board" id="board"></div>
     <div class="hidden-names" id="hidden" hidden></div>
     <div class="hidden-names" id="counted" hidden></div>
+    <div class="hidden-names" id="dropped" hidden></div>
+    <p class="hint" id="skipnote"></p>
+    <div class="pending" id="pending" hidden></div>
+    <details class="problems" id="names" hidden><summary>Approved board names (<span id="names-n">0</span>)</summary><div id="names-list"></div></details>
     <details class="problems" id="problems" hidden><summary></summary><ul id="plist"></ul></details>
   </section>
 
   <section class="card post">
     <div>
       <h2>Post to the student leaderboard</h2>
-      <p class="hint">Posts the top 10 for every game (all time, every question set, one spot per student) to the leaderboard students open from the hub. Hidden names stay off. Students see names, scores, accuracy and the question set, never the codes. The site takes a minute or two to show the new board.</p>
+      <p class="hint">Posts the top 10 for every game (this season, every question set, one spot per student, at least 70% right) to the leaderboard students open from the hub. Hidden names stay off. Students see names, scores, accuracy and the question set, never the codes. The site takes a minute or two to show the new board.</p>
       <div class="row" style="margin-top:0"><button class="primary" id="publish">Post to the site</button><button id="download">Download file instead</button></div>
       <div class="status" id="pub-status" aria-live="polite"></div>
     </div>
@@ -170,6 +185,16 @@ select{ background:var(--paper); color:var(--ink); border:2px solid var(--line);
 (function(){
 var $=function(i){ return document.getElementById(i); }, C=window.SpitzCode;
 var KEY='spitz_leaderboard_v1', HKEY='spitz_hidden_v1', OKEY='spitz_counted_v1', okd={}, TKEY='spitz_gh_key', entries=[], problems=[], st={game:null,set:'*',when:'all'}, hidden={};
+/* Thanksgiving 2026 reset (Kody, 2026-11-22): the boards start over. Codes from runs before SEASON are left out, and a run needs FLOOR right. */
+var SEASON='2026-11-22', SEASON_DAY=Date.UTC(2026,10,22), FLOOR=C.FLOOR||0.7, skipped={old:0,floor:0};
+/* School sign-in on the form gives every row the student's school email (an ID number). The first time an ID sends a score, Kody approves
+   the name it shows on the board; after that every score from that ID posts under that name, whatever name was typed in the game.
+   IDs and emails stay in this browser only: boardData() never writes them. */
+var NKEY='spitz_board_names_v1', DKEY='spitz_dropped_v1', boardNames={}, dropped={}, logCheck=null;
+try{ boardNames=JSON.parse(localStorage.getItem(NKEY)||'{}')||{}; }catch(e){}
+try{ dropped=JSON.parse(localStorage.getItem(DKEY)||'{}')||{}; }catch(e){}
+function saveNames(){ try{ localStorage.setItem(NKEY,JSON.stringify(boardNames)); }catch(e){} }
+function saveDropped(){ try{ localStorage.setItem(DKEY,JSON.stringify(dropped)); }catch(e){} }
 try{ hidden=JSON.parse(localStorage.getItem(HKEY)||'{}')||{}; }catch(e){}
 try{ okd=JSON.parse(localStorage.getItem(OKEY)||'{}')||{}; }catch(e){}
 function saveOk(){ try{ localStorage.setItem(OKEY,JSON.stringify(okd)); }catch(e){} }
@@ -197,10 +222,11 @@ function nameTries(n){ var w=String(n).trim().split(/\s+/).filter(Boolean), t=[S
   if(w.length>1){ t.push(w[0]+' '+w[w.length-1].charAt(0).toUpperCase()); if(w.length>2) t.push(w[0]+' '+w[1].charAt(0).toUpperCase()); t.push(w[0]); }
   return t; }
 function readAs(code,n){ var t=nameTries(n); for(var i=0;i<t.length;i++){ var r=C.read(code,t[i]); if(r){ if(i) r.as=t[i]; return r; } } return null; }
-function parse(text){ entries=[]; problems=[]; var seen={};
+function parse(text){ entries=[]; problems=[]; skipped={old:0,floor:0}; var seen={};
   text.split(/\r?\n/).forEach(function(line){ if(!line.trim()) return;
     var m=line.match(OLD)||line.match(NEW), fields=line.split(/\t|,(?=(?:[^"]*"[^"]*")*[^"]*$)/).map(function(f){ return f.replace(/^"|"$/g,'').trim(); });
-    var rest=m?line.replace(m[0],' '):line, name='';
+    var rest=m?line.replace(m[0],' '):line, name='', email='';
+    rest.split(/\t|,/).some(function(f){ f=f.replace(/^"|"$/g,'').trim().toLowerCase(); if(/^[^\s@]+@[^\s@]+\.[a-z]+$/.test(f)){ email=f; return true; } return false; });
     rest.split(/\t|,/).some(function(f){ f=f.replace(/^"|"$/g,'').trim(); if(!f||isStamp(f)||!/[a-z]/i.test(f)||/^(name|score code|code|timestamp)$/i.test(f)||f.indexOf('@')>=0) return false; name=f; return true; });
     if(!m){ if(name&&!/^(timestamp|name)/i.test(line.trim())) problems.push(esc(name)+': no score code in this row'); return; }
     if(!name){ problems.push(esc(m[0])+': no name in this row'); return; }
@@ -211,11 +237,43 @@ function parse(text){ entries=[]; problems=[]; var seen={};
     if(!r){ problems.push('<b>'+esc(name)+'</b>: '+esc(m[0].toUpperCase())+' isn’t a real score code (a typo in the code itself)'); return; }
     var k=r.code; if(seen[k]){ if(seen[k]!==C.normName(name)) problems.push('<b>'+esc(name)+'</b>: same code as '+esc(seen[k])); return; } seen[k]=C.normName(name);
     var gj=C.GAMES[r.game]; if(gj&&gj[4]) r.game=gj[4];   /* an older id that shares a board (Star Swarm codes from before 2026-11-17) */
-    r.name=name; r.who=C.normName(name); if(!r.date) r.date=stampDate(fields); entries.push(r); });
+    if(!r.date) r.date=stampDate(fields);
+    if(r.old||!r.date||r.date.getTime()<SEASON_DAY){ skipped.old++; return; }   /* from before the reset */
+    r.typed=name; r.email=email; r.who=email?'@'+email:C.normName(name); r.name=email?(boardNames[email]||''):name;
+    if(!r.answered||r.correct/r.answered<FLOOR){ skipped.floor++; r.under=true; }
+    entries.push(r); });
   var ids=Object.keys(C.GAMES).filter(function(id){ return entries.some(function(e){ return e.game===id; }); });
   if(ids.indexOf(st.game)<0) st.game=ids[0]||null;
   $('count').textContent=entries.length?entries.length+' score'+(entries.length===1?'':'s')+' checked out':'';
-  render(); }
+  applyFlags(); render(); }
+
+/* ---------- the answer log check: a real run leaves its answers in Kody's Google Sheet (scorecode.js logs each one), a made-up code doesn't ---------- */
+function lsGet(k){ try{ return localStorage.getItem(k)||''; }catch(e){ return ''; } }
+function sheetUrl(extra){ var u=lsGet('spitz_stats_url'), k=lsGet('spitz_stats_key'); if(!u||!k) return ''; return u+(u.indexOf('?')<0?'?':'&')+'key='+encodeURIComponent(k)+extra; }
+function boardOf(g){ var gj=C.GAMES[g]; return gj&&gj[4]||g; }
+function applyFlags(){ entries.forEach(function(e){ e.flag=e.flagShort=''; }); if(!logCheck) return;
+  entries.forEach(function(e){ if(!e.date) return; var d0=dayNum(e.date)*864e5, nm=C.normName(e.typed), most=0;
+    logCheck.forEach(function(a){ if(a.t<d0-864e5||a.t>d0+2*864e5||boardOf(a.g)!==e.game||C.normName(a.n)!==nm) return; if(a.r>most) most=a.r; });
+    if(!most){ e.flagShort='no answers logged'; e.flag='Your answer log has nothing for this name, game and day. It could be a made-up code, or the Chromebook was offline the whole run.'; }
+    else if(most<e.answered*0.5){ e.flagShort='only '+most+' of '+e.answered+' logged'; e.flag='The code says '+e.answered+' answers, but the most your answer log has for this name, game and day is '+most+'.'; } }); }
+function logStatus(t,bad){ var o=$('log-status'); o.className='status'+(bad?' bad':''); o.textContent=t; }
+function checkLog(){ var days=Math.min(120,Math.max(1,Math.ceil((Date.now()-SEASON_DAY)/864e5)+1)), u=sheetUrl('&days='+days);
+  if(!u){ logStatus('Connect your answer log on the Class stats page first (same link and key).',true); return Promise.resolve(); }
+  logStatus('Checking the answer log…');
+  return fetch(u,{cache:'no-store'}).then(function(r){ if(!r.ok) throw new Error('http'); return r.json(); }).then(function(d){ if(d.error==='key') throw new Error('key');
+    logCheck=(d.rows||[]).map(function(a){ return { t:+a[0], n:a[2], g:a[3], r:+a[6]||0 }; }).filter(function(a){ return a.g&&a.r; });
+    applyFlags(); render(); var f=entries.filter(function(e){ return e.flag&&counts(e); }).length;
+    logStatus(f?f+' score'+(f===1?' looks':'s look')+' off: see ⚠ on the boards.':'Every score matches your answer log.'); })
+  .catch(function(e){ logStatus(e.message==='key'?'The answer log key doesn’t match. Check it on the Class stats page.':'Couldn’t reach your answer log. Try again in a minute.',true); }); }
+/* Load new scores: the form's responses tab lives in the answer-log spreadsheet, and its Apps Script hands them over with the same key */
+function loadScores(){ var u=sheetUrl('&scores=1'); if(!u){ logStatus('Connect your answer log on the Class stats page first (same link and key).',true); return; }
+  $('load').disabled=true; logStatus('Loading new scores…');
+  fetch(u,{cache:'no-store'}).then(function(r){ if(!r.ok) throw new Error('http'); return r.json(); }).then(function(d){
+    if(d.error==='key') throw new Error('key'); if(d.error==='noform'||!d.rows) throw new Error('noform');
+    var text=d.rows.map(function(r){ return r.map(function(c){ return String(c).replace(/[\t\r\n]+/g,' '); }).join('\t'); }).join('\n');
+    $('paste').value=text; try{ localStorage.setItem(KEY,text); }catch(e){} parse(text); return checkLog(); })
+  .catch(function(e){ logStatus(e.message==='key'?'The answer log key doesn’t match. Check it on the Class stats page.':e.message==='noform'?'Your answer log sheet has no form responses tab yet. Link the score form to it (steps in the reset guide).':'Couldn’t reach your Google Sheet. Try again, or paste the responses instead.',true); })
+  .then(function(){ $('load').disabled=false; }); }
 
 function dayNum(d){ return d?Math.floor(d.getTime()/864e5):null; }
 function inWhen(e,when){ when=when||st.when; if(when==='all') return true; if(!e.date) return false; var n=new Date(), t=Math.floor(Date.UTC(n.getFullYear(),n.getMonth(),n.getDate())/864e5), d=dayNum(e.date);
@@ -225,14 +283,16 @@ function setLabel(e){ return e.setName+(e.allTopics===false?' · '+e.topics.join
 function better(a,b){ if(a.kind==='strokes') return a.score<b.score||(a.score===b.score&&a.correct>b.correct);
   if(a.kind==='versus') return a.score>b.score||(a.score===b.score&&a.buds>b.buds);
   return a.score>b.score||(a.score===b.score&&a.correct/(a.answered||1)>b.correct/(b.answered||1)); }
-function rankFor(game,set,when){ var best={}; entries.forEach(function(e){ if(e.game!==game||hidden[e.who]||!inWhen(e,when)) return; if(set!=='*'&&setKey(e)!==set) return;
+function counts(e){ return !e.under&&!!e.name&&!dropped[e.code]&&!hidden[e.who]; }
+function rankFor(game,set,when){ var best={}; entries.forEach(function(e){ if(e.game!==game||!counts(e)||!inWhen(e,when)) return; if(set!=='*'&&setKey(e)!==set) return;
     var k=e.who; if(!best[k]||better(e,best[k])) best[k]=e; });
   return Object.keys(best).map(function(k){ return best[k]; }).sort(function(a,b){ return better(a,b)?-1:better(b,a)?1:0; }); }
 function ranked(){ return rankFor(st.game,st.set,st.when); }
 function fmtDate(d){ return d?d.toLocaleDateString(undefined,{month:'short',day:'numeric',timeZone:'UTC'}):''; }
 function rowHtml(e,i,meta,hideBtn){ var acc=e.answered?Math.round(100*e.correct/e.answered)+'%':'';
-  return '<div class="lb'+(hideBtn?' t':'')+(i<3?' g'+(i+1):'')+'" style="animation-delay:'+(i*60)+'ms"><span class="rk">'+(i+1)+'</span><span class="nm">'+esc(e.name)+(meta?'<span class="meta">'+esc(meta(e))+'</span>':'')+'</span><span class="sc">'+esc(e.display)+(e.bonus?'<span title="Suggested skill bonus"> ⭐</span>':'')+'</span><span class="ac" title="Accuracy">'+acc+'</span>'+
-    (hideBtn?'<button class="hide" data-hide="'+esc(e.who)+'" data-name="'+esc(e.name)+'" title="Keep this name off every board">Hide name</button>':'')+'</div>'; }
+  return '<div class="lb'+(hideBtn?' t':'')+(i<3?' g'+(i+1):'')+'" style="animation-delay:'+(i*60)+'ms"><span class="rk">'+(i+1)+'</span><span class="nm">'+esc(e.name)+(meta?'<span class="meta">'+esc(meta(e))+'</span>':'')+(hideBtn&&e.flag?'<span class="flag" title="'+esc(e.flag)+'">⚠ '+esc(e.flagShort)+'</span>':'')+'</span><span class="sc">'+esc(e.display)+(e.bonus?'<span title="Suggested skill bonus"> ⭐</span>':'')+'</span><span class="ac" title="Accuracy">'+acc+'</span>'+
+    (hideBtn?'<span class="btns">'+(e.flag?'<button class="hide" data-drop="'+esc(e.code)+'" data-name="'+esc(e.name+' · '+e.display)+'" title="Leave this one score off the board">Drop score</button>':'')+
+      '<button class="hide" data-hide="'+esc(e.who)+'" data-name="'+esc(e.name)+'" title="Keep this name off every board">Hide name</button></span>':'')+'</div>'; }
 
 function render(){
   var counts={}; entries.forEach(function(e){ counts[e.game]=(counts[e.game]||0)+1; });
@@ -249,6 +309,16 @@ function render(){
   $('hidden').innerHTML='Hidden names:'+hk.map(function(k){ return '<button data-unhide="'+esc(k)+'" title="Show this name again"><s>'+esc(hidden[k])+'</s> · Show</button>'; }).join('');
   var ok=entries.filter(function(e){ return e.counted; }); $('counted').hidden=!ok.length;
   $('counted').innerHTML='Counted by you (name didn’t match):'+ok.map(function(e){ return '<button data-uncount="'+esc(e.counted)+'" title="Stop counting this score">'+esc(e.name)+' · '+esc(e.display)+' · Undo</button>'; }).join('');
+  var pend={}; entries.forEach(function(e){ if(e.email&&!boardNames[e.email]){ var q=pend[e.email]||(pend[e.email]={typed:{},n:0}); q.typed[e.typed]=1; q.n++; } });
+  var pk=Object.keys(pend); $('pending').hidden=!pk.length;
+  $('pending').innerHTML='<h3>New students: approve the name the board shows</h3><p class="hint">Their scores stay off the boards until you approve a name (first name, last initial). You do this once per student; their school ID never goes on the site.</p>'+
+    pk.map(function(em){ var q=pend[em], t=Object.keys(q.typed), id=em.split('@')[0];
+      return '<div class="pend"><span class="who"><b>'+esc(id)+'</b> typed '+t.map(esc).join(', ')+' · '+q.n+' score'+(q.n===1?'':'s')+'</span><input type="text" maxlength="30" autocomplete="off" data-em="'+esc(em)+'" value="'+esc(t[0]||'')+'" aria-label="Board name for '+esc(id)+'"><button class="primary" data-approve="'+esc(em)+'">Approve</button></div>'; }).join('');
+  var nk=Object.keys(boardNames); $('names').hidden=!nk.length; $('names-n').textContent=nk.length;
+  $('names-list').innerHTML=nk.sort(function(a,b){ return boardNames[a].localeCompare(boardNames[b]); }).map(function(em){ return '<div class="pend"><span class="who"><b>'+esc(em.split('@')[0])+'</b></span><input type="text" maxlength="30" autocomplete="off" data-rename="'+esc(em)+'" value="'+esc(boardNames[em])+'" aria-label="Board name for '+esc(em.split('@')[0])+'"></div>'; }).join('');
+  var dk=Object.keys(dropped); $('dropped').hidden=!dk.length;
+  $('dropped').innerHTML='Dropped scores:'+dk.map(function(k){ return '<button data-undrop="'+esc(k)+'" title="Put this score back"><s>'+esc(dropped[k])+'</s> · Undo</button>'; }).join('');
+  $('skipnote').textContent=[skipped.old?skipped.old+' from before the reset ('+fmtDate(new Date(SEASON_DAY))+')':'',skipped.floor?skipped.floor+' under '+Math.round(FLOOR*100)+'% right':''].filter(Boolean).join(' · ').replace(/^(.)/,'Left off the boards: $1');
   $('problems').hidden=!problems.length; $('problems').querySelector('summary').textContent=problems.length+' row'+(problems.length===1?'':'s')+' to check';
   $('plist').innerHTML=problems.map(function(p){ return '<li>'+p+'</li>'; }).join('');
 }
@@ -304,6 +374,13 @@ $('tok-state').addEventListener('click',function(e){ if(e.target.id!=='tok-forge
 $('board').addEventListener('click',function(e){ var b=e.target.closest('[data-hide]'); if(!b) return; hidden[b.dataset.hide]=b.dataset.name; saveHidden(); render(); });
 $('plist').addEventListener('click',function(e){ var b=e.target.closest('[data-ok]'); if(!b) return; okd[b.dataset.ok]=b.dataset.name; saveOk(); parse($('paste').value); });
 $('counted').addEventListener('click',function(e){ var b=e.target.closest('[data-uncount]'); if(!b) return; delete okd[b.dataset.uncount]; saveOk(); parse($('paste').value); });
+$('board').addEventListener('click',function(e){ var b=e.target.closest('[data-drop]'); if(!b) return; dropped[b.dataset.drop]=b.dataset.name; saveDropped(); render(); });
+$('dropped').addEventListener('click',function(e){ var b=e.target.closest('[data-undrop]'); if(!b) return; delete dropped[b.dataset.undrop]; saveDropped(); render(); });
+function approve(em){ var i=$('pending').querySelector('input[data-em="'+em.replace(/"/g,'')+'"]'), v=i&&i.value.trim(); if(!v){ if(i) i.focus(); return; } boardNames[em]=v.slice(0,30); saveNames(); parse($('paste').value); }
+$('pending').addEventListener('click',function(e){ var b=e.target.closest('[data-approve]'); if(b) approve(b.dataset.approve); });
+$('pending').addEventListener('keydown',function(e){ var i=e.target.closest('input[data-em]'); if(i&&e.key==='Enter') approve(i.dataset.em); });
+$('names-list').addEventListener('change',function(e){ var i=e.target.closest('input[data-rename]'); if(!i) return; var v=i.value.trim(); if(v) boardNames[i.dataset.rename]=v.slice(0,30); else delete boardNames[i.dataset.rename]; saveNames(); parse($('paste').value); });
+$('load').addEventListener('click',loadScores); $('logcheck').addEventListener('click',checkLog);
 $('hidden').addEventListener('click',function(e){ var b=e.target.closest('[data-unhide]'); if(!b) return; delete hidden[b.dataset.unhide]; saveHidden(); render(); });
 tokState();
 
