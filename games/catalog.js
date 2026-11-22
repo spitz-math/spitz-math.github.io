@@ -173,6 +173,7 @@ window.SpitzGames=[
      Games not listed here are always shown. Hidden games' files stay on the site. */
   /* Kody approved this schedule 2026-10-12 (Mondays 12:00 UTC) */
   var UNLOCK={ dig_buds:null, /* Dig Buds: locked until Kody picks its date */
+    football_buds:null, /* Football Buds BLITZ (2026-11-22): live at games/football_buds.html as a secret link, off the hub until Kody picks its date */
     mini_golf:'2026-10-19T12:00', brick_breaker:'2026-10-19T12:00', snake_arena:'2026-10-19T12:00',
     burger_blaster:'2026-10-26T12:00', pinball:'2026-10-26T12:00',
     rocket_buds:'2026-11-02T12:00', brawl_buds:'2026-11-02T12:00',
@@ -180,8 +181,7 @@ window.SpitzGames=[
     rook_and_ruin:'2026-11-16T12:00' /* Kody 2026-11-16: "make it live" (moved up from Nov 23) */ };
   /* Updated games (Kody, 2026-10-30): a big change to a live game shows an UPDATED badge and a short line saying what changed (more = the hover text) on its hub card
      for NEW_DAYS days, and the game sorts up with the new ones. at = when it went live (UTC). */
-  var UPDATED={ football_buds:{ at:'2026-11-22T15:00', what:'New: Football Buds BLITZ', more:'Rebuilt as Football Buds BLITZ: arcade football with wild powers, combos, team colours and an 8-minute game' },
-    hoop_buds:{ at:'2026-10-30T16:00', what:'New: points & All-Pro', more:'Now with a real points score, All-Pro mode and 3 challenges every game' },
+  var UPDATED={ hoop_buds:{ at:'2026-10-30T16:00', what:'New: points & All-Pro', more:'Now with a real points score, All-Pro mode and 3 challenges every game' },
     pinball:{ at:'2026-11-09T18:15', what:'New: All-Pro & challenges', more:'All-Pro mode, 3 challenges every game and double points in the last 30 seconds' },
     shift_racer:{ at:'2026-11-09T18:15', what:'New: police chases', more:'Outrun the police, plus All-Pro mode, 3 challenges and double points in the last 30 seconds' },
     skate:{ at:'2026-11-09T18:15', what:'New: special tricks', more:'Fill the Special meter for triple-point tricks, plus All-Pro mode, 3 challenges and a double-points finish' },
