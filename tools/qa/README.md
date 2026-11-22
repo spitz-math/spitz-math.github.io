@@ -4,7 +4,7 @@ One test runner for every Spitz Arcade game, and later the hub, Checkpoint and t
 
 > **after restart, hp is reset**: expected 5, got 1
 
-Started 2026-11-17 as the pilot from the "spitz.dev tooling evaluation". Rook & Ruin was the first game; Burger Blaster and Rocket Buds were added with an adapter each and no runner changes. Rook & Ruin is the first testing ground, not the boundary: the same runner, report and review loop are meant for every Arcade game, the hub, Checkpoint and other spitz.dev apps.
+Started 2026-11-17 as the pilot from the "spitz.dev tooling evaluation". Rook & Ruin was the first game; Burger Blaster and Rocket Buds were added with an adapter each and no runner changes, then Splat Range, Hoop Buds and Snake Arena (2026-11-19). Rook & Ruin is the first testing ground, not the boundary: the same runner, report and review loop are meant for every Arcade game, the hub, Checkpoint and other spitz.dev apps.
 
 ## Run it
 
@@ -77,7 +77,7 @@ Rule of thumb: **hooks set the scene, real input does the action.** Use `__G` to
 
 | Tier | The game provides | Tested |
 | --- | --- | --- |
-| 0 | nothing | the Safety check (`.github/smoke/smoke.js`): loads, Start works, no errors |
+| 0 | nothing | the Safety check (`.github/smoke/smoke.js`): loads, types a name, presses Start, checks `__G.state().started`, plays about 6 s with real keys, no errors |
 | 1 | `__G.state()` (18 games already) | the baseline above |
 | 2 | `__G.step(dt)` and scene helpers | scenario tests (shop, boss, revive) without waiting on real time |
 | 3 | `__G.seed(n)` | exact-value checks and stable screenshot comparison (no game yet) |

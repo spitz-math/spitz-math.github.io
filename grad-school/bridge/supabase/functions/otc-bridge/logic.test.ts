@@ -58,3 +58,12 @@ test('update does not mutate the original document', () => {
   updateAssignment(a.doc, { id: a.task.id, checkSteps: ['Draft'] })
   assert.equal(a.doc.tasks[0].checklist[0].done, false)
 })
+
+test('appending to full notes is refused, never cut off', () => {
+  const a = addAssignment(base(), { course: 'one', title: 'Video', notes: 'x'.repeat(2400) })
+  const ok = updateAssignment(a.doc, { id: a.task.id, appendNotes: 'short update' })
+  assert.equal(ok.task.notes, 'x'.repeat(2400) + '\nshort update')
+  assert.throws(() => updateAssignment(ok.doc, { id: a.task.id, appendNotes: 'y'.repeat(200) }), /Notes are full.*Nothing was saved/)
+  const trimmed = updateAssignment(ok.doc, { id: a.task.id, notes: 'summary' })
+  assert.equal(updateAssignment(trimmed.doc, { id: a.task.id, appendNotes: 'y'.repeat(200) }).task.notes, 'summary\n' + 'y'.repeat(200))
+})
