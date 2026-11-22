@@ -25,6 +25,7 @@ Live at the hidden address `/games/dig_buds.html`. It stays off the hub and lead
 | `speed.js` (full) | frame rate and dig hitch at 6x CPU slowdown |
 | `music_level.js` (full) | renders the song off line and prints its loudness |
 | `bot.js` (full) | plays a whole 5-minute round: `node bot.js <seed> <ms per answer> <accuracy>` |
+| `math_rule.js` | Kody's math rule: `node math_rule.js wrong 99` must still dig and rescue Buds; `right` must outscore `guess`, `one`, `wrong`, `mash`, `idle` on the same seed |
 
 ## Honest limits
 - These checks catch script errors and layout cut-offs, and print numbers to read. Most do not assert
@@ -35,6 +36,11 @@ Live at the hidden address `/games/dig_buds.html`. It stays off the hub and lead
   WebGL launch flags in the shared harness.
 
 ## Rules Kody set for this game
+- Math is not fuel (Kody 2026-11-19, remake v20 2026-11-22): digging always works. Questions come in Power Stops
+  (every 40 s of play, 2 questions, 3 for multiplication; the clock waits up to 20 s a question) and one question per
+  chest (right = full treasure, wrong = half). Right answers give Power (each block dug with Power is twice as fast and
+  uses 1 Power), cash, and raise the score multiplier (x1.25 per right answer in a row, up to x2; a wrong answer resets it).
+  No Q button, no energy, no out-of-energy state. Final 45 s = Gold Rush (ore glows through stone, double points).
 - 5-minute rescue run. No crafting, building, torches, night or fall damage.
 - The caves are the heart (Kody 2026-11-17: kids should leave saying "the caves were cool"). Seven named caves
   (Mossy Hollow, Crystal Grotto, Mushroom Grove, Old Mine, Magma Hall, Gloom Nest, Star Geode), one Bud in each,

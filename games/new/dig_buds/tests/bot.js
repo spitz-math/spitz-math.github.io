@@ -3,14 +3,14 @@ const b=await chromium.launch({args:['--use-gl=swiftshader','--enable-unsafe-swi
 const errs=[];p.on('pageerror',e=>{errs.push(e.message);console.log('ERR',e.message)});
 await p.goto((process.env.DIG_URL||'http://localhost:8765')+'/'+file);await p.evaluate(()=>{localStorage.clear()});await p.reload();await p.evaluate((s)=>__G.reseed(s),seed);await p.reload();
 await p.fill('#dg-nameinput','Bot B');await p.click('#dg-go');await p.waitForTimeout(300);
-const t0=Date.now(),ev=[];let lastN=0,shots=0,stuckT=0,lastPos='';
+const t0=Date.now(),ev=[];let shopN=0,lastN=0,shots=0,stuckT=0,lastPos='';
 while(true){const st=await p.evaluate(()=>{const S=__G.state(),P=__G.P();return {over:S.over,e:S.energy,M:__G.M(),n:S.buds.filter(Boolean).length,score:S.score,cash:S.cash,x:P.x,y:P.y,z:P.z,surf:S.surf,hp:__G.hp(),ch:S.chests,goal:S.goal,ans:S.answered,lv:S.lv.bucket}});
  if(st.over)break; const el=(Date.now()-t0)/1000;
  if(st.n!==lastN){ev.push([Math.round(el),st.n,st.score]);lastN=st.n; if(shots<2){await p.waitForTimeout(700);await p.screenshot({path:'bot_rescue'+(shots++)+'.png'});}}
- if(st.e<2){ if(st.M!=='q')await p.evaluate(()=>{['up','jump','digdown'].forEach(k=>__G.hold(k,false));__G.modal('q')});
-   for(let i=0;i<5;i++){await p.waitForTimeout(ansMs);const o=await p.evaluate((acc)=>{const S=__G.state();if(S.over||!S.q||S.qDone)return 0;const ok=S.q.choices.findIndex(c=>c.ok);__G.answer(Math.random()<acc?ok:(ok+1)%S.q.choices.length);return 1},acc);
-     if(!await p.evaluate(()=>__G.fast)){await p.waitForTimeout(1900);await p.evaluate(()=>{const n=document.getElementById('dg-next');if(!n.disabled)n.click()});}}
-   await p.evaluate(()=>{const S=__G.state();__G.modal('shop');for(const id of ['drill','magnet','bucket','luck','drill','scan','magnet','bucket']){const bt=document.querySelector('.dg-buy[data-u="'+id+'"]');if(bt&&!bt.disabled){bt.click();}}__G.modal(null)});continue;}
+ if(st.M==='q'){ await p.evaluate(()=>{['up','jump','digdown','mine'].forEach(k=>__G.hold(k,false))});   // a Power Stop or chest question is open: answer it
+   const o=await p.evaluate((acc)=>{const S=__G.state();if(!S.q)return 0;if(S.qDone){const n=document.getElementById('dg-next');if(!n.disabled)n.click();return 0;}const ok=S.q.choices.findIndex(c=>c.ok);__G.answer(Math.random()<acc?ok:(ok+1)%S.q.choices.length);return 1},acc);
+   await p.waitForTimeout(o?Math.min(ansMs,1500):400); continue;}
+ if(++shopN%120===0) await p.evaluate(()=>{__G.modal('shop');for(const id of ['drill','magnet','bucket','luck','drill','scan','magnet','bucket']){const bt=document.querySelector('.dg-buy[data-u="'+id+'"]');if(bt&&!bt.disabled){bt.click();}}__G.modal(null)});
  const r=await p.evaluate(()=>{const P=__G.P(),S=__G.state();let best=null,bd=1e9;__G.buds().forEach(b=>{if(b.home||(b.i===6&&S.buds.slice(0,6).filter(Boolean).length<6))return;if(!best)best=b});
    if(!best){__G.hold('digdown',true);return 'free';}
    const hd=Math.hypot(best.x-P.x,best.z-P.z),deep=P.y<S.surf-6;

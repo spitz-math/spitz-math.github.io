@@ -188,6 +188,8 @@ button:disabled{ cursor:default; }
 .dg-mbtn.sm{ height:66px; padding:0 20px 0 10px; gap:12px; border-radius:16px; } .dg-mbtn.sm .key{ width:44px; height:44px; border-radius:11px; font-size:27px; background:#C9B3FF; } .dg-mbtn.sm .t{ font-size:26px; } .dg-mbtn.sm small{ font-size:16px; margin-top:2px; }
 .dg-mbtn.sm.r .key{ background:var(--gold); } .dg-mbtn.sm.r{ border-color:var(--gold); } .dg-mbtn.sm.r::after{ background:var(--gold); } .dg-mbtn.sm.r small{ color:var(--gold); }
 .dg-mbtn[hidden]{ display:none; }
+#dg-paintchip.on{ border-color:var(--teal); } #dg-paintchip.on .v{ color:var(--teal); }
+.dg-mbtn.q{ cursor:default; }
 .dg-mbtn.need{ border-color:var(--teal); isolation:isolate; }
 .dg-mbtn.need::after{ content:''; position:absolute; inset:-3px; border-radius:inherit; background:var(--teal); opacity:0; z-index:-1; animation:dgPulseO 1.1s infinite; pointer-events:none; }
 .dg-mbtn.need small{ color:var(--teal); }
@@ -231,26 +233,26 @@ button:disabled{ cursor:default; }
     <span class="dg-sp"></span>
     <div class="dg-chip" id="dg-timerchip"><span class="l">Time</span><span class="v" id="dg-time">5:00</span></div>
     <div class="dg-chip" id="dg-scorechip"><span class="l">Score</span><span class="v" id="dg-score">0</span></div>
-    <div class="dg-chip" id="dg-paintchip"><span class="l">Energy</span><span class="v" id="dg-paint">0</span></div>
+    <div class="dg-chip" id="dg-paintchip"><span class="l">Power</span><span class="v" id="dg-paint">0</span></div>
     <div class="dg-chip" id="dg-cashchip"><span class="l">Cash</span><span class="v" id="dg-cash">$0</span></div>
-    <div class="dg-chip" id="dg-streakchip"><span class="l">Streak</span><span class="v" id="dg-streak">0</span></div>
+    <div class="dg-chip" id="dg-streakchip"><span class="l">Multiplier</span><span class="v" id="dg-streak">×1</span></div>
   </div>
   <div class="dg-dock">
     <button class="dg-mbtn sm r need" id="dg-rbtn" hidden aria-label="Hop back up where you fell, key R"><span class="key">R</span><span class="t">Hop back up<small>You fell into a cave</small></span></button>
     <div class="dg-mbtn sm x" aria-hidden="true"><span class="key">X</span><span class="t">Dig down<small>Hold it</small></span></div>
     <button class="dg-mbtn sm h" id="dg-hbtn" aria-label="Back to camp, key H"><span class="key">H</span><span class="t">Back to camp</span></button>
-    <button class="dg-mbtn q" id="dg-qbtn" aria-label="Answer questions, key Q"><span class="key">Q</span><span class="t">Questions<small id="dg-qsub">+8 energy</small></span></button>
+    <div class="dg-mbtn q" id="dg-qbtn" role="status" aria-live="off"><span class="key">⚡</span><span class="t">Power Stop<small id="dg-qsub">in 25s</small></span></div>
     <button class="dg-mbtn b" id="dg-shopbtn" aria-label="Shop, key B"><span class="key">B</span><span class="t">Shop<small>Spend cash</small></span></button>
   </div>
-  <div class="dg-modal" id="dg-qm" hidden><div class="dg-mhead"><h2>Questions</h2><span class="dg-mnote">Answer for energy and cash</span><span class="dg-sp"></span><button class="dg-x" data-close aria-label="Close questions (Q or Esc)">×</button></div>
+  <div class="dg-modal" id="dg-qm" hidden><div class="dg-mhead"><h2 id="dg-qtitle">Power Stop</h2><span class="dg-mnote" id="dg-qnote">Right answers charge your pick and raise your multiplier.</span><span class="dg-sp"></span></div>
     <div class="dg-q" id="dg-q">
       <div class="dg-qhead"><span class="dg-tag" id="dg-tag">Questions</span><span class="dg-reward" id="dg-reward"></span></div>
       <div class="dg-prompt" id="dg-prompt"></div>
       <div id="dg-body"><div id="dg-visual"></div><div class="dg-choices" id="dg-choices"></div></div>
-      <div class="dg-fb" id="dg-fb">Answer correctly to earn energy and cash.</div>
+      <div class="dg-fb" id="dg-fb">Right answers give Power and cash.</div>
       <button class="dg-next" id="dg-next" disabled>Next question ›</button>
     </div>
-    <div class="dg-mfoot">Q or Esc goes back to your island</div>
+    <div class="dg-mfoot">Press 1-4 or click an answer · you go back to digging after the last one</div>
   </div>
   <div class="dg-modal wide" id="dg-shop" hidden>
     <div class="dg-shophead"><h2>Shop</h2><span class="cash" id="dg-shopcash">$0</span><span class="dg-sp"></span><button class="dg-x" id="dg-shopx" aria-label="Close the shop">×</button></div>
@@ -264,15 +266,15 @@ button:disabled{ cursor:default; }
     <div class="sz-eyebrow">Spitz <b>Arcade</b></div><h2 class="dg-big"><span class="dg-crown" aria-hidden="true"></span><span><b>DIG</b> <i>BUDS</i></span></h2>
     <p class="dg-sub"><span class="sz-setname">Slope-intercept form.</span> Six little Buds are lost in the caves under your island. You have 5 minutes to find them and bring them home.</p>
     <div class="dg-steps">
-      <div class="dg-step"><b>1. Answer</b>Press Q for questions. Each right answer charges your energy and earns cash.</div>
+      <div class="dg-step"><b>1. Dig</b>Your pick always works. Power Stops pop up as you play. Right answers give Power (digs twice as fast) and raise your score multiplier up to ×2.</div>
       <div class="dg-step"><b>2. Explore</b>Each glowing beam marks a hidden cave. Hold X to dig down into it, or find the way in.</div>
       <div class="dg-step"><b>3. Rescue</b>A lost Bud is somewhere in every cave. Find it and it hops home. Ore pays cash for the shop (B).</div>
     </div>
     <div class="dg-row"><input class="dg-input" id="dg-nameinput" maxlength="24" placeholder="First name + last initial" autocomplete="off" aria-label="Your name"><button class="sz-mus" id="sz-mus" aria-label="Music on or off, key N">♪ Music on</button></div>
     <p class="dg-nogl" id="dg-nogl" hidden>This Chromebook can't draw the 3D world right now. Close your other tabs and reload the page, or pick another game.</p>
-    <div class="dg-row dg-mode" role="group" aria-label="Difficulty"><button class="dg-md" id="dg-rookie" aria-pressed="true">Rookie</button><button class="dg-md" id="dg-pro" aria-pressed="false">★ All-Pro <span>wrong answers cost energy · points ×1.5</span></button></div>
+    <div class="dg-row dg-mode" role="group" aria-label="Difficulty"><button class="dg-md" id="dg-rookie" aria-pressed="true">Rookie</button><button class="dg-md" id="dg-pro" aria-pressed="false">★ All-Pro <span>wrong answers cost Power · points ×1.5</span></button></div>
     <button class="dg-go" id="dg-go" disabled><span>Start</span></button>
-    <div class="dg-keys">Keys: 1–4 answer · Enter next question · mouse looks · arrows or WASD walk · Space jumps and climbs walls · hold click digs · hold X digs straight down · right-click or E throws dynamite<br>Q questions · B shop · R hop back up after a fall · H back to camp · N music · M mute · Shift+R new game · F full screen</div>
+    <div class="dg-keys">Keys: 1–4 answer · Enter next · mouse looks · arrows or WASD walk · Space jumps and climbs walls · hold click digs · hold X digs straight down · right-click or E throws dynamite<br>B shop · R hop back up after a fall · H back to camp · N music · M mute · Shift+R new game · F full screen</div>
   </div><span class="dg-credit sz-credit">Made by Spitz <i class="sz-burger" aria-hidden="true"></i></span></div>
 
   <div class="dg-over" id="dg-end" hidden><div class="dg-box"><div class="sz-eyebrow">Spitz <b>Arcade</b></div>
@@ -707,7 +709,6 @@ function view(e,yaw,pit){ var cy=Math.cos(yaw), sy=Math.sin(yaw), cp=Math.cos(pi
 var PL={x:40,y:50,z:40,vy:0,yaw:0,pit:-0.5,ground:false,mine:null,bob:0}, TGT=null, pops=[], nudgeT=0, msgT=0, msg='', FUSES=[], SHAKE=0;
 var EYE=1.55, RAD=0.3, HGT=1.7, REACH=5;
 function FONT(px){ return '800 '+px+'px '+getComputedStyle(document.documentElement).getPropertyValue('--display'); }
-function nudge(){ freeMouse(); if(now()-nudgeT<1200) return; nudgeT=now(); var q=$('dg-qbtn'); q.classList.remove('nudge'); void q.offsetWidth; q.classList.add('nudge'); SND.empty(); toast('Out of energy: press Q to answer questions!'); }
 function say(t){ msg=t; msgT=now(); }
 function hits(x,y,z){ for(var X=Math.floor(x-RAD);X<=Math.floor(x+RAD);X++) for(var Y=Math.floor(y);Y<=Math.floor(y+HGT-0.01);Y++) for(var Z=Math.floor(z-RAD);Z<=Math.floor(z+RAD);Z++) if(solidAt(X,Y,Z)) return true; return false; }
 function spawn(){ var x=SX/2, z=SZ/2; PL.x=x+.5; PL.z=z+.5; PL.y=topY(x,z)+0.01; PL.vy=0; PL.peak=PL.y; }
@@ -720,11 +721,12 @@ function ray(){ var cp=Math.cos(PL.pit), dx=Math.sin(PL.yaw)*cp, dy=Math.sin(PL.
     if(tx<ty&&tx<tz){ x+=sx; t=tx; tx+=tdx; n=[-sx,0,0]; } else if(ty<tz){ y+=sy; t=ty; ty+=tdy; n=[0,-sy,0]; } else { z+=sz; t=tz; tz+=tdz; n=[0,0,-sz]; } }
   return null; }
 function tier(){ return 4; }
-function pickX(){ return (1.7+0.4*budsHome())*(S.buff.super>0?1.5:1); }
+function powered(){ return S.energy>0||S.buff.super>0; }
+function pickX(){ return (1.3+0.3*budsHome())*(S.buff.super>0?2.6:S.energy>0?2:1); }   // Power (from right answers) digs twice as fast; with none you still dig
 function mineTime(b){ return (0.25+0.2*B[b].cost)/pickX(); }
 function startMine(){ if(!TGT||PL.mine) return; var b=TGT.b, bd=B[b];
-  if(b===12){ if(now()-msgT>1500){ say('Bedrock is the bottom of the world'); SND.thunk(); } return; }
-  var cost=S.buff.super>0?0:1; if(S.energy<cost){ nudge(); return; }
+  if(b===12){ if(now()-msgT>1500){ say('Bedrock is the bottom. Press H to go back to camp'); SND.thunk(); } return; }
+  var cost=S.buff.super>0||S.energy<1?0:1;
   PL.mine={x:TGT.x,y:TGT.y,z:TGT.z,b:b,t:0,cost:cost,n:TGT.n}; }
 function give(id,n){ S.inv[id]=(S.inv[id]||0)+n; }
 function val(b){ return B[b].pts||B[b].en; }
@@ -733,9 +735,9 @@ var TIPS={};
 function collect(b,quiet){ var bd=B[b]; if(bd.drop) give(bd.drop,1); if(!val(b)) return 0;
   var pts=Math.round((bd.pts||0)*(S.buff.double>0?2:1)*mult()), ca=oreCash(b), en=bd.en||0; S.score+=pts; S.cash+=ca; S.energy+=en; S.oreCash=(S.oreCash||0)+ca;
   if(bd.pts){ S.ores++; S.found[b]=(S.found[b]||0)+1; }
-  if(bd.star){ S.buff.super=Math.max(S.buff.super,12); toast('STAR POWER! Free, faster digging for 12 seconds'); }
-  if(!quiet){ SND.ore(Math.min(5,Math.max(1,[0,0,0,0,0,0,0,0,2,3,4,5,0,0,0,0,1,5,3][b]||1))); pops.push({t:0,txt:[pts?'+'+pts:'',ca?'$'+ca:'',en?'+'+en+' energy':''].filter(Boolean).join(' · ')+'  '+bd.n,col:bd.ore});
-    if(ca&&!bd.en&&!S.tipCash){ S.tipCash=1; say('Ore pays cash: spend it in the shop (B)'); } else if(en&&!S.tipEn){ S.tipEn=1; say(bd.n+' gives you energy'); } }
+  if(bd.star){ S.buff.super=Math.max(S.buff.super,12); toast('STAR POWER! Super Dig for 12 seconds'); }
+  if(!quiet){ SND.ore(Math.min(5,Math.max(1,[0,0,0,0,0,0,0,0,2,3,4,5,0,0,0,0,1,5,3][b]||1))); pops.push({t:0,txt:[pts?'+'+pts:'',ca?'$'+ca:'',en?'+'+en+' Power':''].filter(Boolean).join(' · ')+'  '+bd.n,col:bd.ore});
+    if(ca&&!bd.en&&!S.tipCash){ S.tipCash=1; say('Ore pays cash: spend it in the shop (B)'); } else if(en&&!S.tipEn){ S.tipEn=1; say(bd.n+' gives you Power'); } }
   return pts; }
 /* shop upgrades that change how you dig: the Drill digs deeper with every hit, the Magnet pulls in ore near your dig */
 function drillOn(m){ var lv=S.lv.drill||0, n=m.n; if(!lv||!n||(!n[0]&&!n[1]&&!n[2])) return;
@@ -746,7 +748,7 @@ function magnetOn(m){ var R=S.lv.magnet||0, n=0; if(!R) return;
     setBlock(x,y,z,0); S.mined++; collect(b,n>=3); dropFx(x+.5,y+.5,z+.5,B[b].t[1]); n++; }
   if(n) SND.cash(); }
 function finishMine(){ var m=PL.mine; PL.mine=null; if(get(m.x,m.y,m.z)!==m.b) return;
-  S.energy-=m.cost; setBlock(m.x,m.y,m.z,0); S.mined++; var bd=B[m.b]; burst(m.x+.5,m.y+.5,m.z+.5,bd.t[1],16,3.2);
+  S.energy=Math.max(0,S.energy-m.cost); setBlock(m.x,m.y,m.z,0); S.mined++; var bd=B[m.b]; burst(m.x+.5,m.y+.5,m.z+.5,bd.t[1],16,3.2);
   if(val(m.b)) collect(m.b); else { S.score+=1; if(bd.drop) give(bd.drop,1); SND.dig(bd.cost); }
   var fy0=Math.floor(PL.y+0.01); if((m.x!==Math.floor(PL.x)||m.z!==Math.floor(PL.z))&&(m.y===fy0||m.y===fy0+1)){ var oy=m.y===fy0?fy0+1:fy0, ob=get(m.x,oy,m.z);      // digging sideways opens a doorway two blocks tall for the price of one
     if(ob&&ob!==12&&oy>0&&oy<SY){ setBlock(m.x,oy,m.z,0); S.mined++; burst(m.x+.5,oy+.5,m.z+.5,B[ob].t[1],10,3); if(ob===22) openChest(oy,false); else if(val(ob)) collect(ob); } }
@@ -762,8 +764,9 @@ function place(){ if((S.inv[21]||0)<1){ say('No dynamite: find it in chests or b
   S.inv[21]--; setBlock(x,y,z,21); FUSES.push({x:x,y:y,z:z,t:1.4}); say('Dynamite lit!'); SND.fuse(); save(); hud(); }
 /* chests: the deeper the chest, the better the loot */
 function loot(y){ var m=mult(); return [y>=30?{pts:50,en:10,tnt:0}:y>=22?{pts:150,en:0,tnt:1}:y>=11?{pts:300,en:15,tnt:1}:{pts:500,en:30,tnt:2}].map(function(l){ l.pts=Math.round(l.pts*m); return l; })[0]; }
-function openChest(y,quiet){ var l=loot(y); S.energy+=l.en; if(l.tnt) give(21,l.tnt); S.score+=l.pts; S.chests=(S.chests||0)+1;
-  if(!quiet){ pops.push({t:0,txt:'Treasure! +'+l.pts,col:'#FFC93C'}); say('In the chest: '+[l.en?'+'+l.en+' energy':'',l.tnt?l.tnt+' dynamite (right-click or E throws it)':''].filter(Boolean).join(' and ')); SND.deposit(); hud(); }
+function openChest(y,quiet){ var l=loot(y); if(!quiet&&S.started&&!S.over&&!S.stop){ S.chestY=y; startStop('chest'); return 0; } return giveChest(l,quiet,1); }
+function giveChest(l,quiet,f){ l.pts=Math.round(l.pts*f); l.en=Math.round(l.en*f); l.tnt=Math.floor(l.tnt*f); S.energy+=l.en; if(l.tnt) give(21,l.tnt); S.score+=l.pts; S.chests=(S.chests||0)+1;
+  if(!quiet){ pops.push({t:0,txt:'Treasure! +'+l.pts,col:'#FFC93C'}); say('In the chest: '+[l.en?'+'+l.en+' Power':'',l.tnt?l.tnt+' dynamite (right-click or E throws it)':''].filter(Boolean).join(' and ')); SND.deposit(); hud(); }
   return l.pts; }
 function boom(f){ if(get(f.x,f.y,f.z)!==21) return; var R2=2.6, got=0, chunks={};
   for(var x=f.x-3;x<=f.x+3;x++) for(var y=f.y-3;y<=f.y+3;y++) for(var z=f.z-3;z<=f.z+3;z++){ var d=(x-f.x)*(x-f.x)+(y-f.y)*(y-f.y)+(z-f.z)*(z-f.z); if(d>R2*R2) continue;
@@ -807,16 +810,17 @@ function update(dt){
     if(hot){ PL.vy=6.5; PL.ground=false; SND.sizzle(); say('Ouch, magma burns! Walk around the glowing orange'); hurt(1); } }
   PL.inv=Math.max(0,(PL.inv||0)-dt); PL.hurtT=Math.max(0,(PL.hurtT||0)-dt); PL.calm=(PL.calm||0)+dt;
   if(hp()<5&&PL.calm>9){ S.hp=hp()+1; PL.calm=0; hud(); }   // hearts come back slowly
-  updGlooms(dt); updBuds(dt); updDrops(dt); updCaves(dt); checkGoal(dt); updParts(dt);
+  updGlooms(dt); updBuds(dt); updDrops(dt); updCaves(dt); checkGoal(dt); updParts(dt); updStops(dt);
+  IDLE_T+=dt; if(IDLE_T>10){ IDLE_T=0; say(CAVENOW>=0?'Follow the arrow on the left to the lost Bud':'Follow the glowing beam to the next cave'); SND.tick(); }
   ATK=Math.max(0,ATK-dt); updSwing(dt); if(PL.mine) swingNow();
   TGT=ray();
   if(HELD.digdown){ var uy=Math.floor(PL.y-0.5); [[0,0],[-RAD,-RAD],[RAD,-RAD],[-RAD,RAD],[RAD,RAD]].some(function(o){ var ux=Math.floor(PL.x+o[0]), uz=Math.floor(PL.z+o[1]), ub=get(ux,uy,uz); if(!ub||ub===18||uy<0) return false; TGT={x:ux,y:uy,z:uz,b:ub,n:[0,1,0]}; return true; }); }   // hold X: dig the block under your feet, no aiming needed
   for(var qx=Math.floor(PL.x-0.9);qx<=Math.floor(PL.x+0.9);qx++) for(var qz=Math.floor(PL.z-0.9);qz<=Math.floor(PL.z+0.9);qz++) for(var qy=Math.floor(PL.y);qy<=Math.floor(PL.y)+1;qy++) if(get(qx,qy,qz)===22&&qx>=0&&qz>=0&&qx<SX&&qz<SZ){ setBlock(qx,qy,qz,0); burst(qx+.5,qy+.5,qz+.5,42,18,3.4); openChest(qy,false); }   // chests open when you walk up to them
-  if(finalRush()&&!S.finalSaid){ S.finalSaid=1; toast('Final 30 seconds: everything scores double!'); SND.goal(); }
+  if(finalRush()&&!S.finalSaid){ S.finalSaid=1; toast('GOLD RUSH! Ore glows through the stone and everything scores double'); SND.goal(); }
   var gtd=TGT?Math.hypot(TGT.x+.5-PL.x,TGT.y+.5-PL.y-EYE,TGT.z+.5-PL.z):9, gt=(HELD.mine||MINEQ||HELD.digdown)&&ATK<=0?rayGloom(gtd):null;
   if(gt){ PL.mine=null; bop(gt); ATK=0.32; MINEQ=false; SW=0; }
   if(PL.mine){ if(!TGT||TGT.x!==PL.mine.x||TGT.y!==PL.mine.y||TGT.z!==PL.mine.z) PL.mine=null; else { PL.mine.t+=dt/mineTime(PL.mine.b); PL.swingT=(PL.swingT||0)+dt; DUSTT-=dt;
-    if(DUSTT<=0){ DUSTT=0.09; var tl=B[PL.mine.b].t[1]; burst(PL.mine.x+.5+TGT.n[0]*.55,PL.mine.y+.5+TGT.n[1]*.55,PL.mine.z+.5+TGT.n[2]*.55,tl,2,2); }
+    if(DUSTT<=0){ DUSTT=0.09; var tl=B[PL.mine.b].t[1]; burst(PL.mine.x+.5+TGT.n[0]*.55,PL.mine.y+.5+TGT.n[1]*.55,PL.mine.z+.5+TGT.n[2]*.55,tl,powered()?4:2,powered()?3.2:2); }   // Power digs throw more dust
     if(PL.mine.t>=1) finishMine(); } }
   if(!PL.mine&&(HELD.mine||MINEQ||HELD.digdown)&&!gt){ startMine(); if(!PL.mine&&MINEQ){ ATK=0.32; SW=0; } } MINEQ=false;
   if(PLACEQ){ PLACEQ=false; place(); }
@@ -905,8 +909,9 @@ function spawnBonus(){ var X=0, Z=0, k=0; do{ var a=Math.random()*6.283, r=8+Mat
 function budsHome(){ return (S.buds||[]).filter(Boolean).length; }
 function budsReg(){ return (S.buds||[]).slice(0,6).filter(Boolean).length; }
 function hiddenBud(b){ return b.i===6&&budsReg()<6; }
-function finalRush(){ return S.started&&!S.over&&S.endAt-now()<=30000; }
-function mult(){ return (finalRush()?2:1)*(S.pro?1.5:1); }
+function finalRush(){ return S.started&&!S.over&&S.endAt-now()<=45000; }
+function streakMult(){ return 1+Math.min(S.streak||0,4)*0.25; }   // right answers in a row raise every score: x1.25, x1.5, x1.75, x2; a wrong answer drops it back to x1
+function mult(){ return (finalRush()?2:1)*(S.pro?1.5:1)*streakMult(); }
 /* All-Pro (picked on the start screen): points x1.5, but a wrong answer costs energy and one more Gloom prowls the caves */
 function proPick(){ try{ return localStorage.getItem('dig_buds_pro')==='1'; }catch(e){ return false; } }
 function modeDraw(){ $('dg-rookie').setAttribute('aria-pressed',S.pro?'false':'true'); $('dg-pro').setAttribute('aria-pressed',S.pro?'true':'false'); }
@@ -968,7 +973,7 @@ function drawDyn(){ var L=[];
   gl.uniform1f(LOC.fogN,FOG[0]); gl.uniform1f(LOC.fogF,FOG[1]); }
 var FOG=[30,56];
 var SCAN=[], scanT=0;
-function drawScan(){ var lv=S.lv.scan||0; if(!lv) return; var R=lv>1?10:5;
+function drawScan(){ var lv=finalRush()?2:(S.lv.scan||0); if(!lv) return; var R=lv>1?10:5;
   if(now()-scanT>400){ scanT=now(); SCAN=[]; var cx=Math.floor(PL.x), cy=Math.floor(PL.y+1), cz=Math.floor(PL.z);
     for(var x=Math.max(0,cx-R);x<=Math.min(SX-1,cx+R);x++) for(var z=Math.max(0,cz-R);z<=Math.min(SZ-1,cz+R);z++) for(var y=Math.max(1,cy-R);y<=Math.min(SY-1,cy+R);y++){ var b=V[idx(x,y,z)]; if(b&&b!==23&&b!==18&&B[b].cash&&b!==16) SCAN.push([x,y,z,b]); } }
   if(!SCAN.length) return; var L=[], pu=0.3+0.06*Math.sin(now()/260); SCAN.forEach(function(o){ var t=B[o[3]].t[1]; cube(L,o[0]+.5,o[1]+.5,o[2]+.5,pu,t,t,t,1,1); });
@@ -1040,7 +1045,7 @@ function drawHud(){ var c=hx; c.clearRect(0,0,W,H); c.textAlign='center'; var rb
 
   c.strokeStyle='rgba(255,255,255,.9)'; c.lineWidth=4; c.beginPath(); c.moveTo(W/2-14,H/2); c.lineTo(W/2+14,H/2); c.moveTo(W/2,H/2-14); c.lineTo(W/2,H/2+14); c.stroke();
   if(PL.mine){ c.strokeStyle='#FFC93C'; c.lineWidth=8; c.beginPath(); c.arc(W/2,H/2,30,-Math.PI/2,-Math.PI/2+Math.PI*2*Math.min(1,PL.mine.t)); c.stroke(); }
-  if(TGT){ var bd=B[TGT.b], lock=bd.tier>tier(), t=bd.n+(TGT.b===12?'':lock?' · needs '+TIERS[bd.tier]:' · '+(S.buff.super>0?0:1)+' ⚡'+(bd.pts?' · '+bd.pts+' pts':'')+(bd.cash?' · $'+oreCash(TGT.b):'')+(bd.en?' · +'+bd.en+' energy':'')+(bd.star?' · STAR POWER':''));
+  if(TGT){ var bd=B[TGT.b], lock=bd.tier>tier(), t=bd.n+(TGT.b===12?'':lock?' · needs '+TIERS[bd.tier]:(powered()?' · ⚡':'')+(bd.pts?' · '+bd.pts+' pts':'')+(bd.cash?' · $'+oreCash(TGT.b):'')+(bd.en?' · +'+bd.en+' Power':'')+(bd.star?' · STAR POWER':''));
     c.font=FONT(30); var tw=c.measureText(t).width; c.fillStyle='rgba(12,9,25,.72)'; rr(c,W/2-tw/2-18,H/2+44,tw+36,48,14); c.fill(); c.fillStyle=lock?'#FF9A9A':(bd.ore||'#FBF5EC'); c.fillText(t,W/2,H/2+79); }
   /* depth, pick and fuse */
   var dep=Math.max(0,(S.surf||44)-Math.floor(PL.y)); c.textAlign='left'; c.fillStyle='rgba(12,9,25,.72)'; rr(c,24,120,400,150,16); c.fill();
@@ -1060,20 +1065,20 @@ function drawHud(){ var c=hx; c.clearRect(0,0,W,H); c.textAlign='center'; var rb
     if(dep>4){ var ht='Hold Space by a wall to climb'; c.font=FONT(24); c.fillStyle='rgba(12,9,25,.72)'; rr(c,24,gy,c.measureText(ht).width+40,48,14); c.fill(); c.fillStyle=PL.fell?'#FFE0A3':'#B3A6C4'; c.fillText(ht,44,gy+33); } }
   c.textAlign='center';
   if((S.inv[21]||0)>0){ var dt2='Dynamite × '+S.inv[21]+' · right-click or E throws it'; c.font=FONT(28); var dw=c.measureText(dt2).width; c.fillStyle='rgba(12,9,25,.78)'; rr(c,W/2-dw/2-24,H-92,dw+48,60,16); c.fill(); c.fillStyle='#FF9A7A'; c.fillText(dt2,W/2,H-52); }
-  pops.forEach(function(p,i){ if(p.t<0) return; c.globalAlpha=Math.min(1,(1.4-p.t)*2); c.font=FONT(46); c.lineWidth=7; c.strokeStyle='rgba(12,9,25,.85)'; var y=H/2-70-p.t*40-i*54; c.strokeText(p.txt,W/2,y); c.fillStyle=p.col; c.fillText(p.txt,W/2,y); }); c.globalAlpha=1;
+  pops.forEach(function(p,i){ if(p.t<0) return; c.globalAlpha=Math.min(1,(1.4-p.t)*2); c.font=FONT(46); c.lineWidth=7; c.strokeStyle='rgba(12,9,25,.85)'; var y=CTITLE?H/2+150-p.t*40+i*54:H/2-70-p.t*40-i*54; /* under a cave title card, pops stack below the crosshair so the two never overlap */ c.strokeText(p.txt,W/2,y); c.fillStyle=p.col; c.fillText(p.txt,W/2,y); }); c.globalAlpha=1;
   if(msg&&now()-msgT<2600){ c.font=FONT(32); var mw=c.measureText(msg).width; c.fillStyle='rgba(12,9,25,.8)'; rr(c,W/2-mw/2-20,112,mw+40,56,16); c.fill(); c.fillStyle='#FFE0A3'; c.fillText(msg,W/2,151); }
-  else if(S.buff.double>0||S.buff.super>0){ c.font=FONT(34); c.fillStyle='#FFC93C'; c.fillText(S.buff.double>0?'GOLD RUSH: ore scores double '+Math.ceil(S.buff.double)+'s':'SUPER PICK: free mining '+Math.ceil(S.buff.super)+'s',W/2,150); }
-  var noE=S.started&&!S.over&&S.energy<1&&S.buff.super<=0;
-  if(S.started&&!S.over&&!LOCKED&&canPlay()&&!noE){ c.fillStyle='rgba(12,9,25,.8)'; rr(c,W/2-380,H/2+120,760,150,20); c.fill(); c.fillStyle='#FFB547'; c.font=FONT(44); c.fillText('Click here to look around',W/2,H/2+180);
+  else if(S.buff.double>0||S.buff.super>0){ c.font=FONT(34); c.fillStyle='#FFC93C'; c.fillText(S.buff.double>0?'DOUBLE ORE '+Math.ceil(S.buff.double)+'s':'SUPER DIG '+Math.ceil(S.buff.super)+'s',W/2,150); }
+  else if(S.started&&!S.over&&S.energy>0&&!finalRush()){ c.font=FONT(30); c.fillStyle='#2EF2C4'; c.fillText('⚡ POWER DIG: '+S.energy+' blocks at double speed',W/2,150); }
+  if(S.started&&!S.over&&!LOCKED&&canPlay()){ c.fillStyle='rgba(12,9,25,.8)'; rr(c,W/2-380,H/2+120,760,150,20); c.fill(); c.fillStyle='#FFB547'; c.font=FONT(44); c.fillText('Click here to look around',W/2,H/2+180);
     c.fillStyle='#fff'; c.font=FONT(28); c.fillText('Move the mouse to look · Esc frees the mouse',W/2,H/2+230); }
-  else if(S.started&&!S.over&&S.mined===0&&!cavesFound()&&!noE){ c.fillStyle='rgba(12,9,25,.78)'; rr(c,W/2-420,H/2+120,840,112,18); c.fill(); c.fillStyle='#fff'; c.font=FONT(30); c.fillText('Follow the glowing beam: a hidden cave is under it',W/2,H/2+164); c.fillText('Walk in where there is a way in, or hold X to dig down',W/2,H/2+208); }
+  else if(S.started&&!S.over&&S.mined===0&&!cavesFound()){ c.fillStyle='rgba(12,9,25,.78)'; rr(c,W/2-420,H/2+120,840,112,18); c.fill(); c.fillStyle='#fff'; c.font=FONT(30); c.fillText('Follow the glowing beam: a hidden cave is under it',W/2,H/2+164); c.fillText('Walk in where there is a way in, or hold X to dig down',W/2,H/2+208); }
   else if(S.started&&!S.over&&!CTITLE&&GL.length&&!S.glooms&&PL.y<(S.surf||44)-5){ c.fillStyle='rgba(12,9,25,.78)'; rr(c,W/2-420,190,840,70,18); c.fill(); c.fillStyle='#C9B3FF'; c.font=FONT(30); c.fillText('Glooms creep around in the dark: click one to bop it',W/2,236); }
   if(CTITLE){ var ca=(now()-CTITLE.t)/1000; if(ca>3.4) CTITLE=null; else { c.globalAlpha=Math.min(1,ca*3,(3.4-ca)*2); c.textAlign='center'; c.lineWidth=10; c.strokeStyle='rgba(12,9,25,.85)';
       c.font=FONT(34); c.strokeText('You found',W/2,236); c.fillStyle='#FBF5EC'; c.fillText('You found',W/2,236);
       c.font=FONT(84); c.strokeText(CTITLE.c.n,W/2,320); c.fillStyle=CTITLE.c.col; c.fillText(CTITLE.c.n,W/2,320); c.globalAlpha=1; } }
-  if(finalRush()){ c.font=FONT(34); var ft='FINAL 30: DOUBLE POINTS', fw=c.measureText(ft).width; c.fillStyle='rgba(12,9,25,.8)'; rr(c,W-fw-72,112,fw+48,56,16); c.fill(); c.fillStyle='#FFC93C'; c.fillText(ft,W-fw/2-48,151); }
+  if(finalRush()){ c.font=FONT(34); var ft='GOLD RUSH: DOUBLE POINTS', fw=c.measureText(ft).width; c.fillStyle='rgba(12,9,25,.8)'; rr(c,W-fw-72,112,fw+48,56,16); c.fill(); c.fillStyle='#FFC93C'; c.fillText(ft,W-fw/2-48,151); }
   if(LOCKED){ c.textAlign='left'; c.font=FONT(24); c.fillStyle='rgba(255,255,255,.85)'; c.fillText('Esc frees the mouse',26,H-30); c.textAlign='center'; }
-  if(noE&&canPlay()){ c.fillStyle='rgba(12,9,25,.72)'; c.fillRect(0,H/2+130,W,110); c.fillStyle='#fff'; c.font=FONT(54); c.fillText('Out of energy: press Q for questions',W/2,H/2+202); }
+  
   if(!gl){ c.fillStyle='#fff'; c.font=FONT(40); c.fillText('This computer cannot draw 3D (WebGL is off).',W/2,H/2); } }
 var lastF=now(), FPS=[];
 function loop(){ var t=now(), dt=Math.min(0.05,(t-lastF)/1000); lastF=t; FPS.push(dt); if(FPS.length>90) FPS.shift(); if(canPlay()) update(dt); draw(); requestAnimationFrame(loop); }
@@ -1109,74 +1114,93 @@ function worldBoot(){ genWorld(S.seed); for(var x0=0;x0<SX;x0++) for(var z0=0;z0
 /* ================= GAME STATE ================= */
 /* RENAME: upgrades and power-ups for this game. FAST (multiplication facts) answers come quicker, so they pay less. */
 var UPG=[
-  {id:'bucket', name:'Power Cell',  vals:FAST?[6,8,10,12]:[20,26,32,40], cost:[30,70,150], fmt:function(v){ return '+'+v+' energy per answer'; }},
-  {id:'cash',   name:'Prize Money', vals:FAST?[4,6,9,12]:[10,15,25,40], cost:[35,80,170], fmt:function(v){ return '$'+v+' per answer'; }},
+  {id:'bucket', name:'Power Cell',  vals:[25,32,40,50], cost:[30,70,150], fmt:function(v){ return '+'+v+' Power per right answer'; }},
+  {id:'cash',   name:'Prize Money', vals:[15,20,28,40], cost:[35,80,170], fmt:function(v){ return '$'+v+' per right answer'; }},   // right answers are the main way to afford upgrades
   {id:'drill',  name:'Drill',       cost:[50,120], desc:['','Dig 2 blocks with every hit','Dig 3 blocks with every hit']},
   {id:'magnet', name:'Ore Magnet',  cost:[30,70], desc:['','Grabs ore next to your dig','Grabs ore 2 blocks away']},
   {id:'luck',   name:'Lucky Pick',  cost:[35,80], desc:['','Ore pays double cash','Ore pays triple cash']},
   {id:'scan',   name:'Ore Scanner', cost:[25,60], desc:['','See ore through walls','See ore from twice as far']}
 ];
 var POW=[
-  {id:'refill', name:'Energy Pack', cost:20, d:'+20 energy now'},
+  {id:'refill', name:'Power Pack',  cost:20, d:'+25 Power now'},
   {id:'tnt',    name:'Dynamite',    cost:25, d:'2 sticks: blast a big hole'},
   {id:'super',  name:'Super Pick',  cost:30, secs:25, d:'Free, faster digging'},
-  {id:'double', name:'Gold Rush',   cost:35, secs:30, d:'Ore scores double points'}
+  {id:'double', name:'Double Ore',   cost:35, secs:30, d:'Ore scores double points'}
 ];
 var S;
 function fresh(){ return { name:'', len:5, started:false, over:false, endAt:0, score:0, energy:0, cash:0, streak:0, best:0, answered:0, correct:0, mined:0, ores:0, placed:0, seed:Math.floor(Math.random()*1e9), edits:[], pl:null, inv:{}, sel:0,
-  topics:QS?QS.topicTable():{}, lv:{bucket:0,cash:0,drill:0,magnet:0,luck:0,scan:0}, pick:4, crafts:0, furnace:0, helmet:1, boots:0, beacon:0, found:{}, deep:99, surf:0, hp:5, glooms:0, kos:0, buds:[0,0,0,0,0,0,0], finalSaid:0, bonus:0, bspot:null, pro:proPick(), chests:0, goal:0, shelter:0, made:{}, houseSt:0, pb:{}, nightSaid:0, buff:{double:0,super:0}, q:null, qDone:false, picked:-1, gen:2, caves:{}, trail:[] }; }
+  topics:QS?QS.topicTable():{}, lv:{bucket:0,cash:0,drill:0,magnet:0,luck:0,scan:0}, pick:4, crafts:0, furnace:0, helmet:1, boots:0, beacon:0, found:{}, deep:99, surf:0, hp:5, glooms:0, kos:0, buds:[0,0,0,0,0,0,0], finalSaid:0, bonus:0, bspot:null, pro:proPick(), chests:0, goal:0, shelter:0, made:{}, houseSt:0, pb:{}, nightSaid:0, buff:{double:0,super:0}, playT:0, stop:null, stopN:0, stopsDone:0, q:null, qDone:false, picked:-1, gen:2, caves:{}, trail:[] }; }
 function save(){ try{ localStorage.setItem(KEY,JSON.stringify(S)); localStorage.setItem(KEY+'_mute',muted?'1':'0'); }catch(e){} }
-function load(){ try{   /* gen 2 = the named-caves world (2026-11-17): older saved runs start fresh */ var v=JSON.parse(localStorage.getItem(KEY)||'null'); muted=localStorage.getItem(KEY+'_mute')==='1'; if(v&&v.gen===2&&v.topics&&v.lv&&v.buff&&v.edits&&v.inv&&v.buds&&v.caves) return v; }catch(e){} return null; }
+function load(){ try{   /* gen 2 = the named-caves world (2026-11-17): older saved runs start fresh */ var v=JSON.parse(localStorage.getItem(KEY)||'null'); muted=localStorage.getItem(KEY+'_mute')==='1'; if(v&&v.gen===2&&v.playT!==undefined&&v.topics&&v.lv&&v.buff&&v.edits&&v.inv&&v.buds&&v.caves) return v; }catch(e){} return null; }
 function U(id){ var u=UPG.filter(function(x){ return x.id===id; })[0]; return u.vals[S.lv[id]]; }
 function now(){ return Date.now(); }
 var MODAL=null, RELOCK=false;
 function canPlay(){ return !!(S.started&&!S.over&&!MODAL); }
 var MID={q:'dg-qm',shop:'dg-shop'};
 /* one menu at a time; the world waits while a menu is open (the clock keeps going) */
-function openModal(m){ if(!S.started||S.over) return; if(m&&MODAL===m) m=null;
+function openModal(m){ if(!S.started||S.over) return; if(S.stop&&m!=='q') return; if(m==='q'&&!S.stop) return; if(m&&MODAL===m) m=null;
   if(m&&!MODAL) RELOCK=LOCKED; if(m) freeMouse(); HELD={};
   Object.keys(MID).forEach(function(k){ $(MID[k]).hidden=(k!==m); }); MODAL=m||null;
   if(m==='shop') drawShop(); if(m==='q'){ if(!S.q) newQ(); }
   if(!m&&RELOCK){ RELOCK=false; grab(); } hud(); }
 [].forEach.call(document.querySelectorAll('[data-close]'),function(b){ b.addEventListener('click',function(){ openModal(null); }); });
-$('dg-qbtn').addEventListener('click',function(){ openModal('q'); });
 
 /* ================= HUD ================= */
 function streakBonus(st){ return FAST? Math.min(Math.floor(st/5),4) : Math.min(Math.max(st-1,0),5)*2; }
-function hud(){ $('dg-score').textContent=S.score.toLocaleString(); $('dg-paint').textContent=S.energy; $('dg-cash').textContent='$'+S.cash; $('dg-streak').textContent=S.streak;
-  var empty=S.started&&!S.over&&S.energy<1; $('dg-paintchip').classList.toggle('empty',empty); $('dg-qbtn').classList.toggle('need',empty&&MODAL!=='q');
-  $('dg-qsub').textContent='+'+U('bucket')+' energy each';
-  $('dg-reward').innerHTML='+'+U('bucket')+' energy · +$'+(U('cash')+streakBonus(S.streak+1));
+function hud(){ $('dg-score').textContent=S.score.toLocaleString(); $('dg-paint').textContent=S.energy; $('dg-cash').textContent='$'+S.cash; $('dg-streak').textContent='×'+streakMult();
+  $('dg-paintchip').classList.toggle('on',S.started&&!S.over&&powered()); stopLabel();
+  $('dg-reward').innerHTML=(S.stop==='chest'?'Right: full treasure · wrong: half':'+'+stopPow()+' Power · +$'+(U('cash')+streakBonus(S.streak+1)));
   $('dg-shopcash').textContent='$'+S.cash; if(MODAL==='shop') drawShop(); }
 function timerDraw(){ var left=S.started? Math.max(0,S.endAt-now()) : S.len*60000, s=Math.ceil(left/1000);
   $('dg-time').textContent=Math.floor(s/60)+':'+('0'+(s%60)).slice(-2); $('dg-timerchip').classList.toggle('low',S.started&&s<=30);
-  if(S.started&&!S.over&&left<=0){ endRun(); return; } }
+  if(S.started&&!S.over&&left<=0){ endRun(); return; } if(S.started&&!S.over) stopLabel(); }
 
 /* ================= QUESTIONS UI ================= */
 var nextT=0, lockT=0;
 if(FAST) $('dg-q').classList.add('fast');
 function showQ(){ var q=S.q; $('dg-tag').textContent=q.topic; $('dg-prompt').innerHTML=q.prompt; $('dg-visual').innerHTML=q.visual||''; $('dg-q').classList.toggle('vis',!!q.visual);
   $('dg-choices').innerHTML=q.choices.map(function(c,i){ return '<button class="dg-ch" data-i="'+i+'"><span class="k">'+(i+1)+'</span><span class="t">'+c.html+'</span></button>'; }).join('');
-  var fb=$('dg-fb'); if(!FAST){ fb.className='dg-fb'; fb.innerHTML='Answer correctly to earn energy and cash.'; } $('dg-next').disabled=true;
+  var fb=$('dg-fb'); if(!FAST){ fb.className='dg-fb'; fb.innerHTML=S.stop==='chest'?'Answer to open the chest.':'Right answers give Power and cash.'; } $('dg-next').disabled=true;
   if(S.qDone) markAnswered(S.picked,false); hud(); }
-function newQ(){ clearTimeout(nextT); if(!QS) return; S.q=QS.next(); S.qDone=false; S.picked=-1; save(); showQ(); }
-function markAnswered(i,fresh){ var q=S.q, btns=$('dg-choices').querySelectorAll('.dg-ch'), c=q.choices[i], fb=$('dg-fb');
+function newQ(){ clearTimeout(nextT); if(!QS) return; QSHOWN=now(); S.q=QS.next(); S.qDone=false; S.picked=-1; save(); showQ(); }
+function markAnswered(i,fresh){ $('dg-next').textContent=S.stopN+1>=stopLen()?'Back to digging ›':'Next question ›'; var q=S.q, btns=$('dg-choices').querySelectorAll('.dg-ch'), c=q.choices[i], fb=$('dg-fb');
   btns.forEach(function(b,j){ b.disabled=true; if(q.choices[j].ok) b.classList.add('right'); else if(j!==i&&!FAST) b.hidden=true; }); if(!c.ok) btns[i].classList.add('wrong');
   if(c.ok){ fb.className='dg-fb ok'; fb.innerHTML='<span class="h">Correct!'+(fresh&&S.streak>1?' Streak '+S.streak+'.':'')+'</span>'+q.explain; $('dg-next').disabled=false; }
   else { fb.className='dg-fb bad'; fb.innerHTML='<span class="h">Not quite.</span>'+c.why+(FAST?' ':'<br>')+q.explain;
     $('dg-next').disabled=!!fresh; if(fresh&&!FAST){ clearTimeout(lockT); lockT=setTimeout(function(){ $('dg-next').disabled=false; },1800); } } }
+var QSHOWN=0;   // a double-tap must not land on the next question
 function answer(i){ if(!S.started||S.over||S.qDone||!S.q) return; var c=S.q.choices[i]; if(!c) return; S.qDone=true; S.picked=i; S.answered++;
   if(!S.topics[S.q.topic]) S.topics[S.q.topic]=[0,0]; S.topics[S.q.topic][1]++;
   var btn=$('dg-choices').querySelectorAll('.dg-ch')[i];
   if(c.ok){ S.correct++; S.topics[S.q.topic][0]++; S.streak++; S.best=Math.max(S.best,S.streak); var np=U('bucket'), ca=U('cash')+streakBonus(S.streak);
-    S.energy+=np; S.cash+=ca; SND.correct(); markAnswered(i,true);
-    if(FAST) nextT=setTimeout(function(){ if(S.qDone&&!S.over) newQ(); },150);
-    else { var p=stagePoint(btn,60,40); confetti(p[0],p[1],40,2.2); toast('+'+np+' energy · +$'+ca); nextT=setTimeout(function(){ if(S.qDone&&!S.over) newQ(); },1600); } }
+    if(S.stop==='chest'){ np=0; S.chestOk=1; } else np=stopPow(); S.energy+=np; S.cash+=ca; SND.correct(); markAnswered(i,true);
+    if(S.streak%3===0){ S.buff.super=Math.max(S.buff.super,8); }
+    if(FAST) nextT=setTimeout(function(){ if(S.qDone&&!S.over) stepStop(); },150);
+    else { var p=stagePoint(btn,60,40); confetti(p[0],p[1],40,2.2); toast((np?'+'+np+' Power · ':'')+'+$'+ca+' · ×'+streakMult()+(S.streak%3===0?' · 3 in a row: SUPER DIG!':'')); nextT=setTimeout(function(){ if(S.qDone&&!S.over) stepStop(); },1600); } }
   else { S.streak=0; S.cash=Math.max(0,S.cash-(FAST?3:5)); if(S.pro) S.energy=Math.max(0,S.energy-(FAST?3:8)); SND.miss(); markAnswered(i,true);
-    if(FAST) nextT=setTimeout(function(){ if(S.qDone&&!S.over) newQ(); },1200); }
+    if(FAST) nextT=setTimeout(function(){ if(S.qDone&&!S.over) stepStop(); },2500); }   // time to read the right answer
   save(); hud(); }
-$('dg-choices').addEventListener('click',function(e){ var b=e.target.closest('.dg-ch'); if(b) answer(+b.dataset.i); });
-$('dg-next').addEventListener('click',function(){ if(S.qDone) newQ(); });
+$('dg-choices').addEventListener('click',function(e){ var b=e.target.closest('.dg-ch'); if(b&&now()-QSHOWN>=400) answer(+b.dataset.i); });
+$('dg-next').addEventListener('click',function(){ if(S.qDone) stepStop(); });
+/* ===== POWER STOPS: questions come at set moments (Kody's rule: math is not fuel) =====
+   Every STOP_EVERY seconds of real play a short Power Stop opens (the clock waits). Right answers give Power,
+   which makes the pick dig twice as fast; a wrong answer gives none, and digging never stops. Chests ask one
+   question: right = full treasure, wrong = half. */
+var STOP_FIRST=25, STOP_EVERY=40;
+function stopLen(){ return S.stop==='chest'?1:(FAST?3:2); }
+function stopPow(){ return U('bucket')*(finalRush()?2:1); }
+function nextStopIn(){ return Math.max(0,Math.ceil(STOP_FIRST+STOP_EVERY*S.stopsDone-S.playT)); }
+function stopLabel(){ var el=$('dg-qsub'); if(el) el.textContent=S.stop?'now':'in '+nextStopIn()+'s · answer for Power'; }
+function startStop(kind){ if(S.stop||S.over) return; S.stop=kind; S.stopN=0; S.chestOk=0; PL.mine=null;
+  $('dg-qtitle').textContent=kind==='chest'?'Treasure chest!':'Power Stop'; $('dg-qnote').textContent=kind==='chest'?'Right answer: full treasure. The clock waits.':'Right answers charge your pick and raise your multiplier.';
+  SND.goal(); newQ(); openModal('q'); }
+function stepStop(){ if(!S.stop) return; S.stopN++; if(S.stopN<stopLen()){ newQ(); return; } endStop(); }
+function endStop(){ var k=S.stop; S.stop=null; if(k==='stop') S.stopsDone++; S.q=null; S.qDone=false;
+  if(k==='chest'){ var l=loot(S.chestY||30); giveChest(l,false,S.chestOk?1:0.5); if(!S.chestOk) say('Half the treasure this time. Right answers open the whole chest'); }
+  openModal(null); save(); hud(); }
+function updStops(dt){ S.playT+=dt; if(!S.stop&&S.playT>=STOP_FIRST+STOP_EVERY*S.stopsDone) startStop('stop'); }
+setInterval(function(){ if(S.started&&!S.over&&S.stop&&now()-QSHOWN<20000){ S.endAt+=250; } },250);   // the clock waits during a Power Stop (up to 20 s a question, so walking away still ends the round)
+var IDLE_T=0; ['keydown','mousedown','mousemove'].forEach(function(ev){ addEventListener(ev,function(){ IDLE_T=0; }); });
 
 
 /* ================= SHOP ================= */
@@ -1192,7 +1216,7 @@ $('dg-hbtn').addEventListener('click',function(){ if(canPlay()) goHome(); this.b
 $('dg-shopx').addEventListener('click',function(){ openShop(false); });
 $('dg-shop').addEventListener('click',function(e){ var b=e.target.closest('.dg-buy'); if(!b||b.disabled) return;
   if(b.dataset.u){ var u=UPG.filter(function(x){ return x.id===b.dataset.u; })[0], pr=u.cost[S.lv[u.id]]; if(S.cash<pr) return; S.cash-=pr; S.lv[u.id]++; toast(u.name+' upgraded!'); }
-  else { var p=POW.filter(function(x){ return x.id===b.dataset.p; })[0]; if(S.cash<p.cost) return; S.cash-=p.cost; if(p.id==='refill') S.energy+=20; else if(p.id==='tnt') give(21,2); else S.buff[p.id]=p.secs; toast(p.name+'!'); }
+  else { var p=POW.filter(function(x){ return x.id===b.dataset.p; })[0]; if(S.cash<p.cost) return; S.cash-=p.cost; if(p.id==='refill') S.energy+=25; else if(p.id==='tnt') give(21,2); else S.buff[p.id]=p.secs; toast(p.name+'!'); }
   SND.cash(); save(); hud(); drawShop(); });
 
 /* ================= START / END ================= */
@@ -1200,7 +1224,7 @@ $('dg-rookie').addEventListener('click',function(){ setMode(false); }); $('dg-pr
 $('dg-nameinput').addEventListener('input',function(){ $('dg-go').disabled=!this.value.trim(); });
 $('dg-nameinput').addEventListener('keydown',function(e){ if(e.key==='Enter'&&this.value.trim()) $('dg-go').click(); });
 $('dg-go').addEventListener('click',function(){ var n=$('dg-nameinput').value.trim(); if(!n||!gl) return; ac(); S.name=n; S.started=true; S.endAt=now()+S.len*60000; $('dg-start').hidden=true;
-  $('dg-nameinput').blur(); newQ(); save(); hud(); openModal('q'); });
+  $('dg-nameinput').blur(); save(); hud(); });
 function endRun(){ freeMouse(); S.over=true; HELD={}; clearTimeout(nextT); Object.keys(MID).forEach(function(k){ $(MID[k]).hidden=true; }); MODAL=null; save(); showEnd(true); }
 function showEnd(celebrate){ $('dg-endname').textContent=S.name+(S.pro?'  ★ All-Pro':''); $('dg-endscore').textContent=S.score.toLocaleString();
   var acc=S.answered?Math.round(100*S.correct/S.answered):0;
@@ -1209,7 +1233,7 @@ function showEnd(celebrate){ $('dg-endname').textContent=S.name+(S.pro?'  ★ Al
   /* LEADERBOARD HOOK: the shared score code (scorecode.js) shows the student's code here.
      RENAME: 'starter' must become the game's id in GAMES in scorecode.js (the sharing thread adds it at go-live); until then no code shows. */
   if(window.SpitzCode&&SpitzCode.show) try{ SpitzCode.show('dg','dig_buds',S); }catch(e){}
-  $('dg-end').hidden=false; if(celebrate){ SND.win(); [0,350,700,1100].forEach(function(ms,i){ setTimeout(function(){ confetti(200+i*500,1070,90,1.3); confetti(1720-i*500,1070,90,1.3); },ms); }); } }
+  $('dg-end').hidden=false; if(celebrate&&S.score>0){ SND.win(); [0,350,700,1100].forEach(function(ms,i){ setTimeout(function(){ confetti(200+i*500,1070,90,1.3); confetti(1720-i*500,1070,90,1.3); },ms); }); } }
 var armT=0; $('dg-again').addEventListener('click',function(){ var b=this; if(!b.classList.contains('arm')){ b.classList.add('arm'); b.textContent='Tap again to start over'; clearTimeout(armT); armT=setTimeout(function(){ b.classList.remove('arm'); b.textContent='Play again'; },3000); return; }
   b.classList.remove('arm'); b.textContent='Play again'; var keepName=S.name; S=fresh(); S.name=keepName; pops=[]; worldBoot(); modeDraw();
   $('dg-end').hidden=true; $('dg-start').hidden=false; $('dg-nameinput').value=keepName; $('dg-go').disabled=!keepName; save(); hud(); timerDraw();
@@ -1226,20 +1250,19 @@ document.addEventListener('keydown',function(e){ if(e.metaKey||e.ctrlKey||e.altK
   if(k==='f'){ e.preventDefault(); fullscreen(); return; }
   if(k==='n'){ e.preventDefault(); musicToggle(); return; }
   if(k==='m'){ e.preventDefault(); muted=!muted; save(); toast(muted?'Sound off':'Sound on'); if(!muted) SND.tick(); return; }
-  if(e.key==='Escape'){ if(MODAL) openModal(null); return; }
+  if(e.key==='Escape'){ if(MODAL&&!S.stop) openModal(null); return; }
   if(k==='b'){ e.preventDefault(); openModal('shop'); return; }      // never put actions on W, A, S or D: many students move with them
-  if(k==='q'){ e.preventDefault(); openModal('q'); return; }
   if(k==='h'){ e.preventDefault(); if(canPlay()) goHome(); return; }
   if(k==='r'&&!e.shiftKey){ e.preventDefault(); if(canPlay()) hopBack(); return; }
-  if(MODAL==='q'&&/^[1-4]$/.test(e.key)){ answer(+e.key-1); return; }
+  if(MODAL==='q'&&/^[1-4]$/.test(e.key)){ if(now()-QSHOWN>=400) answer(+e.key-1); return; }
   if(MODAL!=='q') return;
-  if(e.key==='Enter'){ if(S.qDone&&!$('dg-next').disabled&&!FAST){ e.preventDefault(); newQ(); } return; } });
+  if(e.key==='Enter'){ if(S.qDone&&!$('dg-next').disabled&&!FAST){ e.preventDefault(); stepStop(); } return; } });
 addEventListener('blur',function(){ HELD={}; });
 function fit(){ var s=Math.min(innerWidth/1920,innerHeight/1080), y=$('stage').style; y.transform='scale('+s+')'; y.left=((innerWidth-1920*s)/2)+'px'; y.top=((innerHeight-1080*s)/2)+'px'; }
 addEventListener('resize',fit);
 function askNew(o){ if(o) freeMouse(); $('sz-ask').hidden=!o; if(o) HELD={}; }
 function newRun(){ var n=S.name; S=fresh(); S.name=n; try{ localStorage.setItem(KEY,JSON.stringify(S)); }catch(e){} location.reload(); }   // S is replaced first, so a save that fires before the reload writes the fresh run
-$('sz-askyes').addEventListener('click',newRun); $('sz-askno').addEventListener('click',function(){ askNew(false); });
+$('sz-askyes').addEventListener('click',function(){ var b=this; if(!b.classList.contains('arm')){ b.classList.add('arm'); b.textContent='Tap again to erase this run'; setTimeout(function(){ b.classList.remove('arm'); b.textContent='Yes, new game (Y)'; },3000); return; } newRun(); });   // a stray click can't wipe a run $('sz-askno').addEventListener('click',function(){ askNew(false); });
 document.querySelector('.dg-top .dg-logo').addEventListener('click',function(){ if(S.started) askNew(true); });
 $('sz-mus').addEventListener('click',function(e){ e.stopPropagation(); ac(); musicToggle(); }); musBtn();
 $('dg-go').addEventListener('click',function(){ if(S.started) jingle(); });
@@ -1249,12 +1272,12 @@ S=load()||fresh(); worldBoot(); fit(); modeDraw(); if(!gl) $('dg-nogl').hidden=f
 if(!QS){ $('dg-prompt').textContent='questions.js is missing: keep it in the same folder as this game.'; }
 if(S.started){ $('dg-start').hidden=true;
   if(S.over||S.endAt<=now()){ S.over=true; showEnd(false); }
-  else { if(S.q&&!(FAST&&S.qDone)) showQ(); else newQ(); } }
+  else if(S.stop){ $('dg-qtitle').textContent=S.stop==='chest'?'Treasure chest!':'Power Stop'; if(S.q&&!(FAST&&S.qDone)) showQ(); else newQ(); MODAL=null; openModal('q'); } }
 else { $('dg-nameinput').value=S.name||''; $('dg-go').disabled=!S.name; }
 hud(); timerDraw(); setInterval(timerDraw,250); setInterval(function(){ if(S.started&&!S.over) save(); },1000); requestAnimationFrame(loop);
 
 /* test hooks */
-window.__G={ state:function(){ return S; }, song:function(){ return SONG; }, mg:function(c,d){ return musGraph(c,d); }, P:function(){ return PL; }, tgt:function(){ return TGT; }, hold:function(d,on){ HELD[d]=on; }, look:look, locked:function(){ return LOCKED; }, mine:function(){ MINEQ=true; }, place:function(){ PLACEQ=true; }, modal:openModal, GL:function(){ return GL; }, sw:function(v){ SW=v; PL.mine=null; HELD.mine=false; }, rg:function(){ return rayGloom(9); }, atk:function(){ return ATK; }, spawnG:spawnGloom, wet:function(){ return inWater(PL.x,PL.y+0.5,PL.z); }, hp:hp, M:function(){ return MODAL; }, get:get, fps:function(){ var s=0; FPS.forEach(function(d){ s+=d; }); return FPS.length/s; }, glerr:function(){ return window.__glerr||(gl?'':'nogl'); }, answer:answer, update:update, canPlay:canPlay, end:function(){ S.endAt=now()-1; timerDraw(); }, fast:FAST, reseed:function(n){ S=fresh(); S.seed=n; save(); }, buds:function(){ return BUDS; }, goals:GOALS, relightBox:relightBox, setBlock:setBlock, topY:topY, lightAt:lightAt, drops:function(){ return DROPS; }, caves:function(){ return CAVES; }, cave:function(){ return CAVENOW; }, trail:function(){ return TRAIL; } };
+window.__G={ state:function(){ return S; }, song:function(){ return SONG; }, mg:function(c,d){ return musGraph(c,d); }, P:function(){ return PL; }, tgt:function(){ return TGT; }, hold:function(d,on){ HELD[d]=on; }, look:look, locked:function(){ return LOCKED; }, mine:function(){ MINEQ=true; }, place:function(){ PLACEQ=true; }, modal:function(m){ if(!m&&S.stop) endStop(); else openModal(m); }, nostops:function(){ STOP_FIRST=1e9; }, GL:function(){ return GL; }, sw:function(v){ SW=v; PL.mine=null; HELD.mine=false; }, rg:function(){ return rayGloom(9); }, atk:function(){ return ATK; }, spawnG:spawnGloom, wet:function(){ return inWater(PL.x,PL.y+0.5,PL.z); }, hp:hp, M:function(){ return MODAL; }, get:get, fps:function(){ var s=0; FPS.forEach(function(d){ s+=d; }); return FPS.length/s; }, glerr:function(){ return window.__glerr||(gl?'':'nogl'); }, answer:answer, update:update, canPlay:canPlay, end:function(){ S.endAt=now()-1; timerDraw(); }, stop:function(k){ startStop(k||'stop'); }, stepStop:function(){ stepStop(); }, fast:FAST, reseed:function(n){ S=fresh(); S.seed=n; save(); }, buds:function(){ return BUDS; }, goals:GOALS, relightBox:relightBox, setBlock:setBlock, topY:topY, lightAt:lightAt, drops:function(){ return DROPS; }, caves:function(){ return CAVES; }, cave:function(){ return CAVENOW; }, trail:function(){ return TRAIL; } };
 })();
 </script>
 <!-- ================= FULL SCREEN REMINDER: shows until the game is full screen; click it or press F ================= -->

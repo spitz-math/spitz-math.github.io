@@ -1,7 +1,7 @@
 const {chromium}=require('playwright');(async()=>{const b=await chromium.launch({args:['--use-gl=swiftshader','--enable-unsafe-swiftshader','--ignore-gpu-blocklist']});const p=await b.newPage({viewport:{width:1366,height:768}});
 p.on('pageerror',e=>console.log('ERR',e.message));
 await p.goto('file://'+(process.env.DIG_OUT||'/home/user/dig')+'/dig_buds_mult.html');await p.evaluate(()=>__G.reseed(777));await p.reload();await p.waitForTimeout(300);await p.screenshot({path:'r_start.png'});
-await p.fill('#dg-nameinput','Test T');await p.click('#dg-go');await p.waitForTimeout(400);
+await p.fill('#dg-nameinput','Test T');await p.click('#dg-go');await p.evaluate(()=>__G.nostops());await p.waitForTimeout(400);
 await p.evaluate(()=>{__G.modal(null);const S=__G.state();S.energy=60;});await p.waitForTimeout(600);await p.screenshot({path:'r_surface.png'});
 // walk to nearest bud's column
 const bud=await p.evaluate(()=>{const P=__G.P();let best=null,bd=1e9;__G.buds().forEach(b=>{const d=Math.hypot(b.x-P.x,b.z-P.z);if(d<bd){bd=d;best=b}});P.x=best.x-3;P.z=best.z;P.y=__G.topY(Math.floor(P.x),Math.floor(P.z))+0.01;P.peak=P.y;P.yaw=Math.PI/2;P.pit=0.25;return [best.i,best.x,best.y,best.z,P.y]});console.log('bud',bud);

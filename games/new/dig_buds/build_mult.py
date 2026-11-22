@@ -1,6 +1,6 @@
 import sys
 import os
-HERE=os.path.dirname(os.path.abspath(__file__)); GAMES=os.path.normpath(os.path.join(HERE,'..','..'))+'/'; OUT=os.path.join(HERE,'out')+'/'; os.makedirs(OUT,exist_ok=True)
+HERE=os.path.dirname(os.path.abspath(__file__)); GAMES=os.path.normpath(os.path.join(HERE,'..','..'))+'/'; OUT=os.path.join(HERE,os.environ.get('DIG_BUILD','out'))+'/'; os.makedirs(OUT,exist_ok=True)
 G=GAMES
 q=open(G+'questions.js',encoding='utf-8').read()
 line=[l for l in q.split('\n') if l.startswith('var FALLBACK=ASSIGN.length?')][0]

@@ -8,7 +8,7 @@ await p.click('#dg-go');await p.waitForTimeout(400);
 console.log('pro',await p.evaluate(()=>[__G.state().pro,localStorage.getItem('dig_buds_pro')]));
 await p.evaluate(()=>{__G.modal(null);__G.state().energy=40;});
 // wrong answer costs energy
-await p.evaluate(()=>{__G.modal('q');});await p.waitForTimeout(300);
+await p.evaluate(()=>{__G.stop();});await p.waitForTimeout(300);
 console.log('wrong',await p.evaluate(()=>{const S=__G.state();const e0=S.energy;const ok=S.q.choices.findIndex(c=>c.ok);__G.answer((ok+1)%S.q.choices.length);return [e0,S.energy]}));
 await p.evaluate(()=>{__G.modal(null)});
 for(const i of [0,1,2,3,4,5,6]){await p.evaluate((i)=>{const bd=__G.buds()[i],P=__G.P();P.x=bd.x;P.y=bd.y;P.z=bd.z;P.peak=P.y;P.vy=0;},i);await p.waitForTimeout(350);}
