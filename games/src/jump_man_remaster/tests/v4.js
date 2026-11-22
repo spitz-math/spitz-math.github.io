@@ -12,7 +12,7 @@ const ok=(c,m,v)=>{ if(!c) fails++; console.log(c?'  ok':'  FAIL',m,v===undefine
   await p.keyboard.press('1'); s=await st(); ok(s.answered===0,'number keys do nothing between Waystones',s);
   await p.keyboard.down('ArrowRight'); await p.waitForTimeout(500); await p.keyboard.up('ArrowRight'); await p.keyboard.press('ArrowUp'); await p.waitForTimeout(200);
   s=await st(); ok(s.x>560,'running is free from the start',s);
-  const idle=await p.evaluate(()=>document.getElementById('jm-prompt').innerText); ok(/Next Waystone in \d+ ledge/.test(idle),'panel says how far the next Waystone is',idle);
+  const idle=await p.evaluate(()=>document.getElementById('jm-prompt').textContent); ok(/Next Waystone in \d+ ledge/.test(idle),'panel says how far the next Waystone is',idle);
   // land on the first full floor -> Waystone
   const land=(i)=>p.evaluate(i=>{ const G=__G, P=G.man(), S=G.state(); while(G.plats().length<=i+5){ P.on=null; P.h+=2500; P.vy=0; G.step(1/60); } const pl=G.plats(); S.fog=pl[i].h-1500; const q=pl[i]; P.on=null; P.x=q.floor?300:G.cxAt(q); P.h=q.h+30; P.vy=-10; P.vx=0; P.lastI=i-1; for(let k=0;k<20;k++) G.step(1/60); return {on:P.on&&P.on.i}; },i);
   await land(10); await p.waitForTimeout(200); s=await st(); ok(s.way&&s.way.got===0&&s.q,'landing on floor 10 opens the Waystone',s);

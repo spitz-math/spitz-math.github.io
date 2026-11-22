@@ -337,3 +337,62 @@ function drawBeam(x,py){ var g=RM()?0.22:0.18+0.06*Math.sin(gt*2.4); cx.globalAl
   for(var s=0;s<6;s++){ var w=40-s*6; cx.fillRect(Math.round(x-w/2),py-130-(s+1)*90,w,90); } cx.globalAlpha=1; }
 /* fog edge shimmer: a few light wisps drifting along the top of the fog */
 function drawWisps(y){ for(var i=0;i<7;i++){ var x=((i*157+gt*(18+i*5))%(W+80))-40, yy=y-8-((i*37)%14); cx.fillStyle=i%2?'rgba(255,255,255,.55)':'rgba(230,214,255,.6)'; cx.fillRect(Math.round(x/4)*4,Math.round(yy/4)*4,12+(i%3)*4,4); } }
+
+//@@ HUD6
+/* ================= v6 game UI (Kody 2026-11-22: match the newer games) =================
+   The tower fills the middle of the screen. Everything you read lives on the two side columns, drawn as outlined text on the
+   sky (no boxes, no chips): time and score, goals, Turbo and your moves on the left; height, hearts, the fog and the
+   next-Waystone meter on the right. Questions open as a game window over the tower only at a Waystone. Numbers use Spitz Digits. */
+var SKYD=document.getElementById('jmr-sky'), SL=document.getElementById('jmr-sl').getContext('2d'), SR=document.getElementById('jmr-sr').getContext('2d'), sideT=0, sideKey=['','',''];
+/* speed: the sky behind the columns is a CSS gradient changed every 10 m, and each column is its own small canvas
+   that redraws only when one of its own numbers changes (one 1920x1080 canvas cost half the frame rate at 6x slowdown) */
+function sideLayer(i,key){ if(sideKey[i]===key) return false; sideKey[i]=key; return true; }
+var SW=1920, SH=1080, TX=352, TW=1216, INK='#0B0F1C', WF="'Pixelify Sans', Inter, sans-serif", NF="'Spitz Digits', 'Pixelify Sans', Inter, sans-serif";
+function otext(c,txt,x,y,font,col,al,lw,mw){ c.font=font; c.textAlign=al||'left'; c.lineJoin='round'; c.lineWidth=lw||9; c.strokeStyle=INK; if(mw){ c.strokeText(txt,x,y,mw); c.fillStyle=col; c.fillText(txt,x,y,mw); return; } c.strokeText(txt,x,y); c.fillStyle=col; c.fillText(txt,x,y); }
+function sideHud(force){ var t=now(); if(!force&&t-sideT<100) return; sideT=t;
+  var live=S.started&&!S.over, m=cam/20, left=S.started?Math.max(0,S.endAt-t):S.len*60000, secs=Math.ceil(left/1000), clock=Math.floor(secs/60)+':'+('0'+(secs%60)).slice(-2);
+  var wayLeft=Math.max(0,S.nextWay-(S.pi||0)), rushLeft=S.rush?Math.max(0,S.rush.i-(S.pi||0)):0, gap=Math.max(0,Math.round((P.h-S.fog)/20));
+  if(force) sideKey=['','',''];
+  var sk=skyAt(Math.floor(m/10)*10); if(sideLayer(0,sk.join())) SKYD.style.background='linear-gradient(rgba(6,10,26,.62),rgba(6,10,26,.62)),linear-gradient('+sk[0]+','+sk[1]+')';
+  var c=SL, tb=turbo();
+  if(sideLayer(1,[S.started,clock,S.score,JSON.stringify(S.goals&&S.goals.map(function(g){ return [g.txt,Math.min(goalProg(g),g.n)]; })),S.streak,tb,JSON.stringify(S.mv)].join('|'))){
+  c.setTransform(1,0,0,1,0,0); c.clearRect(0,0,352,SH); c.fillStyle=INK; c.fillRect(TX-8,0,8,SH);
+  if(S.started){
+  var L=44;
+  otext(c,'Time',L,190,'500 36px '+WF,'#A9C2EE'); otext(c,clock,L,272,'400 88px '+NF,secs<=30?'#FF8FA3':'#FFFFFF');
+  otext(c,'Score',L,350,'500 36px '+WF,'#A9C2EE'); otext(c,S.score.toLocaleString(),L,432,'400 88px '+NF,'#FFC93C');
+  if(S.goals){ otext(c,'Goals',L,520,'500 32px '+WF,'#A9C2EE'); S.goals.forEach(function(g,j){ var y=566+j*78, pr=Math.min(goalProg(g),g.n);
+      otext(c,'★',L,y,'400 30px '+WF,'#FFC93C',null,7); otext(c,g.txt,L+38,y,'800 24px Inter, sans-serif','#FFFFFF',null,7,248);
+      c.fillStyle=INK; c.fillRect(L+32,y+14,176,22); c.fillStyle='#242936'; c.fillRect(L+36,y+18,168,14); c.fillStyle='#FFC93C'; c.fillRect(L+36,y+18,Math.round(168*pr/g.n),14);
+      otext(c,pr+' / '+g.n,L+218,y+34,'800 20px Inter, sans-serif','#A9C2EE',null,6); }); }
+  var nx=tb>=3?0:[5,10,15][tb];
+  otext(c,tb?'Turbo '+tb+'!':'Turbo',L,720,'500 32px '+WF,tb?['','#FFC93C','#FF8A1F','#FF6BD6'][tb]:'#A9C2EE');
+  otext(c,tb>=3?'Top speed!':(nx-S.streak)+' more right in a row',L,760,'800 22px Inter, sans-serif','#FFFFFF',null,6);
+  otext(c,'Moves',L,836,'500 32px '+WF,'#A9C2EE'); var rows=[['Run','← →'],['Jump','↑ / Space']]; MOVES.forEach(function(mv){ if(S.mv[mv.id]) rows.push([mv.name,mv.id==='dash'?'Shift':mv.id==='wall'?'at a wall':mv.id==='glide'?'hold ↑':'↑ in air']); });
+  rows.slice(0,6).forEach(function(r,j){ var y=878+j*34; otext(c,r[0],L,y,'800 22px Inter, sans-serif','#FFFFFF',null,6); otext(c,r[1],L+270,y,'800 20px Inter, sans-serif','#7CF0FF','right',6); });
+  } }
+  // right column (its canvas starts at x=1568, so draw in stage coordinates shifted left)
+  c=SR; if(!sideLayer(2,[S.started,Math.floor(Math.max(0,P.h)/20),S.hearts,Math.ceil(S.calm||0),fogOn()?gap:-1,wayLeft,rushLeft,!!S.rush,live&&CB.on?CB.floors+':'+Math.round(CB.t*10):0,S.ways].join('|'))) return;
+  c.setTransform(1,0,0,1,0,0); c.clearRect(0,0,352,SH); c.setTransform(1,0,0,1,-(TX+TW),0); c.fillStyle=INK; c.fillRect(TX+TW,0,8,SH);
+  if(!S.started) return;
+  var R=TX+TW+44;
+  otext(c,'Height',R,190,'500 36px '+WF,'#A9C2EE'); otext(c,Math.floor(Math.max(0,P.h)/20)+' m',R,272,'400 88px '+NF,'#FFFFFF');
+  heartPx(-99,-99,true); heartPx(-99,-99,false); for(var k=0;k<HEART_MAX;k++) c.drawImage(HEARTS[k<S.hearts?'on':'off'],R+k*92,320,77,70);
+  if(fogOn()){ var held=S.calm>0; otext(c,held?'Fog held '+Math.ceil(S.calm)+' s':'Fog '+gap+' m below',R,450,'800 28px Inter, sans-serif',held?'#7CF0FF':gap<17?'#FF8FA3':'#D6C8F0',null,7); }
+  else otext(c,'Fog starts soon',R,450,'800 28px Inter, sans-serif','#D6C8F0',null,7);
+  var rush=!!S.rush, n=rush?rushLeft:wayLeft, tot=rush?(S.rush.n?SUMMIT_NEXT:SUMMIT_UP):(S.nextWay>WAY_FIRST?WAY_EVERY:WAY_FIRST), lv=Math.max(0,Math.min(1,1-n/tot)), col=rush?'#FFC23D':'#7CF0FF';
+  otext(c,rush?'Summit':'Next Waystone',R,540,'500 32px '+WF,col); otext(c,n+(n===1?' ledge':' ledges'),R,588,'800 30px Inter, sans-serif','#FFFFFF',null,7);
+  c.fillStyle=INK; c.fillRect(R-6,616,264,40); c.fillStyle='#242936'; c.fillRect(R,622,252,28); c.fillStyle=col; c.fillRect(R,622,Math.round(252*lv),28);
+  if(CB.on&&live){ var w=comboWord(Math.max(4,CB.floors)), lvl=Math.max(0,CB.t/U('combo'));
+    otext(c,'Combo',R,760,'500 32px '+WF,'#A9C2EE'); otext(c,''+CB.floors,R,836,'400 72px '+NF,CB.jumps>=2&&CB.floors>=4?w[2]:'#FFFFFF'); otext(c,CB.floors===1?'floor':'floors',R+12+c.measureText(''+CB.floors).width,836,'800 30px Inter, sans-serif','#FFFFFF',null,7);
+    c.fillStyle=INK; c.fillRect(R-6,862,264,32); c.fillStyle='#242936'; c.fillRect(R,868,252,20); c.fillStyle=lvl>0.3?'#FFC93C':'#FF7A7A'; c.fillRect(R,868,Math.round(252*lvl),20); }
+  otext(c,'Waystones cleared',R,676,'800 22px Inter, sans-serif','#A9C2EE',null,6); otext(c,''+S.ways,R+252,676,'800 22px Inter, sans-serif','#FFFFFF','right',6); }
+/* the in-tower layer keeps only what belongs in the world: the zone banner, first-time hints and touch buttons */
+function towerHud(t,live){
+  if(banner){ var bk=(t-banner.t0)/2200; if(bk>=1) banner=null; else { cx.globalAlpha=Math.min(1,bk*6,(1-bk)*4); cx.textAlign='center';
+      otext(cx,banner.kind?banner.sub:'New zone · '+banner.sub,W/2,216,'800 30px Inter, sans-serif','#FFC93C','center',8); otext(cx,banner.txt,W/2,296,'400 76px '+WF,'#FFFFFF','center',12); cx.globalAlpha=1; } }
+  [['l','◀'],['r','▶'],['j','▲']].concat(S.mv&&S.mv.dash?[['d','»']]:[]).forEach(function(b){ var B=BTN[b[0]], on=Object.keys(ptr).some(function(k){ return ptr[k]===b[0]; }); cx.fillStyle=on?'rgba(255,176,32,.75)':'rgba(8,9,13,.45)'; cx.beginPath(); cx.arc(B.x,B.y,B.r,0,6.28); cx.fill();
+    cx.lineWidth=4; cx.strokeStyle='rgba(243,245,249,.5)'; cx.stroke(); cx.fillStyle='#F3F5F9'; cx.textAlign='center'; cx.font='800 '+(b[0]==='j'?56:48)+'px Inter, sans-serif'; cx.textBaseline='middle'; cx.fillText(b[1],B.x,B.y+3); cx.textBaseline='alphabetic'; });
+  if(live&&!S.way&&!S.offer&&S.jumps<3&&!banner){ otext(cx,'← → Run     ↑ Jump',W/2,320,'400 60px '+WF,'#FFFFFF','center',12);
+    otext(cx,S.jumps===0&&(S.climbT||0)>6?'Press ← or → to run, then ↑ to jump!':'Run fast to jump higher. Skip floors to combo!',W/2,374,'800 30px Inter, sans-serif','#FFC93C','center',8); }
+  sideHud(); }

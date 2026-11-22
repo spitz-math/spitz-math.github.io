@@ -31,3 +31,11 @@ Tests: tests/v4.js (rules, replaces v2.js), tests/sets.js, tests/fps.js. Gamepla
 - End screen: "Height points" and "Bonus points" replace Best streak and Height · combo (score = height + bonus).
 - Height, the Waystone/summit meter count and the ledge height marks use Inter 800: the pixel digits blurred when the canvas is scaled to a Chromebook screen.
 - Pixel effects drawn in code (PixelFX-style timing, 4 px grid, at most 6 at once): wall-kick sparks, heavy-landing dust (falls faster than 1100 px/s), rock bonk star, summit burst, a stepped light beam above the summit lantern, light wisps along the fog edge. Presentation only: scripted policy scores unchanged.
+
+## v6 (2026-11-22): game UI to match the newer games
+Kody: "completely redesign the ui to align more with our more recent games." Follows the Star Swarm v14 rule (no sci-fi dashboard: no chips, boxes or mono caps labels).
+- The tower sits in the middle of the 1920x1080 stage at full height. Everything you read sits on two side columns as outlined text on the sky: Time, Score, Goals (with progress bars), Turbo and Moves on the left; Height, hearts, fog, Next Waystone or Summit meter, Waystones cleared and Combo on the right. Big numbers use Spitz Digits.
+- Speed: the sky behind the columns is a CSS gradient changed every 10 m, and each column is its own 352x1080 canvas that redraws only when its own numbers change (one 1920x1080 canvas halved the frame rate at 6x slowdown).
+- The Waystone question opens as one game window over the tower (solid fill, light frame, dark outline) with 3 pips and 2x2 choices; the in-tower layer keeps only the zone banner, first-time hints and touch buttons.
+- Start screen steps sit in one window as plain rows; end-screen stats are plain numbers.
+- Gameplay unchanged: tests/v4.js and tests/sets.js pass (sets needs a 2.1 s miss wait).

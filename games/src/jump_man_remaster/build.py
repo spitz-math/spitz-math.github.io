@@ -203,6 +203,71 @@ for old, new in [
    "cx.fillText(S.jumps===0&&(S.climbT||0)>6?'Press ← or → to run, then ↑ to jump!':'Waystones teach new moves. Then the fog rises!',W/2,424);"),
 ]:
     t = swap(t, old, new)
+# ---------------- v6 game UI (Kody 2026-11-22: "redesign the UI to align with our more recent games") ----------------
+t = t.replace(parts['FLOOR'] + parts['WAYDRAW'], parts['FLOOR'] + parts['WAYDRAW'])
+t = cut(t, "  drawHearts();\n  // zone banner", "var lastF=now(); function loop()", "  towerHud(t,live); }\n")
+for old, new in [
+  ("/* ================= START / END", parts['HUD6'] + "\n/* ================= START / END"),
+  ('<div class="jm-top">', '<div id="jmr-sky" aria-hidden="true"></div><canvas id="jmr-sl" class="jmr-col" width="352" height="1080" aria-hidden="true"></canvas><canvas id="jmr-sr" class="jmr-col" width="352" height="1080" aria-hidden="true"></canvas>\n  <div class="jm-top">'),
+  ("function hud(){ hudLive();", "function hud(){ hudLive(); $('jm-q').classList.toggle('on',!!(S.way&&S.q&&!S.offer)); if(S.way) $('jm-wayn').innerHTML=[0,1,2].map(function(k){ var r=S.way.res[k]; return '<i class=\"'+(r===1?'ok':r===0?'no':k===S.way.n?'now':'')+'\"></i>'; }).join('');"),
+  ("fb.innerHTML='Waystone: 3 questions. Each right answer holds the fog back.';", "fb.innerHTML='2 right: a new move and a heart back. Each right answer holds the fog 3 s.';"),
+  ('<div class="jm-qhead"><span class="jm-tag" id="jm-tag">Facts</span><span class="jm-reward" id="jm-reward"></span></div>', '<div class="jm-qhead"><span class="jmr-wt">Waystone</span><span class="jmr-wayn" id="jm-wayn"></span><span class="jm-sp"></span><span class="jm-tag" id="jm-tag">Facts</span><span class="jm-reward" id="jm-reward"></span></div>'),
+  ("function showQ(){ var q=S.q; if(!S.way||!q){ idleQ(); return; }", "function showQ(){ var q=S.q; if(!S.way||!q){ idleQ(); hud(); return; }"),
+  ("['Correct',S.correct+' of '+S.answered]", "['Correct',S.correct+' of '+S.answered]"),
+]:
+    t = swap(t, old, new)
+t = swap(t, "  sideHud(); }\n", "  sideHud(); }\nsetInterval(function(){ if(!S.started||S.over) sideHud(true); },500);\n")
+V6CSS = """
+/* start screen: the three steps sit in one game window as plain rows (no box per step) */
+.jm-steps{ background:#16264A; border:6px solid #E8EEFF; box-shadow:0 0 0 4px #0B0F1C, 8px 8px 0 4px #0B0F1C; padding:14px 26px !important; gap:0 !important; }
+.jm-step{ border:0 !important; box-shadow:none !important; background:none !important; padding:12px 0 !important; }
+.jm-step + .jm-step{ border-top:3px solid #2C3F6E !important; }
+
+/* ---- v6 layout: tower in the middle, side columns drawn on #jmr-side, question window over the tower ---- */
+#stage{ display:block !important; padding:0 !important; background:#0B0F1C !important; }
+#jmr-sky{ position:absolute; left:0; top:0; width:1920px; height:1080px; z-index:0; }
+.jmr-col{ position:absolute; top:0; width:352px; height:1080px; z-index:0; }
+#jmr-sl{ left:0; } #jmr-sr{ left:1568px; }
+.jm-top{ display:block !important; }
+.jm-top > .jm-chip, .jm-top > .jm-shopbtn, .jm-top > .jm-sp{ display:none !important; }
+.jm-brand{ position:absolute; left:44px; top:34px; z-index:2; }
+.jm-brand .jm-logo{ font-size:58px; }
+#jm-main{ display:block !important; }
+.jm-range{ position:absolute !important; left:352px; top:0; width:1054px !important; height:936px !important; margin:0 !important; border:0 !important; border-radius:0 !important; box-shadow:none !important;
+  transform:scale(1.15385) !important; transform-origin:0 0 !important; z-index:1; }
+.jm-buffs{ display:none !important; }
+.jm-q{ position:absolute !important; left:452px; top:150px; width:1016px; z-index:6; padding:26px 34px 30px !important; gap:16px !important; border-radius:0 !important;
+  background:#16264A !important; border:6px solid #E8EEFF !important; box-shadow:0 0 0 6px #0B0F1C, 0 16px 0 6px rgba(0,0,0,.35) !important;
+  opacity:0; transform:translateY(14px); pointer-events:none; transition:opacity .15s, transform .15s; }
+.jm-q.on{ opacity:1; transform:none; pointer-events:auto; }
+.jm-q.nudge{ animation:none !important; }
+.jm-qhead{ gap:16px !important; }
+.jmr-wt{ font:500 44px/1 var(--display); color:#7CF0FF; }
+.jmr-wayn{ display:flex; gap:10px; } .jmr-wayn i{ width:30px; height:18px; background:#3A3550; box-shadow:0 0 0 4px #0B0F1C; }
+.jmr-wayn i.ok{ background:#FFC23D; } .jmr-wayn i.no{ background:#FF6B6B; } .jmr-wayn i.now{ background:#E8EEFF; }
+.jm-tag{ background:none !important; box-shadow:none !important; min-width:0 !important; padding:0 !important; font:800 24px/1 var(--body) !important; letter-spacing:0 !important; text-transform:none !important; color:#A9C2EE !important; }
+.jm-reward{ display:none !important; }
+.jm-prompt{ font-size:96px !important; height:auto !important; min-height:0 !important; padding:4px 0 8px !important; text-shadow:6px 6px 0 #0B0F1C !important; }
+.jm-choices{ display:grid !important; grid-template-columns:1fr 1fr; gap:14px !important; }
+.jm-q.vis .jm-choices{ grid-template-columns:1fr; }
+.jm-ch{ min-height:84px !important; font-size:42px !important; border-radius:0 !important; background:#0F1B38 !important; border:4px solid #3C5590 !important; box-shadow:none !important; }
+.jm-ch .k{ width:52px !important; height:52px !important; background:#E8EEFF !important; color:#0B0F1C !important; box-shadow:0 4px 0 #8A9BC4; }
+.jm-ch.right{ border-color:var(--ok) !important; background:#123A2A !important; } .jm-ch.wrong{ border-color:var(--no) !important; background:#3A1626 !important; }
+.jm-fb{ min-height:0 !important; height:auto !important; border:0 !important; background:none !important; padding:4px 2px 0 !important; font:700 28px/1.3 var(--body) !important; color:#C9D6F5 !important; }
+.jm-fb.ok, .jm-fb.bad{ border:0 !important; }
+.jm-next{ display:block !important; align-self:center; height:auto !important; padding:12px 26px !important; border-radius:0 !important; background:#E8EEFF !important; color:#0B0F1C !important; font:500 30px/1 var(--display) !important; box-shadow:0 6px 0 #8A9BC4; }
+.jm-next:disabled{ visibility:hidden; }
+.jmr-offer{ position:absolute; inset:0; background:rgba(6,10,26,.55) !important; }
+.jmr-offer h2{ font-size:72px !important; text-shadow:0 0 0 transparent, 6px 6px 0 #0B0F1C !important; }
+.jmr-pick{ border-radius:0 !important; background:#16264A !important; border:6px solid #E8EEFF !important; box-shadow:0 0 0 6px #0B0F1C, 0 16px 0 6px rgba(0,0,0,.35) !important; }
+.jmr-ofoot{ color:#E8EEFF !important; text-shadow:3px 3px 0 #0B0F1C; }
+.jm-stats, .jm-topics{ gap:6px 30px !important; margin:22px 0 12px !important; }
+.jm-stat{ background:none !important; border:0 !important; box-shadow:none !important; border-radius:0 !important; padding:4px !important; }
+.jm-stat .l{ text-transform:none !important; letter-spacing:0 !important; font:700 24px/1.2 var(--body) !important; color:#A9C2EE !important; }
+.jm-stat .v{ font:400 52px/1.1 var(--display) !important; text-shadow:4px 4px 0 #0B0F1C; }
+.jm-topics .jm-stat .v{ font-size:36px !important; }
+"""
+t = swap(t, '</style>\n</head>', V6CSS + '</style>\n</head>') if t.count('</style>\n</head>') == 1 else swap(t, '<script src="kit.js"></script>', '<style>' + V6CSS + '</style>\n<script src="kit.js"></script>')
 for gone in ['S.energy+=', "U('energy')"]:
     assert gone not in t, gone
 open(os.path.join(O, 'jump_man_multiplication.html'), 'w', encoding='utf-8').write(t)
