@@ -24,6 +24,7 @@ var css=[
 '.sz-ask .sz-askrow{ display:flex; justify-content:center; gap:20px; }',
 '.sz-ask .sz-askrow button{ height:96px; padding:0 44px; border-radius:22px; font:800 32px/1 Inter,system-ui,sans-serif; background:var(--panel); border:3px solid var(--border); color:var(--text); }',
 '.sz-ask #sz-askyes{ background:var(--sz-mark); border-color:var(--sz-mark); color:#111; }',
+'.sz-askwait{ opacity:.5; cursor:wait; }',
 '[class$="-logo"]{ cursor:pointer; }',
 /* the F hint */
 '.sz-fs{ position:fixed; left:50%; bottom:16px; transform:translateX(-50%); transform-origin:50% 100%; z-index:9999; display:flex; white-space:nowrap; align-items:center; gap:10px; padding:10px 20px 10px 12px; border-radius:999px;',
@@ -52,6 +53,20 @@ function active(ms){ return Date.now()-IN<(ms||2500); }
    the button lets go of focus. Keyboard presses on a button (detail 0) keep focus, so Tab + Enter still works. */
 document.addEventListener('click',function(e){ var b=e.target&&e.target.closest?e.target.closest('button'):null;
   if(b&&e.detail>0&&b===document.activeElement) b.blur(); });
+/* "Start a new game?" box (Shift+R): its Yes button sits where game buttons were, so a click meant for an answer or a card
+   wiped the run. For 1 s after the box opens, Yes ignores the mouse (Y still works), and a press that started before the box
+   opened never counts. Any game's box: the button's id ends in -askyes and its box opens by dropping the hidden attribute. */
+var ASK_MS=1000, askOpen=0, askDown=0;
+function askBox(el){ return el&&el.querySelector&&!el.hidden&&el.querySelector('[id$="-askyes"]'); }
+new MutationObserver(function(ms){ for(var i=0;i<ms.length;i++){ var y=askBox(ms[i].target);
+  if(y){ askOpen=Date.now(); y.classList.add('sz-askwait'); setTimeout(function(b){ return function(){ b.classList.remove('sz-askwait'); }; }(y),ASK_MS); } } })
+  .observe(document.documentElement,{attributes:true,attributeFilter:['hidden'],subtree:true});
+function askBlock(e){ var b=e.target&&e.target.closest?e.target.closest('[id$="-askyes"]'):null; if(!b) return;
+  var soon=Date.now()-askOpen<ASK_MS;
+  if(e.type==='click'){ if(e.detail===0||(!soon&&askDown>askOpen)) return; }   /* keyboard Enter/Space on a focused Yes (detail 0) is a real choice */
+  else if(!soon){ if(e.type!=='mouseup') askDown=Date.now(); return; }
+  e.preventDefault(); e.stopImmediatePropagation(); }
+['pointerdown','mousedown','mouseup','click'].forEach(function(n){ document.addEventListener(n,askBlock,true); });
 var JINGLE=[[392.00,0,0.12],[523.25,0.13,0.12],[659.25,0.26,0.12],[783.99,0.40,0.34],[659.25,0.78,0.12],[783.99,0.92,0.7]];
 
 /* the shared music engine: synthesized, no audio files. It plays only during a run, sits under the sound effects
