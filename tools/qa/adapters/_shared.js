@@ -14,6 +14,8 @@
      intents, moved      real keys that move the player, and how to tell it moved (from the snapshot's extra fields)
      act, acted, actName the main action (a key in intents.action, or an act(pg) function) and how to tell it happened
      unsupported         { movement: 'why' } for things the game does not have
+     shopKeys            adds a tier 2 scenario: open the Shop with a mouse click, close it with Escape, then Enter
+                         and Space must not open it again (the 2026-11-23 focus bug, fixed in kit.js)
    Hooks only set the scene (open a question, move the clock to its end); real keys and clicks do the action. */
 const { sleep } = require('../lib/harness');
 
@@ -75,6 +77,18 @@ function make(o) {
     },
     scenarios: [],
   };
+  if (o.shopKeys) A.scenarios.push({ name: 'shop: closed with Escape, Enter and Space leave it closed', async run(r) {
+    const pg = await r.page('chromebook'); await A.open(pg); await A.start(pg);
+    const shopOpen = () => pg.evaluate(p => { const e = document.getElementById(p + '-shop'); return !!(e && !e.hidden && e.offsetParent); }, pre);
+    await pg.click(`#${pre}-shopbtn`); await sleep(400);
+    r.check('a mouse click on the Shop button opens the Shop', true, await shopOpen());
+    await pg.keyboard.press('Escape'); await sleep(400);
+    r.check('Escape closes the Shop', false, await shopOpen());
+    let reopened = '';   // checked after every key: two presses would toggle it open and shut again
+    for (const k of ['Enter', 'Space', 'Enter']) { await pg.keyboard.press(k); await sleep(250); if (!reopened && await shopOpen()) reopened = k; }
+    r.check('Enter and Space afterwards leave the Shop closed (key that reopened it)', '', reopened);
+    await pg.context().close();
+  } });
   if (o.moved) A.moved = o.moved;
   if (o.act) A.act = o.act;
   if (o.acted) A.acted = o.acted;

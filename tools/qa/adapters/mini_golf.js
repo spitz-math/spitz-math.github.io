@@ -4,6 +4,7 @@ const { sleep } = require('../lib/harness');
 const { make } = require('./_shared');
 
 module.exports = make({
+  shopKeys: true,
   id: 'mini_golf', pre: 'mg', endBy: 'endAt',
   extra: ['holes', 'putts', 'balls'],
   watch: ['strokes'],

@@ -148,7 +148,7 @@
     {
       "id": "mini_golf",
       "name": "Mini Golf",
-      "tier": 1,
+      "tier": 2,
       "adapter": "adapters/mini_golf.js",
       "paths": [
         "games/mini_golf.html",
