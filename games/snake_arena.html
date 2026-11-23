@@ -1042,7 +1042,7 @@ function showEnd(celebrate){ $('sn-endname').textContent=S.name; $('sn-endscore'
   $('sn-badges').innerHTML=(S.pro?'<div class="sn-badge pro"><b>★</b>All-Pro</div>':'')+S.chal.map(function(c){ return '<div class="sn-badge'+(c.done?' done':'')+'"><b>'+(c.done?'✓':'✗')+'</b>'+CHAL[c.id].txt+'</div>'; }).join('');
   /* LEADERBOARD HOOK: the shared score code (scorecode.js) shows the student's code here */
   if(window.SpitzCode&&SpitzCode.show) try{ SpitzCode.show('sn','snake_arena',S); }catch(e){}
-  $('sn-end').hidden=false; if(celebrate){ SND.win(); [0,350,700,1100].forEach(function(ms,i){ setTimeout(function(){ confetti(200+i*500,1070,90,1.3); confetti(1720-i*500,1070,90,1.3); },ms); }); } }
+  $('sn-end').hidden=false; if(celebrate&&S.score>0){ SND.win(); [0,350,700,1100].forEach(function(ms,i){ setTimeout(function(){ confetti(200+i*500,1070,90,1.3); confetti(1720-i*500,1070,90,1.3); },ms); }); } }
 var armT=0; $('sn-again').addEventListener('click',function(){ var b=this; if(!b.classList.contains('arm')){ b.classList.add('arm'); b.textContent='Tap again to start over'; clearTimeout(armT); armT=setTimeout(function(){ b.classList.remove('arm'); b.textContent='Play again'; },3000); return; }
   b.classList.remove('arm'); b.textContent='Play again'; var keepName=S.name; S=fresh(); S.name=keepName; pops=[]; booms=[]; loops=[]; ann=null; lassoCD=0; reveal=null; last={}; lastG=-1;
   $('sn-end').hidden=true; $('sn-start').hidden=false; $('sn-nameinput').value=keepName; $('sn-go-start').disabled=!keepName; lastChal=''; modeDraw(); save(); hud(); clockDraw(); dirty=true;
