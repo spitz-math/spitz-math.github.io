@@ -47,6 +47,11 @@ var head=document.head||document.documentElement; head.insertBefore(st, head.fir
         toastMs -> how long a toast stays (default 1.5 s)     toastFn(msg) -> a game's own toast, if it has one */
 var IN=-1e9; ['pointerdown','keydown'].forEach(function(n){ addEventListener(n,function(){ IN=Date.now(); },true); });
 function active(ms){ return Date.now()-IN<(ms||2500); }
+/* A button clicked with the mouse kept keyboard focus, so a later Enter or Space clicked it again
+   (close the Shop, press Enter for the next question: the Shop opened again). After a mouse or touch click
+   the button lets go of focus. Keyboard presses on a button (detail 0) keep focus, so Tab + Enter still works. */
+document.addEventListener('click',function(e){ var b=e.target&&e.target.closest?e.target.closest('button'):null;
+  if(b&&e.detail>0&&b===document.activeElement) b.blur(); });
 var JINGLE=[[392.00,0,0.12],[523.25,0.13,0.12],[659.25,0.26,0.12],[783.99,0.40,0.34],[659.25,0.78,0.12],[783.99,0.92,0.7]];
 
 /* the shared music engine: synthesized, no audio files. It plays only during a run, sits under the sound effects
