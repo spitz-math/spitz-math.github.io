@@ -17,6 +17,7 @@ window.SPITZ_TESTS=[
   {id:"math8-redesign", title:"Grade 8 Math Redesign Practice Test", v:"73aa505c41"},
   {id:"math6-2025", title:"Grade 6 Math 2025 Released Test", v:"c817937bf7"},
   {id:"math6-2026", title:"Grade 6 Math 2026 Released Test", v:"b8ade306c7"},
+  {id:"ss8-2025", title:"Grade 8 Social Studies 2025 Released Test", v:"33706b813e"},
   {id:"exit-ticket-11-3", title:"Exit Ticket 11/3", v:"2e834945e9"},
   {id:"exit-ticket-11-4", title:"Exit Ticket 11/4", v:"8880075f1e"},
   {id:"exit-ticket-11-11", title:"Exit Ticket 11/11", v:"7b8b04c14e"}

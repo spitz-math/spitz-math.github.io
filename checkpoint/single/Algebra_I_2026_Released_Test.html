@@ -3261,7 +3261,7 @@ function render(){
   } else if(it.rubric) why=`<h4 class="ok">How it is scored</h4><div class="rubric">${it.rubric}</div>`;
   else why=`<h4 class="ok">How to solve it</h4>${rimg(it.n,'all')}`;
   /* student-friendly explanation (it.explain): used instead of TEA's pictures, which stay one click away below it */
-  const X=it.explain, hasTEA=!!(TD.rationale&&TD.rationale[it.n])||!!it.rat; let xh='';
+  const X=it.explain, hasTEA=!!(TD.rationale&&TD.rationale[it.n])||!!it.rat||!!it.rubric; let xh='';
   if(X){ const xw=X.why||{}, chosenWrong=chosen.filter(k=>!correct.includes(k));
     if(e===null) xh+=`<div class="xwhy"><h4 class="no">You left this one blank</h4><p>Here is how to get it.</p></div>`;
     else if(e<it.max){ const parts=correct.length?chosenWrong.map(k=>xw[k]?`<p><b>${L[k]}:</b> ${xw[k]}</p>`:'').join(''):(X.miss?`<p>${X.miss}</p>`:'');
