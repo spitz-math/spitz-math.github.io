@@ -1034,7 +1034,7 @@ tr.ra-now{background:none!important;outline:0}
 <!-- Sign in -->
 <div class="endscreen" id="startScreen">
   <div class="resbar"><b class="wm"><svg class="burger wmb" viewBox="0 0 32 28" aria-hidden="true"><path d="M3 12C3 5 9 2 16 2s13 3 13 10z" fill="#f2a33a"/><g fill="#fff3c4"><ellipse cx="10" cy="6.5" rx="1.1" ry=".6"/><ellipse cx="16" cy="5" rx="1.1" ry=".6"/><ellipse cx="21.5" cy="7" rx="1.1" ry=".6"/><ellipse cx="13" cy="9" rx="1.1" ry=".6"/><ellipse cx="19" cy="9.5" rx="1.1" ry=".6"/></g><path d="M2 12.5h28l-2.5 3-3-2-3 2.5-3-2.5-3 2.5-3-2.5-3 2.5-3-2z" fill="#5fbf3a"/><rect x="2.5" y="15" width="27" height="3" rx="1.2" fill="#f7d13b"/><rect x="2" y="17.5" width="28" height="4.2" rx="2" fill="#7a3b1d"/><path d="M3 22h26c0 2.6-2.4 4-5 4H8c-2.6 0-5-1.4-5-4z" fill="#e8913a"/></svg>SPITZ <span>CHECKPOINT</span></b></div>
-  <div class="resbar2"><span>Practice Test Site</span><span id="siWho">Mr. Spitz · Algebra I · Chacon Middle School</span></div>
+  <div class="resbar2"><span>Practice Test Site</span><span id="siWho">Chacon Middle School</span></div>
   <div class="scroller"><div class="waves"></div><div class="endwrap">
     <form class="rescard sicard" id="startForm" autocomplete="off">
       <h1>Please Sign In</h1>
@@ -3363,7 +3363,14 @@ const $=s=>document.querySelector(s);
 const APP=window.SPITZ_APP||null;
 const params=new URLSearchParams(location.search);
 const testOrder=L=>{ const yr=t=>{ const m=/^alg1-(\d{4})$/.exec(t.id); return m?+m[1]:null; }; return L.map((t,i)=>({t,i})).sort((a,b)=>{ const A=yr(a.t), B=yr(b.t); if(A!=null&&B!=null) return B-A; if(A!=null) return -1; if(B!=null) return 1; return a.i-b.i; }).map(o=>o.t); }; // released tests newest year first, then the rest in list order
-const allTests=testOrder(window.SPITZ_TESTS||[]), tests=allTests.filter(t=>!t.hidden);   // hidden tests stay reachable with ?test=<id>
+const allTests=testOrder(window.SPITZ_TESTS||[]), tests=allTests.filter(t=>!t.hidden&&!/^exit-ticket/.test(t.id));   // hidden tests stay reachable with ?test=<id>   (exit tickets are for class sessions, so they stay off the practice list)
+/* practice list grouped by subject (grade order), newest year first inside each group */
+const SUBJ=[['math6','Grade 6 Math'],['math7','Grade 7 Math'],['math8','Grade 8 Math'],['alg1','Algebra I'],['rla6','Grade 6 Reading'],['rla7','Grade 7 Reading'],['rla8','Grade 8 Reading'],['sci8','Grade 8 Science'],['ss8','Grade 8 Social Studies']];
+const subjOf=t=>{ const k=String(t.id).split('-')[0], i=SUBJ.findIndex(x=>x[0]===k); return i<0?SUBJ.length:i; };
+const yrOf=t=>{ const m=/-(\d{4})$/.exec(t.id); return m?+m[1]:null; };
+function practiceOptions(L){ const g=SUBJ.map(()=>[]).concat([[]]); L.forEach((t,i)=>g[subjOf(t)].push({t,i}));
+  return g.map((G,n)=>{ if(!G.length) return ''; G.sort((a,b)=>{ const A=yrOf(a.t), B=yrOf(b.t); if(A!=null&&B!=null) return B-A; if(A!=null) return -1; if(B!=null) return 1; return a.i-b.i; });
+    return `<optgroup label="${n<SUBJ.length?SUBJ[n][1]:'Other'}">`+G.map(o=>`<option value="${o.t.id}">${o.t.title}</option>`).join('')+'</optgroup>'; }).join(''); }
 const fixed=APP?null:(params.get('test')||(tests.length===1?tests[0].id:null));
 const pick=$('#stuTest'), shown=$('#siTestName');
 /* class periods: a session's teacher has their own list (from the server); the file version offers 1st to 9th */
@@ -3379,7 +3386,7 @@ const setWho=r=>{ $('#siWho').textContent=r&&r.by?[r.by,r.subject,SCHOOL].filter
 if(APP){ pick.closest('.sif').hidden=true; $('#siSesRow').hidden=false; $('#siPractice').hidden=false; askName(false);
   $('#stuSession').addEventListener('input',()=>{ if(!$('#siNameRow').hidden){ askName(false); $('#siErr').hidden=true; setWho(null); } }); }
 else if(fixed){ const t=allTests.find(t=>t.id===fixed); shown.textContent=t?t.title:fixed; shown.hidden=false; pick.hidden=true; }
-else { pick.innerHTML='<option value="" hidden></option>'+tests.map(t=>`<option value="${t.id}">${t.title}</option>`).join(''); pick.hidden=false; shown.hidden=true; }
+else { pick.innerHTML='<option value="" hidden></option>'+practiceOptions(tests); pick.hidden=false; shown.hidden=true; }
 const err=(t,focus)=>{ $('#siErr').textContent=t; $('#siErr').hidden=false; $('#siBtn').disabled=false; if(focus) focus.focus(); };
 function load(id,done){
   window.SPITZ_TESTID=id; window.SPITZ_BASE=window.SPITZ_ROOT+'tests/'+id+'/';
