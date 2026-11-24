@@ -66,7 +66,7 @@ const ok=(c,m,v)=>{ if(!c) fails++; console.log(c?'  ok':'  FAIL',m,v===undefine
   const hl=await p.evaluate(()=>{ const G=__G, S=G.state(), P=G.man(); while(G.plats().length<=S.nextWay+5){ P.on=null; P.h+=2500; P.vy=0; G.step(1/60); } const h0=S.hearts, pl=G.plats(), q=pl[S.nextWay]; S.fog=q.h-1500; P.on=null; P.x=q.floor?300:G.cxAt(q); P.h=q.h+30; P.vy=-10; P.lastI=q.i-1; for(let k=0;k<20;k++) G.step(1/60);
     const f0=S.fog; for(let k=0;k<60;k++) G.step(1/60); const frozen=S.fog===f0; for(let k=0;k<3;k++){ const i=S.q.choices.findIndex(c=>c.ok); S.qDone=false; G.ans(i); G.newQ(); } G.pick(); return {h0,h1:S.hearts,frozen}; });
   ok(hl.frozen&&hl.h1===hl.h0+1,'the fog stops at a Waystone, and passing it gives a heart back',hl);
-  const go=await p.evaluate(()=>{ const G=__G, S=G.state(), P=G.man(); S.hearts=1; S.fog=P.h+100; G.step(1/60); return {over:S.over,why:document.getElementById('jmr-endwhy').textContent}; });
+  const go=await p.evaluate(()=>{ const G=__G, S=G.state(), P=G.man(); S.hearts=1; S.climbT+=10; S.fog=P.h+100; G.step(1/60); return {over:S.over,why:document.getElementById('jmr-endwhy').textContent}; });
   ok(go.over&&go.why==='The fog caught you!','0 hearts ends the run',go);
   if(rm==='no-preference') await p.screenshot({path:OUT+'v2_fogend.png'});
 

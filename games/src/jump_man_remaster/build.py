@@ -278,12 +278,13 @@ if os.path.exists(SOUND_BLOCK):
 else:
     print('WARNING: no sound block at', SOUND_BLOCK, '- built with code sounds only')
 # ---- v10 harder platforming (Kody 2026-11-24 "make the platforming and the jumps hard, not just the fog"). Measured reach with
-# no upgrades: standing jump 147 px up, half-speed run 297, full run 392. By ledge 130 most rises (the first floor stays easy) need a running jump
-# (180-250 px, at most 0.64 of the full-run reach), ledges are narrower (110-170 px), farther apart sideways (up to 340 px),
-# and more of them move or crumble. tests/reach.js proves every gap can be made from a half-speed run with no upgrades.
+# no upgrades: standing jump 147 px up, half-speed run 297, full run 392. v11 (Kody: running jumps 'mean', picked 'soften a lot'):
+# most rises stay standing-jump height (108-138 px); by ledge 140 up to 1 ledge in 5 is a tall one (175-220 px) that needs a run.
+# Ledges are narrower (110-170 px), farther apart sideways (up to 340 px), and more of them move or crumble.
+# tests/reach.js proves every gap can be made from a half-speed run with no upgrades.
 GEN_SWAPS = [
   ("    var p={i:i,h:prev.h+108+r[0]*24};",
-   "    var L=Math.max(0,Math.min(1,(i-10)/120)), p={i:i,h:prev.h+110+70*L+r[0]*(24+70*L)};"),
+   "    var L=Math.max(0,Math.min(1,(i-10)/130)), tall=i%FLOOR_EVERY!==0&&prev.kind!=='crumble'&&(r[5]*7)%1<0.2*L, p={i:i,h:prev.h+(tall?175+r[0]*45:108+r[0]*(24+6*L)),tall:tall};"),
   ("    else { var L=Math.min(1,i/150); p.w=Math.round(240-95*L+r[1]*(80-20*L));\n      p.amp=(i>12&&r[4]<0.16+0.16*L)? Math.round(50+r[9]*(20+70*L)) : 0;",
    "    else { p.w=Math.round(240-130*L+r[1]*(70-10*L));\n      p.amp=(i>12&&r[4]<0.16+0.26*L)? Math.round(50+r[9]*(20+80*L)) : 0;"),
   ("var d=(r[2]<0.5?-1:1)*(110+r[3]*(120+60*L));", "var d=(r[2]<0.5?-1:1)*(120+r[3]*(120+100*L));"),

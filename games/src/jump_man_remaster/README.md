@@ -55,3 +55,9 @@ Kody: "make the platforming and the jumps hard, not just the fog."
 - tests/reach.js proves every gap in the first 600 ledges of 5 towers can be made from a half-speed run with no upgrades (moving ledges: you may wait for them to swing close).
 - Since the jumps are now the challenge, the fog went back to v4 speed (24 px/s + 0.07 per meter, cap 85) and sits up to 700 px below you, and a rock hit is a knock again (no heart). Waystones still need 3 of 3.
 - Test bots: a clumsy climber bot (running jumps, no rock dodging) at 70% right dies in about 2 minutes; the same bot at 100% right learns 4 moves and survives 1 run in 4. The tests/v4.js bot with all moves climbs 280 ledges in 4 minutes with 3 hearts.
+
+## v11 (2026-11-24): softer jumps
+Kody on v10: "those running jumps are mean lol", then picked "Soften a lot".
+- Most rises are back to standing-jump height (108-138 px, standing reach 147). From ledge 10 to 140 up to 1 ledge in 5 becomes a tall one (175-220 px) that needs a running jump; floors and ledges after a crumble ledge are never tall. Narrow, far, moving and crumbling ledges from v10 stay.
+- Fog: a second dip within 4 game seconds of a hit only lifts you again (no second heart), and the lift picks a steady ledge (not moving, ice, crumble or spring).
+- Test bots: clumsy climber at 70% right survives 7 of 8 runs (0-2 hearts lost); all-right 7,147-7,237; always-wrong and random guessing fall to the fog (1,900-2,300); idle loses fast.

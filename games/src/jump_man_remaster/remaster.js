@@ -231,9 +231,10 @@ function fogStep(dt){ var was=fogOn(); S.climbT=(S.climbT||0)+dt; if(!was&&fogOn
   if(S.calm>0){ S.calm=Math.max(0,S.calm-dt); S.fog=Math.max(S.fog,P.h-FOG_GAP); }
   else S.fog=Math.max(S.fog+fogSpeed()*dt, P.h-FOG_GAP);
   if(P.h+PH*0.45<S.fog) fogHit(); }
-function fogHit(){ S.hearts=Math.max(0,S.hearts-1); SND.crash(); shk=10; endCombo();
+var lastHit=-1e9;   /* game seconds (S.climbT), not the wall clock */
+function fogHit(){ var again=(S.climbT||0)-lastHit<4; lastHit=S.climbT||0; if(!again) S.hearts=Math.max(0,S.hearts-1); SND.crash(); shk=10; endCombo();   /* v11: a second dip within 4 s only lifts you again */
   if(S.hearts<=0){ S.fogOut=true; endRun(); return; }
-  var tgt=null; for(var i=Math.max(0,S.pi-20);i<plats.length;i++){ var p=plats[i]; if(p.h>S.fog+300&&solid(p)&&p.kind!=='spring'&&p.kind!=='crumble'){ tgt=p; break; } }
+  var tgt=null; for(var i=Math.max(0,S.pi-20);i<plats.length;i++){ var p=plats[i]; if(p.h>S.fog+300&&solid(p)&&p.kind!=='spring'&&p.kind!=='crumble'&&p.kind!=='ice'&&!p.amp){ tgt=p; break; } }
   if(tgt){ P.on=tgt; P.h=tgt.h; P.x=tgt.floor?W/2:cxAt(tgt,gt); P.vx=0; P.vy=0; P.lastI=tgt.i; S.pi=tgt.i; P.airJ=0; P.dashed=false; P.glide=false; }
   S.fog=P.h-FOG_GAP; S.calm=Math.max(S.calm||0,3); cam=P.h;   /* v8: 3 s of held fog after a hit, so one mistake never costs two hearts */ pop(P.x,P.h+160,'OUCH!',S.hearts+(S.hearts===1?' heart left':' hearts left'),'#FF8FA3',true); hud(); save(); }
 function wayHeal(){ if(S.hearts<HEART_MAX){ S.hearts++; pop(P.x,P.h+230,'+1 HEART','','#FF8FA3'); return true; } return false; }
