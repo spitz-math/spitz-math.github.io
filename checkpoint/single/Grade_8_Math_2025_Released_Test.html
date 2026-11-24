@@ -2351,7 +2351,8 @@ const lattice=(R,f)=>{ const P=[]; for(let x=-R;x<=R&&P.length<2;x++){ const y=f
     case 'graphsys': { const g=it.ineqs.map(q=>{ const pts=lattice(it.R,x=>{ const y=q.m*x+q.b; return Math.abs(y-Math.round(y))<1e-9?Math.round(y):null; }); if(pts.length<2) throw new Error('a boundary line does not go through two grid points'); return {pts,dash:q.op.length===1}; });
       let region=null; for(let X=-it.R+0.5;X<it.R&&!region;X+=1) for(let Y=-it.R+0.5;Y<it.R&&!region;Y+=1) if(it.ineqs.every(q=>q.op[0]==='>'?Y>q.m*X+q.b:Y<q.m*X+q.b)) region=[X,Y];
       if(!region) throw new Error('the two inequalities have no region in common on the grid'); return {g,region}; }
-    case 'cline': { if(it.seg) return {pts:it.seg.map(P=>P.slice())}; const P=lattice(R,x=>it.eq[1]?(it.eq[2]-it.eq[0]*x)/it.eq[1]:null); if(P.length<2) throw new Error('the correct line does not go through two grid points'); return {pts:P}; }
+    case 'cline': { if(it.seg){ const ok=Array.isArray(it.seg)&&it.seg.length===2&&it.seg.every(P=>Array.isArray(P)&&P.length===2&&P.every(v=>Number.isInteger(v)&&Math.abs(v)<R))&&(it.seg[0][0]!==it.seg[1][0]||it.seg[0][1]!==it.seg[1][1]);
+      if(!ok) throw new Error('seg must be two different whole-number grid points inside the grid (|x|, |y| < R)'); return {pts:it.seg.map(P=>P.slice())}; } const P=lattice(R,x=>it.eq[1]?(it.eq[2]-it.eq[0]*x)/it.eq[1]:null); if(P.length<2) throw new Error('the correct line does not go through two grid points'); return {pts:P}; }
     case 'graphexp': return {a:it.a,b:it.b,pts:[[0,it.a],[1,it.a*it.b]]};
     case 'numline': return it.mode==='ineq'?Object.assign({},it.answer):it.answer.slice();
     case 'filltable': return it.answer.map(String);
