@@ -1,6 +1,15 @@
 {
  "posts": [
   {
+   "id": "leaderboard-reset-nov26",
+   "type": "patch",
+   "game": "",
+   "title": "The leaderboard got wiped. Time for new high scores!",
+   "date": "2026-11-24",
+   "text": "Every board is empty. Old scores are gone, so every game has a #1 spot up for grabs.\n- Get at least 70% right in a run to make the board.\n- Hit Send my score on the end screen. Your name and score fill in on their own, then just tap Submit.\n- Each game remembers your name, so you only type it once.\n- One spot per player per game. Beat your own best to climb.\nMore info coming soon.",
+   "show": true
+  },
+  {
    "id": "football-buds-blitz-dev",
    "type": "dev",
    "game": "",
@@ -58,5 +67,5 @@
    "show": true
   }
  ],
- "updated": "2026-11-20T15:30:00.000Z"
+ "updated": "2026-11-24T20:00:00.000Z"
 }
