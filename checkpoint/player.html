@@ -448,6 +448,10 @@ select.inl option{line-height:1.3;padding:4px 8px;color:#000;background:#fff}
 /* two columns, read down each column (A B | C D), as some released items show their graph or table choices */
 .choices.grid2.cols2{display:grid;grid-template-columns:repeat(2,max-content);grid-template-rows:repeat(2,auto);grid-auto-flow:column;gap:12px 16px}
 .choices.grid2.cols2 .choice{min-width:0;width:auto}
+.choices.grid2.placed{display:grid;gap:12px 14px;align-items:start;justify-content:start}
+.choices.grid2.placed .choice{min-width:0;width:auto;height:100%;box-sizing:border-box}
+.choices.grid2.placed .fig{max-width:100%}
+@media (max-width:760px){.choices.grid2.placed{display:flex}}
 .choices.grid2.cols2 .sgraph{width:220px!important}
 .rvclone .choices.grid2.cols2{grid-template-columns:repeat(2,minmax(0,1fr))}
 .rvclone .choices.grid2.cols2 .sgraph{width:100%!important;max-width:220px}
@@ -1221,11 +1225,13 @@ function build(it){
   const id=it.n;
   if(it.type==='mc'||it.type==='ms'){
     const wrap=document.createElement('div'); wrap.className='choices'; if(it.grid) wrap.classList.add('grid2'); if(it.grid&&it.cols2) wrap.classList.add('cols2');
+    if(it.grid&&it.place){ wrap.classList.add('placed'); wrap.style.gridTemplateColumns=it.place.cols; }   /* place: picture choices laid out like the online form (hot spot items) */
     wrap.setAttribute('role',it.type==='mc'?'radiogroup':'group');
     it.choices.forEach((c,k)=>{
       const d=document.createElement('div'); d.className='choice'+(it.type==='ms'?' ms':'');
       d.setAttribute('role',it.type==='mc'?'radio':'checkbox'); d.setAttribute('aria-checked','false'); d.tabIndex=0; d.dataset.k=k;
       d.innerHTML=`<span class="bubble"><span class="bl">${it.letters[k]}</span></span><span class="ctext">${c}</span>`;
+      if(it.grid&&it.place){ d.style.gridArea=it.place.at[k]; const im=d.querySelector('img.fig'); if(im&&it.place.w) im.style.setProperty('width',it.place.w[k]+'px','important'); }
       const act=()=>{
         if(consumeHL()) return;
         if(S.modes.hl) return;
@@ -1954,6 +1960,8 @@ const EQX={
     const flush=()=>{ if(num){ if(!/^\d*\.?\d+$|^\d+\.$/.test(num)) throw 0; push('('+num+')',true); num=''; } };
     for(const n of B){
       if(typeof n==='string'&&/[0-9.]/.test(n)){ if(num===''&&opd()) { flush(); } num+=n; continue; }
+      /* a whole number right before a number-only fraction is a mixed number: 11 1/2 = 11.5 */
+      if(n.t==='frac'&&/^\d+$/.test(num)&&[n.n,n.d].every(q=>q.length&&q.every(ch=>typeof ch==='string'&&/[0-9]/.test(ch)))){ push('('+num+'+'+EQX.ser(n.n)+'/'+EQX.ser(n.d)+')',true); num=''; continue; }
       flush();
       if(typeof n==='string'){
         if(n===v) push('X',true); else if(n==='π') push('Math.PI',true);
@@ -2244,7 +2252,8 @@ function score(it){ const a=S.answers[it.n]; if(a==null||NOKEY(it)) return null;
     case 'dnd': return it.answer.every((z,t)=>a[t]===z);
     case 'graph': return a[0]===it.answer[0]&&a[1]===it.answer[1];
     case 'graphline': return a.lines.length===1&&a.pts.length===0&&a.lines[0].every(P=>onLine(it,P));
-    case 'boxes': { if(a.some(q=>q==null)) return false; const A2=it.unordered?[...a].sort():a, K=it.unordered?[...it.answer].sort():it.answer; return K.every((q,i)=>A2[i]===q); }
+    case 'boxes': { if(a.some(q=>q==null)) return false; const A2=it.unordered?[...a].sort():a; /* alt: other accepted orders (x + 20 ≥ 75 or 20 + x ≥ 75) */
+      return [it.answer,...(it.alt||[])].some(K0=>{ const K=it.unordered?[...K0].sort():K0; return K.every((q,i)=>A2[i]===q); }); }
     case 'hotspot': return Array.isArray(it.answer)?a.length===it.answer.length&&it.answer.every(v=>a.includes(v)):a===it.answer;
     case 'cline': return a.pts.length===2&&a.pts.every(P=>onLine(it,P));
     case 'graphsys': { const r=sysParts(it,a); return r.lines&&r.region; }
