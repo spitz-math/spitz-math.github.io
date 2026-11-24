@@ -19,6 +19,7 @@ window.SPITZ_TESTS=[
   {id:"math6-2024", title:"Grade 6 Math 2024 Released Test", v:"bef1dde7d7"},
   {id:"math6-2025", title:"Grade 6 Math 2025 Released Test", v:"c817937bf7"},
   {id:"math6-2026", title:"Grade 6 Math 2026 Released Test", v:"b8ade306c7"},
+  {id:"math7-2025", title:"Grade 7 Math 2025 Released Test", v:"5bd621c43a"},
   {id:"ss8-2025", title:"Grade 8 Social Studies 2025 Released Test", v:"33706b813e"},
   {id:"sci8-2025", title:"Grade 8 Science 2025 Released Test", v:"eb1729f11f", hidden:true},
   {id:"exit-ticket-11-3", title:"Exit Ticket 11/3", v:"2e834945e9"},

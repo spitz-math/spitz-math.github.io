@@ -318,6 +318,7 @@ svg.hs .spot[aria-checked="true"]{fill:rgba(90,80,210,.35);stroke:#4b3fc4;stroke
 .hswrap{margin:.2em 0}
 .hsimg{position:relative;margin:.4em 0;line-height:0} .hsimg img{width:100%;height:auto;display:block}
 .hsdot{position:absolute;width:28px;height:28px;margin:-14px 0 0 -14px;border-radius:50%;border:2px solid #4b3fc4;background:rgba(255,255,255,.55);cursor:pointer;padding:0}
+.hsdot.hsbox{margin:0;border-radius:4px;background:transparent} .hsdot.hsbox[aria-checked="true"]{background:rgba(90,80,210,.22);box-shadow:none;border-width:3px} /* spot [x,y,w,h] in % = a clickable box (e.g. a city name on a map) */
 .hsdot:hover{background:rgba(130,120,220,.25)} .hsdot[aria-checked="true"]{background:rgba(90,80,210,.5);box-shadow:inset 0 0 0 4px #fff}
 /* graphing tools */
 .eq.ctr{text-align:center;margin-left:0}
@@ -1638,7 +1639,7 @@ function buildHotspot(it,root){
 const hsPts=(it,a)=>[].concat(a).map(q=>it.img?(it.spotNames?it.spotNames[q]:'Spot '+'ABCDEFGHIJKL'[q]):`(${fmtN(it.spots[q][0])}, ${fmtN(it.spots[q][1])})`).join(', ');
 /* hot spot on a picture (teachers' own tests): spots are [left %, top %] on the picture */
 function buildHotImg(it,root,multi){ const id=it.n, w=document.createElement('div'); w.className='hsimg'; w.style.maxWidth=(it.imgw||400)+'px';
-  w.innerHTML=`<img src="${it.img}" alt="Picture with spots to choose">`+it.spots.map(([x,y],q)=>`<button type="button" class="hsdot" style="left:${x}%;top:${y}%" role="${multi?'checkbox':'radio'}" aria-checked="false" aria-label="${it.spotNames?'Point '+it.spotNames[q]:'Spot '+'ABCDEFGHIJKL'[q]}" data-k="${q}"></button>`).join('');
+  w.innerHTML=`<img src="${it.img}" alt="Picture with spots to choose">`+it.spots.map(([x,y,bw,bh],q)=>`<button type="button" class="hsdot${bw?' hsbox':''}" style="left:${x}%;top:${y}%${bw?`;width:${bw}%;height:${bh}%`:''}" role="${multi?'checkbox':'radio'}" aria-checked="false" aria-label="${it.spotNames?'Point '+it.spotNames[q]:'Spot '+'ABCDEFGHIJKL'[q]}" data-k="${q}"></button>`).join('');
   const has=q=>multi?(S.answers[id]||[]).includes(q):S.answers[id]===q;
   const sync=()=>{ w.querySelectorAll('.hsdot').forEach(c=>c.setAttribute('aria-checked',has(+c.dataset.k))); refresh(); };
   w.addEventListener('click',e=>{ const c=e.target.closest('.hsdot'); if(!c) return; const q=+c.dataset.k;
@@ -1986,7 +1987,7 @@ if(window.SPITZ_SELFCHECK) window.__EQX=EQX;   /* answer-key checks only */
 function buildEqFull(it,root){
   const id=it.n, w=document.createElement('div'); w.className='eqe eqx';
   const T=(d)=>`<svg viewBox="0 0 20 20"><path d="${d}" fill="none" stroke="currentColor" stroke-width="2"/></svg>`;
-  w.innerHTML=`<div class="eqrow">${it.lead||''}<div class="eqfield" tabindex="0" role="textbox" aria-label="Answer"></div></div>
+  w.innerHTML=`<div class="eqrow">${it.lead||''}<div class="eqfield" tabindex="0" role="textbox" aria-label="Answer"></div>${it.trail||''}</div>
    <div class="eqtools"><button type="button" data-k="left" aria-label="Move left">${T('M15 10H5M9 6l-4 4 4 4')}</button><button type="button" data-k="right" aria-label="Move right">${T('M5 10h10M11 6l4 4-4 4')}</button><button type="button" data-k="undo" aria-label="Undo">${T('M7 7l-3 3 3 3M4 10h8a4 4 0 0 1 0 8')}</button><button type="button" data-k="redo" aria-label="Redo">${T('M13 7l3 3-3 3M16 10H8a4 4 0 0 0 0 8')}</button><button type="button" data-k="bksp" aria-label="Delete">${T('M7 5h10v10H7l-4-5zM10 8l4 4M14 8l-4 4')}</button></div>
    <div class="eqpad"><div class="eqkeys full"></div></div>`;
   const field=w.querySelector('.eqfield'), keys=w.querySelector('.eqkeys');
