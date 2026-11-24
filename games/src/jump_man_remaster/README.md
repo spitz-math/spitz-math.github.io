@@ -39,3 +39,11 @@ Kody: "completely redesign the ui to align more with our more recent games." Fol
 - The Waystone question opens as one game window over the tower (solid fill, light frame, dark outline) with 3 pips and 2x2 choices; the in-tower layer keeps only the zone banner, first-time hints and touch buttons.
 - Start screen steps sit in one window as plain rows; end-screen stats are plain numbers.
 - Gameplay unchanged: tests/v4.js and tests/sets.js pass (sets needs a 2.1 s miss wait).
+
+## v9 (2026-11-24): harder climb, Waystones need 3 of 3
+Kody: "game is currently waaaaaay too easy, dont love how we have 3 questions at the waystones but answering 2 right still give it to you."
+- A Waystone teaches the next move and gives a heart back only for 3 of 3 right (+300 too). 0-2 right: "Almost!", no move. Each right answer still holds the fog 3 s and pays +20.
+- Fog: 28 px/s + 0.1 per meter climbed, cap 100 (was 24 + 0.07, cap 85); it trails at most 540 px below you (was 560). After a fog hit it holds 3 s so one slip never costs two hearts.
+- Rocks: a hit costs a heart but never your last one (only the fog ends a run); 2 s safe after a hit.
+- Sounds: the Pixel Arcade one-shots (v8 gains) are licensed for use inside games only, so they are NOT in the repo. build.py embeds them from /mnt/project-files/studio_trials/pixel_arcade_vital/jump_man_sound_block.js (or $JMR_SOUNDS) when that file exists; otherwise the game keeps its code sounds. The end screen plays SND.over when the fog catches you.
+- Scripted results (bal/kid.js middling climber that never dodges rocks, 70% right): survives about 3 runs in 8, most heart losses from rocks; all-right 8,048-8,810 vs always-wrong 1,588-3,007 (always-wrong now usually loses to the fog in the last 2 minutes).

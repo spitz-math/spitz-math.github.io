@@ -178,22 +178,22 @@ SND.way=function(){ [523.25,783.99,1046.5].forEach(function(f,i){ tone(f,f,i*0.0
 function openWay(){ S.way={i:P.on.i,got:0,n:0,res:[]}; keys.l=keys.r=keys.j=false; ptr={}; jumpQ=false; dashQ=false; P.vx=0; SND.way();
   newQ(); save(); hud(); nudge(); }
 function closeWay(){ var w=S.way, r=w.got; S.way=null; S.ways++; S.nextWay=nextWayAfter(w.i); S.q=null; S.qDone=false; S.bonus+=r*20+(r===3?300:0);
-  if(r>=2){ SND.goal(); var q=stagePoint(cv,P.x,sy(P.h)-80); confetti(q[0],q[1],r===3?60:30,2.4); } else SND.miss();
-  var healed=r>=2&&wayHeal(); S.offer=makeOffer().concat([r,healed?1:0]); showOffer(); showQ(); save(); hud(); }
+  if(r===3){ SND.goal(); var q=stagePoint(cv,P.x,sy(P.h)-80); confetti(q[0],q[1],60,2.4); } else SND.miss();
+  var healed=r===3&&wayHeal(); S.offer=makeOffer().concat([r,healed?1:0]); showOffer(); showQ(); save(); hud(); }
 /* the reward is fixed: the next move in order, then the boosts in turn (each up to 3 times), then points */
 var BOOST_ORDER=['jump','speed','combo','magnet'];
 function makeOffer(){ var m=MOVES.filter(function(x){ return !S.mv[x.id]&&(!x.need||S.mv[x.need]); })[0]; if(m) return [m.id];
   var nb=S.learned.filter(isBoost).length; for(var k=0;k<12;k++){ var id=BOOST_ORDER[(nb+k)%4]; if(S.lv[id]<3) return [id]; } return ['pts']; }
 function isBoost(id){ return BOOSTS.some(function(x){ return x.id===id; }); }
-function showOffer(){ var el=$('jmr-offer'); if(!S.offer){ el.hidden=true; return; } var id=S.offer[0], r=S.offer[1]===undefined?3:S.offer[1], d=moveDef(id), win=r>=2;
+function showOffer(){ var el=$('jmr-offer'); if(!S.offer){ el.hidden=true; return; } var id=S.offer[0], r=S.offer[1]===undefined?3:S.offer[1], d=moveDef(id), win=r===3;
   $('jmr-offerh').textContent=!win?'Almost!':isBoost(id)?'Upgrade!':id==='pts'?'Bonus!':'New move!';
   $('jmr-offer').classList.toggle('miss',!win);
-  var score='<span class="jmr-score">'+r+' of 3 right'+(S.offer[2]?' · +1 heart':'')+(r===3?' · +300':'')+(win?'':' · get 2 right next time to learn it')+'</span>';
+  var score='<span class="jmr-score">'+r+' of 3 right'+(S.offer[2]?' · +1 heart':'')+(r===3?' · +300':'')+(win?'':' · get all 3 right next time to learn it')+'</span>';
   $('jmr-picks').innerHTML='<button class="jmr-pick'+(win?'':' locked')+'" data-i="0">'+score+'<b>'+d.name+(isBoost(id)?' <small>level '+(S.lv[id]+1)+' of 3</small>':'')+'</b><span class="d">'+d.d+'</span>'+(d.how&&win?'<span class="jmr-how">'+d.how+'</span>':'')+'</button>';
   el.hidden=false; }
 var LASTR=3;
 function pickOffer(i){ if(!S.offer||!S.offer[0]||S.over) return; var id=S.offer[0], d=moveDef(id); LASTR=S.offer[1]===undefined?3:S.offer[1]; S.offer=null; $('jmr-offer').hidden=true;
-  var won=LASTR>=2;
+  var won=LASTR===3;
   if(won){ if(id==='pts') S.bonus+=150; else if(isBoost(id)) S.lv[id]=Math.min(3,S.lv[id]+1); else S.mv[id]=1; S.learned.push(id); } SND.goal(); keys.l=keys.r=keys.j=false; jumpQ=false; save(); showQ(); hud(); }
 $('jmr-picks').addEventListener('click',function(e){ var b=e.target.closest('.jmr-pick'); if(b) pickOffer(+b.dataset.i); });
 /* between Waystones the question panel shows the moves you have */
@@ -202,7 +202,7 @@ function idleQ(){ $('jm-tag').textContent='Climb'; $('jm-reward').textContent=''
   var rows=[['Run','← →'],['Jump','Space or ↑']]; MOVES.forEach(function(m){ if(S.mv[m.id]) rows.push([m.name,m.how]); });
   BOOSTS.forEach(function(b){ if(S.lv[b.id]) rows.push([b.name,'Level '+S.lv[b.id]]); });
   $('jm-choices').innerHTML='<div class="jmr-moves"><div class="jmr-mh">Your moves</div>'+rows.map(function(r){ return '<div class="jmr-mv"><b>'+r[0]+'</b><span>'+r[1]+'</span></div>'; }).join('')+'</div>';
-  var fb=$('jm-fb'); fb.className='jm-fb'; fb.innerHTML='Each Waystone asks 3 questions. Every right answer holds the fog back 3 seconds. 2 right teaches a new move and gives back a heart.'; $('jm-next').disabled=true; }
+  var fb=$('jm-fb'); fb.className='jm-fb'; fb.innerHTML='Each Waystone asks 3 questions. Every right answer holds the fog back 3 seconds. All 3 right teaches a new move and gives back a heart.'; $('jm-next').disabled=true; }
 var idleLeft=-1; setInterval(function(){ if(S&&S.started&&!S.over&&!S.way){ var l=(S.rush?'r':'')+(S.nextWay-(S.pi||0)); if(l!==idleLeft){ idleLeft=l; idleQ(); } } },300);
 
 //@@ WAYDRAW
@@ -219,11 +219,12 @@ function drawWaystone(x,py,done,active){ var L='#1B1328', rune=done?'#FFC23D':'#
    3 hearts. After the first Waystone a fog rises up the tower, a little faster the higher you are, and never more than
    about 5 ledges below you. Sinking into it costs a heart and lifts you to a safe ledge above it; at 0 hearts the run ends.
    The fog stops at every Waystone, and passing one gives a heart back and pushes the fog down. */
-var FOG_GAP=560, HEART_MAX=3, FOG_START=20, CALM_PER=3, CALM_MAX=12;
+var FOG_GAP=540, HEART_MAX=3, FOG_START=20, CALM_PER=3, CALM_MAX=12;
 /* v4: the fog also starts 20 s into the climb (so standing still loses), each right answer holds it 3 s (shown under the
    hearts), combos of 4+ floors hold it too, and it runs 25% faster in the Summit Rush */
 function fogOn(){ return S.ways>0||(S.climbT||0)>=FOG_START; }
-function fogSpeed(){ return Math.min(85,24+Math.floor(S.top/20)*0.07)*(S.rush?1.25:1); }
+function fogSpeed(){ return Math.min(FOG_CAP,FOG_V0+Math.floor(S.top/20)*FOG_RAMP)*(S.rush?1.25:1); }
+var FOG_V0=28, FOG_RAMP=0.1, FOG_CAP=100;   /* v8: Kody 'way too easy' (v4 was 24 + 0.07/m, cap 85, gap 560) */
 function fogCalm(s){ S.calm=Math.min(CALM_MAX,(S.calm||0)+s); }
 function fogStep(dt){ var was=fogOn(); S.climbT=(S.climbT||0)+dt; if(!was&&fogOn()&&!S.ways){ pop(P.x,P.h+260,'THE FOG RISES!','climb up and away','#D6C8F0',true); SND.crash(); }
   if(!fogOn()){ S.fog=P.h-FOG_GAP; return; }
@@ -234,7 +235,7 @@ function fogHit(){ S.hearts=Math.max(0,S.hearts-1); SND.crash(); shk=10; endComb
   if(S.hearts<=0){ S.fogOut=true; endRun(); return; }
   var tgt=null; for(var i=Math.max(0,S.pi-20);i<plats.length;i++){ var p=plats[i]; if(p.h>S.fog+300&&solid(p)&&p.kind!=='spring'&&p.kind!=='crumble'){ tgt=p; break; } }
   if(tgt){ P.on=tgt; P.h=tgt.h; P.x=tgt.floor?W/2:cxAt(tgt,gt); P.vx=0; P.vy=0; P.lastI=tgt.i; S.pi=tgt.i; P.airJ=0; P.dashed=false; P.glide=false; }
-  S.fog=P.h-560; cam=P.h; pop(P.x,P.h+160,'OUCH!',S.hearts+(S.hearts===1?' heart left':' hearts left'),'#FF8FA3',true); hud(); save(); }
+  S.fog=P.h-FOG_GAP; S.calm=Math.max(S.calm||0,3); cam=P.h;   /* v8: 3 s of held fog after a hit, so one mistake never costs two hearts */ pop(P.x,P.h+160,'OUCH!',S.hearts+(S.hearts===1?' heart left':' hearts left'),'#FF8FA3',true); hud(); save(); }
 function wayHeal(){ if(S.hearts<HEART_MAX){ S.hearts++; pop(P.x,P.h+230,'+1 HEART','','#FF8FA3'); return true; } return false; }
 var FOGC=null;
 function fogTop(){ return FOGC||(FOGC=pxc(64,8,4,function(g){ for(var x=0;x<64;x++){ var h=3+Math.round(2*Math.sin(x/5)+1.5*Math.sin(x/2.3)); g.fillStyle='rgba(214,200,240,.55)'; g.fillRect(x,8-h-2,1,2); g.fillStyle='rgba(176,156,214,.78)'; g.fillRect(x,8-h,1,h); } })); }
@@ -288,8 +289,10 @@ function rockStep(dt){ var i=P.lastI||0, live=inRocks(i)&&!S.rush;
   rocks.forEach(function(r){ if(r.warn>0){ r.warn-=dt; r.h=cam+700; return; } r.h-=ROCK_V*dt;
     if(bonkT<=0&&Math.abs(r.x-P.x)<PW/2+24&&r.h<P.h+PH+10&&r.h>P.h-10){ r.dead=true; bonk(r); } });
   rocks=rocks.filter(function(r){ return !r.dead&&sy(r.h)<H+80; }); }
-function bonk(r){ bonkT=1; var d=P.x>=r.x?1:-1; P.vx=d*340; if(P.on){ P.on=null; P.vy=-120; } else P.vy=Math.min(P.vy,-120);
-  endCombo(); CB.on=false; shk=RM()?0:8; SND.crack(); pop(P.x,P.h+160,'BONK!','','#FFB020'); fxAdd('bonk',P.x,P.h); }
+function bonk(r){ bonkT=2; var d=P.x>=r.x?1:-1; P.vx=d*340; if(P.on){ P.on=null; P.vy=-120; } else P.vy=Math.min(P.vy,-120);
+  endCombo(); CB.on=false; shk=RM()?0:8; SND.crack(); fxAdd('bonk',P.x,P.h);
+  /* v8: a rock costs a heart, but never your last one (only the fog ends a run) */
+  if(S.hearts>1){ S.hearts--; pop(P.x,P.h+160,'BONK!',S.hearts+(S.hearts===1?' heart left':' hearts left'),'#FFB020'); save(); hud(); } else pop(P.x,P.h+160,'BONK!','','#FFB020'); }
 var ROCKC=null;
 function rockPx(){ return ROCKC||(ROCKC=pxc(12,12,5,function(g){ var M=['...####.....','..#bbbb##...','.#bbhbbbb#..','#bbhhbbbbb#.','#bbbbbbbsb#.','#bbbbbbbsbb#','#bsbbbbbbbb#','.#bbbbbbsb#.','.#bbbbbbbb#.','..##bbbb##..','....####....','............'];
   M.forEach(function(row,y){ for(var x=0;x<12;x++){ var c=row[x]; if(c==='.') continue; g.fillStyle=c==='#'?'#1B1328':c==='h'?'#E8C79A':c==='s'?'#6B3F22':'#A8693A'; g.fillRect(x,y,1,1); } }); })); }

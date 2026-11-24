@@ -167,7 +167,7 @@ t = cut(t, "  var cap=40, fh=420, fy=220,", "  // Turbo chip",
   "  cx.fillStyle='#fff'; cx.font='800 32px Inter, sans-serif'; cx.fillText(left,W-61,fy+fh+44);\n")
 t = cut(t, "  if(live&&S.energy<=0&&!buffOn('free')){", "  else if(live&&S.jumps<3){",
   "  if(live&&S.way){ cx.fillStyle='rgba(8,9,13,.82)'; cx.fillRect(W/2-380,230,760,236); cx.strokeStyle='#7CF0FF'; cx.lineWidth=4; cx.strokeRect(W/2-380,230,760,236);\n"
-  "    cx.fillStyle='#fff'; cx.font='400 60px '+DF; cx.fillText('WAYSTONE',W/2,306); cx.font='700 32px Inter, sans-serif'; cx.fillStyle='#7CF0FF'; cx.fillText('2 right: a new move and a heart back  →',W/2,358);\n"
+  "    cx.fillStyle='#fff'; cx.font='400 60px '+DF; cx.fillText('WAYSTONE',W/2,306); cx.font='700 32px Inter, sans-serif'; cx.fillStyle='#7CF0FF'; cx.fillText('3 of 3 right: a new move and a heart back  →',W/2,358);\n"
   "    cx.font='700 26px Inter, sans-serif'; cx.fillStyle='#D6C8F0'; cx.fillText('Each right answer holds the fog back 3 seconds',W/2,400);\n"
   "    for(var wk=0;wk<3;wk++){ cx.fillStyle=S.way.res[wk]===1?'#FFC23D':S.way.res[wk]===0?'#FF6B6B':'#3A3550'; cx.fillRect(W/2-58+wk*42,424,32,20); } }\n"
   "  else if(live&&S.offer){ }\n")
@@ -196,7 +196,7 @@ for old, new in [
   ("function endRun(){ S.over=true;", "function endRun(){ S.over=true; S.offer=null; $('jmr-offer').hidden=true; rocks=[];"),
   ("if(celebrate){ SND.win();", "$('jm-again').disabled=true; setTimeout(function(){ $('jm-again').disabled=false; },2000); if(celebrate&&!S.fogOut&&S.correct>0){ SND.win();"),
   ("Every 30 ledges a Waystone stops you: answer 3 questions. 2 right teaches a new move; 3 of 3 also gives back a heart.",
-   "Every 40 ledges: 3 questions. Right answers hold back the fog; 2 right teaches a new move and gives back a heart."),
+   "Every 40 ledges: 3 questions. Right answers hold back the fog; all 3 right teaches a new move and gives back a heart."),
   ("<b>New moves</b>Moves to learn: wall kick off the sides, double jump, glide, air dash and more.",
    "<b>Summit Rush</b>Learn wall kick, double jump, glide and air dash. In the last minute, race the fog to the golden lanterns!"),
   ("cx.fillText('Waystones teach new moves. Then the fog rises!',W/2,424);",
@@ -210,7 +210,7 @@ for old, new in [
   ("/* ================= START / END", parts['HUD6'] + "\n/* ================= START / END"),
   ('<div class="jm-top">', '<div id="jmr-sky" aria-hidden="true"></div><canvas id="jmr-sl" class="jmr-col" width="352" height="1080" aria-hidden="true"></canvas><canvas id="jmr-sr" class="jmr-col" width="352" height="1080" aria-hidden="true"></canvas>\n  <div class="jm-top">'),
   ("function hud(){ hudLive();", "function hud(){ hudLive(); $('jm-q').classList.toggle('on',!!(S.way&&S.q&&!S.offer)); if(S.way) $('jm-wayn').innerHTML=[0,1,2].map(function(k){ var r=S.way.res[k]; return '<i class=\"'+(r===1?'ok':r===0?'no':k===S.way.n?'now':'')+'\"></i>'; }).join('');"),
-  ("fb.innerHTML='Waystone: 3 questions. Each right answer holds the fog back.';", "fb.innerHTML='2 right: a new move and a heart back. Each right answer holds the fog 3 s.';"),
+  ("fb.innerHTML='Waystone: 3 questions. Each right answer holds the fog back.';", "fb.innerHTML='All 3 right: a new move and a heart back. Each right answer holds the fog 3 s.';"),
   ('<div class="jm-qhead"><span class="jm-tag" id="jm-tag">Facts</span><span class="jm-reward" id="jm-reward"></span></div>', '<div class="jm-qhead"><span class="jmr-wt">Waystone</span><span class="jmr-wayn" id="jm-wayn"></span><span class="jm-sp"></span><span class="jm-tag" id="jm-tag">Facts</span><span class="jm-reward" id="jm-reward"></span></div>'),
   ("function showQ(){ var q=S.q; if(!S.way||!q){ idleQ(); return; }", "function showQ(){ var q=S.q; if(!S.way||!q){ idleQ(); hud(); return; }"),
   ("['Correct',S.correct+' of '+S.answered]", "['Correct',S.correct+' of '+S.answered]"),
@@ -268,6 +268,15 @@ V6CSS = """
 .jm-topics .jm-stat .v{ font-size:36px !important; }
 """
 t = swap(t, '</style>\n</head>', V6CSS + '</style>\n</head>') if t.count('</style>\n</head>') == 1 else swap(t, '<script src="kit.js"></script>', '<style>' + V6CSS + '</style>\n<script src="kit.js"></script>')
+# ---- v8 sounds: the Pixel Arcade one-shots (licensed for use inside games only) stay OUT of the repo. The block lives in
+# project files and is embedded into the built game when present; without it the game keeps its code sounds.
+t = swap(t, "$('jm-again').disabled=true;", "$('jm-again').disabled=true; if(S.fogOut&&SND.over) SND.over();")
+SOUND_BLOCK = os.environ.get('JMR_SOUNDS', '/mnt/project-files/studio_trials/pixel_arcade_vital/jump_man_sound_block.js')
+if os.path.exists(SOUND_BLOCK):
+    sb = read(SOUND_BLOCK); assert 'PIXEL ARCADE SOUNDS' in sb and t.count('\n})();\n') == 1
+    t = t.replace('\n})();\n', '\n' + sb.rstrip('\n') + '\n})();\n')
+else:
+    print('WARNING: no sound block at', SOUND_BLOCK, '- built with code sounds only')
 for gone in ['S.energy+=', "U('energy')"]:
     assert gone not in t, gone
 open(os.path.join(O, 'jump_man_multiplication.html'), 'w', encoding='utf-8').write(t)
