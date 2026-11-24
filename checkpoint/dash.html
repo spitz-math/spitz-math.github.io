@@ -1804,7 +1804,7 @@ $('#mtRev').onchange=async()=>{ const v=$('#mtRev').checked;
 
 /* ---------- write a test: a teacher's own questions (stcOwnGet / stcOwnSave). The answers stay in the Sheet; GitHub gets the test without them. ---------- */
 const OE_COURSES=['6th Math','7th Math','8th Math','Algebra I','6th RLA','7th RLA','8th RLA','8th Science','8th History','Other'];
-const OE_TYPES={mc:'Multiple choice',ms:'Check all that apply',num:'Number answer',eq:'Equation editor',inline:'Drop-down',table:'Table match',boxes:'Drag into boxes',graph:'Plot a point',graphline:'Draw a line',dnd:'Drag into groups',venn:'Venn diagram',hotspot:'Hot spot',graphineq:'Graph an inequality',graphsys:'Graph a system of inequalities',graphfunc:'Graph a function',graphexp:'Graph an exponential curve',numline:'Number line',filltable:'Fill in a table',datadisp:'Data display',shade:'Shade a model',figure:'Draw a figure',blanks:'Fill in the blanks',label:'Label a picture',order:'Put in order',hottext:'Hot text',twopart:'Two-part',text:'Written answer'};
+const OE_TYPES={mc:'Multiple choice',ms:'Check all that apply',num:'Number answer',word:'Type a word',eq:'Equation editor',inline:'Drop-down',table:'Table match',boxes:'Drag into boxes',graph:'Plot a point',graphline:'Draw a line',dnd:'Drag into groups',venn:'Venn diagram',hotspot:'Hot spot',graphineq:'Graph an inequality',graphsys:'Graph a system of inequalities',graphfunc:'Graph a function',graphexp:'Graph an exponential curve',numline:'Number line',filltable:'Fill in a table',datadisp:'Data display',shade:'Shade a model',figure:'Draw a figure',blanks:'Fill in the blanks',label:'Label a picture',order:'Put in order',hottext:'Hot text',twopart:'Two-part',text:'Written answer'};
 const OE_PTS={mc:1,ms:2,num:1,eq:1,inline:1,table:2,boxes:2,graph:1,graphline:1,dnd:1,venn:1,hotspot:1,graphineq:1,graphsys:2,graphfunc:1,graphexp:1,numline:1,filltable:1,datadisp:1,shade:1,figure:1,blanks:1,label:1,order:1,hottext:1,twopart:2,text:2}, OE_L='ABCDEFGHIJKL';
 const OE_SYM='≤ ≥ ≠ ± × ÷ − · π √ ∛ ° ² ³ ½ ⅓ ¼ ¾ ∠ △ ⊥ ∥ ≈ ∞ → ↔ ¢ á é í ó ú ñ ¿ ¡ “ ” —'.split(' ');
 let OE=null;
@@ -3185,7 +3185,7 @@ function cellAns(s,i,raw){ if(!raw){ const c=DANS[s.key]; raw=c&&c.a&&c.a[i]; if
   if((t==='mc'||!t)&&idx(a)) return idx(a);
   if((t==='ms'||!t)&&Array.isArray(a)&&a.length&&a.every(idx)) return a.map(idx).join('').slice(0,3);
   if(typeof a==='string'&&/^[A-H]$/.test(a)) return a;
-  if((t==='num'||t==='eq')&&a!=null&&typeof a!=='object'){ const v=String(a).replace(/\s/g,''); return esc(v.length>4?v.slice(0,3)+'…':v); }
+  if((t==='num'||t==='eq'||t==='word')&&a!=null&&typeof a!=='object'){ const v=String(a).replace(/\s/g,''); return esc(v.length>4?v.slice(0,3)+'…':v); }
   return ''; }
 const CANS={};
 function cellAnsFetch(ses){ if(!ses||CANS[ses]) return; CANS[ses]=1;
@@ -3509,6 +3509,7 @@ function qvAns(it,a){   // a student's answer in words (matches the player's "Yo
     case 'mc': return L8[a]+(it.choices&&it.choices[a]!=null?'  '+qvCut(qvTxt(it.choices[a]),60):'');
     case 'ms': return a.length?a.map(k=>L8[k]).join(', '):'No answer';
     case 'num': case 'eq': return String(a).replace(/\^\{([^{}]*)\}/g,'^$1').replace(/-/g,'−');
+    case 'word': return qvCut(String(a),40);
     case 'inline': return a.map((v,k)=>v==null?'—':qvCut(qvTxt(it.drops[k][v]),40)).join(' · ');
     case 'table': return a.map((v,k)=>(it.rows?qvCut(qvTxt(it.rows[k]),24)+': ':'')+(v==null?'—':qvTxt(it.cols[v]))).join('; ');
     case 'boxes': return a.map(q=>q==null?'—':qvTxt(it.tiles[q])).join(' , ');
@@ -3740,7 +3741,7 @@ document.addEventListener('scroll',()=>{ tip.hidden=true; },true);
    Every publish is one commit: the test folder, tests/index.js and the test's single/ file together. */
 const TP={gh:null, files:null, index:[], player:null, pkg:null, cache:{}, metas:{}, working:false, watch:null};
 const MIME={png:'image/png',jpg:'image/jpeg',jpeg:'image/jpeg',gif:'image/gif',svg:'image/svg+xml',webp:'image/webp'};
-const TYPES=['mc','ms','num','inline','table','dnd','graph','graphline','cline','graphsys','boxes','hotspot','graphineq','graphexp','graphfunc','eq','text','numline','filltable','datadisp','shade','figure','blanks','label','order','hottext','twopart'];   // 'text': a written answer the teacher scores
+const TYPES=['mc','ms','num','word','inline','table','dnd','graph','graphline','cline','graphsys','boxes','hotspot','graphineq','graphexp','graphfunc','eq','text','numline','filltable','datadisp','shade','figure','blanks','label','order','hottext','twopart'];   // 'text': a written answer the teacher scores
 const ENC=new TextEncoder(), DEC=new TextDecoder();
 const extOf=p=>(String(p).match(/\.([a-z0-9]+)$/i)||[])[1]?.toLowerCase()||'';
 const pad2=n=>String(n).padStart(2,'0');
@@ -3788,7 +3789,7 @@ const DESCRIBE=`(function(){ var TD=window.__TD, keys=['answer','m','b','op','a'
   var dp=new DOMParser(), txt=function(h){ return (dp.parseFromString(String(h==null?'':h).replace(/<span class="frac"><span>([\\s\\S]*?)<\\/span><span>([\\s\\S]*?)<\\/span><\\/span>/g,'$1/$2').replace(/\\{GRAPH\\}/g,' ').replace(/<\\/(td|th|p|div|li|tr|table)>|<br\\s*\\/?>|<p[\\s>]/gi,' $&'),'text/html').body.textContent||'').replace(/\\s+/g,' ').trim(); };
   var disp=function(it){ var a=it.answer; try{ switch(it.type){
     case 'mc': return ODD[a]+'  '+txt((it.choices||[])[a]); case 'ms': return a.map(function(i){ return ODD[i]; }).join(', ');
-    case 'num': case 'eq': return String(a).replace(/\\^\\{([^{}]*)\\}/g,'^$1').replace(/-/g,'−'); case 'hotspot': return [].concat(a).map(function(q){ return it.spots?'('+it.spots[q].join(', ')+')':'spot '+q; }).join(', ');
+    case 'num': case 'eq': return String(a).replace(/\\^\\{([^{}]*)\\}/g,'^$1').replace(/-/g,'−'); case 'word': return [].concat(a).join(' or '); case 'hotspot': return [].concat(a).map(function(q){ return it.spots?'('+it.spots[q].join(', ')+')':'spot '+q; }).join(', ');
     case 'inline': return a.map(function(v,k){ return txt(it.drops[k][v]); }).join(' · ');
     case 'table': return a.map(function(v,k){ return txt(it.rows[k])+': '+txt(it.cols[v]); }).join('; ');
     case 'dnd': return a.map(function(z,t){ return txt(it.tiles[t])+' → '+txt(it.zones[z]); }).join('; ');
@@ -4121,6 +4122,7 @@ function itemProblem(it){ let a; try{ a=JSON.parse(it.ans); }catch(e){ a=null; }
     case 'ms': return Array.isArray(a)&&a.length&&a.every(v=>int(v,it.nChoices))&&new Set(a).size===a.length?'':'the answer must be a list of choice numbers (0 = A).';
     case 'eq': if(it.full) return typeof a==='string'&&a.trim()?'':'the answer must be an expression.';
     case 'num': return typeof a==='number'&&isFinite(a)?'':'the answer must be a number.';
+    case 'word': return [].concat(a).length&&[].concat(a).every(w=>typeof w==='string'&&w.trim())?'':'the answer must be a word (or a list of words).';
     case 'inline': return Array.isArray(a)&&a.length===it.dropLens.length&&a.every((v,k)=>int(v,it.dropLens[k]))?'':'the answer needs one choice number for each of its '+it.dropLens.length+' drop-downs.';
     case 'table': return Array.isArray(a)&&a.length===it.nRows&&a.every(v=>int(v,it.nCols))?'':'the answer needs one column number for each of its '+it.nRows+' rows.';
     case 'dnd': return Array.isArray(a)&&a.length===it.nTiles&&a.every(v=>int(v,it.nZones))?'':'the answer needs one box number for each of its '+it.nTiles+' tiles.';
