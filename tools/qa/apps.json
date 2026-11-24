@@ -80,21 +80,147 @@
       ]
     },
     {
-      "id": "dig_buds",
-      "name": "Dig Buds",
+      "id": "football_buds",
+      "name": "Football Buds BLITZ",
       "tier": 1,
-      "webgl": true,
-      "adapter": "adapters/dig_buds.js",
+      "adapter": "adapters/football_buds.js",
       "paths": [
-        "games/dig_buds.html",
-        "games/new/dig_buds/",
-        "tools/qa/adapters/dig_buds.js"
-      ],
-      "suite": {
-        "about": "The game's own checks (games/new/dig_buds/run_tests.sh): smoke, upgrades, All-Pro, score code, falls and keys, no WebGL, caves, all sets fit",
-        "quick": "bash games/new/dig_buds/run_tests.sh",
-        "full": "bash games/new/dig_buds/run_tests.sh full"
-      }
+        "games/football_buds.html",
+        "games/cards/football_buds.webp",
+        "tools/qa/adapters/football_buds.js"
+      ]
+    },
+    {
+      "id": "shift_racer",
+      "name": "Shift Racer",
+      "tier": 1,
+      "adapter": "adapters/shift_racer.js",
+      "paths": [
+        "games/shift_racer.html",
+        "tools/qa/adapters/shift_racer.js",
+        "tools/qa/adapters/_shared.js"
+      ]
+    },
+    {
+      "id": "dash",
+      "name": "Dash",
+      "tier": 1,
+      "adapter": "adapters/dash.js",
+      "paths": [
+        "games/dash.html",
+        "tools/qa/adapters/dash.js",
+        "tools/qa/adapters/_shared.js"
+      ]
+    },
+    {
+      "id": "skate",
+      "name": "Skate",
+      "tier": 1,
+      "adapter": "adapters/skate.js",
+      "paths": [
+        "games/skate.html",
+        "tools/qa/adapters/skate.js",
+        "tools/qa/adapters/_shared.js"
+      ]
+    },
+    {
+      "id": "fishing",
+      "name": "Go Fish",
+      "tier": 1,
+      "adapter": "adapters/fishing.js",
+      "paths": [
+        "games/fishing.html",
+        "tools/qa/adapters/fishing.js",
+        "tools/qa/adapters/_shared.js"
+      ]
+    },
+    {
+      "id": "brick_breaker",
+      "name": "Brick Breaker",
+      "tier": 1,
+      "adapter": "adapters/brick_breaker.js",
+      "paths": [
+        "games/brick_breaker.html",
+        "tools/qa/adapters/brick_breaker.js",
+        "tools/qa/adapters/_shared.js"
+      ]
+    },
+    {
+      "id": "mini_golf",
+      "name": "Mini Golf",
+      "tier": 2,
+      "adapter": "adapters/mini_golf.js",
+      "paths": [
+        "games/mini_golf.html",
+        "tools/qa/adapters/mini_golf.js",
+        "tools/qa/adapters/_shared.js"
+      ]
+    },
+    {
+      "id": "burger_shop",
+      "name": "Burger Shop",
+      "tier": 1,
+      "adapter": "adapters/burger_shop.js",
+      "paths": [
+        "games/burger_shop.html",
+        "tools/qa/adapters/burger_shop.js",
+        "tools/qa/adapters/_shared.js"
+      ]
+    },
+    {
+      "id": "fit_check",
+      "name": "Fit Check",
+      "tier": 1,
+      "adapter": "adapters/fit_check.js",
+      "paths": [
+        "games/fit_check.html",
+        "tools/qa/adapters/fit_check.js",
+        "tools/qa/adapters/_shared.js"
+      ]
+    },
+    {
+      "id": "hill_climb",
+      "name": "Hill Climb",
+      "tier": 1,
+      "adapter": "adapters/hill_climb.js",
+      "paths": [
+        "games/hill_climb.html",
+        "tools/qa/adapters/hill_climb.js",
+        "tools/qa/adapters/_shared.js"
+      ]
+    },
+    {
+      "id": "pinball",
+      "name": "Pinball",
+      "tier": 1,
+      "adapter": "adapters/pinball.js",
+      "paths": [
+        "games/pinball.html",
+        "tools/qa/adapters/pinball.js",
+        "tools/qa/adapters/_shared.js"
+      ]
+    },
+    {
+      "id": "brawl_buds",
+      "name": "Brawl Buds",
+      "tier": 1,
+      "adapter": "adapters/brawl_buds.js",
+      "paths": [
+        "games/brawl_buds.html",
+        "tools/qa/adapters/brawl_buds.js",
+        "tools/qa/adapters/_shared.js"
+      ]
+    },
+    {
+      "id": "paint_royale",
+      "name": "Paint Royale",
+      "tier": 1,
+      "adapter": "adapters/paint_royale.js",
+      "paths": [
+        "games/paint_royale.html",
+        "tools/qa/adapters/paint_royale.js",
+        "tools/qa/adapters/_shared.js"
+      ]
     }
   ]
 }

@@ -720,7 +720,7 @@ function showEnd(celebrate){ $('bb-endname').textContent=S.name; $('bb-endscore'
   $('bb-endtopics').style.gridTemplateColumns='repeat('+Object.keys(S.topics).length+',1fr)';
   $('bb-end').hidden=false;
   if(window.SpitzCode) window.SpitzCode.show('bb','brick_breaker',S);        // the score code for the class leaderboard
-  if(celebrate){ SND.win(); [0,350,700,1100].forEach(function(ms,i){ setTimeout(function(){ confetti(200+i*500,1070,90,1.3); confetti(1720-i*500,1070,90,1.3); },ms); }); } }
+  if(celebrate&&S.score>0){ SND.win(); [0,350,700,1100].forEach(function(ms,i){ setTimeout(function(){ confetti(200+i*500,1070,90,1.3); confetti(1720-i*500,1070,90,1.3); },ms); }); } }
 var armT=0; $('bb-again').addEventListener('click',function(){ var b=this; if(!b.classList.contains('arm')){ b.classList.add('arm'); b.textContent='Tap again to start over'; clearTimeout(armT); armT=setTimeout(function(){ b.classList.remove('arm'); b.textContent='Play again'; },3000); return; }
   b.classList.remove('arm'); b.textContent='Play again'; newGame(); });
 

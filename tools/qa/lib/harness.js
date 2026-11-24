@@ -32,11 +32,8 @@ class Run {
     this.out = path.join(ROOT, 'qa-out', app.id); fs.mkdirSync(this.out, { recursive: true });
     this.tests = []; this.coverage = []; this.started = Date.now();
   }
-  async open() { this.server = await serve(this.port);   // Playwright is loaded here, so a run with nothing to play needs no Chrome
-    /* 3D games ("webgl": true in apps.json, e.g. Dig Buds) need software WebGL in headless Chrome; every other game launches exactly as before. */
-    const args = this.app && this.app.webgl ? ['--use-gl=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist'] : [];
-    this.browser = await require('playwright').chromium.launch(args.length ? { args } : undefined); }
-  async close() { if (this.browser) await this.browser.close().catch(() => {}); if (this.server) this.server.close(); }   // guarded: a failed launch must not hide its own error
+  async open() { this.server = await serve(this.port); this.browser = await require('playwright').chromium.launch(); }   // loaded here, so a run with nothing to play needs no Chrome
+  async close() { await this.browser.close().catch(() => {}); this.server.close(); }
 
   /* A fresh page that records script errors, missing files and console errors for the current test. */
   async page(viewport = 'chromebook', cpu = 1) {

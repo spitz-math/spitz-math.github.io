@@ -35,13 +35,14 @@ var GAMES={                     /* id: [number in the code, display name, how it
   pinball_v1:[18,'Pinball (classic)','points'],   /* codes from before 2026-11-07: points capped at 1,048,575 and top runs hit it */
   hill_climb:[19,'Hill Climb','points'],
   fit_check:[20,'Fit Check','points'],
-  football_buds:[21,'Football Buds','points'],   /* points since 2026-10-30 (id 5 was the Buds vs Rivals score) */
+  football_buds_v2:[21,'Football Buds (before BLITZ)','points'],   /* codes from 2026-10-30 until Football Buds BLITZ went live (top scores ~30,000); id 5 was the Buds vs Rivals score */
   hoop_buds:[22,'Hoop Buds','points'],   /* points since 2026-10-30 (id 6 was the Buds vs Rivals score) */
   rocket_buds:[23,'Rocket Buds','points'],   /* points since 2026-11-02 (id 14 was the Buds vs Rivals score) */
   brawl_buds:[24,'Brawl Buds','points'],   /* points since 2026-11-02 (id 17 was the Buds vs Rivals score) */
   pinball:[25,'Pinball','points',10],   /* since 2026-11-07 the code holds the score in tens (a 4th entry = score unit), so runs up to 10,485,750 fit (id 18 capped at 1,048,575) */
   rook_and_ruin:[26,'Rook & Ruin','points'],   /* 2026-11-15; best bot runs score about 210,000, well under the 1,048,575 cap */
   dig_buds:[28,'Dig Buds','points'],
+  football_buds:[29,'Football Buds BLITZ','points',10],   /* Football Buds BLITZ (2026-11): bot runs score about 100,000 to 450,000; the code holds the score in tens, so runs up to 10,485,750 fit (id 21 is the older Football Buds) */
   star_swarm:[27,'Star Swarm','points',10]   /* since 2026-11-17 the code holds the score in tens, so runs up to 10,485,750 fit (id 2 capped at 1,048,575) */
 };
 /* question sets in the order questions.js lists them; 0 means the game's own questions. Add new sets at the end.
@@ -85,7 +86,7 @@ function bonusCfg(){ var T=window.SpitzTopics, c={ pct:BONUS.pct, suggest:BONUS.
    don't pick them up from the public repo. A browser still has to open them, so this hides them from casual reading, not from
    someone determined. To change one: btoa(link.split('').reverse().join('')) in the browser console. */
 function unhide(s){ try{ return s?atob(s).split('').reverse().join(''):''; }catch(e){ return ''; } }
-var FORM={ url:unhide('bXJvZndlaXYvWXEzZV9WS2pGUG9HRl90YXE2cnhoSFV5bFJUR2JRRzZITnJ0LWhUZVA3MTEvZC9zbXJvZi9tb2MuZWxnb29nLnNjb2QvLzpzcHR0aA=='), name:'', code:'' };
+var FORM={ url:unhide('bXJvZndlaXYvd3Uxd2N2dHFFSU8yVGpyQ1IzTUhkdDdpMG9BR3JTWnhrVVlqRS1KczFBdkJWR1dkU0xRcElBRjEvZS9kL3Ntcm9mL21vYy5lbGdvb2cuc2NvZC8vOnNwdHRo'), name:'entry.363051448', code:'entry.957085991' };   /* pre-filled link from Kody 2026-11-24: one-click Send my score */
 
 var ALPH='ABCDEFGHJKLMNPQRSTUVWXYZ23456789', SECRET='spitz|burger|arcade', BASE=Date.UTC(2026,7,1);
 var MASK=BigInt('0xB4E1C93A5D7F02E68C1A');            /* 80 bits */
@@ -174,13 +175,14 @@ function css(){ if(document.getElementById('spz-code-css')) return; var st=docum
 function prefilled(){ return !!(FORM.url&&FORM.name&&FORM.code); }
 function formLink(name,code){ if(!FORM.url) return ''; if(!prefilled()) return FORM.url;
   return FORM.url+(FORM.url.indexOf('?')<0?'?':'&')+'usp=pp_url&'+FORM.name+'='+encodeURIComponent(name)+'&'+FORM.code+'='+encodeURIComponent(code); }
-function button(link,code){ return '<a href="'+link+'" target="_blank" rel="noopener" data-spz-code="'+code+'">'+(prefilled()?'Send my score':'Copy code &amp; open form')+'</a>'; }
+function button(link,code){ return prefilled()? '<a href="'+link+'" target="_blank" rel="noopener">Send my score</a>'   /* the form opens with the name and code filled in: nothing to copy */
+  : '<a href="'+link+'" target="_blank" rel="noopener" data-spz-code="'+code+'">Copy code &amp; open form</a>'; }
 /* Fresh start when coming back later (Kody, 2026-10-12): each game saves its run under KEY so a reload keeps it. We stamp every save
    with the time; on load, any run (finished or not) older than 20 minutes is cleared so the game opens
    at its start screen. Saves from before this change have no stamp and are cleared too. Add each new game's KEY here (the part before any set/topics suffix). */
 (function(){
   var K={ splat_range:'splat_range_v5', star_swarm:'star_swarm_v1', shift_racer:'shift_racer_v1', jump_man_multiplication:'jump_man_facts_v1',
-    football_buds:'football_buds_game_v2', hoop_buds:'hoop_buds_game_v1', dash:'dash_facts_game_v3', skate:'skate_game_v1', mini_golf:'mini_golf_v1',
+    football_buds:'football_buds_game_v3', hoop_buds:'hoop_buds_game_v1', dash:'dash_facts_game_v3', skate:'skate_game_v1', mini_golf:'mini_golf_v1',
     fishing:'go_fish_v1', brick_breaker:'brick_breaker_v1', burger_shop:'burger_shop_v1', burger_blaster:'burger_blaster_v1', rocket_buds:'rocket_buds_v1',
     paint_royale:'paint_royale_v1', snake_arena:'snake_arena_v1', brawl_buds:'brawl_buds_v1', pinball:'pinball_v1', hill_climb:'hill_climb_v1', fit_check:'fit_check_v1', dig_buds:'dig_buds_v10', rook_and_ruin:'bladebound_v3' };
   var f=(location.pathname.split('/').pop()||'').replace(/\.html?$/,'').replace(/_(mult|v\d|test)$/,''), key=K[f]; if(!key) return;
@@ -230,6 +232,22 @@ function button(link,code){ return '<a href="'+link+'" target="_blank" rel="noop
   addEventListener('unhandledrejection',function(e){ var r=e&&e.reason; oops('Promise: '+(r&&r.message||r),''); });
   if(LOG){ setTimeout(flush,4000); addEventListener('pagehide',function(){ flush(true); }); document.addEventListener('visibilitychange',function(){ if(document.visibilityState==='hidden') flush(true); }); }
 })();
+/* Ask once, remember everywhere (Kody, 2026-11-22): every game's start screen has an <input id="xx-nameinput">. The first name a student
+   types is kept for the whole arcade (same site = same storage), so the next game opens with it filled in. A first name or nickname is fine:
+   it only lives in the game (the score code, "you'd be #3", the answer log); the board name is the one Mr. Spitz approves for the student's
+   school account on teacher.html. Nothing to add per game: any input whose id ends in -nameinput gets this. */
+(function(){ var NK='spitz_name';
+  function get(){ try{ return localStorage.getItem(NK)||''; }catch(e){ return ''; } }
+  function put(v){ v=String(v||'').trim().slice(0,24); if(!v) return; try{ localStorage.setItem(NK,v); }catch(e){} }
+  function hook(){ var n=get(); document.querySelectorAll('input[id$="-nameinput"]').forEach(function(inp){ if(inp.dataset.spzName) return; inp.dataset.spzName='1';
+      inp.placeholder='First name or nickname';
+      if(!inp.getAttribute('aria-label')&&!document.querySelector('label[for="'+inp.id+'"]')) inp.setAttribute('aria-label','Your name');
+      if(n&&!inp.value.trim()){ inp.value=n; inp.dispatchEvent(new Event('input',{bubbles:true})); }   /* the game's own input listener turns its Play button on */
+      inp.addEventListener('change',function(){ put(inp.value); }); inp.addEventListener('blur',function(){ put(inp.value); }); }); }
+  /* after the game's own start-up code, which may set the box from a saved run */
+  function later(){ setTimeout(hook,0); }
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',later); else later();
+  addEventListener('load',later); })();   /* once more after load, for games that build their start screen late (each box is only set up once) */
 /* tab icon: each game has its own emoji icon (Kody, 2026-10-11), picked from the file name; unknown pages get the Spitz burger */
 (function(){ if(document.querySelector('link[rel~="icon"]')) return;
   var E={ splat_range:'🎯', star_swarm:'👾', shift_racer:'🏎️', jump_man_multiplication:'👟', football_buds:'🏈', hoop_buds:'🏀', dash:'⚡', skate:'🛹', mini_golf:'⛳',
@@ -267,7 +285,7 @@ function bonusLine(gameId,S){ var g=GAMES[gameId], pct=g&&g[2]!=='strokes'?bonus
 /* Beat the board (Kody, 2026-10-30): the end screen says where this run would land on the student leaderboard (data/leaderboard.json, the
    top 10s Mr. Spitz posts), or how far it is from the top 10, so a good run gets sent in and a close one gets played again. Points games only.
    Read once when the page opens, so it is ready by the end screen; no Wi-Fi = no line. */
-var BOARD=null;
+var BOARD=null, FLOOR=0.7;   /* the share of answers a run needs right to go on the board; teacher.html reads SpitzCode.FLOOR */
 try{ var me=document.currentScript&&document.currentScript.src;
   fetch(new URL('../data/leaderboard.json',me||location.href).href+'?v='+Math.floor(Date.now()/3e5)).then(function(r){ return r.ok?r.json():null; })
     .then(function(d){ BOARD=d&&d.games||null; },function(){}); }catch(e){}
@@ -276,7 +294,8 @@ function boardLine(gameId,S){ var g=GAMES[gameId]; if(!BOARD||!g||g[2]!=='points
     mine=boost(S.score,bonusPct()), name=g[1], me=normName(S.name), rank=1, mineOn=null;
   if(!(mine>0)) return '';
   /* no rank brag for a run that is mostly guesses (2026-11-17 health check: a bot with 18% right was told "#3" on boards with 1-2 names) */
-  if((+S.answered||0)>=5&&(+S.correct||0)/S.answered<0.5) return '';
+  /* the board only takes runs with at least FLOOR right (Kody, 2026-11-22), so a run under it gets told how to get on instead */
+  if((+S.answered||0)>=5&&(+S.correct||0)/S.answered<FLOOR) return '🎯 Get '+Math.round(FLOOR*100)+'% right to make the '+name+' board. You got '+Math.round(100*(+S.correct||0)/S.answered)+'%.';
   top.forEach(function(e,i){ if(e.v>=mine) rank++; if(e.n&&e.n===me&&!mineOn) mineOn={ v:e.v, r:i+1 }; });
   if(mineOn&&mineOn.v>=mine) return '🏆 You\'re #'+mineOn.r+' on the '+name+' board with '+mineOn.v.toLocaleString()+(mineOn.r===1?'. Beat your own record!':'. Beat it to move up!');
   if(!top.length) return '🏆 Nobody is on the '+name+' board yet. Send your score to be the first!';
@@ -305,5 +324,5 @@ function show(PFX,gameId,S){ try{
     '<span class="n">'+(!link?'Type your name and this code into the class Google Form.':prefilled()?'Tap Send my score, then Submit on the form.':'Tap the button, then paste the code into the form with your name.')+'</span>';
   addBoard(PFX,gameId,S); return code; }catch(e){ return ''; } }
 
-window.SpitzCode={ BONUS:BONUS, bonusPct:bonusPct, GAMES:GAMES, SET_NAMES:SET_NAMES, TOPIC_NAMES:TOPIC_NAMES, make:make, read:read, show:show, normName:normName, today:today, FORM:FORM };
+window.SpitzCode={ BONUS:BONUS, bonusPct:bonusPct, GAMES:GAMES, SET_NAMES:SET_NAMES, TOPIC_NAMES:TOPIC_NAMES, make:make, read:read, show:show, normName:normName, today:today, FORM:FORM, FLOOR:FLOOR };
 })();
