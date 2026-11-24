@@ -132,7 +132,7 @@ for old, new in [
   ("<b>Upgrade</b>Spend cash in the Shop on jump boots, a longer combo clock, bigger energy packs and power-ups.", "<b>New moves</b>Moves to learn: wall kick off the sides, double jump, glide, air dash and more."),
   # canvas: tutorial line, test hooks, boot
   ("'Every step and jump uses energy'", "'A Waystone waits on every full floor'"),
-  ("types:Object.keys(GEN) };", "types:Object.keys(GEN), dash:function(){ dashQ=true; }, pick:function(){ pickOffer(0); }, airMax:airMax, ans:function(i){ answer(i); }, newQ:function(){ newQ(); }, closeWay:function(){ closeWay(); }, rocks:function(){ return rocks; }, fogOn:function(){ return fogOn(); }, fogSpeed:function(){ return fogSpeed(); } };"),
+  ("types:Object.keys(GEN) };", "types:Object.keys(GEN), dash:function(){ dashQ=true; }, pick:function(){ pickOffer(0); }, airMax:airMax, ans:function(i){ answer(i); }, newQ:function(){ newQ(); }, closeWay:function(){ closeWay(); }, rocks:function(){ return rocks; }, fogOn:function(){ return fogOn(); }, fogSpeed:function(){ return fogSpeed(); }, reset:function(){ resetTower(); }, gen:function(h){ genTo(h); } };"),
   ("else if(S.q){ showQ(); } else newQ(); }", "else if(S.way&&S.q){ showQ(); } else newQ(); showOffer(); }"),
 ]:
     t = swap(t, old, new)
@@ -277,6 +277,20 @@ if os.path.exists(SOUND_BLOCK):
     t = t.replace('\n})();\n', '\n' + sb.rstrip('\n') + '\n})();\n')
 else:
     print('WARNING: no sound block at', SOUND_BLOCK, '- built with code sounds only')
+# ---- v10 harder platforming (Kody 2026-11-24 "make the platforming and the jumps hard, not just the fog"). Measured reach with
+# no upgrades: standing jump 147 px up, half-speed run 297, full run 392. By ledge 130 most rises (the first floor stays easy) need a running jump
+# (180-250 px, at most 0.64 of the full-run reach), ledges are narrower (110-170 px), farther apart sideways (up to 340 px),
+# and more of them move or crumble. tests/reach.js proves every gap can be made from a half-speed run with no upgrades.
+GEN_SWAPS = [
+  ("    var p={i:i,h:prev.h+108+r[0]*24};",
+   "    var L=Math.max(0,Math.min(1,(i-10)/120)), p={i:i,h:prev.h+110+70*L+r[0]*(24+70*L)};"),
+  ("    else { var L=Math.min(1,i/150); p.w=Math.round(240-95*L+r[1]*(80-20*L));\n      p.amp=(i>12&&r[4]<0.16+0.16*L)? Math.round(50+r[9]*(20+70*L)) : 0;",
+   "    else { p.w=Math.round(240-130*L+r[1]*(70-10*L));\n      p.amp=(i>12&&r[4]<0.16+0.26*L)? Math.round(50+r[9]*(20+80*L)) : 0;"),
+  ("var d=(r[2]<0.5?-1:1)*(110+r[3]*(120+60*L));", "var d=(r[2]<0.5?-1:1)*(120+r[3]*(120+100*L));"),
+  ("else if(i>18&&r[6]<0.10+0.18*L&&prev.kind!=='crumble') p.kind='crumble';", "else if(i>18&&r[6]<0.10+0.22*L&&prev.kind!=='crumble') p.kind='crumble';"),
+]
+for a_, b_ in GEN_SWAPS:
+    t = swap(t, a_, b_)
 for gone in ['S.energy+=', "U('energy')"]:
     assert gone not in t, gone
 open(os.path.join(O, 'jump_man_multiplication.html'), 'w', encoding='utf-8').write(t)

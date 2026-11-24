@@ -219,12 +219,12 @@ function drawWaystone(x,py,done,active){ var L='#1B1328', rune=done?'#FFC23D':'#
    3 hearts. After the first Waystone a fog rises up the tower, a little faster the higher you are, and never more than
    about 5 ledges below you. Sinking into it costs a heart and lifts you to a safe ledge above it; at 0 hearts the run ends.
    The fog stops at every Waystone, and passing one gives a heart back and pushes the fog down. */
-var FOG_GAP=540, HEART_MAX=3, FOG_START=20, CALM_PER=3, CALM_MAX=12;
+var FOG_GAP=700, HEART_MAX=3, FOG_START=20, CALM_PER=3, CALM_MAX=12;
 /* v4: the fog also starts 20 s into the climb (so standing still loses), each right answer holds it 3 s (shown under the
    hearts), combos of 4+ floors hold it too, and it runs 25% faster in the Summit Rush */
 function fogOn(){ return S.ways>0||(S.climbT||0)>=FOG_START; }
 function fogSpeed(){ return Math.min(FOG_CAP,FOG_V0+Math.floor(S.top/20)*FOG_RAMP)*(S.rush?1.25:1); }
-var FOG_V0=28, FOG_RAMP=0.1, FOG_CAP=100;   /* v8: Kody 'way too easy' (v4 was 24 + 0.07/m, cap 85, gap 560) */
+var FOG_V0=24, FOG_RAMP=0.07, FOG_CAP=85;    /* v8: Kody 'way too easy' (v4 was 24 + 0.07/m, cap 85, gap 560) */
 function fogCalm(s){ S.calm=Math.min(CALM_MAX,(S.calm||0)+s); }
 function fogStep(dt){ var was=fogOn(); S.climbT=(S.climbT||0)+dt; if(!was&&fogOn()&&!S.ways){ pop(P.x,P.h+260,'THE FOG RISES!','climb up and away','#D6C8F0',true); SND.crash(); }
   if(!fogOn()){ S.fog=P.h-FOG_GAP; return; }
@@ -291,8 +291,8 @@ function rockStep(dt){ var i=P.lastI||0, live=inRocks(i)&&!S.rush;
   rocks=rocks.filter(function(r){ return !r.dead&&sy(r.h)<H+80; }); }
 function bonk(r){ bonkT=2; var d=P.x>=r.x?1:-1; P.vx=d*340; if(P.on){ P.on=null; P.vy=-120; } else P.vy=Math.min(P.vy,-120);
   endCombo(); CB.on=false; shk=RM()?0:8; SND.crack(); fxAdd('bonk',P.x,P.h);
-  /* v8: a rock costs a heart, but never your last one (only the fog ends a run) */
-  if(S.hearts>1){ S.hearts--; pop(P.x,P.h+160,'BONK!',S.hearts+(S.hearts===1?' heart left':' hearts left'),'#FFB020'); save(); hud(); } else pop(P.x,P.h+160,'BONK!','','#FFB020'); }
+  /* v10: back to a knock with no heart lost: on the narrow v10 ledges a knock already costs height (v8-v9 took a heart) */
+  pop(P.x,P.h+160,'BONK!','','#FFB020'); }
 var ROCKC=null;
 function rockPx(){ return ROCKC||(ROCKC=pxc(12,12,5,function(g){ var M=['...####.....','..#bbbb##...','.#bbhbbbb#..','#bbhhbbbbb#.','#bbbbbbbsb#.','#bbbbbbbsbb#','#bsbbbbbbbb#','.#bbbbbbsb#.','.#bbbbbbbb#.','..##bbbb##..','....####....','............'];
   M.forEach(function(row,y){ for(var x=0;x<12;x++){ var c=row[x]; if(c==='.') continue; g.fillStyle=c==='#'?'#1B1328':c==='h'?'#E8C79A':c==='s'?'#6B3F22':'#A8693A'; g.fillRect(x,y,1,1); } }); })); }

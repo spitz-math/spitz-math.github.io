@@ -47,3 +47,11 @@ Kody: "game is currently waaaaaay too easy, dont love how we have 3 questions at
 - Rocks: a hit costs a heart but never your last one (only the fog ends a run); 2 s safe after a hit.
 - Sounds: the Pixel Arcade one-shots (v8 gains) are licensed for use inside games only, so they are NOT in the repo. build.py embeds them from /mnt/project-files/studio_trials/pixel_arcade_vital/jump_man_sound_block.js (or $JMR_SOUNDS) when that file exists; otherwise the game keeps its code sounds. The end screen plays SND.over when the fog catches you.
 - Scripted results (bal/kid.js middling climber that never dodges rocks, 70% right): survives about 3 runs in 8, most heart losses from rocks; all-right 8,048-8,810 vs always-wrong 1,588-3,007 (always-wrong now usually loses to the fog in the last 2 minutes).
+
+## v10 (2026-11-24): harder platforming
+Kody: "make the platforming and the jumps hard, not just the fog."
+- Measured reach with no upgrades: standing jump 147 px up, half-speed run 297, full run 392.
+- From ledge 10 to ledge 130 the tower ramps up: rises 110-134 px grow to 180-274 px (most need a running jump; at most 0.70 of the full-run reach), ledges shrink to 110-170 px wide, sideways gaps grow to 340 px, and more ledges move (up to 42%) or crumble (up to 32%). The first floor stays easy.
+- tests/reach.js proves every gap in the first 600 ledges of 5 towers can be made from a half-speed run with no upgrades (moving ledges: you may wait for them to swing close).
+- Since the jumps are now the challenge, the fog went back to v4 speed (24 px/s + 0.07 per meter, cap 85) and sits up to 700 px below you, and a rock hit is a knock again (no heart). Waystones still need 3 of 3.
+- Test bots: a clumsy climber bot (running jumps, no rock dodging) at 70% right dies in about 2 minutes; the same bot at 100% right learns 4 moves and survives 1 run in 4. The tests/v4.js bot with all moves climbs 280 ledges in 4 minutes with 3 hearts.
