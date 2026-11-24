@@ -269,7 +269,7 @@ var szm=/[?&]set=([a-z]+)/.exec(location.search); if(szm) document.documentEleme
     <div class="sr-stats" id="sr-endstats"></div>
     <div class="sr-topics" id="sr-endtopics"></div>
     <div class="sr-code"><span class="l">Your score code</span><span id="sr-endcode"></span></div>
-    <p class="sr-note">Type your name and this code into the class Google Form.</p>
+    <p class="sr-note">Tap the button, then paste the code into the form with your name.</p>
     <button class="sr-again" id="sr-again">Play again</button>
   </div><span class="sr-credit sz-credit">Made by Spitz <i class="sz-burger" aria-hidden="true"></i></span></div>
 
@@ -935,7 +935,7 @@ function showEnd(celebrate){ if(window.SpitzCode) setTimeout(function(){ window.
   $('sr-endstats').innerHTML=[['Correct',S.correct+' / '+S.answered],['Accuracy',acc+'%'],['Best streak',S.best],['Best combo',S.bestCombo],['Stage goals',S.goals||0]].map(function(a){ return '<div class="sr-stat"><div class="l">'+a[0]+'</div><div class="v">'+a[1]+'</div></div>'; }).join('');
   $('sr-endtopics').innerHTML=Object.keys(S.topics).map(function(k){ var t=S.topics[k]; return '<div class="sr-stat"><div class="l">'+k+'</div><div class="v">'+t[0]+' / '+t[1]+'</div></div>'; }).join('');
   if(!S.code){ S.code=makeCode(S.score,S.correct,S.answered); save(); } $('sr-endcode').textContent=S.code;
-  $('sr-end').hidden=false; if(celebrate){ SND.win(); [0,350,700,1100].forEach(function(ms,i){ setTimeout(function(){ confetti(200+i*500,1070,90,1.3); confetti(1720-i*500,1070,90,1.3); },ms); }); } }
+  $('sr-end').hidden=false; if(celebrate&&S.score>0){ SND.win(); [0,350,700,1100].forEach(function(ms,i){ setTimeout(function(){ confetti(200+i*500,1070,90,1.3); confetti(1720-i*500,1070,90,1.3); },ms); }); } }
 var armT=0; $('sr-again').addEventListener('click',function(){ var b=this; if(!b.classList.contains('arm')){ b.classList.add('arm'); b.textContent='Tap again to start over'; clearTimeout(armT); armT=setTimeout(function(){ b.classList.remove('arm'); b.textContent='Play again'; },3000); return; }
   b.classList.remove('arm'); b.textContent='Play again'; var keepName=S.name, keepLen=5; S=fresh(); S.name=keepName; S.len=keepLen; targets=[]; shots=[]; pops=[]; bits=[]; wave=null; $('sr-wave').hidden=true; setupStage(false);
   $('sr-end').hidden=true; $('sr-start').hidden=false; $('sr-nameinput').value=keepName; $('sr-go').disabled=!keepName;

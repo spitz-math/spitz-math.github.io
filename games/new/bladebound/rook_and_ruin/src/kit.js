@@ -1,0 +1,249 @@
+/* ================= SPITZ KIT (games/kit.js): the pieces every Spitz Arcade game shares =================
+   Loaded in each game's <head>, so a fix here reaches all the games at once:
+   - brand styles (the Made by Spitz credit with Kody's burger, eyebrow, music button, "Start a new game?" box) and the F hint
+   - SpitzKit.game(env): music switch (N), the Spitz jingle, the shared music engine, confetti, toast, stagePoint
+   - the start screen names the question set the hub link picked
+   - an offline cache (sw.js) so games open fast on slow school Wi-Fi
+   Each game keeps its own look, sound effects and song, and hands them to the kit in one SpitzKit.game({...}) call.
+   Self-contained test copies (*_mult.html) have this file built in, like questions.js and scorecode.js. */
+(function(){
+'use strict';
+var BURGER='data:image/webp;base64,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';
+
+/* ---------- brand styles (were the "SPITZ ARCADE BRAND" block in every game) ---------- */
+var css=[
+'.sz-credit{ display:inline-flex !important; align-items:center; gap:10px; font:800 18px/1 Inter,system-ui,sans-serif !important; letter-spacing:.16em !important; text-transform:uppercase; color:var(--sz-ink) !important; white-space:nowrap; }',
+".sz-credit::before{ content:''; flex:none; width:26px; height:5px; border-radius:3px; background:var(--sz-mark); }",
+'.sz-burger{ display:inline-block; flex:none; width:1.4em; height:1.15em; margin:-.15em 0; background:url("'+BURGER+'") center/contain no-repeat; vertical-align:middle; }',
+'.sz-eyebrow{ display:inline-flex; align-items:center; gap:14px; margin:0 0 18px; font:800 24px/1 Inter,system-ui,sans-serif; letter-spacing:.34em; text-transform:uppercase; color:var(--sz-ink); }',
+".sz-eyebrow::before,.sz-eyebrow::after{ content:''; width:40px; height:5px; border-radius:3px; background:var(--sz-mark); }",
+'.sz-eyebrow b{ color:var(--sz-mark); font-weight:800; }',
+'.sz-mus{ height:84px; padding:0 26px; border-radius:20px; background:var(--panel); border:3px solid var(--border); font:800 30px/1 Inter,system-ui,sans-serif; color:var(--sz-ink); white-space:nowrap; }',
+'.sz-mus.on{ border-color:var(--sz-mark); color:var(--text); }',
+'.sz-ask.sz-ask{ z-index:40; } .sz-ask h2{ margin:0 0 6px; font:400 84px/1.05 var(--display); color:var(--text); }',
+'.sz-ask .sz-askrow{ display:flex; justify-content:center; gap:20px; }',
+'.sz-ask .sz-askrow button{ height:96px; padding:0 44px; border-radius:22px; font:800 32px/1 Inter,system-ui,sans-serif; background:var(--panel); border:3px solid var(--border); color:var(--text); }',
+'.sz-ask #sz-askyes{ background:var(--sz-mark); border-color:var(--sz-mark); color:#111; }',
+'[class$="-logo"]{ cursor:pointer; }',
+/* the F hint */
+'.sz-fs{ position:fixed; left:50%; bottom:16px; transform:translateX(-50%); transform-origin:50% 100%; z-index:9999; display:flex; white-space:nowrap; align-items:center; gap:10px; padding:10px 20px 10px 12px; border-radius:999px;',
+'  border:2px solid rgba(255,255,255,.4); background:rgba(0,0,0,.78); color:#fff; font:700 18px/1 Inter,system-ui,sans-serif; cursor:pointer; box-shadow:0 8px 24px rgba(0,0,0,.4); transition:opacity .4s; }',
+'.sz-fs kbd{ display:inline-grid; place-items:center; min-width:34px; height:34px; border-radius:8px; background:#fff; color:#111; font:800 20px/1 Inter,system-ui,sans-serif; }',
+'.sz-fs.quiet{ opacity:.4; } .sz-fs:hover{ opacity:1; }',
+'.sz-fs[hidden]{ display:none; }',
+/* "reduce motion" turned on in the Chromebook's settings (2026-10-24): pulses, pops and slides on the page finish at once (the end state still shows).
+   The canvas games themselves and confetti keep moving; a few games also calm their own shake for it. */
+'@media (prefers-reduced-motion:reduce){ *,*::before,*::after{ animation-duration:.01ms !important; animation-iteration-count:1 !important; animation-delay:0s !important; transition-duration:.01ms !important; transition-delay:0s !important; scroll-behavior:auto !important; } }'
+].join('\n');
+var st=document.createElement('style'); st.id='sz-kit-css'; st.textContent=css;
+/* first in <head>, so each game's own styles still win over the shared ones */
+var head=document.head||document.documentElement; head.insertBefore(st, head.firstChild);
+
+/* ---------- SpitzKit.game(env) ----------
+   env: ac()  -> the game's AudioContext (or null)    muted() -> true while M has everything muted
+        song() -> the game's SONG for the shared music engine (leave it out when the game runs its own music)
+        voice(f,t0,dur) -> the jingle's instrument (default: SONG.voice)
+        confetti, toast -> ids of the confetti canvas and the toast box     colors -> the game's confetti colors
+        toastMs -> how long a toast stays (default 1.5 s)     toastFn(msg) -> a game's own toast, if it has one */
+var IN=-1e9; ['pointerdown','keydown'].forEach(function(n){ addEventListener(n,function(){ IN=Date.now(); },true); });
+function active(ms){ return Date.now()-IN<(ms||2500); }
+var JINGLE=[[392.00,0,0.12],[523.25,0.13,0.12],[659.25,0.26,0.12],[783.99,0.40,0.34],[659.25,0.78,0.12],[783.99,0.92,0.7]];
+
+/* the shared music engine: synthesized, no audio files. It plays only during a run, sits under the sound effects
+   (25 Chromebooks play it at once), and backs off while the student reads a question. */
+function musGraph(ctx,dest,SONG){ var out=ctx.createGain(), act=ctx.createGain(), d=ctx.createDelay(1), fb=ctx.createGain(), wet=ctx.createGain(); out.gain.value=SONG.level; out.connect(dest); act.connect(out);
+  d.delayTime.value=SONG.echo||0.3; fb.gain.value=0.28; wet.gain.value=0.3; d.connect(fb); fb.connect(d); d.connect(wet); wet.connect(act);
+  var n=Math.floor(ctx.sampleRate*0.3), buf=ctx.createBuffer(1,n,ctx.sampleRate), ch=buf.getChannelData(0); for(var i=0;i<n;i++) ch[i]=Math.random()*2-1;
+  return {out:out,act:act,echo:d,noise:buf}; }
+function mNote(ctx,to,type,fr,t,dur,vol,cut,echo,att){ var o=ctx.createOscillator(), f=ctx.createBiquadFilter(), e=ctx.createGain(); o.type=type; o.frequency.value=fr; f.type='lowpass'; f.frequency.value=cut||2400;
+  e.gain.setValueAtTime(0.0001,t); e.gain.exponentialRampToValueAtTime(vol,t+(att||0.008)); e.gain.setValueAtTime(vol,t+Math.max(att||0.008,dur*0.55)); e.gain.exponentialRampToValueAtTime(0.0001,t+dur);
+  o.connect(f); f.connect(e); e.connect(to); if(echo) e.connect(echo); o.start(t); o.stop(t+dur+0.03); return o; }
+function mHit(ctx,g,to,t,dur,vol,hp,lp){ var s=ctx.createBufferSource(), f=ctx.createBiquadFilter(), e=ctx.createGain(); s.buffer=g.noise; f.type=lp?'lowpass':'highpass'; f.frequency.value=lp||hp;
+  e.gain.setValueAtTime(vol,t); e.gain.exponentialRampToValueAtTime(0.0001,t+dur); s.connect(f); f.connect(e); e.connect(to); s.start(t); s.stop(t+dur+0.03); }
+function mKick(ctx,to,t,vol,hi,lo){ var o=ctx.createOscillator(), e=ctx.createGain(); o.type='sine'; o.frequency.setValueAtTime(hi||200,t); o.frequency.exponentialRampToValueAtTime(lo||48,t+0.12);
+  e.gain.setValueAtTime(0.0001,t); e.gain.exponentialRampToValueAtTime(vol||0.8,t+0.005); e.gain.exponentialRampToValueAtTime(0.0001,t+0.2); o.connect(e); e.connect(to); o.start(t); o.stop(t+0.22); }
+
+function game(env){
+  var K={ active:active, mNote:mNote, mHit:mHit, mKick:mKick, onMusic:function(){} }, off=false;
+  function $(id){ return document.getElementById(id); }
+
+  /* music switch: M mutes everything; N turns just the music off (remembered on this Chromebook) */
+  try{ off=localStorage.getItem('spitz_music_off')==='1'; }catch(e){}
+  K.musicOff=function(){ return off; };
+  K.musBtn=function(){ var b=$('sz-mus'); if(b){ b.textContent=off?'♪ Music off':'♪ Music on'; b.classList.toggle('on',!off); } };
+  K.musicToggle=function(){ off=!off; try{ localStorage.setItem('spitz_music_off',off?'1':'0'); }catch(e){} K.musBtn(); K.toast(off?'Music off':'Music on'); K.onMusic(); };
+  /* the Spitz jingle: the same notes open every game, played on that game's own instrument */
+  var voice=env.voice||function(f,t0,dur){ env.song().voice(f,t0,dur); };
+  K.jingle=function(){ JINGLE.forEach(function(n){ voice(n[0],n[1],n[2]); }); };
+
+  if(env.song){
+    K.musGraph=function(ctx,dest){ return musGraph(ctx,dest,env.song()); };
+    var MUS={ on:false, g:null, i:0, t:0 };
+    setInterval(function(){ var a=env.ac(), SONG=env.song(), want=SONG.want()&&!env.muted()&&!off;
+      if(!want){ if(MUS.on){ MUS.on=false; var g=MUS.g; MUS.g=null; if(g&&a){ g.out.gain.setTargetAtTime(0,a.currentTime,0.2); setTimeout(function(){ try{ g.out.disconnect(); }catch(e){} },1400); } } return; }
+      if(!a||a.state!=='running') return;                                              // browsers hold sound until the first click or key press
+      if(!MUS.on){ MUS.on=true; MUS.g=K.musGraph(a,a.destination); MUS.g.out.gain.setValueAtTime(0.0001,a.currentTime); MUS.g.out.gain.linearRampToValueAtTime(SONG.level,a.currentTime+1.2); MUS.i=0; MUS.t=a.currentTime+0.1; }
+      MUS.g.act.gain.setTargetAtTime(SONG.busy()?1:0.35,a.currentTime,0.35);            // playing: full band. Reading a question: it backs off so they can think
+      if(MUS.t<a.currentTime) MUS.t=a.currentTime+0.05;                                 // the tab was in the background: pick up from now
+      while(MUS.t<a.currentTime+0.5){ var sd=SONG.sd(); SONG.step(a,MUS.g,MUS.i,MUS.t,sd); MUS.t+=sd; MUS.i++; } },120);
+    /* test hook: render the music off line and measure it */
+    window.__music=function(sec){ var SONG=env.song(), C=window.OfflineAudioContext||window.webkitOfflineAudioContext, c=new C(1,44100*sec,44100), g=K.musGraph(c,c.destination), t=0.05, i=0;
+      while(t<sec){ var sd=SONG.sd(); SONG.step(c,g,i,t,sd); t+=sd; i++; }
+      return c.startRendering().then(function(buf){ var d=buf.getChannelData(0), pk=0, sq=0, bad=0, n=d.length; for(var j=0;j<n;j++){ var v=d[j]; if(v!==v) bad++; pk=Math.max(pk,Math.abs(v)); sq+=v*v; }
+        return {peak:pk, rms:Math.sqrt(sq/n), bad:bad, steps:i}; }); };
+  }
+
+  /* confetti (always on, even with reduced motion): pieces move by elapsed time, not by frame, so a slow Chromebook doesn't leave them
+     hanging in the air, and the loop restarts itself if a frame is ever dropped. The layer is drawn at half size (960x540) to save work. */
+  var parts=[], craf=0, cfLast=0, cfSeen=0, CFC=env.colors||['#FF3DB4','#B6FF3D','#2DE2E6','#FF8A1F','#FFF04D','#C77DFF','#FFFFFF'];
+  function cfStep(ts){ craf=0; cfSeen=Date.now(); var cv0=$(env.confetti), c=cv0.getContext('2d'), k=cv0.width/1920, f=cfLast?Math.min(3,(ts-cfLast)/16.67):1; cfLast=ts;
+    c.setTransform(1,0,0,1,0,0); c.clearRect(0,0,cv0.width,cv0.height);
+    try{ parts=parts.filter(function(p){ return p.life<p.max&&p.y<1120; });
+      var drag1=Math.pow(0.985,f), drag2=Math.pow(0.992,f);
+      parts.forEach(function(p){ p.life+=f; p.vy+=0.42*f; p.vx*=drag1; p.vy*=drag2; p.x+=p.vx*f; p.y+=p.vy*f; p.r+=p.vr*f; var s=Math.cos(p.life*0.2);
+        c.setTransform(k,0,0,k,0,0); c.translate(p.x,p.y); c.rotate(p.r); c.globalAlpha=Math.max(0,Math.min(1,(p.max-p.life)/25)); c.fillStyle=p.c; c.fillRect(-p.w/2,-p.h/2*s,p.w,p.h*s); });
+    }catch(e){ parts=[]; }
+    c.globalAlpha=1; c.setTransform(1,0,0,1,0,0);
+    if(parts.length) craf=requestAnimationFrame(cfStep); else { c.clearRect(0,0,cv0.width,cv0.height); cfLast=0; } }
+  K.confetti=function(x,y,n,spread){ for(var i=0;i<n;i++){ var a=-Math.PI/2+(Math.random()-0.5)*spread, sp=8+Math.random()*15;
+      parts.push({x:x,y:y,vx:Math.cos(a)*sp,vy:Math.sin(a)*sp,w:10+Math.random()*12,h:6+Math.random()*8,r:Math.random()*6.28,vr:(Math.random()-0.5)*0.5,c:CFC[i%CFC.length],life:0,max:85+Math.random()*60}); }
+    if(parts.length>700) parts=parts.slice(-700);
+    window.__conf=(window.__conf||0)+n; if(!craf||Date.now()-cfSeen>400){ if(craf) cancelAnimationFrame(craf); cfLast=0; craf=requestAnimationFrame(cfStep); } };
+  var toastT=0; K.toast=env.toastFn||function(msg){ var t=$(env.toast); t.textContent=msg; t.hidden=false; clearTimeout(toastT); toastT=setTimeout(function(){ t.hidden=true; },env.toastMs||1500); };
+  /* where an element sits on the 1920x1080 stage (confetti bursts start there) */
+  K.stagePoint=function(el,dx,dy){ var r=el.getBoundingClientRect(), s=$('stage').getBoundingClientRect(), k=1920/s.width; return [(r.left-s.left)*k+(dx||0),(r.top-s.top)*k+(dy||0)]; };
+  return K;
+}
+window.SpitzKit={ game:game, active:active, burger:BURGER };
+
+/* ---------- once the page is read: the set name and the F hint ---------- */
+function ready(){
+  /* the start screen names the question set the hub link picked */
+  var m=/[?&]set=([a-z0-9]+)/.exec(location.search); if(m&&window.SpitzQ&&SpitzQ.sets&&SpitzQ.sets[m[1]]) document.querySelectorAll('.sz-setname').forEach(function(e){ e.textContent=SpitzQ.sets[m[1]].name+'.'; });
+
+  /* "Press F for full screen" */
+  var b=document.createElement('button'); b.className='sz-fs'; b.id='sz-fs'; b.hidden=true; b.setAttribute('aria-label','Full screen, key F'); b.innerHTML='<kbd>F</kbd>Press F for full screen';
+  document.body.appendChild(b); var t0=Date.now();
+  function fs(){ return !!(document.fullscreenElement||document.webkitFullscreenElement); }
+  function upd(){ b.hidden=fs(); var st=document.querySelector('[id$="-start"]'), onStart=!!(st&&!st.hidden&&st.offsetParent);
+    b.classList.toggle('quiet', !onStart && Date.now()-t0>8000);
+    /* sit at the same spot of the game screen at any window size: scale with the stage and follow its letterbox (a game can move it sideways with --sz-fs-x,
+       or up top with --sz-fs-y:top and --sz-fs-top). On the start and end screens it waits in the top right corner, so it never covers the keys line
+       or the buttons (a game can opt out with --sz-fs-corner:0) */
+    if(b.dataset.own) return;   // the game places it itself (Brick Breaker: under the paddle)
+    var sg=document.getElementById('stage'); if(sg){ var r=sg.getBoundingClientRect(), k=r.width/1920; if(k>0){ var cs=getComputedStyle(document.documentElement),
+        x=parseFloat(cs.getPropertyValue('--sz-fs-x'))||0.5, en=document.querySelector('[id$="-end"]'), over=onStart||!!(en&&!en.hidden&&en.offsetParent);
+      if(over&&cs.getPropertyValue('--sz-fs-corner').trim()!=='0'){ b.style.top=(r.top+24*k)+'px'; b.style.bottom='auto'; b.style.left=(r.right-24*k)+'px'; b.style.transformOrigin='100% 0'; b.style.transform='translateX(-100%) scale('+k+')'; }
+      else{ var top=!over&&cs.getPropertyValue('--sz-fs-y').trim()==='top'; b.style.top=top?(r.top+(parseFloat(cs.getPropertyValue('--sz-fs-top'))||30)*k)+'px':''; b.style.transformOrigin=top?'50% 0':''; b.style.left=(r.left+r.width*x)+'px'; b.style.bottom=top?'auto':(window.innerHeight-r.bottom+16*k)+'px'; b.style.transform='translateX(-50%) scale('+k+')'; } } } }
+  b.addEventListener('click',function(){ document.dispatchEvent(new KeyboardEvent('keydown',{key:'f',bubbles:true})); setTimeout(upd,300); });
+  ['click','keydown'].forEach(function(n){ document.addEventListener(n,function(){ setTimeout(upd,60); },true); });   // follow Start / Play again right away
+  window.addEventListener('resize',function(){ setTimeout(upd,50); }); document.addEventListener('fullscreenchange',upd); document.addEventListener('webkitfullscreenchange',upd); setInterval(upd,1000); upd();
+}
+if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',ready); else ready();
+
+/* ---------- the start screen (2026-11-05, matches the hub): parts rise in once, a Start button you can press down ----------
+   Only opacity and translate move, so a game's own skew or tilt stays. */
+var css2=[
+'[id$="-start"] [id$="-go"],[id$="-start"] [id$="-go-start"]{ transition:translate .08s ease-out; }',
+'[id$="-start"] [id$="-go"]:active:not(:disabled),[id$="-start"] [id$="-go-start"]:active:not(:disabled){ translate:0 5px; }'
+].join('\n');
+var st2=document.createElement('style'); st2.id='sz-kit-css2'; st2.textContent=css2; (document.head||document.documentElement).appendChild(st2);
+function startIntro(){
+  var ov=document.querySelector('[id$="-start"]'), eb=ov&&ov.querySelector('.sz-eyebrow'); if(!eb||!eb.animate) return;
+  var box=eb.parentElement, RM=matchMedia('(prefers-reduced-motion: reduce)');
+  function play(){ if(RM.matches) return; var parts=[], i=0;
+    [].forEach.call(box.children,function(c){ if(/-steps\b/.test(c.className)) [].push.apply(parts,c.children); else parts.push(c); });
+    parts.forEach(function(el){ if(el.hidden||!el.offsetParent) return;
+      el.animate([{opacity:0,translate:'0 18px'},{opacity:1,translate:'0 0'}],{duration:420,delay:60+i*55,easing:'cubic-bezier(.22,1,.36,1)',fill:'backwards'}); i++; }); }
+  /* Kody 2026-11-05: no animation on every visit. It plays the first time a game opens on a Chromebook, then the screen just shows */
+  var key='sz_intro_'+location.pathname.split('/').pop(); try{ if(localStorage.getItem(key)) return; localStorage.setItem(key,'1'); }catch(e){ return; }
+  if(!ov.hidden&&ov.offsetParent) play();
+}
+if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',startIntro); else startIntro();
+
+/* ---------- the controls card (2026-11-05, Kody: "they dont read"): each start screen draws its keys as keycaps with a word or two under each.
+   A game writes <div class="sz-ctl" data-ctl="1234=Answer | LR/AD=Move | Space=Jump"></div>.
+   Groups split on |, keys = label; / means "or". Tokens: 1234 and 123 (number keys), LR (← →), AD, ARROWS and WASD (the T of four keys),
+   Space, Shift, Enter, Click, Mouse, Drag, or any single key (← → ↑ ↓ or a letter). */
+var css3=[
+'.sz-ctl{ display:flex; justify-content:center; flex-wrap:wrap; gap:14px 44px; margin:0 0 14px; }',
+'.sz-ctl .g{ display:flex; flex-direction:column; align-items:center; justify-content:flex-end; gap:8px; }',
+'.sz-ctl .k{ display:flex; align-items:flex-end; gap:6px; }',
+'.sz-ctl kbd{ letter-spacing:0; text-transform:none; display:inline-grid; place-items:center; min-width:58px; height:58px; padding:0 12px; box-sizing:border-box; border-radius:6px; background:#F2F2F6; color:#15151D; font:800 28px/1 Inter,system-ui,sans-serif; box-shadow:inset 0 -6px 0 rgba(0,0,0,.28); }',
+'.sz-ctl kbd.wide{ min-width:170px; } .sz-ctl kbd.mid{ min-width:104px; font-size:23px; }',
+'.sz-ctl .t{ display:inline-grid; grid-template-columns:repeat(3,40px); grid-auto-rows:40px; gap:4px; }',
+'.sz-ctl .t kbd{ min-width:40px; height:40px; padding:0; font-size:21px; box-shadow:inset 0 -4px 0 rgba(0,0,0,.28); } .sz-ctl .t kbd:first-child{ grid-column:2; } .sz-ctl .t kbd:nth-child(2){ grid-column:1; }',
+'.sz-ctl .or{ align-self:center; font:700 19px/1 Inter,system-ui,sans-serif; color:var(--muted,#9aa); margin:0 2px; }',
+'.sz-ctl .l{ font:800 26px/1.1 Inter,system-ui,sans-serif; letter-spacing:0; text-transform:none; color:var(--text,#fff); white-space:nowrap; }',
+'.sz-ctl svg{ display:block; height:64px; width:auto; }',
+/* the small keys line and the Spitz Arcade eyebrow look the same in every game and sit on a dark band, so they read on any theme */
+'.sz-meta{ display:inline-flex; flex-wrap:wrap; justify-content:center; align-items:center; gap:10px 24px; padding:8px 20px; border-radius:999px; background:rgba(6,8,20,.8); font:700 20px/1 Inter,system-ui,sans-serif; letter-spacing:0; text-transform:none; color:#E9E9F2; }',
+'.sz-meta span{ display:inline-flex; align-items:center; gap:8px; white-space:nowrap; }',
+'.sz-meta kbd{ display:inline-grid; place-items:center; min-width:30px; height:30px; padding:0 8px; box-sizing:border-box; border-radius:6px; background:#F2F2F6; color:#15151D; font:800 16px/1 Inter,system-ui,sans-serif; box-shadow:inset 0 -3px 0 rgba(0,0,0,.28); }',
+'.sz-eyebrow.sz-eyebrow{ font:800 22px/1 Inter,system-ui,sans-serif; letter-spacing:.34em; text-transform:uppercase; color:#fff; text-shadow:none; padding:9px 22px; border-radius:999px; background:rgba(6,8,20,.78); }'
+].join('\n');
+var st3=document.createElement('style'); st3.id='sz-kit-css3'; st3.textContent=css3; (document.head||document.documentElement).appendChild(st3);
+function ctlKeys(tok){
+  function k(t,c){ return '<kbd'+(c?' class="'+c+'"':'')+'>'+t+'</kbd>'; }
+  function tee(a){ return '<span class="t">'+a.map(function(x){ return k(x); }).join('')+'</span>'; }
+  var mouse=function(lit,extra){ return '<svg viewBox="0 0 44 64" aria-hidden="true"><rect x="3" y="3" width="38" height="58" rx="19" fill="#F2F2F6"/>'+(lit?'<path d="M22 3a19 19 0 0 0-19 19v4h19z" fill="var(--sz-mark,#ffcf3a)"/>':'')+'<path d="M22 3v23M3 26h38" stroke="#15151D" stroke-width="3"/>'+(extra||'')+'</svg>'; };
+  switch(tok){
+    case '1234': return k('1')+k('2')+k('3')+k('4');
+    case '123': return k('1')+k('2')+k('3');
+    case 'LR': return k('←')+k('→');
+    case 'AD': return k('A')+k('D');
+    case 'ARROWS': return tee(['↑','←','↓','→']);
+    case 'WASD': return tee(['W','A','S','D']);
+    case 'Space': return k('Space','wide');
+    case 'Shift': case 'Enter': return k(tok,'mid');
+    case 'Click': return mouse(true);
+    case 'Mouse': return mouse(false);
+    case 'Drag': return mouse(true,'<path d="M30 50 L40 60 M40 52 v8 h-8" stroke="var(--sz-mark,#ffcf3a)" stroke-width="4" fill="none" stroke-linecap="round"/>');
+    default: return k(tok);
+  }
+}
+function ctlCards(){ document.querySelectorAll('.sz-ctl[data-ctl]').forEach(function(el){
+  el.innerHTML=el.getAttribute('data-ctl').split('|').map(function(g){ var p=g.split('='), keys=p[0].trim(), lab=(p[1]||'').trim();
+    return '<div class="g"><div class="k">'+keys.split('/').map(function(a){ return a.trim().split(/\s+/).map(ctlKeys).join(''); }).join('<span class="or">or</span>')+'</div><div class="l">'+lab+'</div></div>'; }).join('');
+  /* the rest of that keys line (music, mute, new game, full screen) becomes one band of small keycaps */
+  var par=el.parentNode, n=el.nextSibling; while(n){ var nx=n.nextSibling; par.removeChild(n); n=nx; }
+  var m=document.createElement('div'); m.className='sz-meta';
+  m.innerHTML='<span><kbd>N</kbd>Music</span><span><kbd>M</kbd>Mute</span><span><kbd>Shift+R</kbd>New game</span><span><kbd>F</kbd>Full screen</span>';
+  par.appendChild(m); if(/left|start/.test(getComputedStyle(par).textAlign)) el.style.justifyContent='flex-start'; }); }
+if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',ctlCards); else ctlCards();
+/* the keys card made a few start screens taller than the game screen: shrink that start screen's box just enough to fit (Chrome's zoom keeps it crisp) */
+function fitStart(){ var ov=document.querySelector('[id$="-start"]'), eb=ov&&ov.querySelector('.sz-eyebrow'), sg=document.getElementById('stage'); if(!eb||!sg||ov.hidden) return;
+  var box=eb.parentElement; box.style.zoom=''; var k=1920/(sg.getBoundingClientRect().width||1920), hi=1e9, lo=-1e9;
+  box.querySelectorAll('*').forEach(function(e){ var r=e.getBoundingClientRect(); if(r.height){ hi=Math.min(hi,r.top); lo=Math.max(lo,r.bottom); } });
+  var h=(lo-hi)*k; if(h>1040) box.style.zoom=(1030/h).toFixed(3); }
+function fitWatch(){ fitStart(); if(document.fonts&&document.fonts.ready) document.fonts.ready.then(fitStart); var ov=document.querySelector('[id$="-start"]');
+  if(ov) new MutationObserver(function(){ if(!ov.hidden) fitStart(); }).observe(ov,{attributes:true,attributeFilter:['hidden']}); addEventListener('resize',function(){ setTimeout(fitStart,60); }); }
+if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',fitWatch); else fitWatch();
+/* ---------- the end screen (2026-11-05): lines slide in one after another and the big score counts up to the real number.
+   It plays each time a run ends (that is a moment worth a little show). The score always lands on the game's exact text,
+   and if the game rewrites the score while it counts, the count stops and the game's text stays. */
+function endShow(){
+  var ov=document.querySelector('[id$="-end"]'), eb=ov&&ov.querySelector('.sz-eyebrow'); if(!eb||!eb.animate) return;
+  var box=eb.parentElement, RM=matchMedia('(prefers-reduced-motion: reduce)'), shown=false;
+  function count(el){ var tn=null, w=document.createTreeWalker(el,NodeFilter.SHOW_TEXT,null,false), n;
+    while((n=w.nextNode())){ if(/\d/.test(n.nodeValue)){ tn=n; break; } } if(!tn) return;
+    var full=tn.nodeValue, m=/(\d[\d,]*)/.exec(full); if(!m) return; var goal=parseInt(m[1].replace(/,/g,''),10); if(!(goal>9)) return;
+    var pre=full.slice(0,m.index), post=full.slice(m.index+m[1].length), comma=m[1].indexOf(',')>=0, t0=0, dur=Math.min(1400,600+goal/40), last=null;
+    function fmt(v){ return comma?v.toLocaleString('en-US'):String(v); }
+    function step(ts){ if(!t0) t0=ts; if(last!==null&&tn.nodeValue!==last) return;   // the game changed it: leave the game's text
+      var p=Math.min(1,(ts-t0)/dur), e=1-Math.pow(1-p,3); last=pre+fmt(Math.round(goal*e))+post; tn.nodeValue=last;
+      if(p<1) requestAnimationFrame(step); else tn.nodeValue=full; }
+    last=pre+'0'+post; tn.nodeValue=last; setTimeout(function(){ requestAnimationFrame(step); },260); }
+  function play(){ if(RM.matches) return; var i=0;
+    [].forEach.call(box.children,function(c){ var kids=/-stats\b/.test(c.className)&&c.children.length>1&&c.children.length<9?c.children:[c];
+      [].forEach.call(kids,function(el){ if(!el.offsetParent) return;
+        el.animate([{opacity:0,translate:'0 16px'},{opacity:1,translate:'0 0'}],{duration:380,delay:80+i*70,easing:'cubic-bezier(.22,1,.36,1)',fill:'backwards'}); i++; }); });
+    var sc=box.querySelector('[id$="-endscore"]'); if(sc) count(sc); }
+  function chk(){ var vis=!ov.hidden&&!!ov.offsetParent; if(vis&&!shown) requestAnimationFrame(play); shown=vis; }
+  chk(); new MutationObserver(chk).observe(ov,{attributes:true,attributeFilter:['hidden']});
+}
+if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',endShow); else endShow();
+
+/* ---------- offline cache (games/sw.js): a game opens from the Chromebook's cache, then refreshes in the background ---------- */
+if('serviceWorker' in navigator && location.protocol==='https:') addEventListener('load',function(){ try{ navigator.serviceWorker.register('sw.js',{scope:'./'}).catch(function(){}); }catch(e){} });
+})();

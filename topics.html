@@ -86,7 +86,7 @@ input:focus{ outline:none; border-color:var(--brand); }
 <div class="wrap">
   <header>
     <div class="brand"><div class="logo" aria-hidden="true"><img class="burst" src="/launchpad_burst.webp" alt="" width="1312" height="1199"><img class="patty" src="/launchpad_patty.webp" alt="" width="1312" height="1199"></div><div><div class="tag">Teacher page · Made by Spitz</div><h1>Spitz <span>Topics</span></h1></div></div>
-    <nav class="tnav" aria-label="Teacher pages"><a href="teacher.html">Scores</a><a href="topics.html" aria-current="page">Topics</a><a href="stats.html">Class stats</a><a href="leaderboard.html" target="_blank" rel="noopener">Leaderboard ↗</a><a href="arcade/" target="_blank" rel="noopener">Arcade ↗</a></nav>
+    <nav class="tnav" aria-label="Teacher pages"><a href="teacher.html">Scores</a><a href="topics.html" aria-current="page">Topics</a><a href="news.html">News</a><a href="stats.html">Class stats</a><a href="leaderboard.html" target="_blank" rel="noopener">Leaderboard ↗</a><a href="arcade/" target="_blank" rel="noopener">Arcade ↗</a></nav>
   </header>
 
   <section class="card now" aria-live="polite">
@@ -158,7 +158,10 @@ var SETS=[
   {id:'slide',name:'Slide and Slice',unit:'Standard to y = mx + b',topics:[['slide','Slide'],['slice','Slice'],['both','Both steps'],['slope','Find the slope']]},
   {id:'perp',name:'Parallel & perpendicular',unit:'Same slope or opposite reciprocal',topics:[['par','Parallel slopes'],['perp','Perpendicular slopes'],['pair','Spot the pair']]},
   {id:'solve',name:'Solving equations',unit:'Two-step and multi-step',topics:[['two','Two-step'],['dist','Distributing'],['both','Both sides'],['comb','Combine like terms']]},
-  {id:'evalf',name:'Evaluating functions',unit:'Find f(x) for a given x',topics:[['eq','From an equation'],['sq','With x²'],['graph','From a graph'],['table','From a table']]}
+  {id:'evalf',name:'Evaluating functions',unit:'Find f(x) for a given x',topics:[['eq','From an equation'],['sq','With x²'],['graph','From a graph'],['table','From a table']]},
+  {id:'dr',name:'Domain & range',unit:'Inputs and outputs',topics:[['pts','Pairs and tables'],['graph','From a graph'],['story','Word problems']]},
+  {id:'rate',name:'Rate of change',unit:'How fast y changes',topics:[['table','From a table'],['graph','From a graph'],['story','Word problems'],['compare','Compare rates']]},
+  {id:'icpt',name:'Intercepts',unit:'Where a line crosses the axes',topics:[['graph','From a graph'],['table','From a table'],['eq','From y = mx + b'],['mean','What it means']]}
 ];
 var DEF={ hidden:[], off:{}, assign:[], suggest:{ sets:[], note:'' }, bonus:25 };
 var TKEY='spitz_gh_key', REPO='spitz-math.github.io';

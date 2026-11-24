@@ -211,7 +211,7 @@ if(/[?&]set=mult\b/.test(location.search)) document.documentElement.classList.ad
   </div><span class="fh-credit sz-credit">Made by Spitz <i class="sz-burger" aria-hidden="true"></i></span></div>
 
   <div class="fh-over" id="fh-end" hidden><div class="fh-box"><div class="sz-eyebrow">Spitz <b>Arcade</b></div>
-    <p class="fh-sub" style="margin:0">Time! Show this screen to your teacher.</p>
+    <p class="fh-sub" style="margin:0">Time!</p>
     <div class="fh-name" id="fh-endname"></div>
     <div class="fh-final" id="fh-endscore">0</div>
     <div class="fh-bestcatch" id="fh-endbest"></div>
@@ -859,7 +859,7 @@ function showEnd(celebrate){ if(window.SpitzCode) setTimeout(function(){ window.
   $('fh-endbest').innerHTML=bt? 'Best catch: <b style="--c:'+bt.c+'">'+bt.n+' '+S.bestName+'</b> · Fish log '+species()+'/15 · Deepest '+S.deepest+' m' : 'No fish this time. Next time, answer early and drop your line often.';
   $('fh-endstats').innerHTML=[['Correct',S.correct+' / '+S.answered],['Accuracy',acc+'%'],['Best streak',S.best],['Fish caught',S.fish],['Orders done',S.orders]].map(function(a){ return '<div class="fh-stat"><div class="l">'+a[0]+'</div><div class="v">'+a[1]+'</div></div>'; }).join('');
   $('fh-endtopics').innerHTML=Object.keys(S.topics).map(function(k){ var t=S.topics[k]; return '<div class="fh-stat"><div class="l">'+k+'</div><div class="v">'+t[0]+' / '+t[1]+'</div></div>'; }).join('');
-  $('fh-end').hidden=false; if(celebrate){ SND.win(); [0,350,700,1100].forEach(function(ms,i){ setTimeout(function(){ confetti(200+i*500,1070,90,1.3); confetti(1720-i*500,1070,90,1.3); },ms); }); } }
+  $('fh-end').hidden=false; if(celebrate&&S.score>0){ SND.win(); [0,350,700,1100].forEach(function(ms,i){ setTimeout(function(){ confetti(200+i*500,1070,90,1.3); confetti(1720-i*500,1070,90,1.3); },ms); }); } }
 var armT=0; $('fh-again').addEventListener('click',function(){ var b=this; if(!b.classList.contains('arm')){ b.classList.add('arm'); b.textContent='Tap again to start over'; clearTimeout(armT); armT=setTimeout(function(){ b.classList.remove('arm'); b.textContent='Play again'; },3000); return; }
   b.classList.remove('arm'); b.textContent='Play again'; var keepName=S.name; S=fresh(); S.name=keepName; resetLake();
   $('fh-end').hidden=true; $('fh-start').hidden=false; $('fh-nameinput').value=keepName; $('fh-go').disabled=!keepName; save(); hud(); timerDraw();

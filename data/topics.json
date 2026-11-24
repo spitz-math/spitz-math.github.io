@@ -4,23 +4,27 @@
   "shift": [
    "gr",
    "ne"
+  ],
+  "evalf": [
+   "graph",
+   "table"
   ]
  },
  "assign": [],
  "suggest": {
   "sets": [
    {
-    "id": "hoy"
+    "id": "slide"
+   },
+   {
+    "id": "solve"
    },
    {
     "id": "evalf"
-   },
-   {
-    "id": "shift"
    }
   ],
   "note": ""
  },
  "bonus": 25,
- "updated": "2026-11-04T19:33:47.381Z"
+ "updated": "2026-11-13T13:44:39.275Z"
 }

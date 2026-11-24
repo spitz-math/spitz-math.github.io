@@ -30,7 +30,7 @@ window.SpitzGames=[
    '<g transform="translate(150 6)"><path d="M6 0l6 8-6 8-6-8z" fill="#FFC93C"/></g>'+
    '<g transform="translate(88 30)"><rect x="4" y="0" width="16" height="8" fill="#FFC93C"/><rect x="4" y="8" width="16" height="10" fill="#F2C29B"/><rect x="14" y="10" width="3" height="3" fill="#0D1A3A"/>'+
    '<rect x="2" y="18" width="20" height="14" fill="#3E6BC4"/><rect x="-4" y="16" width="6" height="6" fill="#F2C29B"/><rect x="22" y="12" width="6" height="6" fill="#F2C29B"/><rect x="2" y="32" width="8" height="10" fill="#15295A"/><rect x="14" y="30" width="8" height="8" fill="#15295A"/></g>'},
-  {id:'football_buds',name:'Football Buds',d:'Four quarters vs the Rivals',font:"'Graduate'",paper:'#0A101E',panel:'#121B30',acc:'#E8344A',
+  {id:'football_buds',name:'Football Buds BLITZ',d:'Arcade football vs the Rivals',font:"'Graduate'",paper:'#0A101E',panel:'#121B30',acc:'#FF6070',
    art:'<rect width="200" height="110" fill="#2E7D3A"/><g fill="#348A41"><rect x="0" y="0" width="40" height="110"/><rect x="80" y="0" width="40" height="110"/><rect x="160" y="0" width="40" height="110"/></g>'+
    '<g stroke="#F7F3E3" stroke-width="2" opacity=".85"><path d="M40 0v110M80 0v110M120 0v110M160 0v110"/></g>'+
    '<g fill="#F7F3E3" font-family="Graduate,serif" font-size="14" text-anchor="middle"><text x="40" y="104">20</text><text x="120" y="104">40</text></g>'+
@@ -95,6 +95,10 @@ window.SpitzGames=[
    '<path d="M-36 51q0-26 36-26t36 26z" fill="#E8A24A"/><g fill="#F6E3C2"><ellipse cx="-14" cy="38" rx="2" ry="1.2"/><ellipse cx="0" cy="33" rx="2" ry="1.2"/><ellipse cx="14" cy="38" rx="2" ry="1.2"/><ellipse cx="-4" cy="43" rx="2" ry="1.2"/><ellipse cx="8" cy="44" rx="2" ry="1.2"/></g></g>'+
    '<g transform="translate(150 16)"><rect width="36" height="44" rx="3" fill="#F6E3C2"/><path d="M6 12h24M6 20h18M6 28h22M6 36h14" stroke="#C4AA98" stroke-width="3" stroke-linecap="round"/><circle cx="18" cy="0" r="3" fill="#43302A"/></g>'+
    '<g transform="translate(22 40)"><rect x="0" y="10" width="16" height="38" rx="5" fill="#FF3B2E"/><rect x="4" y="2" width="8" height="10" rx="2" fill="#FF3B2E"/><rect x="5" y="-4" width="6" height="7" rx="1.5" fill="#F6E3C2"/><rect x="3" y="22" width="10" height="12" rx="2" fill="#F6E3C2" opacity=".85"/></g>'},
+  {id:'dig_buds',name:'Dig Buds',d:'Dig down and rescue the lost Buds',font:"'Fredoka'",paper:'#0D0A14',panel:'#1A1424',acc:'#3EE6D0',
+   art:'<rect width="200" height="110" fill="#8CC8F5"/><rect y="58" width="200" height="52" fill="#8A5A3C"/><rect y="52" width="200" height="12" fill="#5FCB8A"/>'+
+   '<rect x="88" y="64" width="24" height="46" fill="#2A1F38"/><rect x="92" y="84" width="16" height="16" rx="2" fill="#FFC857"/><rect x="95" y="89" width="3" height="4" fill="#3A2412"/><rect x="102" y="89" width="3" height="4" fill="#3A2412"/>'+
+   '<g fill="#3EE6D0"><rect x="30" y="76" width="8" height="8"/><rect x="150" y="90" width="8" height="8"/></g><g fill="#FFC93C"><rect x="56" y="94" width="8" height="8"/><rect x="134" y="72" width="8" height="8"/></g>'},
   {id:'fit_check',name:'Fit Check',d:'Dress up for the runway',font:"'Paytone One'",paper:'#130A1A',panel:'#1F1229',acc:'#FF6CB3',
    art:'<defs><radialGradient id="fcspot" cx=".5" cy="0" r="1"><stop offset="0" stop-color="#FF6CB3" stop-opacity=".55"/><stop offset=".7" stop-color="#FF6CB3" stop-opacity="0"/></radialGradient></defs><rect width="200" height="110" fill="#130A1A"/><path d="M70 0H130L170 110H30Z" fill="url(#fcspot)"/>'+
    '<path d="M60 110L84 70H116L140 110Z" fill="#2A1A36"/>'+
@@ -107,6 +111,10 @@ window.SpitzGames=[
    '<path d="M0 88C30 80 50 92 80 84S130 66 160 76S190 82 200 78V110H0z" fill="#6B4426"/><path d="M0 88C30 80 50 92 80 84S130 66 160 76S190 82 200 78" fill="none" stroke="#7BD84A" stroke-width="4"/>'+
    '<g transform="translate(100 63) rotate(-14) scale(.24)"><path d="M-34 -12L-26 -56L20 -56L34 -12" fill="none" stroke="#2B2B33" stroke-width="7"/><path d="M-90 -26L-40 -26L-30 -12L34 -12L52 -28L84 -24L92 -6L90 12L-90 12Z" fill="#FF4A36" stroke="#5E1208" stroke-width="3"/><path d="M10 -2Q40 -14 60 -10Q46 -4 62 0Q44 4 56 8Q30 6 10 6Z" fill="#FFB21E"/><circle cx="-4" cy="-66" r="15" fill="#FFB21E"/><circle cx="-56" cy="56" r="34" fill="#17140F"/><circle cx="-56" cy="56" r="15" fill="#FFB21E"/><circle cx="58" cy="56" r="34" fill="#17140F"/><circle cx="58" cy="56" r="15" fill="#FFB21E"/></g>'+
    '<rect x="0" y="0" width="200" height="3" fill="#FFB21E"/>'},
+  {id:'rook_and_ruin',name:'Rook & Ruin',d:'Sword run through the dungeon',font:"'Pixelify Sans'",paper:'#120A1F',panel:'#1E1233',acc:'#FFC23A',
+   art:'<rect width="200" height="110" fill="#120A1F"/><g fill="#1E1233"><rect x="0" y="70" width="200" height="40"/></g><g fill="#2A1C44"><rect x="0" y="70" width="40" height="20"/><rect x="80" y="70" width="40" height="20"/><rect x="160" y="70" width="40" height="20"/><rect x="40" y="90" width="40" height="20"/><rect x="120" y="90" width="40" height="20"/></g>'+
+   '<g transform="translate(100 18) rotate(35)"><rect x="-3" y="0" width="6" height="52" fill="#F4ECD8"/><rect x="-12" y="50" width="24" height="5" fill="#FFC23A"/><rect x="-3" y="55" width="6" height="12" fill="#C98A1E"/></g>'+
+   '<g fill="#4FE3F0"><rect x="34" y="40" width="5" height="5"/><rect x="160" y="34" width="5" height="5"/></g><rect x="0" y="0" width="200" height="3" fill="#FFC23A"/>'},
   {id:'pinball',name:'Pinball',d:'Burger Ball pinball',font:"'Shrikhand'",paper:'#0F0805',panel:'#1C110A',acc:'#FF4D3A',
    art:'<rect width="200" height="110" fill="#1C110A"/>'+
    '<g fill="#FFECD2" opacity=".05"><rect x="0" y="0" width="20" height="20"/><rect x="40" y="0" width="20" height="20"/><rect x="80" y="0" width="20" height="20"/><rect x="120" y="0" width="20" height="20"/><rect x="160" y="0" width="20" height="20"/><rect x="20" y="20" width="20" height="20"/><rect x="60" y="20" width="20" height="20"/><rect x="100" y="20" width="20" height="20"/><rect x="140" y="20" width="20" height="20"/><rect x="180" y="20" width="20" height="20"/><rect x="0" y="40" width="20" height="20"/><rect x="40" y="40" width="20" height="20"/><rect x="80" y="40" width="20" height="20"/><rect x="120" y="40" width="20" height="20"/><rect x="160" y="40" width="20" height="20"/><rect x="20" y="60" width="20" height="20"/><rect x="60" y="60" width="20" height="20"/><rect x="100" y="60" width="20" height="20"/><rect x="140" y="60" width="20" height="20"/><rect x="180" y="60" width="20" height="20"/><rect x="0" y="80" width="20" height="20"/><rect x="40" y="80" width="20" height="20"/><rect x="80" y="80" width="20" height="20"/><rect x="120" y="80" width="20" height="20"/><rect x="160" y="80" width="20" height="20"/></g>'+
@@ -159,19 +167,25 @@ window.SpitzGames=[
 (function(){
   var NEW_DAYS=7;
   var ADDED={ brick_breaker:'2026-10-10T20:16', mini_golf:'2026-10-10T20:30', burger_blaster:'2026-10-11T04:15', rocket_buds:'2026-10-11T04:25', paint_royale:'2026-10-11T04:30', snake_arena:'2026-10-11T19:20', brawl_buds:'2026-10-11T19:25', pinball:'2026-10-11T20:00', fit_check:'2026-10-24T14:30' };
-  var BEST=['hoop_buds','football_buds','rocket_buds','paint_royale','snake_arena','brawl_buds','pinball','hill_climb','fit_check','burger_blaster','burger_shop','mini_golf','skate','dash','fishing','brick_breaker','star_swarm','splat_range','shift_racer','jump_man_multiplication'];
+  var BEST=['hoop_buds','football_buds','rocket_buds','paint_royale','snake_arena','brawl_buds','pinball','hill_climb','rook_and_ruin','fit_check','burger_blaster','burger_shop','mini_golf','skate','dash','fishing','brick_breaker','star_swarm','splat_range','shift_racer','jump_man_multiplication'];
   /* Drip release (Kody, 2026-10-11): students start with 10 games and more unlock each week. A game listed in UNLOCK is hidden from the hub
      and leaderboard until its date (UTC); null = locked until Kody says so. To unlock, set the date: the game appears then with a NEW badge.
      Games not listed here are always shown. Hidden games' files stay on the site. */
   /* Kody approved this schedule 2026-10-12 (Mondays 12:00 UTC) */
-  var UNLOCK={ mini_golf:'2026-10-19T12:00', brick_breaker:'2026-10-19T12:00', snake_arena:'2026-10-19T12:00',
+  var UNLOCK={ dig_buds:null, /* Dig Buds: locked until Kody picks its date */
+    football_buds:null, /* Football Buds BLITZ (2026-11-22): live at games/football_buds.html as a secret link, off the hub until Kody picks its date */
+    mini_golf:'2026-10-19T12:00', brick_breaker:'2026-10-19T12:00', snake_arena:'2026-10-19T12:00',
     burger_blaster:'2026-10-26T12:00', pinball:'2026-10-26T12:00',
     rocket_buds:'2026-11-02T12:00', brawl_buds:'2026-11-02T12:00',
-    paint_royale:'2026-11-09T12:00', hill_climb:'2026-11-09T12:00' };
+    paint_royale:'2026-11-09T12:00', hill_climb:'2026-11-09T12:00',
+    rook_and_ruin:'2026-11-16T12:00' /* Kody 2026-11-16: "make it live" (moved up from Nov 23) */ };
   /* Updated games (Kody, 2026-10-30): a big change to a live game shows an UPDATED badge and a short line saying what changed (more = the hover text) on its hub card
      for NEW_DAYS days, and the game sorts up with the new ones. at = when it went live (UTC). */
-  var UPDATED={ football_buds:{ at:'2026-10-30T15:00', what:'New: points & All-Pro', more:'Now with a real points score, All-Pro mode and 3 challenges every game' },
-    hoop_buds:{ at:'2026-10-30T16:00', what:'New: points & All-Pro', more:'Now with a real points score, All-Pro mode and 3 challenges every game' } };
+  var UPDATED={ hoop_buds:{ at:'2026-10-30T16:00', what:'New: points & All-Pro', more:'Now with a real points score, All-Pro mode and 3 challenges every game' },
+    pinball:{ at:'2026-11-09T18:15', what:'New: All-Pro & challenges', more:'All-Pro mode, 3 challenges every game and double points in the last 30 seconds' },
+    shift_racer:{ at:'2026-11-09T18:15', what:'New: police chases', more:'Outrun the police, plus All-Pro mode, 3 challenges and double points in the last 30 seconds' },
+    skate:{ at:'2026-11-09T18:15', what:'New: special tricks', more:'Fill the Special meter for triple-point tricks, plus All-Pro mode, 3 challenges and a double-points finish' },
+    snake_arena:{ at:'2026-11-17T14:30', what:'New: full-screen arena', more:'A full-screen arena, Rivals that each hunt their own way, All-Pro mode, 3 challenges and double points in the last 30 seconds' } };
   var now=Date.now(), G=window.SpitzGames;
   window.SpitzLocked=Object.keys(UNLOCK).filter(function(id){ return !UNLOCK[id]||Date.parse(UNLOCK[id]+'Z')>now; });
   Object.keys(UNLOCK).forEach(function(id){ if(UNLOCK[id]) ADDED[id]=UNLOCK[id]; });
@@ -184,7 +198,7 @@ window.SpitzGames=[
 /* Real screenshots on the cards (2026-10-24): a game listed in SHOTS shows a picture from the game itself (games/cards/<id>.webp, 400x220)
    instead of its drawing. Take a game out of the list to bring its drawing back (kept in g.drawn). */
 (function(){
-  var SHOTS=['brawl_buds','brick_breaker','burger_blaster','fishing','football_buds','hill_climb','hoop_buds','pinball','rocket_buds','skate'];
+  var SHOTS=['brawl_buds','brick_breaker','burger_blaster','dig_buds','fishing','football_buds','hill_climb','hoop_buds','pinball','rocket_buds','rook_and_ruin','skate'];
   /* pictures also ready in games/cards/ (busier at card size, so they keep their drawings for now): burger_shop, fit_check, paint_royale, snake_arena, splat_range */
   var me=document.currentScript&&document.currentScript.src, base=me?me.replace(/catalog\.js(\?.*)?$/,''):'/games/';
   window.SpitzGames.forEach(function(g){ if(SHOTS.indexOf(g.id)<0) return; g.drawn=g.art;

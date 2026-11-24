@@ -1,0 +1,9 @@
+{
+ "/arcade/": [
+  "div#games-feat > button.game > span.face > span.new | size",
+  "div#games-feat > button.game > span.face > span.new.upd | size"
+ ],
+ "/games/jump_man_multiplication.html": [
+  "div#jm-start > span.jm-credit.sz-credit | contrast"
+ ]
+}

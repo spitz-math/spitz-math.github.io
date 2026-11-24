@@ -1,0 +1,873 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#121315">
+<meta name="robots" content="noindex,nofollow,noarchive">
+<title>Off the Clock</title>
+<meta name="description" content="Grad school work in one private place.">
+<link rel="icon" href="burger_icon-192.png" type="image/png" sizes="192x192">
+<link rel="icon" href="burger_icon.png" type="image/png">
+<link rel="apple-touch-icon" href="../apple-touch-icon.png">
+<link href="../fonts/bricolagegrotesque-onest-c24d53.css" rel="stylesheet">
+<link href="../fonts/bungee-pressstart2p-nunito-5675ec.css" rel="stylesheet">
+<link rel="stylesheet" href="ui.css">
+<script>try{if(localStorage.getItem('otc:side')==='mini')document.documentElement.classList.add('side-mini')}catch(e){}</script>
+<script src="config.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.119.0/dist/umd/supabase.js"></script>
+</head>
+<body>
+<header class="top">
+  <a class="brand" href="./" aria-label="Off the Clock home"><span class="brand-mark"><img src="burger_inverted.webp" alt="" width="56" height="45"></span><span class="brand-copy"><b>Off the Clock</b></span></a>
+  <div class="top-actions"><span class="online" id="sync-indicator" role="status" aria-live="polite"><i></i><span id="sync-label">Not signed in</span></span><button id="retry-save" class="tinybtn" type="button" hidden>Try again</button><button id="reload-cloud" class="tinybtn" type="button" hidden>Load saved copy</button><button id="account-btn" class="tinybtn" type="button" hidden>Sign out</button></div>
+</header>
+<section id="gate">
+<div class="gate-card">
+  <div class="gate-lockup"><span class="gate-burger"><img src="burger_inverted.webp" alt="" width="440" height="355"></span>
+  <h1 class="gate-title">Off the Clock</h1></div>
+  <p class="lede">Grad school work in one private place: what's due, what's done, and when you can stop for the day.</p>
+  <div id="login-step-email">
+    <button class="btn primary wide" id="github-login-btn" type="button"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 .5a11.5 11.5 0 0 0-3.64 22.41c.58.1.79-.25.79-.56v-2c-3.2.7-3.88-1.37-3.88-1.37-.52-1.33-1.28-1.69-1.28-1.69-1.05-.71.08-.7.08-.7 1.16.08 1.77 1.19 1.77 1.19 1.03 1.77 2.7 1.26 3.36.96.1-.75.4-1.26.73-1.55-2.55-.29-5.24-1.28-5.24-5.68 0-1.26.45-2.28 1.19-3.09-.12-.29-.52-1.46.11-3.05 0 0 .97-.31 3.17 1.18a11 11 0 0 1 5.77 0c2.2-1.49 3.17-1.18 3.17-1.18.63 1.59.23 2.76.11 3.05.74.81 1.19 1.83 1.19 3.09 0 4.41-2.69 5.39-5.25 5.67.41.36.78 1.06.78 2.14v3.17c0 .31.21.67.8.56A11.5 11.5 0 0 0 12 .5z"/></svg>Sign in with GitHub</button>
+    <div class="or">or get an email link</div>
+    <form id="email-form"><label for="login-email">Email</label><input id="login-email" name="email" type="email" placeholder="you@example.com" autocomplete="email" required><button type="submit" class="btn wide" id="send-btn">Email me a link</button></form>
+  </div>
+  <div id="login-step-code" hidden><h2>Check your email</h2><p>We sent a sign-in link to <strong id="email-destination"></strong>. If the email has a code instead, type it here.</p><form id="code-form"><label for="login-code">Code</label><input id="login-code" class="code" inputmode="numeric" pattern="[0-9]{6,8}" autocomplete="one-time-code" placeholder="••••••" required><button class="btn primary wide" type="submit" id="verify-btn">Sign in</button></form><button class="text-link" id="back-email" type="button">Use a different email</button></div>
+  <details class="paste-link"><summary>Email link not working?</summary><p>In Gmail, right-click <b>Sign in</b>, choose <b>Copy link address</b>, and paste it here instead of clicking it. The link stays in this tab and only goes to Supabase to be checked.</p><form id="link-form"><label for="link-input">Link from the email</label><input id="link-input" type="url" placeholder="Paste the whole link" autocomplete="off" spellcheck="false" required><button class="btn wide" id="link-verify-btn" type="submit">Check link</button></form></details>
+  <div id="login-feedback" hidden role="status" class="notice"></div>
+  <div id="preview-option" hidden><p>The cloud isn't set up yet, so you can try it with sample assignments.</p><button id="preview-btn" class="btn wide" type="button">Open preview</button></div>
+  <p class="fine">Private. Only you can see your assignments.</p>
+</div>
+</section>
+<div id="workspace" hidden>
+<div class="shell">
+<aside class="side">
+  <button class="side-toggle" id="side-toggle" type="button" aria-label="Collapse side bar" aria-expanded="true" title="Collapse side bar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M9 4v16"/><path d="m16 10-2 2 2 2"/></svg></button>
+  <nav class="navigation" aria-label="Sections">
+    <button class="navbtn active" data-view="mission" type="button" title="Today"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>Today</button>
+    <button class="navbtn" data-view="tasks" type="button" title="Assignments"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6h11M9 12h11M9 18h11"/><path d="m3.5 6 1 1 2-2M3.5 12l1 1 2-2M3.5 18l1 1 2-2"/></svg>Assignments</button>
+    <button class="navbtn" data-view="week" type="button" title="Week"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>Week</button>
+  </nav>
+  <div class="side-burger"><img src="burger_inverted.webp" alt="" width="440" height="355"></div>
+  <div class="side-foot">You're allowed to stop.</div>
+</aside>
+<main class="main">
+<div class="toolbar"><span id="today-label" class="date-label"></span><button type="button" id="new-task-top" class="btn primary" aria-label="Add assignment"><span>+ Add<span class="long"> assignment</span></span></button></div>
+<section class="view active" id="view-mission">
+  <div class="today-head">
+    <div class="today-copy"><p class="status-line" id="hero-kicker"></p><h1 id="hero-title">One thing at a time</h1><p class="lede" id="hero-caption"></p><p class="foot" id="hero-foot"></p><button id="hero-action" type="button" hidden>See all assignments</button></div>
+    <div class="ring" id="hero-disc"><div class="ring-dial"><div class="disc-core"><strong id="progress-number">0%</strong><small id="week-progress-label">Course week</small></div></div><em id="progress-caption"></em></div>
+  </div>
+  <div class="glance" id="glance" aria-label="At a glance"></div>
+  <div class="today-grid">
+    <div class="today-main">
+      <div id="today-checklist" aria-live="polite"></div>
+      <section class="panel next-panel"><div class="block-head"><h2>Up next</h2><span class="count" id="mission-count"></span><button class="text-link" id="see-all" type="button">All assignments</button></div>
+      <div class="rows" id="mission-list"></div></section>
+    </div>
+    <aside class="rail">
+      <section class="panel due-panel" id="due-panel"><div class="block-head due-head"><h2>Due in Brightspace</h2><span class="count" id="due-week-count"></span></div>
+      <div id="due-week"></div></section>
+      <section class="panel course-panel"><div class="block-head"><h2>Courses</h2><button class="text-link" id="edit-courses" type="button">Edit and colors</button></div>
+      <div id="course-list"></div>
+      <p class="note"><b>Finished isn't submitted.</b> Checking off every step doesn't turn anything in. Submit in Brightspace, then mark it submitted here.</p></section>
+    </aside>
+  </div>
+  <div class="block-head week-head"><div><h2 id="mission-week-heading">This week</h2><p class="sub" id="mission-week-subheading"></p></div><button class="text-link" id="see-week" type="button">Open the week</button></div>
+  <div class="week-strip" id="week-strip"></div>
+</section>
+<section class="view" id="view-tasks">
+  <div class="page-head"><div><h1>Assignments</h1><p class="sub">Finished and submitted are tracked separately.</p></div></div>
+  <div class="filterbar"><div class="seg" id="status-filters"><button class="filter active" data-filter="all" type="button">All</button><button class="filter" data-filter="active" type="button">Open</button><button class="filter" data-filter="done" type="button">Finished</button><button class="filter" data-filter="submitted" type="button">Submitted</button></div><input id="search-tasks" class="search" type="search" placeholder="Search assignments, readings, outlines" aria-label="Search assignments and your materials"></div>
+  <div class="rows" id="task-list"></div>
+  <section id="material-results" class="material-results" hidden aria-label="Found in your materials"></section>
+</section>
+<section class="view" id="view-week">
+  <div class="page-head"><div><h1 id="week-heading">This week</h1><p class="sub" id="week-subheading"></p></div><div class="week-toolbar"><button class="btn icon" id="week-prev" type="button" aria-label="Previous week">‹</button><button class="btn" id="week-current" type="button">This week</button><button class="btn icon" id="week-next" type="button" aria-label="Next week">›</button></div></div>
+  <div class="week-strip" id="week-strip-full" style="margin-top:24px"></div>
+  <div class="day-planner" id="week-list" aria-label="Steps for each day"></div>
+</section>
+<footer class="footer"><span>Backup</span><button class="text-link" id="export-data" type="button">Export</button><button class="text-link" id="import-data" type="button">Import</button></footer>
+</main>
+</div>
+</div>
+<dialog id="task-dialog"><div class="modal-top"><h2 id="form-title">New assignment</h2><button class="x" id="close-task" type="button" aria-label="Close">×</button></div><form id="task-form" class="formbody"><input id="task-id" type="hidden">
+<div class="field"><label for="task-title">Assignment</label><input id="task-title" maxlength="250" required placeholder="What do you need to do?"></div>
+<div class="fieldrow"><div class="field"><label for="task-course">Course</label><select id="task-course" required></select></div><div class="field"><label for="task-status">Progress</label><select id="task-status"><option value="todo">Not started</option><option value="inprogress">In progress</option><option value="done">Finished</option></select></div></div>
+<div class="fieldrow"><div class="field"><label for="task-due">Due in Brightspace</label><input type="date" id="task-due"></div><div class="field"><label for="task-target">Aim to finish by</label><input type="date" id="task-target"></div></div>
+<div class="field" id="task-submission-field"><label for="task-submission">Submitted?</label><select id="task-submission"><option value="unconfirmed">Not submitted yet</option><option value="submitted">Submitted in Brightspace</option></select></div>
+<div class="field"><label for="task-notes">Notes</label><textarea id="task-notes" maxlength="2500" placeholder="Anything future you should know"></textarea></div>
+<section class="checklist-editor" aria-label="Assignment steps">
+<div class="checklist-editor-head"><strong>Steps</strong><small>Give each step its own day. Checking a step anywhere updates this assignment. Finishing every step doesn't submit it.</small></div>
+<div id="task-step-editor"></div>
+<div class="step-editor-actions"><button type="button" class="btn" id="add-step">+ Add step</button><span>Start from:</span><button type="button" data-step-template="paper">Paper</button><button type="button" data-step-template="video">Video</button><button type="button" data-step-template="discussion">Discussion</button><button type="button" data-step-template="reading">Reading</button></div>
+<label class="submission-requirement"><input type="checkbox" id="task-submission-required" checked> This gets submitted in Brightspace</label>
+</section>
+<section class="checklist-editor readings-editor" aria-label="Readings">
+<div class="checklist-editor-head"><strong>Readings</strong><small>PDFs for this assignment, stored privately in your account and never in the site's code.</small></div>
+<div id="reading-list"></div>
+<div class="step-editor-actions"><label class="btn" id="reading-add"><input type="file" id="reading-file" accept="application/pdf,.pdf" multiple hidden>+ Attach PDF</label><span id="reading-status" class="reading-status" role="status" aria-live="polite"></span></div>
+</section>
+<section class="checklist-editor readings-editor docs-editor" aria-label="Outlines and scripts">
+<div class="checklist-editor-head"><strong>Outlines and scripts</strong><small>Paper outlines, video scripts and notes. ChatGPT can save these here for you.</small></div>
+<div id="doc-list"></div>
+<div class="step-editor-actions"><button type="button" class="btn" id="doc-new">+ New</button><span id="doc-status" class="reading-status" role="status" aria-live="polite"></span></div>
+</section>
+<section class="checklist-editor readings-editor final-editor" aria-label="Final work">
+<div class="checklist-editor-head"><strong>Final work</strong><small>What you turned in: the paper, a video link, or a quiz result. Adding it here does not mark it submitted.</small></div>
+<div id="final-file"></div>
+<div class="final-fields"><label>Link<input type="url" id="final-link" maxlength="500" placeholder="https:// video or document link"></label><label>Note<input type="text" id="final-note" maxlength="500" placeholder="e.g. Quiz 3: 18/20"></label></div>
+</section>
+<div class="form-actions"><button type="button" class="btn danger" id="delete-task" hidden>Delete</button><div class="right"><button type="button" class="btn" id="cancel-task">Cancel</button><button type="submit" class="btn primary">Save</button></div></div></form></dialog>
+<dialog id="doc-dialog" class="doc-dialog"><div class="modal-top"><h2 id="doc-heading">Outline</h2><button class="x" id="close-doc" type="button" aria-label="Close">×</button></div><form id="doc-form" class="formbody"><input type="hidden" id="doc-id"><input type="hidden" id="doc-task">
+<div class="fieldrow"><div class="field"><label for="doc-title">Title</label><input id="doc-title" maxlength="200" required placeholder="e.g. Chapter 7 paper outline"></div><div class="field"><label for="doc-kind">Type</label><select id="doc-kind"><option value="outline">Outline</option><option value="script">Video script</option><option value="notes">Notes</option><option value="draft">Draft</option><option value="other">Other</option></select></div></div>
+<div class="field"><label>PDF</label><div id="doc-file"></div></div>
+<div class="field"><label for="doc-body">Text <small class="muted-note">(optional if you attach a PDF)</small></label><textarea id="doc-body" class="doc-body" maxlength="200000" placeholder="Paste or write here"></textarea></div>
+<p class="reading-status" id="doc-meta"></p>
+<div class="form-actions"><button type="button" class="btn danger" id="doc-delete" hidden>Delete</button><div class="right"><button type="button" class="btn" id="doc-copy">Copy text</button><button type="button" class="btn" id="doc-cancel">Cancel</button><button type="submit" class="btn primary">Save</button></div></div></form></dialog>
+<dialog id="course-dialog"><div class="modal-top"><h2>Courses</h2><button class="x" id="close-courses" type="button" aria-label="Close">×</button></div><form class="formbody" id="course-form"><p class="importnote">These are saved in your private data, not in the site's code.</p><label class="byclass-toggle"><input type="checkbox" id="color-by-class"><span>Color everything by class<small>Each assignment, step, checkbox and progress bar takes its class's color.</small></span></label>
+<h3 class="course-group">First course</h3>
+<div class="field"><label for="course-a">Name or code</label><input id="course-a" required maxlength="100" placeholder="EDFR 6388"></div><div class="field"><label for="course-a-description">Full title</label><input id="course-a-description" maxlength="250" placeholder="Course title"></div><div class="field"><label for="course-a-instructor">Professor</label><input id="course-a-instructor" maxlength="150" placeholder="Professor name"></div><div class="field"><label id="course-a-color-label">Color</label><div class="swatches" role="radiogroup" aria-labelledby="course-a-color-label"><label class="cc-blue" title="Azure"><input type="radio" name="course-a-color" value="blue" aria-label="Azure"><span></span></label><label class="cc-teal" title="Seafoam"><input type="radio" name="course-a-color" value="teal" aria-label="Seafoam"><span></span></label><label class="cc-pink" title="Pink"><input type="radio" name="course-a-color" value="pink" aria-label="Pink"><span></span></label><label class="cc-orchid" title="Orchid"><input type="radio" name="course-a-color" value="orchid" aria-label="Orchid"><span></span></label><label class="cc-cobalt" title="Cobalt"><input type="radio" name="course-a-color" value="cobalt" aria-label="Cobalt"><span></span></label><label class="cc-orange" title="Orange (the original)"><input type="radio" name="course-a-color" value="orange" aria-label="Orange (the original)"><span></span></label></div></div>
+<h3 class="course-group">Second course</h3>
+<div class="field"><label for="course-b">Name or code</label><input id="course-b" required maxlength="100" placeholder="EDCI 7355"></div><div class="field"><label for="course-b-description">Full title</label><input id="course-b-description" maxlength="250" placeholder="Course title"></div><div class="field"><label for="course-b-instructor">Professor</label><input id="course-b-instructor" maxlength="150" placeholder="Professor name"></div><div class="field"><label id="course-b-color-label">Color</label><div class="swatches" role="radiogroup" aria-labelledby="course-b-color-label"><label class="cc-blue" title="Azure"><input type="radio" name="course-b-color" value="blue" aria-label="Azure"><span></span></label><label class="cc-teal" title="Seafoam"><input type="radio" name="course-b-color" value="teal" aria-label="Seafoam"><span></span></label><label class="cc-pink" title="Pink"><input type="radio" name="course-b-color" value="pink" aria-label="Pink"><span></span></label><label class="cc-orchid" title="Orchid"><input type="radio" name="course-b-color" value="orchid" aria-label="Orchid"><span></span></label><label class="cc-cobalt" title="Cobalt"><input type="radio" name="course-b-color" value="cobalt" aria-label="Cobalt"><span></span></label><label class="cc-orange" title="Orange (the original)"><input type="radio" name="course-b-color" value="orange" aria-label="Orange (the original)"><span></span></label></div></div>
+<h3 class="course-group">Brightspace calendar</h3>
+<p class="importnote">In Brightspace, open Calendar, choose Subscribe, and copy the link. ChatGPT and Claude use it to check official due dates every morning. The link is private, so it is saved only in your account.</p>
+<div class="field"><label for="bs-feed">Calendar link</label><input id="bs-feed" type="url" maxlength="1000" placeholder="https://…brightspace.com/d2l/le/calendar/feed/…"></div>
+<div class="step-editor-actions"><button type="button" class="btn" id="bs-save">Save link</button><span id="bs-status" class="reading-status" role="status" aria-live="polite"></span></div>
+<div class="form-actions"><div class="right"><button class="btn primary" type="submit">Save courses</button></div></div></form></dialog>
+<input id="import-file" type="file" accept=".json,application/json" hidden>
+<script>
+(function(){'use strict';
+const $=s=>document.querySelector(s), $$=s=>Array.from(document.querySelectorAll(s));
+const CONFIG=window.OFF_CLOCK_CONFIG||{};const IS_CONFIGURED=!!(CONFIG.supabaseUrl&&CONFIG.supabaseKey&& !CONFIG.supabaseUrl.includes('YOUR_')&&!CONFIG.supabaseKey.includes('YOUR_'));
+const COURSE_COLORS=['blue','teal','pink','orchid','cobalt','orange','violet','gold'];
+const emptyData=()=>({version:4,courses:[{id:'one',name:'Course 01',description:'',instructor:'',color:'blue'},{id:'two',name:'Course 02',description:'',instructor:'',color:'teal'}],tasks:[],weekCalendar:{anchorStart:'',anchorNumber:null},prefs:{colorByClass:false}});
+function courseColor(c){const j=Math.max(0,app.courses.indexOf(c));return COURSE_COLORS.includes(c&&c.color)?c.color:(j?'teal':'blue')}
+const demoData=()=>({version:4,courses:[{id:'one',name:'Course 1',description:'Foundations'},{id:'two',name:'Course 2',description:'Mathematics Education'}],tasks:[{id:'demo-1',course:'one',title:'Respond to discussion prompts',due:dayISO(1),target:dayISO(0),status:'inprogress',submission:'unconfirmed',notes:'Demo assignment — not actual coursework.'},{id:'demo-2',course:'two',title:'Read next assigned chapter',due:dayISO(3),target:dayISO(1),status:'todo',submission:'unconfirmed',notes:'Demo assignment — not actual coursework.'},{id:'demo-3',course:'one',title:'Submit weekly reflection',due:dayISO(5),target:dayISO(3),status:'done',submission:'submitted',notes:'Demo assignment — not actual coursework.'}]});
+let app=emptyData(),supabaseClient=null,user=null,preview=false,currentView='mission',filter='all',email='',remoteRevision=null,saving=false,dirty=false,saveLoop=null,conflict=false,weekOffset=0;
+const openChecklistIds=new Set();
+function uniqueId(){return (globalThis.crypto&&crypto.randomUUID)?crypto.randomUUID():'task-'+Date.now().toString(36)+'-'+Math.random().toString(36).slice(2,11)}
+function dayISO(n=0){const d=new Date();d.setHours(12,0,0,0);d.setDate(d.getDate()+n);return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`}
+function dateObj(s){return s?new Date(s+'T12:00:00'):null}
+function showDate(s){const d=dateObj(s);return d?d.toLocaleDateString(undefined,{month:'short',day:'numeric'}):'No date'}
+function diffDays(s){if(!s)return Infinity;return Math.round((dateObj(s)-dateObj(dayISO()))/86400000)}
+
+function localDateISO(d){return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`}
+function shiftISO(s,n){const d=dateObj(s);d.setDate(d.getDate()+n);return localDateISO(d)}
+function weekStartISO(s){const d=dateObj(s);d.setDate(d.getDate()-((d.getDay()-3+7)%7));return localDateISO(d)}
+function utcDayNumber(s){return Date.UTC(Number(s.slice(0,4)),Number(s.slice(5,7))-1,Number(s.slice(8,10)))/86400000}
+function courseWeek(offset=0,referenceDate=dayISO()){
+ const start=shiftISO(weekStartISO(referenceDate),offset*7),end=shiftISO(start,6);
+ const cfg=app.weekCalendar||{},anchor=cfg.anchorStart;
+ const weekNumber=anchor&&Number.isInteger(cfg.anchorNumber)?cfg.anchorNumber+Math.round((utcDayNumber(start)-utcDayNumber(weekStartISO(anchor)))/7):null;
+ const label=weekNumber&&weekNumber>0?`Week ${weekNumber}`:'Course week';
+ const dates=`${showDate(start)} – ${showDate(end)}`;
+ return {start,end,number:weekNumber,label,dates};
+}
+function inCourseWeek(s,w){return !!s&&s>=w.start&&s<=w.end}
+
+function dueLabel(t){if(!t.due)return t.submissionRequired===false?{text:t.target?'Prep by '+showDate(t.target):'No deadline',cl:''}:{text:'Due date not verified',cl:'unverified'};if(isHandled(t))return {text:'Due '+showDate(t.due),cl:''};const dd=diffDays(t.due);return dd<0?{text:Math.abs(dd)===1?'1 day overdue':`${Math.abs(dd)} days overdue`,cl:'late'}:dd===0?{text:'Due today',cl:'soon'}:dd===1?{text:'Due tomorrow',cl:'soon'}:{text:'Due '+showDate(t.due),cl:''}}
+function escapeHTML(v){return String(v??'').replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]))}
+function course(t){return app.courses.find(c=>c.id===t.course)||app.courses[0]}
+function isDone(t){return t.status==='done'||t.submission==='submitted'}
+function normalizedChecklist(raw){
+ if(!Array.isArray(raw))return [];
+ const used=new Set();
+ return raw.slice(0,32).filter(step=>step&&typeof step.text==='string'&&step.text.trim()).map(step=>{
+   let id=String(step.id||uniqueId()).slice(0,100);
+   if(used.has(id))id=uniqueId();
+   used.add(id);
+   return {id,text:step.text.trim().slice(0,180),done:step.done===true,planDate:/^\d{4}-\d{2}-\d{2}$/.test(step.planDate||'')?step.planDate:''};
+ });
+}
+function prepProgress(t){const items=t.checklist||[];return {total:items.length,done:items.filter(step=>step.done).length};}
+function updateStatusFromSteps(t){
+ const {total,done}=prepProgress(t);
+ if(t.submission==='submitted')t.status='done';
+ else if(total)t.status=done===total?'done':done?'inprogress':'todo';
+}
+const taskTemplates={
+ paper:['Read assigned materials','Outline main points','Write first draft','Revise and proofread'],
+ video:['Read or watch assigned sources','Plan outline / script','Record video','Upload video or share link'],
+ discussion:['Read prompt and relevant materials','Draft response','Revise response','Post discussion response'],
+ reading:['Read assigned material','Write notes / key takeaways']
+};
+function normalized(data){const o=emptyData();if(!data||!Array.isArray(data.tasks))return o;if(Array.isArray(data.courses)&&data.courses.length>=2){o.courses=data.courses.slice(0,2).map((x,i)=>({id:typeof x.id==='string'&&x.id?x.id:(i?'two':'one'),name:String(x.name||`Course 0${i+1}`).slice(0,100),description:String(x.description||'').slice(0,250),instructor:String(x.instructor||'').slice(0,150),color:COURSE_COLORS.includes(x.color)?x.color:(i?'teal':'blue')}));}o.tasks=data.tasks.slice(0,300).filter(t=>t&&t.title).map(t=>({id:String(t.id||uniqueId()),course:o.courses.some(c=>c.id===t.course)?t.course:o.courses[0].id,title:String(t.title).slice(0,250),due:/^\d{4}-\d{2}-\d{2}$/.test(t.due||'')?t.due:'',target:/^\d{4}-\d{2}-\d{2}$/.test(t.target||'')?t.target:'',status:['todo','inprogress','done'].includes(t.status)?t.status:'todo',submission:t.submission==='submitted'?'submitted':'unconfirmed',notes:String(t.notes||'').slice(0,2500),checklist:normalizedChecklist(t.checklist),submissionRequired:t.submissionRequired!==false,readings:normalizedReadings(t.readings),finalWork:normalizedFinal(t.finalWork),...(t.lms&&typeof t.lms.uid==='string'&&t.lms.uid?{lms:{uid:t.lms.uid.slice(0,300),...(/^\d{4}-\d{2}-\d{2}$/.test(t.lms.keepDue||'')?{keepDue:t.lms.keepDue}:{})}}:{})}));o.prefs={colorByClass:data.prefs?.colorByClass===true};const wc=data.weekCalendar||{};if(/^\d{4}-\d{2}-\d{2}$/.test(wc.anchorStart||'')&&Number.isInteger(wc.anchorNumber)&&wc.anchorNumber>0){o.weekCalendar={anchorStart:wc.anchorStart,anchorNumber:wc.anchorNumber}}return o}
+function setSync(text,kind=''){const el=$('#sync-indicator');el.className='online '+(kind||'');$('#sync-label').textContent=text}
+function syncControls(mode=''){ $('#retry-save').hidden=mode!=='retry'; $('#reload-cloud').hidden=mode!=='conflict'; }
+
+function setFeedback(text,type=''){const el=$('#login-feedback');el.hidden=false;el.textContent=text;el.className='notice '+type}
+function setWorkspace(open){$('#gate').hidden=open;$('#workspace').hidden=!open;$('#account-btn').hidden=!open}
+function showView(v){currentView=v;$$('.view').forEach(x=>x.classList.toggle('active',x.id==='view-'+v));$$('.navbtn').forEach(x=>x.classList.toggle('active',x.dataset.view===v));render();window.scrollTo({top:0,behavior:'smooth'})}
+function sortedTasks(rows){return rows.slice().sort((a,b)=>{const ax=(a.due||a.target||'9999'),bx=(b.due||b.target||'9999');return ax.localeCompare(bx)||a.title.localeCompare(b.title)})}
+function statusButtons(t){
+ const id=escapeHTML(t.id);
+ const hasChecklist=(t.checklist||[]).length>0;
+ const complete=hasChecklist?'<button class="toggle" type="button" title="Edit steps" data-edit="'+id+'">Edit steps</button>':`<button class="toggle ${isDone(t)?'on':''}" type="button" aria-pressed="${isDone(t)}" title="${isDone(t)?'Mark not finished':'Mark finished'}" data-complete="${id}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12 5 5 9-10"/></svg>Finished</button>`;
+ const submit=t.submissionRequired===false?'':`<button class="toggle sub ${t.submission==='submitted'?'on':''}" type="button" aria-pressed="${t.submission==='submitted'}" title="${t.submission==='submitted'?'Not submitted after all':'I submitted it in Brightspace'}" data-submit="${id}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 19V6M6 11l6-6 6 6"/></svg>Submitted</button>`;
+ return '<div class="actions">'+complete+submit+'</div>';
+}
+function taskHTML(t,i,clickTitle=false){
+ const d=dueLabel(t),c=course(t),name=escapeHTML(c?.name||'Course'),id=escapeHTML(t.id);
+ const items=t.checklist||[],{total,done}=prepProgress(t),percentage=total?Math.round(100*done/total):0;
+ const next=items.find(step=>!step.done)?.text;
+ const steps=total?`<div class="step-progress"><strong>${done} of ${total} steps</strong><span class="step-next">${next?'Next: '+escapeHTML(next):'Every step done'}</span></div><div class="step-track"><span style="width:${percentage}%"></span></div><details class="task-checklist" data-checklist="${id}" ${openChecklistIds.has(t.id)?'open':''}><summary>${openChecklistIds.has(t.id)?'Hide steps':'Show steps'}</summary><div class="step-items">${items.map(step=>`<label class="step-entry"><input type="checkbox" data-step-task="${id}" data-step-id="${escapeHTML(step.id)}" ${step.done?'checked':''}><span>${escapeHTML(step.text)}</span></label>`).join('')}${t.submissionRequired===false?'':`<label class="step-entry submit-entry"><input type="checkbox" data-submit-check="${id}" ${t.submission==='submitted'?'checked':''}><span>Submitted in Brightspace</span></label>`}</div></details>`:'';
+ const cc='cc-'+courseColor(c);return `<div class="mission-row ${cc}"><div class="mission-body">${clickTitle?`<button data-edit="${id}" class="mission-title ${isHandled(t)?'done':''}">${escapeHTML(t.title)}</button>`:`<div class="mission-title ${isHandled(t)?'done':''}">${escapeHTML(t.title)}</div>`}<div class="meta"><span class="tag ${cc}">${name}</span><span class="${d.cl}">${escapeHTML(d.text)}</span>${t.target?`<span>Aim for ${showDate(t.target)}</span>`:''}${t.submission==='submitted'?`<span class="is-submitted">Submitted</span>`:''}</div>${readingsHTML(t)}${docsHTML(t)}${finalWorkHTML(t)}${steps}</div>${statusButtons(t)}</div>`;
+}
+
+function plannedDayEntries(date){
+ const rows=[];
+ for(const t of app.tasks){
+  for(const step of t.checklist||[])if(step.planDate===date)rows.push({t,step,type:'step'});
+  if(t.submissionRequired!==false&&(t.target||t.due)===date)rows.push({t,type:'submit'});
+ }
+ return rows;
+}
+function isEntryDone(entry){return entry.type==='submit'?entry.t.submission==='submitted':entry.step.done}
+function displayStepLabel(label){return String(label).replace(/^(?:MON|TUE|WED|THU|FRI|SAT|SUN)\s+\d{1,2}\/\d{1,2}\s*[—–-]\s*/i,'')}
+function moveStepOptions(current,week){
+ return '<option value="">No day</option>'+Array.from({length:7},(_,i)=>{
+  const day=shiftISO(week.start,i),d=dateObj(day),label=d.toLocaleDateString(undefined,{weekday:'short',month:'short',day:'numeric'});
+  return '<option value="'+day+'" '+(day===current?'selected':'')+'>'+label+'</option>';
+ }).join('');
+}
+function plannedDayCard(date,week,compact=false){
+ const rows=plannedDayEntries(date),done=rows.filter(isEntryDone).length,remaining=rows.length-done;
+ const d=dateObj(date),weekday=d.toLocaleDateString(undefined,{weekday:'long'}),isToday=date===dayISO();
+ const due=app.tasks.filter(t=>t.due===date),dueOpen=due.filter(t=>t.submissionRequired!==false&&t.submission!=='submitted').length;
+ const groups=new Map();
+ for(const r of rows){if(!groups.has(r.t.id))groups.set(r.t.id,{task:r.t,entries:[]});groups.get(r.t.id).entries.push(r);}
+ const groupHtml=Array.from(groups.values()).map(({task,entries})=>{
+  const id=escapeHTML(task.id),c=course(task),cn=escapeHTML(c?.name||'Course');
+  const work=entries.map(r=>{
+   const submit=r.type==='submit',attr=submit?'data-submit-check="'+id+'"':'data-step-task="'+id+'" data-step-id="'+escapeHTML(r.step.id)+'"';
+   const label=submit?(r.t.due&&r.t.due!==date?'Submit in Brightspace (due '+showDate(r.t.due)+')':'Submit in Brightspace'):displayStepLabel(r.step.text);
+   const move=submit||compact?'':'<select class="day-move" data-replan-task="'+id+'" data-replan-step="'+escapeHTML(r.step.id)+'" aria-label="Reschedule '+escapeHTML(r.step.text)+'" title="Move this step to another day">'+moveStepOptions(date,week)+'</select>';
+   return '<div class="day-action"><label class="day-action-check '+(submit?'day-action-submit':'')+'"><input type="checkbox" '+attr+' '+(isEntryDone(r)?'checked':'')+'><span>'+escapeHTML(label)+'</span></label>'+move+'</div>';
+  }).join('');
+  const cc='cc-'+courseColor(c);return '<div class="day-group '+cc+'"><div class="day-group-title"><span class="day-group-course '+cc+'">'+cn+'</span><button type="button" data-edit="'+id+'" title="Edit assignment and its work steps">'+escapeHTML(task.title)+'</button></div>'+readingsHTML(task)+'<div class="day-actions">'+work+'</div></div>';
+ }).join('');
+ const dueHtml=due.length?'<details class="day-deadlines"><summary>'+due.length+' due in Brightspace'+(dueOpen?', '+dueOpen+' not submitted yet':'')+'</summary><div class="day-deadline-list">'+due.map(t=>'<div><span>'+escapeHTML(t.title)+'</span><b class="'+(t.submission==='submitted'?'submitted':'')+'">'+(t.submission==='submitted'?'Submitted':t.submissionRequired===false?'Prep only':'Due')+'</b></div>').join('')+'</div></details>':'';
+ return '<section class="day-plan-card '+(isToday?'current-day ':'')+(compact?'compact-day':'')+'" data-plan-day="'+date+'"><div class="day-plan-head"><div><span class="day-plan-kicker">'+(compact?"Today's steps":weekday)+(isToday&&!compact?' · Today':'')+'</span><h3>'+escapeHTML(showDate(date))+'</h3></div><div class="day-count">'+(rows.length?'<strong>'+done+' of '+rows.length+'</strong><small>'+(remaining?'done':'done, all clear')+'</small>':'')+'</div></div><div class="day-plan-body">'+(groupHtml||'<div class="day-empty">'+(compact?'Nothing planned for today.':'Nothing planned')+'</div>')+dueHtml+'</div></section>';
+}
+function unscheduledStepsCard(){
+ const pending=app.tasks.flatMap(t=>(t.checklist||[]).filter(step=>!step.planDate&&!step.done).map(step=>({t,step})));
+ if(!pending.length)return '';
+ return '<section class="day-plan-card unscheduled-plan"><div class="day-plan-head"><div><span class="day-plan-kicker">No day yet</span><h3>Steps to plan</h3></div><span class="day-count"><strong>'+pending.length+'</strong><small>'+(pending.length===1?'step':'steps')+'</small></span></div><div class="day-plan-body">'+pending.map(({t,step})=>'<div class="unscheduled-entry"><span>'+escapeHTML(step.text)+'</span><button type="button" data-edit="'+escapeHTML(t.id)+'">Pick a day · '+escapeHTML(t.title)+'</button></div>').join('')+'</div></section>';
+}
+
+// Briefing: the same rules as the bridge's planning.ts (get_briefing / suggest_catch_up),
+// computed here from the data already loaded. Suggestions only move a step when Kody clicks.
+function outstandingTask(t){return !(t.status==='done'&&(t.submission==='submitted'||t.submissionRequired===false))}
+function missedSteps(today=dayISO()){
+ return app.tasks.filter(outstandingTask).flatMap(t=>(t.checklist||[]).filter(s=>!s.done&&s.planDate&&s.planDate<today).map(step=>({t,step}))).sort((a,b)=>a.step.planDate.localeCompare(b.step.planDate)||a.t.title.localeCompare(b.t.title));
+}
+function catchUpPlan(today=dayISO(),perDay=3){
+ const busy=new Map();
+ for(const t of app.tasks.filter(outstandingTask))for(const s of t.checklist||[])if(!s.done&&s.planDate>=today)busy.set(s.planDate,(busy.get(s.planDate)||0)+1);
+ return missedSteps(today).map(({t,step})=>{
+  let day=today;
+  for(let i=0;i<28;i++,day=shiftISO(day,1)){
+   if(t.due&&day>t.due)break;
+   if((busy.get(day)||0)<perDay){busy.set(day,(busy.get(day)||0)+1);return {t,step,to:day}}
+  }
+  return {t,step,to:''};
+ });
+}
+function dayName(s){if(s===dayISO())return 'today';if(s===dayISO(1))return 'tomorrow';return dateObj(s).toLocaleDateString(undefined,{weekday:'short',month:'short',day:'numeric'})}
+function catchUpCard(){
+ const plan=catchUpPlan();if(!plan.length)return '';
+ const movable=plan.filter(p=>p.to).length;
+ const rows=plan.map(({t,step,to})=>{
+  const id=escapeHTML(t.id),sid=escapeHTML(step.id),c=course(t),cc='cc-'+courseColor(c),late=-diffDays(step.planDate);
+  const when='Planned '+(late===1?'yesterday':dayName(step.planDate))+(t.due?' · Due '+(t.due===dayISO()?'today':showDate(t.due)):'');
+  const act=to?'<button type="button" class="catch-move" data-catchup-task="'+id+'" data-catchup-step="'+sid+'" data-catchup-to="'+to+'">Move to '+escapeHTML(dayName(to))+'</button>':'<button type="button" class="catch-move none" data-edit="'+id+'" title="No open day before it’s due">Pick a day</button>';
+  return '<div class="catch-row '+cc+'"><label class="day-action-check"><input type="checkbox" data-step-task="'+id+'" data-step-id="'+sid+'"><span>'+escapeHTML(displayStepLabel(step.text))+'<small><span class="tag '+cc+'">'+escapeHTML(c?.name||'Course')+'</span> '+escapeHTML(t.title)+'</small><small class="catch-when">'+escapeHTML(when)+'</small></span></label>'+act+'</div>';
+ }).join('');
+ return '<section class="catch-card" aria-label="Missed steps"><div class="catch-head"><div><h3>Catch up</h3><p>'+(plan.length===1?'1 step slipped past its day.':plan.length+' steps slipped past their day.')+' Check it off if you did it, or move it. Nothing moves until you say so.</p></div>'+(movable>1?'<button type="button" class="btn" data-catchup-all>Move all</button>':'')+'</div><div class="catch-rows">'+rows+'</div></section>';
+}
+function dueWeekHTML(week){
+ const today=dayISO();
+ const late=app.tasks.filter(t=>t.due&&t.due<week.start&&t.submissionRequired!==false&&t.submission!=='submitted');
+ const all=sortedTasks(late).concat(app.tasks.filter(t=>inCourseWeek(t.due,week)).sort((a,b)=>a.due.localeCompare(b.due)||a.title.localeCompare(b.title)));
+ const rows=all.filter(t=>!isHandled(t)).concat(all.filter(isHandled)); // submitted (and finished prep) sink to the bottom
+ if(!rows.length)return '<p class="due-empty">Nothing with a verified due date this week.</p>';
+ return '<div class="due-list">'+rows.map(t=>{
+  const c=course(t),cc='cc-'+courseColor(c),d=dateObj(t.due),sub=t.submission==='submitted';
+  const past=!sub&&t.submissionRequired!==false&&t.due<today;
+  const state=sub?['Submitted','ok']:t.submissionRequired===false?(t.status==='done'?['Done','ok']:['Prep only, nothing to submit','']):t.status==='done'?['Finished, not submitted','warn']:past?['Past due','bad']:t.status==='inprogress'?['In progress','']:['Not started',''];
+  return '<button type="button" class="due-item '+cc+(sub?' is-sub':'')+(past?' is-past':'')+(t.due===today?' is-today':'')+'" data-edit="'+escapeHTML(t.id)+'"><span class="due-date"><small>'+d.toLocaleDateString(undefined,{weekday:'short'})+'</small><b>'+d.getDate()+'</b></span><span class="due-text"><span class="due-title">'+escapeHTML(t.title)+'</span><span class="due-meta"><span class="tag '+cc+'">'+escapeHTML(c?.name||'Course')+'</span><span class="due-state '+state[1]+'">'+state[0]+'</span></span></span></button>';
+ }).join('')+'</div>';
+}
+
+const READING_BUCKET='otc-readings';
+function normalizedReadings(raw){
+ if(!Array.isArray(raw))return [];
+ return raw.slice(0,20).filter(r=>r&&typeof r.path==='string'&&r.path&&!r.path.includes('..')).map(r=>({id:String(r.id||uniqueId()).slice(0,100),title:String(r.title||'Reading').slice(0,180),path:r.path.slice(0,300),size:Number.isFinite(r.size)?r.size:0,...(/^[0-9a-f]{64}$/.test(r.sha256||'')?{sha256:r.sha256}:{})}));
+}
+function safeLink(v){const u=String(v||'').trim().slice(0,500);return /^https?:\/\/[^\s"'<>]+$/i.test(u)?u:''}
+function normalizedFinal(raw){
+ if(!raw||typeof raw!=='object')return undefined;
+ const f=raw.file&&typeof raw.file.path==='string'&&raw.file.path&&!raw.file.path.includes('..')?{title:String(raw.file.title||'Final work').slice(0,180),path:raw.file.path.slice(0,300),size:Number.isFinite(raw.file.size)?raw.file.size:0,...(/^[0-9a-f]{64}$/.test(raw.file.sha256||'')?{sha256:raw.file.sha256}:{})}:null;
+ const link=safeLink(raw.link),note=String(raw.note||'').trim().slice(0,500);
+ if(!f&&!link&&!note)return undefined;
+ return {...(f?{file:f}:{}),...(link?{link}:{}),...(note?{note}:{})};
+}
+const checkIcon='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>';
+function finalWorkHTML(t){
+ const f=t.finalWork;if(!f)return '';
+ const parts=[];
+ if(f.file)parts.push('<button type="button" class="reading-chip final-chip" data-open-reading="'+escapeHTML(f.file.path)+'" title="Open '+escapeHTML(f.file.title)+'">'+checkIcon+'<span>'+escapeHTML(f.file.title)+'</span></button>');
+ if(f.link)parts.push('<a class="reading-chip final-chip" href="'+escapeHTML(f.link)+'" target="_blank" rel="noopener noreferrer" title="'+escapeHTML(f.link)+'">'+checkIcon+'<span>Link</span></a>');
+ if(f.note)parts.push('<span class="final-note">'+escapeHTML(f.note)+'</span>');
+ return '<div class="reading-chips final-chips"><span class="final-label">Final work</span>'+parts.join('')+'</div>';
+}
+const pdfIcon='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5"/></svg>';
+function readingsHTML(t){
+ const r=t.readings||[];if(!r.length)return '';
+ return '<div class="reading-chips">'+r.map(x=>'<button type="button" class="reading-chip" data-open-reading="'+escapeHTML(x.path)+'" title="Open '+escapeHTML(x.title)+'">'+pdfIcon+'<span>'+escapeHTML(x.title)+'</span></button>').join('')+'</div>';
+}
+async function openReading(path){
+ if(!supabaseClient||!user){alert('Sign in to open readings.');return}
+ const w=window.open('','_blank');
+ const {data,error}=await supabaseClient.storage.from(READING_BUCKET).createSignedUrl(path,600);
+ if(error||!data?.signedUrl){if(w)w.close();alert('Could not open that reading: '+(error?.message||'no link'));return}
+ if(w)w.location.href=data.signedUrl;else location.href=data.signedUrl;
+}
+function removeStoredReadings(paths){
+ if(!paths.length||!supabaseClient||!user)return;
+ supabaseClient.storage.from(READING_BUCKET).remove(paths).catch(()=>{});
+}
+// ---------- outlines and scripts (table otc_docs, owner-only) ----------
+const DOC_KINDS={outline:'Outline',script:'Video script',notes:'Notes',draft:'Draft',other:'Doc'};
+let docIndex=[],docsReady=false;
+async function loadDocs(){
+ if(!supabaseClient||!user){docIndex=[];docsReady=false;return}
+ const {data,error}=await supabaseClient.from('otc_docs').select('id,assignment_id,kind,title,author,updated_at,file_path').order('updated_at',{ascending:false});
+ if(error){docIndex=[];docsReady=false;return}
+ docIndex=data||[];docsReady=true;await loadSettings();render();if($('#task-dialog').open)renderDocList();
+}
+// ---------- Brightspace calendar (table otc_settings, owner-only) ----------
+let bsSettings=null;
+async function loadSettings(){
+ if(!supabaseClient||!user){bsSettings=null;return}
+ const {data,error}=await supabaseClient.from('otc_settings').select('brightspace_feed,last_sync').maybeSingle();
+ bsSettings=error?null:(data||{brightspace_feed:null,last_sync:null});
+}
+function bsBannerHTML(){
+ const s=bsSettings?.last_sync;if(!s)return '';
+ const ch=Array.isArray(s.changed)?s.changed:[],nw=Array.isArray(s.newItems)?s.newItems:[];
+ if(!ch.length&&!nw.length)return '';
+ const rows=ch.map(c=>'<li><b>'+escapeHTML(c.title)+'</b>: yours '+escapeHTML(showDate(c.trackerDue))+', Brightspace '+escapeHTML(showDate(c.brightspaceDue))+'</li>').concat(nw.map(n=>'<li><b>'+escapeHTML(n.title)+'</b>: new in Brightspace, due '+escapeHTML(showDate(n.brightspaceDue))+'</li>')).join('');
+ const when=s.at?new Date(s.at).toLocaleDateString(undefined,{month:'short',day:'numeric'}):'';
+ return '<div class="bs-banner" role="note"><strong>Brightspace check'+(when?' · '+escapeHTML(when):'')+'</strong><ul>'+rows+'</ul><small>Ask ChatGPT or Claude to sync Brightspace and apply the ones you want.</small></div>';
+}
+// ---------- search inside readings, outlines and final work ----------
+let matTimer=0,matSeq=0;
+function materialRefs(){
+ const m=new Map();
+ for(const t of app.tasks){for(const r of t.readings||[])m.set(r.path,{task:t,source:'Reading',title:r.title});if(t.finalWork?.file)m.set(t.finalWork.file.path,{task:t,source:'Final work',title:t.finalWork.file.title})}
+ for(const d of docIndex)if(d.file_path)m.set(d.file_path,{task:app.tasks.find(t=>t.id===d.assignment_id),source:DOC_KINDS[d.kind]||'Doc',title:d.title,docId:d.id});
+ return m;
+}
+function excerpt(body,q){const i=body.toLowerCase().indexOf(q.toLowerCase());if(i<0)return '';const a=Math.max(0,i-70),b=Math.min(body.length,i+q.length+90);const before=body.lastIndexOf('--- Page ',i);const pg=before<0?'':(body.slice(before+9).match(/^\d+/)||[''])[0];return {page:pg,text:(a?'…':'')+body.slice(a,b).replace(/--- Page \d+ ---/g,' ').replace(/\s+/g,' ').trim()+(b<body.length?'…':'')}}
+async function searchMaterials(){
+ const box=$('#material-results'),q=$('#search-tasks').value.trim().replace(/[%,()*\\]/g,' ').trim();
+ if(!supabaseClient||!user||q.length<3){box.hidden=true;box.innerHTML='';return}
+ const seq=++matSeq;
+ const [d,t]=await Promise.all([
+  supabaseClient.from('otc_docs').select('id,assignment_id,kind,title,body').or('title.ilike.%'+q+'%,body.ilike.%'+q+'%').limit(20),
+  supabaseClient.from('otc_text').select('path,body').ilike('body','%'+q+'%').limit(20)]);
+ if(seq!==matSeq)return;
+ const refs=materialRefs(),out=[];
+ for(const x of d.data||[]){const task=app.tasks.find(k=>k.id===x.assignment_id);out.push({open:'data-open-doc="'+escapeHTML(x.id)+'"',source:DOC_KINDS[x.kind]||'Doc',title:x.title,task,ex:excerpt(x.body||'',q)})}
+ for(const x of t.data||[]){const r=refs.get(x.path);if(!r)continue;out.push({open:r.docId?'data-open-doc="'+escapeHTML(r.docId)+'"':'data-open-reading="'+escapeHTML(x.path)+'"',source:r.source,title:r.title,task:r.task,ex:excerpt(x.body,q)})}
+ box.hidden=!out.length;
+ box.innerHTML=out.length?'<h3>Found in your materials <small>'+out.length+'</small></h3>'+out.map(o=>'<button type="button" class="material-hit" '+o.open+'><span class="material-src">'+escapeHTML(o.source)+(o.ex&&o.ex.page?' · p. '+escapeHTML(o.ex.page):'')+'</span><b>'+escapeHTML(o.title)+'</b>'+(o.task?'<small>'+escapeHTML(o.task.title)+'</small>':'')+(o.ex?'<span class="material-ex">'+escapeHTML(o.ex.text)+'</span>':'')+'</button>').join(''):'';
+}
+function docsFor(id){return docIndex.filter(d=>d.assignment_id===id)}
+function docsHTML(t){
+ const d=docsFor(t.id);if(!d.length)return '';
+ return '<div class="reading-chips doc-chips">'+d.map(x=>'<button type="button" class="reading-chip doc-chip" data-open-doc="'+escapeHTML(x.id)+'" title="Open '+escapeHTML(x.title)+'"><b>'+escapeHTML(DOC_KINDS[x.kind]||'Doc')+'</b><span>'+escapeHTML(x.title)+'</span></button>').join('')+'</div>';
+}
+function renderDocList(msg){
+ const id=$('#task-id').value,off=!supabaseClient||!user;
+ const list=id?docsFor(id):[];
+ $('#doc-list').innerHTML=list.map(x=>'<div class="reading-row"><button type="button" class="reading-chip doc-chip" data-open-doc="'+escapeHTML(x.id)+'"><b>'+escapeHTML(DOC_KINDS[x.kind]||'Doc')+'</b><span>'+escapeHTML(x.title)+'</span></button><small>'+escapeHTML(x.author==='kody'?'':'by '+(x.author==='chatgpt'?'ChatGPT':'Claude')+' · ')+escapeHTML(showDate(String(x.updated_at).slice(0,10)))+'</small><button type="button" class="btn small" data-edit-doc="'+escapeHTML(x.id)+'">Edit</button></div>').join('')||'<p class="reading-empty">None yet.</p>';
+ $('#doc-new').disabled=off||!id;
+ $('#doc-status').textContent=msg!==undefined?msg:off?'Sign in to save outlines and scripts.':!id?'Save the assignment first.':!docsReady?'Run the outlines SQL in Supabase to turn this on.':'';
+}
+let docFile=null,docFileOld=null,docUploads=new Set(),docSaved=false;
+function renderDocFile(msg){
+ $('#doc-file').innerHTML=docFile?'<div class="reading-row"><button type="button" class="reading-chip" data-open-reading="'+escapeHTML(docFile.path)+'">'+pdfIcon+'<span>'+escapeHTML(docFile.name||'PDF')+'</span></button><small>'+(docFile.size?Math.max(1,Math.round(docFile.size/1024))+' KB':'')+'</small><button type="button" class="x" id="doc-file-remove" aria-label="Remove PDF" title="Remove">×</button></div>'
+  :'<div class="step-editor-actions"><label class="btn" id="doc-file-add"><input type="file" id="doc-file-input" accept="application/pdf,.pdf" hidden>+ Attach PDF</label><span class="reading-status" role="status" aria-live="polite">'+escapeHTML(msg||'')+'</span></div>';
+}
+async function uploadDocFile(f){
+ const taskId=$('#doc-task').value;if(!f||!supabaseClient||!user||!taskId)return;
+ if(f.type!=='application/pdf'&&!/\.pdf$/i.test(f.name)){renderDocFile(f.name+' is not a PDF.');return}
+ if(f.size>50*1024*1024){renderDocFile(f.name+' is over 50 MB.');return}
+ renderDocFile('Uploading '+f.name+'…');
+ let sha256='';try{sha256=[...new Uint8Array(await crypto.subtle.digest('SHA-256',await f.arrayBuffer()))].map(b=>b.toString(16).padStart(2,'0')).join('')}catch(e){}
+ const safe=f.name.replace(/\.pdf$/i,'').replace(/[^A-Za-z0-9._-]+/g,'-').slice(0,80)||'doc';
+ const path=user.id+'/'+taskId+'/doc-'+uniqueId().slice(0,8)+'-'+safe+'.pdf';
+ const {error}=await supabaseClient.storage.from(READING_BUCKET).upload(path,f,{contentType:'application/pdf',upsert:false});
+ if(error){renderDocFile('Upload failed: '+error.message);return}
+ docUploads.add(path);docFile={path,size:f.size,sha256,name:f.name.replace(/\.pdf$/i,'')};
+ if(!$('#doc-title').value.trim())$('#doc-title').value=docFile.name.slice(0,200);
+ renderDocFile();
+}
+async function openDoc(docId,taskId){
+ if(!supabaseClient||!user){alert('Sign in to open outlines and scripts.');return}
+ $('#doc-form').reset();docFile=null;docFileOld=null;docUploads=new Set();docSaved=false;$('#doc-id').value=docId||'';$('#doc-task').value=taskId||'';$('#doc-delete').hidden=!docId;$('#doc-meta').textContent='';
+ if(docId){
+  const {data,error}=await supabaseClient.from('otc_docs').select('*').eq('id',docId).maybeSingle();
+  if(error||!data){alert('Could not open it: '+(error?.message||'not found'));return}
+  $('#doc-task').value=data.assignment_id;$('#doc-title').value=data.title;if(data.file_path){docFile={path:data.file_path,size:data.file_size||0,sha256:data.file_sha256||'',name:data.title};docFileOld=data.file_path}$('#doc-kind').value=data.kind;$('#doc-body').value=data.body;
+  $('#doc-meta').textContent='Last saved '+new Date(data.updated_at).toLocaleString()+(data.author==='kody'?'':' by '+(data.author==='chatgpt'?'ChatGPT':'Claude'));
+ }
+ renderDocFile();$('#doc-heading').textContent=docId?(DOC_KINDS[$('#doc-kind').value]||'Doc'):'New outline or script';
+ $('#doc-dialog').showModal();
+}
+let draftReadings=[],draftNew=new Set(),draftRemoved=[],dialogSaved=false,draftFinal=null;
+function renderDraftFinal(msg){
+ const off=!supabaseClient||!user;
+ $('#final-file').innerHTML=draftFinal?'<div class="reading-row"><button type="button" class="reading-chip final-chip" data-open-reading="'+escapeHTML(draftFinal.path)+'">'+checkIcon+'<span>'+escapeHTML(draftFinal.title)+'</span></button><small>'+(draftFinal.size?Math.max(1,Math.round(draftFinal.size/1024))+' KB':'')+'</small><button type="button" class="x" id="final-remove" aria-label="Remove final work file" title="Remove">×</button></div>'
+  :'<div class="step-editor-actions"><label class="btn'+(off?' disabled':'')+'" id="final-add"><input type="file" id="final-input" accept="application/pdf,.pdf" hidden'+(off?' disabled':'')+'>+ Attach finished PDF</label><span class="reading-status" role="status" aria-live="polite">'+escapeHTML(msg!==undefined?msg:off?'Sign in to attach PDFs.':'')+'</span></div>';
+}
+async function uploadFinal(f){
+ const taskId=$('#task-id').value||$('#task-form').dataset.newId;
+ if(!f||!supabaseClient||!user||!taskId)return;
+ if(f.type!=='application/pdf'&&!/\.pdf$/i.test(f.name)){renderDraftFinal(f.name+' is not a PDF. Save it as a PDF first.');return}
+ if(f.size>50*1024*1024){renderDraftFinal(f.name+' is over 50 MB.');return}
+ renderDraftFinal('Uploading '+f.name+'…');
+ let sha256='';
+ try{sha256=[...new Uint8Array(await crypto.subtle.digest('SHA-256',await f.arrayBuffer()))].map(b=>b.toString(16).padStart(2,'0')).join('')}catch(e){}
+ const safe=f.name.replace(/\.pdf$/i,'').replace(/[^A-Za-z0-9._-]+/g,'-').slice(0,80)||'final';
+ const path=user.id+'/'+taskId+'/final-'+uniqueId().slice(0,8)+'-'+safe+'.pdf';
+ const {error}=await supabaseClient.storage.from(READING_BUCKET).upload(path,f,{contentType:'application/pdf',upsert:false});
+ if(error){renderDraftFinal('Upload failed: '+error.message);return}
+ draftNew.add(path);
+ draftFinal={title:f.name.replace(/\.pdf$/i,'').slice(0,180),path,size:f.size,...(sha256?{sha256}:{})};
+ renderDraftFinal();
+}
+function renderDraftReadings(msg){
+ $('#reading-list').innerHTML=draftReadings.map(r=>'<div class="reading-row"><button type="button" class="reading-chip" data-open-reading="'+escapeHTML(r.path)+'">'+pdfIcon+'<span>'+escapeHTML(r.title)+'</span></button><small>'+(r.size?Math.max(1,Math.round(r.size/1024))+' KB':'')+'</small><button type="button" class="x" data-remove-reading="'+escapeHTML(r.id)+'" aria-label="Remove '+escapeHTML(r.title)+'" title="Remove">×</button></div>').join('')||'<p class="reading-empty">No readings attached.</p>';
+ const off=!supabaseClient||!user;
+ $('#reading-file').disabled=off;$('#reading-add').classList.toggle('disabled',off);
+ $('#reading-status').textContent=msg!==undefined?msg:off?'Sign in to attach PDFs.':'';
+}
+async function uploadReadings(files){
+ const taskId=$('#task-id').value||$('#task-form').dataset.newId;
+ if(!supabaseClient||!user||!taskId)return;
+ for(const f of files){
+  if(draftReadings.length>=20){renderDraftReadings('An assignment holds at most 20 readings.');break}
+  if(f.type!=='application/pdf'&&!/\.pdf$/i.test(f.name)){renderDraftReadings(f.name+' is not a PDF.');continue}
+  if(f.size>50*1024*1024){renderDraftReadings(f.name+' is over 50 MB.');continue}
+  let sha256='';
+  try{sha256=[...new Uint8Array(await crypto.subtle.digest('SHA-256',await f.arrayBuffer()))].map(b=>b.toString(16).padStart(2,'0')).join('')}catch(e){}
+  const dup=sha256&&draftReadings.find(r=>r.sha256===sha256);
+  if(dup){renderDraftReadings(f.name+' is already attached as \u201c'+dup.title+'\u201d.');continue}
+  renderDraftReadings('Uploading '+f.name+'…');
+  const safe=f.name.replace(/\.pdf$/i,'').replace(/[^A-Za-z0-9._-]+/g,'-').slice(0,80)||'reading';
+  const path=user.id+'/'+taskId+'/'+uniqueId().slice(0,8)+'-'+safe+'.pdf';
+  const {error}=await supabaseClient.storage.from(READING_BUCKET).upload(path,f,{contentType:'application/pdf',upsert:false});
+  if(error){renderDraftReadings(/bucket/i.test(error.message)?'Readings storage isn\u2019t set up yet. Run the readings SQL in Supabase first.':'Upload failed: '+error.message);return}
+  draftNew.add(path);
+  draftReadings.push({id:uniqueId(),title:f.name.replace(/\.pdf$/i,'').slice(0,180),path,size:f.size,...(sha256?{sha256}:{})});
+ }
+ renderDraftReadings();
+}
+function isHandled(t){return t.submission==='submitted'||(t.submissionRequired===false&&t.status==='done')}
+function needsSubmitting(t){return t.submissionRequired!==false&&t.status==='done'&&t.submission!=='submitted'}
+function toSubmitCard(rows){
+ if(!rows.length)return '';
+ const today=dayISO();
+ return '<section class="submit-card" id="submit-card" aria-label="Finished, not submitted"><div class="catch-head"><div><h3>Finished, not submitted</h3><p>Done on your end, but not turned in yet. Submit in Brightspace, then mark it here.</p></div></div><div class="catch-rows">'+rows.map(t=>{
+  const c=course(t),cc='cc-'+courseColor(c),id=escapeHTML(t.id),dd=t.due?diffDays(t.due):null;
+  const when=!t.due?'<span class="unverified">Due date not verified</span>':dd<0?'<span class="late">Was due '+escapeHTML(showDate(t.due))+' · '+(dd===-1?'1 day':(-dd)+' days')+' ago</span>':dd===0?'<span class="soon">Due today</span>':'<span>Due '+escapeHTML(showDate(t.due))+'</span>';
+  return '<div class="catch-row submit-row '+cc+'"><div class="submit-text"><button type="button" class="submit-title" data-edit="'+id+'">'+escapeHTML(t.title)+'</button><small><span class="tag '+cc+'">'+escapeHTML(c?.name||'Course')+'</span>'+when+'</small></div><button type="button" class="catch-move sub-move" data-submit="'+id+'">I submitted it</button></div>';
+ }).join('')+'</div></section>';
+}
+function glanceHTML(week,toSubmit){
+ const today=dayISO(),plan=plannedDayEntries(today).filter(r=>r.type==='step'),left=plan.filter(r=>!r.step.done),tasksLeft=new Set(left.map(r=>r.t.id)).size;
+ const open=app.tasks.filter(t=>t.due&&t.submissionRequired!==false&&!isHandled(t));
+ const late=open.filter(t=>t.due<today&&t.status!=='done').length,dueToday=open.filter(t=>t.due===today).length,laterWeek=open.filter(t=>t.due>today&&t.due<=week.end);
+ const planV=left.length?left.length+(left.length===1?' step':' steps'):plan.length?'All done':'Nothing planned';
+ const planS=left.length?'left, across '+tasksLeft+(tasksLeft===1?' assignment':' assignments'):plan.length?plan.length+' planned steps checked off':'Plan steps on the Week page';
+ const dueV=dueToday?dueToday+' due today':laterWeek.length?laterWeek.length+' due this week':'Nothing due';
+ const dueS=[late?late+' past due':'',dueToday&&laterWeek.length?laterWeek.length+' more by '+showDate(week.end):'',!dueToday&&laterWeek.length?'next one '+dayName(laterWeek.map(t=>t.due).sort()[0]):''].filter(Boolean).join(' · ')||'Official dates only';
+ const subV=toSubmit.length?toSubmit.length+' to submit':'Nothing waiting';
+ const subS=toSubmit.length?'finished, not turned in':'Everything finished is submitted';
+ const tile=(go,label,v,sub,cls)=>'<button type="button" class="glance-tile '+cls+'" data-go="'+go+'"><span class="glance-label">'+label+'</span><b>'+escapeHTML(v)+'</b><small>'+escapeHTML(sub)+'</small></button>';
+ return tile('today-checklist','Your plan for today',planV,planS,left.length?'':'calm')+tile('due-week','Due in Brightspace',dueV,dueS,late?'bad':dueToday?'warn':laterWeek.length?'':'calm')+tile(toSubmit.length?'submit-card':'due-week','Finished, not submitted',subV,subS,toSubmit.length?'warn':'calm');
+}
+function render(){if($('#workspace').hidden)return;document.body.classList.toggle('by-class',app.prefs?.colorByClass===true);$('#today-label').textContent=new Date().toLocaleDateString(undefined,{weekday:'short',month:'short',day:'numeric',year:'numeric'});let all=app.tasks,active=sortedTasks(all.filter(t=>t.submission!=='submitted')),targets=active.filter(t=>(t.target&&diffDays(t.target)<=0&&!isDone(t))||(t.due&&diffDays(t.due)<=3)),focus=targets.length?targets.slice(0,5):active.slice(0,4);const toSubmit=sortedTasks(all.filter(needsSubmitting));focus=focus.filter(t=>!needsSubmitting(t));const openCount=active.filter(t=>!needsSubmitting(t)).length;const stepsLeftToday=plannedDayEntries(dayISO()).filter(r=>r.type==='step'&&!r.step.done).length;const todayRemaining=active.filter(t=>(t.target&&diffDays(t.target)<=0&&!isDone(t))||(t.due&&diffDays(t.due)<=0));const unknown=active.filter(t=>!t.due&&t.submissionRequired!==false).length;const currentWeek=courseWeek(),selectedWeek=courseWeek(weekOffset);const dueThisWeek=all.filter(t=>inCourseWeek(t.due,currentWeek));const totalWeek=dueThisWeek.length,doneWeek=dueThisWeek.filter(isHandled).length,pct=totalWeek?Math.round(100*doneWeek/totalWeek):0;
+const missed=missedSteps().length;const clear=all.length>0&&todayRemaining.length===0&&unknown===0&&missed===0&&toSubmit.length===0&&stepsLeftToday===0;
+$('#hero-kicker').textContent=preview?'Preview with sample assignments. Nothing here is saved.':'';
+const nToday=todayRemaining.length;$('#hero-title').textContent=clear?'You\u2019re off the clock':toSubmit.length?(toSubmit.length===1?'1 finished assignment to submit':toSubmit.length+' finished assignments to submit'):stepsLeftToday?(stepsLeftToday===1?'1 step planned for today':stepsLeftToday+' steps planned for today'):nToday?(nToday===1?'1 thing needs you today':nToday+' things need you today'):missed?(missed===1?'1 step to catch up on':missed+' steps to catch up on'):unknown?'Check the unverified dates':focus.length?'One thing at a time':'Start with one thing';
+$('#hero-caption').textContent=clear?'Nothing is overdue, nothing planned for today is left, and every assignment has a date. You can close this.':unknown&&!nToday?`${unknown} unsubmitted assignment${unknown===1?' has':'s have'} no verified due date. Check Brightspace before you call it a day.`:toSubmit.length?'Turn those in first. Then work the plan for today.':all.length?'You only need the next few, not the whole semester.':'Add your first assignment to get started.';
+$('#hero-foot').textContent=unknown&&nToday?`${unknown} assignment${unknown===1?' still needs':'s still need'} a verified due date.`:'';
+$('#hero-disc').style.setProperty('--progress',pct+'%');$('#week-progress-label').textContent=currentWeek.label;$('#progress-number').textContent=pct+'%';$('#progress-caption').textContent=totalWeek?`${doneWeek} of ${totalWeek} due this week submitted`:'Nothing due this week';
+$('#mission-count').textContent=openCount?`${focus.length} of ${openCount} open`:'';
+$('#mission-list').innerHTML=focus.length?focus.map((t,i)=>taskHTML(t,i,true)).join(''):`<div class="empty"><h3>${all.length?'All caught up':'Nothing here yet'}</h3><p>${all.length?'Everything you logged is submitted. Check Brightspace for new work.':'Add your first assignment, or import a backup from the bottom of the page.'}</p><button class="btn primary" type="button" id="empty-new">+ Add assignment</button></div>`;
+$('#course-list').innerHTML=app.courses.map((c,j)=>{const ct=all.filter(t=>t.course===c.id),done=ct.filter(isDone).length,p=ct.length?Math.round(done/ct.length*100):0;return `<div class="course-entry cc-${courseColor(c)}"><div class="course-top"><div><div class="course-name">${escapeHTML(c.name)}</div><div class="course-desc">${escapeHTML(c.description||'')}</div>${c.instructor?`<div class="course-professor">${escapeHTML(c.instructor)}</div>`:''}</div><span class="course-count">${done} of ${ct.length}</span></div><div class="track"><div class="fill" style="width:${p}%"></div></div></div>`}).join('');
+$('#today-label').textContent+=` · ${currentWeek.label}`;
+$('#mission-week-heading').textContent=currentWeek.number?currentWeek.label:'This week';
+$('#mission-week-subheading').textContent=currentWeek.dates+', Wednesday to Tuesday';
+$('#week-heading').textContent=selectedWeek.number?selectedWeek.label:(weekOffset===0?'This week':weekOffset===1?'Next week':weekOffset===-1?'Last week':'Course week');
+$('#week-subheading').textContent=selectedWeek.dates+', Wednesday to Tuesday';
+$('#week-current').disabled=weekOffset===0;
+function weekGrid(node,w){
+ node.innerHTML=Array.from({length:7},(_,i)=>{
+  const date=shiftISO(w.start,i),d=dateObj(date),due=all.filter(t=>t.due===date),rows=plannedDayEntries(date),open=rows.filter(r=>!isEntryDone(r)).length;
+  return '<div class="day '+(date===dayISO()?'today':'')+'"><div class="dow">'+d.toLocaleDateString(undefined,{weekday:'short'})+'</div><div class="dom">'+d.getDate()+'</div><div class="count '+(open?'':'none')+'">'+(rows.length?(open?open+' left':'done'):due.length?due.length+' due':'')+'</div><div class="dot '+(rows.length||due.length?'':'none')+'"></div></div>';
+ }).join('');
+}
+weekGrid($('#week-strip'),currentWeek);
+weekGrid($('#week-strip-full'),selectedWeek);
+$('#glance').innerHTML=glanceHTML(currentWeek,toSubmit);
+$('#today-checklist').innerHTML=toSubmitCard(toSubmit)+catchUpCard()+plannedDayCard(dayISO(),currentWeek,true);
+$('#due-week').innerHTML=bsBannerHTML()+dueWeekHTML(currentWeek);{const open=dueThisWeek.filter(t=>t.submissionRequired!==false&&t.submission!=='submitted').length;$('#due-week-count').textContent=currentWeek.number?currentWeek.label:'This week'}
+$('#week-list').innerHTML=Array.from({length:7},(_,i)=>plannedDayCard(shiftISO(selectedWeek.start,i),selectedWeek)).join('')+unscheduledStepsCard();
+const q=$('#search-tasks').value.toLowerCase().trim();let filtered=sortedTasks(all.filter(t=>!q||t.title.toLowerCase().includes(q)||course(t)?.name.toLowerCase().includes(q)||t.notes.toLowerCase().includes(q)));filtered=filtered.filter(t=>!isHandled(t)).concat(filtered.filter(isHandled));if(filter==='active')filtered=filtered.filter(t=>!isDone(t));else if(filter==='done')filtered=filtered.filter(t=>isDone(t));else if(filter==='submitted')filtered=filtered.filter(t=>t.submission==='submitted');
+$('#task-list').innerHTML=filtered.map((t,i)=>taskHTML(t,i,true)).join('')||`<div class="empty"><h3>Nothing matches</h3><p>Try another filter or search.</p></div>`;
+}
+function addEditorStep(step={}){
+ const id=String(step.id||uniqueId()).slice(0,100);
+ const row=document.createElement('div');
+ row.className='step-editor-row';row.dataset.stepId=id;
+ row.innerHTML=`<input type="checkbox" data-editor-done aria-label="Step completed" ${step.done?'checked':''}><input type="text" data-editor-text maxlength="180" placeholder="What needs to be done?" value="${escapeHTML(step.text||'')}" aria-label="Step description"><input type="date" data-editor-date aria-label="Planned date for step" value="${escapeHTML(step.planDate!==undefined?step.planDate:($('#task-target').value||$('#task-due').value||''))}"><button type="button" data-remove-step aria-label="Remove step" title="Remove step">×</button>`;
+ $('#task-step-editor').appendChild(row);
+ $('#task-status').disabled=true;
+ return row;
+}
+function updateEditorStatusControl(){
+ const hasSteps=!!$('#task-step-editor .step-editor-row');
+ $('#task-status').disabled=hasSteps;
+ $('#task-submission-field').hidden=!$('#task-submission-required').checked;
+}
+$('#add-step').onclick=()=>{if($$('#task-step-editor .step-editor-row').length>=32){alert('Limit of 32 steps per assignment.');return}const row=addEditorStep();row.querySelector('[data-editor-text]').focus();};
+$('#task-step-editor').addEventListener('click',e=>{
+ const button=e.target.closest('[data-remove-step]');if(!button)return;
+ button.closest('.step-editor-row').remove();updateEditorStatusControl();
+});
+$$('[data-step-template]').forEach(button=>button.addEventListener('click',()=>{
+ const labels=taskTemplates[button.dataset.stepTemplate]||[];
+ const existing=$$('#task-step-editor .step-editor-row');
+ if(existing.length&& !confirm('Add these steps to your existing checklist?'))return;
+ labels.slice(0,Math.max(0,32-existing.length)).forEach(text=>addEditorStep({text,done:false}));
+ updateEditorStatusControl();
+}));
+$('#task-submission-required').onchange=updateEditorStatusControl;
+function openTask(id){
+ const t=id?app.tasks.find(x=>x.id===id):null;
+ $('#form-title').textContent=t?'Edit assignment':'New assignment';
+ $('#task-id').value=t?.id||'';
+ $('#task-form').dataset.newId=t?'':uniqueId();
+ draftReadings=(t?.readings||[]).map(r=>({...r}));draftNew=new Set();draftRemoved=[];dialogSaved=false;renderDraftReadings();
+ draftFinal=t?.finalWork?.file?{...t.finalWork.file}:null;renderDraftFinal();renderDocList();$('#final-link').value=t?.finalWork?.link||'';$('#final-note').value=t?.finalWork?.note||'';
+ $('#task-title').value=t?.title||'';
+ $('#task-course').innerHTML=app.courses.map(c=>`<option value="${escapeHTML(c.id)}">${escapeHTML(c.name)}</option>`).join('');
+ $('#task-course').value=t?.course||app.courses[0].id;
+ $('#task-due').value=t?.due||'';
+ $('#task-target').value=t?.target||'';
+ $('#task-status').value=t?.status||'todo';
+ $('#task-submission').value=t?.submission||'unconfirmed';
+ $('#task-notes').value=t?.notes||'';
+ $('#task-submission-required').checked=t?.submissionRequired!==false;
+ $('#task-step-editor').replaceChildren();
+ (t?.checklist||[]).forEach(addEditorStep);
+ updateEditorStatusControl();
+ $('#delete-task').hidden=!t;
+ $('#task-dialog').showModal();$('#task-title').focus();
+}
+function makeChange(){render();persist()}
+function handleTaskClick(e){
+ const el=e.target.closest('[data-complete],[data-submit],[data-edit]');
+ if(!el)return;
+ const id=el.dataset.complete||el.dataset.submit||el.dataset.edit;
+ if(el.dataset.edit){openTask(id);return}
+ const t=app.tasks.find(x=>x.id===id);if(!t)return;
+ if(el.dataset.complete){
+   if(isDone(t)){t.status='todo';t.submission='unconfirmed'}
+   else t.status='done';
+ } else if(el.dataset.submit){
+   t.submission=t.submission==='submitted'?'unconfirmed':'submitted';
+   if(t.submission==='submitted')t.status='done';
+   else if((t.checklist||[]).length)updateStatusFromSteps(t);
+ }
+ makeChange();
+}
+document.addEventListener('toggle',e=>{
+ if(e.target?.matches?.('details[data-checklist]')){
+   const id=e.target.dataset.checklist;
+   if(e.target.open)openChecklistIds.add(id);else openChecklistIds.delete(id);
+ }
+},true);
+function handleStepToggle(e){
+ const input=e.target;
+ if(!input.matches('[data-step-task],[data-submit-check]'))return;
+ const taskId=input.dataset.stepTask||input.dataset.submitCheck;
+ const t=app.tasks.find(x=>x.id===taskId);if(!t)return;
+ openChecklistIds.add(t.id);
+ if(input.dataset.stepId){
+   const step=(t.checklist||[]).find(x=>x.id===input.dataset.stepId);
+   if(!step)return;
+   step.done=input.checked;
+   updateStatusFromSteps(t);
+ }else{
+   if(t.submissionRequired===false)return;
+   t.submission=input.checked?'submitted':'unconfirmed';
+   updateStatusFromSteps(t);
+ }
+ makeChange();
+}
+$$('#mission-list,#task-list,#week-list,#today-checklist').forEach(el=>{
+ el.addEventListener('click',handleTaskClick);
+ el.addEventListener('change',e=>{
+  if(e.target.matches('[data-replan-task]')){
+   const t=app.tasks.find(x=>x.id===e.target.dataset.replanTask);
+   const step=(t?.checklist||[]).find(x=>x.id===e.target.dataset.replanStep);
+   if(step){step.planDate=e.target.value||'';makeChange()}
+  }else handleStepToggle(e);
+ });
+});$('#mission-list').addEventListener('click',e=>{if(e.target.closest('#empty-new'))openTask()});
+$('#due-week').addEventListener('click',handleTaskClick);
+$('#glance').addEventListener('click',e=>{const b=e.target.closest('[data-go]');const el=b&&document.getElementById(b.dataset.go);if(el)el.scrollIntoView({behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth',block:'start'})});
+$('#today-checklist').addEventListener('click',e=>{
+ const one=e.target.closest('[data-catchup-to]'),all=e.target.closest('[data-catchup-all]');
+ if(!one&&!all)return;
+ const moves=all?catchUpPlan().filter(p=>p.to).map(p=>({t:p.t,step:p.step,to:p.to})):[{t:app.tasks.find(x=>x.id===one.dataset.catchupTask),to:one.dataset.catchupTo,stepId:one.dataset.catchupStep}];
+ let n=0;for(const m of moves){const step=m.step||(m.t?.checklist||[]).find(x=>x.id===m.stepId);if(step&&!step.done&&/^\d{4}-\d{2}-\d{2}$/.test(m.to)){step.planDate=m.to;n++}}
+ if(n)makeChange();
+});
+$('#task-form').addEventListener('submit',e=>{
+ e.preventDefault();
+ const id=$('#task-id').value||$('#task-form').dataset.newId||uniqueId(),old=app.tasks.find(x=>x.id===id);
+ const checklist=$$('#task-step-editor .step-editor-row').map(row=>({id:row.dataset.stepId||uniqueId(),text:row.querySelector('[data-editor-text]').value.trim().slice(0,180),done:row.querySelector('[data-editor-done]').checked,planDate:row.querySelector('[data-editor-date]').value||''})).filter(s=>s.text);
+ const t={id,course:$('#task-course').value,title:$('#task-title').value.trim(),due:$('#task-due').value,target:$('#task-target').value,status:$('#task-status').value,submission:$('#task-submission').value,notes:$('#task-notes').value.trim(),checklist,submissionRequired:$('#task-submission-required').checked,readings:draftReadings.map(r=>({...r})),finalWork:normalizedFinal({file:draftFinal,link:$('#final-link').value,note:$('#final-note').value})};
+ if(!t.title)return;
+ if(!t.submissionRequired)t.submission='unconfirmed';
+ updateStatusFromSteps(t);
+ if(t.submission==='submitted')t.status='done';
+ if(old)Object.assign(old,t);else app.tasks.push(t);
+ dialogSaved=true;removeStoredReadings(draftRemoved);draftNew=new Set();draftRemoved=[];
+ $('#task-dialog').close();makeChange();
+});
+$('#delete-task').addEventListener('click',()=>{const id=$('#task-id').value;if(!id)return;if(!confirm('Delete this assignment? This also deletes it from your synced dashboard.'))return;const gone=app.tasks.find(t=>t.id===id);dialogSaved=true;removeStoredReadings([...(gone?.readings||[]).map(r=>r.path),...(gone?.finalWork?.file?[gone.finalWork.file.path]:[]),...draftNew]);draftNew=new Set();if(supabaseClient&&user&&docsFor(id).length){removeStoredReadings(docsFor(id).map(d=>d.file_path).filter(Boolean));supabaseClient.from('otc_docs').delete().eq('assignment_id',id).then(()=>loadDocs())}app.tasks=app.tasks.filter(t=>t.id!==id);$('#task-dialog').close();makeChange()});
+$('#cancel-task').onclick=$('#close-task').onclick=()=>$('#task-dialog').close();
+$('#task-dialog').addEventListener('close',()=>{if(!dialogSaved&&draftNew.size)removeStoredReadings([...draftNew]);draftNew=new Set();draftRemoved=[]});
+$('#final-file').addEventListener('change',e=>{if(e.target.id!=='final-input')return;const f=e.target.files?.[0];e.target.value='';uploadFinal(f)});
+$('#final-file').addEventListener('click',e=>{if(!e.target.closest('#final-remove')||!draftFinal)return;const p=draftFinal.path;draftFinal=null;if(draftNew.has(p)){draftNew.delete(p);removeStoredReadings([p])}else draftRemoved.push(p);renderDraftFinal('Removed. Save to keep this change.')});
+$('#reading-file').addEventListener('change',e=>{const files=Array.from(e.target.files||[]);e.target.value='';uploadReadings(files)});
+$('#reading-list').addEventListener('click',e=>{const b=e.target.closest('[data-remove-reading]');if(!b)return;const r=draftReadings.find(x=>x.id===b.dataset.removeReading);if(!r)return;draftReadings=draftReadings.filter(x=>x!==r);if(draftNew.has(r.path)){draftNew.delete(r.path);removeStoredReadings([r.path])}else draftRemoved.push(r.path);renderDraftReadings('Removed. Save to keep this change.')});
+document.addEventListener('click',e=>{const b=e.target.closest('[data-open-doc],[data-edit-doc]');if(!b)return;e.preventDefault();e.stopPropagation();if(b.dataset.editDoc){openDoc(b.dataset.editDoc);return}const d=docIndex.find(x=>x.id===b.dataset.openDoc);if(d?.file_path)openReading(d.file_path);else openDoc(b.dataset.openDoc)},true);
+$('#doc-file').addEventListener('change',e=>{if(e.target.id!=='doc-file-input')return;const f=e.target.files?.[0];e.target.value='';uploadDocFile(f)});
+$('#doc-file').addEventListener('click',e=>{if(!e.target.closest('#doc-file-remove')||!docFile)return;if(docUploads.has(docFile.path)){docUploads.delete(docFile.path);removeStoredReadings([docFile.path])}docFile=null;renderDocFile('Removed. Save to keep this change.')});
+$('#doc-dialog').addEventListener('close',()=>{if(!docSaved&&docUploads.size)removeStoredReadings([...docUploads]);docUploads=new Set()});
+$('#doc-new').onclick=()=>openDoc('',$('#task-id').value);
+$('#doc-cancel').onclick=$('#close-doc').onclick=()=>$('#doc-dialog').close();
+$('#doc-copy').onclick=async()=>{try{await navigator.clipboard.writeText($('#doc-body').value);$('#doc-meta').textContent='Copied.'}catch(e){$('#doc-body').select()}};
+$('#doc-kind').onchange=()=>{if($('#doc-id').value)$('#doc-heading').textContent=DOC_KINDS[$('#doc-kind').value]||'Doc'};
+$('#doc-form').addEventListener('submit',async e=>{e.preventDefault();
+ const id=$('#doc-id').value,row={title:$('#doc-title').value.trim().slice(0,200),kind:$('#doc-kind').value,body:$('#doc-body').value.slice(0,200000),file_path:docFile?.path||null,file_size:docFile?.size||null,file_sha256:/^[0-9a-f]{64}$/.test(docFile?.sha256||'')?docFile.sha256:null};
+ if(!row.title)return;
+ if(!row.body.trim()&&!row.file_path){$('#doc-meta').textContent='Attach a PDF or add some text.';return}
+ const q=id?supabaseClient.from('otc_docs').update(row).eq('id',id):supabaseClient.from('otc_docs').insert({...row,assignment_id:$('#doc-task').value,author:'kody'});
+ const {error}=await q;if(error){$('#doc-meta').textContent='Could not save: '+(/otc_docs|relation|schema cache/i.test(error.message)?'run the outlines SQL in Supabase first.':error.message);return}
+ docSaved=true;if(docFileOld&&docFileOld!==row.file_path)removeStoredReadings([docFileOld]);$('#doc-dialog').close();await loadDocs();renderDocList('Saved.');
+});
+$('#doc-delete').onclick=async()=>{const id=$('#doc-id').value;if(!id||!confirm('Delete this for good?'))return;const {error}=await supabaseClient.from('otc_docs').delete().eq('id',id);if(error){$('#doc-meta').textContent='Could not delete: '+error.message;return}removeStoredReadings([docFileOld,...docUploads].filter(Boolean));docUploads=new Set();docSaved=true;$('#doc-dialog').close();await loadDocs();renderDocList('Deleted.')};
+document.addEventListener('click',e=>{const b=e.target.closest('[data-open-reading]');if(!b)return;e.preventDefault();e.stopPropagation();openReading(b.dataset.openReading)},true);
+$('#edit-courses').onclick=()=>{$('#bs-feed').value=bsSettings?.brightspace_feed||'';$('#bs-status').textContent=!supabaseClient||!user?'Sign in to connect Brightspace.':bsSettings?.last_sync?.at?'Last checked '+new Date(bsSettings.last_sync.at).toLocaleString():'';$('#course-a').value=app.courses[0]?.name||'';$('#course-a-description').value=app.courses[0]?.description||'';$('#course-a-instructor').value=app.courses[0]?.instructor||'';$('#course-b').value=app.courses[1]?.name||'';$('#course-b-description').value=app.courses[1]?.description||'';$('#course-b-instructor').value=app.courses[1]?.instructor||'';['a','b'].forEach((k,j)=>{const v=courseColor(app.courses[j]);$$('[name="course-'+k+'-color"]').forEach(x=>x.checked=x.value===v)});$('#color-by-class').checked=app.prefs?.colorByClass===true;$('#course-dialog').showModal()};$('#close-courses').onclick=()=>$('#course-dialog').close();
+$('#bs-save').onclick=async()=>{
+ if(!supabaseClient||!user){$('#bs-status').textContent='Sign in first.';return}
+ const v=$('#bs-feed').value.trim().replace(/^webcal:/i,'https:');
+ if(v&&!/^https:\/\/\S+$/i.test(v)){$('#bs-status').textContent='That doesn\u2019t look like a link.';return}
+ const {error}=await supabaseClient.from('otc_settings').upsert({user_id:user.id,brightspace_feed:v||null});
+ $('#bs-status').textContent=error?(/otc_settings|relation|schema cache/i.test(error.message)?'Run the Brightspace SQL in Supabase first.':'Could not save: '+error.message):v?'Saved. It will be checked tomorrow morning, or ask ChatGPT or Claude to sync Brightspace now.':'Link removed.';
+ if(!error)await loadSettings();
+};
+$('#course-form').addEventListener('submit',e=>{e.preventDefault();app.courses[0].name=$('#course-a').value.trim();app.courses[0].description=$('#course-a-description').value.trim();app.courses[0].instructor=$('#course-a-instructor').value.trim();app.courses[1].name=$('#course-b').value.trim();app.courses[1].description=$('#course-b-description').value.trim();app.courses[1].instructor=$('#course-b-instructor').value.trim();['a','b'].forEach((k,j)=>{const v=$('[name="course-'+k+'-color"]:checked')?.value;if(COURSE_COLORS.includes(v))app.courses[j].color=v});app.prefs={...(app.prefs||{}),colorByClass:$('#color-by-class').checked};$('#course-dialog').close();makeChange()});
+$$('.navbtn').forEach(x=>x.addEventListener('click',()=>showView(x.dataset.view)));
+$$('#new-task-top,#new-task-list,#week-new').forEach(x=>x.onclick=()=>openTask());
+$('#hero-action').onclick=$('#see-all').onclick=()=>showView('tasks');
+$('#see-week').onclick=()=>{weekOffset=0;showView('week')};
+$('#week-prev').onclick=()=>{weekOffset=Math.max(-52,weekOffset-1);render()};
+$('#week-next').onclick=()=>{weekOffset=Math.min(52,weekOffset+1);render()};
+$('#week-current').onclick=()=>{weekOffset=0;render()};
+$('#status-filters').onclick=e=>{const btn=e.target.closest('[data-filter]');if(!btn)return;filter=btn.dataset.filter;$$('#status-filters .filter').forEach(x=>x.classList.toggle('active',x===btn));render()};$('#search-tasks').oninput=()=>{render();clearTimeout(matTimer);matTimer=setTimeout(searchMaterials,300)};$('#search-tasks').addEventListener('search',render);
+function showApp(){setWorkspace(true);window.scrollTo({top:0,behavior:'instant'});$('#account-btn').textContent=preview?'Close preview':'Sign out';render()}
+$('#account-btn').onclick=async()=>{if(preview){preview=false;app=emptyData();setWorkspace(false);setSync('Not signed in');return}if(supabaseClient){if((dirty||saving)&&!confirm('Unsaved edits exist. Export a backup before signing out. Sign out anyway?'))return;await supabaseClient.auth.signOut();user=null;app=emptyData();dirty=false;remoteRevision=null;conflict=false;syncControls();setWorkspace(false);setSync('Signed out')} };
+$('#preview-btn').onclick=()=>{preview=true;app=demoData();setSync('Preview, not saved');showApp()};
+async function loadRemote(force=false){
+  if(!supabaseClient||!user)return false;
+  if((dirty||saving||$('#task-dialog').open||$('#course-dialog').open)&&!force)return false; // Never overwrite unsaved local edits.
+  setSync('Loading…');
+  const {data,error}=await supabaseClient.from('grad_profiles').select('data,revision,updated_at').eq('user_id',user.id).maybeSingle();
+  if(error){setSync("Couldn't load",'bad');alert('Could not load your synced tasks: '+error.message);return false}
+  app=normalized(data?.data||emptyData());remoteRevision=data?.revision??null;
+  dirty=false;conflict=false;syncControls();setSync('Saved','good');render();loadDocs();return true;
+}
+async function persist(){
+  if(preview){setSync('Preview, not saved');return}
+  if(!supabaseClient||!user){setSync('Not signed in','bad');return}
+  dirty=true;
+  if(saving||conflict)return;
+  saving=true;
+  try {
+    while(dirty&&!conflict){
+      dirty=false;
+      setSync('Saving…');
+      const snapshot=structuredClone(app);
+      const resp=remoteRevision===null
+        ? await supabaseClient.from('grad_profiles').insert({user_id:user.id,data:snapshot}).select('revision').maybeSingle()
+        : await supabaseClient.from('grad_profiles').update({data:snapshot}).eq('user_id',user.id).eq('revision',remoteRevision).select('revision').maybeSingle();
+      if(resp.error){
+        dirty=true;
+        if(resp.error.code==='23505'){
+          conflict=true;syncControls('conflict');setSync('Changed on another device','bad');
+          alert('Another device saved a new copy first. Export this tab as a backup, then choose Load saved copy to see the latest version. Nothing was overwritten.');
+        }else{
+          syncControls('retry');setSync("Didn't save",'bad');
+          alert('Your change was not saved to the cloud. Keep this tab open, then press Try again. '+resp.error.message);
+        }
+        break;
+      }
+      if(!resp.data){ // An update matched no row: another device has moved the version forward.
+        dirty=true;conflict=true;syncControls('conflict');setSync('Changed on another device','bad');
+        alert('A newer copy exists on another device. Export this tab as a backup before reloading the cloud copy. Your changes were NOT overwritten.');
+        break;
+      }
+      remoteRevision=resp.data.revision;
+    }
+    if(!dirty&&!conflict){syncControls();setSync('Saved','good')}
+  } finally {saving=false}
+}
+$('#retry-save').onclick=()=>{if(dirty&&!conflict)persist()};
+$('#reload-cloud').onclick=async()=>{
+  if(!confirm('Reload the cloud version? This discards unsaved changes on this device. Export a backup first if you want to keep them.'))return;
+  dirty=false;conflict=false;await loadRemote(true);
+};
+window.addEventListener('beforeunload',e=>{if(!preview&&(dirty||saving)){e.preventDefault();e.returnValue=''}});
+function exportData(){const blob=new Blob([JSON.stringify({...app,exportedAt:new Date().toISOString()},null,2)],{type:'application/json'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='off-the-clock-private-backup-'+dayISO()+'.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),3000)}$('#export-data').onclick=exportData;
+$('#import-data').onclick=()=>$('#import-file').click();$('#import-file').addEventListener('change',async e=>{const f=e.target.files?.[0];e.target.value='';if(!f)return;try{const data=JSON.parse(await f.text());if(!Array.isArray(data.tasks))throw new Error('No tasks array in the file');if(app.tasks.length&&!confirm('Import will replace your existing task list on this account. Continue?'))return;app=normalized(data);makeChange();alert(`Imported ${app.tasks.length} tasks. ${preview?'This is a preview; nothing was synced.':'Saving them to your private cloud account.'}`)}catch(err){alert('Could not import backup: '+err.message)}});
+async function signedIn(session){if(!session?.user)return;user=session.user;preview=false;const loaded=await loadRemote();if(loaded)showApp();else setWorkspace(false)}
+// Remember the callback before the SDK has a chance to clear the one-time URL fragment.
+const authArrivalHash = new URLSearchParams(location.hash.replace(/^#/, ''));
+const authArrivalQuery = new URLSearchParams(location.search);
+async function recoverRedirectSession(){
+  const access_token=authArrivalHash.get('access_token'),refresh_token=authArrivalHash.get('refresh_token');
+  if(access_token&&refresh_token){
+    const {data,error}=await supabaseClient.auth.setSession({access_token,refresh_token});
+    if(error)throw error;
+    return data?.session||null;
+  }
+  const code=authArrivalQuery.get('code');
+  if(code){
+    const {data,error}=await supabaseClient.auth.exchangeCodeForSession(code);
+    if(error)throw error;
+    return data?.session||null;
+  }
+  return null;
+}
+function callbackFailureMessage(){
+  const message=authArrivalHash.get('error_description')||authArrivalQuery.get('error_description');
+  const code=authArrivalHash.get('error_code')||authArrivalQuery.get('error_code');
+  return message|| (code?'Sign-in link error: '+code:'');
+}
+async function boot(){
+  if(!IS_CONFIGURED){$('#preview-option').hidden=false;setFeedback('Preview mode only: no cloud database is connected.','');setSync('Cloud not set up');return}
+  if(!window.supabase?.createClient){setFeedback('Could not load the sign-in library. Check your internet connection and reload.','error');setSync("Sign-in didn't load",'bad');return}
+  try{
+    supabaseClient=window.supabase.createClient(CONFIG.supabaseUrl,CONFIG.supabaseKey,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});
+    let {data,error}=await supabaseClient.auth.getSession();
+    if(error)throw error;
+    let session=data?.session||null;
+    if(!session)session=await recoverRedirectSession();
+    if(session){
+      await signedIn(session);
+      if($('#workspace').hidden)setFeedback('Your link signed you in, but your private assignments could not be loaded. Refresh or contact support.','error');
+    }else{
+      const failure=callbackFailureMessage();
+      if(failure){setFeedback('This sign-in link could not be used: '+failure+'. Request a fresh link.','error');setSync('Link problem','bad')}
+      else if(authArrivalHash.has('access_token')||authArrivalQuery.has('code')){setFeedback('Returned from Supabase, but no session was established. Check your redirect settings and request a new link.','error');setSync('Not signed in','bad')}
+      else setSync('Ready to sign in');
+    }
+    supabaseClient.auth.onAuthStateChange((event,session)=>{
+      if(event==='SIGNED_OUT'){user=null;app=emptyData();dirty=false;remoteRevision=null;conflict=false;syncControls();setWorkspace(false);setSync('Signed out')}
+      else if(event==='SIGNED_IN'&&session&&!user)setTimeout(()=>signedIn(session),0);
+    });
+  }catch(e){setFeedback('Sign-in setup error: '+e.message+'. If you just followed an email link, verify that the Supabase Site URL and Redirect URLs point to https://spitzmath.com/grad-school/','error');setSync('Sign-in problem','bad')}
+}
+$('#github-login-btn').addEventListener('click',async()=>{
+  if(!supabaseClient){setFeedback('Sign-in is not ready. Refresh this page.','error');return}
+  const button=$('#github-login-btn');
+  button.disabled=true;
+  setFeedback('Opening secure GitHub sign-in…');
+  try{
+    const {error}=await supabaseClient.auth.signInWithOAuth({
+      provider:'github',
+      options:{redirectTo:location.origin+location.pathname}
+    });
+    if(error)throw error;
+  }catch(e){
+    setFeedback('GitHub sign-in is not available yet: '+e.message+'. Configure GitHub under Supabase Authentication → Providers.','error');
+    button.disabled=false;
+  }
+});
+$('#email-form').addEventListener('submit',async e=>{e.preventDefault();if(!supabaseClient)return;email=$('#login-email').value.trim();$('#send-btn').disabled=true;setFeedback('Sending your secure sign-in link…');try{const {error}=await supabaseClient.auth.signInWithOtp({email,options:{emailRedirectTo:location.origin+location.pathname}});if(error)throw error;$('#login-step-email').hidden=true;$('#login-step-code').hidden=false;$('#email-destination').textContent=email;$('#login-code').focus();setFeedback('Open the link in your email to sign in. If your email contains a numeric code instead, enter it below.','success')}catch(err){setFeedback(err.message,'error')}finally{$('#send-btn').disabled=false}});
+$('#code-form').addEventListener('submit',async e=>{e.preventDefault();if(!supabaseClient)return;$('#verify-btn').disabled=true;try{const token=$('#login-code').value.trim();const {data,error}=await supabaseClient.auth.verifyOtp({email,token,type:'email'});if(error)throw error;setFeedback('Access granted. Loading your dashboard…','success');if(data.session&&!user)await signedIn(data.session)}catch(err){setFeedback(err.message,'error')}finally{$('#verify-btn').disabled=false}});
+
+function extractEmailMagicLink(input){
+  let value=String(input||'').trim();
+  const expected=new URL(CONFIG.supabaseUrl).host;
+  for(let hop=0;hop<4;hop++){
+    let url;try{url=new URL(value)}catch(e){throw new Error('Paste the full link address copied from your email.')}
+    if(url.protocol!=='https:')throw new Error('Only HTTPS sign-in links are supported.');
+    if((url.hostname==='google.com'||url.hostname.endsWith('.google.com'))&&url.pathname==='/url'){
+      const inner=url.searchParams.get('q')||url.searchParams.get('url');
+      if(!inner)throw new Error('Could not find the destination inside the Google email link.');
+      value=inner;continue;
+    }
+    if(url.host!==expected||url.pathname!=='/auth/v1/verify')throw new Error('The link does not belong to your Off the Clock sign-in.');
+    const token_hash=url.searchParams.get('token')||url.searchParams.get('token_hash');
+    const type=url.searchParams.get('type');
+    if(!token_hash||!['signup','magiclink','email'].includes(type))throw new Error('This email link is incomplete or not a sign-in link.');
+    return {token_hash,type};
+  }
+  throw new Error('Could not read the nested email link.');
+}
+$('#link-form').addEventListener('submit',async event=>{
+  event.preventDefault();
+  if(!supabaseClient)return;
+  const button=$('#link-verify-btn'),input=$('#link-input');
+  button.disabled=true;
+  setFeedback('Verifying your email link with Supabase…');
+  try{
+    const credentials=extractEmailMagicLink(input.value);
+    const {data,error}=await supabaseClient.auth.verifyOtp(credentials);
+    input.value='';
+    if(error)throw error;
+    if(data.session){await signedIn(data.session);if(user)setFeedback('Email link verified. You are signed in.','success')}
+    else{
+      const s=await supabaseClient.auth.getSession();
+      if(s.error)throw s.error;
+      if(!s.data.session)throw new Error('The link verified but no session was returned. Request a new email and copy the link before opening it.');
+      await signedIn(s.data.session);
+    }
+  }catch(err){input.value='';setFeedback('Link sign-in failed: '+err.message,'error')}
+  finally{button.disabled=false}
+});
+$('#back-email').onclick=()=>{$('#login-step-email').hidden=false;$('#login-step-code').hidden=true;setFeedback('Enter your email address to request a new code.')};
+window.addEventListener('focus',()=>{if(!preview&&user&&!saving&&!dirty&&!conflict)loadRemote()});document.addEventListener('visibilitychange',()=>{if(!document.hidden&&!preview&&user&&!saving&&!dirty&&!conflict)loadRemote()});
+boot();
+})();
+</script>
+<script>
+(function(){const root=document.documentElement,b=document.getElementById('side-toggle');
+function paint(){const mini=root.classList.contains('side-mini');b.setAttribute('aria-expanded',String(!mini));const l=mini?'Expand side bar':'Collapse side bar';b.setAttribute('aria-label',l);b.title=l}
+b.addEventListener('click',()=>{root.classList.toggle('side-mini');try{localStorage.setItem('otc:side',root.classList.contains('side-mini')?'mini':'open')}catch(e){}paint()});paint()})();
+</script>
+</body>
+</html>

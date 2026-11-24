@@ -326,7 +326,7 @@ var szm=/[?&]set=([a-z]+)/.exec(location.search); if(szm) document.documentEleme
   </div><span class="hb-credit sz-credit">Made by Spitz <i class="sz-burger" aria-hidden="true"></i></span></div>
 
   <div class="hb-over" id="hb-end" hidden><div class="hb-box"><div class="sz-eyebrow">Spitz <b>Arcade</b></div>
-    <p class="hb-sub" style="margin:0">Final score. Show this screen to your teacher.</p>
+    <p class="hb-sub" style="margin:0">Final score.</p>
     <div class="hb-name" id="hb-endname"></div>
     <div class="hb-final" id="hb-endscore">0</div>
     <div class="hb-result" id="hb-endres"></div>
@@ -858,7 +858,7 @@ function showEnd(celebrate){ if(window.SpitzCode) setTimeout(function(){ window.
   var acc=S.answered?Math.round(100*S.correct/S.answered):0;
   $('hb-endstats').innerHTML=[['Correct',S.correct+' of '+S.answered],['Accuracy',acc+'%'],['Best streak',S.best],['Perfect huddles',S.perfect+' of '+S.huddles]].map(function(a){ return '<div class="hb-stat"><div class="l">'+a[0]+'</div><div class="v">'+a[1]+'</div></div>'; }).join('');
   $('hb-endtopics').innerHTML=Object.keys(S.topics).map(function(k){ var t=S.topics[k]; return '<div class="hb-stat"><div class="l">'+k+'</div><div class="v">'+t[0]+' / '+t[1]+'</div></div>'; }).join('');
-  $('hb-end').hidden=false; if(celebrate){ SND.win(); [0,350,700,1100].forEach(function(ms,i){ setTimeout(function(){ confetti(200+i*500,1070,90,1.3); confetti(1720-i*500,1070,90,1.3); },ms); }); } }
+  $('hb-end').hidden=false; if(celebrate&&S.score>0){ SND.win(); [0,350,700,1100].forEach(function(ms,i){ setTimeout(function(){ confetti(200+i*500,1070,90,1.3); confetti(1720-i*500,1070,90,1.3); },ms); }); } }
 var armT=0; $('hb-again').addEventListener('click',function(){ var b=this; if(!b.classList.contains('arm')){ b.classList.add('arm'); b.textContent='Tap again to start over'; clearTimeout(armT); armT=setTimeout(function(){ b.classList.remove('arm'); b.textContent='Play again'; },3000); return; }
   b.classList.remove('arm'); b.textContent='Play again'; var keepName=S.name; S=fresh(); S.name=keepName; setPlay(); modeDraw();
   $('hb-end').hidden=true; $('hb-start').hidden=false; $('hb-nameinput').value=keepName; $('hb-go').disabled=!keepName; save(); hud();

@@ -1348,6 +1348,346 @@ function makeEvalF(PFX){
       shuffle(q.choices); q.visual=q.visual||''; delete q.check; return q; } throw new Error('generator failed: '+type); }
   return { build:build }; }
 
+function makeDomRng(PFX){
+  /* ================= QUESTION GENERATOR: domain & range (2026-11-17) =================
+     Domain = the x-values (inputs), range = the y-values (outputs). From ordered pairs, a table or a mapping diagram (answer is a list),
+     from a graph (a segment with closed dots gives an inequality, separate dots give a list), and from a word problem where only whole
+     numbers make sense. Wrong choices are the usual slips: the other list, a repeated value listed twice, the whole grid, a continuous
+     answer for a whole-number story, and writing the bigger number first. Picture questions keep every choice at 12 characters or fewer. */
+  var MINUS='−', LE=' ≤ ';
+  function ri(a,b){ return a+Math.floor(Math.random()*(b-a+1)); }
+  function pick(a){ return a[Math.floor(Math.random()*a.length)]; }
+  function shuffle(a){ for(var i=a.length-1;i>0;i--){ var j=Math.floor(Math.random()*(i+1)), t=a[i]; a[i]=a[j]; a[j]=t; } return a; }
+  function num(n){ return n<0? MINUS+(-n) : ''+n; }
+  function pt(x,y){ return '('+num(x)+', '+num(y)+')'; }
+  function uniq(a){ var o=[]; a.forEach(function(v){ if(o.indexOf(v)<0) o.push(v); }); return o.sort(function(p,q){ return p-q; }); }
+  function setH(a){ return '{'+a.map(num).join(', ')+'}'; }
+  function same(a,b){ return a.length===b.length&&a.every(function(v,i){ return v===b[i]; }); }
+  function plainLen(h){ return h.replace(/<[^>]+>/g,'').length; }
+  function SetC(a,why){ var h=setH(a); return {html:h,val:{list:a},why:why||'',key:h}; }
+  function IneqC(lo,v,hi,why){ var h=num(lo)+LE+v+LE+num(hi); return {html:h,val:{lo:lo,v:v,hi:hi},why:why||'',key:h}; }
+  function W(word){ return '<span class="c-m">'+word+'</span>'; }
+  var FONT=' font-family="Inter,sans-serif" font-weight="800"';
+  var COORD={ domain:'x', range:'y' }, OTHER={ domain:'range', range:'domain' };
+  var WHY_OTHER={ domain:'Those are the y-values, the range. The domain is the x-values.', range:'Those are the x-values, the domain. The range is the y-values.' };
+
+  function gridSVG(draw){ var S=380, u=S/12, X=function(x){ return ((x+6)*u).toFixed(1); }, Y=function(y){ return ((6-y)*u).toFixed(1); }, h='';
+    for(var i=-6;i<=6;i++){ h+='<line x1="'+X(i)+'" y1="0" x2="'+X(i)+'" y2="'+S+'" stroke="#2A3142" stroke-width="2"/><line x1="0" y1="'+Y(i)+'" x2="'+S+'" y2="'+Y(i)+'" stroke="#2A3142" stroke-width="2"/>'; }
+    h+='<line x1="0" y1="'+Y(0)+'" x2="'+S+'" y2="'+Y(0)+'" stroke="#C9D1E0" stroke-width="3"/><line x1="'+X(0)+'" y1="0" x2="'+X(0)+'" y2="'+S+'" stroke="#C9D1E0" stroke-width="3"/>';
+    [-4,-2,2,4].forEach(function(n){ h+='<text x="'+X(n)+'" y="'+(+Y(0)+24)+'" text-anchor="middle" font-size="20" fill="#9BA5B8"'+FONT+'>'+num(n)+'</text>'+
+      '<text x="'+(+X(0)-8)+'" y="'+(+Y(n)+7)+'" text-anchor="end" font-size="20" fill="#9BA5B8"'+FONT+'>'+num(n)+'</text>'; });
+    h+=draw(X,Y);
+    return '<svg class="'+PFX+'-graph" width="'+S+'" height="'+S+'" viewBox="0 0 '+S+' '+S+'" role="img" aria-label="Graph on a grid">'+h+'</svg>'; }
+  function dot(X,Y,p){ return '<circle cx="'+X(p[0])+'" cy="'+Y(p[1])+'" r="10" fill="#FFF04D" stroke="#0E1016" stroke-width="3"/>'; }
+  function tableSVG(rows){ var n=rows.length, h=380/(n+1), s='<rect x="0" y="0" width="380" height="'+h+'" fill="#232838"/>';
+    s+='<text x="95" y="'+(h/2+12)+'" text-anchor="middle" font-size="34" fill="#C9D1E0"'+FONT+'>x</text><text x="285" y="'+(h/2+12)+'" text-anchor="middle" font-size="34" fill="#C9D1E0"'+FONT+'>y</text>';
+    rows.forEach(function(p,i){ var yy=(i+1)*h+h/2+11;
+      s+='<text x="95" y="'+yy+'" text-anchor="middle" font-size="32" fill="#F2F4F8"'+FONT+'>'+num(p[0])+'</text><text x="285" y="'+yy+'" text-anchor="middle" font-size="32" fill="#F2F4F8"'+FONT+'>'+num(p[1])+'</text>'; });
+    for(var i=1;i<=n;i++) s+='<line x1="0" y1="'+(i*h)+'" x2="380" y2="'+(i*h)+'" stroke="#343B4D" stroke-width="2"/>';
+    s+='<line x1="190" y1="0" x2="190" y2="380" stroke="#343B4D" stroke-width="3"/>';
+    return '<svg class="'+PFX+'-graph" width="380" height="380" viewBox="0 0 380 380" role="img" aria-label="Table of x and y values">'+s+'</svg>'; }
+  function mapSVG(P){ var Xs=uniq(P.map(function(p){ return p[0]; })), Ys=uniq(P.map(function(p){ return p[1]; }));
+    function at(list,i){ return 212+(i-(list.length-1)/2)*64; }
+    var s='<defs><marker id="'+PFX+'-dmh" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="5" markerHeight="5" orient="auto"><path d="M0 0L10 5L0 10z" fill="#FFF04D"/></marker></defs>';
+    s+='<ellipse cx="80" cy="212" rx="62" ry="158" fill="#1C2130" stroke="#C9D1E0" stroke-width="3"/><ellipse cx="300" cy="212" rx="62" ry="158" fill="#1C2130" stroke="#C9D1E0" stroke-width="3"/>';
+    s+='<text x="80" y="38" text-anchor="middle" font-size="30" fill="#C9D1E0"'+FONT+'>x</text><text x="300" y="38" text-anchor="middle" font-size="30" fill="#C9D1E0"'+FONT+'>y</text>';
+    P.forEach(function(p){ s+='<line x1="116" y1="'+at(Xs,Xs.indexOf(p[0]))+'" x2="262" y2="'+at(Ys,Ys.indexOf(p[1]))+'" stroke="#FFF04D" stroke-width="4" marker-end="url(#'+PFX+'-dmh)"/>'; });
+    Xs.forEach(function(x,i){ s+='<text x="80" y="'+(at(Xs,i)+11)+'" text-anchor="middle" font-size="32" fill="#F2F4F8"'+FONT+'>'+num(x)+'</text>'; });
+    Ys.forEach(function(y,i){ s+='<text x="300" y="'+(at(Ys,i)+11)+'" text-anchor="middle" font-size="32" fill="#F2F4F8"'+FONT+'>'+num(y)+'</text>'; });
+    return '<svg class="'+PFX+'-graph" width="380" height="380" viewBox="0 0 380 380" role="img" aria-label="Mapping diagram from x to y">'+s+'</svg>'; }
+
+  /* four pairs with one repeated value in the asked column (so "list it once" is a real choice), at most 3 distinct values there */
+  function pairs(ask,lo,hi){ var P=[], i=COORD[ask]==='x'?0:1, vals=[], k;
+    while(vals.length<3){ k=ri(lo,hi); if(vals.indexOf(k)<0) vals.push(k); }
+    var col=vals.concat([pick(vals)]); shuffle(col);
+    var oth=[]; while(oth.length<4){ k=ri(lo,hi); if(oth.indexOf(k)<0) oth.push(k); }
+    for(var n=0;n<4;n++) P.push(i===0? [col[n],oth[n]] : [oth[n],col[n]]);
+    /* same x twice must give the same y, or it isn't a function; keep this set to functions so nothing else gets in the way */
+    if(i===0){ var seen={}; P.forEach(function(p){ if(seen[p[0]]!==undefined) p[1]=seen[p[0]]; else seen[p[0]]=p[1]; }); }
+    return P; }
+  function listQ(ask,P,prompt,visual,topic,src){
+    var i=COORD[ask]==='x'?0:1, col=P.map(function(p){ return p[i]; }), right=uniq(col), other=uniq(P.map(function(p){ return p[1-i]; }));
+    var dup=col.slice().sort(function(a,b){ return a-b; });
+    var all=uniq(col.concat(P.map(function(p){ return p[1-i]; })));
+    var swap=right.slice(); var sp=P.filter(function(p){ return other.indexOf(p[i])<0&&right.indexOf(p[1-i])<0; })[0];
+    if(sp){ swap[swap.indexOf(sp[i])]=sp[1-i]; swap=uniq(swap); }
+    var cand=shuffle([SetC(other,WHY_OTHER[ask]), SetC(dup,'List each value once, even if it shows up twice.'),
+      SetC(all,'Only the '+COORD[ask]+'-values go in the '+ask+'.'), SetC(swap,src==='pairs'? 'Use the '+(i===0?'first':'second')+' number of each pair for the '+ask+'.' : 'Use only the '+COORD[ask]+'-values for the '+ask+'.')]);
+    var out=[SetC(right)], seen={}; seen[out[0].key]=1;
+    cand.forEach(function(c){ if(out.length<4&&!seen[c.key]&&c.val.list.length>1&&plainLen(c.html)<=(visual?12:20)){ seen[c.key]=1; out.push(c); } });
+    return { topic:topic, prompt:prompt, visual:visual, data:{list:right},
+      check:function(v){ return same(v.list,uniq(P.map(function(p){ return p[i]; }))); },
+      choices:out,
+      explain:'The '+ask+' is the '+COORD[ask]+'-values, each listed once: <span class="c-ans">'+setH(right)+'</span>.' }; }
+
+  var GEN={
+  drPairs:function(){ var ask=pick(['domain','range']), P=pairs(ask,-6,9);
+    return listQ(ask,P,'What is the '+W(ask)+'? <span class="c-pt">'+P.map(function(p){ return pt(p[0],p[1]); }).join(', ')+'</span>','','Pairs and tables','pairs'); },
+  drTable:function(){ var ask=pick(['domain','range']), P=pairs(ask,-5,9);
+    return listQ(ask,P,'What is the '+W(ask)+' of the table?',tableSVG(P),'Pairs and tables'); },
+  drMap:function(){ var ask=pick(['domain','range']), P=pairs(ask,-5,9);
+    return listQ(ask,P,'What is the '+W(ask)+' of the mapping?',mapSVG(P),'Pairs and tables'); },
+  drSeg:function(){ var ask=pick(['domain','range']), a=[ri(-5,2),ri(-5,5)], b=[ri(a[0]+2,5),ri(-5,5)];
+    if(Math.abs(b[1]-a[1])<2) return null;
+    var xl=a[0], xh=b[0], yl=Math.min(a[1],b[1]), yh=Math.max(a[1],b[1]);
+    var v=COORD[ask], lo=ask==='domain'?xl:yl, hi=ask==='domain'?xh:yh, olo=ask==='domain'?yl:xl, ohi=ask==='domain'?yh:xh, ov=COORD[OTHER[ask]];
+    var vis=gridSVG(function(X,Y){ return '<line x1="'+X(a[0])+'" y1="'+Y(a[1])+'" x2="'+X(b[0])+'" y2="'+Y(b[1])+'" stroke="#FF4B4B" stroke-width="6" stroke-linecap="round"/>'+dot(X,Y,a)+dot(X,Y,b); });
+    var cand=[IneqC(olo,v,ohi,WHY_OTHER[ask]), IneqC(lo,ov,hi,'The '+ask+' is about '+v+', so use '+v+'.'),
+      IneqC(-6,v,6,'Only count where the graph is, not the whole grid.'), IneqC(lo+1,v,hi,'Closed dots mean the ends count. Start at '+num(lo)+'.'), IneqC(lo,v,hi-1,'Closed dots mean the ends count. Go up to '+num(hi)+'.')];
+    if(ask==='range'){ var first=a[1], last=b[1]; if(first>last) cand.push(IneqC(first,v,last,'Write the smaller number first.')); }
+    var out=[IneqC(lo,v,hi)], seen={}; seen[out[0].key]=1;
+    shuffle(cand).forEach(function(c){ if(out.length<4&&!seen[c.key]&&c.val.lo!==c.val.hi&&plainLen(c.html)<=12){ seen[c.key]=1; out.push(c); } });
+    return { topic:'From a graph', prompt:'What is the '+W(ask)+' of the graph?', visual:vis, data:{lo:lo,hi:hi},
+      check:function(c){ return c.v===v&&c.lo===Math.min(ask==='domain'?a[0]:a[1],ask==='domain'?b[0]:b[1])&&c.hi===Math.max(ask==='domain'?a[0]:a[1],ask==='domain'?b[0]:b[1]); },
+      choices:out,
+      explain:'Read the '+v+'-values from end to end: <span class="c-ans">'+num(lo)+LE+v+LE+num(hi)+'</span>.' }; },
+  drDots:function(){ var ask=pick(['domain','range']), P=[], xs=[], ys=[], k;
+    while(xs.length<3){ k=ri(-5,5); if(xs.indexOf(k)<0) xs.push(k); }
+    while(ys.length<3){ k=ri(-5,5); if(ys.indexOf(k)<0) ys.push(k); }
+    for(var n=0;n<3;n++) P.push([xs[n],ys[n]]);
+    var i=ask==='domain'?0:1, right=uniq(P.map(function(p){ return p[i]; })), lo=right[0], hi=right[2], v=COORD[ask];
+    var vis=gridSVG(function(X,Y){ return P.map(function(p){ return dot(X,Y,p); }).join(''); });
+    var q=listQ(ask,P,'What is the '+W(ask)+' of the dots?',vis,'From a graph');
+    if(q.choices.length<4) q.choices.splice(1,0,IneqC(lo,v,hi,'Only the dots count, not the space between them. List the '+v+'-values.'));
+    else q.choices[3]=IneqC(lo,v,hi,'Only the dots count, not the space between them. List the '+v+'-values.');
+    var chk=q.check; q.check=function(c){ return c.list? chk(c) : false; };
+    return q; },
+  drStory:function(){ var S=pick([
+      {item:'tickets', one:'ticket', verb:'buy', y:'total cost', cost:true, rate:ri(3,9), say:function(r){ return 'Tickets cost $'+r+' each. You buy 1 to '; }},
+      {item:'bracelets', one:'bracelet', verb:'make', y:'beads used', cost:false, rate:ri(5,9), say:function(r){ return 'Each bracelet uses '+r+' beads. You make 1 to '; }},
+      {item:'songs', one:'song', verb:'buy', y:'total cost', cost:true, rate:ri(2,4), say:function(r){ return 'Songs cost $'+r+' each. You buy 1 to '; }},
+      {item:'boxes', one:'box', verb:'buy', y:'total pencils', cost:false, rate:pick([6,8,10,12]), say:function(r){ return 'A box holds '+r+' pencils. You buy 1 to '; }}]);
+    var n=pick([3,4]), ask=pick(['domain','range']), xs=[], ys=[]; for(var k=1;k<=n;k++){ xs.push(k); ys.push(k*S.rate); }
+    var right=ask==='domain'?xs:ys, other=ask==='domain'?ys:xs, v=COORD[ask];
+    var prompt=S.say(S.rate)+n+'. x = '+S.item+', y = '+S.y+'. What is the '+W(ask)+'?';
+    var zero=[0].concat(right), start2=xs.map(function(t){ return t+1; }), plus1=xs.map(function(t){ return S.rate+t-1; });
+    var cand=[SetC(other,ask==='domain'? 'Those are the '+S.y+', the y-values. The domain is the x-values, the '+S.item+'.' : 'Those are the '+S.item+', the x-values. The range is the y-values, the '+S.y+'.'),
+      SetC(zero,'You '+S.verb+' at least 1, so 0 isn’t in the list.'),
+      IneqC(right[0],v,right[n-1],'You can’t '+S.verb+' part of a '+S.one+', so list the whole numbers.'),
+      ask==='range'? SetC(plus1,'Each one adds '+S.rate+', so the '+S.y+' jumps by '+S.rate+'.') : SetC(start2,'You can '+S.verb+' just 1, so start at 1.')];
+    var out=[SetC(right)], seen={}; seen[out[0].key]=1;
+    shuffle(cand).forEach(function(c){ if(out.length<4&&!seen[c.key]){ seen[c.key]=1; out.push(c); } });
+    return { topic:'Word problems', prompt:prompt, data:{list:right},
+      check:function(c){ return !!c.list&&same(c.list,ask==='domain'?xs:xs.map(function(t){ return t*S.rate; })); },
+      choices:out,
+      explain:'x is the number of '+S.item+' and y is the '+S.y+'. The '+ask+' is every possible '+v+'-value: <span class="c-ans">'+setH(right)+'</span>.' }; }
+  };
+  function build(type){ for(var tries=0;tries<400;tries++){ var q=GEN[type](); if(!q||q.choices.length!==4) continue;
+      if(new Set(q.choices.map(function(c){ return c.key; })).size!==4) continue;
+      if(!q.check(q.choices[0].val)) continue;                                                  // the answer must pass the independent check
+      if(q.choices.slice(1).some(function(c){ return q.check(c.val); })) continue;              // and no distractor may pass it
+      if(q.choices.slice(1).some(function(c){ return !c.why; })) continue;
+      q.type=type; q.choices.forEach(function(c,i){ c.ok=i===0; });
+      shuffle(q.choices); q.visual=q.visual||''; delete q.check; return q; } throw new Error('generator failed: '+type); }
+  return { build:build }; }
+
+function makeRoc(PFX){
+  /* ================= QUESTION GENERATOR: rate of change (2026-11-17) =================
+     Rate of change = change in y ÷ change in x. From a table (x often jumps by more than 1), from a graph with two dots,
+     from a word problem with units (two moments in time, not starting at zero, so total ÷ time is a wrong answer), and
+     comparing four unit rates ("which is fastest?", where the biggest total is usually not the answer). Whole-number rates. */
+  var MINUS='−';
+  function ri(a,b){ return a+Math.floor(Math.random()*(b-a+1)); }
+  function nz(a,b){ var v; do{ v=ri(a,b); }while(v===0); return v; }
+  function pick(a){ return a[Math.floor(Math.random()*a.length)]; }
+  function shuffle(a){ for(var i=a.length-1;i>0;i--){ var j=Math.floor(Math.random()*(i+1)), t=a[i]; a[i]=a[j]; a[j]=t; } return a; }
+  function num(n){ return n<0? MINUS+(-n) : ''+n; }
+  function frac(n,d){ return '<span class="'+PFX+'-fr"><span>'+n+'</span><span>'+d+'</span></span>'; }
+  function gcd(a,b){ a=Math.abs(a); b=Math.abs(b); while(b){ var t=a%b; a=b; b=t; } return a; }
+  function pt(x,y){ return '('+num(x)+', '+num(y)+')'; }
+  function pl(n,w){ return n+' '+w+(n===1?'':'s'); }
+  function W(h){ return '<span class="c-m">'+h+'</span>'; }
+  /* a choice holding a number: whole numbers, or a fraction n/d for the flipped slip */
+  function N(n,d,why){ d=d||1; if(d<0){ n=-n; d=-d; } var g=gcd(n,d)||1; n/=g; d/=g;
+    var h=d===1? num(n) : (n<0?MINUS:'')+frac(Math.abs(n),d); return {html:h,val:n/d,why:why||'',key:'n'+n+'/'+d}; }
+  function T(h,val,why){ return {html:h,val:val,why:why||'',key:h}; }
+  var FONT=' font-family="Inter,sans-serif" font-weight="800"';
+  function fill(out,cand){ var seen={}; out.forEach(function(c){ seen[c.key]=1; });
+    shuffle(cand).forEach(function(c){ if(c&&out.length<4&&!seen[c.key]){ seen[c.key]=1; out.push(c); } }); return out; }
+  function gridSVG(m,b,dots){ var S=380, u=S/12, X=function(x){ return ((x+6)*u).toFixed(1); }, Y=function(y){ return ((6-y)*u).toFixed(1); }, h='';
+    for(var i=-6;i<=6;i++){ h+='<line x1="'+X(i)+'" y1="0" x2="'+X(i)+'" y2="'+S+'" stroke="#2A3142" stroke-width="2"/><line x1="0" y1="'+Y(i)+'" x2="'+S+'" y2="'+Y(i)+'" stroke="#2A3142" stroke-width="2"/>'; }
+    h+='<line x1="0" y1="'+Y(0)+'" x2="'+S+'" y2="'+Y(0)+'" stroke="#C9D1E0" stroke-width="3"/><line x1="'+X(0)+'" y1="0" x2="'+X(0)+'" y2="'+S+'" stroke="#C9D1E0" stroke-width="3"/>';
+    [-4,-2,2,4].forEach(function(n){ h+='<text x="'+X(n)+'" y="'+(+Y(0)+24)+'" text-anchor="middle" font-size="20" fill="#9BA5B8"'+FONT+'>'+num(n)+'</text>'+
+      '<text x="'+(+X(0)-8)+'" y="'+(+Y(n)+7)+'" text-anchor="end" font-size="20" fill="#9BA5B8"'+FONT+'>'+num(n)+'</text>'; });
+    h+='<line x1="'+X(-7)+'" y1="'+Y(-7*m+b)+'" x2="'+X(7)+'" y2="'+Y(7*m+b)+'" stroke="#FF4B4B" stroke-width="6" stroke-linecap="round"/>';
+    dots.forEach(function(p){ h+='<circle cx="'+X(p[0])+'" cy="'+Y(p[1])+'" r="9" fill="#FFF04D" stroke="#0E1016" stroke-width="3"/>'; });
+    return '<svg class="'+PFX+'-graph" width="'+S+'" height="'+S+'" viewBox="0 0 '+S+' '+S+'" role="img" aria-label="Graph of a line">'+h+'</svg>'; }
+  function tableSVG(rows,xl,yl){ var n=rows.length, h=380/(n+1), s='<rect x="0" y="0" width="380" height="'+h+'" fill="#232838"/>';
+    s+='<text x="95" y="'+(h/2+12)+'" text-anchor="middle" font-size="34" fill="#C9D1E0"'+FONT+'>'+xl+'</text><text x="285" y="'+(h/2+12)+'" text-anchor="middle" font-size="34" fill="#C9D1E0"'+FONT+'>'+yl+'</text>';
+    rows.forEach(function(p,i){ var yy=(i+1)*h+h/2+11;
+      s+='<text x="95" y="'+yy+'" text-anchor="middle" font-size="32" fill="#F2F4F8"'+FONT+'>'+num(p[0])+'</text><text x="285" y="'+yy+'" text-anchor="middle" font-size="32" fill="#F2F4F8"'+FONT+'>'+num(p[1])+'</text>'; });
+    for(var i=1;i<=n;i++) s+='<line x1="0" y1="'+(i*h)+'" x2="380" y2="'+(i*h)+'" stroke="#343B4D" stroke-width="2"/>';
+    s+='<line x1="190" y1="0" x2="190" y2="380" stroke="#343B4D" stroke-width="3"/>';
+    return '<svg class="'+PFX+'-graph" width="380" height="380" viewBox="0 0 380 380" role="img" aria-label="Table of x and y values">'+s+'</svg>'; }
+  var SIGN_WHY=function(m){ return m>0? 'y goes up as x goes up, so the rate is positive.' : 'y goes down as x goes up, so the rate is negative.'; };
+
+  /* word problems: x and y units, whether y grows or shrinks, how a rate is said */
+  var STORIES=[
+    {x:'week', y:'dollars', up:true, rates:[5,10,15,20,25], start:[10,60], say:function(x1,y1,x2,y2){ return 'You have $'+y1+' saved in week '+x1+' and $'+y2+' in week '+x2+'.'; }, unit:function(r){ return (r<0?MINUS:'')+'$'+Math.abs(r)+' per week'; }},
+    {x:'day', y:'cm', up:true, rates:[2,3,4,5,6], start:[3,12], say:function(x1,y1,x2,y2){ return 'A plant is '+y1+' cm tall on day '+x1+' and '+y2+' cm tall on day '+x2+'.'; }, unit:function(r){ return num(r)+' cm per day'; }},
+    {x:'hour', y:'%', up:false, rates:[5,10,15], start:[100,100], say:function(x1,y1,x2,y2){ return 'A phone battery is at '+y1+'% after '+pl(x1,'hour')+' and '+y2+'% after '+pl(x2,'hour')+'.'; }, unit:function(r){ return num(r)+'% per hour'; }},
+    {x:'minute', y:'gallons', up:true, rates:[4,6,8,10,12], start:[20,50], say:function(x1,y1,x2,y2){ return 'A pool has '+y1+' gallons after '+pl(x1,'minute')+' and '+y2+' gallons after '+pl(x2,'minute')+'.'; }, unit:function(r){ return num(r)+' gallons per minute'; }},
+    {x:'hour', y:'inches', up:false, rates:[1,2,3], start:[14,20], say:function(x1,y1,x2,y2){ return 'A candle is '+y1+' inches tall after '+pl(x1,'hour')+' and '+y2+' inches after '+pl(x2,'hour')+'.'; }, unit:function(r){ return num(r)+(Math.abs(r)===1?' inch':' inches')+' per hour'; }},
+    {x:'game', y:'points', up:true, rates:[6,8,12,15], start:[5,30], say:function(x1,y1,x2,y2){ return 'A player has '+y1+' points after game '+x1+' and '+y2+' points after game '+x2+'.'; }, unit:function(r){ return num(r)+' points per game'; }}];
+  /* compare: four unit rates, pick the biggest (or the cheapest for a deal) */
+  var COMPARE=[
+    {prompt:'Who earns the most <span class="c-m">per hour</span>?', lab:function(r,h){ return '$'+(r*h)+' in '+h+' hours'; }, best:'max', per:'hours', unit:function(r){ return '$'+r+' per hour'; }},
+    {prompt:'Which car is the <span class="c-m">fastest</span>?', lab:function(r,h){ return (r*h)+' miles in '+h+' hr'; }, best:'max', per:'hours', unit:function(r){ return r+' miles per hour'; }, scale:5},
+    {prompt:'Who reads the most pages <span class="c-m">per day</span>?', lab:function(r,h){ return (r*h)+' pages in '+h+' days'; }, best:'max', per:'days', unit:function(r){ return r+' pages per day'; }},
+    {prompt:'Which is the <span class="c-m">best deal</span> (lowest price each)?', lab:function(r,h){ return '$'+(r*h)+' for '+h; }, best:'min', per:'items', unit:function(r){ return '$'+r+' each'; }}];
+
+  var GEN={
+  rcTable:function(){ var m=nz(-6,6), dx=pick([1,2,2,3,5]), b=ri(-10,10), x0=pick([0,0,ri(-4,4)]), rows=[];
+    for(var i=0;i<4;i++){ var x=x0+i*dx; rows.push([x,m*x+b]); } if(rows.some(function(r){ return Math.abs(r[1])>40||Math.abs(r[0])>20; })) return null;
+    var dy=m*dx;
+    var cand=[Math.random()<0.5&&N(-m,1,'Check the sign: '+SIGN_WHY(m)), N(rows[0][1],1,'That’s a y-value in the table. Find how much y changes for each 1 that x goes up.')];
+    if(dx!==1) cand.push(N(dy,1,'That’s the change in y. Divide by the change in x, '+dx+'.'));
+    if(Math.abs(m)!==1||dx!==1) cand.push(N(dx,dy,'That’s change in x ÷ change in y. Flip it: change in y ÷ change in x.'));
+    cand.push(N(m+1,1,'Change in y ÷ change in x: '+num(dy)+' ÷ '+dx+'.'),N(m-1,1,'Change in y ÷ change in x: '+num(dy)+' ÷ '+dx+'.'));
+    return { topic:'From a table', prompt:'What is the '+W('rate of change')+'?', visual:tableSVG(rows,'x','y'), data:{m:m},
+      check:function(v){ return v===(rows[3][1]-rows[0][1])/(rows[3][0]-rows[0][0]); },
+      choices:fill([N(m,1)],cand),
+      explain:'Each row, y changes by '+num(dy)+' when x changes by '+dx+': '+num(dy)+' ÷ '+dx+' = <span class="c-ans">'+num(m)+'</span>.' }; },
+  rcGraph:function(){ var m=pick([1,-1,2,-2,3,-3,4,-4]), run=Math.abs(m)>=3?1:pick([1,2]), x1=ri(-4,2), b=ri(-4,4), y1=m*x1+b, x2=x1+run, y2=m*x2+b;
+    if(Math.abs(y1)>5||Math.abs(y2)>5||Math.abs(x2)>5) return null;
+    var cand=[Math.random()<0.5&&N(-m,1,'Check the sign: '+SIGN_WHY(m)), N(b,1,'That’s where the line crosses the y-axis, not how fast it climbs.')];
+    if(run!==1) cand.push(N(y2-y1,1,'That’s the rise. Divide by the run, '+run+'.'));
+    if(Math.abs(m)!==1) cand.push(N(run,y2-y1,'That’s run ÷ rise. Flip it: rise ÷ run.'));
+    cand.push(N(m+1,1,'Count the rise and run between the two dots.'),N(m-1,1,'Count the rise and run between the two dots.'));
+    return { topic:'From a graph', prompt:'What is the '+W('rate of change')+'?', visual:gridSVG(m,b,[[x1,y1],[x2,y2]]), data:{m:m},
+      check:function(v){ return v===(y2-y1)/(x2-x1); },
+      choices:fill([N(m,1)],cand),
+      explain:'From dot to dot: rise '+num(y2-y1)+', run '+run+'. '+num(y2-y1)+' ÷ '+run+' = <span class="c-ans">'+num(m)+'</span>.' }; },
+  rcStory:function(){ var S=pick(STORIES), r=pick(S.rates)*(S.up?1:-1), x1=ri(1,4), x2=x1+pick([2,3,4,5]), y0=ri(S.start[0],S.start[1]);
+    if(S.y==='dollars'||S.y==='gallons') y0=Math.round(y0/5)*5;
+    var y1=y0+r*x1, y2=y0+r*x2; if(y2<=0||y1<=0) return null;
+    var dy=y2-y1, dx=x2-x1, U=function(v,why){ return T(S.unit(v),v,why); };
+    var cand=[U(dy,'That’s the whole change. Divide by the '+dx+' '+S.x+'s in between.'), Math.random()<0.5&&U(-r,'Check the sign: it '+(r>0?'goes up':'goes down')+', so the rate is '+(r>0?'positive':'negative')+'.')];
+    if(y2%x2===0&&y2/x2!==r) cand.push(U(y2/x2,'That uses one moment only. Use the change between the two moments.'));
+    if(y1%x1===0&&y1/x1!==r&&x1>1) cand.push(U(y1/x1,'That uses one moment only. Use the change between the two moments.'));
+    var st=Math.abs(r)>=5?5:1; cand.push(U(r+st,'Find the change in '+S.y+' ÷ the change in '+S.x+'s.'),r-st!==0&&U(r-st,'Find the change in '+S.y+' ÷ the change in '+S.x+'s.'));
+    return { topic:'Word problems', prompt:S.say(x1,y1,x2,y2)+' What is the '+W('rate of change')+'?', data:{r:r},
+      check:function(v){ return v===(y2-y1)/(x2-x1); },
+      choices:fill([U(r)],cand),
+      explain:'Change ÷ time: '+num(dy)+' ÷ '+dx+' = <span class="c-ans">'+S.unit(r)+'</span>.' }; },
+  rcCompare:function(){ var C=pick(COMPARE), sc=C.scale||1, rs=[], hs=[], k;
+    while(rs.length<4){ k=sc*ri(sc>1?8:3,sc>1?14:15); if(rs.indexOf(k)<0&&rs.every(function(o){ return Math.abs(o-k)>=sc; })) rs.push(k); }
+    for(var i=0;i<4;i++) hs.push(ri(2,6));
+    var best=C.best==='max'? Math.max.apply(null,rs) : Math.min.apply(null,rs), bi=rs.indexOf(best);
+    var tot=rs.map(function(r,i){ return r*hs[i]; }), bigTot=tot.indexOf(C.best==='max'?Math.max.apply(null,tot):Math.min.apply(null,tot));
+    if(bigTot===bi&&Math.random()<0.75) return null;                                           /* usually the biggest total is a trap */
+    if(new Set(tot).size<4) return null;
+    var out=[T(C.lab(best,hs[bi]),best,'')];
+    rs.forEach(function(r,i){ if(i!==bi) out.push(T(C.lab(r,hs[i]),r,'That’s '+C.unit(r)+'. The best is '+C.unit(best)+'.')); });
+    return { topic:'Compare rates', prompt:C.prompt, data:{r:best},
+      check:function(v){ return v===(C.best==='max'? Math.max.apply(null,rs) : Math.min.apply(null,rs)); },
+      choices:out,
+      explain:'Divide each total by the number of '+C.per+'. The best is <span class="c-ans">'+C.unit(best)+'</span>.' }; }
+  };
+  function build(type){ for(var tries=0;tries<400;tries++){ var q=GEN[type](); if(!q||q.choices.length!==4) continue;
+      if(new Set(q.choices.map(function(c){ return c.key; })).size!==4) continue;
+      if(!q.check(q.choices[0].val)) continue;                                                  // the answer must pass the independent check
+      if(q.choices.slice(1).some(function(c){ return q.check(c.val); })) continue;              // and no distractor may pass it
+      if(q.choices.slice(1).some(function(c){ return !c.why; })) continue;
+      q.type=type; q.choices.forEach(function(c,i){ c.ok=i===0; });
+      shuffle(q.choices); q.visual=q.visual||''; delete q.check; return q; } throw new Error('generator failed: '+type); }
+  return { build:build }; }
+
+function makeIcpt(PFX){
+  /* ================= QUESTION GENERATOR: intercepts (2026-11-17) =================
+     x-intercept = where the line crosses the x-axis (y is 0), y-intercept = where it crosses the y-axis (x is 0), answered as points.
+     From a graph, a table, an equation in y = mx + b (standard form has its own set, Standard form), and what an intercept means
+     in a story. Wrong choices: the coordinates in the wrong order, the other intercept, a sign slip, the slope. */
+  var MINUS='−';
+  function ri(a,b){ return a+Math.floor(Math.random()*(b-a+1)); }
+  function nz(a,b){ var v; do{ v=ri(a,b); }while(v===0); return v; }
+  function pick(a){ return a[Math.floor(Math.random()*a.length)]; }
+  function shuffle(a){ for(var i=a.length-1;i>0;i--){ var j=Math.floor(Math.random()*(i+1)), t=a[i]; a[i]=a[j]; a[j]=t; } return a; }
+  function num(n){ return n<0? MINUS+(-n) : ''+n; }
+  function pt(x,y){ return '('+num(x)+', '+num(y)+')'; }
+  function sgn(v){ return v>0? ' + '+v : v<0? ' '+MINUS+' '+(-v) : ''; }
+  function term(a,v){ return a===1? v : a===-1? MINUS+v : num(a)+v; }
+  function eq(h){ return '<span class="'+PFX+'-eq">'+h+'</span>'; }
+  function P(x,y,why){ var h=pt(x,y); return {html:h,val:{x:x,y:y},why:why||'',key:h}; }
+  function T(h,val,why){ return {html:h,val:val,why:why||'',key:h}; }
+  function W(h){ return '<span class="c-m" style="white-space:nowrap">'+h+'</span>'; }
+  var FONT=' font-family="Inter,sans-serif" font-weight="800"';
+  function fill(out,cand){ var seen={}; out.forEach(function(c){ seen[c.key]=1; });
+    shuffle(cand).forEach(function(c){ if(c&&out.length<4&&!seen[c.key]){ seen[c.key]=1; out.push(c); } }); return out; }
+  function gridSVG(m,b){ var S=380, u=S/12, X=function(x){ return ((x+6)*u).toFixed(1); }, Y=function(y){ return ((6-y)*u).toFixed(1); }, h='';
+    for(var i=-6;i<=6;i++){ h+='<line x1="'+X(i)+'" y1="0" x2="'+X(i)+'" y2="'+S+'" stroke="#2A3142" stroke-width="2"/><line x1="0" y1="'+Y(i)+'" x2="'+S+'" y2="'+Y(i)+'" stroke="#2A3142" stroke-width="2"/>'; }
+    h+='<line x1="0" y1="'+Y(0)+'" x2="'+S+'" y2="'+Y(0)+'" stroke="#C9D1E0" stroke-width="3"/><line x1="'+X(0)+'" y1="0" x2="'+X(0)+'" y2="'+S+'" stroke="#C9D1E0" stroke-width="3"/>';
+    [-4,-2,2,4].forEach(function(n){ h+='<text x="'+X(n)+'" y="'+(+Y(0)+24)+'" text-anchor="middle" font-size="20" fill="#9BA5B8"'+FONT+'>'+num(n)+'</text>'+
+      '<text x="'+(+X(0)-8)+'" y="'+(+Y(n)+7)+'" text-anchor="end" font-size="20" fill="#9BA5B8"'+FONT+'>'+num(n)+'</text>'; });
+    h+='<line x1="'+X(-7)+'" y1="'+Y(-7*m+b)+'" x2="'+X(7)+'" y2="'+Y(7*m+b)+'" stroke="#FF4B4B" stroke-width="6" stroke-linecap="round"/>';
+    return '<svg class="'+PFX+'-graph" width="'+S+'" height="'+S+'" viewBox="0 0 '+S+' '+S+'" role="img" aria-label="Graph of a line">'+h+'</svg>'; }
+  function tableSVG(rows){ var n=rows.length, h=380/(n+1), s='<rect x="0" y="0" width="380" height="'+h+'" fill="#232838"/>';
+    s+='<text x="95" y="'+(h/2+12)+'" text-anchor="middle" font-size="34" fill="#C9D1E0"'+FONT+'>x</text><text x="285" y="'+(h/2+12)+'" text-anchor="middle" font-size="34" fill="#C9D1E0"'+FONT+'>y</text>';
+    rows.forEach(function(p,i){ var yy=(i+1)*h+h/2+11;
+      s+='<text x="95" y="'+yy+'" text-anchor="middle" font-size="32" fill="#F2F4F8"'+FONT+'>'+num(p[0])+'</text><text x="285" y="'+yy+'" text-anchor="middle" font-size="32" fill="#F2F4F8"'+FONT+'>'+num(p[1])+'</text>'; });
+    for(var i=1;i<=n;i++) s+='<line x1="0" y1="'+(i*h)+'" x2="380" y2="'+(i*h)+'" stroke="#343B4D" stroke-width="2"/>';
+    s+='<line x1="190" y1="0" x2="190" y2="380" stroke="#343B4D" stroke-width="3"/>';
+    return '<svg class="'+PFX+'-graph" width="380" height="380" viewBox="0 0 380 380" role="img" aria-label="Table of x and y values">'+s+'</svg>'; }
+  /* the line through (a, 0) and (0, b): every check plugs the point back into it */
+  function onLine(a,b,v){ return v.x*b+v.y*a===a*b; }
+  function pointQ(which,a,b,topic,prompt,visual,extra,how){
+    var isX=which==='x', right=isX? P(a,0) : P(0,b);
+    var cand=[isX? P(0,a,'Order matters: the x-intercept is (x, 0), so y is 0.') : P(b,0,'Order matters: the y-intercept is (0, y), so x is 0.'),
+      isX? P(0,b,'That’s the y-intercept. The x-intercept is where the line crosses the x-axis.') : P(a,0,'That’s the x-intercept. The y-intercept is where the line crosses the y-axis.'),
+      isX? P(-a,0,'Check the sign of x.') : P(0,-b,'Check the sign of y.')].concat(extra||[]);
+    return { topic:topic, prompt:prompt, visual:visual||'', data:{a:a,b:b},
+      check:function(v){ return v&&v.x!==undefined&&(isX? v.y===0 : v.x===0)&&onLine(a,b,v); },
+      choices:fill([right],cand),
+      explain:how+' The '+which+'-intercept is <span class="c-ans">'+(isX?pt(a,0):pt(0,b))+'</span>.' }; }
+
+  var STORIES=[
+    {say:function(m,b){ return 'A tank has y gallons of water after x minutes: '; }, rates:[2,4,5,8,10], x:'minute', y:'gallons',
+     yi:function(b){ return 'It starts with '+b+' gallons'; }, xi:function(a){ return 'It’s empty after '+a+' minutes'; }, sl:function(m){ return 'It drains '+m+' gallons a minute'; }},
+    {say:function(m,b){ return 'A gift card has y dollars left after x songs: '; }, rates:[1,2,3], x:'song', y:'dollars',
+     yi:function(b){ return 'The card starts at $'+b; }, xi:function(a){ return 'It runs out after '+a+' songs'; }, sl:function(m){ return 'Each song costs $'+m; }},
+    {say:function(m,b){ return 'A phone has y% battery after x hours: '; }, rates:[5,10,20,25], x:'hour', y:'%', full:100,
+     yi:function(b){ return 'It starts at '+b+'%'; }, xi:function(a){ return 'It dies after '+a+' hours'; }, sl:function(m){ return 'It loses '+m+'% each hour'; }},
+    {say:function(m,b){ return 'A hiker is y feet from camp after x minutes: '; }, rates:[20,25,40,50], x:'minute', y:'feet',
+     yi:function(b){ return 'Starts '+b+' feet from camp'; }, xi:function(a){ return 'At camp after '+a+' minutes'; }, sl:function(m){ return 'Walks '+m+' feet a minute'; }}];
+
+  var GEN={
+  icGraph:function(){ var a=nz(-5,5), b=nz(-5,5), which=pick(['x','y']);
+    return pointQ(which,a,b,'From a graph','What is the '+W(which+'-intercept')+'?',gridSVG(-b/a,b),
+      [P(b,a,'Read where the line crosses the '+which+'-axis.')],'The line crosses the '+which+'-axis at '+pt(which==='x'?a:0,which==='x'?0:b)+'.'); },
+  icTable:function(){ var m=pick([1,-1,2,-2,3,-3]), a=nz(-3,3), b=-m*a, which=pick(['x','y']);
+    if(Math.abs(b)>9) return null;
+    var lo=Math.min(0,a)-ri(0,3-Math.abs(a)), rows=[]; for(var i=0;i<4;i++){ var x=lo+i; rows.push([x,m*(x-a)]); }
+    var stray=rows.filter(function(r){ return r[0]!==0&&r[1]!==0; })[0];
+    var extra=stray? [P(stray[0],stray[1],'That point isn’t on an axis. Find the row where '+(which==='x'?'y':'x')+' is 0.')] : [];
+    return pointQ(which,a,b,'From a table','What is the '+W(which+'-intercept')+'?',tableSVG(rows),extra,
+      'Find the row where '+(which==='x'?'y':'x')+' is 0.'); },
+  icEq:function(){ var m=nz(-5,5), a=nz(-6,6), b=-m*a, which=pick(['x','y','y']);
+    if(Math.abs(b)>15||Math.abs(m)===1&&Math.random()<0.5) return null;
+    var extra=[P(0,m,'That’s the slope. The y-intercept is the number added at the end.')];
+    if(which==='x') extra=[P(b,0,'Set y = 0 and solve for x.'),P(m,0,'Set y = 0 and solve for x.')];
+    var how=which==='y'? 'In y = mx + b, b is the y-intercept.' : 'Set y = 0: '+eq('0 = '+term(m,'x')+sgn(b))+', so x = '+num(a)+'.';
+    return pointQ(which,a,b,'From y = mx + b','What is the '+W(which+'-intercept')+' of '+eq('y = '+term(m,'x')+sgn(b))+'?','',extra,how); },
+  icMean:function(){ var S=pick(STORIES), m=pick(S.rates), a=S.full? S.full/m : ri(3,12), b=S.full||m*a;
+    if(a!==Math.round(a)||a<2||b===a||m===a||m===b) return null;
+    var which=pick(['x','y']);
+    var right=which==='x'? T(S.xi(a),'x','') : T(S.yi(b),'y','');
+    var cand=[which==='x'? T(S.yi(b),'y','That’s the y-intercept: where it starts, when x is 0.') : T(S.xi(a),'x','That’s the x-intercept: when y reaches 0.'),
+      T(S.sl(m),'m','That’s the rate of change (the slope), how much it changes each '+S.x+'.'),
+      which==='x'? T(S.xi(b),'bad','The x-intercept is when y is 0. Solve 0 = '+MINUS+m+'x + '+b+'.') : T(S.yi(m),'bad','The y-intercept is the number added at the end, '+b+'.')];
+    return { topic:'What it means', prompt:S.say(m,b)+eq('y = '+MINUS+m+'x + '+b)+'. What does the '+W(which+'-intercept')+' mean?', data:{a:a,b:b},
+      check:function(v){ return v===which; },
+      choices:fill([right],cand),
+      explain:which==='y'? 'When x is 0, y = '+b+'. <span class="c-ans">'+S.yi(b)+'</span>.' : 'When y is 0, x = '+a+'. <span class="c-ans">'+S.xi(a)+'</span>.' }; }
+  };
+  function build(type){ for(var tries=0;tries<400;tries++){ var q=GEN[type](); if(!q||q.choices.length!==4) continue;
+      if(new Set(q.choices.map(function(c){ return c.key; })).size!==4) continue;
+      if(!q.check(q.choices[0].val)) continue;                                                  // the answer must pass the independent check
+      if(q.choices.slice(1).some(function(c){ return q.check(c.val); })) continue;              // and no distractor may pass it
+      if(q.choices.slice(1).some(function(c){ return !c.why; })) continue;
+      q.type=type; q.choices.forEach(function(c,i){ c.ok=i===0; });
+      shuffle(q.choices); q.visual=q.visual||''; delete q.check; return q; } throw new Error('generator failed: '+type); }
+  return { build:build }; }
+
 var SETS={
   /* whole: one mixed set of facts 0–12; links can't pick single fact groups (Kody, 2026-10-30). The groups stay so the end screen shows which tables need work */
   mult:{ name:'Multiplication facts', make:makeMult, big:true, whole:true, topics:[['f03','Facts 0–3',['Facts 0–3'],1],['f46','Facts 4–6',['Facts 4–6'],2],['f79','Facts 7–9',['Facts 7–9'],3],['f1012','Facts 10–12',['Facts 10–12'],2]] },
@@ -1367,7 +1707,11 @@ var SETS={
   slide:{ name:'Slide and Slice', make:makeSlideSlice, topics:[['slide','Slide',['ssSlide']],['slice','Slice',['ssSlice']],['both','Both steps',['ssBoth']],['slope','Find the slope',['ssSlope']]] },
   perp:{ name:'Parallel & perpendicular', make:makeParPerp, topics:[['par','Parallel slopes',['ppPar']],['perp','Perpendicular slopes',['ppPerp']],['pair','Spot the pair',['ppPair']]] },
   solve:{ name:'Solving equations', make:makeSolve, topics:[['two','Two-step',['slTwo']],['dist','Distributing',['slDist']],['both','Both sides',['slBoth']],['comb','Combine like terms',['slCombine']]] },
-  evalf:{ name:'Evaluating functions', make:makeEvalF, topics:[['eq','From an equation',['efLin']],['sq','With x²',['efSq']],['graph','From a graph',['efGraph']],['table','From a table',['efTable']]] }
+  evalf:{ name:'Evaluating functions', make:makeEvalF, topics:[['eq','From an equation',['efLin']],['sq','With x²',['efSq']],['graph','From a graph',['efGraph']],['table','From a table',['efTable']]] },
+  /* added 2026-11-17 (Kody's overnight pick) */
+  dr:{ name:'Domain & range', make:makeDomRng, topics:[['pts','Pairs and tables',['drPairs','drTable','drMap']],['graph','From a graph',['drSeg','drDots']],['story','Word problems',['drStory']]] },
+  rate:{ name:'Rate of change', make:makeRoc, topics:[['table','From a table',['rcTable']],['graph','From a graph',['rcGraph']],['story','Word problems',['rcStory']],['compare','Compare rates',['rcCompare']]] },
+  icpt:{ name:'Intercepts', make:makeIcpt, topics:[['graph','From a graph',['icGraph']],['table','From a table',['icTable']],['eq','From y = mx + b',['icEq']],['mean','What it means',['icMean']]] }
 };
 
 /* Teacher settings: Mr. Spitz changes these on topics.html (the teacher control panel), which saves data/topics.json in the repo.

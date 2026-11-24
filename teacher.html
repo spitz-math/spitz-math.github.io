@@ -99,7 +99,7 @@ select{ background:var(--paper); color:var(--ink); border:2px solid var(--line);
 <div class="wrap">
   <header>
     <div class="brand"><div class="logo" aria-hidden="true"><img class="burst" src="/launchpad_burst.webp" alt="" width="1312" height="1199"><img class="patty" src="/launchpad_patty.webp" alt="" width="1312" height="1199"></div><div><div class="tag">Teacher page · Made by Spitz</div><h1>Spitz <span>Scores</span></h1></div></div>
-    <nav class="tnav" aria-label="Teacher pages"><a href="teacher.html" aria-current="page">Scores</a><a href="topics.html">Topics</a><a href="stats.html">Class stats</a><a href="leaderboard.html" target="_blank" rel="noopener">Leaderboard ↗</a><a href="arcade/" target="_blank" rel="noopener">Arcade ↗</a></nav>
+    <nav class="tnav" aria-label="Teacher pages"><a href="teacher.html" aria-current="page">Scores</a><a href="topics.html">Topics</a><a href="news.html">News</a><a href="stats.html">Class stats</a><a href="leaderboard.html" target="_blank" rel="noopener">Leaderboard ↗</a><a href="arcade/" target="_blank" rel="noopener">Arcade ↗</a></nav>
   </header>
 
   <div class="cols">
@@ -210,6 +210,7 @@ function parse(text){ entries=[]; problems=[]; var seen={};
       else if(any){ problems.push('<b>'+esc(name)+'</b>: '+esc(m[0].toUpperCase())+' doesn’t match this name. It reads <b>'+esc(any.gameName)+' · '+esc(any.display)+'</b> ('+any.correct+' of '+any.answered+' correct'+(any.date?', '+fmtDate(any.date):'')+'). If this is their own score and they just typed their name differently, <button class="okbtn" data-ok="'+esc(id)+'" data-name="'+esc(name)+'">Count it</button>'); return; } }
     if(!r){ problems.push('<b>'+esc(name)+'</b>: '+esc(m[0].toUpperCase())+' isn’t a real score code (a typo in the code itself)'); return; }
     var k=r.code; if(seen[k]){ if(seen[k]!==C.normName(name)) problems.push('<b>'+esc(name)+'</b>: same code as '+esc(seen[k])); return; } seen[k]=C.normName(name);
+    var gj=C.GAMES[r.game]; if(gj&&gj[4]) r.game=gj[4];   /* an older id that shares a board (Star Swarm codes from before 2026-11-17) */
     r.name=name; r.who=C.normName(name); if(!r.date) r.date=stampDate(fields); entries.push(r); });
   var ids=Object.keys(C.GAMES).filter(function(id){ return entries.some(function(e){ return e.game===id; }); });
   if(ids.indexOf(st.game)<0) st.game=ids[0]||null;

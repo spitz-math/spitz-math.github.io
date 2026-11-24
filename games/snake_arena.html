@@ -19,66 +19,77 @@ button:focus-visible{ outline:4px solid var(--accent); outline-offset:3px; }
 button:disabled{ cursor:default; }
 kbd{ font:inherit; }
 [hidden]{ display:none !important; }
-#stage{ position:absolute; left:0; top:0; width:1920px; height:1080px; transform-origin:0 0; padding:18px 28px 20px; display:grid; grid-template-rows:84px minmax(0,1fr); gap:16px;
-  background:radial-gradient(800px 420px at 30% 0%, rgba(166,255,60,.07), transparent 70%), radial-gradient(600px 400px at 100% 100%, rgba(255,79,184,.07), transparent 70%), var(--paper); }
+#stage{ position:absolute; left:0; top:0; width:1920px; height:1080px; transform-origin:0 0; overflow:hidden; background:var(--paper); }
 
-/* top bar: round capsules, like scales */
-.sn-top{ display:flex; align-items:center; gap:14px; white-space:nowrap; }
-.sn-brand{ display:flex; flex-direction:column; gap:6px; margin-right:12px; }
-.sn-logo{ margin:0; display:flex; align-items:center; gap:12px; font:400 54px/1 var(--display); letter-spacing:.02em; }
+/* FULL-SCREEN ARENA (2026-11-10, like Dig Buds): the arena fills the whole screen. The score chips, the board, the challenges and the energy bar
+   float over it, and the snack stop and the shop are pop-ups over the frozen arena. */
+.sn-arena{ position:absolute; inset:0; overflow:hidden; background:#030907; }
+#sn-canvas{ position:absolute; left:0; top:0; width:1920px; height:1080px; cursor:crosshair; touch-action:none; }
+.sn-floor{ position:absolute; left:0; top:0; width:2610px; height:1456px; transform-origin:0 0; will-change:transform; background-color:#0A1A16; pointer-events:none; }
+.sn-hud{ position:absolute; inset:0; z-index:6; pointer-events:none; }
+.sn-hud button{ pointer-events:auto; }
+.sn-sp{ flex:1; }
+.sn-brand{ position:absolute; left:22px; top:14px; display:flex; flex-direction:column; gap:5px; pointer-events:auto; cursor:pointer; }
+.sn-logo{ margin:0; display:flex; align-items:center; gap:10px; font:400 38px/1 var(--display); letter-spacing:.02em; text-shadow:0 3px 0 rgba(3,9,7,.8); }
 .sn-logo b{ color:var(--lime); font-weight:400; } .sn-logo i{ color:var(--pink); font-style:normal; }
 .sn-mark{ flex:none; display:block; }
-.sn-sp{ flex:1; }
-.sn-chip{ position:relative; height:76px; min-width:150px; padding:6px 26px 6px 54px; border-radius:999px; background:var(--panel); border:3px solid var(--border); display:flex; flex-direction:column; justify-content:center; }
-.sn-chip::before{ content:''; position:absolute; left:18px; top:50%; width:22px; height:22px; margin-top:-11px; border-radius:50%; background:var(--c,var(--jade)); box-shadow:inset -4px -4px 0 rgba(0,0,0,.25); }
-.sn-chip .l{ font:800 18px/1 var(--body); letter-spacing:.13em; text-transform:uppercase; color:var(--muted); }
-.sn-chip .v{ font:400 40px/1.05 var(--display); letter-spacing:.02em; font-variant-numeric:tabular-nums; }
-#sn-timerchip{ --c:#5E8C7E; min-width:170px; } #sn-timerchip .v{ font-size:44px; }
-#sn-scorechip{ --c:var(--pink); min-width:180px; } #sn-lenchip{ --c:var(--lime); } #sn-cashchip{ --c:#4ADE80; } #sn-streakchip{ --c:var(--sun); }
+.sn-chips{ position:absolute; right:22px; top:14px; display:flex; gap:10px; white-space:nowrap; }
+.sn-chip{ position:relative; height:62px; min-width:118px; padding:5px 18px 5px 42px; border-radius:999px; background:rgba(14,30,27,.9); border:3px solid var(--border); display:flex; flex-direction:column; justify-content:center; }
+.sn-chip::before{ content:''; position:absolute; left:14px; top:50%; width:18px; height:18px; margin-top:-9px; border-radius:50%; background:var(--c,var(--jade)); box-shadow:inset -3px -3px 0 rgba(0,0,0,.25); }
+.sn-chip .l{ font:800 14px/1 var(--body); letter-spacing:.13em; text-transform:uppercase; color:var(--muted); }
+.sn-chip .v{ font:400 31px/1.05 var(--display); letter-spacing:.02em; font-variant-numeric:tabular-nums; }
+#sn-timerchip{ --c:#5E8C7E; position:absolute; left:50%; top:14px; margin-left:-82px; width:164px; min-width:0; } #sn-timerchip .v{ font-size:34px; }
+#sn-scorechip{ --c:var(--pink); min-width:170px; } #sn-lenchip{ --c:var(--lime); } #sn-cashchip{ --c:#4ADE80; } #sn-streakchip{ --c:var(--sun); }
 #sn-lenchip .v{ color:var(--lime); } #sn-cashchip .v{ color:#4ADE80; } #sn-streakchip .v{ color:var(--sun); }
 #sn-timerchip.low{ border-color:var(--no); } #sn-timerchip.low .v{ color:var(--no); }
+#sn-timerchip.final{ border-color:var(--sun); } #sn-timerchip.final .l{ color:var(--sun); }
+#sn-add{ position:absolute; left:42px; top:60px; font:400 26px/1 var(--display); color:var(--sun); opacity:0; pointer-events:none; text-shadow:0 2px 0 rgba(3,9,7,.9); }
+#sn-add.go{ animation:snAdd 1s ease-out; } @keyframes snAdd{ 0%{ opacity:1; transform:translateY(0); } 100%{ opacity:0; transform:translateY(16px); } }
 
-/* main: the arena fills the left, a slim side panel on the right */
-#sn-main{ display:grid; grid-template-columns:minmax(0,1fr) 330px; gap:18px; min-height:0; }
-.sn-arena{ position:relative; width:1516px; height:942px; border-radius:26px; overflow:hidden; border:3px solid #1F4A3E; background:#030907; box-shadow:0 0 0 6px #08160F, 0 22px 50px rgba(0,0,0,.45); }
-#sn-canvas{ position:absolute; left:0; top:0; width:1510px; height:936px; cursor:crosshair; touch-action:none; }
-.sn-floor{ position:absolute; left:0; top:0; width:2160px; height:1352px; transform-origin:0 0; will-change:transform; background-color:#0A1A16; pointer-events:none; }
-.sn-side{ min-height:0; display:flex; flex-direction:column; gap:14px; }
-.sn-board{ border-radius:22px; background:var(--panel); border:3px solid var(--border); padding:16px 16px 12px; }
-.sn-board h3{ margin:0 0 10px 4px; font:400 30px/1 var(--display); letter-spacing:.03em; color:var(--sun); }
-.sn-row{ height:42px; display:grid; grid-template-columns:34px 22px minmax(0,1fr) auto; align-items:center; gap:10px; padding:0 10px; border-radius:12px; font:700 23px/1 var(--body); color:#D5EAE2; }
-.sn-row .rk{ font:400 24px/1 var(--display); color:var(--muted); text-align:right; }
-.sn-row .dot{ width:20px; height:20px; border-radius:50%; box-shadow:inset -3px -3px 0 rgba(0,0,0,.3); }
-.sn-row .nm{ overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
-.sn-row .ln{ font:400 26px/1 var(--display); font-variant-numeric:tabular-nums; }
+/* right side: the board and this run's challenges, see-through so the arena shows behind them */
+.sn-side{ position:absolute; right:22px; top:90px; width:286px; display:flex; flex-direction:column; gap:10px; }
+.sn-board,.sn-chalbox{ border-radius:18px; background:rgba(8,20,17,.78); border:2px solid var(--border); padding:10px 10px 8px; }
+.sn-board h3,.sn-chalbox h3{ margin:0 0 6px 6px; display:flex; justify-content:space-between; align-items:baseline; font:400 22px/1 var(--display); letter-spacing:.03em; color:var(--sun); }
+.sn-chalbox h3 span{ font:800 14px/1 var(--body); letter-spacing:.06em; color:var(--muted); margin-right:4px; }
+.sn-row{ height:31px; display:grid; grid-template-columns:24px 16px minmax(0,1fr) auto; align-items:center; gap:8px; padding:0 8px; border-radius:9px; font:700 18px/1 var(--body); color:#D5EAE2; }
+.sn-row .rk{ font:400 19px/1 var(--display); color:var(--muted); text-align:right; }
+.sn-row .dot{ width:15px; height:15px; border-radius:50%; box-shadow:inset -2px -2px 0 rgba(0,0,0,.3); }
+.sn-row .nm{ overflow:hidden; text-overflow:ellipsis; white-space:nowrap; } .sn-row .nm small{ font:700 13px/1 var(--body); letter-spacing:.05em; text-transform:uppercase; color:var(--muted); margin-left:6px; }
+.sn-row .ln{ font:400 20px/1 var(--display); font-variant-numeric:tabular-nums; }
 .sn-row.me{ background:rgba(166,255,60,.14); color:var(--lime); } .sn-row.me .rk{ color:var(--lime); }
 .sn-row.king .rk{ color:var(--sun); }
 .sn-row.gone{ color:var(--muted); font-style:italic; }
-.sn-mini{ display:flex; gap:10px; margin-top:8px; padding-top:10px; border-top:2px solid var(--border); }
-.sn-mini div{ flex:1; text-align:center; font:800 15px/1.2 var(--body); letter-spacing:.1em; text-transform:uppercase; color:var(--muted); }
-.sn-mini b{ display:block; font:400 30px/1.1 var(--display); letter-spacing:.02em; color:var(--text); }
-.sn-gauge{ position:relative; display:flex; align-items:center; gap:16px; border-radius:22px; background:var(--panel); border:3px solid var(--border); padding:14px 18px; }
-.sn-ring{ position:relative; flex:none; width:132px; height:132px; }
-.sn-ring svg{ position:absolute; inset:0; transform:rotate(-90deg); }
-.sn-ring circle{ fill:none; stroke-width:14; } .sn-ring .bg{ stroke:rgba(255,255,255,.1); } .sn-ring .fg{ stroke:var(--sun); stroke-linecap:round; stroke-dasharray:351.86; stroke-dashoffset:351.86; }
-.sn-ring .v{ position:absolute; inset:0; display:grid; place-items:center; font:400 46px/1 var(--display); padding-bottom:4px; }
-.sn-gauge .t{ font:800 18px/1.3 var(--body); letter-spacing:.12em; text-transform:uppercase; color:var(--muted); }
-.sn-gauge .t b{ display:block; font:400 34px/1 var(--display); letter-spacing:.03em; color:var(--sun); text-transform:none; margin-bottom:6px; }
-.sn-gauge.empty{ border-color:var(--no); isolation:isolate; }
-.sn-gauge.empty::after{ content:''; position:absolute; inset:0; border-radius:inherit; background:var(--no); opacity:0; z-index:-1; pointer-events:none; animation:snPulseO 1s infinite; }
-@keyframes snPulseO{ 50%{ opacity:.22; } }
-.sn-btn{ height:96px; border-radius:22px; display:flex; align-items:center; justify-content:center; gap:14px; font:400 36px/1 var(--display); letter-spacing:.03em; }
-.sn-btn kbd{ padding:7px 10px; border-radius:8px; background:rgba(0,0,0,.2); font:800 19px/1 var(--body); letter-spacing:0; }
-#sn-stopbtn{ position:relative; background:var(--lime); color:#0B2200; box-shadow:0 6px 0 #5FA51A; isolation:isolate; }
-#sn-stopbtn.low::after{ content:''; position:absolute; inset:-6px; border-radius:26px; box-shadow:0 0 0 5px var(--lime), 0 0 30px var(--lime); opacity:0; z-index:-1; pointer-events:none; animation:snPulseO2 .9s infinite; }
+.sn-mini{ display:flex; gap:8px; margin-top:6px; padding-top:7px; border-top:2px solid var(--border); }
+.sn-mini div{ flex:1; text-align:center; font:800 12px/1.2 var(--body); letter-spacing:.1em; text-transform:uppercase; color:var(--muted); }
+.sn-mini b{ display:block; font:400 23px/1.1 var(--display); letter-spacing:.02em; color:var(--text); }
+.sn-ci{ display:flex; align-items:center; gap:8px; min-height:36px; padding:3px 8px; border-radius:9px; font:700 16px/1.15 var(--body); color:var(--text); }
+.sn-ci .b{ flex:none; width:20px; height:20px; border-radius:6px; border:3px solid var(--border); display:grid; place-items:center; font:900 13px/1 var(--body); color:#06110F; }
+.sn-ci .t{ flex:1; min-width:0; } .sn-ci .p{ flex:none; font:800 15px/1 var(--body); color:var(--sun); }
+.sn-ci.done{ color:var(--ok); } .sn-ci.done .b{ background:var(--ok); border-color:var(--ok); }
+
+/* bottom: the energy bar with the snack stop and shop buttons */
+.sn-bar{ position:absolute; left:50%; bottom:16px; width:900px; margin-left:-450px; display:flex; align-items:center; gap:12px; }
+.sn-stopped .sn-bar,.sn-stopped #sn-boostbtn{ visibility:hidden; }
+.sn-gauge{ position:relative; flex:1; height:50px; border-radius:999px; background:rgba(4,16,12,.88); border:3px solid var(--border); overflow:hidden; }
+#sn-gfill{ position:absolute; left:0; top:0; bottom:0; width:0; background:linear-gradient(90deg,#E8A512,var(--sun)); transition:width .15s linear; }
+.sn-gauge span{ position:absolute; inset:0; display:flex; align-items:center; justify-content:center; gap:10px; font:800 19px/1 var(--body); color:#fff; text-shadow:0 2px 4px rgba(0,0,0,.9); white-space:nowrap; }
+.sn-gauge span b{ font:400 27px/1 var(--display); }
+.sn-gauge.empty{ border-color:var(--no); }
+.sn-gauge.empty::after{ content:''; position:absolute; inset:0; background:var(--no); opacity:0; pointer-events:none; animation:snPulseO 1s infinite; }
+@keyframes snPulseO{ 50%{ opacity:.25; } }
+.sn-btn{ flex:none; height:50px; padding:0 18px; border-radius:999px; display:flex; align-items:center; justify-content:center; gap:10px; font:400 24px/1 var(--display); letter-spacing:.03em; white-space:nowrap; }
+.sn-btn kbd{ padding:5px 8px; border-radius:7px; background:rgba(0,0,0,.2); font:800 15px/1 var(--body); letter-spacing:0; }
+#sn-stopbtn{ position:relative; background:var(--lime); color:#0B2200; box-shadow:0 4px 0 #5FA51A; isolation:isolate; }
+#sn-stopbtn.low::after{ content:''; position:absolute; inset:-6px; border-radius:999px; box-shadow:0 0 0 5px var(--lime), 0 0 30px var(--lime); opacity:0; z-index:-1; pointer-events:none; animation:snPulseO2 .9s infinite; }
 @keyframes snPulseO2{ 50%{ opacity:1; } }
-#sn-boostbtn{ background:var(--panel); border:3px solid var(--sun); color:var(--sun); touch-action:none; }
+#sn-shopbtn2{ background:rgba(14,30,27,.9); border:3px solid var(--sun); color:var(--sun); }
+#sn-boostbtn{ position:absolute; right:210px; bottom:22px; width:170px; height:110px; border-radius:26px; display:none; background:rgba(14,30,27,.9); border:3px solid var(--sun); color:var(--sun); touch-action:none; font:400 28px/1.05 var(--display); }
 #sn-boostbtn.on{ background:var(--sun); color:#2A1E00; }
-.sn-hint{ font:600 19px/1.35 var(--body); color:var(--muted); text-align:center; padding:0 6px; }
+@media (pointer:coarse){ #sn-boostbtn{ display:block; } }
 
 /* the snack stop: a card over the frozen arena */
 .sn-stop{ position:absolute; inset:0; z-index:5; display:grid; place-items:center; background:rgba(3,9,7,.72); }
-.sn-card{ position:relative; width:1310px; min-height:660px; max-height:918px; border-radius:30px; padding:22px 30px 22px; display:flex; flex-direction:column; gap:12px;
+.sn-card{ position:relative; width:1250px; min-height:660px; max-height:918px; border-radius:30px; padding:22px 30px 22px; display:flex; flex-direction:column; gap:12px;
   background:linear-gradient(180deg,#0F231E,#091612); border:3px solid var(--lime); box-shadow:0 0 0 8px rgba(166,255,60,.1), 0 30px 80px rgba(0,0,0,.6); }
 .sn-card::before{ content:''; position:absolute; left:30px; right:30px; top:-3px; height:9px; border-radius:0 0 8px 8px;
   background:radial-gradient(circle at 9px 0, var(--lime) 0 7px, transparent 7.5px) 0 0/18px 9px; opacity:.9; }
@@ -163,7 +174,7 @@ kbd{ font:inherit; }
 .sn-step b{ display:block; font:400 44px/1 var(--display); letter-spacing:.03em; color:var(--lime); margin-bottom:10px; }
 .sn-step:nth-child(2) b{ color:var(--sun); } .sn-step:nth-child(3) b{ color:var(--pink); }
 .sn-rowx{ display:flex; justify-content:center; align-items:center; gap:16px; margin-bottom:24px; flex-wrap:wrap; }
-.sn-input{ width:520px; height:84px; border-radius:999px; border:3px solid var(--border); background:var(--panel); color:var(--text); font:800 36px/1 var(--body); padding:0 34px; -webkit-user-select:text; user-select:text; }
+.sn-input{ width:470px; height:84px; border-radius:999px; border:3px solid var(--border); background:var(--panel); color:var(--text); font:800 36px/1 var(--body); padding:0 34px; -webkit-user-select:text; user-select:text; }
 .sn-input:focus{ outline:none; border-color:var(--lime); }
 .sn-start{ height:100px; padding:0 100px; border-radius:999px; background:var(--lime); color:#0B2200; font:400 62px/1 var(--display); letter-spacing:.04em; box-shadow:0 8px 0 #5FA51A; }
 .sn-start:disabled{ background:var(--panel-2); color:var(--muted); box-shadow:none; }
@@ -177,10 +188,18 @@ kbd{ font:inherit; }
 .sn-topics{ display:grid; grid-template-columns:repeat(auto-fit,minmax(0,1fr)); gap:14px; margin-bottom:22px; }
 .sn-again{ height:76px; padding:0 40px; border-radius:999px; background:var(--panel); border:3px solid var(--border); font:400 36px/1 var(--display); letter-spacing:.03em; }
 .sn-again.arm{ border-color:var(--no); color:var(--no); }
-.sn-credit{ font:800 18px/1 var(--body); letter-spacing:.14em; text-transform:uppercase; color:var(--muted); white-space:nowrap; }
+.sn-mode{ display:inline-flex; gap:10px; }
+.sn-len{ height:84px; padding:0 24px; border-radius:999px; background:var(--panel); border:3px solid var(--border); font:400 34px/1 var(--display); letter-spacing:.04em; color:var(--muted); }
+.sn-len span{ font:800 20px/1 var(--body); margin-left:8px; }
+.sn-len[aria-pressed="true"]{ border-color:var(--sun); color:var(--sun); background:color-mix(in srgb,var(--sun) 12%,var(--panel)); }
+.sn-badges{ display:flex; justify-content:center; gap:12px; margin:0 0 16px; flex-wrap:wrap; }
+.sn-badge{ display:flex; align-items:center; gap:10px; padding:9px 18px; border-radius:999px; background:var(--panel); border:3px solid var(--border); font:700 22px/1.2 var(--body); color:var(--muted); }
+.sn-badge b{ font:900 22px/1 var(--body); } .sn-badge.done{ border-color:var(--ok); color:var(--text); } .sn-badge.done b{ color:var(--ok); }
+.sn-badge.pro{ border-color:var(--sun); color:var(--sun); }
+.sn-credit{ font:800 15px/1 var(--body); letter-spacing:.14em; text-transform:uppercase; color:var(--muted); white-space:nowrap; }
 .sn-over .sn-credit{ position:absolute; right:36px; bottom:28px; font-size:24px; }
 .sn-toast.top{ padding:9px 24px; font-size:24px; }   /* during a snack stop: smaller, sitting on the card's top edge */
-.sn-toast{ position:absolute; left:786px; top:200px; white-space:nowrap; transform:translateX(-50%); z-index:30; padding:16px 30px; border-radius:999px; background:var(--lime); color:#0B2200; font:800 30px/1 var(--body); pointer-events:none; }
+.sn-toast{ position:absolute; left:960px; top:214px; white-space:nowrap; transform:translateX(-50%); z-index:30; padding:16px 30px; border-radius:999px; background:var(--lime); color:#0B2200; font:800 30px/1 var(--body); pointer-events:none; }
 #sn-confetti{ position:absolute; left:0; top:0; width:1920px; height:1080px; z-index:18; pointer-events:none; }
 
 @font-face{ font-family:'Spitz Digits'; font-style:normal; font-weight:100 900; font-display:block; unicode-range:U+0030-0039; src:url(data:font/woff2;base64,d09GMgABAAAAAAfMABAAAAAADMwAAAdzAAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAG4EiHBgGYAA8CAIJgmEREAqKHIkfCxoAATYCJAMwBCAFhWIHIAwHGxoLEdWsHsg0UhbO38//T/ftTibfwYN+m6xocqCFakUkg7hmwWfBi2YPp+e8pXKtVlvMSpPxgf+bf+5qAKrbIN9ag8OIO4VBfADxtyf8cL/Ui8IojRS9U7of+S4iKHOZYEcDDKAOqgKbwHiOY94Su1qgT+UXbgcGIIoUHLA1C7esQxgmVPJ9EF+9dFPTiUoBJgyZG4aJSE8LYgnmoQ0lcJADhiAMcIQQRgTR6v1HIQBDvwWHg6D+hJB+h7D+ABNcv0AQk+GO+gVi+gsMBDEeEf0JDBxjo5B+tzrNREzE3Z25GWdnEAACOwIWBNnkxIpfxRL2tWQgEIQoMX0mV3PVkNwMxY3lFSiCwIxAz78eIDTEfnJ+nO/OBXYEzggg9oXus50DsMBXULZgIm+/JRMMBnFAa8T26Vrrl7oPAXW/VwHBqaVIk9fL2Cl5menDVJbsjfD581xijhDlK8uILXDJcIgV2C5xR1QQz65o8TKlUEJVL1GiQqxYuITM7Ipk9xYvc6mS0wSh1Vsp97d5NhXJuNO6VMqZLpk0+KZXSQiJVdj8VYho9c+lgFP7dp7T5DV75JfFqahMxm1blNPtJo9ul8VtKV0Krq9DiPK9KyevlBOqBAtcChMf0OpRUZwglaock2mTr1RcZUrFzu2Rlxkkm6JxxLPLLzO/qTPvZ9pxuFGmnWnLuC3LXIo4ta1eeVnc5sC9LNowDIwJaH2JEsCIiDuZHg1d7CJgXLgYYRNuxgCT0OJuHEbCCmWXjnLyrZE5lpVv7fYHdHlUDclZ17A81j0oXdA1JI2qASn8QWmse7h9945Fu9tmLcZpqxvp7eLPkI9mXZduPo2q+4+f530o+xgxNgJjmgjOOYB99rlD24jeoxfPaozt3r3bKGfNGnauU/XU7dRsLC5+5bjjgRt37rRLMgtzZO3auRkF2rkZ1ITx8nv3juFr3K5ve3tWsWTfxHNsKRSUqbrImrNw2aeeP7wdPTuOXNAcv3RsV/t9CbfVbSNFu4zRfjyY7ApJiCPKoue2BNYro7FuJt2ZjJLBORt2sPHWPZvz1DGqyeLerZiczYIt/6G2pXhfzrTfEresanSUXh1UULgmaISWjsYts9+akWG/LW6ZdGyEXhtUULA6aJSuGotbZr9tTYOrqdQrLynCPyApwjvPVOrqair1zkuKCPBPivDKM5XC/c1SxpqpuwyJ/p3L5HPSBJOIYGxNDZqe39VS9TDUdFlwDymjGrxrqFJhYqFrLc9+w7eXtuzH+3iCjOGoAq9Ktlzbr+mSZO7s9Eugin4MSk7O67kZ3hXUbNxop/D5azcjK8+91LbM2NNq/fdPNiaNbUeNdIob4+cps4gb+jZCLQH5wZ0bKLhnLlwcsEcszYn/mNwsPxs+ry1rV5O1oYBL3Z89s4CTpJkO3onnGYT+tlMOpleMNdX5ijZ5ST/D7utO1pskBngrfvTlHlvWeS+sPaRWT2Els6PtpvgIuemmmdrO5jFqlNlHG27K1jj9eHUeYeKWq3pIqd/Re7mJ8Yqvluo7LmZpuOUsDm6Q8xYituhfW9rZuRPXklpLlvp1FGT1By+w3JQp41zm7aqcN0N6OLTJJUslS1/CSmeNRluvtk0Oz7IN41vnx1F2c1ySMxf51dG8Ge2tnOUr66ysRCuXc9jLV4isrOpWLEeEbWKphfCNdRH/aOBiO2miJsvq1UsOa3s4DBAjPCh06U4srhB0uI4axdCn/RYrCtfUuhvnOokj+HOpYGp+Znn2wpkV+3xzw9pMa92KBbG5TnVRmdR8KrjAS7xkdBH39NdVbM6ur6e53NOTuzjsVZOnid3c07dWsdmrJk9zyVOTq9jsVbdOQcDwLmAdD99dtGS4YTtf4VmhVmZUZNvh0/oiiS00FWrZBUvILTbpjcf6uVGSeT61hfzxrDrRkWnDpxPqxi+WDWyNfLdEl71thtDS0nP6VBZr2wyRpaXX9CkAABAACPDmf249UaAb+lVNUw0AcMHvKRMA7rhcvvnf8q+vWqLqXwDqUAIAEIDy8u/TNLWG/4f/r1JL/LqQbkmLmA5oX6asBxbD8v9LpiGsmEEwYKYCzAhYMOeCZGrBgDkTLGYtLIR2LfRBFSXfMFQAjXciWx+2AFBD2dcuylQHpPIJdmEiYEaomJSggx8mBkJxGP02umaDSRkWaDOpwB4SRkc+H6hAAxpQg2B4wAPNXtEdRahRHlKCCtBwRzXqUA4PyFCJEtBQoF5xwO4eSEQc+BAgGWI43w3ecIcnEtGIEkhRifCQBsSgEa1wgwg0ytEIGYpQh3TQwNRDezUUIOFFNtoTXqQuUrFHzkD+KUJAIQUCRCNk5jkqC5ptfz6qUYNW1KES5ee0HwlHlMAJJLxnLXuCRPG6gIcARfvgxqMNdFeJStTPwDQLIEViopQyBRLUPCjThBxFGZSwxvdRliAOTiw2pyCDDOQKoL6CrhM9v2oTaJQixZpQxKNzFYshAy2XG6FAKQpDAlQ0V1LX1kVesZUkoNHfc4f2nQHuDFNyyH4UEviv8Sc3t4v9qvmZUwAAAA==) format('woff2'); }
@@ -189,7 +208,7 @@ kbd{ font:inherit; }
 /* ================= SPITZ ARCADE BRAND: the shared styles live in games/kit.js (anything below is this game's own) ================= */
 
 /* the full-screen reminder sits in the empty middle of the top bar */
-:root{ --sz-fs-x:0.52; --sz-fs-y:top; }   /* during play the hint sits at the top of the stage, between the Time chip and the score chips, and follows the stage at any window size */
+:root{ --sz-fs-x:0.335; --sz-fs-y:top; --sz-fs-top:20; }   /* during play the hint sits at the top of the stage, between the Time chip and the score chips, and follows the stage at any window size */
 /* start screen steps and scene (2026-11-05) */
 #sn-start .sn-step{ background:none; border:0; border-radius:0; box-shadow:none; transform:none; padding:0; }
 #sn-start .sn-steps{ gap:34px; }
@@ -210,47 +229,48 @@ kbd{ font:inherit; }
     <circle cx="98" cy="24" r="16" fill="#A6FF3C"/><circle cx="103" cy="18" r="6" fill="#fff"/><circle cx="105" cy="17" r="3" fill="#06110F"/><path d="M112 30 l9 3 l-6 1 l6 4 l-10 -3" fill="#FF4FB8"/></symbol>
 </defs></svg>
 <div id="stage">
-  <div class="sn-top">
-    <div class="sn-brand"><h1 class="sn-logo"><svg class="sn-mark" width="78" height="46"><use href="#sn-snek"/></svg><span><b>SNAKE</b> <i>ARENA</i></span></h1><span class="sn-credit sz-credit">Made by Spitz <i class="sz-burger" aria-hidden="true"></i></span></div>
-    <div class="sn-chip" id="sn-timerchip"><span class="l">Time</span><span class="v" id="sn-time">5:00</span></div>
-    <span class="sn-sp"></span>
-    <div class="sn-chip" id="sn-scorechip"><span class="l">Score</span><span class="v" id="sn-score">0</span></div>
-    <div class="sn-chip" id="sn-lenchip"><span class="l">Length</span><span class="v" id="sn-len">0</span></div>
-    <div class="sn-chip" id="sn-cashchip"><span class="l">Cash</span><span class="v" id="sn-cash">$0</span></div>
-    <div class="sn-chip" id="sn-streakchip"><span class="l">Streak</span><span class="v" id="sn-streak">0</span></div>
-  </div>
-  <div id="sn-main">
-    <div class="sn-arena" id="sn-arena">
-      <div class="sn-floor" id="sn-floor"></div>
-      <canvas id="sn-canvas" width="1510" height="936" aria-label="The arena. Your snake is the green one. Eat snacks, lasso them by circling, and make the Rivals crash into you."></canvas>
-      <div class="sn-stop" id="sn-stop" hidden>
-        <div class="sn-card" id="sn-q">
-          <div class="sn-qhead"><span class="sn-stoptitle" id="sn-stoptitle">SNACK STOP</span><span class="sn-tag" id="sn-tag">Questions</span>
-            <div class="sn-tank"><div class="sn-tankfill" id="sn-tankfill"></div><span id="sn-tanktxt">Energy 0 / 100</span></div><span class="sn-need" id="sn-need"></span>
-            <button class="sn-shopbtn" id="sn-shopbtn" aria-label="Open the shop, key B">Shop <kbd>B</kbd></button></div>
-          <div class="sn-prompt" id="sn-prompt"></div>
-          <div id="sn-body"><div id="sn-visual"></div><div class="sn-choices" id="sn-choices"></div></div>
-          <div class="sn-fb" id="sn-fb"></div>
-          <div class="sn-foot"><button class="sn-next" id="sn-next" disabled>Next question ›</button><button class="sn-go" id="sn-go" disabled>Slither! <kbd>Space</kbd></button></div>
-          <div class="sn-shop" id="sn-shop" hidden>
-            <div class="sn-shophead"><h2>Snake Shop</h2><span class="cash" id="sn-shopcash">$0</span><span class="sn-sp"></span><button class="sn-x" id="sn-shopx" aria-label="Back to the questions, key B or Esc">Back to questions</button></div>
-            <div class="sn-sec">Upgrades (keep for the whole run)</div>
-            <div class="sn-grid" id="sn-upg"></div>
-            <div class="sn-sec">Power-ups (start when you slither)</div>
-            <div class="sn-grid three" id="sn-pow"></div>
-            <div class="sn-shopnote">Cash comes from right answers. Power-ups only tick down while you slither.</div>
-          </div>
+  <div class="sn-arena" id="sn-arena">
+    <div class="sn-floor" id="sn-floor"></div>
+    <canvas id="sn-canvas" width="1920" height="1080" aria-label="The arena. Your snake is the green one. Eat snacks, lasso them by circling, and make the Rivals crash into you."></canvas>
+    <div class="sn-hud" id="sn-hud">
+      <div class="sn-brand" id="sn-brand"><h1 class="sn-logo"><svg class="sn-mark" width="56" height="33"><use href="#sn-snek"/></svg><span><b>SNAKE</b> <i>ARENA</i></span></h1><span class="sn-credit sz-credit">Made by Spitz <i class="sz-burger" aria-hidden="true"></i></span></div>
+      <div class="sn-chip" id="sn-timerchip"><span class="l" id="sn-timel">Time</span><span class="v" id="sn-time">5:00</span></div>
+      <div class="sn-chips">
+        <div class="sn-chip" id="sn-scorechip"><span class="l" id="sn-scorel">Points</span><span class="v" id="sn-score">0</span><span id="sn-add"></span></div>
+        <div class="sn-chip" id="sn-lenchip"><span class="l">Length</span><span class="v" id="sn-len">0</span></div>
+        <div class="sn-chip" id="sn-cashchip"><span class="l">Cash</span><span class="v" id="sn-cash">$0</span></div>
+        <div class="sn-chip" id="sn-streakchip"><span class="l">Streak</span><span class="v" id="sn-streak">0</span></div>
+      </div>
+      <div class="sn-side">
+        <div class="sn-board"><h3>Longest snakes</h3><div id="sn-rows"></div>
+          <div class="sn-mini"><div><b id="sn-tk">0</b>Takedowns</div><div><b id="sn-king">0:00</b>King time</div></div></div>
+        <div class="sn-chalbox"><h3>Challenges <span id="sn-chalpts">+1,000 each</span></h3><div id="sn-chal"></div></div>
+      </div>
+      <div class="sn-bar">
+        <button class="sn-btn" id="sn-stopbtn" aria-label="Snack stop: answer questions for energy, key Enter">Snack stop <kbd>Enter</kbd></button>
+        <div class="sn-gauge" id="sn-gauge"><div id="sn-gfill"></div><span>Energy <b id="sn-gv">0</b> · hold Space to boost</span></div>
+        <button class="sn-btn" id="sn-shopbtn2" aria-label="Open the shop, key B">Shop <kbd>B</kbd></button>
+      </div>
+      <button id="sn-boostbtn" aria-label="Hold to boost">Hold to<br>boost</button>
+    </div>
+    <div class="sn-stop" id="sn-stop" hidden>
+      <div class="sn-card" id="sn-q">
+        <div class="sn-qhead"><span class="sn-stoptitle" id="sn-stoptitle">SNACK STOP</span><span class="sn-tag" id="sn-tag">Questions</span>
+          <div class="sn-tank"><div class="sn-tankfill" id="sn-tankfill"></div><span id="sn-tanktxt">Energy 0 / 100</span></div><span class="sn-need" id="sn-need"></span>
+          <button class="sn-shopbtn" id="sn-shopbtn" aria-label="Open the shop, key B">Shop <kbd>B</kbd></button></div>
+        <div class="sn-prompt" id="sn-prompt"></div>
+        <div id="sn-body"><div id="sn-visual"></div><div class="sn-choices" id="sn-choices"></div></div>
+        <div class="sn-fb" id="sn-fb"></div>
+        <div class="sn-foot"><button class="sn-next" id="sn-next" disabled>Next question ›</button><button class="sn-go" id="sn-go" disabled>Slither! <kbd>Space</kbd></button></div>
+        <div class="sn-shop" id="sn-shop" hidden>
+          <div class="sn-shophead"><h2>Snake Shop</h2><span class="cash" id="sn-shopcash">$0</span><span class="sn-sp"></span><button class="sn-x" id="sn-shopx" aria-label="Back to the questions, key B or Esc">Back to questions</button></div>
+          <div class="sn-sec">Upgrades (keep for the whole run)</div>
+          <div class="sn-grid" id="sn-upg"></div>
+          <div class="sn-sec">Power-ups (start when you slither)</div>
+          <div class="sn-grid three" id="sn-pow"></div>
+          <div class="sn-shopnote">Cash comes from right answers. Power-ups only tick down while you slither.</div>
         </div>
       </div>
-    </div>
-    <div class="sn-side">
-      <div class="sn-board"><h3>Longest snakes</h3><div id="sn-rows"></div>
-        <div class="sn-mini"><div><b id="sn-tk">0</b>Takedowns</div><div><b id="sn-king">0:00</b>King time</div></div></div>
-      <div class="sn-gauge" id="sn-gauge"><div class="sn-ring"><svg viewBox="0 0 132 132" width="132" height="132"><circle class="bg" cx="66" cy="66" r="56"/><circle class="fg" id="sn-gfill" cx="66" cy="66" r="56"/></svg><div class="v" id="sn-gv">0</div></div>
-        <div class="t"><b>Energy</b>Hold Space<br>to boost</div></div>
-      <button class="sn-btn" id="sn-stopbtn" aria-label="Snack stop: answer questions for energy, key Enter">Snack stop <kbd>Enter</kbd></button>
-      <button class="sn-btn" id="sn-boostbtn" aria-label="Hold to boost">Hold to boost</button>
-      <div class="sn-hint">Circle around snacks or a Rival’s head to lasso them. Get the Rivals to crash into your body.</div>
     </div>
   </div>
 
@@ -260,19 +280,20 @@ kbd{ font:inherit; }
     <div class="sn-steps">
       <div class="sn-step"><b>Snack stop</b><span id="sn-step1">Answer questions for energy and cash. Slithering uses energy. When it runs out, you stop here, safe.</span></div>
       <div class="sn-step"><b>Lasso</b>Eat snacks to grow. Circle around snacks to scoop them all up at once. Circle a Rival’s head to catch it!</div>
-      <div class="sn-step"><b>Cut them off</b>Boost in front of Rivals so they crash into you. Hunt the Wanted snake, the Titan and the Gold Rush.</div>
+      <div class="sn-step"><b>Cut them off</b>Boost in front of Rivals so they crash into you. A red <span style="color:var(--no);font-weight:900">!</span> means that Rival is coming for you.</div>
     </div>
-    <div class="sn-rowx"><input class="sn-input" id="sn-nameinput" maxlength="24" placeholder="First name + last initial" autocomplete="off" aria-label="Your name"><button class="sz-mus" id="sz-mus" aria-label="Music on or off, key N">♪ Music on</button></div>
+    <div class="sn-rowx"><input class="sn-input" id="sn-nameinput" maxlength="24" placeholder="First name + last initial" autocomplete="off" aria-label="Your name"><button class="sz-mus" id="sz-mus" aria-label="Music on or off, key N">♪ Music on</button><span class="sn-mode" role="group" aria-label="Difficulty"><button class="sn-len" id="sn-rookie" aria-pressed="true">Rookie</button><button class="sn-len" id="sn-pro" aria-pressed="false" title="Sharper Rivals, one more hunter, and a wrong answer costs 10 energy. Points ×1.5">★ All-Pro <span>×1.5</span></button></span></div>
     <button class="sn-start" id="sn-go-start" disabled>Start</button>
-    <div class="sn-keys"><div class="sz-ctl" data-ctl="1234=Answer | ARROWS=Steer | Space=Boost | Enter=Snack stop | B=Shop"></div>N music · M mute · Shift+R new game · F full screen</div>
+    <div class="sn-keys"><div class="sz-ctl" data-ctl="1234=Answer | ARROWS/Mouse=Steer | Space/Click=Boost | Enter=Snack stop | B=Shop"></div>N music · M mute · Shift+R new game · F full screen</div>
   </div><span class="sn-credit sz-credit">Made by Spitz <i class="sz-burger" aria-hidden="true"></i></span></div>
 
   <div class="sn-over" id="sn-end" hidden><div class="sn-box"><div class="sz-eyebrow">Spitz <b>Arcade</b></div>
-    <p class="sn-sub" style="margin:0">Time! Show this screen to your teacher.</p>
+    <p class="sn-sub" style="margin:0">Time!</p>
     <div class="sn-name" id="sn-endname"></div>
     <div class="sn-final" id="sn-endscore">0</div>
     <div class="sn-stats" id="sn-endstats"></div>
     <div class="sn-topics" id="sn-endtopics"></div>
+    <div class="sn-badges" id="sn-badges"></div>
     <button class="sn-again" id="sn-again">Play again</button>
   </div><span class="sn-credit sz-credit">Made by Spitz <i class="sz-burger" aria-hidden="true"></i></span></div>
 
@@ -375,16 +396,19 @@ var snToastT=0; function snToast(msg){ var t=$('sn-toast'); t.textContent=msg; v
   if(inStop&&t.offsetParent){ var c=$('sn-q').getBoundingClientRect(), o=t.offsetParent.getBoundingClientRect(), k=o.height/t.offsetParent.offsetHeight||1; t.style.top=Math.round((c.top-o.top)/k-t.offsetHeight/2)+'px'; } clearTimeout(snToastT); snToastT=setTimeout(function(){ t.hidden=true; },1700); }
 
 /* ================= THE ARENA: sizes and rules (world px and seconds) ================= */
-var CW=1510, CH=936, R=1200, SP=8, START=26, NBOT=7, NPEL=330, NEGG=3, STEP=1/60;
+var CW=1920, CH=1080, R=1200, SP=8, START=26, NBOT=7, NPEL=330, NEGG=3, STEP=1/60;
 var SPD=190, BDRAIN=18, CRUISE=1.1, LOWEN=20, MAXLEN=500, BOTMAX=200;          /* energy: slithering uses CRUISE a second, boosting uses BDRAIN more */
-var PTS={snack:10, orb:25, takedown:250, king:10, gold:50, lassoSnack:15, lassoRival:400, bounty:500, titan:1500, goal:300};
+var PTS={snack:10, orb:25, takedown:250, king:10, gold:50, lassoSnack:15, lassoRival:400, bounty:500, titan:1500, goal:300, blitz:250, multi:250};
+var PRO_X=1.5, PRO_SPILL=10, CH_PTS=1000, FINAL=30;   /* All-Pro: points x1.5 and a wrong answer costs 10 energy; each challenge +1,000; the last 30 seconds pay double */
 var NEED=FAST?3:2;                                    /* questions before each slither */
 var LASSO_MIN=24, LASSO_AREA=4000;                    /* a lasso needs at least 24 body pieces between the head and where it closes, and a real loop inside */
-var EVT_FIRST=35, EVT_GAP=45;                         /* arena events: the first after 35 s of slithering, then every 45 s */
+var EVT_FIRST=30, EVT_GAP=34;                         /* arena events: the first after 30 s of slithering, then one about every 34 s */
 var EVENTS=[
   {id:'rush',    name:'GOLD RUSH',  secs:15, col:'#FFD447', sub:'Gold snacks are 50 points each. Follow the gold arrow!'},
   {id:'titan',   name:'THE TITAN',  secs:40, col:'#FF9F1C', sub:'A giant snake! Cut it off for 1,500 points.'},
-  {id:'squeeze', name:'SQUEEZE',    secs:16, col:'#FF4FB8', sub:'The wall closes in. Takedowns count double!'}
+  {id:'turbo',   name:'TURBO TIME', secs:12, col:'#2DE2E6', sub:'Boosting is free! Hold Space and fly.'},
+  {id:'squeeze', name:'SQUEEZE',    secs:16, col:'#FF4FB8', sub:'The wall closes in. Takedowns count double!'},
+  {id:'blitz',   name:'BOUNTY BLITZ', secs:20, col:'#FFD447', sub:'Every Rival is Wanted: +250 for each one you take down!'}
 ];
 var GOALS=[
   {id:'eat',    n:40, txt:'Eat 40 snacks'},
@@ -421,6 +445,11 @@ function rad(s){ return s.titan?30:11+Math.min(12,Math.max(0,s.len-START)/22); }
 function ringR(){ return S&&S.ring?S.ring:R; }
 function inDisk(rmax){ var a=Math.random()*6.283, d=Math.sqrt(Math.random())*rmax; return {x:Math.cos(a)*d,y:Math.sin(a)*d}; }
 
+/* ---------- RIVAL STYLES (2026-11-10): every Rival plays its own way ----------
+   Cutter: boosts across your path to cut you off. Coiler: circles around you and tries to close the ring. Snacker: races for the big snacks,
+   grows fast and runs from a fight. Lurker: waits by a mystery egg and pounces. */
+var STYLES=['cutter','coiler','snacker','lurker','cutter','snacker','coiler'], STYLE_NAME={cutter:'Cutter',coiler:'Coiler',snacker:'Snacker',lurker:'Lurker'};
+function styleOf(id){ return STYLES[(id-1)%STYLES.length]; }
 function makeSnake(id,me,name,cols,x,y,ang,len){ var s={ id:id, me:me, name:name, cols:cols, x:x, y:y, ang:ang, want:ang, len:len, pts:[], alive:true, boost:false, ghost:me?2.5:1,
     odo:0, fuel:60, spd:me?1:rf(0.9,0.98), sk:me?1:rf(0.75,1.05), hunter:false, dead:0, bx0:x, bx1:x, by0:y, by1:y,
     ai:{ t:0, tx:x, ty:y, want:ang, mode:'eat', hb:0, wander:0 } };
@@ -444,7 +473,7 @@ function makeBot(id,sn,used){ var names=BOT_NAMES.filter(function(n){ return use
   for(var t=0;t<20;t++){ var p=safeSpot(sn,500,Math.max(200,ringR()-450)), len=ri(30,110)-t*3;
     b=makeSnake(id,false,name,col,p.x,p.y,Math.atan2(-p.y,-p.x)+rf(-1.2,1.2),Math.max(START,len));
     if(clearOf(b,sn)) break; }
-  b.hunter=id<=2; return b; }
+  b.style=styleOf(id); return b; }
 function snack(){ var p=inDisk(ringR()-30); return {x:Math.round(p.x),y:Math.round(p.y),v:1,c:ri(0,PEL_COLS.length-1),r:5,o:0}; }
 function newEgg(){ var p=inDisk(Math.max(150,ringR()-160)); return {x:Math.round(p.x),y:Math.round(p.y),gold:Math.random()<0.25}; }
 function newWorld(w){ w.sn=[deadMe()]; var used=[];
@@ -467,31 +496,64 @@ var POW=[
 var S;
 function fresh(){ var s={ name:'', len:5, started:false, over:false, clock:300, phase:'stop', stopKind:'spawn', stopAns:[], spawned:false,
   score:0, kingAcc:0, cash:0, streak:0, best:0, answered:0, correct:0, earned:0, takedowns:0, longest:0, kingT:0, outs:0, topics:QS?QS.topicTable():{},
-  lv:{snacks:0,cash:0,turbo:0,magnet:0}, buff:{ghost:0,double:0,magnet:0}, pack:[], pendLen:0, en:0, ver:2, ring:R, evt:null, evtN:0, nextEvt:EVT_FIRST, wanted:-1, wantT:4, goal:0, gp:0, goals:0, lassos:0, bestLasso:0, eaten:0, eggsOpened:0, bounties:0, lowWarn:false,
+  lv:{snacks:0,cash:0,turbo:0,magnet:0}, buff:{ghost:0,double:0,magnet:0}, pack:[], pendLen:0, en:0, ver:3, pro:proPick(), chal:dealChallenges(), golds:0, lassoRs:0, multis:0, lastTk:-99, final:false, ring:R, evt:null, evtN:0, nextEvt:EVT_FIRST, wanted:-1, wantT:4, goal:0, gp:0, goals:0, lassos:0, bestLasso:0, eaten:0, eggsOpened:0, bounties:0, lowWarn:false,
   q:null, qDone:false, picked:-1, playT:0, spawnT:0, outBy:'', outT:0, cd:0, feed:[], king:-1 };
   newWorld(s); return s; }
 function save(){ try{ var k=function(v){ return typeof v==='number'?Math.round(v*10)/10:v; };
     localStorage.setItem(KEY,JSON.stringify(S,function(n,v){ return typeof v==='number'?k(v):v; })); localStorage.setItem(KEY+'_mute',muted?'1':'0'); }catch(e){} }
-function load(){ try{ var v=JSON.parse(localStorage.getItem(KEY)||'null'); muted=localStorage.getItem(KEY+'_mute')==='1'; if(v&&v.ver===2&&v.topics&&v.lv&&v.sn&&v.sn.length>=NBOT+1&&v.pel) return v; }catch(e){} return null; }
+function load(){ try{ var v=JSON.parse(localStorage.getItem(KEY)||'null'); muted=localStorage.getItem(KEY+'_mute')==='1'; if(v&&v.ver===3&&v.topics&&v.lv&&v.chal&&v.sn&&v.sn.length>=NBOT+1&&v.pel) return v; }catch(e){} return null; }
 function U(id){ var u=UPG.filter(function(x){ return x.id===id; })[0]; return u.vals[S.lv[id]]; }
 function now(){ return Date.now(); }
 function me(){ return S.sn[0]; }
 function dbl(){ return S.buff.double>0?2:1; }
+/* ================= POINTS, ALL-PRO, CHALLENGES (2026-11-10) =================
+   All-Pro: sharper Rivals, one more may come for you at once, a wrong answer costs 10 energy, and every point counts x1.5.
+   Each run deals 3 challenges (1 math, 1 arena, 1 either) worth +1,000 each. The last 30 seconds of the clock pay double. */
+function proPick(){ try{ return localStorage.getItem('snake_arena_pro')==='1'; }catch(e){ return false; } }
+function ptsX(){ return (S&&S.pro?PRO_X:1)*(S&&S.final?2:1); }
+function addPts(n){ if(!S||S.over||!(n>0)) return 0; n=Math.round(n*ptsX()); S.score+=n;
+  if(n>=100){ var a=$('sn-add'); if(a){ a.textContent='+'+n.toLocaleString(); a.classList.remove('go'); void a.offsetWidth; a.classList.add('go'); } } return n; }
+function accPct(){ return S.answered?Math.round(100*S.correct/S.answered):0; }
+var ACCN=FAST?20:10;
+var CHAL={
+  streak:{ math:1, txt:'Get a '+(FAST?12:6)+'-answer streak', n:FAST?12:6, v:function(){ return S.best; } },
+  right:{ math:1, txt:'Answer '+(FAST?30:15)+' right', n:FAST?30:15, v:function(){ return S.correct; } },
+  acc90:{ math:1, end:1, txt:'90% right, '+ACCN+'+ questions', n:90, v:function(){ return S.answered>=ACCN?accPct():0; }, p:function(){ return S.answered<ACCN?S.answered+'/'+ACCN:accPct()+'%'; } },
+  gold:{ math:1, txt:'Open a gold egg', n:1, v:function(){ return S.golds; } },
+  cut3:{ txt:'Take down 3 Rivals', n:3, v:function(){ return S.takedowns; } },
+  lassoR:{ txt:'Lasso a Rival', n:1, v:function(){ return S.lassoRs; } },
+  king:{ txt:'Be the King for 20 seconds', n:20, v:function(){ return Math.floor(S.kingT); } },
+  bounty:{ txt:'Collect a bounty', n:1, v:function(){ return S.bounties; } },
+  len:{ txt:'Grow to length 120', n:120, v:function(){ return S.longest; } },
+  mega:{ txt:'Lasso 10 snacks in one loop', n:10, v:function(){ return S.bestLasso; } },
+  dbl:{ txt:'Get a double takedown', n:1, v:function(){ return S.multis; } } };
+function dealChallenges(){ var ids=Object.keys(CHAL), m=shuffle(ids.filter(function(k){ return CHAL[k].math; })), p=shuffle(ids.filter(function(k){ return !CHAL[k].math; }));
+  var pick0=[m[0],p[0]], rest=shuffle(m.slice(1).concat(p.slice(1))); pick0.push(rest[0]); return pick0.map(function(id){ return {id:id,done:false}; }); }
+function chalProg(c){ var d=CHAL[c.id]; if(c.done) return ''; if(d.p) return d.p(); return d.n>1?Math.min(Math.max(0,d.v()),d.n)+'/'+d.n:''; }
+function chalCheck(final){ if(!S||!S.started||S.over) return; S.chal.forEach(function(c){ var d=CHAL[c.id]; if(c.done||(d.end&&!final)||d.v()<d.n) return; c.done=true; addPts(CH_PTS);
+    if(!final){ SND.open(true); snToast('Challenge done! '+d.txt); } }); }
+var lastChal='';
+function chalDraw(){ var h=S.chal.map(function(c){ var d=CHAL[c.id], p=chalProg(c);
+    return '<div class="sn-ci'+(c.done?' done':'')+'"><span class="b">'+(c.done?'✓':'')+'</span><span class="t">'+d.txt+'</span><span class="p">'+p+'</span></div>'; }).join(''), k=h+(S.pro?1:0);
+  if(k===lastChal) return; lastChal=k; $('sn-chal').innerHTML=h; $('sn-chalpts').textContent='+'+(CH_PTS*(S.pro?PRO_X:1)).toLocaleString()+' each'; }
+function modeDraw(){ $('sn-rookie').setAttribute('aria-pressed',String(!S.pro)); $('sn-pro').setAttribute('aria-pressed',String(!!S.pro)); }
+function setMode(pro){ if(S.started) return; S.pro=pro; try{ localStorage.setItem('snake_arena_pro',pro?'1':'0'); }catch(e){} lastChal=''; modeDraw(); hud(); save(); SND.tick(); }
 function streakBonus(st){ return FAST? Math.min(Math.floor(st/5),4) : Math.min(Math.max(st-1,0),5)*2; }
 
 /* ================= HUD ================= */
 var last={};
 function setTxt(id,v){ if(last[id]!==v){ last[id]=v; $(id).textContent=v; } }
-function hud(){ var P=me(); setTxt('sn-score',Math.floor(S.score).toLocaleString()); setTxt('sn-len',P.alive?Math.floor(P.len):(S.started?'—':0)); setTxt('sn-cash','$'+S.cash); setTxt('sn-streak',S.streak);
+function hud(){ var P=me(); chalCheck(false); chalDraw(); setTxt('sn-scorel',S.pro?'All-Pro pts':'Points'); setTxt('sn-score',Math.floor(S.score).toLocaleString()); setTxt('sn-len',P.alive?Math.floor(P.len):(S.started?'—':0)); setTxt('sn-cash','$'+S.cash); setTxt('sn-streak',S.streak);
   setTxt('sn-tk',S.takedowns); var kt=Math.floor(S.kingT); setTxt('sn-king',Math.floor(kt/60)+':'+('0'+kt%60).slice(-2)); gauge(); if(!$('sn-stop').hidden) stopHud(); if(!$('sn-shop').hidden) drawShop(); }
 var lastG=-1;
-function gauge(){ var b=Math.round(S.en); if(b!==lastG){ lastG=b; $('sn-gv').textContent=b; $('sn-gfill').style.strokeDashoffset=(351.86*(1-b/100)).toFixed(1); }
+function gauge(){ var b=Math.round(S.en); if(b!==lastG){ lastG=b; $('sn-gv').textContent=b; $('sn-gfill').style.width=b+'%'; }
   var low=S.started&&!S.over&&S.phase==='live'&&b<LOWEN; if(last.low!==low){ last.low=low; $('sn-stopbtn').classList.toggle('low',low); $('sn-gauge').classList.toggle('empty',low); } }
-function clockDraw(){ var s=Math.ceil(Math.max(0,S.clock)); setTxt('sn-time',Math.floor(s/60)+':'+('0'+(s%60)).slice(-2)); var low=S.started&&s<=30; if(last.clow!==low){ last.clow=low; $('sn-timerchip').classList.toggle('low',low); } }
+function clockDraw(){ var s=Math.ceil(Math.max(0,S.clock)); setTxt('sn-time',Math.floor(s/60)+':'+('0'+(s%60)).slice(-2)); var low=S.started&&s<=10; if(last.clow!==low){ last.clow=low; $('sn-timerchip').classList.toggle('low',low); }
+  var fin=!!S.final&&!S.over; if(last.fin!==fin){ last.fin=fin; $('sn-timerchip').classList.toggle('final',fin); $('sn-timel').textContent=fin?'Final ×2':'Time'; } }
 /* the side board: every snake by length, the King on top */
 function board(){ var list=S.sn.filter(function(s){ return s.alive&&!s.titan; }).sort(function(a,b){ return b.len-a.len||a.id-b.id; }), h='', P=me();
-  list.forEach(function(s,i){ h+='<div class="sn-row'+(s.me?' me':'')+(i===0?' king':'')+'"><span class="rk">'+(i===0?'♛':i+1)+'</span><span class="dot" style="background:'+s.cols[0]+'"></span><span class="nm">'+(s.me?'You':s.name)+'</span><span class="ln">'+Math.floor(s.len)+'</span></div>'; });
-  if(!P.alive&&S.started) h+='<div class="sn-row me gone"><span class="rk">–</span><span class="dot" style="background:'+ME_COLS[0]+'"></span><span class="nm">You</span><span class="ln" style="font:700 19px var(--body)">'+(S.spawned?'respawning':'ready')+'</span></div>';
+  list.forEach(function(s,i){ h+='<div class="sn-row'+(s.me?' me':'')+(i===0?' king':'')+'"><span class="rk">'+(i===0?'♛':i+1)+'</span><span class="dot" style="background:'+s.cols[0]+'"></span><span class="nm">'+(s.me?'You':s.name+(s.style?'<small>'+STYLE_NAME[s.style]+'</small>':''))+'</span><span class="ln">'+Math.floor(s.len)+'</span></div>'; });
+  if(!P.alive&&S.started) h+='<div class="sn-row me gone"><span class="rk">–</span><span class="dot" style="background:'+ME_COLS[0]+'"></span><span class="nm">You</span><span class="ln" style="font:700 15px var(--body)">'+(S.spawned?'respawning':'ready')+'</span></div>';
   if(last.board!==h){ last.board=h; $('sn-rows').innerHTML=h; } }
 
 /* ================= QUESTIONS UI: the snack stop ================= */
@@ -514,7 +576,7 @@ function newQ(){ clearTimeout(nextT); if(!QS) return; S.q=QS.next(); S.qDone=fal
 function markAnswered(i,fresh){ var q=S.q, btns=$('sn-choices').querySelectorAll('.sn-ch'), c=q.choices[i], fb=$('sn-fb');
   btns.forEach(function(b,j){ b.disabled=true; if(q.choices[j].ok) b.classList.add('right'); else if(j!==i&&!FAST) b.hidden=true; }); if(!c.ok) btns[i].classList.add('wrong');
   if(c.ok){ fb.className='sn-fb ok'; fb.innerHTML='<span class="h">Correct!'+(fresh?' +'+U('snacks')+' energy.':'')+(fresh&&S.streak>1?' Streak '+S.streak+'.':'')+'</span>'+q.explain; $('sn-next').disabled=false; }
-  else { fb.className='sn-fb bad'; fb.innerHTML='<span class="h">Not quite. No energy this time.</span>'+c.why+(FAST?' ':'<br>')+q.explain;
+  else { fb.className='sn-fb bad'; fb.innerHTML='<span class="h">Not quite. '+(fresh&&S.pro?'−'+PRO_SPILL+' energy (All-Pro).':'No energy this time.')+'</span>'+c.why+(FAST?' ':'<br>')+q.explain;
     $('sn-next').disabled=!!fresh; if(fresh&&!FAST){ clearTimeout(lockT); lockT=setTimeout(function(){ $('sn-next').disabled=false; },1800); } } }
 function answer(i){ if(!S.started||S.over||S.phase!=='stop'||!$('sn-shop').hidden||S.qDone||!S.q) return; var c=S.q.choices[i]; if(!c) return; S.qDone=true; S.picked=i; S.answered++;
   if(!S.topics[S.q.topic]) S.topics[S.q.topic]=[0,0]; S.topics[S.q.topic][1]++; S.stopAns.push(c.ok?1:0); fbKeep=true;
@@ -523,7 +585,7 @@ function answer(i){ if(!S.started||S.over||S.phase!=='stop'||!$('sn-shop').hidde
     SND.correct(); if(add>0) SND.fill(); markAnswered(i,true);
     if(S.pack.length) openEgg();
     nextT=setTimeout(function(){ if(S.qDone&&S.phase==='stop') newQ(); },FAST?150:1600); }
-  else { S.streak=0; S.cash=Math.max(0,S.cash-(FAST?3:5)); SND.miss(); markAnswered(i,true);
+  else { S.streak=0; S.cash=Math.max(0,S.cash-(FAST?3:5)); if(S.pro) S.en=Math.max(0,S.en-PRO_SPILL); SND.miss(); markAnswered(i,true);
     if(FAST) nextT=setTimeout(function(){ if(S.qDone&&S.phase==='stop') newQ(); },1200); }
   save(); hud(); }
 $('sn-choices').addEventListener('click',function(e){ var b=e.target.closest('.sn-ch'); if(b) answer(+b.dataset.i); });
@@ -536,7 +598,7 @@ function openEgg(){ var e=S.pack.shift(), gold=e.gold||S.streak>=3, L=pick(LOOT)
   if(L.secs) S.buff[L.id]=Math.max(S.buff[L.id],0)+L.secs*k;
   if(L.grow){ grow(Math.round(L.grow*k)); d='+'+Math.round(L.grow*k)+' length'; }
   if(L.id==='tank'){ S.en=100; S.lowWarn=false; }
-  S.eggsOpened++; goalAdd('egg',1);
+  S.eggsOpened++; if(gold) S.golds++; goalAdd('egg',1);
   if(L.secs) d=d+' for '+Math.round(L.secs*k)+' s';
   reveal={t0:now(),gold:gold,name:L.name,d:d}; snToast((gold?'Gold egg: ':'Egg: ')+L.name+'!'); SND.open(gold); dirty=true; }
 function grow(n){ var P=me(); if(P.alive) P.len=Math.min(MAXLEN,P.len+n); else S.pendLen+=n; }
@@ -552,7 +614,7 @@ function drawShop(){ $('sn-shopcash').textContent='$'+S.cash;
     return '<div class="sn-sc"><div class="n">'+p.name+'</div><div class="d">'+p.d+(p.secs?' ('+p.secs+' s)':'')+'</div><button class="sn-buy" data-p="'+p.id+'"'+(on||S.cash<p.cost?' disabled':'')+'>'+(on?'Active':'Buy $'+p.cost)+'</button></div>'; }).join('');
   if(last.pow!==h2){ last.pow=h2; $('sn-pow').innerHTML=h2; } }
 function openShop(o){ if(!S.started||S.over||S.phase==='out') return; if(o&&S.phase!=='stop') openStop('mid'); if(S.phase!=='stop') return; $('sn-shop').hidden=!o; $('sn-q').classList.toggle('shopping',!!o); if(o){ last.upg=last.pow=null; drawShop(); } }
-$('sn-shopbtn').addEventListener('click',function(){ openShop(true); });
+$('sn-shopbtn').addEventListener('click',function(){ openShop(true); }); $('sn-shopbtn2').addEventListener('click',function(){ openShop(true); });
 $('sn-shopx').addEventListener('click',function(){ openShop(false); });
 $('sn-shop').addEventListener('click',function(e){ var b=e.target.closest('.sn-buy'); if(!b||b.disabled) return;
   if(b.dataset.u){ var u=UPG.filter(function(x){ return x.id===b.dataset.u; })[0], pr=u.cost[S.lv[u.id]]; if(S.cash<pr) return; S.cash-=pr; S.lv[u.id]++; snToast(u.name+' upgraded!'); }
@@ -561,10 +623,10 @@ $('sn-shop').addEventListener('click',function(e){ var b=e.target.closest('.sn-b
 
 /* ================= SNACK STOP, COUNTDOWN, LIVE ================= */
 function openStop(kind){ if(!S.started||S.over) return; fbKeep=false; S.phase='stop'; S.stopKind=kind; S.stopAns=[]; wantEmpty=false;
-  $('sn-stoptitle').textContent=kind==='empty'?'OUT OF ENERGY':'SNACK STOP'; KD={}; boostTouch=false; ptrBoost=false; $('sn-boostbtn').classList.remove('on'); $('sn-stop').hidden=false; $('sn-toast').hidden=true; $('sn-shop').hidden=true; $('sn-q').classList.remove('shopping');
+  $('sn-stoptitle').textContent=kind==='empty'?'OUT OF ENERGY':'SNACK STOP'; KD={}; boostTouch=false; ptrBoost=false; $('sn-boostbtn').classList.remove('on'); $('sn-stop').hidden=false; $('sn-hud').classList.add('sn-stopped'); $('sn-toast').hidden=true; $('sn-shop').hidden=true; $('sn-q').classList.remove('shopping');
   if(!S.q||S.qDone) newQ(); else showQ(); hud(); save(); dirty=true; }
 function leaveStop(){ if(S.phase!=='stop') return; if(!canGo()){ var q=$('sn-q'); q.classList.remove('nudge'); void q.offsetWidth; q.classList.add('nudge'); SND.empty(); return; }
-  clearTimeout(lockT); $('sn-stop').hidden=true; $('sn-shop').hidden=true; $('sn-q').classList.remove('shopping');
+  clearTimeout(lockT); $('sn-stop').hidden=true; $('sn-hud').classList.remove('sn-stopped'); $('sn-shop').hidden=true; $('sn-q').classList.remove('shopping');
   if(S.stopKind==='spawn') spawnMe();
   S.phase='count'; S.cd=S.stopKind==='spawn'?1.5:0.9; cdShown=-1; ctrl.mode=ctrl.mode||'keys';
   if(document.activeElement&&document.activeElement.blur) document.activeElement.blur(); save(); hud(); dirty=true; }
@@ -577,8 +639,9 @@ function playerOut(by){ var P=me(); S.outs++; S.outBy=by?by.name:'The wall'; S.p
 
 /* ================= THE ARENA: moving, eating, crashing ================= */
 var KD={}, ctrl={mode:'keys', px:0, py:0, ax:0, ay:0, inside:false}, ptrBoost=false, boostTouch=false, boostWas=false, wantEmpty=false;
-var cam={x:0,y:0,z:0.62}, pops=[], booms=[], loops=[], ann=null, acc=0, goT=0, cdShown=-1, dirty=true;
+var cam={x:0,y:0,z:0.86}, pops=[], booms=[], loops=[], ann=null, acc=0, goT=0, cdShown=-1, dirty=true;
 function feed(txt,mine){ S.feed.unshift({txt:txt,me:!!mine,t0:now()}); S.feed=S.feed.slice(0,4); }
+function steerHeld(){ return !!(KD.arrowleft||KD.arrowright||KD.arrowup||KD.arrowdown||KD.a||KD.d||KD.w||KD.s); }
 function wantBoost(){ return !!(KD[' ']||KD.shift||ptrBoost||boostTouch); }
 function steerMe(P,dt){ var w=P.want;
   if(ctrl.mode==='keys'){ var mx=(KD.arrowright||KD.d?1:0)-(KD.arrowleft||KD.a?1:0), my=(KD.arrowdown||KD.s?1:0)-(KD.arrowup||KD.w?1:0); if(mx||my) w=Math.atan2(my,mx); }
@@ -586,10 +649,10 @@ function steerMe(P,dt){ var w=P.want;
   P.want=w;
   var wb=wantBoost();
   P.boost=wb&&S.en>0; if(P.boost&&!boostWas) SND.boost(); boostWas=wb;
-  S.en=Math.max(0,S.en-(CRUISE+(P.boost?BDRAIN:0))*dt);                         /* slithering uses energy; boosting uses a lot more */
+  S.en=Math.max(0,S.en-(CRUISE+(P.boost&&!(S.evt&&S.evt.id==='turbo')?BDRAIN:0))*dt);                         /* slithering uses energy; boosting uses a lot more */
   if(S.en<LOWEN&&!S.lowWarn){ S.lowWarn=true; SND.empty(); snToast('Low energy! Press Enter for a snack stop'); }
   if(S.en<=0){ P.boost=false; wantEmpty=true; } }                                 /* out: the snake curls up safe in a snack stop (opened after this step) */
-function move(s,dt){ var r=rad(s), tr=(s.me?4.4:3.4)/(1+(r-11)/30), d=angDiff(s.want,s.ang), mx=tr*dt*(s.boost?0.85:1);
+function move(s,dt){ var r=rad(s), tr=s.me?5.8/(1+(r-11)/55):3.4/(1+(r-11)/30), d=angDiff(s.want,s.ang), mx=tr*dt*(s.boost&&!s.me?0.85:1);
   s.ang+=d>mx?mx:d<-mx?-mx:d;
   var sp=SPD*(s.boost?(s.me?U('turbo'):1.9):1)*s.spd*(s.titan?0.8:1), dx=Math.cos(s.ang)*sp*dt, dy=Math.sin(s.ang)*sp*dt; s.x+=dx; s.y+=dy; s.odo+=sp*dt;
   /* the wall: you slide along it (no crash); Rivals turn back */
@@ -621,18 +684,23 @@ function die(A,B,how){ A.alive=false; A.dead=0; A.boost=false;
   if(orbs>560){ var drop=orbs-560; S.pel=S.pel.filter(function(p){ if(p.o&&drop>0){ drop--; return false; } return true; }); }
   if(A.me){ playerOut(B); return; }
   var wasWanted=S.wanted===A.id; if(wasWanted){ S.wanted=-1; S.wantT=6; }
-  if(B&&B.me){ var squeeze=S.evt&&S.evt.id==='squeeze'?2:1, base=A.titan?PTS.titan:how==='lasso'?PTS.lassoRival:PTS.takedown, pts=(base*squeeze+(wasWanted?PTS.bounty:0))*dbl();
-    S.score+=pts; S.takedowns++; goalAdd('cut',1); if(how==='lasso') goalAdd('lassoR',1); if(wasWanted){ S.bounties++; goalAdd('bounty',1); }
+  if(B&&B.me){ var squeeze=S.evt&&S.evt.id==='squeeze'?2:1, blitz=!wasWanted&&!A.titan&&S.evt&&S.evt.id==='blitz', multi=S.playT-S.lastTk<6, base=A.titan?PTS.titan:how==='lasso'?PTS.lassoRival:PTS.takedown,
+      pts=addPts((base*squeeze+(wasWanted?PTS.bounty:0)+(blitz?PTS.blitz:0)+(multi?PTS.multi:0))*dbl());
+    S.takedowns++; S.lastTk=S.playT; if(multi) S.multis++; goalAdd('cut',1); if(how==='lasso'){ S.lassoRs++; goalAdd('lassoR',1); } if(wasWanted||blitz){ S.bounties++; goalAdd('bounty',1); }
     SND.takedown(); if(wasWanted||A.titan) SND.king();
-    feed(A.titan?'You took down the Titan!':wasWanted?'Bounty! You got '+A.name+'!':how==='lasso'?'You lassoed '+A.name+'!':'You cut off '+A.name+'!',true);
-    pops.push({x:A.x,y:A.y-30,t0:now(),txt:'+'+pts,lab:A.titan?'TITAN DOWN!':wasWanted?'BOUNTY!':how==='lasso'?'LASSOED!':'CUT OFF!',col:A.titan?'#FF9F1C':wasWanted?'#FFD447':'#A6FF3C'});
+    feed(A.titan?'You took down the Titan!':wasWanted||blitz?'Bounty! You got '+A.name+'!':how==='lasso'?'You lassoed '+A.name+'!':'You cut off '+A.name+'!',true);
+    pops.push({x:A.x,y:A.y-30,t0:now(),txt:'+'+pts,lab:A.titan?'TITAN DOWN!':multi?'DOUBLE TAKEDOWN!':wasWanted||blitz?'BOUNTY!':how==='lasso'?'LASSOED!':'CUT OFF!',col:A.titan?'#FF9F1C':wasWanted||blitz||multi?'#FFD447':'#A6FF3C'});
     var sp=stagePt(A.x,A.y); confetti(sp[0],sp[1],A.titan||wasWanted?90:45,2.4); }
   else { S.crashes=(S.crashes||0)+1; feed(A.titan?'The Titan crashed into '+(B?B.name:'the wall')+'!':A.name+' ran into '+(B?B.name:'a wall')+(wasWanted?' (bounty lost)':'')); if(onScreen(A.x,A.y)) SND.crash(); }
   if(A.titan&&S.evt&&S.evt.id==='titan') S.evt.left=0; }
-function stagePt(x,y){ return [31+(CW/2+(x-cam.x)*cam.z), 121+(CH/2+(y-cam.y)*cam.z)]; }
+function stagePt(x,y){ return [CW/2+(x-cam.x)*cam.z, CH/2+(y-cam.y)*cam.z]; }
 function onScreen(x,y){ return Math.abs(x-cam.x)*cam.z<CW/2+40&&Math.abs(y-cam.y)*cam.z<CH/2+40; }
 
-/* ---------- the Rivals: chase snacks, look ahead to dodge bodies and the wall, and a couple of them hunt you ---------- */
+/* ---------- THE RIVALS' BRAINS (2026-11-10) ----------
+   Every Rival chases snacks and looks ahead to dodge bodies and the wall. On top of that each one has a style (see RIVAL STYLES).
+   Fair play: only a few Rivals may come for you at once (1 at first, then 2; one more in All-Pro), never in your first 6 seconds or while you are a ghost,
+   every attack ends after a few seconds and then that Rival rests, and a red ! shows over any Rival that is coming for you.
+   They get a little sharper while you are winning and ease off after you get cut off, so the arena stays close. */
 function blocked(b,ang,look){ var r=rad(b), c=Math.cos(ang), s=Math.sin(ang), sn=S.sn;
   for(var k=0;k<2;k++){ var dist=look*(k?1:0.5), x=b.x+c*dist, y=b.y+s*dist;
     var RR=ringR(); if(x*x+y*y>(RR-r-30)*(RR-r-30)) return true;
@@ -640,28 +708,58 @@ function blocked(b,ang,look){ var r=rad(b), c=Math.cos(ang), s=Math.sin(ang), sn
       if(x<o.bx0-m||x>o.bx1+m||y<o.by0-m||y>o.by1+m) continue;
       var p=o.pts; for(var i=0;i<p.length;i+=2){ var dx=x-p[i][0], dy=y-p[i][1]; if(dx*dx+dy*dy<m*m) return true; } } }
   return false; }
-function huntersOn(){ var n=0; for(var i=1;i<S.sn.length;i++) if(S.sn[i].alive&&S.sn[i].ai.mode==='hunt') n++; return n; }
+function sharp(){ return clamp(0.9+0.04*Math.min(S.takedowns,8)-0.07*Math.min(S.outs,5)+(S.pro?0.2:0)+(S.king===0?0.08:0),0.7,1.35); }
+function atkCap(){ return (S.playT<40?1:2)+(S.pro?1:0); }
+function attackers(){ var n=0; for(var i=1;i<S.sn.length;i++){ var o=S.sn[i]; if(o.alive&&!o.titan&&o.ai.onMe&&S.wanted!==o.id) n++; } return n; }
+function fairGame(P){ return P.alive&&P.ghost<=0&&S.buff.ghost<=0&&S.playT-S.spawnT>6; }
+function endAttack(b,rest){ var a=b.ai; a.onMe=false; a.atk=0; a.kind=''; a.cd=rest; }
+/* aim at the spot where b can cross in front of the moving snake T */
+function cutAim(b,T,a){ var d=Math.hypot(T.x-b.x,T.y-b.y), ts=SPD*(T.boost?(T.me?U('turbo'):1.9):1)*(T.spd||1), bs=SPD*b.spd*(b.boost?1.9:1), tt=clamp(d/(bs*1.5),0.25,1.3), lead=ts*tt+40+rad(T)*2;
+  a.tx=T.x+Math.cos(T.ang)*lead; a.ty=T.y+Math.sin(T.ang)*lead; }
 function botThink(b,dt){ var a=b.ai, r=rad(b), P=me();
-  a.t-=dt; a.hb-=dt; a.wander-=dt;
+  a.t-=dt; a.hb-=dt; a.wander-=dt; if(a.cd>0) a.cd-=dt; if(a.atk>0) a.atk-=dt; if(a.rvT>0) a.rvT-=dt; a.lt=(a.lt||0)-dt;
   a.chk=(a.chk||0)-dt; if(a.chk<=0){ if(a.cx!=null&&Math.hypot(b.x-a.cx,b.y-a.cy)<45) escape(b,Math.atan2(-b.y,-b.x),1); a.chk=1; a.cx=b.x; a.cy=b.y; }   /* stuck check, once a second */
   if(a.esc>0){ a.esc-=dt; b.want=a.escAng; b.boost=false; if(!b.titan) b.fuel=Math.min(60,b.fuel+6*dt); return; }
   if(a.t<=0){ a.t=rf(0.14,0.24);
-    var hunt=false;
-    var isW=S.wanted===b.id, dP=P.alive?Math.hypot(P.x-b.x,P.y-b.y):1e9;                 /* the Wanted Rival and the Titan always come for you */
-    if(P.alive&&(b.hunter||isW||b.titan)&&P.ghost<=0&&S.buff.ghost<=0&&S.playT-S.spawnT>6&&(b.titan||b.len>P.len*0.7)){
-      if(dP<(b.titan?700:isW?480:360)&&(a.mode==='hunt'||isW||b.titan||huntersOn()<(S.playT<45?1:2))) hunt=true; }
-    a.mode=hunt?'hunt':'eat';
-    if(hunt){ var lead=140+rad(P)*3; a.tx=P.x+Math.cos(P.ang)*lead; a.ty=P.y+Math.sin(P.ang)*lead; if(a.hb<=-1.5&&b.fuel>30&&Math.random()<(dP<260||isW?0.5:0.3)) a.hb=rf(0.5,1.0); }
-    else { var best=null, bs=-1e9, ca=Math.cos(b.ang), sa=Math.sin(b.ang);
-      for(var i=0;i<S.pel.length;i++){ var p=S.pel[i], dx=p.x-b.x, dy=p.y-b.y; if(dx>380||dx<-380||dy>380||dy<-380) continue;
-        var d=Math.sqrt(dx*dx+dy*dy)||1, sc=(p.g?220:p.o?140:35)-d+(dx*ca+dy*sa)/d*110; if(sc>bs){ bs=sc; best=p; } }
-      var ev=S.evt, rz=ev&&ev.id==='rush'?Math.hypot(ev.x-b.x,ev.y-b.y):1e9;
-      if(rz<1100&&rz>ev.r&&!(best&&best.g)&&b.id%2){ a.tx=ev.x; a.ty=ev.y; }                       /* in a Gold Rush, half the Rivals race you to the gold */
-      else if(best){ a.tx=best.x; a.ty=best.y; }
-      else if(a.wander<=0||Math.hypot(a.tx-b.x,a.ty-b.y)<60){ var w=inDisk(R*0.75); a.tx=w.x; a.ty=w.y; a.wander=rf(2,4); } }
-    var want=Math.atan2(a.ty-b.y,a.tx-b.x), look=(58+r*2.4)*b.sk+(b.boost?70:0);
+    var K=sharp(), st=b.titan?'titan':b.style, isW=S.wanted===b.id, dP=P.alive?Math.hypot(P.x-b.x,P.y-b.y):1e9, fair=fairGame(P), wasLurk=a.lurk, fuelOK=b.fuel>22, T=null, i;
+    a.lurk=false;
+    /* an attack ends when its time is up, or when you are safe or far away; then this Rival rests */
+    if(a.onMe&&(!fair||dP>(b.titan?900:620)||(a.atk<=0&&!b.titan))) endAttack(b,b.titan?0:rf(4,7)/K);
+    /* start one? The Titan and the Wanted Rival always come for you; the others wait for a turn */
+    if(!a.onMe&&fair&&!(a.cd>0)){ var kind='';
+      if(b.titan){ if(dP<700) kind='cut'; }
+      else if(isW){ if(dP<480&&b.len>P.len*0.5) kind='cut'; }
+      else if(attackers()>=atkCap()){ }
+      else if(st==='cutter'){ if(dP<400*K&&b.len>P.len*0.5) kind='cut'; }
+      else if(st==='coiler'){ if(dP<340*K&&b.len>=80&&P.len<b.len*1.4) kind='coil'; }
+      else if(st==='lurker'){ if(dP<(wasLurk?340:230)*K&&b.len>P.len*0.4) kind='cut'; }
+      if(kind){ a.onMe=true; a.kind=kind; a.atk=kind==='coil'?7:isW?5:st==='lurker'?3:4; a.rvT=0;
+        if(kind==='coil') a.dir=angDiff(P.ang,Math.atan2(b.y-P.y,b.x-P.x))>0?1:-1; } }
+    if(a.onMe){ a.mode=a.kind;
+      if(a.kind==='coil'){                                                           /* circle around your head, tightening the ring as it goes */
+        var th=Math.atan2(b.y-P.y,b.x-P.x), q=1-clamp(a.atk/7,0,1), cr=clamp(b.len*SP/6.283*0.8,95,185)*(1-0.25*q), ps=SPD*(P.boost?U('turbo'):1)*0.25, nt=th+a.dir*0.85;
+        a.tx=P.x+Math.cos(P.ang)*ps+Math.cos(nt)*cr; a.ty=P.y+Math.sin(P.ang)*ps+Math.sin(nt)*cr; if(b.fuel>10&&a.hb<=0) a.hb=0.4; }
+      else { cutAim(b,P,a); if(a.hb<=-1.2&&fuelOK&&Math.random()<(dP<280||isW?0.55:0.35)*K) a.hb=rf(0.5,1.0); } }
+    else { if(a.rvT>0){ for(i=1;i<S.sn.length;i++) if(S.sn[i].id===a.rv&&S.sn[i].alive) T=S.sn[i]; }
+      if(T){ a.mode='rival'; cutAim(b,T,a); if(a.hb<=-1.2&&fuelOK&&Math.random()<0.4) a.hb=rf(0.5,0.9); }
+      else { a.mode='eat';
+        /* a Cutter with nothing to do sometimes goes after another Rival, so the arena never sits still */
+        if(st==='cutter'&&!(a.cd>0)&&b.len>50&&Math.random()<0.03){ var bd=380, o;
+          for(i=1;i<S.sn.length;i++){ o=S.sn[i]; if(o===b||!o.alive||o.titan||o.ghost>0||o.len>b.len*1.2) continue; var d0=Math.hypot(o.x-b.x,o.y-b.y); if(d0<bd){ bd=d0; a.rv=o.id; a.rvT=3; a.cd=5; } } }
+        var pa=Math.atan2(b.y-P.y,b.x-P.x), flee=st==='snacker'&&P.alive&&dP<250&&P.len>b.len*0.7&&Math.cos(angDiff(P.ang,pa))>0.3, egg=null;
+        if(st==='lurker'){ if(a.lt<-6) a.lt=rf(7,10); if(a.lt>0){ var be=1e9; S.eggs.forEach(function(e){ var d1=Math.hypot(e.x-b.x,e.y-b.y); if(d1<be){ be=d1; egg=e; } }); } }
+        if(flee){ a.mode='flee'; var fa=pa+(angDiff(b.ang,pa)>0?0.5:-0.5); a.tx=b.x+Math.cos(fa)*300; a.ty=b.y+Math.sin(fa)*300; if(fuelOK&&a.hb<=-1) a.hb=0.6; }     /* a Snacker runs from a bigger snake */
+        else if(egg){ a.mode='lurk'; a.lurk=true; var t2=Math.atan2(b.y-egg.y,b.x-egg.x)+0.7; a.tx=egg.x+Math.cos(t2)*120; a.ty=egg.y+Math.sin(t2)*120; }                 /* a Lurker circles a mystery egg, waiting */
+        else { var best=null, bs=-1e9, ca=Math.cos(b.ang), sa=Math.sin(b.ang), reach=st==='snacker'?600:380, ow=st==='snacker'?260:140, bdist=0;
+          for(i=0;i<S.pel.length;i++){ var p=S.pel[i], dx=p.x-b.x, dy=p.y-b.y; if(dx>reach||dx<-reach||dy>reach||dy<-reach) continue;
+            var d=Math.sqrt(dx*dx+dy*dy)||1, sc=(p.g?ow+80:p.o?ow:35)-d+(dx*ca+dy*sa)/d*110; if(sc>bs){ bs=sc; best=p; bdist=d; } }
+          var ev=S.evt, rz=ev&&ev.id==='rush'?Math.hypot(ev.x-b.x,ev.y-b.y):1e9;
+          if(rz<1100&&rz>ev.r&&!(best&&best.g)&&(b.id%2||st==='snacker')){ a.tx=ev.x; a.ty=ev.y; }                       /* in a Gold Rush, the Snackers and half the others race you to the gold */
+          else if(best){ a.tx=best.x; a.ty=best.y; if(st==='snacker'&&best.o&&bdist>180&&fuelOK&&a.hb<=-1) a.hb=0.5; }   /* a Snacker boosts to the big snacks first */
+          else if(a.wander<=0||Math.hypot(a.tx-b.x,a.ty-b.y)<60){ var w=inDisk(R*0.75); a.tx=w.x; a.ty=w.y; a.wander=rf(2,4); } } } }
+    var want=Math.atan2(a.ty-b.y,a.tx-b.x), look=(58+r*2.4)*b.sk*clamp(K,0.85,1.2)+(b.boost?70:0);
     if(blocked(b,want,look)){ var side=angDiff(want,b.ang)>0?1:-1, offs=[0.5,1.0,1.6,2.3,3.0], found=false;
-      for(var k=0;k<offs.length&&!found;k++){ for(var sgn=0;sgn<2;sgn++){ var o=offs[k]*(sgn?-side:side); if(!blocked(b,want+o,look)){ want+=o; found=true; break; } } }
+      for(var k=0;k<offs.length&&!found;k++){ for(var sgn=0;sgn<2;sgn++){ var of=offs[k]*(sgn?-side:side); if(!blocked(b,want+of,look)){ want+=of; found=true; break; } } }
       if(!found) want=b.ang+Math.PI*0.8; }
     a.want=want; }
   b.want=a.want; b.boost=a.hb>0&&b.fuel>0;
@@ -694,16 +792,18 @@ function step(dt){ var sn=S.sn, P=sn[0], i, j;
   /* the King: the longest snake (the Titan does not count). Being King pays points every second */
   var king=null; for(i=0;i<sn.length;i++){ var s=sn[i]; if(s.alive&&!s.titan&&(!king||s.len>king.len)) king=s; }
   var was=S.king; S.king=king?king.id:-1;
-  if(king&&king.me){ S.kingT+=dt; goalAdd('king',dt); S.kingAcc+=PTS.king*dbl()*dt; if(S.kingAcc>=1){ var w=Math.floor(S.kingAcc); S.kingAcc-=w; S.score+=w; }
+  if(king&&king.me){ S.kingT+=dt; goalAdd('king',dt); S.kingAcc+=PTS.king*dbl()*ptsX()*dt; if(S.kingAcc>=1){ var w=Math.floor(S.kingAcc); S.kingAcc-=w; S.score+=w; }
     if(was!==0){ SND.king(); snToast('You’re the King! +'+PTS.king+' points every second'); feed('You are the longest snake!',true); var sp=stagePt(P.x,P.y); confetti(sp[0],sp[1],60,2.6); } }
   if(P.alive){ S.longest=Math.max(S.longest,Math.floor(P.len)); goalSet('len',Math.floor(P.len)); }
   eventStep(dt); wantedStep(dt); }
+/* the last 30 seconds of the clock: every point counts double */
+function finalStep(){ if(S.final||S.over||!S.started||S.clock>FINAL) return; S.final=true; ann={t0:now(),big:'FINAL 30',sub:'Every point counts double until time is up!',col:'#FFD447'}; SND.event(); feed('Final 30: double points!',true); dirty=true; hud(); }
 function eat(dt){ var sn=S.sn, P=sn[0], mag=P.alive?U('magnet')+(S.buff.magnet>0?240:0):0, pr=P.alive?rad(P):0, pel=S.pel;
   for(var i=pel.length-1;i>=0;i--){ var p=pel[i];
     if(mag>0){ var dx=P.x-p.x, dy=P.y-p.y, mr=mag+pr; if(dx<mr&&dx>-mr&&dy<mr&&dy>-mr){ var d=Math.sqrt(dx*dx+dy*dy); if(d<mr&&d>1){ var mv=Math.min(d,520*dt); p.x+=dx/d*mv; p.y+=dy/d*mv; } } }
     for(var j=0;j<sn.length;j++){ var s=sn[j]; if(!s.alive) continue; var r=rad(s)+p.r+6, ex=s.x-p.x, ey=s.y-p.y; if(ex>r||ex<-r||ey>r||ey<-r) continue;
-      if(ex*ex+ey*ey<r*r){ s.len=Math.min(s.me?MAXLEN:s.titan?400:BOTMAX,s.len+p.v*(s.me?1:0.6));        /* Rivals grow a little slower than you */
-        if(s.me){ S.score+=(p.g?PTS.gold:p.o?PTS.orb:PTS.snack)*dbl(); S.eaten++; goalAdd('eat',1); if(p.g){ SND.gold(); pops.push({x:p.x,y:p.y-20,t0:now(),txt:'+'+PTS.gold*dbl(),col:'#FFD447',sz:30}); } else if(p.o) SND.orb(); else SND.munch(); }
+      if(ex*ex+ey*ey<r*r){ s.len=Math.min(s.me?MAXLEN:s.titan?400:BOTMAX,s.len+p.v*(s.me?1:s.style==='snacker'?0.9:0.6));        /* Rivals grow a little slower than you (Snackers nearly keep up) */
+        if(s.me){ var got=addPts((p.g?PTS.gold:p.o?PTS.orb:PTS.snack)*dbl()); S.eaten++; goalAdd('eat',1); if(p.g){ SND.gold(); pops.push({x:p.x,y:p.y-20,t0:now(),txt:'+'+got,col:'#FFD447',sz:30}); } else if(p.o) SND.orb(); else SND.munch(); }
         if(p.o){ pel[i]=pel[pel.length-1]; pel.pop(); } else { var n=snack(); p.x=n.x; p.y=n.y; p.c=n.c; }
         break; } } } }
 function respawnBot(i){ var used=S.sn.map(function(s){ return s.name; }), b=makeBot(i,S.sn,used); b.ghost=1; S.sn[i]=b; }
@@ -725,7 +825,7 @@ function closeLoop(P,i){ var poly=[[P.x,P.y]].concat(P.pts.slice(0,i+1)), area=0
     if(q.o){ pel[j]=pel[pel.length-1]; pel.pop(); } else { var nq=snack(); q.x=nq.x; q.y=nq.y; q.c=nq.c; } }
   var caught=S.sn.filter(function(o){ return o.alive&&!o.me&&o.ghost<=0&&o.x>x0&&o.x<x1&&o.y>y0&&o.y<y1&&inPoly(o.x,o.y,poly); });
   loops.push({pts:poly.filter(function(q,k){ return k%2===0; }),t0:now(),big:got>=10||caught.length>0}); dirty=true;
-  if(got){ pts*=dbl(); S.score+=pts; S.eaten+=got; goalAdd('eat',got); S.lassos++; S.bestLasso=Math.max(S.bestLasso,got); goalSet('lasso',got);
+  if(got){ pts=addPts(pts*dbl()); S.eaten+=got; goalAdd('eat',got); S.lassos++; S.bestLasso=Math.max(S.bestLasso,got); goalSet('lasso',got);
     var cx0=(x0+x1)/2, cy0=(y0+y1)/2; pops.push({x:cx0,y:cy0,t0:now(),txt:'+'+pts,lab:got>=10?'MEGA LASSO!':'LASSO ×'+got,col:'#A6FF3C'}); SND.lasso(got);
     if(got>=10){ feed('Mega lasso: '+got+' snacks!',true); var sp=stagePt(cx0,cy0); confetti(sp[0],sp[1],40,2.6); } }
   caught.forEach(function(o){ die(o,P,'lasso'); }); }
@@ -734,8 +834,8 @@ function closeLoop(P,i){ var poly=[[P.x,P.y]].concat(P.pts.slice(0,i+1)), area=0
 function goalNow(){ return GOALS[S.goal%GOALS.length]; }
 function goalAdd(id,n){ var g=goalNow(); if(g.id!==id||!S.started) return; S.gp+=n; if(S.gp>=g.n) goalDone(); }
 function goalSet(id,v){ var g=goalNow(); if(g.id!==id||!S.started) return; if(v>S.gp) S.gp=v; if(S.gp>=g.n) goalDone(); }
-function goalDone(){ var g=goalNow(); S.score+=PTS.goal; S.goals++; S.goal++; S.gp=0; SND.goal(); snToast('Goal done: '+g.txt+'! +'+PTS.goal); feed('Goal done! +'+PTS.goal,true);
-  var P=me(); if(P.alive) pops.push({x:P.x,y:P.y-60,t0:now(),txt:'+'+PTS.goal,lab:'GOAL!',col:'#FFD447'});
+function goalDone(){ var g=goalNow(), gpts=addPts(PTS.goal); S.goals++; S.goal++; S.gp=0; SND.goal(); snToast('Goal done: '+g.txt+'! +'+gpts); feed('Goal done! +'+gpts,true);
+  var P=me(); if(P.alive) pops.push({x:P.x,y:P.y-60,t0:now(),txt:'+'+gpts,lab:'GOAL!',col:'#FFD447'});
   if(goalNow().id==='len') goalSet('len',P.alive?Math.floor(P.len):0); }
 
 /* ---------- arena events: Gold Rush, the Titan, the Squeeze ---------- */
@@ -812,9 +912,13 @@ function drawSnake(c,s,t,view){ var r=rad(s), p=s.pts, n=p.length; if(!n) return
   c.globalAlpha=1;
   if(S.king===s.id) drawCrown(c,s.x,s.y-r*1.12-4,1+r/40);
   if(s.me){ c.strokeStyle='rgba(166,255,60,'+(0.35+0.25*Math.sin(t/220))+')'; c.lineWidth=3; c.beginPath(); c.arc(s.x,s.y,r*1.12+9,0,6.283); c.stroke(); }
-  else { var big=s.titan, nm=big?'TITAN':s.name; c.font=big?FONT(34):IFONT(800,18); c.textAlign='center'; c.textBaseline='alphabetic'; var ny=s.y-r*1.12-(S.king===s.id?30:10);
-    c.fillStyle='rgba(3,9,7,.9)'; c.fillText(nm,s.x+2,ny+2); c.fillStyle=big?'#FF9F1C':'#E9FFF4'; c.fillText(nm,s.x,ny);
-    if(S.wanted===s.id){ c.font=IFONT(900,17); var tw=c.measureText('★ WANTED +'+PTS.bounty).width+20; c.fillStyle='#FFD447'; rr(c,s.x-tw/2,ny-48,tw,28,14); c.fill();
+  else { var big=s.titan, hot=!!s.ai.onMe, nm=big?'TITAN':s.name+(s.style?' · '+STYLE_NAME[s.style]:''); c.font=big?FONT(34):IFONT(800,18); c.textAlign='center'; c.textBaseline='alphabetic'; var ny=s.y-r*1.12-(S.king===s.id?30:10);
+    c.fillStyle='rgba(3,9,7,.9)'; c.fillText(nm,s.x+2,ny+2); c.fillStyle=big?'#FF9F1C':hot?'#FF9AA8':'#E9FFF4'; c.fillText(nm,s.x,ny);
+    var isW=S.wanted===s.id, blz=!big&&!isW&&S.evt&&S.evt.id==='blitz';
+    if(hot&&S.phase==='live'){ var by=ny-(isW||blz?66:36), bs=1+0.12*Math.sin(t/140); c.fillStyle='#FF4B4B'; c.beginPath(); c.arc(s.x,by,15*bs,0,6.283); c.fill(); c.strokeStyle='#06110F'; c.lineWidth=3; c.stroke();   /* a red ! : this Rival is coming for you */
+      c.fillStyle='#fff'; c.font=IFONT(900,22); c.textBaseline='middle'; c.fillText('!',s.x,by+1); c.textBaseline='alphabetic'; }
+    if(blz){ c.font=IFONT(900,16); var bw=c.measureText('★ +'+PTS.blitz).width+18; c.fillStyle='#FFD447'; rr(c,s.x-bw/2,ny-46,bw,26,13); c.fill(); c.fillStyle='#2A1E00'; c.textBaseline='middle'; c.fillText('★ +'+PTS.blitz,s.x,ny-32); c.textBaseline='alphabetic'; }
+    if(isW){ c.font=IFONT(900,17); var tw=c.measureText('★ WANTED +'+PTS.bounty).width+20; c.fillStyle='#FFD447'; rr(c,s.x-tw/2,ny-48,tw,28,14); c.fill();
       c.fillStyle='#2A1E00'; c.textBaseline='middle'; c.fillText('★ WANTED +'+PTS.bounty,s.x,ny-33);
       c.strokeStyle='rgba(255,212,71,'+(0.45+0.25*Math.sin(t/180))+')'; c.lineWidth=4; c.beginPath(); c.arc(s.x,s.y,r*1.12+10,0,6.283); c.stroke(); } } }
 function drawCrown(c,x,y,k){ c.fillStyle='#FFD447'; c.strokeStyle='#06110F'; c.lineWidth=2.5; c.beginPath(); c.moveTo(x-12*k,y); c.lineTo(x-12*k,y-11*k); c.lineTo(x-6*k,y-5*k); c.lineTo(x,y-14*k); c.lineTo(x+6*k,y-5*k); c.lineTo(x+12*k,y-11*k); c.lineTo(x+12*k,y); c.closePath(); c.fill(); c.stroke(); }
@@ -838,8 +942,8 @@ function drawHUD(c,t){ var P=me();
   if(P.alive&&P.ghost>0&&S.phase==='live') pills.push(['SAFE '+Math.ceil(P.ghost),'#C9F7FF']);
   var px=24; c.font=IFONT(800,19); hudW[1]=0; pills.forEach(function(p){ var w=c.measureText(p[0]).width+28; c.fillStyle='rgba(3,9,7,.82)'; rr(c,px,CH-130,w,40,20); c.fill(); c.strokeStyle=p[1]; c.lineWidth=2; c.stroke(); c.fillStyle=p[1]; c.textAlign='left'; c.textBaseline='middle'; c.fillText(p[0],px+14,CH-109); px+=w+8; }); hudW[0]=pills.length?px:0;
   /* the feed */
-  c.textAlign='right'; c.textBaseline='middle'; c.font=IFONT(800,19); S.feed.forEach(function(f,i){ var a=Math.max(0,Math.min(1,(5200-(t-f.t0))/600)); if(a<=0) return; c.globalAlpha=a; var w=c.measureText(f.txt).width+28; hudW[1]=Math.max(hudW[1],w);
-    c.fillStyle=f.me?'rgba(166,255,60,.18)':'rgba(3,9,7,.72)'; rr(c,CW-18-w,18+i*38,w,32,10); c.fill(); c.fillStyle=f.me?'#A6FF3C':'#E9FFF4'; c.fillText(f.txt,CW-32,35+i*38); c.globalAlpha=1; });
+  c.textAlign='left'; c.textBaseline='middle'; c.font=IFONT(800,19); S.feed.forEach(function(f,i){ var a=Math.max(0,Math.min(1,(5200-(t-f.t0))/600)); if(a<=0) return; c.globalAlpha=a; var w=c.measureText(f.txt).width+28; hudW[1]=Math.max(hudW[1],w);
+    c.fillStyle=f.me?'rgba(166,255,60,.18)':'rgba(3,9,7,.72)'; rr(c,22,96+i*38,w,32,10); c.fill(); c.fillStyle=f.me?'#A6FF3C':'#E9FFF4'; c.fillText(f.txt,36,113+i*38); c.globalAlpha=1; });
   /* the egg pouch */
   c.fillStyle='rgba(3,9,7,.82)'; rr(c,18,CH-74,196,56,16); c.fill(); c.font=IFONT(800,18); c.fillStyle='#93B8AB'; c.textAlign='left'; c.textBaseline='middle'; c.fillText('EGGS',34,CH-45);
   for(var k=0;k<2;k++){ var ex=118+k*48, has=k<S.pack.length; c.beginPath(); c.ellipse(ex,CH-46,14,18,0,0,6.283); if(has){ c.fillStyle=S.pack[k].gold?'#FFD447':'#E9FFF4'; c.fill(); } c.strokeStyle=has?'#06110F':'#2E5A4E'; c.lineWidth=2.5; c.stroke(); }
@@ -848,7 +952,7 @@ function drawHUD(c,t){ var P=me();
   var mk=mr/R; if(S.ring<R-2){ c.strokeStyle='#FF4FB8'; c.lineWidth=2; c.beginPath(); c.arc(mx,my,S.ring*mk,0,6.283); c.stroke(); }
   if(S.evt&&S.evt.id==='rush'){ c.fillStyle='rgba(255,212,71,.35)'; c.beginPath(); c.arc(mx+S.evt.x*mk,my+S.evt.y*mk,S.evt.r*mk+2,0,6.283); c.fill(); }
   S.eggs.forEach(function(e){ c.fillStyle=e.gold?'#FFD447':'#E9FFF4'; c.fillRect(mx+e.x*mk-2,my+e.y*mk-2,4,4); });
-  S.sn.forEach(function(s){ if(!s.alive||s.me) return; var sp=s.titan||S.wanted===s.id; c.fillStyle=s.titan?'#FF9F1C':S.wanted===s.id?'#FFD447':S.king===s.id?'#FFF3B0':'rgba(255,255,255,.45)'; c.beginPath(); c.arc(mx+s.x*mk,my+s.y*mk,sp?5:S.king===s.id?4.5:2.5,0,6.283); c.fill(); });
+  S.sn.forEach(function(s){ if(!s.alive||s.me) return; var sp=s.titan||S.wanted===s.id; c.fillStyle=s.titan?'#FF9F1C':S.wanted===s.id?'#FFD447':s.ai.onMe?'#FF4B4B':S.king===s.id?'#FFF3B0':'rgba(255,255,255,.45)'; c.beginPath(); c.arc(mx+s.x*mk,my+s.y*mk,sp?5:s.ai.onMe?4:S.king===s.id?4.5:2.5,0,6.283); c.fill(); });
   if(P.alive){ c.fillStyle='#A6FF3C'; c.beginPath(); c.arc(mx+P.x*mk,my+P.y*mk,5.5,0,6.283); c.fill(); c.strokeStyle='#06110F'; c.lineWidth=2; c.stroke(); }
 }
 function draw(){ var t=now(), c=cx, P=me(), Z=cam.z, k=RS;
@@ -879,21 +983,21 @@ function draw(){ var t=now(), c=cx, P=me(), Z=cam.z, k=RS;
   c.setTransform(k,0,0,k,0,0);
   if(t-hudT>200||hudDirty){ hudT=t; hudDirty=false; var hc=hudCv.getContext('2d'); hc.setTransform(k,0,0,k,0,0); hc.clearRect(0,0,CW,CH); if(S.started&&!S.over) drawHUD(hc,t); }
   c.setTransform(1,0,0,1,0,0);
-  if(S.started&&!S.over) [[0,CH-150,Math.min(CW-200,Math.max(240,hudW[0]+30)),150],[CW-hudW[1]-30,0,hudW[1]+30,180],[CW-190,CH-190,190,190]].forEach(function(q){
+  if(S.started&&!S.over) [[0,CH-150,Math.min(CW-200,Math.max(240,hudW[0]+30)),150],[0,88,hudW[1]+40,170],[CW-190,CH-190,190,190]].forEach(function(q){
     if(q[2]<=0||q[3]<=0) return; var a=Math.round(q[0]*k), b=Math.round(q[1]*k), w=Math.round(q[2]*k), h=Math.round(q[3]*k); c.drawImage(hudCv,a,b,w,h,a,b,w,h); });
   c.setTransform(k,0,0,k,0,0);
   if(S.started&&!S.over&&S.phase!=='out'){ var g=goalNow(), gp=g.id==='king'?Math.floor(S.gp):Math.min(g.n,Math.floor(S.gp));
-    pill(c,'GOAL: '+g.txt+'   '+gp+' / '+g.n+'   +'+PTS.goal,CW/2,40,'#A6FF3C');
-    if(S.evt) pill(c,S.evt.name+'  '+Math.max(0,Math.ceil(S.evt.left))+' s',CW/2,92,S.evt.col);
+    pill(c,'GOAL: '+g.txt+'   '+gp+' / '+g.n+'   +'+Math.round(PTS.goal*ptsX()),CW/2,106,'#A6FF3C');
+    if(S.evt) pill(c,S.evt.name+'  '+Math.max(0,Math.ceil(S.evt.left))+' s',CW/2,156,S.evt.col);
     pointers(c); }
-  if(ann){ var ak=(t-ann.t0)/2800; if(ak>=1) ann=null; else { c.globalAlpha=Math.min(1,(1-ak)*4,ak*8); c.fillStyle='rgba(3,9,7,.9)'; rr(c,CW/2-390,166,780,140,24); c.fill(); c.strokeStyle=ann.col; c.lineWidth=4; c.stroke();
-      c.textAlign='center'; c.textBaseline='alphabetic'; c.font=FONT(64); c.fillStyle=ann.col; c.fillText(ann.big,CW/2,242); c.font=IFONT(700,24); c.fillStyle='#E9FFF4'; c.fillText(ann.sub,CW/2,284); c.globalAlpha=1; } }
+  if(ann){ var ak=(t-ann.t0)/2800; if(ak>=1) ann=null; else { c.globalAlpha=Math.min(1,(1-ak)*4,ak*8); c.fillStyle='rgba(3,9,7,.9)'; rr(c,CW/2-390,196,780,140,24); c.fill(); c.strokeStyle=ann.col; c.lineWidth=4; c.stroke();
+      c.textAlign='center'; c.textBaseline='alphabetic'; c.font=FONT(64); c.fillStyle=ann.col; c.fillText(ann.big,CW/2,272); c.font=IFONT(700,24); c.fillStyle='#E9FFF4'; c.fillText(ann.sub,CW/2,314); c.globalAlpha=1; } }
   if(S.phase==='out'){ c.fillStyle='rgba(3,9,7,.55)'; c.fillRect(0,0,CW,CH); banner(c,'CUT OFF!',S.outBy+' got you','#FF4FB8','You keep your score. Snack stop next…'); }
   else if(S.phase==='count'){ var n=Math.ceil(S.cd/0.5); banner(c,S.stopKind==='spawn'&&n<=3?String(Math.max(1,n)):'GET READY','',S.stopKind==='spawn'?'#A6FF3C':'#FFD447',S.stopKind==='spawn'?'Eat snacks · lasso them · cut off the Rivals':''); }
   else if(goT>0&&S.phase==='live'){ c.globalAlpha=Math.min(1,goT*2); banner(c,'SLITHER!','','#A6FF3C',''); c.globalAlpha=1; }
-  if(reveal&&S.phase!=='out'){ var rk=(t-reveal.t0)/2400; if(rk>=1) reveal=null; else { c.globalAlpha=Math.min(1,(1-rk)*4); c.fillStyle='rgba(3,9,7,.9)'; rr(c,CW/2-340,326,680,150,24); c.fill(); c.strokeStyle=reveal.gold?'#FFD447':'#A6FF3C'; c.lineWidth=4; c.stroke();
-      c.textAlign='center'; c.textBaseline='alphabetic'; c.font=IFONT(800,20); c.fillStyle=reveal.gold?'#FFD447':'#A6FF3C'; c.fillText(reveal.gold?'GOLD EGG':'MYSTERY EGG',CW/2,366);
-      c.font=FONT(56); c.fillStyle='#fff'; c.fillText(reveal.name.toUpperCase(),CW/2,422); c.font=IFONT(700,22); c.fillStyle='#E9FFF4'; c.fillText(reveal.d,CW/2,458); c.globalAlpha=1; } } }
+  if(reveal&&S.phase!=='out'){ var rk=(t-reveal.t0)/2400; if(rk>=1) reveal=null; else { c.globalAlpha=Math.min(1,(1-rk)*4); c.fillStyle='rgba(3,9,7,.9)'; rr(c,CW/2-340,356,680,150,24); c.fill(); c.strokeStyle=reveal.gold?'#FFD447':'#A6FF3C'; c.lineWidth=4; c.stroke();
+      c.textAlign='center'; c.textBaseline='alphabetic'; c.font=IFONT(800,20); c.fillStyle=reveal.gold?'#FFD447':'#A6FF3C'; c.fillText(reveal.gold?'GOLD EGG':'MYSTERY EGG',CW/2,396);
+      c.font=FONT(56); c.fillStyle='#fff'; c.fillText(reveal.name.toUpperCase(),CW/2,452); c.font=IFONT(700,22); c.fillStyle='#E9FFF4'; c.fillText(reveal.d,CW/2,488); c.globalAlpha=1; } } }
 
 /* arrows at the edge of the arena view that point to the Wanted Rival, the Titan and a Gold Rush */
 function pointers(c){ var P=me(); if(!P.alive||S.phase!=='live'&&S.phase!=='count') return; var tg=[];
@@ -906,11 +1010,12 @@ function pointers(c){ var P=me(); if(!P.alive||S.phase!=='live'&&S.phase!=='coun
 
 /* ================= THE LOOP ================= */
 var lastF=performance.now(), boardT=0;
-function camStep(dt){ var P=me(), tz=S.spawned||P.alive? clamp(1.04-(P.len-START)/380*0.28,0.78,1.04) : 0.62;
+function zoomFor(len){ return clamp(1.04-(len-START)/380*0.28,0.82,1.04); }   /* the full-screen arena shows more, so the snakes are drawn a little bigger than before */
+function camStep(dt){ var P=me(), tz=S.spawned||P.alive? zoomFor(P.len) : 0.86;
   if(P.alive){ var f=1-Math.exp(-dt*9); cam.x+=(P.x-cam.x)*f; cam.y+=(P.y-cam.y)*f; }
   cam.z+=(tz-cam.z)*(1-Math.exp(-dt*2)); }
 function frame(t){ var dt=Math.min(0.1,(t-lastF)/1000); lastF=t;
-  if(S.started&&!S.over){ S.clock-=dt; clockDraw(); if(S.clock<=0){ endRun(); } }   /* the clock runs the whole run, snack stops too, so every run takes 5 minutes */
+  if(S.started&&!S.over){ S.clock-=dt; finalStep(); clockDraw(); if(S.clock<=0){ endRun(); } }   /* the clock runs the whole run, snack stops too, so every run takes 5 minutes */
   if(S.started&&!S.over){
     if(S.phase==='live'){ acc+=dt; var n=0; while(acc>=STEP&&n<5&&S.phase==='live'&&!wantEmpty){ acc-=STEP; step(STEP); n++; } if(n>=5) acc=0; camStep(dt); dirty=true; hud(); perfStep(dt);
       if(wantEmpty&&S.phase==='live') openStop('empty'); }
@@ -924,21 +1029,23 @@ function frame(t){ var dt=Math.min(0.1,(t-lastF)/1000); lastF=t;
 
 /* ================= START / END ================= */
 $('sn-step1').textContent='Answer questions for energy and cash. Slithering uses energy. When it runs out, you stop here, safe.';
+$('sn-rookie').addEventListener('click',function(){ ac(); setMode(false); }); $('sn-pro').addEventListener('click',function(){ ac(); setMode(true); });
 $('sn-nameinput').addEventListener('input',function(){ $('sn-go-start').disabled=!this.value.trim(); });
 $('sn-nameinput').addEventListener('keydown',function(e){ if(e.key==='Enter'&&this.value.trim()){ e.preventDefault(); e.stopPropagation(); $('sn-go-start').click(); } });
 $('sn-go-start').addEventListener('click',function(){ var n=$('sn-nameinput').value.trim(); if(!n) return; ac(); jingle(); S.name=n; S.started=true; $('sn-start').hidden=true;
   $('sn-nameinput').blur(); openStop('spawn'); });
-function endRun(){ S.over=true; S.phase='over'; clearTimeout(nextT); KD={}; $('sn-stop').hidden=true; save(); hud(); showEnd(true); }
+function endRun(){ chalCheck(true); S.over=true; S.phase='over'; clearTimeout(nextT); KD={}; $('sn-stop').hidden=true; $('sn-hud').classList.remove('sn-stopped'); save(); hud(); showEnd(true); }
 function showEnd(celebrate){ $('sn-endname').textContent=S.name; $('sn-endscore').textContent=Math.floor(S.score).toLocaleString();
   var acc0=S.answered?Math.round(100*S.correct/S.answered):0;
   $('sn-endstats').innerHTML=[['Correct',S.correct+' / '+S.answered],['Accuracy',acc0+'%'],['Best streak',S.best],['Takedowns',S.takedowns],['Goals',S.goals]].map(function(a){ return '<div class="sn-stat"><div class="l">'+a[0]+'</div><div class="v">'+a[1]+'</div></div>'; }).join('');
   $('sn-endtopics').innerHTML=Object.keys(S.topics).map(function(k){ var t=S.topics[k]; return '<div class="sn-stat"><div class="l">'+k+'</div><div class="v">'+t[0]+' / '+t[1]+'</div></div>'; }).join('');
+  $('sn-badges').innerHTML=(S.pro?'<div class="sn-badge pro"><b>★</b>All-Pro</div>':'')+S.chal.map(function(c){ return '<div class="sn-badge'+(c.done?' done':'')+'"><b>'+(c.done?'✓':'✗')+'</b>'+CHAL[c.id].txt+'</div>'; }).join('');
   /* LEADERBOARD HOOK: the shared score code (scorecode.js) shows the student's code here */
   if(window.SpitzCode&&SpitzCode.show) try{ SpitzCode.show('sn','snake_arena',S); }catch(e){}
-  $('sn-end').hidden=false; if(celebrate){ SND.win(); [0,350,700,1100].forEach(function(ms,i){ setTimeout(function(){ confetti(200+i*500,1070,90,1.3); confetti(1720-i*500,1070,90,1.3); },ms); }); } }
+  $('sn-end').hidden=false; if(celebrate&&S.score>0){ SND.win(); [0,350,700,1100].forEach(function(ms,i){ setTimeout(function(){ confetti(200+i*500,1070,90,1.3); confetti(1720-i*500,1070,90,1.3); },ms); }); } }
 var armT=0; $('sn-again').addEventListener('click',function(){ var b=this; if(!b.classList.contains('arm')){ b.classList.add('arm'); b.textContent='Tap again to start over'; clearTimeout(armT); armT=setTimeout(function(){ b.classList.remove('arm'); b.textContent='Play again'; },3000); return; }
   b.classList.remove('arm'); b.textContent='Play again'; var keepName=S.name; S=fresh(); S.name=keepName; pops=[]; booms=[]; loops=[]; ann=null; lassoCD=0; reveal=null; last={}; lastG=-1;
-  $('sn-end').hidden=true; $('sn-start').hidden=false; $('sn-nameinput').value=keepName; $('sn-go-start').disabled=!keepName; save(); hud(); clockDraw(); dirty=true;
+  $('sn-end').hidden=true; $('sn-start').hidden=false; $('sn-nameinput').value=keepName; $('sn-go-start').disabled=!keepName; lastChal=''; modeDraw(); save(); hud(); clockDraw(); dirty=true;
   $('sn-choices').innerHTML=''; $('sn-prompt').innerHTML=''; $('sn-visual').innerHTML=''; });
 
 /* ================= KEYS ================= */
@@ -963,14 +1070,14 @@ document.addEventListener('keydown',function(e){ if(e.metaKey||e.ctrlKey||e.altK
     if(k===' '&&!e.repeat){ e.preventDefault(); leaveStop(); return; }
     if(STEER[k]) e.preventDefault(); return; }
   if(e.key==='Enter'&&(S.phase==='live'||S.phase==='count')){ e.preventDefault(); openStop('mid'); return; }
-  if(STEER[k]){ e.preventDefault(); KD[k]=true; ctrl.mode='keys'; ctrl.ax=ctrl.px; ctrl.ay=ctrl.py; return; }
+  if(STEER[k]){ e.preventDefault(); KD[k]=true; ctrl.mode='keys'; ctrl.kt=now(); ctrl.ax=ctrl.px; ctrl.ay=ctrl.py; return; }
   if(k===' '||k==='shift'){ e.preventDefault(); KD[k]=true; } });
 document.addEventListener('keyup',function(e){ var k=k0(e); KD[k]=false; if(e.key==='Shift') KD.shift=false; });
 addEventListener('blur',function(){ KD={}; ptrBoost=false; boostTouch=false; $('sn-boostbtn').classList.remove('on'); });
 /* pointer: the snake follows the mouse; hold the button to boost. On a touch screen, hold and drag to steer, and hold the boost button */
 function toCanvas(e){ var r=cv.getBoundingClientRect(); return {x:(e.clientX-r.left)*CW/r.width,y:(e.clientY-r.top)*CH/r.height}; }
 cv.addEventListener('pointermove',function(e){ var p=toCanvas(e); ctrl.px=p.x; ctrl.py=p.y;
-  if(ctrl.mode!=='ptr'&&Math.hypot(p.x-ctrl.ax,p.y-ctrl.ay)>24) ctrl.mode='ptr'; });
+  if(ctrl.mode!=='ptr'){ if(now()-(ctrl.kt||-9e9)<2500||steerHeld()){ ctrl.ax=p.x; ctrl.ay=p.y; } else if(Math.hypot(p.x-ctrl.ax,p.y-ctrl.ay)>60) ctrl.mode='ptr'; } });
 cv.addEventListener('pointerdown',function(e){ var p=toCanvas(e); e.preventDefault(); ac(); ctrl.px=p.x; ctrl.py=p.y; ctrl.ax=p.x; ctrl.ay=p.y; ctrl.mode='ptr';
   try{ cv.setPointerCapture(e.pointerId); }catch(x){} if(e.pointerType==='mouse'&&S.phase==='live') ptrBoost=true; });
 ['pointerup','pointercancel','lostpointercapture'].forEach(function(n){ cv.addEventListener(n,function(e){ if(e.pointerType==='mouse') ptrBoost=false; else if(n!=='lostpointercapture'){ ctrl.mode='keys'; ctrl.ax=ctrl.px; ctrl.ay=ctrl.py; } }); });
@@ -985,13 +1092,13 @@ addEventListener('resize',fit);
 function askNew(o){ $('sz-ask').hidden=!o; if(o&&(S.phase==='live'||S.phase==='count')) openStop('mid'); }
 function newRun(){ var n=S.name; S=fresh(); S.name=n; try{ localStorage.setItem(KEY,JSON.stringify(S)); }catch(e){} location.reload(); }   // S is replaced first, so a save that fires before the reload writes the fresh run
 $('sz-askyes').addEventListener('click',newRun); $('sz-askno').addEventListener('click',function(){ askNew(false); });
-document.querySelector('.sn-top .sn-logo').addEventListener('click',function(){ if(S.started) askNew(true); });
+$('sn-brand').addEventListener('click',function(){ if(S.started) askNew(true); });
 $('sz-mus').addEventListener('click',function(e){ e.stopPropagation(); ac(); musicToggle(); }); musBtn();
 
 /* ================= BOOT ================= */
-S=load()||fresh(); fit();
+S=load()||fresh(); fit(); modeDraw();
 if(!QS){ $('sn-prompt').textContent='questions.js is missing: keep it in the same folder as this game.'; }
-if(me().alive){ cam.x=me().x; cam.y=me().y; cam.z=clamp(1.04-(me().len-START)/380*0.28,0.78,1.04); }
+if(me().alive){ cam.x=me().x; cam.y=me().y; cam.z=zoomFor(me().len); }
 S.sn.forEach(function(s){ if(s.alive) bbox(s); });
 if(S.started){ $('sn-start').hidden=true;
   if(S.over){ showEnd(false); }
@@ -1006,7 +1113,7 @@ if(document.fonts&&document.fonts.ready) document.fonts.ready.then(function(){ d
 window.__G={ state:function(){ return S; }, me:me, answer:answer, next:function(){ return QS.next(); }, showQ:showQ, openStop:openStop, leaveStop:leaveStop, canGo:canGo, goLive:goLive,
   step:step, sim:function(sec,fn){ for(var i=0;i<sec*60;i++){ if(fn) fn(); if(S.phase!=='live') break; step(STEP); } return S; }, die:die, rad:rad, blocked:blocked, U:U, hud:hud, board:board,
   keys:function(){ return KD; }, ctrl:function(){ return ctrl; }, cam:function(){ return cam; }, draw:draw, openEgg:openEgg, openShop:openShop, spawnMe:spawnMe,
-  end:function(){ S.clock=0.01; }, rscap:function(){ return RSCAP; }, closeLoop:closeLoop, lasso:lasso, inPoly:inPoly, startEvent:startEvent, endEvent:endEvent, EVENTS:EVENTS, GOALS:GOALS, goalNow:goalNow,
+  end:function(){ S.clock=0.01; }, rscap:function(){ return RSCAP; }, setMode:setMode, CHAL:CHAL, chal:function(){ return S.chal; }, addPts:addPts, ptsX:ptsX, botThink:botThink, sharp:sharp, attackers:attackers, atkCap:atkCap, STYLES:STYLES, finalStep:finalStep, CW:CW, CH:CH, closeLoop:closeLoop, lasso:lasso, inPoly:inPoly, startEvent:startEvent, endEvent:endEvent, EVENTS:EVENTS, GOALS:GOALS, goalNow:goalNow,
   wantedStep:wantedStep, fresh:fresh, loops:function(){ return loops; }, PTS:PTS, ringR:ringR, consts:{CRUISE:CRUISE,BDRAIN:BDRAIN,LOWEN:LOWEN,LASSO_MIN:LASSO_MIN}, emptyNow:function(){ return wantEmpty; }, set:QS?QS.set:null, fast:FAST, NEED:NEED, R:R, RS:function(){ return RS; } };
 window.__verify=function(n){ var bad=[], i; for(i=0;i<n;i++){ var q=QS.next(), ok=q.choices.filter(function(c){ return c.ok; });
     if(ok.length!==1) bad.push(['not one right',q.prompt]); if(new Set(q.choices.map(function(c){ return c.html; })).size!==4) bad.push(['repeat labels',q.prompt]);

@@ -1,0 +1,102 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#121315">
+<meta name="robots" content="noindex,nofollow,noarchive">
+<title>Connect to Sprite Drop</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.119.0/dist/umd/supabase.js"></script>
+<style>
+:root{--bg:#121315;--panel:#1c1e21;--ink:#f3f1ec;--muted:#b9b5ad;--faint:#8c8880;--accent:#f39a2b;--line:#2c2f33}
+*{box-sizing:border-box}
+body{margin:0;min-height:100vh;display:grid;place-items:center;padding:16px;background:var(--bg);color:var(--ink);font:16px/1.5 system-ui,-apple-system,"Segoe UI",sans-serif}
+.card{width:min(440px,100%);display:grid;gap:16px;padding:28px;border-radius:18px;background:var(--panel);border:1px solid var(--line)}
+h1{margin:0;font-size:22px;line-height:1.3}
+h1 b{color:var(--accent)}
+p{margin:0;color:var(--muted)}
+ul{margin:8px 0 0;padding-left:18px;color:var(--muted);font-size:14px}
+.who{font-size:13px;color:var(--faint)}
+input{width:100%;padding:12px 14px;border-radius:10px;border:1px solid var(--line);background:var(--bg);color:var(--ink);font:inherit}
+.btn{padding:12px 16px;border-radius:10px;border:1px solid var(--line);background:transparent;color:var(--ink);font:600 15px/1 inherit;cursor:pointer}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:#121315}
+.btn:disabled{opacity:.5;cursor:default}
+.choices{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+</style>
+</head>
+<body>
+<main class="card" id="card">
+  <p id="msg">Checking the request…</p>
+</main>
+<script>
+// Approval page for the Sprite Drop test bridge (Supabase OAuth 2.1 server).
+// Supabase sends here with ?authorization_id=… when ChatGPT or Claude asks to connect.
+// This is a separate Supabase project from Off the Clock. The key below is the
+// publishable key, which is safe in a public page.
+const SPRITE_DROP = {
+  supabaseUrl: 'https://klbbcwlddgtsolvsxvwe.supabase.co',
+  supabaseKey: 'sb_publishable_k0ZE76Yc9hnXs0-8hwV0sQ_lHFFjzt9',
+}
+;(function () {
+  const card = document.getElementById('card'), msg = document.getElementById('msg')
+  const id = new URLSearchParams(location.search).get('authorization_id')
+  const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c])
+  const say = (html) => { msg.innerHTML = html }
+  if (!id) { say('This page opens when ChatGPT or Claude asks to connect to Sprite Drop. There is nothing to approve right now.'); return }
+  if (!window.supabase) { say('Could not load sign-in. Check your connection and reload.'); return }
+  const sb = window.supabase.createClient(SPRITE_DROP.supabaseUrl, SPRITE_DROP.supabaseKey, { auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true, flowType: 'pkce' } })
+
+  function signInForm() {
+    // Password first: it works inside the Claude and ChatGPT sign-in windows (iPhone fills it with Face ID).
+    // The email link only works when it opens in this same browser, which phones usually don't do.
+    say('Sign in with your spitz.dev email and password.')
+    card.insertAdjacentHTML('beforeend', '<form id="pf" style="display:grid;gap:10px"><input id="email" type="email" autocomplete="username" required placeholder="you@example.com"><input id="pw" type="password" autocomplete="current-password" required placeholder="Password"><button class="btn primary" type="submit" id="go">Sign in</button></form><button class="btn" type="button" id="send">Email me a sign-in link instead</button>')
+    const f = document.getElementById('pf'), send = document.getElementById('send'), email = document.getElementById('email')
+    f.onsubmit = async (ev) => {
+      ev.preventDefault()
+      const go = document.getElementById('go'); go.disabled = true
+      const { error } = await sb.auth.signInWithPassword({ email: email.value.trim(), password: document.getElementById('pw').value })
+      if (error) { go.disabled = false; say('Could not sign in: ' + esc(error.message)); return }
+      f.remove(); send.remove(); say('Signed in. Loading the request…')
+      card.prepend(msg); show().catch((e) => say('Something went wrong: ' + esc(e.message)))
+    }
+    send.onclick = async () => {
+      const e = email.value.trim()
+      if (!e) { say('Type your email first.'); return }
+      send.disabled = true
+      const { error } = await sb.auth.signInWithOtp({ email: e, options: { emailRedirectTo: location.href } })
+      if (error) { send.disabled = false; say('Could not send the link: ' + esc(error.message)); return }
+      say('Check your email for the sign-in link. It only works if it opens in this same browser.')
+      f.remove(); send.remove()
+    }
+  }
+
+  async function decide(approve, buttons) {
+    buttons.forEach((b) => (b.disabled = true))
+    const { data, error } = approve ? await sb.auth.oauth.approveAuthorization(id) : await sb.auth.oauth.denyAuthorization(id)
+    if (error || !data?.redirect_url) { say('That did not go through: ' + esc(error?.message || 'no redirect') + '. Start the connection again from ChatGPT or Claude.'); return }
+    say(approve ? 'Connected. Taking you back…' : 'Denied. Taking you back…')
+    location.href = data.redirect_url
+  }
+
+  async function show() {
+    const { data: { session } } = await sb.auth.getSession()
+    if (!session) { signInForm(); return }
+    const { data, error } = await sb.auth.oauth.getAuthorizationDetails(id)
+    if (error) { say('This request has expired or is not valid (' + esc(error.message) + '). Start the connection again from ChatGPT or Claude.'); return }
+    if (data.redirect_url) { say('Already approved. Taking you back…'); location.replace(data.redirect_url); return }
+    msg.remove()
+    const name = data.client?.name || 'An app'
+    card.insertAdjacentHTML('beforeend',
+      '<h1><b>' + esc(name) + '</b> wants to connect to Sprite Drop</h1>' +
+      '<div><p>If you approve, it can:</p><ul><li>Save images to your private Sprite Drop storage</li><li>List and open the images saved there</li></ul></div>' +
+      '<p class="who">Signed in as ' + esc(data.user?.email || session.user?.email) + '. Sprite Drop is a test and is separate from Off the Clock. You can remove this connection any time in ChatGPT or Claude settings.</p>' +
+      '<div class="choices"><button class="btn" type="button" id="deny">Deny</button><button class="btn primary" type="button" id="approve">Approve</button></div>')
+    const a = document.getElementById('approve'), d = document.getElementById('deny')
+    a.onclick = () => decide(true, [a, d]); d.onclick = () => decide(false, [a, d])
+  }
+  show().catch((e) => say('Something went wrong: ' + esc(e.message)))
+})()
+</script>
+</body>
+</html>

@@ -14,9 +14,9 @@
 (function(){
 'use strict';
 
-var GAMES={                     /* id: [number in the code, display name, how it is ranked] — never renumber */
+var GAMES={                     /* id: [number in the code, display name, how it is ranked, optional score unit] — never renumber */
   splat_range:[1,'Splat Range','points'],
-  star_swarm:[2,'Star Swarm','points'],
+  star_swarm_v1:[2,'Star Swarm','points',1,'star_swarm'],   /* codes from before 2026-11-17: points capped at 1,048,575 and the #1 run hit it. A 5th entry = the board it joins (teacher.html), so old and new codes share one Star Swarm board */
   shift_racer:[3,'Shift Racer','points'],
   jump_man_multiplication:[4,'Jump Man','points'],
   football_buds_v1:[5,'Football Buds (classic)','versus'],   /* codes from before 2026-10-30, when Football Buds scored Buds vs Rivals */
@@ -32,18 +32,23 @@ var GAMES={                     /* id: [number in the code, display name, how it
   paint_royale:[15,'Paint Royale','points'],
   snake_arena:[16,'Snake Arena','points'],
   brawl_buds_v1:[17,'Brawl Buds (classic)','versus'],   /* codes from before 2026-11-02, when Brawl Buds scored Buds vs Rivals */
-  pinball:[18,'Pinball','points'],
+  pinball_v1:[18,'Pinball (classic)','points'],   /* codes from before 2026-11-07: points capped at 1,048,575 and top runs hit it */
   hill_climb:[19,'Hill Climb','points'],
   fit_check:[20,'Fit Check','points'],
-  football_buds:[21,'Football Buds','points'],   /* points since 2026-10-30 (id 5 was the Buds vs Rivals score) */
+  football_buds_v2:[21,'Football Buds (before BLITZ)','points'],   /* codes from 2026-10-30 until Football Buds BLITZ went live (top scores ~30,000); id 5 was the Buds vs Rivals score */
   hoop_buds:[22,'Hoop Buds','points'],   /* points since 2026-10-30 (id 6 was the Buds vs Rivals score) */
   rocket_buds:[23,'Rocket Buds','points'],   /* points since 2026-11-02 (id 14 was the Buds vs Rivals score) */
-  brawl_buds:[24,'Brawl Buds','points']   /* points since 2026-11-02 (id 17 was the Buds vs Rivals score) */
+  brawl_buds:[24,'Brawl Buds','points'],   /* points since 2026-11-02 (id 17 was the Buds vs Rivals score) */
+  pinball:[25,'Pinball','points',10],   /* since 2026-11-07 the code holds the score in tens (a 4th entry = score unit), so runs up to 10,485,750 fit (id 18 capped at 1,048,575) */
+  rook_and_ruin:[26,'Rook & Ruin','points'],   /* 2026-11-15; best bot runs score about 210,000, well under the 1,048,575 cap */
+  dig_buds:[28,'Dig Buds','points'],
+  football_buds:[29,'Football Buds BLITZ','points',10],   /* Football Buds BLITZ (2026-11): bot runs score about 100,000 to 450,000; the code holds the score in tens, so runs up to 10,485,750 fit (id 21 is the older Football Buds) */
+  star_swarm:[27,'Star Swarm','points',10]   /* since 2026-11-17 the code holds the score in tens, so runs up to 10,485,750 fit (id 2 capped at 1,048,575) */
 };
 /* question sets in the order questions.js lists them; 0 means the game's own questions. Add new sets at the end.
    New codes (layout C, since Oct 21 2026) have 6 bits for the set and 5 for topics, so up to 63 sets with up to 5 topics each fit. */
-var SETS=[null,'mult','slope','point','hoy','shift','func','int','sq','plot0','plot','fam','fslope','stdform','slide','perp','solve','evalf'];
-var SET_NAMES={ mult:'Multiplication facts', slope:'Slope-intercept form', point:'Point-slope form', hoy:'HOY & VUX', shift:'Linear transformations', func:'Functions', int:'Integers', sq:'Squares & roots', plot0:'Graphing y = mx', plot:'Graphing y = mx + b', fam:'Function families', fslope:'Finding slope', stdform:'Standard form', slide:'Slide and Slice', perp:'Parallel & perpendicular', solve:'Solving equations', evalf:'Evaluating functions' };
+var SETS=[null,'mult','slope','point','hoy','shift','func','int','sq','plot0','plot','fam','fslope','stdform','slide','perp','solve','evalf','dr','rate','icpt'];
+var SET_NAMES={ mult:'Multiplication facts', slope:'Slope-intercept form', point:'Point-slope form', hoy:'HOY & VUX', shift:'Linear transformations', func:'Functions', int:'Integers', sq:'Squares & roots', plot0:'Graphing y = mx', plot:'Graphing y = mx + b', fam:'Function families', fslope:'Finding slope', stdform:'Standard form', slide:'Slide and Slice', perp:'Parallel & perpendicular', solve:'Solving equations', evalf:'Evaluating functions', dr:'Domain & range', rate:'Rate of change', icpt:'Intercepts' };
 /* SET_TOPICS = topics on offer now. A topic's bit is its position, so never reorder; a dropped topic keeps its slot in TOPIC_NAMES
    (graphing's 'Plot it' and 'Points on the line', dropped Oct 10 2026) so older codes still name it. A dropped topic in the middle is null in
    SET_TOPICS (slope's 'yint', merged into 'slope' Oct 19 2026: bit 1 is now "Find slope or y-intercept", bit 2 only appears in older codes).
@@ -54,13 +59,14 @@ var TOPIC_ALIAS={ slope:{ yint:'slope' } };
 var TOPIC_SHARE={ shift:{ fl:'st', af:'st' } };
 /* codes made before a topic change read with the names and topics on offer then */
 var TOPIC_BEFORE={ slope:{ until:'2026-10-19', names:['Write the equation','Find the slope','Find the y-intercept','Read a graph'], topics:['write','slope','yint','graph'] } };
-var SET_TOPICS={ mult:['f03','f46','f79','f1012'], slope:['write','slope',null,'graph'], point:['write','point','slope'], hoy:['describe','graph','slope'], shift:['vs','hs','gr','ne','st'], func:['points','table','map','graph'], int:['add','sub','mult'], sq:['square','root','neg','est'], plot0:['match','eq'], plot:['match','eq'], fam:['eq','graph'], fslope:['pts','graph','table','eq'], stdform:['x','y'], slide:['slide','slice','both','slope'], perp:['par','perp','pair'], solve:['two','dist','both','comb'], evalf:['eq','sq','graph','table'] };
+var SET_TOPICS={ mult:['f03','f46','f79','f1012'], slope:['write','slope',null,'graph'], point:['write','point','slope'], hoy:['describe','graph','slope'], shift:['vs','hs','gr','ne','st'], func:['points','table','map','graph'], int:['add','sub','mult'], sq:['square','root','neg','est'], plot0:['match','eq'], plot:['match','eq'], fam:['eq','graph'], fslope:['pts','graph','table','eq'], stdform:['x','y'], slide:['slide','slice','both','slope'], perp:['par','perp','pair'], solve:['two','dist','both','comb'], evalf:['eq','sq','graph','table'], dr:['pts','graph','story'], rate:['table','graph','story','compare'], icpt:['graph','table','eq','mean'] };
 var TOPIC_NAMES={ mult:['Facts 0–3','Facts 4–6','Facts 7–9','Facts 10–12'], slope:['Write the equation','Find slope or y-intercept','Find the y-intercept','Read a graph'],
   point:['Write the equation','Find the point','Find the slope'], hoy:['Describe the line','Match the graph','Find the slope'], shift:['Vertical shifts','Horizontal shifts','Graphs','New equations','Stretches & reflections'],
   func:['Ordered pairs','Tables','Mapping diagrams','Graphs'], int:['Adding','Subtracting','Multiplying'],
   sq:['Squaring','Square roots','Negatives','Estimating roots'],
   plot0:['Pick the line','Write the equation','Plot it','Points on the line'], plot:['Pick the line','Write the equation','Plot it','Points on the line'],
-  fam:['From the equation','From the graph'], fslope:['From two points','From a graph','From a table','From an equation'], stdform:['x-intercept','y-intercept'], slide:['Slide','Slice','Both steps','Find the slope'], perp:['Parallel slopes','Perpendicular slopes','Spot the pair'], solve:['Two-step','Distributing','Both sides','Combine like terms'], evalf:['From an equation','With x²','From a graph','From a table'] };
+  fam:['From the equation','From the graph'], fslope:['From two points','From a graph','From a table','From an equation'], stdform:['x-intercept','y-intercept'], slide:['Slide','Slice','Both steps','Find the slope'], perp:['Parallel slopes','Perpendicular slopes','Spot the pair'], solve:['Two-step','Distributing','Both sides','Combine like terms'], evalf:['From an equation','With x²','From a graph','From a table'],
+  dr:['Pairs and tables','From a graph','Word problems'], rate:['From a table','From a graph','Word problems','Compare rates'], icpt:['From a graph','From a table','From y = mx + b','What it means'] };
 
 /* Google Form for score submissions. With only url, the button copies the code and opens the form.
    Add the entry.NNNN ids of the Name and Score code questions (from a pre-filled link) to fill both in for the student. */
@@ -128,7 +134,7 @@ function boost(v,pct,up){ v=+v||0; return v>0&&pct? (up?Math.ceil:Math.round)(v*
 var RUDE=/FUCK|FUK|FCK|CUNT|SHT|ASS|FAG|CUM|DCK|DICK|PUSS|PNS|PENS|TWAT|SLUT|WHR|NGA|NGR|NAZ|KKK|RAPE|SEX|SXY|XXX|TTS|TTY|CLT|DYKE|GAY|HTLR|PUTA|CRAP|DAMN|HELL|BUTT|PEE|POOP/;
 /* salts 12–15 (4–7 in layout B) mark a code that earned the Suggested skill bonus (the score in it is already boosted) */
 function make(gameId,S){ var g=GAMES[gameId]; if(!g) throw new Error('Unknown game '+gameId); var L=linkSet(), score, pct=g[2]==='strokes'?0:bonusPct(), b=pct?12:8;
-  if(g[2]==='versus') score=(clamp(boost(S.buds,pct,true),10)<<10)|clamp(S.rivals,10); else if(g[2]==='strokes') score=S.strokes; else score=boost(S.score,pct);
+  if(g[2]==='versus') score=(clamp(boost(S.buds,pct,true),10)<<10)|clamp(S.rivals,10); else if(g[2]==='strokes') score=S.strokes; else score=Math.round(boost(S.score,pct)/(g[3]||1));
   var f={ game:g[0], set:L.set, topics:L.topics, len:S.len||0, day:today()%(1<<LAYOUT_C.day), score:score, correct:S.correct, answered:S.answered }, code;
   for(var salt=b;salt<b+4;salt++){ code=encode(f,S.name,salt); if(!RUDE.test(code.replace(/-/g,''))) break; }
   return code; }
@@ -144,7 +150,8 @@ function fields(P,W,recent){ var f=unpack(P,W), set=SETS[f.set]; f.W=W; f.id=nul
 function read(code,name,any){ var c=String(code||'').toUpperCase().replace(/[^A-Z0-9]/g,''); if(c.length!==16) return null;
   var full=0n; for(var i=0;i<16;i++){ var v=ALPH.indexOf(c[i]); if(v<0) return null; full=(full<<5n)|BigInt(v); }
   full^=MASK; var chk=full&0xFFFFn, P=(full>>16n)^stream(chk), prev=(P>>62n)===0n?LAYOUT_B:LAYOUT_A, f=null, bonus=false, salt;
-  for(salt=0;salt<16&&!f;salt++) if(check(P,name,salt)===chk){ f=fields(P,salt<8?prev:LAYOUT_C); bonus=!!f&&salt%8>=4; }
+  /* layout C salts (8–15) first: nearly every code is layout C now, so a rare check-sum clash with an older salt can't misread it (2026-11-17: a Star Swarm code read as Burger Shop) */
+  for(var si=0;si<16&&!f;si++){ salt=(si+8)%16; if(check(P,name,salt)===chk){ f=fields(P,salt<8?prev:LAYOUT_C); bonus=!!f&&salt%8>=4; } }
   if(!f&&any){ f=fields(P,LAYOUT_C,true)||fields(P,prev,true); }   /* no name to tell the layout by: take the one that reads as a real recent run */
   if(!f) return null; var id=f.id, W=f.W;
   var g=GAMES[id], set=SETS[f.set], r={ code:c.slice(0,4)+'-'+c.slice(4,8)+'-'+c.slice(8,12)+'-'+c.slice(12), game:id, gameName:g[1], kind:g[2],
@@ -153,7 +160,7 @@ function read(code,name,any){ var c=String(code||'').toUpperCase().replace(/[^A-
   var d=f.day, wrap=1<<W.day, now=today(); while(d+wrap<=now) d+=wrap; r.date=new Date(BASE+d*864e5); r.day=d;
   var old=set&&TOPIC_BEFORE[set]; if(old&&r.date<new Date(old.until+'T00:00:00Z')) r.topics=f.topics? old.names.filter(function(n,i){ return f.topics&(1<<i); }) : old.names.filter(function(n,i){ return !!old.topics[i]; });
   if(g[2]==='versus'){ r.buds=f.score>>10; r.rivals=f.score&1023; r.score=r.buds-r.rivals; r.display=r.buds+' – '+r.rivals; }
-  else { r.score=f.score; r.display=f.score.toLocaleString(); }
+  else { r.score=f.score*(g[3]||1); r.display=r.score.toLocaleString(); }
   return r; }
 
 /* ---------- end screen ---------- */
@@ -174,9 +181,9 @@ function button(link,code){ return '<a href="'+link+'" target="_blank" rel="noop
    at its start screen. Saves from before this change have no stamp and are cleared too. Add each new game's KEY here (the part before any set/topics suffix). */
 (function(){
   var K={ splat_range:'splat_range_v5', star_swarm:'star_swarm_v1', shift_racer:'shift_racer_v1', jump_man_multiplication:'jump_man_facts_v1',
-    football_buds:'football_buds_game_v2', hoop_buds:'hoop_buds_game_v1', dash:'dash_facts_game_v3', skate:'skate_game_v1', mini_golf:'mini_golf_v1',
+    football_buds:'football_buds_game_v3', hoop_buds:'hoop_buds_game_v1', dash:'dash_facts_game_v3', skate:'skate_game_v1', mini_golf:'mini_golf_v1',
     fishing:'go_fish_v1', brick_breaker:'brick_breaker_v1', burger_shop:'burger_shop_v1', burger_blaster:'burger_blaster_v1', rocket_buds:'rocket_buds_v1',
-    paint_royale:'paint_royale_v1', snake_arena:'snake_arena_v1', brawl_buds:'brawl_buds_v1', pinball:'pinball_v1', hill_climb:'hill_climb_v1', fit_check:'fit_check_v1' };
+    paint_royale:'paint_royale_v1', snake_arena:'snake_arena_v1', brawl_buds:'brawl_buds_v1', pinball:'pinball_v1', hill_climb:'hill_climb_v1', fit_check:'fit_check_v1', dig_buds:'dig_buds_v10', rook_and_ruin:'bladebound_v3' };
   var f=(location.pathname.split('/').pop()||'').replace(/\.html?$/,'').replace(/_(mult|v\d|test)$/,''), key=K[f]; if(!key) return;
   var run=function(k){ return k.indexOf(key)===0&&!/_(mute|t)$/.test(k); };   /* KEY may carry the set and topics after it */
   try{ var ls=window.localStorage;
@@ -227,7 +234,7 @@ function button(link,code){ return '<a href="'+link+'" target="_blank" rel="noop
 /* tab icon: each game has its own emoji icon (Kody, 2026-10-11), picked from the file name; unknown pages get the Spitz burger */
 (function(){ if(document.querySelector('link[rel~="icon"]')) return;
   var E={ splat_range:'🎯', star_swarm:'👾', shift_racer:'🏎️', jump_man_multiplication:'👟', football_buds:'🏈', hoop_buds:'🏀', dash:'⚡', skate:'🛹', mini_golf:'⛳',
-    fishing:'🎣', brick_breaker:'🧱', burger_shop:'🍟', burger_blaster:'💥', rocket_buds:'🚗', paint_royale:'🎨', snake_arena:'🐍', brawl_buds:'🥊', pinball:'🎱', hill_climb:'🚚', fit_check:'👗' };
+    fishing:'🎣', brick_breaker:'🧱', burger_shop:'🍟', burger_blaster:'💥', rocket_buds:'🚗', paint_royale:'🎨', snake_arena:'🐍', brawl_buds:'🥊', pinball:'🎱', hill_climb:'🚚', fit_check:'👗', dig_buds:'⛏️', rook_and_ruin:'⚔️' };
   var f=(location.pathname.split('/').pop()||'').replace(/\.html?$/,'').replace(/_(mult|v\d|test)$/,''), e=E[f], l=document.createElement('link'); l.rel='icon'; l.type='image/svg+xml';
   l.href=e?'data:image/svg+xml,'+encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect width="64" height="64" rx="14" fill="#17121F"/><text x="32" y="46" font-size="40" text-anchor="middle">'+e+'</text></svg>')
     :"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%2317121F'/%3E%3Cpath d='M10 29q0-17 22-17t22 17z' fill='%23F2A541'/%3E%3Cg fill='%23FFF3D6'%3E%3Cellipse cx='22' cy='21' rx='2.4' ry='1.4'/%3E%3Cellipse cx='32' cy='17' rx='2.4' ry='1.4'/%3E%3Cellipse cx='42' cy='21' rx='2.4' ry='1.4'/%3E%3Cellipse cx='28' cy='25' rx='2.4' ry='1.4'/%3E%3Cellipse cx='37' cy='25' rx='2.4' ry='1.4'/%3E%3C/g%3E%3Cpath d='M8 31h48l-4 5-5-3-5 3-5-3-5 3-5-3-5 3-5-3-5 3z' fill='%236FD34A'/%3E%3Crect x='9' y='35' width='46' height='8' rx='4' fill='%237A3B1E'/%3E%3Cpath d='M8 43h48l-3 3H11z' fill='%23FFC72C'/%3E%3Cpath d='M10 46h44q0 7-7 7H17q-7 0-7-7z' fill='%23F2A541'/%3E%3C/svg%3E";
@@ -269,6 +276,8 @@ function boardLine(gameId,S){ var g=GAMES[gameId]; if(!BOARD||!g||g[2]!=='points
   var b=BOARD[gameId], top=(b&&b.top||[]).map(function(e){ return { n:normName(e.name), v:+String(e.score).replace(/[^0-9]/g,'')||0 }; }),
     mine=boost(S.score,bonusPct()), name=g[1], me=normName(S.name), rank=1, mineOn=null;
   if(!(mine>0)) return '';
+  /* no rank brag for a run that is mostly guesses (2026-11-17 health check: a bot with 18% right was told "#3" on boards with 1-2 names) */
+  if((+S.answered||0)>=5&&(+S.correct||0)/S.answered<0.5) return '';
   top.forEach(function(e,i){ if(e.v>=mine) rank++; if(e.n&&e.n===me&&!mineOn) mineOn={ v:e.v, r:i+1 }; });
   if(mineOn&&mineOn.v>=mine) return '🏆 You\'re #'+mineOn.r+' on the '+name+' board with '+mineOn.v.toLocaleString()+(mineOn.r===1?'. Beat your own record!':'. Beat it to move up!');
   if(!top.length) return '🏆 Nobody is on the '+name+' board yet. Send your score to be the first!';

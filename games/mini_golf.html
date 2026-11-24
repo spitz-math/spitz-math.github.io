@@ -260,7 +260,7 @@ button:disabled{ cursor:default; }
   </div><span class="mg-credit sz-credit">Made by Spitz <i class="sz-burger" aria-hidden="true"></i></span></div>
 
   <div class="mg-over" id="mg-end" hidden><div class="mg-box"><div class="sz-eyebrow">Spitz <b>Arcade</b></div>
-    <p class="mg-sub" style="margin:0">Time! Show this screen to your teacher.</p>
+    <p class="mg-sub" style="margin:0">Time!</p>
     <div class="mg-name" id="mg-endname"></div>
     <div class="mg-final" id="mg-endscore">0</div>
     <div class="mg-stats" id="mg-endstats"></div>
@@ -841,7 +841,7 @@ function showEnd(celebrate){ $('mg-endname').textContent=S.name; $('mg-endscore'
   $('mg-endtopics').innerHTML=Object.keys(S.topics).map(function(k){ var t=S.topics[k]; return '<div class="mg-stat"><div class="l">'+k+'</div><div class="v">'+t[0]+' / '+t[1]+'</div></div>'; }).join('');
   /* LEADERBOARD HOOK: the shared score code (scorecode.js) shows the student's code here */
   if(window.SpitzCode&&SpitzCode.show) try{ SpitzCode.show('mg','mini_golf',S); }catch(e){}
-  $('mg-end').hidden=false; if(celebrate){ SND.win(); [0,350,700,1100].forEach(function(ms,i){ setTimeout(function(){ confetti(200+i*500,1070,90,1.3); confetti(1720-i*500,1070,90,1.3); },ms); }); } }
+  $('mg-end').hidden=false; if(celebrate&&S.score>0){ SND.win(); [0,350,700,1100].forEach(function(ms,i){ setTimeout(function(){ confetti(200+i*500,1070,90,1.3); confetti(1720-i*500,1070,90,1.3); },ms); }); } }
 var armT=0; $('mg-again').addEventListener('click',function(){ var b=this; if(!b.classList.contains('arm')){ b.classList.add('arm'); b.textContent='Tap again to start over'; clearTimeout(armT); armT=setTimeout(function(){ b.classList.remove('arm'); b.textContent='Play again'; },3000); return; }
   b.classList.remove('arm'); b.textContent='Play again'; var keepName=S.name; S=fresh(); S.name=keepName; pops=[]; S.ball=hole(0).tee.slice(); S.cup=hole(0).cup.slice(); placeBall();
   $('mg-end').hidden=true; $('mg-start').hidden=false; $('mg-nameinput').value=keepName; $('mg-go').disabled=!keepName; $('mg-ss').hidden=true; drawTurf(); save(); hud(); timerDraw();
