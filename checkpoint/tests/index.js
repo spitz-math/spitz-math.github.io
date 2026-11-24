@@ -23,7 +23,7 @@ window.SPITZ_TESTS=[
   {id:"ss8-2025", title:"Grade 8 Social Studies 2025 Released Test", v:"33706b813e"},
   {id:"ss8-2024", title:"Grade 8 Social Studies 2024 Released Test", v:"1a39b81225"},
   {id:"sci8-2025", title:"Grade 8 Science 2025 Released Test", v:"eb1729f11f", hidden:true},
-  {id:"sci8-2024", title:"Grade 8 Science 2024 Released Test", v:"fb3fa4f098", hidden:true},
+  {id:"sci8-2024", title:"Grade 8 Science 2024 Released Test", v:"33993db8d1", hidden:true},
   {id:"exit-ticket-11-3", title:"Exit Ticket 11/3", v:"2e834945e9"},
   {id:"exit-ticket-11-4", title:"Exit Ticket 11/4", v:"8880075f1e"},
   {id:"exit-ticket-11-11", title:"Exit Ticket 11/11", v:"7b8b04c14e"}
