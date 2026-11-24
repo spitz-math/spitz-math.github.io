@@ -2541,7 +2541,8 @@ ${PAPER_CSS}
 };
 function earn(it){ const a=S.answers[it.n]; if(a==null||it.type==='text') return null; /* written answers: the teacher scores them */ if(NOKEY(it)){ const p=OWNPTS&&OWNPTS[it.n]; return p==null?null:+p; } const full=score(it)===true; if(it.max===1||full) return full?it.max:0;
   let hit=0, parts=2;
-  if(it.type==='boxes'){ if(it.unordered){ const left=[...it.answer]; a.forEach(q=>{ const i=left.indexOf(q); if(q!=null&&i>=0){ hit++; left.splice(i,1); } }); } else hit=it.answer.filter((q,i)=>a[i]===q).length; parts=it.answer.length; }
+  if(it.type==='boxes'){ if(it.unordered){ const left=[...it.answer]; a.forEach(q=>{ const i=left.indexOf(q); if(q!=null&&i>=0){ hit++; left.splice(i,1); } }); } else hit=Math.max(...[it.answer,...(it.alt||[])].map(K=>K.filter((q,i)=>a[i]===q).length)); parts=it.answer.length;
+    if(it.half) return hit*2>=parts?1:0; }   /* half:true = TEA's "half or more right earns 1 point" (2024 Grade 8 Science Q6, Q19); alt keys count too (Q19 row 4 takes Comet or Meteor) */
   else if(it.type==='ms'||(it.type==='hotspot'&&Array.isArray(it.answer))){ hit=Math.max(0,a.filter(q=>it.answer.includes(q)).length-Math.max(0,a.length-it.answer.length)); parts=it.answer.length; }
   else if(it.type==='inline'){ hit=it.answer.filter((q,i)=>a[i]===q).length; parts=it.answer.length; }
   else if(it.type==='graphsys'){ const r=sysParts(it,a); hit=(r.lines?1:0)+(r.region?1:0); }
