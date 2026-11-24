@@ -36,12 +36,13 @@ const A = {
     const q = await pg.evaluate(() => { const S = __G.state(); return { open: !!(S.stop && S.q && !S.qDone), right: S.q ? S.q.choices.findIndex(c => c.ok) : -1 }; });
     return { ...q, before };
   },
-  /* Finish the Power Stop the way a student does: answer each question with its number key until the card closes. */
+  /* Finish the Power Stop the way a student does: answer each question with its number key, then Enter on the last card to go back to digging. */
   async continueQuestion(pg) {
     for (let i = 0; i < 10; i++) {
       const s = await pg.evaluate(() => { const S = __G.state(); return { stop: !!S.stop, open: !!(S.q && !S.qDone), right: S.q ? S.q.choices.findIndex(c => c.ok) : -1 }; });
       if (!s.stop) break;
       if (s.open) { await sleep(450); await pg.keyboard.press('Digit' + (s.right + 1)); }
+      else await pg.keyboard.press('Enter');   // the last card waits for the student (Enter, Space or a click on Back to digging)
       await sleep(700);
     }
     await pg.waitForFunction(() => !__G.state().stop && !__G.M(), null, { timeout: 6000 }).catch(() => {});

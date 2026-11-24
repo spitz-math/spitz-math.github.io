@@ -102,7 +102,7 @@ button:disabled{ cursor:default; }
 .dg-q.fast .dg-ch{ position:relative; min-height:150px; justify-content:center; border-radius:24px; font:800 72px/1 var(--display); }
 .dg-q.fast .dg-ch .k{ position:absolute; left:14px; top:14px; width:46px; height:46px; font-size:28px; }
 .dg-q.fast .dg-fb{ height:150px; min-height:0; overflow:hidden; }
-.dg-q.fast .dg-next{ display:none; }
+.dg-q.fast .dg-next{ display:none; } .dg-q.fast.last .dg-next{ display:block; } .dg-q.fast.last .dg-fb{ height:90px; }
 
 /* shop: over the arena */
 .dg-shop{ position:absolute; inset:0; z-index:5; background:rgba(12,9,25,.97); padding:18px 26px; display:flex; flex-direction:column; gap:12px; }
@@ -252,7 +252,7 @@ button:disabled{ cursor:default; }
       <div class="dg-fb" id="dg-fb">Right answers give Power and cash.</div>
       <button class="dg-next" id="dg-next" disabled>Next question ›</button>
     </div>
-    <div class="dg-mfoot">Press 1-4 or click an answer · you go back to digging after the last one</div>
+    <div class="dg-mfoot">Press 1-4 or click an answer · Space or Enter goes back to digging</div>
   </div>
   <div class="dg-modal wide" id="dg-shop" hidden>
     <div class="dg-shophead"><h2>Shop</h2><span class="cash" id="dg-shopcash">$0</span><span class="dg-sp"></span><button class="dg-x" id="dg-shopx" aria-label="Close the shop">×</button></div>
@@ -1170,7 +1170,8 @@ function showQ(){ var q=S.q; $('dg-tag').textContent=q.topic; $('dg-prompt').inn
   var fb=$('dg-fb'); if(!FAST){ fb.className='dg-fb'; fb.innerHTML=S.stop==='chest'?'Answer to open the chest.':'Right answers give Power and cash.'; } $('dg-next').disabled=true;
   if(S.qDone) markAnswered(S.picked,false); hud(); }
 function newQ(){ clearTimeout(nextT); if(!QS) return; QSHOWN=now(); S.q=QS.next(); S.qDone=false; S.picked=-1; save(); showQ(); }
-function markAnswered(i,fresh){ $('dg-next').textContent=S.stopN+1>=stopLen()?'Back to digging ›':'Next question ›'; var q=S.q, btns=$('dg-choices').querySelectorAll('.dg-ch'), c=q.choices[i], fb=$('dg-fb');
+function lastQ(){ return !!S.stop&&S.stopN+1>=stopLen(); }
+function markAnswered(i,fresh){ $('dg-next').textContent=lastQ()?'Back to digging ›':'Next question ›'; $('dg-q').classList.toggle('last',lastQ()); var q=S.q, btns=$('dg-choices').querySelectorAll('.dg-ch'), c=q.choices[i], fb=$('dg-fb');
   btns.forEach(function(b,j){ b.disabled=true; if(q.choices[j].ok) b.classList.add('right'); else if(j!==i&&!FAST) b.hidden=true; }); if(!c.ok) btns[i].classList.add('wrong');
   if(c.ok){ fb.className='dg-fb ok'; fb.innerHTML='<span class="h">Correct!'+(fresh&&S.streak>1?' Streak '+S.streak+'.':'')+'</span>'+q.explain; $('dg-next').disabled=false; }
   else { fb.className='dg-fb bad'; fb.innerHTML='<span class="h">Not quite.</span>'+c.why+(FAST?' ':'<br>')+q.explain;
@@ -1182,10 +1183,10 @@ function answer(i){ if(!S.started||S.over||S.qDone||!S.q) return; var c=S.q.choi
   if(c.ok){ S.correct++; S.topics[S.q.topic][0]++; S.streak++; S.best=Math.max(S.best,S.streak); var np=U('bucket'), ca=U('cash')+streakBonus(S.streak);
     if(S.stop==='chest'){ np=0; S.chestOk=1; } else np=stopPow(); S.energy+=np; S.cash+=ca; SND.correct(); markAnswered(i,true);
     if(S.streak%3===0){ S.buff.super=Math.max(S.buff.super,8); setTimeout(SND.superdig,380); } else if(S.streak<=4) setTimeout(function(){ SND.multup(S.streak); },380);
-    if(FAST) nextT=setTimeout(function(){ if(S.qDone&&!S.over) stepStop(); },150);
-    else { var p=stagePoint(btn,60,40); confetti(p[0],p[1],40,2.2); toast((np?'+'+np+' Power · ':'')+'+$'+ca+' · ×'+streakMult()+(S.streak%3===0?' · 3 in a row: SUPER DIG!':'')); nextT=setTimeout(function(){ if(S.qDone&&!S.over) stepStop(); },1600); } }
+    if(FAST){ if(!lastQ()) nextT=setTimeout(function(){ if(S.qDone&&!S.over) stepStop(); },150); }
+    else { var p=stagePoint(btn,60,40); confetti(p[0],p[1],40,2.2); toast((np?'+'+np+' Power · ':'')+'+$'+ca+' · ×'+streakMult()+(S.streak%3===0?' · 3 in a row: SUPER DIG!':'')); if(!lastQ()) nextT=setTimeout(function(){ if(S.qDone&&!S.over) stepStop(); },1600); } }
   else { S.streak=0; S.cash=Math.max(0,S.cash-(FAST?3:5)); if(S.pro) S.energy=Math.max(0,S.energy-(FAST?3:8)); SND.miss(); markAnswered(i,true);
-    if(FAST) nextT=setTimeout(function(){ if(S.qDone&&!S.over) stepStop(); },2500); }   // time to read the right answer
+    if(FAST&&!lastQ()) nextT=setTimeout(function(){ if(S.qDone&&!S.over) stepStop(); },2500); }   // time to read the right answer
   save(); hud(); }
 $('dg-choices').addEventListener('click',function(e){ var b=e.target.closest('.dg-ch'); if(b&&now()-QSHOWN>=400) answer(+b.dataset.i); });
 $('dg-next').addEventListener('click',function(){ if(S.qDone) stepStop(); });
@@ -1253,7 +1254,7 @@ function k0(e){ return (e.key||'').toLowerCase(); }
 document.addEventListener('keydown',function(e){ if(e.metaKey||e.ctrlKey||e.altKey) return; if(e.target&&/^(INPUT|TEXTAREA)$/.test(e.target.tagName)) return;
   if(!$('sz-ask').hidden){ e.preventDefault(); if(k0(e)==='y') newRun(); else if(k0(e)==='n'||e.key==='Escape') askNew(false); return; }
   if(k0(e)==='r'&&e.shiftKey){ e.preventDefault(); if(S.started) askNew(true); return; } var k=k0(e);
-  if(k===' '){ e.preventDefault(); return; }
+  if(k===' '){ e.preventDefault(); if(MODAL==='q'&&S.qDone&&lastQ()&&!$('dg-next').disabled) stepStop(); return; }
   if(k==='f'){ e.preventDefault(); fullscreen(); return; }
   if(k==='n'){ e.preventDefault(); musicToggle(); return; }
   if(k==='m'){ e.preventDefault(); muted=!muted; save(); toast(muted?'Sound off':'Sound on'); if(!muted) SND.tick(); return; }
@@ -1263,7 +1264,7 @@ document.addEventListener('keydown',function(e){ if(e.metaKey||e.ctrlKey||e.altK
   if(k==='r'&&!e.shiftKey){ e.preventDefault(); if(canPlay()) hopBack(); return; }
   if(MODAL==='q'&&/^[1-4]$/.test(e.key)){ if(now()-QSHOWN>=400) answer(+e.key-1); return; }
   if(MODAL!=='q') return;
-  if(e.key==='Enter'){ if(S.qDone&&!$('dg-next').disabled&&!FAST){ e.preventDefault(); stepStop(); } return; } });
+  if(e.key==='Enter'){ if(S.qDone&&!$('dg-next').disabled&&(!FAST||lastQ())){ e.preventDefault(); stepStop(); } return; } });
 addEventListener('blur',function(){ HELD={}; });
 function fit(){ var s=Math.min(innerWidth/1920,innerHeight/1080), y=$('stage').style; y.transform='scale('+s+')'; y.left=((innerWidth-1920*s)/2)+'px'; y.top=((innerHeight-1080*s)/2)+'px'; }
 addEventListener('resize',fit);
