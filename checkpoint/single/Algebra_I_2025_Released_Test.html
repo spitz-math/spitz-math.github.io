@@ -1515,6 +1515,7 @@ function buildGraphLine(it,root){
   });
   root.appendChild(w); setMode('line');
 }
+const segHits=(it,a)=>it.seg.filter(K=>a.pts.some(P=>P[0]===K[0]&&P[1]===K[1])).length;
 const onLine=(it,P)=>it.eq[0]*P[0]+it.eq[1]*P[1]===it.eq[2];
 /* ================= extra item types for released-test rebuilds ================= */
 const SVGNS='http://www.w3.org/2000/svg';
@@ -1800,7 +1801,8 @@ function buildCLine(it,root){
   w.innerHTML=`<div class="cgplot">${g.html}</div>`;
   const svg=w.querySelector('svg'), marks=svg.querySelector('.marks'), pts=svg.querySelector('.pts');
   const A=()=>S.answers[id]||(S.answers[id]={pts:[]});
-  const lineOf=a=>{ marks.innerHTML=''; if(a&&a.pts.length===2){ const [e0,e1]=clipLine(g,a.pts[0],a.pts[1]); marks.appendChild(mk('line',{x1:g.X(e0[0]),y1:g.Y(e0[1]),x2:g.X(e1[0]),y2:g.Y(e1[1]),class:'cline'})); } };
+  /* it.seg = the two endpoints of a line segment (plot two exact points; the points are joined by a segment, not a full line) */
+  const lineOf=a=>{ marks.innerHTML=''; if(a&&a.pts.length===2){ const [e0,e1]=it.seg?a.pts:clipLine(g,a.pts[0],a.pts[1]); marks.appendChild(mk('line',{x1:g.X(e0[0]),y1:g.Y(e0[1]),x2:g.X(e1[0]),y2:g.Y(e1[1]),class:'cline'})); } };
   function draw(){ pts.innerHTML=''; const a=S.answers[id]; lineOf(a);
     if(a) a.pts.forEach((P,k)=>{ const el=ptEl(g,P,k); pts.appendChild(el);
       dragOn(svg,g,el,(q,d)=>{ const np=d?[Math.max(-g.xr,Math.min(g.xr,P[0]+d[0])),Math.max(-g.yr,Math.min(g.yr,P[1]+d[1]))]:[q.gx,q.gy];
@@ -2256,7 +2258,7 @@ function score(it){ const a=S.answers[it.n]; if(a==null||NOKEY(it)) return null;
     case 'boxes': { if(a.some(q=>q==null)) return false; const A2=it.unordered?[...a].sort():a; /* alt: other accepted orders (x + 20 ≥ 75 or 20 + x ≥ 75) */
       return [it.answer,...(it.alt||[])].some(K0=>{ const K=it.unordered?[...K0].sort():K0; return K.every((q,i)=>A2[i]===q); }); }
     case 'hotspot': return Array.isArray(it.answer)?a.length===it.answer.length&&it.answer.every(v=>a.includes(v)):a===it.answer;
-    case 'cline': return a.pts.length===2&&a.pts.every(P=>onLine(it,P));
+    case 'cline': return a.pts.length===2&&(it.seg?segHits(it,a)===2:a.pts.every(P=>onLine(it,P)));
     case 'graphsys': { const r=sysParts(it,a); return r.lines&&r.region; }
     case 'graphineq': { if(a.pts.length!==2||!a.shade) return false; const on=P=>P[1]===it.m*P[0]+it.b; const strict=it.op==='>'||it.op==='<';
       const sideOK=(it.op[0]==='>')?a.shade[1]>it.m*a.shade[0]+it.b:a.shade[1]<it.m*a.shade[0]+it.b;
@@ -2282,7 +2284,7 @@ function show(it,a){ if(a==null) return '—';
     case 'inline': return a.map((v,k)=>v==null?'—':it.drops[k][v]).join(' · ');
     case 'table': return a.map((v,k)=>v==null?'—':(it.cols[v]||'')).join(', ');
     case 'graphsys': return a.g.map((L,k)=>`Graph ${k+1}: `+(L.pts.length===2?`${L.dash?'dashed':'solid'} line through (${fmtN(L.pts[0][0])}, ${fmtN(L.pts[0][1])}) and (${fmtN(L.pts[1][0])}, ${fmtN(L.pts[1][1])})`:'no line')).join('<br>')+(a.region?'<br>Region selected':'<br>No region selected');
-    case 'cline': return a.pts.length?a.pts.map(P=>`(${fmtN(P[0])}, ${fmtN(P[1])})`).join(' and ')+(a.pts.length===2?' (line through both points)':''):'—';
+    case 'cline': return a.pts.length?a.pts.map(P=>`(${fmtN(P[0])}, ${fmtN(P[1])})`).join(' and ')+(a.pts.length===2?(it.seg?' (segment between the points)':' (line through both points)'):''):'—';
     case 'dnd': { if(NOKEY(it)) return it.zones.map((z,k)=>`${z}: ${it.tiles.filter((t,ti)=>a[ti]===k).join(', ')||'—'}`).join('<br>'); const c=it.answer.filter((z,t)=>a[t]===z).length; return `${c} of ${it.tiles.length} placed correctly`; }
     case 'graph': return `(${fmtN(a[0])}, ${fmtN(a[1])})`;
     case 'boxes': return a.map(q=>q==null?'—':it.tiles[q]).join(' , ');
@@ -2349,7 +2351,8 @@ const lattice=(R,f)=>{ const P=[]; for(let x=-R;x<=R&&P.length<2;x++){ const y=f
     case 'graphsys': { const g=it.ineqs.map(q=>{ const pts=lattice(it.R,x=>{ const y=q.m*x+q.b; return Math.abs(y-Math.round(y))<1e-9?Math.round(y):null; }); if(pts.length<2) throw new Error('a boundary line does not go through two grid points'); return {pts,dash:q.op.length===1}; });
       let region=null; for(let X=-it.R+0.5;X<it.R&&!region;X+=1) for(let Y=-it.R+0.5;Y<it.R&&!region;Y+=1) if(it.ineqs.every(q=>q.op[0]==='>'?Y>q.m*X+q.b:Y<q.m*X+q.b)) region=[X,Y];
       if(!region) throw new Error('the two inequalities have no region in common on the grid'); return {g,region}; }
-    case 'cline': { const P=lattice(R,x=>it.eq[1]?(it.eq[2]-it.eq[0]*x)/it.eq[1]:null); if(P.length<2) throw new Error('the correct line does not go through two grid points'); return {pts:P}; }
+    case 'cline': { if(it.seg){ const ok=Array.isArray(it.seg)&&it.seg.length===2&&it.seg.every(P=>Array.isArray(P)&&P.length===2&&P.every(v=>Number.isInteger(v)&&Math.abs(v)<R))&&(it.seg[0][0]!==it.seg[1][0]||it.seg[0][1]!==it.seg[1][1]);
+      if(!ok) throw new Error('seg must be two different whole-number grid points inside the grid (|x|, |y| < R)'); return {pts:it.seg.map(P=>P.slice())}; } const P=lattice(R,x=>it.eq[1]?(it.eq[2]-it.eq[0]*x)/it.eq[1]:null); if(P.length<2) throw new Error('the correct line does not go through two grid points'); return {pts:P}; }
     case 'graphexp': return {a:it.a,b:it.b,pts:[[0,it.a],[1,it.a*it.b]]};
     case 'numline': return it.mode==='ineq'?Object.assign({},it.answer):it.answer.slice();
     case 'filltable': return it.answer.map(String);
@@ -2428,6 +2431,7 @@ function paperize(it,el,mode){ const t=it.type, rm=s=>el.querySelectorAll(s).for
   else if(t==='hotspot'){ if(it.img){ el.querySelectorAll('.hsdot').forEach(d=>{ d.textContent=L[+d.dataset.k]; }); say=pl(it.pick||1,'Circle the correct spot.','Circle the # correct spots.'); }
     else say=pl(it.pick||1,'Circle the correct point.','Circle the # correct points.'); }
   else if(t==='graph') say='Plot the point on the grid.';
+  else if(t==='cline'&&it.seg) say='Plot the two endpoints on the grid.';
   else if(t==='graphline'||t==='cline') say='Draw the line on the grid.';
   else if(t==='graphineq') say='Draw the boundary line (solid or dashed), then shade the solution set.';
   else if(t==='graphsys') say='Graph both boundary lines (solid or dashed), then shade the solution set.';
@@ -2549,6 +2553,7 @@ function earn(it){ const a=S.answers[it.n]; if(a==null||it.type==='text') return
   else if(it.type==='twopart') return a.a===it.answer.a?1:0;
   else if(it.type==='figure'){ hit=figHit(a,it.answer); parts=it.answer.length; }
   else if(it.type==='hottext'){ hit=Math.max(0,a.filter(q=>it.answer.includes(q)).length-Math.max(0,a.length-it.answer.length)); parts=it.answer.length; }
+  else if(it.type==='cline'&&it.seg) hit=segHits(it,a);
   else if(it.type==='numline'&&it.mode==='ineq') hit=(a.k===it.answer.k&&!!a.closed===!!it.answer.closed?1:0)+(a.dir===it.answer.dir?1:0);
   else if(it.type==='numline'){ hit=Math.max(0,a.filter(q=>it.answer.includes(q)).length-Math.max(0,a.length-it.answer.length)); parts=it.answer.length; }
   else if(it.type==='graphineq'){ const on=P=>P[1]===it.m*P[0]+it.b; const lineOK=a.pts.length===2&&on(a.pts[0])&&on(a.pts[1])&&a.dash===(it.op.length===1);
