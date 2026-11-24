@@ -212,7 +212,9 @@ function load(){ if(!connected()) return; var days=st.days; liveStatus('Loading�
     answers=(d.rows||[]).map(function(a){ var o={}; COLS.forEach(function(k,i){ o[k]=a[i]; }); o.t=+o.t; o.who=C.normName(o.n)||'#'+o.d; o.ok=o.ok===''||o.ok==null?null:+o.ok; return o; });
     errors=answers.filter(function(r){ return r.tp==='ERROR'; }); answers=answers.filter(function(r){ return r.tp!=='ERROR'; });   /* game errors share the log (scorecode.js) */
     fetchedDays=days; liveStatus('Updated '+new Date().toLocaleTimeString([],{hour:'numeric',minute:'2-digit'})); fillFilters(); render(); })
-  .catch(function(e){ liveStatus(e.message==='key'?'The key doesn’t match. Check it against the one setup() showed you.':'Couldn’t reach your Google Sheet. Check the link, then Refresh.',true); })
+  .catch(function(e){ var msg=e.message==='key'?'The key doesn’t match. Paste the key again: in Apps Script, run setup() and copy the key it shows in the log.':'Couldn’t reach your Google Sheet. Check the link, then Refresh, or connect again below.';
+    /* show the connect box again (link kept, key cleared) so a wrong key or a new link can be fixed right here */
+    if(e.message==='key') ls(KK,null); $('url').value=ls(UK); $('connect-box').hidden=false; if(e.message==='key') render(); liveStatus(msg,true); })
   .then(function(){ $('refresh').disabled=false; }); }
 
 function renderLive(){ var on=connected(); $('connect-box').hidden=on; $('live-body').hidden=!on||!fetchedDays; $('refresh').hidden=!on; if(!on||!fetchedDays) return;

@@ -86,7 +86,7 @@ function bonusCfg(){ var T=window.SpitzTopics, c={ pct:BONUS.pct, suggest:BONUS.
    don't pick them up from the public repo. A browser still has to open them, so this hides them from casual reading, not from
    someone determined. To change one: btoa(link.split('').reverse().join('')) in the browser console. */
 function unhide(s){ try{ return s?atob(s).split('').reverse().join(''):''; }catch(e){ return ''; } }
-var FORM={ url:unhide('bXJvZndlaXYvWXEzZV9WS2pGUG9HRl90YXE2cnhoSFV5bFJUR2JRRzZITnJ0LWhUZVA3MTEvZC9zbXJvZi9tb2MuZWxnb29nLnNjb2QvLzpzcHR0aA=='), name:'', code:'' };
+var FORM={ url:unhide('bXJvZndlaXYvd3Uxd2N2dHFFSU8yVGpyQ1IzTUhkdDdpMG9BR3JTWnhrVVlqRS1KczFBdkJWR1dkU0xRcElBRjEvZS9kL3Ntcm9mL21vYy5lbGdvb2cuc2NvZC8vOnNwdHRo'), name:'entry.363051448', code:'entry.957085991' };   /* pre-filled link from Kody 2026-11-24: one-click Send my score */
 
 var ALPH='ABCDEFGHJKLMNPQRSTUVWXYZ23456789', SECRET='spitz|burger|arcade', BASE=Date.UTC(2026,7,1);
 var MASK=BigInt('0xB4E1C93A5D7F02E68C1A');            /* 80 bits */
@@ -175,7 +175,8 @@ function css(){ if(document.getElementById('spz-code-css')) return; var st=docum
 function prefilled(){ return !!(FORM.url&&FORM.name&&FORM.code); }
 function formLink(name,code){ if(!FORM.url) return ''; if(!prefilled()) return FORM.url;
   return FORM.url+(FORM.url.indexOf('?')<0?'?':'&')+'usp=pp_url&'+FORM.name+'='+encodeURIComponent(name)+'&'+FORM.code+'='+encodeURIComponent(code); }
-function button(link,code){ return '<a href="'+link+'" target="_blank" rel="noopener" data-spz-code="'+code+'">'+(prefilled()?'Send my score':'Copy code &amp; open form')+'</a>'; }
+function button(link,code){ return prefilled()? '<a href="'+link+'" target="_blank" rel="noopener">Send my score</a>'   /* the form opens with the name and code filled in: nothing to copy */
+  : '<a href="'+link+'" target="_blank" rel="noopener" data-spz-code="'+code+'">Copy code &amp; open form</a>'; }
 /* Fresh start when coming back later (Kody, 2026-10-12): each game saves its run under KEY so a reload keeps it. We stamp every save
    with the time; on load, any run (finished or not) older than 20 minutes is cleared so the game opens
    at its start screen. Saves from before this change have no stamp and are cleared too. Add each new game's KEY here (the part before any set/topics suffix). */
