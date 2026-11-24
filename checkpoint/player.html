@@ -1638,7 +1638,7 @@ function buildHotspot(it,root){
 const hsPts=(it,a)=>[].concat(a).map(q=>it.img?(it.spotNames?it.spotNames[q]:'Spot '+'ABCDEFGHIJKL'[q]):`(${fmtN(it.spots[q][0])}, ${fmtN(it.spots[q][1])})`).join(', ');
 /* hot spot on a picture (teachers' own tests): spots are [left %, top %] on the picture */
 function buildHotImg(it,root,multi){ const id=it.n, w=document.createElement('div'); w.className='hsimg'; w.style.maxWidth=(it.imgw||400)+'px';
-  w.innerHTML=`<img src="${it.img}" alt="Picture with spots to choose">`+it.spots.map(([x,y,bw,bh],q)=>`<button type="button" class="hsdot${bw?' hsbox':''}" style="left:${x}%;top:${y}%${bw?`;width:${bw}%;height:${bh}%`:''}" role="${multi?'checkbox':'radio'}" aria-checked="false" aria-label="${it.spotNames?'Point '+it.spotNames[q]:'Spot '+'ABCDEFGHIJKL'[q]}" data-k="${q}"></button>`).join('');
+  w.innerHTML=`<img src="${it.img}" alt="Picture with spots to choose">`+it.spots.map(([x,y,bw,bh],q)=>{ const box=+bw>0&&+bh>0; return `<button type="button" class="hsdot${box?' hsbox':''}" style="left:${x}%;top:${y}%${box?`;width:${+bw}%;height:${+bh}%`:''}" role="${multi?'checkbox':'radio'}" aria-checked="false" aria-label="${it.spotNames?'Point '+it.spotNames[q]:'Spot '+'ABCDEFGHIJKL'[q]}" data-k="${q}"></button>`; }).join('');
   const has=q=>multi?(S.answers[id]||[]).includes(q):S.answers[id]===q;
   const sync=()=>{ w.querySelectorAll('.hsdot').forEach(c=>c.setAttribute('aria-checked',has(+c.dataset.k))); refresh(); };
   w.addEventListener('click',e=>{ const c=e.target.closest('.hsdot'); if(!c) return; const q=+c.dataset.k;
