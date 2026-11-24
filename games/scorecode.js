@@ -231,6 +231,22 @@ function button(link,code){ return '<a href="'+link+'" target="_blank" rel="noop
   addEventListener('unhandledrejection',function(e){ var r=e&&e.reason; oops('Promise: '+(r&&r.message||r),''); });
   if(LOG){ setTimeout(flush,4000); addEventListener('pagehide',function(){ flush(true); }); document.addEventListener('visibilitychange',function(){ if(document.visibilityState==='hidden') flush(true); }); }
 })();
+/* Ask once, remember everywhere (Kody, 2026-11-22): every game's start screen has an <input id="xx-nameinput">. The first name a student
+   types is kept for the whole arcade (same site = same storage), so the next game opens with it filled in. A first name or nickname is fine:
+   it only lives in the game (the score code, "you'd be #3", the answer log); the board name is the one Mr. Spitz approves for the student's
+   school account on teacher.html. Nothing to add per game: any input whose id ends in -nameinput gets this. */
+(function(){ var NK='spitz_name';
+  function get(){ try{ return localStorage.getItem(NK)||''; }catch(e){ return ''; } }
+  function put(v){ v=String(v||'').trim().slice(0,24); if(!v) return; try{ localStorage.setItem(NK,v); }catch(e){} }
+  function hook(){ var n=get(); document.querySelectorAll('input[id$="-nameinput"]').forEach(function(inp){ if(inp.dataset.spzName) return; inp.dataset.spzName='1';
+      inp.placeholder='First name or nickname';
+      if(!inp.getAttribute('aria-label')&&!document.querySelector('label[for="'+inp.id+'"]')) inp.setAttribute('aria-label','Your name');
+      if(n&&!inp.value.trim()){ inp.value=n; inp.dispatchEvent(new Event('input',{bubbles:true})); }   /* the game's own input listener turns its Play button on */
+      inp.addEventListener('change',function(){ put(inp.value); }); inp.addEventListener('blur',function(){ put(inp.value); }); }); }
+  /* after the game's own start-up code, which may set the box from a saved run */
+  function later(){ setTimeout(hook,0); }
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',later); else later();
+  addEventListener('load',later); })();   /* once more after load, for games that build their start screen late (each box is only set up once) */
 /* tab icon: each game has its own emoji icon (Kody, 2026-10-11), picked from the file name; unknown pages get the Spitz burger */
 (function(){ if(document.querySelector('link[rel~="icon"]')) return;
   var E={ splat_range:'🎯', star_swarm:'👾', shift_racer:'🏎️', jump_man_multiplication:'👟', football_buds:'🏈', hoop_buds:'🏀', dash:'⚡', skate:'🛹', mini_golf:'⛳',
@@ -268,7 +284,7 @@ function bonusLine(gameId,S){ var g=GAMES[gameId], pct=g&&g[2]!=='strokes'?bonus
 /* Beat the board (Kody, 2026-10-30): the end screen says where this run would land on the student leaderboard (data/leaderboard.json, the
    top 10s Mr. Spitz posts), or how far it is from the top 10, so a good run gets sent in and a close one gets played again. Points games only.
    Read once when the page opens, so it is ready by the end screen; no Wi-Fi = no line. */
-var BOARD=null;
+var BOARD=null, FLOOR=0.7;   /* the share of answers a run needs right to go on the board; teacher.html reads SpitzCode.FLOOR */
 try{ var me=document.currentScript&&document.currentScript.src;
   fetch(new URL('../data/leaderboard.json',me||location.href).href+'?v='+Math.floor(Date.now()/3e5)).then(function(r){ return r.ok?r.json():null; })
     .then(function(d){ BOARD=d&&d.games||null; },function(){}); }catch(e){}
@@ -277,7 +293,8 @@ function boardLine(gameId,S){ var g=GAMES[gameId]; if(!BOARD||!g||g[2]!=='points
     mine=boost(S.score,bonusPct()), name=g[1], me=normName(S.name), rank=1, mineOn=null;
   if(!(mine>0)) return '';
   /* no rank brag for a run that is mostly guesses (2026-11-17 health check: a bot with 18% right was told "#3" on boards with 1-2 names) */
-  if((+S.answered||0)>=5&&(+S.correct||0)/S.answered<0.5) return '';
+  /* the board only takes runs with at least FLOOR right (Kody, 2026-11-22), so a run under it gets told how to get on instead */
+  if((+S.answered||0)>=5&&(+S.correct||0)/S.answered<FLOOR) return '🎯 Get '+Math.round(FLOOR*100)+'% right to make the '+name+' board. You got '+Math.round(100*(+S.correct||0)/S.answered)+'%.';
   top.forEach(function(e,i){ if(e.v>=mine) rank++; if(e.n&&e.n===me&&!mineOn) mineOn={ v:e.v, r:i+1 }; });
   if(mineOn&&mineOn.v>=mine) return '🏆 You\'re #'+mineOn.r+' on the '+name+' board with '+mineOn.v.toLocaleString()+(mineOn.r===1?'. Beat your own record!':'. Beat it to move up!');
   if(!top.length) return '🏆 Nobody is on the '+name+' board yet. Send your score to be the first!';
@@ -306,5 +323,5 @@ function show(PFX,gameId,S){ try{
     '<span class="n">'+(!link?'Type your name and this code into the class Google Form.':prefilled()?'Tap Send my score, then Submit on the form.':'Tap the button, then paste the code into the form with your name.')+'</span>';
   addBoard(PFX,gameId,S); return code; }catch(e){ return ''; } }
 
-window.SpitzCode={ BONUS:BONUS, bonusPct:bonusPct, GAMES:GAMES, SET_NAMES:SET_NAMES, TOPIC_NAMES:TOPIC_NAMES, make:make, read:read, show:show, normName:normName, today:today, FORM:FORM };
+window.SpitzCode={ BONUS:BONUS, bonusPct:bonusPct, GAMES:GAMES, SET_NAMES:SET_NAMES, TOPIC_NAMES:TOPIC_NAMES, make:make, read:read, show:show, normName:normName, today:today, FORM:FORM, FLOOR:FLOOR };
 })();
