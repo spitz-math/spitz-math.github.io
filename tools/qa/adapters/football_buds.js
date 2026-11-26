@@ -1,11 +1,11 @@
 /* Football Buds BLITZ adapter (tier 1: reads __G.state() and __G.play(); the checks only read them).
    Shape: a huddle (one question, then a bonus question) before every snap, then a pick-a-play shelf; Space hikes and the play goes live.
-   Real input throughout: number keys answer, Space hikes / spins, arrow keys run, two clicks on Play again restart. */
+   Real input throughout: number keys answer, Space hikes / spins / fires the power (v73: Space never throws; 1 2 3 throw), arrow keys run, two clicks on Play again restart. */
 const { sleep } = require('../lib/harness');
 
 const A = {
   intents: { left: 'ArrowLeft', right: 'ArrowRight', up: 'ArrowUp', down: 'ArrowDown', action: ' ' },
-  actName: 'Space throws the ball (or spins once you run with it)',
+  actName: '1 throws to receiver 1 from the pocket; Space spins or trucks once you run with it',
   resetKeys: ['score', 'pts', 'buds', 'rivals', 'answered', 'correct', 'qtr', 'clock', 'over'],
 
   async open(pg, set = 'mult') {
@@ -47,7 +47,7 @@ const A = {
     for (let i = 0; i < 6; i++) { await pg.keyboard.press('Space'); await sleep(250); if (await pg.evaluate(() => !!(__G.play() || {}).live)) break; }   // Space hikes
   },
 
-  async act(pg) { await pg.keyboard.press('Space'); },
+  async act(pg) { const qb = await pg.evaluate(() => { const P = __G.play() || {}; return !!(P.live && P.off > 0 && P.me === P.qb && !P.passed && !P.crossed && P.type !== 'run'); }); await pg.keyboard.press(qb ? 'Digit1' : 'Space'); },
   async dirty(pg) { await pg.evaluate(() => { const S = __G.state(); S.pts += 1234; S.score = S.pts; S.buds = 14; S.rivals = 3; }); },
 
   /* The clock only runs during live plays: put it at the last whistle of the 4th quarter with the Buds ahead and end the play. */
