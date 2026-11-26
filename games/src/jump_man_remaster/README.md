@@ -76,3 +76,4 @@ Tests: tests/v12.js (new rules), tests/v4.js (updated for v12), tests/sets.js, t
 - Rocks cost a heart (never the last) and still knock you; Kody: "don't nerf the rocks ... falling more, especially closer to the top": every 1.15 s at the first Rockfall down to 0.6 s from ledge 265 (rockEvery), 0.8 s warning.
 - Fog: speed x(1 + 0.04 per learned move) x(1 + 0.25 x lateK), lateK 0 -> 1 from 1:30 to the end; trailing room fogGap() = 1200 - 60 per move - 200 x lateK (min 600).
 Tests: tests/v12.js and tests/v4.js updated for v13.
+- Arrows in the Moves list are drawn as matching pixel arrows (← → ↑ same size and style).

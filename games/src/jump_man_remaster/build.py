@@ -126,7 +126,7 @@ for old, new in [
   ("if(b==='j') jumpQ=true; tryMove();", "if(b==='d'&&!S.mv.dash){ delete ptr[e.pointerId]; return; } if(b==='j') jumpQ=true; if(b==='d') dashQ=true; tryMove();"),
   # start screen
   ("You have 5 minutes: answer to charge up, then run, jump and combo your way up the tower.", "You have 5 minutes: climb the tower, answer well at each Waystone to learn new moves, and stay above the fog."),
-  ('data-ctl="1234=Answer | LR=Run | Space=Jump"', 'data-ctl="LR=Run | Space=Jump | Shift/X/K=Dash | 1234=Answer"'),
+  ('data-ctl="1234=Answer | LR=Run | Space=Jump"', 'data-ctl="LR/AD=Run | Space=Jump | X/K=Dash | 1234=Answer"'),
   ("<b>Answer</b>Right answers add energy and cash. 5 in a row turns on Turbo shoes. A wrong answer costs $3 and your streak.", "<b>Climb</b>Run fast to jump higher. Skip 2+ floors per jump for a combo. Running and jumping are free."),
   ("<b>Climb</b>Run fast to jump higher. Skip 2+ floors per jump for a combo. Finish goals for bonus points.", "<b>Waystones</b>Every 30 ledges a Waystone stops you: answer 3 questions right to pass. 5 in a row turns on Turbo shoes."),
   ("<b>Upgrade</b>Spend cash in the Shop on jump boots, a longer combo clock, bigger energy packs and power-ups.", "<b>New moves</b>Moves to learn: wall kick off the sides, double jump, glide, air dash and more."),

@@ -157,7 +157,7 @@ function nextWayAfter(i){ return WAY_FIRST+WAY_EVERY*(Math.floor((i-WAY_FIRST)/W
 var MOVES=[ {id:'wall', name:'Wall Kick', d:'Jump just as you hit a side wall to kick up off it', how:'Jump at a side wall'},
             {id:'dbl', name:'Double Jump', d:'Jump again in the air', how:'Jump in the air'},
             {id:'glide', name:'Glide', d:'Hold Jump while falling to float down', how:'Hold Jump, falling'},
-            {id:'dash', name:'Air Dash', d:'A fast burst sideways in the air', how:'Shift, X or K'},
+            {id:'dash', name:'Air Dash', d:'A fast burst sideways in the air', how:'X or K'},
             {id:'triple', name:'Triple Jump', d:'A third jump in the air', how:'Jump in the air', need:'dbl'} ];
 var BOOSTS=[ {id:'jump', name:'Spring Boots', d:'Jump higher'}, {id:'speed', name:'Speed Shoes', d:'Run faster'},
              {id:'combo', name:'Combo Clock', d:'More time to land a combo'}, {id:'magnet', name:'Gem Magnet', d:'Grab gems from farther away'} ];
@@ -374,7 +374,7 @@ function sideHud(force){ var t=now(); if(!force&&t-sideT<100) return; sideT=t;
   var nx=tb>=3?0:[5,10,15][tb];
   otext(c,tb?'Turbo '+tb+'!':'Turbo',L,720,'500 32px '+WF,tb?['','#FFC93C','#FF8A1F','#FF6BD6'][tb]:'#A9C2EE');
   otext(c,tb>=3?'Top speed!':(nx-S.streak)+' more right in a row',L,760,'800 22px Inter, sans-serif','#FFFFFF',null,6);
-  otext(c,'Moves',L,836,'500 32px '+WF,'#A9C2EE'); var rows=[['Run','← →'],['Jump','↑ / Space']]; MOVES.forEach(function(mv){ if(S.mv[mv.id]) rows.push([mv.name,mv.id==='dash'?'Shift':mv.id==='wall'?'at a wall':mv.id==='glide'?'hold ↑':'↑ in air']); });
+  otext(c,'Moves',L,836,'500 32px '+WF,'#A9C2EE'); var rows=[['Run','← →'],['Jump','↑ / Space']]; MOVES.forEach(function(mv){ if(S.mv[mv.id]) rows.push([mv.name,mv.id==='dash'?'X or K':mv.id==='wall'?'at a wall':mv.id==='glide'?'hold ↑':'↑ in air']); });
   rows.slice(0,6).forEach(function(r,j){ var y=878+j*34; otext(c,r[0],L,y,'800 22px Inter, sans-serif','#FFFFFF',null,6); otext(c,r[1],L+270,y,'800 20px Inter, sans-serif','#7CF0FF','right',6); });
   } }
   // right column (its canvas starts at x=1568, so draw in stage coordinates shifted left)
@@ -446,3 +446,47 @@ function rockEvery(){ var k=Math.max(0,Math.min(1,((P.lastI||0)-ROCK_FROM)/240))
 function moveN(){ var n=0; MOVES.forEach(function(m){ if(S.mv[m.id]) n++; }); return n; }
 function lateK(){ var len=(S.len||5)*60, el=len-Math.max(0,(S.endAt-now())/1000); return Math.max(0,Math.min(1,(el-LATE_FROM)/(len-LATE_FROM))); }
 function fogGap(){ return Math.max(600,FOG_GAP-60*moveN()-200*lateK()); }
+/* v15 side columns (Kody 2026-11-25: "maybe more score to the right and put hearts on the left"). Grouped by job:
+   LEFT = you and your survival: time, hearts, the fog, Turbo, your moves. RIGHT = score and progress: score, height,
+   the next Waystone (or Summit), goals, combo. This later declaration replaces the v6 sideHud. */
+/* v15: arrows in the moves list are drawn as one pixel shape so ← → ↑ match in size and weight */
+var ARW={'↑':['...#...','..###..','.#####.','#######','..###..','..###..','..###..'],'←':['...#...','..##...','.######','#######','.######','..##...','...#...'],'→':['...#...','...##..','######.','#######','######.','...##..','...#...']};
+function arwDraw(c,ch,x,y,col){ var m=ARW[ch], u=3, ox=x+2, oy=y-19; c.fillStyle=INK; m.forEach(function(row,j){ for(var i=0;i<7;i++) if(row[i]==='#') c.fillRect(ox+i*u-2,oy+j*u-2,u+4,u+4); }); c.fillStyle=col; m.forEach(function(row,j){ for(var i=0;i<7;i++) if(row[i]==='#') c.fillRect(ox+i*u-0.4,oy+j*u-0.4,u+0.8,u+0.8); }); }
+function keyText(c,txt,right,y,col){ var font='800 22px Inter, sans-serif', AW=25, parts=[], w=0; c.font=font;
+  txt.split(/([←→↑])/).forEach(function(p){ if(!p) return; if(ARW[p]){ parts.push([p,AW]); w+=AW; } else { var pw=c.measureText(p).width; parts.push([p,pw]); w+=pw; } });
+  var x=right-w; parts.forEach(function(p){ if(ARW[p[0]]) arwDraw(c,p[0],x,y,col); else otext(c,p[0],x,y,font,col,'left',6); x+=p[1]; }); }
+function sideHud(force){ var t=now(); if(!force&&t-sideT<100) return; sideT=t;
+  var live=S.started&&!S.over, m=cam/20, left=S.started?Math.max(0,S.endAt-t):S.len*60000, secs=Math.ceil(left/1000), clock=Math.floor(secs/60)+':'+('0'+(secs%60)).slice(-2);
+  var wayLeft=Math.max(0,S.nextWay-(S.pi||0)), rushLeft=S.rush?Math.max(0,S.rush.i-(S.pi||0)):0, gap=Math.max(0,Math.round((P.h-S.fog)/20)), tb=turbo();
+  if(force) sideKey=['','',''];
+  var sk=skyAt(Math.floor(m/10)*10); if(sideLayer(0,sk.join())) SKYD.style.background='linear-gradient(rgba(6,10,26,.62),rgba(6,10,26,.62)),linear-gradient('+sk[0]+','+sk[1]+')';
+  var c=SL, L=44, lab='500 34px '+WF, sm='800 24px Inter, sans-serif';
+  if(sideLayer(1,[S.started,clock,S.hearts,Math.ceil(S.calm||0),fogOn()?gap:-1,S.streak,tb,JSON.stringify(S.mv)].join('|'))){
+    c.setTransform(1,0,0,1,0,0); c.clearRect(0,0,352,SH); c.fillStyle=INK; c.fillRect(TX-8,0,8,SH);
+    if(S.started){
+      otext(c,'Time',L,190,lab,'#A9C2EE'); otext(c,clock,L,272,'400 88px '+NF,secs<=30?'#FF8FA3':'#FFFFFF');
+      heartPx(-99,-99,true); heartPx(-99,-99,false); for(var k=0;k<HEART_MAX;k++) c.drawImage(HEARTS[k<S.hearts?'on':'off'],L+k*92,316,77,70);
+      if(fogOn()){ var held=S.calm>0; otext(c,held?'Fog held '+Math.ceil(S.calm)+' s':'Fog '+gap+' m below',L,444,'800 28px Inter, sans-serif',held?'#7CF0FF':gap<17?'#FF8FA3':'#D6C8F0',null,7); }
+      else otext(c,'Fog starts soon',L,444,'800 28px Inter, sans-serif','#D6C8F0',null,7);
+      var nx=tb>=3?0:[5,10,15][tb];
+      otext(c,tb?'Turbo '+tb+'!':'Turbo',L,540,lab,tb?['','#FFC93C','#FF8A1F','#FF6BD6'][tb]:'#A9C2EE');
+      otext(c,tb>=3?'Top speed!':(nx-S.streak)+' more right in a row',L,580,'800 22px Inter, sans-serif','#FFFFFF',null,6);
+      otext(c,'Moves',L,670,lab,'#A9C2EE'); var rows=[['Run','← → or A D'],['Jump','↑ / Space']]; MOVES.forEach(function(mv){ if(S.mv[mv.id]) rows.push([mv.name,mv.id==='dash'?'X or K':mv.id==='wall'?'at a wall':mv.id==='glide'?'hold ↑':'↑ in air']); });
+      rows.slice(0,7).forEach(function(r,j){ var y=716+j*38; otext(c,r[0],L,y,sm,'#FFFFFF',null,6); keyText(c,r[1],L+270,y,'#7CF0FF'); }); } }
+  c=SR; if(!sideLayer(2,[S.started,S.score,Math.floor(Math.max(0,P.h)/20),wayLeft,rushLeft,!!S.rush,S.ways,JSON.stringify(S.goals&&S.goals.map(function(g){ return [g.txt,Math.min(goalProg(g),g.n)]; })),live&&CB.on?CB.floors+':'+Math.round(CB.t*10):0].join('|'))) return;
+  c.setTransform(1,0,0,1,0,0); c.clearRect(0,0,352,SH); c.setTransform(1,0,0,1,-(TX+TW),0); c.fillStyle=INK; c.fillRect(TX+TW,0,8,SH);
+  if(!S.started) return;
+  var R=TX+TW+44;
+  otext(c,'Score',R,190,lab,'#A9C2EE'); otext(c,S.score.toLocaleString(),R,272,'400 88px '+NF,'#FFC93C');
+  otext(c,'Height',R,340,lab,'#A9C2EE'); otext(c,Math.floor(Math.max(0,P.h)/20)+' m',R,408,'400 64px '+NF,'#FFFFFF');
+  var rush=!!S.rush, n=rush?rushLeft:wayLeft, tot=rush?(S.rush.n?SUMMIT_NEXT:SUMMIT_UP):(S.nextWay>WAY_FIRST?WAY_EVERY:WAY_FIRST), lv=Math.max(0,Math.min(1,1-n/tot)), col=rush?'#FFC23D':'#7CF0FF';
+  otext(c,rush?'Summit':'Next Waystone',R,490,lab,col); otext(c,n+(n===1?' ledge':' ledges'),R,534,'800 28px Inter, sans-serif','#FFFFFF',null,7);
+  c.fillStyle=INK; c.fillRect(R-6,552,264,40); c.fillStyle='#242936'; c.fillRect(R,558,252,28); c.fillStyle=col; c.fillRect(R,558,Math.round(252*lv),28);
+  otext(c,'Waystones cleared',R,626,'800 22px Inter, sans-serif','#A9C2EE',null,6); otext(c,''+S.ways,R+252,626,'800 22px Inter, sans-serif','#FFFFFF','right',6);
+  if(S.goals){ otext(c,'Goals',R,706,lab,'#A9C2EE'); S.goals.forEach(function(g,j){ var y=752+j*78, pr=Math.min(goalProg(g),g.n);
+      otext(c,'★',R,y,'400 30px '+WF,'#FFC93C',null,7); otext(c,g.txt,R+38,y,'800 24px Inter, sans-serif','#FFFFFF',null,7,248);
+      c.fillStyle=INK; c.fillRect(R+32,y+14,136,22); c.fillStyle='#242936'; c.fillRect(R+36,y+18,128,14); c.fillStyle='#FFC93C'; c.fillRect(R+36,y+18,Math.round(128*pr/g.n),14);
+      otext(c,pr+' / '+g.n,R+258,y+34,'800 20px Inter, sans-serif','#A9C2EE','right',6); }); }
+  if(CB.on&&live){ var w=comboWord(Math.max(4,CB.floors)), lvl=Math.max(0,CB.t/U('combo'));
+    otext(c,'Combo',R,940,lab,'#A9C2EE'); otext(c,''+CB.floors,R,1004,'400 64px '+NF,CB.jumps>=2&&CB.floors>=4?w[2]:'#FFFFFF'); otext(c,CB.floors===1?'floor':'floors',R+12+c.measureText(''+CB.floors).width,1004,'800 28px Inter, sans-serif','#FFFFFF',null,7);
+    c.fillStyle=INK; c.fillRect(R-6,1020,264,32); c.fillStyle='#242936'; c.fillRect(R,1026,252,20); c.fillStyle=lvl>0.3?'#FFC93C':'#FF7A7A'; c.fillRect(R,1026,Math.round(252*lvl),20); } }
