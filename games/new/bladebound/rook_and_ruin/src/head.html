@@ -33,7 +33,7 @@ button:disabled{ cursor:default; }
   background:radial-gradient(800px 420px at 70% 0%, rgba(77,224,192,.08), transparent 70%), radial-gradient(600px 380px at 0% 100%, rgba(255,138,61,.07), transparent 70%), var(--paper); }
 
 /* top bar: stone plates */
-.dn-top{ display:flex; align-items:center; gap:14px; white-space:nowrap; }
+.dn-top{ display:flex; align-items:center; gap:10px; white-space:nowrap; }
 .dn-brand{ display:flex; flex-direction:column; gap:6px; margin-right:10px; }
 .dn-logo{ margin:0; display:flex; align-items:center; gap:14px; font:700 54px/1 var(--display); letter-spacing:.02em; cursor:pointer; }
 .dn-logo b{ color:var(--teal); font-weight:700; } .dn-logo i{ color:var(--gold); font-style:normal; }
@@ -330,7 +330,10 @@ body.dn-big .dn-arena, body.dn-shrink .dn-arena{ z-index:41; }
 .dn-co .pt{ color:rgba(244,236,216,.7); } .dn-co .pt.own{ color:#B8F5C8; }
 .dn-co b{ margin-left:auto; }
 .dn-pickbox{ position:relative; }
-.dn-reroll{ position:absolute; left:50%; top:100%; transform:translateX(-50%); margin-top:4px; white-space:nowrap; padding:12px 26px; font:700 24px/1 var(--body); color:var(--rr-ivory,#F4EBDD); background:#2A1A44; border:3px solid var(--rr-gold); border-radius:8px; cursor:pointer; }
+.dn-reroll{ position:static; display:inline-block; margin-top:22px; white-space:nowrap; padding:12px 26px; font:700 24px/1 var(--body); color:var(--rr-ivory,#F4EBDD); background:#2A1A44; border:3px solid var(--rr-gold); border-radius:8px; cursor:pointer; }
+.dn-vit{ height:64px; padding-left:8px; } .dn-vit[hidden]{ display:none; } #dn-vitc{ display:block; height:64px; }
+.dn-pickbox{ transform-origin:50% 50%; }
+.dn-reroll[hidden], .dn-readynote:empty{ display:none; }   /* the empty note no longer adds height, so the box with Reroll in it sits where it did */
 .dn-reroll b{ font-family:var(--pixel); color:var(--rr-gold); }
 .dn-reroll:disabled{ opacity:.45; cursor:default; border-color:#6A5A80; }
 .dn-readynote{ margin:16px 0 0 !important; min-height:30px; font:700 20px/1.3 var(--body) !important; color:var(--rr-gold) !important; }
@@ -488,7 +491,7 @@ body.dn-cine .dn-top, body.dn-cine .dn-side{ opacity:0; pointer-events:none; tra
 
 /*DIGITS*/
 /* ================= SPITZ ARCADE BRAND: the shared styles live in games/kit.js (anything below is this game's own) ================= */
-:root{ --sz-fs-x:0.42; --sz-fs-y:top; }
+:root{ --sz-fs-x:0.31; }   /* the top bar holds the hearts and XP now, so the F hint sits on the bottom wall, left of the gate */
 /* Shift+R box (playtest handoff 2026-11-15, the only approved restyle): the same square plum panel as Paused, gold Yes like Continue, no glow backdrop */
 #sz-ask.dn-over{ background:rgba(7,8,18,.80); }
 #sz-ask .dn-box{ width:980px; padding:30px 40px 34px; background:#1E1233; box-shadow:inset 0 0 0 3px #45346A, 0 0 0 3px #12081C; border-radius:0; }
@@ -523,6 +526,7 @@ body.dn-cine .dn-top, body.dn-cine .dn-side{ opacity:0; pointer-events:none; tra
   <div class="dn-top">
     <div class="dn-brand"><h1 class="dn-logo" aria-label="Rook and Ruin"><span class="dn-swordw" aria-hidden="true"><span class="dn-sword"></span></span><span aria-hidden="true"><i>ROOK</i> <b>&amp;</b> <i>RUIN</i></span></h1><span class="dn-credit sz-credit">Made by Spitz <i class="sz-burger" aria-hidden="true"></i></span></div>
     <div class="dn-chip" id="dn-timerchip" title="Stops during questions and choices"><span class="l">Combat time</span><span class="v" id="dn-time">0:00</span></div>
+    <div class="dn-vit" id="dn-vit" hidden><canvas id="dn-vitc" width="340" height="64" aria-label="Hearts and XP"></canvas></div>
     <span class="dn-sp"></span>
     <div id="dn-ls" hidden><div class="dn-lsg" id="dn-goal" hidden><span class="l" id="dn-goaln">Last Stand: survive</span><span class="v" id="dn-lsclock">2:00</span><i><b id="dn-lsfill"></b></i></div><div class="dn-lsg dn-lsw" id="dn-lsw" hidden><span class="l" id="dn-lswn">The Iron Warden</span><i><b id="dn-lswfill"></b></i></div></div>
     <div class="dn-chip" id="dn-roomchip" hidden><span class="l" id="dn-roomn">Room 1 of 8</span><span class="v" id="dn-roomv">Entry Hall</span></div>
