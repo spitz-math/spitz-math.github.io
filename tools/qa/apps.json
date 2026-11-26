@@ -221,6 +221,19 @@
         "tools/qa/adapters/paint_royale.js",
         "tools/qa/adapters/_shared.js"
       ]
+    },
+    {
+      "id": "star_swarm",
+      "name": "Star Swarm HD",
+      "tier": 1,
+      "adapter": "adapters/star_swarm.js",
+      "paths": [
+        "games/star_swarm.html",
+        "games/star_swarm_art/",
+        "games/audio/star_swarm/",
+        "games/cards/star_swarm.webp",
+        "tools/qa/adapters/star_swarm.js"
+      ]
     }
   ]
 }

@@ -204,7 +204,7 @@ function saveHidden(){ try{ localStorage.setItem(HKEY,JSON.stringify(hidden)); }
 /* Splat Range / Star Swarm codes from before October 2026 (SR-xxxx-xxxx-xxxx / SW-...): score, correct, answered only */
 var OALPH='ABCDEFGHJKLMNPQRSTUVWXYZ23456789', OMASK=BigInt('0x5A3C96E1F0B7D2C');
 function oh16(s){ var h=2166136261; for(var i=0;i<s.length;i++){ h^=s.charCodeAt(i); h=Math.imul(h,16777619)>>>0; } return (h^(h>>>16))&0xFFFF; }
-function readOld(code){ var c=String(code).toUpperCase().replace(/[^A-Z0-9]/g,''), pre=c.slice(0,2), id=pre==='SR'?'splat_range':pre==='SW'?'star_swarm':null; if(!id||c.length!==14) return null; c=c.slice(2);
+function readOld(code){ var c=String(code).toUpperCase().replace(/[^A-Z0-9]/g,''), pre=c.slice(0,2), id=pre==='SR'?'splat_range':pre==='SW'?'star_swarm_v2':null;   /* the oldest Star Swarm codes join the old board, not Star Swarm HD */ if(!id||c.length!==14) return null; c=c.slice(2);
   var full=0n; for(var i=0;i<12;i++){ var v=OALPH.indexOf(c[i]); if(v<0) return null; full=(full<<5n)|BigInt(v); } full^=OMASK;
   var p=full>>16n; if(oh16('spitz'+p.toString()+'burger')!==Number(full&0xFFFFn)) return null;
   var r={ score:Number(p>>24n), correct:Number((p>>16n)&255n), answered:Number((p>>8n)&255n) }; if(r.correct>r.answered) return null;

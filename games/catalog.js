@@ -9,7 +9,7 @@ window.SpitzGames=[
    '<path d="M104 60v14q0 5 3 5t3-5v-12zM126 62v22q0 5 3 5t3-5v-20z" fill="#B6FF3D"/>'+
    '<circle cx="52" cy="40" r="10" fill="#FF2E93"/><circle cx="32" cy="46" r="5" fill="#FF2E93" opacity=".6"/><circle cx="18" cy="50" r="3" fill="#FF2E93" opacity=".35"/>'+
    '<circle cx="40" cy="76" r="8" fill="#2DE2E6"/><circle cx="24" cy="80" r="4" fill="#2DE2E6" opacity=".6"/>'},
-  {id:'star_swarm',name:'Star Swarm',d:'Blast the alien swarm',font:"'Bungee'",paper:'#03050C',panel:'#0A1122',acc:'#3DE0FF',
+  {id:'star_swarm',name:'Star Swarm HD',d:'Blast the alien swarm',font:"'Bungee'",paper:'#03050C',panel:'#0A1122',acc:'#3DE0FF',
    art:'<rect width="200" height="110" fill="#03050C"/>'+
    '<g fill="#EAF6FF"><rect x="14" y="12" width="2" height="2"/><rect x="60" y="30" width="2" height="2"/><rect x="170" y="16" width="3" height="3"/><rect x="186" y="60" width="2" height="2"/><rect x="30" y="74" width="2" height="2"/><rect x="128" y="8" width="2" height="2"/></g>'+
    '<g fill="#FF4F6D"><rect x="40" y="16" width="20" height="8"/><rect x="36" y="20" width="4" height="8"/><rect x="60" y="20" width="4" height="8"/><rect x="44" y="24" width="4" height="4" fill="#03050C"/><rect x="52" y="24" width="4" height="4" fill="#03050C"/>'+
@@ -169,6 +169,7 @@ window.SpitzGames=[
      Games not listed here are always shown. Hidden games' files stay on the site. */
   /* Kody approved this schedule 2026-10-12 (Mondays 12:00 UTC) */
   var UNLOCK={ football_buds:null, /* Football Buds BLITZ (2026-11-22): live at games/football_buds.html as a secret link, off the hub until Kody picks its date */
+    star_swarm:null, /* Star Swarm HD (2026-11-25): live at games/star_swarm.html as a secret link, off the hub until Kody picks its date */
     mini_golf:'2026-10-19T12:00', brick_breaker:'2026-10-19T12:00', snake_arena:'2026-10-19T12:00',
     burger_blaster:'2026-10-26T12:00', pinball:'2026-10-26T12:00',
     rocket_buds:'2026-11-02T12:00', brawl_buds:'2026-11-02T12:00',
@@ -193,7 +194,7 @@ window.SpitzGames=[
 /* Real screenshots on the cards (2026-10-24): a game listed in SHOTS shows a picture from the game itself (games/cards/<id>.webp, 400x220)
    instead of its drawing. Take a game out of the list to bring its drawing back (kept in g.drawn). */
 (function(){
-  var SHOTS=['brawl_buds','brick_breaker','burger_blaster','fishing','football_buds','hill_climb','hoop_buds','pinball','rocket_buds','rook_and_ruin','skate'];
+  var SHOTS=['brawl_buds','brick_breaker','burger_blaster','fishing','football_buds','hill_climb','hoop_buds','pinball','rocket_buds','rook_and_ruin','skate','star_swarm'];
   /* pictures also ready in games/cards/ (busier at card size, so they keep their drawings for now): burger_shop, fit_check, paint_royale, snake_arena, splat_range */
   var me=document.currentScript&&document.currentScript.src, base=me?me.replace(/catalog\.js(\?.*)?$/,''):'/games/';
   window.SpitzGames.forEach(function(g){ if(SHOTS.indexOf(g.id)<0) return; g.drawn=g.art;
