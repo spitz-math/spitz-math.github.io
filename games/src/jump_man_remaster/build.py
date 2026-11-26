@@ -330,6 +330,15 @@ for old, new in [
    "2 right: a new move and a heart back. Miss one and you get a spare question. Each right answer pushes the fog back."),
 ]:
     t = swap(t, old, new)
+# ---- v15: the title-screen arrow keycaps use the same pixel arrows as the in-game Moves list (game-local, kit.js untouched)
+TITLE_ARROWS = r'''<script>
+(function(){ var M={'↑':['...#...','..###..','.#####.','#######','..###..','..###..','..###..'],'←':['...#...','..##...','.######','#######','.######','..##...','...#...'],'→':['...#...','...##..','######.','#######','######.','...##..','...#...']};
+  function svg(m){ var r=''; m.forEach(function(row,y){ for(var x=0;x<7;x++) if(row[x]==='#') r+='<rect x="'+x+'" y="'+y+'" width="1.02" height="1.02"/>'; }); return '<svg viewBox="0 0 7 7" style="width:30px;height:30px;display:block" fill="#15151D" shape-rendering="crispEdges" aria-hidden="true">'+r+'</svg>'; }
+  function run(){ document.querySelectorAll('.jm-keys .sz-ctl kbd').forEach(function(k){ var ch=k.textContent.trim(); if(M[ch]){ k.innerHTML=svg(M[ch]); k.setAttribute('aria-label',ch==='←'?'Left arrow':ch==='→'?'Right arrow':'Up arrow'); } }); }
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',run); else run(); })();
+</script>
+</body>'''
+t = swap(t, '</body>', TITLE_ARROWS)
 for gone in ['S.energy+=', "U('energy')"]:
     assert gone not in t, gone
 open(os.path.join(O, 'jump_man_multiplication.html'), 'w', encoding='utf-8').write(t)
