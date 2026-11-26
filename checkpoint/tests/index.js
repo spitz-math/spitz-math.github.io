@@ -12,6 +12,7 @@ window.SPITZ_TESTS=[
   {id:"rla8-2024", title:"Grade 8 Reading 2024 Released Test", v:"a8bf54ed10"},
   {id:"rla8-2025", title:"Grade 8 Reading 2025 Released Test", v:"01dd7b2a7b"},
   {id:"rla8-2026", title:"Grade 8 Reading 2026 Released Test", v:"55cd8f715d"},
+  {id:"rla7-2025", title:"Grade 7 Reading 2025 Released Test", v:"e6304b028b"},
   {id:"math8-2025", title:"Grade 8 Math 2025 Released Test", v:"5e95282a22"},
   {id:"math8-2026", title:"Grade 8 Math 2026 Released Test", v:"e71f55ebc0"},
   {id:"math8-2023", title:"Grade 8 Math 2023 Released Test", v:"4e4caa3362"},
