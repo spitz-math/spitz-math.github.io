@@ -16,7 +16,7 @@
 
 var GAMES={                     /* id: [number in the code, display name, how it is ranked, optional score unit] — never renumber */
   splat_range:[1,'Splat Range','points'],
-  star_swarm_v1:[2,'Star Swarm','points',1,'star_swarm'],   /* codes from before 2026-11-17: points capped at 1,048,575 and the #1 run hit it. A 5th entry = the board it joins (teacher.html), so old and new codes share one Star Swarm board */
+  star_swarm_v1:[2,'Star Swarm (before HD)','points',1,'star_swarm_v2'],   /* codes from before 2026-11-17: points capped at 1,048,575 and the #1 run hit it. A 5th entry = the board it joins (teacher.html), so both kinds of old Star Swarm code share one board */
   shift_racer:[3,'Shift Racer','points'],
   jump_man_multiplication:[4,'Jump Man','points'],
   football_buds_v1:[5,'Football Buds (classic)','versus'],   /* codes from before 2026-10-30, when Football Buds scored Buds vs Rivals */
@@ -43,7 +43,8 @@ var GAMES={                     /* id: [number in the code, display name, how it
   rook_and_ruin:[26,'Rook & Ruin','points'],   /* 2026-11-15; best bot runs score about 210,000, well under the 1,048,575 cap */
   dig_buds:[28,'Dig Buds','points'],
   football_buds:[29,'Football Buds BLITZ','points',10],   /* Football Buds BLITZ (2026-11): bot runs score about 100,000 to 450,000; the code holds the score in tens, so runs up to 10,485,750 fit (id 21 is the older Football Buds) */
-  star_swarm:[27,'Star Swarm','points',10]   /* since 2026-11-17 the code holds the score in tens, so runs up to 10,485,750 fit (id 2 capped at 1,048,575) */
+  star_swarm_v2:[27,'Star Swarm (before HD)','points',10],   /* codes from 2026-11-17 until Star Swarm HD went live: the score in tens, so runs up to 10,485,750 fit (id 2 capped at 1,048,575) */
+  star_swarm:[30,'Star Swarm HD','points',10]   /* Star Swarm HD (2026-11-25): bot runs score about 10,000 to 130,000; the code holds the score in tens (ids 2 and 27 are the older Star Swarm) */
 };
 /* question sets in the order questions.js lists them; 0 means the game's own questions. Add new sets at the end.
    New codes (layout C, since Oct 21 2026) have 6 bits for the set and 5 for topics, so up to 63 sets with up to 5 topics each fit. */
@@ -181,7 +182,7 @@ function button(link,code){ return prefilled()? '<a href="'+link+'" target="_bla
    with the time; on load, any run (finished or not) older than 20 minutes is cleared so the game opens
    at its start screen. Saves from before this change have no stamp and are cleared too. Add each new game's KEY here (the part before any set/topics suffix). */
 (function(){
-  var K={ splat_range:'splat_range_v5', star_swarm:'star_swarm_v1', shift_racer:'shift_racer_v1', jump_man_multiplication:'jump_man_facts_v1',
+  var K={ splat_range:'splat_range_v5', star_swarm:'star_swarm_v2', shift_racer:'shift_racer_v1', jump_man_multiplication:'jump_man_facts_v1',
     football_buds:'football_buds_game_v3', hoop_buds:'hoop_buds_game_v1', dash:'dash_facts_game_v3', skate:'skate_game_v1', mini_golf:'mini_golf_v1',
     fishing:'go_fish_v1', brick_breaker:'brick_breaker_v1', burger_shop:'burger_shop_v1', burger_blaster:'burger_blaster_v1', rocket_buds:'rocket_buds_v1',
     paint_royale:'paint_royale_v1', snake_arena:'snake_arena_v1', brawl_buds:'brawl_buds_v1', pinball:'pinball_v1', hill_climb:'hill_climb_v1', fit_check:'fit_check_v1', dig_buds:'dig_buds_v10', rook_and_ruin:'bladebound_v3' };
