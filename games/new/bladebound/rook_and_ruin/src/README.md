@@ -122,3 +122,12 @@ Save key `bladebound_v3`, score id `starter` until go-live, prefix `dn`. Goblin 
 ## Movement pass (v53, 2026-11-15, Kody's playtest: "too slow, pinballed by blocking mobs")
 - Moving while attacking: 85% speed (was 55%). Base speed 180 (was 165). Fleet Boots unchanged (+12%/level).
 - Shield knights still block from the front, but the push back on Rook is 70 (was 220) and only once per knight per 0.9 s (with the BLOCKED text).
+
+## Hearts/XP in the top bar, reroll fit, one level-up per room (v81, 2026-11-25, Kody's notes)
+- Hearts (+ armor, Second Wind) and Lv + a shorter XP bar moved off the canvas into the page top bar (`#dn-vit`, a small canvas drawn by `drawVit()`,
+  redrawn only when something changes). It sizes itself to what it shows, so the Siege/Last Stand bars still fit at 1366x620. The kit's "Press F" hint moved
+  from the top bar to the bottom wall (`--sz-fs-x:0.31`, left of the gate). The shop's "Your coins" plate moved up to the top-left corner of the arena.
+- Pick screen: Reroll sits in the box (no longer hangs below it), and `fitPick()` shrinks the whole box when it is taller or wider than the arena.
+- XP that is still flying in when a room clears now lands BEFORE the level-up opens (wait up to 2.5 s, then any left is counted at once), so all of it is in
+  one batch. It used to land after the cards and open a second round of questions right away. A chest also waits for the gems.
+- src/kit.js and src/scorecode.js refreshed from the site copies (the _mult copy had older ones).
