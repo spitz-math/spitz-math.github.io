@@ -281,18 +281,18 @@ function drawKickHint(){ if(!S.started||S.over||!S.mv.wall||(S.kicks||0)>=3||P.o
    mark at the top for 0.8 s first. A hit knocks you sideways and breaks your combo; it never costs a heart (only the fog does).
    Summit Rush: the last 60 seconds. A golden lantern waits 40 ledges up; reaching it pays 400, then the next one is 30 higher.
    No Waystones during the rush, the fog runs 25% faster, and combos pay double. */
-var ROCK_LEN=10, ROCK_FROM=WAY_FIRST+WAY_EVERY/2-ROCK_LEN/2, ROCK_WARN=1.0, ROCK_EVERY=1.8, ROCK_V=560, SUMMIT_UP=40, SUMMIT_NEXT=30, SUMMIT_PTS=400, RUSH_S=60;
+var ROCK_LEN=10, ROCK_FROM=WAY_FIRST+WAY_EVERY/2-ROCK_LEN/2, ROCK_WARN=0.8, ROCK_EVERY=1.15, ROCK_V=560, SUMMIT_UP=40, SUMMIT_NEXT=30, SUMMIT_PTS=400, RUSH_S=60;
 var rocks=[], rockT=0, bonkT=0;
 function inRocks(i){ return i>=ROCK_FROM&&(i-ROCK_FROM)%WAY_EVERY<ROCK_LEN; }
 function rockStep(dt){ var i=P.lastI||0, live=inRocks(i)&&!S.rush;
   if(live&&!S.rockOn){ S.rockOn=true; banner={t0:now(),txt:'Rockfall!',sub:'watch the sky',kind:'rock'}; SND.crack(); }
   if(!live&&S.rockOn) S.rockOn=false;
   rockT-=dt; bonkT-=dt;
-  if(live&&rockT<=0){ rockT=ROCK_EVERY; var x=Math.max(60,Math.min(W-60,P.x+(Math.random()-0.5)*520)); rocks.push({x:x,h:cam+700,warn:ROCK_WARN}); }
+  if(live&&rockT<=0){ rockT=rockEvery(); var x=Math.max(60,Math.min(W-60,P.x+(Math.random()-0.5)*520)); rocks.push({x:x,h:cam+700,warn:ROCK_WARN}); }
   rocks.forEach(function(r){ if(r.warn>0){ r.warn-=dt; r.h=cam+700; return; } r.h-=ROCK_V*dt;
     if(bonkT<=0&&Math.abs(r.x-P.x)<PW/2+24&&r.h<P.h+PH+10&&r.h>P.h-10){ r.dead=true; bonk(r); } });
   rocks=rocks.filter(function(r){ return !r.dead&&sy(r.h)<H+80; }); }
-function bonk(r){ bonkT=2; var d=P.x>=r.x?1:-1; if(!P.on){ P.vx=d*240; P.vy=Math.min(P.vy,-120); }   /* v13: a hit costs a heart instead of knocking you off your ledge */
+function bonk(r){ bonkT=2; var d=P.x>=r.x?1:-1; P.vx=d*340; if(P.on){ P.on=null; P.vy=-120; } else P.vy=Math.min(P.vy,-120);   /* v13: a hit knocks you AND costs a heart (Kody: 'they're a real threat, let them') */
   endCombo(); CB.on=false; shk=RM()?0:8; SND.crack(); fxAdd('bonk',P.x,P.h);
   /* v10: back to a knock with no heart lost: on the narrow v10 ledges a knock already costs height (v8-v9 took a heart) */
   if(S.hearts>1){ S.hearts--; pop(P.x,P.h+160,'BONK!',S.hearts+(S.hearts===1?' heart left':' hearts left'),'#FFB020',true); hud(); save(); } else pop(P.x,P.h+160,'BONK!','','#FFB020'); }
@@ -440,7 +440,9 @@ function drawNudge(){ if(!S.started||S.over||S.way||S.offer) return; var bob=RM(
    the fog climbs faster near the end and keeps up with climbers who have every move ("once i had all the upgrades i was
    FLYING and never in any danger"). lateK runs 0 -> 1 from 1:30 into the round to the end; each learned move adds speed
    and takes away trailing room. */
-var WAY_NEED=2, FOG_LATE=0.25, FOG_PER_MOVE=0.04, LATE_FROM=90;   /* v13: rocks now cost a heart, so they come every 1.8 s (was 1.15) with a 1 s warning (was 0.8) */
+var WAY_NEED=2, FOG_LATE=0.25, FOG_PER_MOVE=0.04, LATE_FROM=90;
+/* rocks fall faster the higher you climb: every 1.15 s in the first Rockfall, down to every 0.6 s from ledge 265 up */
+function rockEvery(){ var k=Math.max(0,Math.min(1,((P.lastI||0)-ROCK_FROM)/240)); return ROCK_EVERY*(1-0.48*k); }
 function moveN(){ var n=0; MOVES.forEach(function(m){ if(S.mv[m.id]) n++; }); return n; }
 function lateK(){ var len=(S.len||5)*60, el=len-Math.max(0,(S.endAt-now())/1000); return Math.max(0,Math.min(1,(el-LATE_FROM)/(len-LATE_FROM))); }
 function fogGap(){ return Math.max(600,FOG_GAP-60*moveN()-200*lateK()); }

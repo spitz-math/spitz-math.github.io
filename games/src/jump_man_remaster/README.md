@@ -73,6 +73,6 @@ Tests: tests/v12.js (new rules), tests/v4.js (updated for v12), tests/sets.js, t
 ## v13 (2026-11-25, Kody's v12 play notes)
 "two questions and a spare third if needed", "rocks should take out a heart", "make the fog climb faster, especially as you get closer to the end. once i had all the upgrades i was FLYING".
 - WAY_NEED=2: 2 right teaches the move (+ heart, +300); a miss brings a spare 3rd; two misses end it. Save ver 6.
-- Rocks cost a heart (never the last) and no longer knock you off; ROCK_EVERY 1.8 s (was 1.15), ROCK_WARN 1.0 s (was 0.8).
+- Rocks cost a heart (never the last) and still knock you; Kody: "don't nerf the rocks ... falling more, especially closer to the top": every 1.15 s at the first Rockfall down to 0.6 s from ledge 265 (rockEvery), 0.8 s warning.
 - Fog: speed x(1 + 0.04 per learned move) x(1 + 0.25 x lateK), lateK 0 -> 1 from 1:30 to the end; trailing room fogGap() = 1200 - 60 per move - 200 x lateK (min 600).
 Tests: tests/v12.js and tests/v4.js updated for v13.
