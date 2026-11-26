@@ -78,3 +78,7 @@ Tests: tests/v12.js (new rules), tests/v4.js (updated for v12), tests/sets.js, t
 Tests: tests/v12.js and tests/v4.js updated for v13.
 - Arrows in the Moves list are drawn as matching pixel arrows (← → ↑ same size and style).
 - Title-screen arrow keycaps use the same pixel arrows (game-local script in build.py; kit.js untouched).
+
+## Hub card (Super Jump Man)
+- Approved on spitz.dev 2026-11-26: card abb2f21c (400x220, sha 37f85f88...) and painting 1b1a27e6 (1536x1024, sha cfb6f160...), Task Drop 20eff60a.
+- art/hubcard_abb2f21c.b64 = exact approved PNG bytes; art/jump_man_multiplication.webp = lossless copy (same pixels). At go-live copy the webp to games/cards/ and add jump_man_multiplication to SHOTS in catalog.js (shared file: ChatGPT review), rename to Super Jump Man.
