@@ -15,7 +15,7 @@
    No live game loads this file yet. A remake's build inlines it, the same way kit.js is inlined into test copies. */
 (function(){
 'use strict';
-var VERSION=1;
+var VERSION=2;
 
 function esc(s){ return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
 function plain(h){ return String(h||'').replace(/<[^>]*>/g,'').replace(/\s+/g,' ').trim(); }
@@ -30,7 +30,7 @@ return [
 '  --rk-body:"Inter",system-ui,sans-serif; --rk-word-scale:1; --rk-key-face:linear-gradient(#22366A,#142249); --rk-key-text:#EAF6FF; --rk-key-rim:#3DE0FF; --rk-key-low:#0F6F8E;',
 '  --rk-heart:#FF4F6D; --rk-heart-off:#3A4458;',
 '  --rk-ol:-3px 0 var(--rk-ink),3px 0 var(--rk-ink),0 -3px var(--rk-ink),0 3px var(--rk-ink),-3px -3px var(--rk-ink),3px 3px var(--rk-ink),-3px 3px var(--rk-ink),3px -3px var(--rk-ink); }',
-'.rk-hud [hidden],.rk-dim[hidden],.rk-over[hidden],.rk-hud[hidden]{ display:none !important; }',
+'.rk-hud [hidden],.rk-dim[hidden],.rk-over[hidden],.rk-hud[hidden],.rk-banner[hidden],.rk-nudge[hidden],.rk-topics[hidden]{ display:none !important; }',
 
 /* --- HUD: words and numbers sit on the play field with a dark pixel outline. Nothing is boxed. --- */
 '.rk-hud{ position:absolute; left:44px; right:44px; top:26px; z-index:4; display:flex; justify-content:space-between; align-items:flex-start; pointer-events:none; white-space:nowrap; color:var(--rk-text); }',
@@ -95,6 +95,25 @@ p+'table{ border-collapse:collapse; font:800 34px/1 var(--rk-body); align-self:f
 '.rk-key{ min-width:54px; height:54px; padding:0 10px; font-size:calc(24px*var(--rk-word-scale)); flex:none; } .rk-key.sm{ min-width:0; height:46px; font-size:calc(20px*var(--rk-key-scale)); margin-right:14px; vertical-align:middle; }',
 'html body .sz-ctl kbd svg.rk-arw, html body .sz-meta kbd svg.rk-arw{ display:block; width:22px; height:22px; shape-rendering:crispEdges; fill:currentColor; } html body .sz-ctl .t kbd svg.rk-arw{ width:18px; height:18px; }',
 
+/* --- upgrade pick, pause, feel layer, nudge --- */
+'.rk-pickwin{ width:1360px; padding:28px 32px 32px; text-align:center; font-family:var(--rk-body); } .rk-pickwin .rk-qt{ margin:0; font-size:calc(40px*var(--rk-word-scale)); }',
+'.rk-picktip{ margin:12px 0 22px; font:700 30px/1.2 var(--rk-body); color:var(--rk-muted); }',
+'.rk-cards{ display:grid; grid-template-columns:repeat(var(--n,3),1fr); gap:18px; }',
+'.rk-card{ min-height:320px; padding:22px 20px; display:flex; flex-direction:column; align-items:center; gap:14px; border-radius:var(--rk-radius); background:var(--rk-tile); color:var(--rk-tile-text); border:3px solid transparent; box-shadow:0 0 0 3px var(--rk-ink); cursor:pointer; font-family:var(--rk-body); }',
+'.rk-card:not(.off):hover{ border-color:var(--rk-accent); } .rk-card.off{ opacity:.4; cursor:default; }',
+'.rk-card .ic{ font-size:84px; line-height:1; height:110px; display:grid; place-items:center; } .rk-card .ic canvas,.rk-card .ic img{ width:110px; height:110px; image-rendering:pixelated; }',
+'.rk-card .n{ font:400 calc(30px*var(--rk-word-scale))/1.15 var(--rk-word); } .rk-card .d{ font:700 28px/1.25 var(--rk-body); color:var(--rk-muted); }',
+'.rk-pausewin{ width:1180px; gap:22px; } .rk-pausewin .rk-stats{ margin:0; }',
+'.rk-vol{ display:flex; gap:50px; font:800 28px/1 var(--rk-body); } .rk-vol label{ display:flex; align-items:center; gap:14px; } .rk-vol input{ width:260px; height:30px; accent-color:var(--rk-accent); } .rk-vol b{ min-width:76px; text-align:left; font-variant-numeric:tabular-nums; }',
+'html body .rk-pkeys .sz-ctl{ margin:0; }',
+'.rk-fx{ position:absolute; inset:0; z-index:5; pointer-events:none; overflow:hidden; }',
+'.rk-pop{ position:absolute; translate:-50% -150%; white-space:nowrap; font:800 46px/1 var(--rk-num); color:var(--rk-text); text-shadow:var(--rk-ol); } .rk-pop.good{ color:var(--rk-good); } .rk-pop.bad{ color:var(--rk-bad); } .rk-pop.gold{ color:var(--rk-gold); }',
+'.rk-banner{ position:absolute; left:0; right:0; top:230px; z-index:5; display:flex; flex-direction:column; align-items:center; gap:10px; pointer-events:none; text-align:center; }',
+'.rk-banner b{ font:400 calc(62px*var(--rk-word-scale))/1.1 var(--rk-word); color:var(--rk-text); text-shadow:var(--rk-ol), 6px 6px 0 var(--rk-ink); } .rk-banner span{ font:800 34px/1.2 var(--rk-body); color:var(--rk-gold); text-shadow:var(--rk-ol); }',
+'.rk-banner.gold b{ color:var(--rk-gold); } .rk-banner.bad b{ color:var(--rk-bad); } .rk-banner.good b{ color:var(--rk-good); }',
+'.rk-nudge{ position:absolute; left:0; right:0; bottom:150px; z-index:5; text-align:center; pointer-events:none; font:400 calc(34px*var(--rk-word-scale))/1.2 var(--rk-word); color:var(--rk-gold); text-shadow:var(--rk-ol); animation:rkBob 1.2s ease-in-out infinite; } @keyframes rkBob{ 50%{ translate:0 -8px; } }',
+'.rk-topics{ display:flex; justify-content:center; flex-wrap:wrap; gap:8px 34px; margin:0 0 12px; font:700 24px/1.2 var(--rk-body); color:var(--rk-muted); } .rk-topics b{ color:var(--rk-text); font-weight:800; margin-right:6px; }',
+
 /* --- title and end screens --- */
 '.rk-over{ position:absolute; inset:0; z-index:15; display:grid; place-items:center; text-align:center; background:var(--rk-over); color:var(--rk-text); font-family:var(--rk-body); }',
 '.rk-box{ width:1240px; display:flex; flex-direction:column; align-items:center; }',
@@ -147,7 +166,7 @@ function make(env){
   function $(id){ return document.getElementById(P+'-'+id); }
   function S(){ return env.S(); }
   function save(){ try{ env.save(); }catch(e){} }
-  function snd(n){ try{ if(env.snd&&env.snd[n]) env.snd[n](); }catch(e){} }
+  function snd(n){ RK.snd(n); }
   function add(html){ var d=document.createElement('div'); d.innerHTML=html; var el=d.firstElementChild; stage.appendChild(el); return el; }
   if(!document.getElementById('rk-css-'+P)){ var st=document.createElement('style'); st.id='rk-css-'+P; st.textContent=css(P); document.head.appendChild(st); }
   var CREDIT='<span class="sz-credit">Made by Spitz <i class="sz-burger" aria-hidden="true"></i></span>';
@@ -294,11 +313,11 @@ function make(env){
       s.card=null; close(); snd('next'); try{ if(K().done) K().done(res); }finally{ save(); } }
     win.addEventListener('click',function(e){ var b=e.target.closest?e.target.closest('.rk-ch'):null; if(b){ answer(+b.dataset.i); return; } if(e.target.closest&&e.target.closest('.rk-next')) proceed(); });
     /* while the card is up it owns the keyboard: 1-4 answer, Space or Enter go on. The game never sees those presses. */
-    document.addEventListener('keydown',function(e){ if(!isOpen()||e.ctrlKey||e.metaKey||e.altKey) return; var hold=document.getElementById(P+'-confirm'); if(hold&&!hold.hidden) return;
+    document.addEventListener('keydown',function(e){ if(!isOpen()||e.ctrlKey||e.metaKey||e.altKey||idOpen('confirm')||idOpen('pause')) return;
       var k=e.key, n='1234'.indexOf(k);
       if(n>=0&&k.length===1){ e.preventDefault(); e.stopImmediatePropagation(); if(!e.repeat) answer(n); }
       else if(k===' '||k==='Enter'){ e.preventDefault(); e.stopImmediatePropagation(); if(!e.repeat) proceed(); }
-      else if(/^(Arrow|[wasdxkjp]$|Escape)/i.test(k)){ e.stopImmediatePropagation(); if(/^Arrow/.test(k)) e.preventDefault(); } },true);
+      else if(/^(Arrow|[wasdxkj]$)/i.test(k)){ e.stopImmediatePropagation(); if(/^Arrow/.test(k)) e.preventDefault(); } },true);
     return { open:open, isOpen:isOpen, answer:answer, proceed:proceed, close:close, kind:function(){ return kind; },
       resume:function(){ var s=S(); if(s&&s.card&&kinds[s.card.kind]&&!s.over){ open(s.card.kind); return true; } return false; },
       fast:function(v){ FAST=!!v; } };
@@ -314,7 +333,7 @@ function make(env){
     var shownAt=0, el=add('<div class="rk-over" id="'+P+'-end" hidden><div class="rk-box"><div class="sz-eyebrow">Spitz <b>Arcade</b></div>'+
       '<div class="rk-endlogo">'+(o.logo||o.name||'')+'</div><div class="rk-endname" id="'+P+'-endname"></div>'+
       '<div class="rk-final" id="'+P+'-endscore">0</div><div class="rk-medal" id="'+P+'-endmedal"></div><div class="rk-goal" id="'+P+'-endgoal"></div>'+
-      '<div class="rk-stats '+P+'-stats" id="'+P+'-endstats"></div>'+
+      '<div class="rk-stats '+P+'-stats" id="'+P+'-endstats"></div><div class="rk-topics" id="'+P+'-endtopics"></div>'+
       '<div class="rk-code"><span class="l">Your score code</span><span class="rk-codev" id="'+P+'-endcode"></span></div>'+
       '<p class="rk-note" id="'+P+'-endnote">Tap the button, then paste the code into the form with your name.</p>'+
       '<button class="rk-again" id="'+P+'-again" type="button"><span class="rk-key sm">Enter</span>Play again</button>'+
@@ -327,6 +346,8 @@ function make(env){
     return { el:el, open:function(){ return !el.hidden; }, hide:function(){ el.hidden=true; },
       show:function(d){ var s=S(); $('endname').textContent=s.name||''; $('endscore').textContent=(d.score||0).toLocaleString('en-US'); $('endmedal').textContent=d.headline||''; $('endgoal').textContent=d.goal||'';
         $('endstats').innerHTML=(d.stats||[]).map(function(r){ return '<div class="rk-stat"><span class="l">'+esc(r[0])+'</span><span class="v">'+esc(r[1]).replace(/^([\d:,.]+(?: \/ [\d,]+)?)\s+(\D.*)$/,'$1 <small>$2</small>')+'</span></div>'; }).join('');
+        var tp=d.topics||{}, tk=Object.keys(tp).filter(function(k){ return tp[k][1]>0; }); $('endtopics').hidden=tk.length<2;   /* per-topic row: only when more than one topic was asked */
+        $('endtopics').innerHTML=tk.slice(0,5).map(function(k){ return '<span><b>'+tp[k][0]+' / '+tp[k][1]+'</b> '+esc(k)+'</span>'; }).join('');
         var code=''; if(o.gameId&&window.SpitzCode) try{ code=window.SpitzCode.show(P,o.gameId,s)||''; }catch(e){}
         if(!code){ $('endcode').textContent=d.code||''; el.querySelector('.rk-code').hidden=!d.code; $('endnote').hidden=!d.code; }
         var b=$('again'); b.disabled=true; setTimeout(function(){ b.disabled=false; },1200);
@@ -346,6 +367,146 @@ function make(env){
       e.stopImmediatePropagation(); if(e.key==='y'||e.key==='Y') yes(); else if(e.key==='n'||e.key==='N'||e.key==='Escape') shut(); },true);
     return { el:el, open:function(){ return !el.hidden; } };
   };
+
+  /* ======================= who has the screen =======================
+     RK.busy() is true while a card, an upgrade pick, the pause box or the "new game?" box is up. A game's loop skips its update while it is,
+     so nothing moves or hurts the player behind a window and the run clock waits (the Shift+R box did not pause in three games). */
+  var layers=[];
+  RK.busy=function(){ for(var i=0;i<layers.length;i++) if(layers[i]()) return true; return false; };
+  function idOpen(id){ var e=document.getElementById(P+'-'+id); return !!e&&!e.hidden; }
+  layers.push(function(){ return idOpen('qdim')||idOpen('pick')||idOpen('pause')||idOpen('confirm'); });
+
+  /* ======================= SOUND =======================
+     RK.snd('right') plays a soft built-in chime unless the game passed its own (env.snd.right). Built-ins: open, right, wrong, next, pick, tick.
+     One AudioContext for the game: RK.ac(). M mutes everything (RK.muted()); the pause box has Music and Effects sliders (RK.vol('fx'), RK.vol('music')). */
+  var AC=null, muted=false, VOL={ fx:1, music:1 };
+  try{ muted=localStorage.getItem('spitz_muted')==='1'; ['fx','music'].forEach(function(k){ var v=localStorage.getItem('spitz_vol_'+k); if(v!==null&&v!==''&&!isNaN(+v)) VOL[k]=Math.max(0,Math.min(1,+v)); }); }catch(e){}
+  RK.ac=function(){ if(!AC){ var C=window.AudioContext||window.webkitAudioContext; if(!C) return null; try{ AC=new C(); }catch(e){ return null; } } if(AC.state==='suspended') try{ AC.resume(); }catch(e){} return AC; };
+  RK.muted=function(){ return muted; };
+  RK.mute=function(on){ muted=on==null?!muted:!!on; try{ localStorage.setItem('spitz_muted',muted?'1':'0'); }catch(e){} if(env.onVolume) env.onVolume(); return muted; };
+  RK.vol=function(k,v){ if(v!=null){ VOL[k]=Math.max(0,Math.min(1,+v)); try{ localStorage.setItem('spitz_vol_'+k,String(VOL[k])); }catch(e){} if(env.onVolume) env.onVolume(); } return VOL[k]; };
+  function note(f,t,d,type,vol){ var a=RK.ac(); if(!a) return; var o=a.createOscillator(), g=a.createGain(), t0=a.currentTime+t; o.type=type||'sine'; o.frequency.value=f;
+    g.gain.setValueAtTime(0.0001,t0); g.gain.exponentialRampToValueAtTime(vol*VOL.fx,t0+0.012); g.gain.exponentialRampToValueAtTime(0.0001,t0+d); o.connect(g); g.connect(a.destination); o.start(t0); o.stop(t0+d+0.03); }
+  /* soft and musical on purpose (25 Chromebooks play them at once): no buzzer for a miss, just two low notes stepping down */
+  var CHIME={ open:[[523,0,0.14,'triangle',0.07]], right:[[659,0,0.16,'sine',0.14],[880,0.09,0.26,'sine',0.14]], wrong:[[330,0,0.18,'triangle',0.09],[262,0.12,0.3,'triangle',0.09]],
+    next:[[440,0,0.07,'triangle',0.05]], pick:[[523,0,0.14,'sine',0.11],[659,0.08,0.14,'sine',0.11],[784,0.16,0.3,'sine',0.11]], tick:[[880,0,0.05,'triangle',0.04]] };
+  var asked=window.__rkSnd=[];   /* tests read which sounds were asked for */
+  RK.snd=function(n){ asked.push(n); if(asked.length>50) asked.shift(); if(muted||VOL.fx<=0) return;
+    try{ if(env.snd&&env.snd[n]){ env.snd[n](); return; } (CHIME[n]||[]).forEach(function(x){ note(x[0],x[1],x[2],x[3],x[4]); }); }catch(e){} };
+
+  /* ======================= FEEL =======================
+     RK.fx.shake(0.5)            screen shake on the game canvas (two sines on real time, fades on real time). Off with reduce-motion.
+     RK.fx.pop(x,y,'+200','good') a number that floats up from a point on the 1920x1080 stage. Kinds: good, bad, gold.
+     RK.fx.banner('Rockfall!','watch the sky')  one banner at a time, queued, and it waits while a window is up, so banners never pile on a card.
+     RK.fx.stop(60)              hit-stop: RK.fx.frozen() is true for that many ms; the game's loop skips its update.
+     Nothing here flashes: no full-screen white, nothing faster than 3 a second. */
+  RK.fx=(function(){
+    var trauma=0, rafOn=false, lastT=0, target=null, stopUntil=0, pops=0, queue=[], showing=null, bTimer=0;
+    function el(){ return target||(target=document.getElementById(env.shake||P+'-canvas')); }
+    function tick(ts){ var dt=lastT?Math.min(0.1,(ts-lastT)/1000):0; lastT=ts; trauma=Math.max(0,trauma-dt*1.6); var e=el();
+      if(e){ if(trauma>0.01&&!reduce()){ var k=trauma*trauma*18, t=ts/1000; e.style.translate=((Math.sin(t*47)+Math.sin(t*31+1))*k/2).toFixed(1)+'px '+((Math.sin(t*41+2)+Math.sin(t*29))*k/2).toFixed(1)+'px'; } else e.style.translate=''; }
+      if(trauma>0.01) requestAnimationFrame(tick); else { rafOn=false; lastT=0; } }
+    var layer=add('<div class="rk-fx" id="'+P+'-fx" aria-hidden="true"></div>'), ban=add('<div class="rk-banner" id="'+P+'-banner" role="status" hidden><b></b><span></span></div>');
+    function next(){ if(showing||!queue.length) return; if(RK.busy()){ clearTimeout(bTimer); bTimer=setTimeout(next,250); return; }
+      showing=queue.shift(); ban.className='rk-banner'+(showing.kind?' '+showing.kind:''); ban.firstChild.textContent=showing.text; ban.lastChild.textContent=showing.sub||''; ban.hidden=false;
+      if(ban.animate&&!reduce()) ban.animate([{opacity:0,scale:'0.9'},{opacity:1,scale:'1'}],{duration:160,easing:'ease-out'});
+      clearTimeout(bTimer); bTimer=setTimeout(function(){ ban.hidden=true; showing=null; next(); },showing.ms||1600); }
+    return {
+      shake:function(a){ trauma=Math.min(1,trauma+(a==null?0.4:a)); if(!rafOn&&!reduce()){ rafOn=true; requestAnimationFrame(tick); } },
+      stop:function(ms){ if(!reduce()) stopUntil=Math.max(stopUntil,Date.now()+Math.min(200,ms||60)); },
+      frozen:function(){ return Date.now()<stopUntil; },
+      pop:function(x,y,text,kind){ if(pops>=14) return; pops++; var s=document.createElement('span'); s.className='rk-pop'+(kind?' '+kind:''); s.textContent=text; s.style.left=x+'px'; s.style.top=y+'px'; layer.appendChild(s);
+        var done=function(){ pops--; if(s.parentNode) s.parentNode.removeChild(s); };
+        if(s.animate){ var a=s.animate(reduce()?[{opacity:1},{opacity:1,offset:0.8},{opacity:0}]:[{opacity:0,translate:'-50% -30%',scale:'0.7'},{opacity:1,translate:'-50% -90%',scale:'1.15',offset:0.18},{opacity:1,translate:'-50% -150%',scale:'1',offset:0.7},{opacity:0,translate:'-50% -190%',scale:'1'}],{duration:850,easing:'ease-out'}); a.onfinish=done; a.oncancel=done; } else setTimeout(done,850); },
+      banner:function(text,sub,o){ o=o||{}; if((showing&&showing.text===text)||queue.some(function(q){ return q.text===text; })) return; if(queue.length>=3) queue.shift(); queue.push({text:text,sub:sub,kind:o.kind,ms:o.ms}); next(); },
+      clear:function(){ queue=[]; clearTimeout(bTimer); ban.hidden=true; showing=null; trauma=0; },
+      showing:function(){ return showing?showing.text:''; } };
+  })();
+
+  /* ======================= UPGRADE PICK =======================
+     var pick = RK.pick({ title:'Hangar', options:function(){ return [ {id:'gun', name:'Gun up', desc:'One more barrel.', icon:'<canvas ...>' | '🔫', off:false}, ... ]; },
+                          onPick:function(id){ ... }, done:function(){ ... } });
+     pick.open(n, 'Both right: pick two!')   n picks in a row (default 1). Keys 1 2 3 or a click. An option with off:true shows greyed out.
+     pick.resume()                            after loading a saved run (S.pick is saved with each choice, so a reload can't pick twice).
+     Fixed rewards need no pick screen at all (Kody: fixed beats choice in Jump Man). Use this only where the choice is the fun. */
+  RK.pick=function(o){
+    var openAt=0, el=add('<div class="rk-dim" id="'+P+'-pick" hidden><div class="rk-win rk-pickwin" role="dialog" aria-modal="true" aria-labelledby="'+P+'-picktitle">'+
+      '<h2 class="rk-qt" id="'+P+'-picktitle"></h2><p class="rk-picktip" id="'+P+'-picktip"></p><div class="rk-cards" id="'+P+'-cards"></div></div></div>');
+    function isOpen(){ return !el.hidden; }
+    function opts(){ return (o.options()||[]).slice(0,4); }
+    function show(){ var s=S(), list=opts(); $('picktitle').textContent=o.title||'Pick one'; $('picktip').textContent=s.pick.tip||(s.pick.left>1?'Pick '+s.pick.left+'.':'Pick one.');
+      $('cards').style.setProperty('--n',list.length);
+      $('cards').innerHTML=list.map(function(c,i){ return '<button class="rk-card'+(c.off?' off':'')+'" type="button" data-i="'+i+'"'+(c.off?' disabled':'')+'><span class="rk-key">'+(i+1)+'</span>'+(c.icon?'<span class="ic">'+c.icon+'</span>':'')+'<span class="n">'+esc(c.name)+'</span><span class="d">'+esc(c.desc||'')+'</span></button>'; }).join(''); }
+    function choose(i){ var s=S(), list=opts(), c=list[i]; if(!isOpen()||!s.pick||!c||c.off||Date.now()-openAt<400) return false;   /* 0.4 s: the key that answered the question never also picks */
+      s.pick.left--; try{ o.onPick(c.id,c); }catch(e){} snd('pick');
+      if(s.pick.left>0&&opts().some(function(x){ return !x.off; })){ s.pick.tip=''; openAt=Date.now(); save(); show(); return true; }
+      s.pick=null; el.hidden=true; try{ if(o.done) o.done(); }finally{ save(); } return true; }
+    el.addEventListener('click',function(e){ var b=e.target.closest?e.target.closest('.rk-card'):null; if(b) choose(+b.dataset.i); });
+    document.addEventListener('keydown',function(e){ if(!isOpen()||idOpen('confirm')||idOpen('pause')||e.ctrlKey||e.metaKey||e.altKey) return; var n='1234'.indexOf(e.key);
+      if(n>=0&&e.key.length===1){ e.preventDefault(); e.stopImmediatePropagation(); if(!e.repeat) choose(n); }
+      else if(/^(Arrow|[wasdxkj ]$|Enter)/i.test(e.key)){ e.stopImmediatePropagation(); if(/^Arrow| /.test(e.key)) e.preventDefault(); } },true);
+    return { isOpen:isOpen, choose:choose,
+      open:function(n,tip){ var s=S(); if(isOpen()) return false; if(!opts().some(function(x){ return !x.off; })){ if(o.done) o.done(); return false; }
+        s.pick={ left:n||1, tip:tip||'' }; el.hidden=false; openAt=Date.now(); save(); show(); return true; },
+      resume:function(){ var s=S(); if(s&&s.pick&&!s.over){ el.hidden=false; openAt=Date.now(); show(); return true; } return false; },
+      close:function(){ el.hidden=true; } };
+  };
+
+  /* ======================= PAUSE =======================
+     RK.pause({ when:function(){ return S.started&&!S.over; }, controls:'ARROWS/WASD=Move | Space=Jump', stats:function(){ return [['Score',S.score],['Hearts',S.hearts]]; } })
+     P or Esc pauses and resumes. The box has Music and Effects sliders and the keys. It also pauses when the tab is hidden, so a run clock never
+     keeps going behind another tab. Check RK.busy() in the loop (it covers this box, cards, the pick and the new-game box). */
+  RK.pause=function(o){ o=o||{};
+    var el=add('<div class="rk-over" id="'+P+'-pause" hidden style="z-index:38"><div class="rk-win rk-ask rk-pausewin" role="dialog" aria-modal="true" aria-labelledby="'+P+'-ptitle">'+
+      '<h2 id="'+P+'-ptitle">Paused</h2><div class="rk-stats" id="'+P+'-pstats"></div>'+
+      '<div class="rk-vol"><label>Music <input type="range" id="'+P+'-volm" min="0" max="100" step="5" aria-label="Music volume"><b id="'+P+'-volmv"></b></label>'+
+      '<label>Effects <input type="range" id="'+P+'-volf" min="0" max="100" step="5" aria-label="Effects volume"><b id="'+P+'-volfv"></b></label></div>'+
+      '<div class="rk-pkeys"><div class="sz-ctl" data-ctl="'+esc(o.controls||'1234=Answer')+'"></div></div>'+
+      '<div class="rk-row"><button class="rk-go" id="'+P+'-resume" type="button"><span class="rk-key sm">P</span>Resume</button></div></div></div>');
+    function isOpen(){ return !el.hidden; }
+    function sync(){ [['m','music'],['f','fx']].forEach(function(p){ var v=Math.round(RK.vol(p[1])*100); $('vol'+p[0]).value=v; $('vol'+p[0]+'v').textContent=v+'%'; }); }
+    function can(){ return (!o.when||o.when())&&!idOpen('confirm')&&!idOpen('start')&&!idOpen('end'); }
+    function open(){ if(isOpen()||!can()) return false; $('pstats').innerHTML=(o.stats?o.stats():[]).map(function(r){ return '<div class="rk-stat"><span class="l">'+esc(r[0])+'</span><span class="v">'+esc(typeof r[1]==='number'?r[1].toLocaleString('en-US'):r[1])+'</span></div>'; }).join('');
+      sync(); el.hidden=false; if(o.onPause) o.onPause(true); return true; }
+    function shut(){ if(!isOpen()) return; el.hidden=true; if(o.onPause) o.onPause(false); }
+    $('volm').addEventListener('input',function(){ RK.vol('music',this.value/100); sync(); }); $('volf').addEventListener('input',function(){ RK.vol('fx',this.value/100); sync(); });
+    $('volf').addEventListener('change',function(){ RK.snd('right'); });
+    $('resume').addEventListener('click',shut);
+    document.addEventListener('keydown',function(e){ if(e.target&&e.target.tagName==='INPUT'&&e.target.type!=='range') return; if(e.ctrlKey||e.metaKey||e.altKey||(e.shiftKey&&/^r$/i.test(e.key))) return;
+      var k=e.key; if(isOpen()){ if(/^(p|Escape|Enter)$/i.test(k)){ e.preventDefault(); e.stopImmediatePropagation(); if(!e.repeat) shut(); }
+        else if(!/^(f|m|n|Tab|Arrow(Left|Right))$/i.test(k)) e.stopImmediatePropagation(); return; }
+      if(/^(p|Escape)$/i.test(k)&&!e.repeat&&can()){ e.preventDefault(); e.stopImmediatePropagation(); open(); } },true);
+    document.addEventListener('visibilitychange',function(){ if(document.hidden&&o.auto!==false) open(); });
+    function late(){ setTimeout(function(){ pixelArrows(el); var m=el.querySelector('.sz-meta'); if(m) m.hidden=true; },0); }
+    if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',late); else late();
+    return { el:el, isOpen:isOpen, open:open, close:shut };
+  };
+
+  /* ======================= RUN EXTRAS =======================
+     RK.best       today's best score on this question set, to chase: RK.best.get(), RK.best.keep(score) (returns the old best). Never kept across days.
+     RK.mult(n)    the answer-streak multiplier: 3 in a row ×1.5, 6 ×2, 10 ×3 (pass your own steps to change it). RK.multNext(n) says what is next.
+     RK.goal({score, was, streak})  the one line to chase on the end screen.
+     RK.idle({after:6, text:'Move! ← →', when:fn})  a nudge after 6 s with no key or click while the run is in play.
+     M mutes. N is the kit.js music switch; pass env.music (the object from SpitzKit.game) and the kit wires N for you. */
+  var STEPS=env.streak||[[3,1.5],[6,2],[10,3]];
+  RK.mult=function(n){ var m=1; STEPS.forEach(function(s){ if(n>=s[0]) m=s[1]; }); return m; };
+  RK.multNext=function(n){ for(var i=0;i<STEPS.length;i++) if(n<STEPS[i][0]) return { at:STEPS[i][0], mult:STEPS[i][1], more:STEPS[i][0]-n }; return null; };
+  function day(){ var d=new Date(); return d.getFullYear()+'-'+(d.getMonth()+1)+'-'+d.getDate(); }
+  RK.best=(function(){ var key=P+'_best'+(env.suffix||'');
+    function get(){ try{ var v=JSON.parse(localStorage.getItem(key)||'null'); if(v&&v.d===day()) return v.v||0; }catch(e){} return 0; }
+    return { get:get, keep:function(score){ var was=get(); if(score>was) try{ localStorage.setItem(key,JSON.stringify({d:day(),v:score})); }catch(e){} return was; } }; })();
+  RK.goal=function(d){ var n=function(v){ return v.toLocaleString('en-US'); }, nx=RK.multNext(d.streak||0);
+    if(d.was>0&&d.score>d.was) return 'New best today! Old best: '+n(d.was)+'.';
+    if(d.was>d.score) return n(d.was-d.score)+' short of your best today.';
+    if(nx) return (d.streak?'Best streak '+d.streak+': get ':'Next run: get ')+nx.at+' right in a row for ×'+nx.mult+' points.';
+    return d.score>0?'Can you beat '+n(d.score)+'?':''; };
+  RK.idle=function(o){ var lastIn=Date.now(), el=add('<div class="rk-nudge" id="'+P+'-nudge" hidden></div>'); el.textContent=o.text||'Keep moving!';
+    ['keydown','pointerdown'].forEach(function(n){ addEventListener(n,function(){ lastIn=Date.now(); if(!el.hidden) el.hidden=true; },true); });
+    setInterval(function(){ var on=(!o.when||o.when())&&!RK.busy(); if(!on){ lastIn=Date.now(); el.hidden=true; return; } el.hidden=Date.now()-lastIn<(o.after||6)*1000; },500);
+    return { el:el, reset:function(){ lastIn=Date.now(); el.hidden=true; } }; };
+  document.addEventListener('keydown',function(e){ if(e.target&&e.target.tagName==='INPUT') return; if(e.ctrlKey||e.metaKey||e.altKey||e.repeat) return;
+    if(e.key==='m'||e.key==='M'){ var on=RK.mute(); if(env.toast) env.toast(on?'Sound off':'Sound on'); }
+    else if((e.key==='n'||e.key==='N')&&env.music&&env.music.musicToggle&&!idOpen('confirm')) env.music.musicToggle(); });
 
   /* F = full screen (the kit's "Press F" button sends this key too) */
   if(env.fullscreen!==false) document.addEventListener('keydown',function(e){ if((e.key==='f'||e.key==='F')&&!e.ctrlKey&&!e.metaKey&&!(e.target&&e.target.tagName==='INPUT')){

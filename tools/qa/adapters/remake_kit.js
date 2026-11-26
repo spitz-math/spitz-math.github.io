@@ -1,8 +1,10 @@
 /* Remake kit adapter (tier 2). Plays games/new/remake_kit/demo.html, a small stand-in game built only from the shared remake kit
-   (title screen, box-free HUD, the 2-questions-plus-a-spare card, end screen). A remake that uses the kit inherits what is proven here.
+   (title screen, box-free HUD, the 2-questions-plus-a-spare card, upgrade pick, pause box, sound and feel hooks, run extras, end screen),
+   and runs the math rule bots on it. A remake that uses the kit inherits what is proven here.
    Real input throughout: number keys answer, Space goes on, arrow keys move, Enter and clicks restart. Hooks only set the scene
    (__G.open('dock') opens a card, __G.end() ends the run). */
 const { sleep } = require('../lib/harness');
+const { mathRule } = require('./_mathrule');
 
 const URL = 'games/new/remake_kit/demo.html';
 const SETS = ['mult', 'slope', 'point', 'hoy', 'shift', 'func', 'int', 'sq', 'plot0', 'plot', 'fam', 'fslope', 'stdform', 'slide', 'perp', 'solve', 'evalf', 'dr', 'rate', 'icpt'];
@@ -22,11 +24,16 @@ async function answer(pg, right) { await sleep(320);
 async function goOn(pg) { await pg.waitForFunction(() => !document.getElementById('dm-next').disabled, null, { timeout: 5000 }).catch(() => {});
   const before = await state(pg); await pg.keyboard.press('Space');
   await pg.waitForFunction(b => { const S = __G.state(); return !__G.card.isOpen() || (S.card && S.card.n !== b); }, before.n, { timeout: 3000 }).catch(() => {}); }
+/* two right on a dock opens the upgrade pick: take the first one on offer with its real number key */
+async function clearPick(pg) { if (!(await pg.evaluate(() => __G.pick.isOpen()))) return false; await sleep(450);
+  const i = await pg.evaluate(() => [].findIndex.call(document.querySelectorAll('#dm-cards .rk-card'), b => !b.disabled));
+  await pg.keyboard.press('Digit' + (i + 1)); await sleep(120); return true; }
 /* play one whole card with a pattern like 'RWR' */
 async function playCard(pg, pattern, kind = 'dock') {
   await pg.evaluate(k => __G.open(k), kind); const seen = [];
   for (const ch of pattern) { const s = await state(pg); if (!s.open) break; seen.push(s.marker); await answer(pg, ch === 'R'); await goOn(pg); }
-  const s = await state(pg); return { seen, closed: !s.open, result: s.results[s.results.length - 1] || null };
+  const picked = await clearPick(pg);
+  const s = await state(pg); return { seen, closed: !s.open, picked, result: s.results[s.results.length - 1] || null };
 }
 
 const A = {
@@ -34,8 +41,8 @@ const A = {
   unsupported: { action: 'the stand-in game only moves; Dash changes speed and has nothing of its own to check' },
   resetKeys: ['score', 'hearts', 'gems', 'answered', 'correct', 'over'],
 
-  async open(pg, set = 'mult', look = 'pixel') {
-    await pg.goto(pg.qaUrl(`${URL}?set=${set}&look=${look}`), { waitUntil: 'load' });
+  async open(pg, set = 'mult', look = 'pixel', extra = '') {
+    await pg.goto(pg.qaUrl(`${URL}?set=${set}&look=${look}${extra}`), { waitUntil: 'load' });
     await pg.evaluate(() => localStorage.clear()); await pg.reload({ waitUntil: 'load' });
     await pg.waitForFunction(() => window.__G && document.getElementById('dm-nameinput'), null, { timeout: 15000 });
   },
@@ -58,7 +65,7 @@ const A = {
     return { ...q, before };
   },
   /* the card asks a second question: answer it too, then the run goes on */
-  async continueQuestion(pg) { await goOn(pg); if ((await state(pg)).open) { await answer(pg, true); await goOn(pg); } await sleep(200); },
+  async continueQuestion(pg) { await goOn(pg); if ((await state(pg)).open) { await answer(pg, true); await goOn(pg); } await clearPick(pg); await sleep(200); },
   async dirty(pg) { await pg.evaluate(() => { const S = __G.state(); S.score += 1234; S.gems += 7; S.hearts = 1; }); },
   async forceEnd(pg) { await pg.evaluate(() => __G.end()); await sleep(200); },
   async endShown(pg) { try { await pg.waitForFunction(() => !document.getElementById('dm-end').hidden, null, { timeout: 8000 }); return true; } catch (e) { return false; } },
@@ -72,6 +79,7 @@ const A = {
         const got = await playCard(pg, p), w = want[p], x = got.result || {};
         r.check(`${p}: the card closes after ${w[1]} questions`, true, got.closed);
         r.check(`${p}: right, asked, perfect, spare used`, JSON.stringify(w), JSON.stringify([x.right, x.asked, x.perfect, x.spare]));
+        r.check(`${p}: the upgrade pick opens only for two right`, x.right === 2, got.picked);
         if (p === 'RWR') { r.check('markers read "1 of 2", "2 of 2", then "Spare question"', '1 of 2|2 of 2|Spare question', got.seen.join('|')); }
         if (p === 'WW') r.check('two misses never show a spare', '1 of 2|2 of 2', got.seen.join('|'));
       }
@@ -98,7 +106,7 @@ const A = {
       await r.shot(pg, 'reload_after_miss');
       await goOn(pg); const f = await state(pg);
       r.check('Space moves on to question 2 of 2', '2 of 2', f.marker);
-      const saved = await pg.evaluate(() => { const k = Object.keys(localStorage).find(x => /^remake_kit_demo_v1/.test(x) && !/_t$/.test(x)); const v = JSON.parse(localStorage.getItem(k)); return [typeof v.answered, !!v.q, typeof v.qDone, typeof v.picked, !!v.card]; });
+      const saved = await pg.evaluate(() => { const k = Object.keys(localStorage).find(x => /^remake_kit_demo_v2/.test(x) && !/_t$/.test(x)); const v = JSON.parse(localStorage.getItem(k)); return [typeof v.answered, !!v.q, typeof v.qDone, typeof v.picked, !!v.card]; });
       r.check('the save keeps the shape the answer log reads (answered, q, qDone, picked) plus the card', JSON.stringify(['number', true, 'boolean', 'number', true]), JSON.stringify(saved));
       await pg.context().close();
     } },
@@ -201,6 +209,139 @@ const A = {
         JSON.stringify(await pg.evaluate(() => [document.getElementById('dm-end').hidden, document.getElementById('dm-start').hidden, document.getElementById('dm-nameinput').value])));
       await pg.context().close();
     } },
+    { name: 'upgrade pick: number keys pick once, a taken upgrade greys out, a reload can not pick twice', async run(r) {
+      const pg = await r.page('chromebook'); await A.open(pg); await A.start(pg);
+      await pg.evaluate(() => __G.open('dock')); await answer(pg, true); await goOn(pg); await answer(pg, true);
+      await pg.waitForFunction(() => !document.getElementById('dm-next').disabled, null, { timeout: 5000 }).catch(() => {});
+      await pg.keyboard.press('Space'); await pg.keyboard.press('Digit2'); await sleep(150);
+      const p0 = await pg.evaluate(() => ({ open: __G.pick.isOpen(), shield: __G.state().shield, cards: document.querySelectorAll('#dm-cards .rk-card').length, tip: document.getElementById('dm-picktip').textContent }));
+      r.check('two right opens the pick with three choices', JSON.stringify([true, 3]), JSON.stringify([p0.open, p0.cards]));
+      r.check('a key pressed as the pick opens does not choose', 0, p0.shield);
+      r.check('no pick text under 11px at Chromebook size', '', await smallText(pg, '#dm-pick'));
+      await r.shot(pg, 'pick');
+      await pg.reload({ waitUntil: 'load' }); await pg.waitForFunction(() => window.__G && __G.pick.isOpen(), null, { timeout: 8000 }).catch(() => {});
+      r.check('a reload comes back on the pick', true, await pg.evaluate(() => __G.pick.isOpen()));
+      await sleep(450); await pg.keyboard.down('ArrowRight'); await sleep(300); await pg.keyboard.up('ArrowRight');
+      r.check('arrow keys do not move the player behind the pick', 480, (await A.snapshot(pg)).x);
+      await pg.keyboard.press('Digit2'); await sleep(150);
+      r.check('key 2 takes the Shield and the pick closes', JSON.stringify([false, 1]), JSON.stringify(await pg.evaluate(() => [__G.pick.isOpen(), __G.state().shield])));
+      await pg.reload({ waitUntil: 'load' }); await pg.waitForFunction(() => window.__G && __G.state().started, null, { timeout: 8000 }).catch(() => {}); await sleep(300);
+      r.check('reloading after picking does not open the pick again', false, await pg.evaluate(() => __G.pick.isOpen()));
+      await pg.evaluate(() => { __G.state().shield = 1; __G.pick.open(1); }); await sleep(450);
+      r.check('an upgrade already held shows greyed out', true, await pg.evaluate(() => document.querySelectorAll('#dm-cards .rk-card')[1].disabled));
+      await pg.keyboard.press('Digit2'); await sleep(120);
+      r.check('its key does nothing', true, await pg.evaluate(() => __G.pick.isOpen()));
+      await pg.click('#dm-cards .rk-card:nth-child(3)'); await sleep(150);
+      r.check('a click picks too', JSON.stringify([false, true]), JSON.stringify(await pg.evaluate(() => [__G.pick.isOpen(), __G.state().boost > 0])));
+      await pg.context().close();
+    } },
+
+    { name: 'pause box: P stops the clock and the player, P or the button resumes, sliders set the volume', async run(r) {
+      const pg = await r.page('chromebook'); await A.open(pg); await A.start(pg); await sleep(400);
+      await pg.keyboard.press('KeyP'); await sleep(150);
+      const a = await pg.evaluate(() => ({ open: !document.getElementById('dm-pause').hidden, left: __G.state().left, x: __G.ship().x, stats: document.querySelectorAll('#dm-pstats .rk-stat').length, busy: __G.rk.busy() }));
+      r.check('P opens the pause box with the run stats', JSON.stringify([true, 3, true]), JSON.stringify([a.open, a.stats, a.busy]));
+      await pg.keyboard.down('ArrowRight'); await sleep(700); await pg.keyboard.up('ArrowRight');
+      const b = await pg.evaluate(() => ({ left: __G.state().left, x: __G.ship().x }));
+      r.check('while paused the clock stands still and the player does not move', JSON.stringify([a.left, a.x]), JSON.stringify([b.left, b.x]));
+      r.check('no pause text under 11px at Chromebook size', '', await smallText(pg, '#dm-pause'));
+      await pg.focus('#dm-volf'); for (let i = 0; i < 4; i++) await pg.keyboard.press('ArrowLeft'); await sleep(100);
+      const v = await pg.evaluate(() => [Math.round(__G.rk.vol('fx') * 100), document.getElementById('dm-volfv').textContent]);
+      r.check('the Effects slider turns the volume down with the arrow keys, and shows it', true, v[0] < 100 && v[1] === v[0] + '%' ? true : JSON.stringify(v));
+      await r.shot(pg, 'pause');
+      await pg.evaluate(() => document.activeElement.blur()); await pg.keyboard.press('Shift+R'); await sleep(150);
+      r.check('Shift+R still asks about a new game on top of the pause box', false, await pg.evaluate(() => document.getElementById('dm-confirm').hidden));
+      await pg.keyboard.press('KeyN'); await sleep(150);
+      await pg.keyboard.press('KeyP'); await sleep(150);
+      r.check('P resumes', true, await pg.evaluate(() => document.getElementById('dm-pause').hidden));
+      await sleep(400); r.check('the clock runs again', true, (await pg.evaluate(() => __G.state().left)) < a.left);
+      await pg.keyboard.press('Escape'); await sleep(150); await pg.click('#dm-resume'); await sleep(150);
+      r.check('Esc pauses and the Resume button resumes', true, await pg.evaluate(() => document.getElementById('dm-pause').hidden && !__G.rk.busy()));
+      await pg.evaluate(() => __G.open('dock')); await sleep(300); await pg.keyboard.press('KeyP'); await sleep(150);
+      const c = await state(pg); await pg.keyboard.press('Digit' + (c.right + 1)); await sleep(150);
+      r.check('pausing over a question card blocks the answer keys', 0, (await state(pg)).answered);
+      await pg.keyboard.press('KeyP'); await sleep(350); await pg.keyboard.press('Digit' + (c.right + 1)); await sleep(150);
+      r.check('after resuming, the question takes its answer', 1, (await state(pg)).correct);
+      await pg.reload({ waitUntil: 'load' }); await pg.waitForFunction(() => window.__G && __G.state().started, null, { timeout: 8000 }).catch(() => {});
+      r.check('the volume is remembered after a reload', v[0], await pg.evaluate(() => Math.round(__G.rk.vol('fx') * 100)));
+      await pg.context().close();
+    } },
+
+    { name: 'sound and feel: chimes on answers, pops and banners capped, M mutes, reduce-motion keeps the screen still', async run(r) {
+      const pg = await r.page('chromebook'); await A.open(pg); await A.start(pg);
+      await pg.evaluate(() => { window.__rkSnd.length = 0; __G.open('dock'); }); await answer(pg, true); await goOn(pg); await answer(pg, false); await sleep(100);
+      const snd = await pg.evaluate(() => window.__rkSnd.slice());
+      r.check('opening a card, a right answer and a miss each ask for their own sound', true, ['open', 'right', 'wrong'].every(n => snd.includes(n)) ? true : snd.join(','));
+      await goOn(pg); if ((await state(pg)).open) { await answer(pg, true); await goOn(pg); } await clearPick(pg);
+      await pg.evaluate(() => { for (let i = 0; i < 40; i++) __G.rk.fx.pop(200 + i * 30, 400, '+100', 'good'); __G.rk.fx.banner('Wave 2', 'here they come'); __G.rk.fx.banner('Wave 2', 'here they come'); __G.rk.fx.banner('Boss!', ''); });
+      await sleep(250);
+      const f = await pg.evaluate(() => ({ pops: document.querySelectorAll('#dm-fx .rk-pop').length, banner: document.querySelector('#dm-banner b').textContent, shown: !document.getElementById('dm-banner').hidden }));
+      r.check('number pops are capped so a burst can not flood the screen', true, f.pops > 0 && f.pops <= 14 ? true : f.pops);
+      r.check('banners show one at a time, first one first', JSON.stringify([true, 'Wave 2']), JSON.stringify([f.shown, f.banner]));
+      r.check('no pop or banner text under 11px at Chromebook size', '', (await smallText(pg, '#dm-banner')) + (await smallText(pg, '#stage > .rk-fx')));
+      await r.shot(pg, 'feel');
+      await pg.evaluate(() => __G.rk.fx.shake(1)); await sleep(120);
+      r.check('a hit shakes the game picture', true, await pg.evaluate(() => (document.getElementById('dm-canvas').style.translate || '') !== ''));
+      await sleep(1600);
+      r.check('the shake dies away by itself', '', await pg.evaluate(() => document.getElementById('dm-canvas').style.translate || ''));
+      await pg.evaluate(() => __G.rk.fx.stop(5000)); r.check('a hit-stop is never longer than a fifth of a second', false, await (async () => { await sleep(260); return pg.evaluate(() => __G.rk.fx.frozen()); })());
+      await pg.keyboard.press('KeyM'); await sleep(100); const m1 = await pg.evaluate(() => __G.rk.muted());
+      await pg.keyboard.press('KeyM'); await sleep(100); const m2 = await pg.evaluate(() => __G.rk.muted());
+      r.check('M turns the sound off and on', JSON.stringify([true, false]), JSON.stringify([m1, m2]));
+      await pg.context().close();
+      const calm = await r.page('chromebook'); await calm.emulateMedia({ reducedMotion: 'reduce' }); await A.open(calm); await A.start(calm);
+      await calm.evaluate(() => { __G.rk.fx.shake(1); __G.rk.fx.stop(150); }); await sleep(120);
+      r.check('with reduce-motion on: no shake and no hit-stop', JSON.stringify(['', false]), JSON.stringify(await calm.evaluate(() => [document.getElementById('dm-canvas').style.translate || '', __G.rk.fx.frozen()])));
+      await calm.context().close();
+    } },
+
+    { name: 'run extras: streak multiplier, best today, idle nudge, topics on the end screen', async run(r) {
+      const pg = await r.page('chromebook'); await A.open(pg, 'slope'); await A.start(pg);
+      r.check('streak multiplier steps: 3 in a row ×1.5, 6 ×2, 10 ×3, and a miss is back to ×1', JSON.stringify([1, 1.5, 1.5, 2, 3, 1]), JSON.stringify(await pg.evaluate(() => [2, 3, 5, 6, 12, 0].map(n => __G.rk.mult(n)))));
+      await pg.evaluate(() => { __G.state().streak = 3; }); await sleep(200);
+      r.check('the HUD says what the streak is worth', true, /3 right = ×1\.5/.test(await pg.evaluate(() => document.querySelector('#dm-hud [data-id="streak"]').textContent)));
+      await pg.evaluate(() => { __G.gems().length = 0; }); await sleep(7200);
+      r.check('after 6 s with no key the nudge shows', false, await pg.evaluate(() => document.getElementById('dm-nudge').hidden));
+      r.check('no nudge text under 11px at Chromebook size', 0, await pg.evaluate(() => { const k = 1920 / document.getElementById('stage').getBoundingClientRect().width; return parseFloat(getComputedStyle(document.getElementById('dm-nudge')).fontSize) / k < 11 ? 1 : 0; }));
+      await pg.keyboard.press('ArrowLeft'); await sleep(150);
+      r.check('any key clears it', true, await pg.evaluate(() => document.getElementById('dm-nudge').hidden));
+      for (const p of ['RR', 'RWR']) await playCard(pg, p);
+      await pg.evaluate(() => { __G.state().score = 5000; __G.end(); }); await sleep(2800);
+      const e1 = await pg.evaluate(() => ({ goal: document.getElementById('dm-endgoal') ? document.getElementById('dm-endgoal').textContent : '', topics: document.getElementById('dm-endtopics') ? !document.getElementById('dm-endtopics').hidden : false, text: document.getElementById('dm-end').textContent }));
+      r.check('the end screen gives one thing to chase', true, e1.goal.length > 8 || /in a row|best/i.test(e1.text));
+      r.note('goal line: ' + e1.goal + ' | topics row shown: ' + e1.topics);
+      r.check('no end screen text under 11px with the extras on', '', await smallText(pg, '#dm-end'));
+      await r.shot(pg, 'end_extras');
+      r.check('best today is kept', 5000, await pg.evaluate(() => __G.rk.best.get()));
+      await pg.keyboard.press('Enter'); await sleep(300); await A.start(pg); await pg.evaluate(() => { __G.state().score = 4200; __G.end(); }); await sleep(600);
+      r.check('a lower run is told how far it fell short', true, /800 short of your best today/.test(await pg.evaluate(() => document.getElementById('dm-end').textContent)));
+      r.check('and the best stays', 5000, await pg.evaluate(() => __G.rk.best.get()));
+      await pg.evaluate(() => { const k = Object.keys(localStorage).find(x => /^dm_best/.test(x)); const v = JSON.parse(localStorage.getItem(k)); v.d = '2020-1-1'; localStorage.setItem(k, JSON.stringify(v)); });
+      r.check('yesterday\'s best does not carry over', 0, await pg.evaluate(() => __G.rk.best.get()));
+      await pg.context().close();
+    } },
+
+    /* the math rule on the stand-in game: six bots, whole 30 second runs, real keys */
+    ...mathRule({
+      open: pg => A.open(pg, 'mult', 'pixel', '&secs=30'),
+      start: pg => A.start(pg),
+      peek: pg => pg.evaluate(() => { const S = __G.state(), up = __G.card.isOpen() && !!S.q;
+        return { over: !!S.over, score: S.score, t: __G.cfg.secs - S.left,
+          card: { open: up, done: !!S.qDone, right: S.q ? S.q.choices.findIndex(c => c.ok) : -1, n: S.q ? S.q.choices.length : 0, id: S.answered - (S.qDone ? 1 : 0) }, correct: S.correct,
+          pick: __G.pick.isOpen() ? 2 : false }; }),   /* a player who earns a pick takes Double points */
+      /* normal play: go for the lowest gem, step aside from a rock about to land */
+      async drive(pg) {
+        const dir = await pg.evaluate(() => { const x = __G.ship().x, rock = __G.rocks().find(r => r.y > 300 && r.y < 500 && Math.abs(r.x - x) < 60);
+          if (rock) return rock.x >= x ? (x > 80 ? -1 : 1) : (x < 880 ? 1 : -1);
+          const g = __G.gems().filter(g => g.y < 470).sort((a, b) => b.y - a.y)[0]; return !g || Math.abs(g.x - x) < 14 ? 0 : g.x > x ? 1 : -1; });
+        if (dir !== pg.__dir) { if (pg.__dir) await pg.keyboard.up(pg.__dir > 0 ? 'ArrowRight' : 'ArrowLeft'); if (dir) await pg.keyboard.down(dir > 0 ? 'ArrowRight' : 'ArrowLeft'); pg.__dir = dir; }
+        await sleep(70);
+      },
+      async release(pg) { if (pg.__dir) await pg.keyboard.up(pg.__dir > 0 ? 'ArrowRight' : 'ArrowLeft'); pg.__dir = 0; },
+      moments: { min: 2, max: 9, gap: 2 }, cap: 150, idleSecs: 45,
+    }),
   ],
 };
+/* while building: QA_ONLY=pause node tools/qa/run.js remake_kit runs only the scenarios with that word in the name */
+if (process.env.QA_ONLY) A.scenarios = A.scenarios.filter(s => s.name.includes(process.env.QA_ONLY));
 module.exports = A;
