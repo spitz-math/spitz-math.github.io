@@ -338,6 +338,27 @@ TITLE_ARROWS = r'''<script>
   if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',run); else run(); })();
 </script>
 </body>'''
+
+# ---- v16 (overnight check 2026-11-26): pop line, pause, game-time clock, stale feedback, no header, small fixes
+t = swap(t, "/* ================= START / END", parts['V16'] + "\n/* ================= START / END")
+for old, new in [
+  ("var fb=$('jm-fb'); if(!S.answered){ fb.className='jm-fb';", "var fb=$('jm-fb'); if(!S.qDone){ fb.className='jm-fb';"),
+  ('<div class="sz-eyebrow">Spitz <b>Arcade</b></div><div class="jmr-hero"', '<div class="sz-eyebrow" aria-hidden="true" style="display:none"></div><div class="jmr-hero"'),
+  ('<div class="jm-over" id="jm-end" hidden><div class="jm-box"><div class="sz-eyebrow">Spitz <b>Arcade</b></div>', '<div class="jm-over" id="jm-end" hidden><div class="jm-box"><div class="sz-eyebrow" aria-hidden="true" style="display:none"></div>'),
+  ("pop(P.x,P.h+160,'FOG!',", "pop(P.x,P.h+160,'FOG HIT!',"),
+  ("[['l','◀'],['r','▶'],['j','▲']].concat(S.mv&&S.mv.dash?[['d','»']]:[]).forEach", "(touchUI()?[['l','◀'],['r','▶'],['j','▲']].concat(S.mv&&S.mv.dash?[['d','»']]:[]):[]).forEach"),
+  ("function hitBtn(e){ var p=canvasPt(e), out=null;", "function hitBtn(e){ if(!touchUI()) return null; var p=canvasPt(e), out=null;"),
+]:
+    t = swap(t, old, new)
+# ---- v16: the game is now called Super Jump Man (Kody 2026-11-26)
+for old, new in [
+  ("if(S.started) askNew(true); return; }", "if(S.over){ var ag=$('jm-again'); if(ag&&!ag.disabled) ag.click(); } else if(S.started) askNew(true); return; }"),
+  ('<title>Spitz Arcade - Jump Man</title>', '<title>Spitz Arcade - Super Jump Man</title>'),
+  ('<h1 class="jm-logo"><b>JUMP</b> <i>MAN</i></h1>', '<h1 class="jm-logo"><small class="jm-super">SUPER</small><b>JUMP</b> <i>MAN</i></h1>'),
+  ('<h2 class="jm-big"><b>JUMP</b> <i>MAN</i></h2>', '<h2 class="jm-big"><small class="jm-super">SUPER</small><b>JUMP</b> <i>MAN</i></h2>'),
+  ('</head>', '<style>.jm-super{ display:block; font-size:.42em; line-height:1; color:#FFC93C; letter-spacing:.06em; margin:0 0 .12em; }</style>\n</head>'),
+]:
+    t = swap(t, old, new)
 t = swap(t, '</body>', TITLE_ARROWS)
 for gone in ['S.energy+=', "U('energy')"]:
     assert gone not in t, gone

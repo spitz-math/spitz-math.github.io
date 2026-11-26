@@ -384,7 +384,7 @@ function sideHud(force){ var t=now(); if(!force&&t-sideT<100) return; sideT=t;
   var R=TX+TW+44;
   otext(c,'Height',R,190,'500 36px '+WF,'#A9C2EE'); otext(c,Math.floor(Math.max(0,P.h)/20)+' m',R,272,'400 88px '+NF,'#FFFFFF');
   heartPx(-99,-99,true); heartPx(-99,-99,false); for(var k=0;k<HEART_MAX;k++) c.drawImage(HEARTS[k<S.hearts?'on':'off'],R+k*92,320,77,70);
-  if(fogOn()){ var held=S.calm>0; otext(c,held?'Fog held '+Math.ceil(S.calm)+' s':'Fog '+gap+' m below',R,450,'800 28px Inter, sans-serif',held?'#7CF0FF':gap<17?'#FF8FA3':'#D6C8F0',null,7); }
+  if(fogOn()){ var held=S.calm>0; otext(c,held?'Safe from fog '+Math.ceil(S.calm)+' s':'Fog '+gap+' m below',R,450,'800 28px Inter, sans-serif',held?'#7CF0FF':gap<17?'#FF8FA3':'#D6C8F0',null,7); }
   else otext(c,'Fog starts soon',R,450,'800 28px Inter, sans-serif','#D6C8F0',null,7);
   var rush=!!S.rush, n=rush?rushLeft:wayLeft, tot=rush?(S.rush.n?SUMMIT_NEXT:SUMMIT_UP):(S.nextWay>WAY_FIRST?WAY_EVERY:WAY_FIRST), lv=Math.max(0,Math.min(1,1-n/tot)), col=rush?'#FFC23D':'#7CF0FF';
   otext(c,rush?'Summit':'Next Waystone',R,540,'500 32px '+WF,col); otext(c,n+(n===1?' ledge':' ledges'),R,588,'800 30px Inter, sans-serif','#FFFFFF',null,7);
@@ -430,7 +430,7 @@ function stretchGen(p,prev,r){ var st=stretchAt(p.i); if(!st||p.floor||p.tall) r
 function stretchStep(){ var st=stretchAt(P.lastI||0); if(st&&S.stretch!==st.s&&!S.rush){ S.stretch=st.s; banner={t0:now(),txt:st.def.txt,sub:st.def.sub,kind:'stretch'}; } }
 /* nobody moving for 6 s gets a nudge; the next ledge is marked for the first few jumps */
 function idleStep(dt){ if(keys.l||keys.r||keys.j||ptrDir()||!P.on) S.idleT=0; else S.idleT=(S.idleT||0)+dt; }
-function drawNudge(){ if(!S.started||S.over||S.way||S.offer) return; var bob=RM()?0:Math.round(Math.sin(gt*5)*5);
+function drawNudge(){ if(!S.started||S.over||S.way||S.offer||banner) return; var bob=RM()?0:Math.round(Math.sin(gt*5)*5);
   if((S.jumps||0)<3){ var p=plats[(P.lastI||0)+1]; if(p){ var x=Math.round(p.floor?P.x:cxAt(p,gt)), y=Math.round(sy(p.h))-70+bob;
       cx.fillStyle='#1B1328'; cx.fillRect(x-20,y-26,40,20); cx.fillRect(x-28,y-8,56,8); cx.fillRect(x-20,y,40,8); cx.fillRect(x-12,y+8,24,8); cx.fillRect(x-4,y+16,8,6);
       cx.fillStyle='#FFC23D'; cx.fillRect(x-14,y-22,28,16); cx.fillRect(x-22,y-6,44,6); cx.fillRect(x-14,y,28,6); cx.fillRect(x-6,y+6,12,8); } }
@@ -466,7 +466,7 @@ function sideHud(force){ var t=now(); if(!force&&t-sideT<100) return; sideT=t;
     if(S.started){
       otext(c,'Time',L,190,lab,'#A9C2EE'); otext(c,clock,L,272,'400 88px '+NF,secs<=30?'#FF8FA3':'#FFFFFF');
       heartPx(-99,-99,true); heartPx(-99,-99,false); for(var k=0;k<HEART_MAX;k++) c.drawImage(HEARTS[k<S.hearts?'on':'off'],L+k*92,316,77,70);
-      if(fogOn()){ var held=S.calm>0; otext(c,held?'Fog held '+Math.ceil(S.calm)+' s':'Fog '+gap+' m below',L,444,'800 28px Inter, sans-serif',held?'#7CF0FF':gap<17?'#FF8FA3':'#D6C8F0',null,7); }
+      if(fogOn()){ var held=S.calm>0; otext(c,held?'Safe from fog '+Math.ceil(S.calm)+' s':'Fog '+gap+' m below',L,444,'800 28px Inter, sans-serif',held?'#7CF0FF':gap<17?'#FF8FA3':'#D6C8F0',null,7); }
       else otext(c,'Fog starts soon',L,444,'800 28px Inter, sans-serif','#D6C8F0',null,7);
       var nx=tb>=3?0:[5,10,15][tb];
       otext(c,tb?'Turbo '+tb+'!':'Turbo',L,540,lab,tb?['','#FFC93C','#FF8A1F','#FF6BD6'][tb]:'#A9C2EE');
@@ -490,3 +490,28 @@ function sideHud(force){ var t=now(); if(!force&&t-sideT<100) return; sideT=t;
   if(CB.on&&live){ var w=comboWord(Math.max(4,CB.floors)), lvl=Math.max(0,CB.t/U('combo'));
     otext(c,'Combo',R,940,lab,'#A9C2EE'); otext(c,''+CB.floors,R,1004,'400 64px '+NF,CB.jumps>=2&&CB.floors>=4?w[2]:'#FFFFFF'); otext(c,CB.floors===1?'floor':'floors',R+12+c.measureText(''+CB.floors).width,1004,'800 28px Inter, sans-serif','#FFFFFF',null,7);
     c.fillStyle=INK; c.fillRect(R-6,1020,264,32); c.fillStyle='#242936'; c.fillRect(R,1026,252,20); c.fillStyle=lvl>0.3?'#FFC93C':'#FF7A7A'; c.fillRect(R,1026,Math.round(252*lvl),20); } }
+//@@ V16
+/* ================= v16 (overnight check 2026-11-26) =================
+   - pops wait in a line: none while a Waystone or New move! card is open, then one at a time, so words never stack
+   - P / Esc pause (between Waystones); the 5:00 clock runs on GAME time, so a hidden tab or a slow Chromebook never eats the clock
+   - on-screen touch buttons only show on a touch screen */
+var popQ=[], popNext=0, paused=false, touchSeen=false;
+function pop(x,h,txt,lab,col,big){ popQ.push({dh:h-P.h,txt:txt,lab:lab||'',col:col||'#fff',big:!!big}); if(popQ.length>4) popQ.splice(popQ.findIndex(function(o){ return !o.big; })>=0?popQ.findIndex(function(o){ return !o.big; }):0,1); }
+function popStep(){ var t=now(); if(!popQ.length||S.way||S.offer||t<popNext) return; var o=popQ.shift();
+  pops.push({x:P.x,h:P.h+Math.max(120,Math.min(200,o.dh)),t0:t,txt:o.txt,lab:o.lab,col:o.col,big:o.big}); popNext=t+(o.big?1300:850); }
+function touchUI(){ try{ return touchSeen||(matchMedia('(pointer: coarse)').matches&&!matchMedia('(any-pointer: fine)').matches); }catch(e){ return touchSeen; } }
+cv.addEventListener('pointerdown',function(e){ if(e.pointerType==='touch'||e.pointerType==='pen') touchSeen=true; },true);
+function canPause(){ return S.started&&!S.over&&!S.way&&!S.offer; }
+function setPause(on){ if(on&&!canPause()) return; if(paused===on) return; paused=on; keys.l=keys.r=keys.j=false; ptr={}; }
+addEventListener('keydown',function(e){ if(e.metaKey||e.ctrlKey||e.altKey) return; if(e.target&&e.target.tagName==='INPUT') return; if(document.querySelector('#sz-ask:not([hidden])')) return;
+  var k=e.key.toLowerCase(); if(k==='p'||k==='escape'){ if(paused){ setPause(false); e.preventDefault(); e.stopImmediatePropagation(); } else if(canPause()){ setPause(true); e.preventDefault(); e.stopImmediatePropagation(); } return; }
+  if(paused&&k!=='f'&&k!=='n'&&k!=='m'){ setPause(false); e.preventDefault(); e.stopImmediatePropagation(); } },true);
+document.addEventListener('visibilitychange',function(){ if(document.hidden) setPause(true); });
+cv.addEventListener('pointerdown',function(e){ if(paused){ setPause(false); e.stopImmediatePropagation(); e.preventDefault(); } },true);
+function drawPause(){ cx.save(); cx.fillStyle='rgba(8,9,20,.66)'; cx.fillRect(0,0,W,H); var y=H*0.62; panel(W/2-330,y-92,660,170); cx.textAlign='center'; cx.lineJoin='round';
+  cx.font='400 76px '+DF; cx.lineWidth=10; cx.strokeStyle='#000'; cx.strokeText('Paused',W/2,y-10); cx.fillStyle='#FFFFFF'; cx.fillText('Paused',W/2,y-10);
+  cx.font='800 30px Inter, sans-serif'; cx.lineWidth=7; cx.strokeText('Press P or any key to keep climbing',W/2,y+50); cx.fillStyle='#7CF0FF'; cx.fillText('Press P or any key to keep climbing',W/2,y+50); cx.restore(); }
+function loop(){ var t=now(), raw=(t-lastF)/1000, dt=Math.min(0.033,raw); lastF=t;
+  if(S.started&&!S.over&&raw>0){ var lost=paused?raw:Math.max(0,raw-dt); if(lost>0){ S.endAt+=lost*1000; } }   /* the clock only counts time the game really played */
+  if(!paused){ update(dt); popStep(); } render(); if(paused) drawPause(); requestAnimationFrame(loop); }
+window.__G16={ pops:function(){ return pops; }, popQ:function(){ return popQ; }, paused:function(){ return paused; }, touchUI:touchUI, pop:pop, gt:function(){ return gt; } };

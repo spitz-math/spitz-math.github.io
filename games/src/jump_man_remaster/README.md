@@ -82,3 +82,6 @@ Tests: tests/v12.js and tests/v4.js updated for v13.
 ## Hub card (Super Jump Man)
 - Approved on spitz.dev 2026-11-26: card abb2f21c (400x220, sha 37f85f88...) and painting 1b1a27e6 (1536x1024, sha cfb6f160...), Task Drop 20eff60a.
 - art/hubcard_abb2f21c.b64 = exact approved PNG bytes; art/jump_man_multiplication.webp = lossless copy (same pixels). At go-live copy the webp to games/cards/ and add jump_man_multiplication to SHOTS in catalog.js (shared file: ChatGPT review), rename to Super Jump Man.
+
+## v16 (overnight check fixes, 2026-11-26)
+- Pop line (no pops over cards, one at a time), stale feedback fixed, no header, renamed Super Jump Man, P/Esc pause + hidden-tab pause, clock on game time, touch buttons only on touch. tests/v16.js.
