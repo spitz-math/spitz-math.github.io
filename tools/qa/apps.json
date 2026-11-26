@@ -234,6 +234,16 @@
         "games/cards/star_swarm.webp",
         "tools/qa/adapters/star_swarm.js"
       ]
+    },
+    {
+      "id": "remake_kit",
+      "name": "Remake kit (demo)",
+      "tier": 2,
+      "adapter": "adapters/remake_kit.js",
+      "paths": [
+        "games/new/remake_kit/",
+        "tools/qa/adapters/remake_kit.js"
+      ]
     }
   ]
 }

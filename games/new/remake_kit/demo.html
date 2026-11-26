@@ -1,0 +1,142 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Spitz Arcade - Remake Kit demo</title>
+<!-- A demo of games/new/remake_kit/remake_kit.js, not a game on the hub. Gem Run is a 60-line stand-in game so the four kit pieces
+     (title screen, HUD, question card, end screen) can be seen and tested together. Try ?set=slope and ?look=cartoon or ?look=dungeon. -->
+<link href="../../../fonts/bungee-pressstart2p-nunito-5675ec.css" rel="stylesheet">
+<link href="../../../fonts/bangers-inter-0413fc.css" rel="stylesheet">
+<link href="../../../fonts/pixelifysans-inter-b2a9b6.css" rel="stylesheet">
+<link href="spitz_digits.css" rel="stylesheet">
+<style>
+:root{ --sz-mark:#3DE0FF; --sz-ink:#A9C2EE; --panel:#0B1430; --border:#3DE0FF; --text:#fff; --muted:#A9C2EE; }
+*{ box-sizing:border-box; }
+html,body{ margin:0; height:100%; background:#03050C; overflow:hidden; }
+body{ color:#fff; font-family:Inter,system-ui,sans-serif; -webkit-user-select:none; user-select:none; }
+button{ font:inherit; color:inherit; }
+button:focus-visible,a:focus-visible{ outline:4px solid var(--rk-accent); outline-offset:3px; }
+[hidden]{ display:none !important; }
+#stage{ position:absolute; left:0; top:0; width:1920px; height:1080px; transform-origin:0 0; overflow:hidden; background:#070B1C; }
+#dm-canvas{ position:absolute; left:0; top:0; width:1920px; height:1080px; image-rendering:pixelated; }
+#dm-confetti{ position:absolute; left:0; top:0; width:1920px; height:1080px; z-index:18; pointer-events:none; }
+.dm-toast{ position:absolute; left:50%; top:150px; transform:translateX(-50%); z-index:30; padding:16px 30px; border-radius:4px; background:#fff; color:#0E1016; font:800 30px/1 Inter,sans-serif; }
+.dm-looks{ position:absolute; left:36px; bottom:28px; z-index:16; display:flex; gap:18px; align-items:center; font:800 24px/1 Inter,sans-serif; color:var(--rk-muted); }
+.dm-looks a{ color:var(--rk-text); padding:8px 12px; border:3px solid var(--rk-muted); border-radius:var(--rk-radius); text-decoration:none; background:var(--rk-win); }
+.dm-looks a.on{ border-color:var(--rk-accent); }
+
+/* ---- a game's own look = a handful of variables. Look 1 (pixel space) is the kit's default. ---- */
+:root[data-look="cartoon"]{ --sz-ink:#2B1A12; --sz-mark:#E2452B; --rk-ink:#2B1A12; --rk-text:#2B1A12; --rk-muted:#7A5B48; --rk-accent:#E2452B; --rk-good:#2E9E4F; --rk-bad:#D5382A; --rk-gold:#B8860B;
+  --rk-win:#FFF4DC; --rk-frame:#2B1A12; --rk-tile:#FFFFFF; --rk-tile-text:#2B1A12; --rk-go:#FFC82E; --rk-go-text:#2B1A12; --rk-dim:rgba(60,40,20,.45); --rk-over:#8FD8C8;
+  --rk-radius:14px; --rk-word:"Bangers","Inter",sans-serif; --rk-num:"Bangers","Inter",sans-serif; --rk-word-scale:1.55;
+  --rk-key-face:#FFFFFF; --rk-key-text:#2B1A12; --rk-key-rim:#2B1A12; --rk-key-low:#C9B79A; --rk-heart:#E2452B; --rk-heart-off:#C9B79A;
+  --rk-ol:-3px 0 #FFF4DC,3px 0 #FFF4DC,0 -3px #FFF4DC,0 3px #FFF4DC,-3px -3px #FFF4DC,3px 3px #FFF4DC,-3px 3px #FFF4DC,3px -3px #FFF4DC;
+  --c-m:#B26B00; --c-pt:#8A6D00; --c-b:#C2247F; --c-x:#0B8474; --c-ans:#7A3FC4; }
+:root[data-look="dungeon"]{ --sz-ink:#B9A6CF; --sz-mark:#FFC23D; --rk-ink:#120B1C; --rk-text:#F4ECD8; --rk-muted:#B9A6CF; --rk-accent:#FFC23D; --rk-good:#7CE38B; --rk-bad:#FF8FA3; --rk-gold:#FFC23D;
+  --rk-win:#241634; --rk-frame:#C9A227; --rk-tile:#3A2552; --rk-go:#FFC23D; --rk-go-text:#241634; --rk-over:rgba(18,11,28,.93);
+  --rk-radius:8px; --rk-word:"Pixelify Sans","Inter",sans-serif; --rk-word-scale:1.5;
+  --rk-key-face:linear-gradient(#4A2F68,#2E1C44); --rk-key-text:#F4ECD8; --rk-key-rim:#C9A227; --rk-key-low:#6E5512; --rk-heart:#E0405E; }
+</style>
+<script src="../../kit.js"></script>
+<script src="../../questions.js"></script>
+<script src="../../scorecode.js"></script>
+<script src="remake_kit.js"></script>
+</head>
+<body>
+<div id="stage">
+  <canvas id="dm-canvas" width="960" height="540" aria-label="Gem Run. Arrow keys or A and D move the ship. Catch gems, dodge rocks."></canvas>
+  <canvas id="dm-confetti" width="960" height="540" aria-hidden="true"></canvas>
+  <div class="dm-toast" id="dm-toast" hidden></div>
+  <div class="dm-looks" id="dm-looks">Look: <a href="?look=pixel" data-l="pixel">Pixel</a><a href="?look=cartoon" data-l="cartoon">Cartoon</a><a href="?look=dungeon" data-l="dungeon">Dungeon</a></div>
+</div>
+<script>
+(function(){
+'use strict';
+function $(id){ return document.getElementById(id); }
+var prm={}; location.search.replace(/^\?/,'').split('&').forEach(function(kv){ var a=kv.split('='); if(a[0]) prm[a[0]]=decodeURIComponent(a[1]||''); });
+var LOOK=/^(cartoon|dungeon)$/.test(prm.look)?prm.look:'pixel'; document.documentElement.setAttribute('data-look',LOOK);
+[].forEach.call($('dm-looks').querySelectorAll('a'),function(a){ a.classList.toggle('on',a.dataset.l===LOOK); a.href='?look='+a.dataset.l+(prm.set?'&set='+prm.set:''); });
+var PAL={ pixel:{sky:'#070B1C',star:'#9DB4D2',ship:'#3DE0FF',gem:'#A6FF4D',rock:'#8A7A9A',ink:'#05070F'},
+          cartoon:{sky:'#8FD8C8',star:'#FFFFFF',ship:'#E2452B',gem:'#FFC82E',rock:'#7A5B48',ink:'#2B1A12'},
+          dungeon:{sky:'#1A1026',star:'#4A2F68',ship:'#FFC23D',gem:'#7CE38B',rock:'#8C7BA3',ink:'#120B1C'} }[LOOK];
+
+/* questions: the set the link picked, or plain multiplication when the page is opened bare */
+var QS=window.SpitzQ?SpitzQ.forGame('dm'):null, KEY='remake_kit_demo_v1'+(QS?QS.suffix:'');
+function nextQuestion(){ if(QS) return QS.next();
+  var a=2+Math.floor(Math.random()*8), b=2+Math.floor(Math.random()*8), v=[a*b,a*b+a,a*b-b,(a+1)*(b+1)].sort(function(){ return Math.random()-0.5; });
+  return { topic:'Multiplication', type:'mult', prompt:a+' × '+b+' = ?', explain:a+' × '+b+' = '+(a*b), choices:v.map(function(n){ return { html:String(n), ok:n===a*b, why:'' }; }) }; }
+
+var RES=[];   /* what each finished card reported (the tests read this) */
+var CFG={ hearts:3, every:6, secs:150, boostSecs:20 };
+var S=null, W=960, H=540, ship={x:480}, gems=[], rocks=[], keys={}, gt=0, last=0, spawnG=0, spawnR=0;
+function fresh(name){ return { ver:1, name:name||'', started:false, over:false, score:0, hearts:CFG.hearts, left:CFG.secs, gems:0, sinceDock:0, boost:0, docks:0, revived:0,
+  answered:0, correct:0, streak:0, best:0, topics:QS?QS.topicTable():{}, q:null, qDone:false, picked:-1, card:null }; }
+function save(){ try{ localStorage.setItem(KEY,JSON.stringify(S)); }catch(e){} }
+function load(){ try{ var v=JSON.parse(localStorage.getItem(KEY)||'null'); if(v&&v.ver===1&&v.started&&!v.over) return v; }catch(e){} return null; }
+
+var RK=SpitzRemake.make({ pre:'dm', S:function(){ return S; }, save:save, next:nextQuestion, hub:'../../../arcade/' });
+var KIT=SpitzKit.game({ ac:function(){ return null; }, muted:function(){ return true; }, voice:function(){}, confetti:'dm-confetti', toast:'dm-toast' });
+var NAME='Gem <b>Run</b>';
+
+var title=RK.title({ name:NAME, tagline:'Catch gems and dodge the rocks. Answer well at each dock for hearts and double points.',
+  controls:'ARROWS/WASD=Move | X/K=Dash | 1234=Answer', onStart:function(name){ S=fresh(name); S.started=true; gems=[]; rocks=[]; ship.x=480; save(); play(true); } });
+$('sz-mus').addEventListener('click',function(){ KIT.musicToggle(); }); KIT.musBtn();
+
+var hud=RK.hud({ left:[ {id:'hearts',type:'hearts',max:CFG.hearts}, {id:'time',type:'num',label:'Time'} ],
+                 right:[ {id:'score',type:'num',label:'Score',size:'big'}, {id:'dock',type:'bar',label:'Next dock',text:true} ] });
+
+var card=RK.card({ fast:!!(QS&&QS.set==='mult')||!QS, kinds:{
+  dock:{ title:'Dock', safe:'You are safe here.', rewards:['No reward this time.','a heart back','a heart back and double points for '+CFG.boostSecs+' seconds'],
+    done:function(r){ RES.push(r); S.docks++; S.sinceDock=0; if(r.right>=1) S.hearts=Math.min(CFG.hearts,S.hearts+1); if(r.right>=2){ S.boost=CFG.boostSecs; KIT.toast('Double points!'); } rocks=[]; } },
+  revive:{ title:'Last chance', safe:'One rescue per run.', need:1, spare:0, rewards:['The run ends here.','one heart: back in the run'],
+    done:function(r){ RES.push(r); if(r.right){ S.hearts=1; S.revived=1; rocks=[]; } else endRun(); } } } });
+
+var end=RK.end({ name:NAME, onAgain:function(){ S=fresh(S.name); save(); hud.show(false); $('dm-looks').hidden=false; title.show(); } });
+RK.ask({ when:function(){ return S&&S.started&&!S.over; }, onYes:function(){ S=fresh(S.name); save(); hud.show(false); card.close(); $('dm-looks').hidden=false; title.show(); } });
+
+function play(fromStart){ title.hide(); end.hide(); $('dm-looks').hidden=true; hud.show(true); last=0; if(!fromStart) card.resume(); }
+function endRun(){ if(S.over) return; S.over=true; S.card=null; save(); hud.show(false); card.close();
+  var pct=S.answered?Math.round(100*S.correct/S.answered):0;
+  end.show({ score:S.score, headline:S.left<=0?'You made it to the end!':'The rocks got you.',
+    goal:S.best<3?'Next run: get 3 right in a row.':'Best streak '+S.best+'. Can you beat '+S.score.toLocaleString('en-US')+'?',
+    stats:[ ['Correct',S.correct+' / '+S.answered], ['Best streak',S.best], ['Gems',S.gems] ], code:'DEMO-CODE-HERE' });
+  if(S.left<=0) KIT.confetti(960,300,90,2.6); }
+
+addEventListener('keydown',function(e){ if(e.target&&e.target.tagName==='INPUT') return; keys[e.key.toLowerCase()]=true; if(/^Arrow| $/.test(e.key)) e.preventDefault(); });
+addEventListener('keyup',function(e){ keys[e.key.toLowerCase()]=false; });
+addEventListener('blur',function(){ keys={}; });
+
+function step(dt){ if(!S||!S.started||S.over||card.isOpen()||!$('dm-confirm').hidden) return;
+  gt+=dt; S.left-=dt; if(S.boost>0) S.boost=Math.max(0,S.boost-dt);
+  var dx=(keys.arrowright||keys.d?1:0)-(keys.arrowleft||keys.a?1:0); ship.x=Math.max(30,Math.min(W-30,ship.x+dx*((keys.x||keys.k)?620:340)*dt));
+  if((spawnG-=dt)<=0){ spawnG=0.7; gems.push({x:40+Math.random()*(W-80),y:-20}); }
+  if((spawnR-=dt)<=0){ spawnR=Math.max(0.45,1.3-(CFG.secs-S.left)/150); rocks.push({x:40+Math.random()*(W-80),y:-30,v:150+Math.random()*120}); }
+  gems=gems.filter(function(g){ g.y+=170*dt; if(Math.abs(g.x-ship.x)<34&&Math.abs(g.y-470)<28){ S.gems++; S.sinceDock++; S.score+=S.boost>0?200:100; return false; } return g.y<H+30; });
+  rocks=rocks.filter(function(r){ r.y+=r.v*dt; if(Math.abs(r.x-ship.x)<32&&Math.abs(r.y-470)<28){ S.hearts--; return false; } return r.y<H+40; });
+  if(S.hearts<=0){ if(!S.revived){ save(); card.open('revive'); } else endRun(); return; }
+  if(S.left<=0){ endRun(); return; }
+  if(S.sinceDock>=CFG.every){ save(); card.open('dock'); } }
+function clock(s){ s=Math.max(0,Math.ceil(s)); return Math.floor(s/60)+':'+('0'+(s%60)).slice(-2); }
+function draw(){ var c=$('dm-canvas').getContext('2d'); c.fillStyle=PAL.sky; c.fillRect(0,0,W,H);
+  c.fillStyle=PAL.star; for(var i=0;i<40;i++){ var sx=(i*197)%W, sy=((i*113)+gt*30*(1+i%3))%H; c.fillRect(sx,sy,3,3); }
+  if(!S||!S.started) return;
+  gems.forEach(function(g){ c.fillStyle=PAL.ink; c.fillRect(g.x-13,g.y-13,26,26); c.fillStyle=PAL.gem; c.fillRect(g.x-9,g.y-9,18,18); });
+  rocks.forEach(function(r){ c.fillStyle=PAL.ink; c.fillRect(r.x-20,r.y-20,40,40); c.fillStyle=PAL.rock; c.fillRect(r.x-16,r.y-16,32,32); });
+  c.fillStyle=PAL.ink; c.fillRect(ship.x-26,452,52,40); c.fillRect(ship.x-10,436,20,20); c.fillStyle=PAL.ship; c.fillRect(ship.x-22,456,44,32); c.fillRect(ship.x-6,440,12,16);
+  hud.set({ hearts:S.hearts, time:clock(S.left), score:S.score, dock:{ f:S.sinceDock/CFG.every, text:S.boost>0?'×2 points '+Math.ceil(S.boost)+' s':(CFG.every-S.sinceDock)+' gems to go' } });
+  hud.flag('time','warn',S.left<=20); hud.flag('dock','hot',S.boost>0); }
+function loop(ts){ var dt=last?Math.min(0.05,(ts-last)/1000):0; last=ts; step(dt); draw(); requestAnimationFrame(loop); }
+
+/* a reload mid-run lands back in the run, on the same question if a card was open */
+var saved=load(); if(saved){ S=saved; play(false); } else S=fresh('');
+requestAnimationFrame(loop);
+
+/* test hooks, the shape the Gameplay checks read */
+window.__G={ state:function(){ return S; }, results:RES, card:card, hud:hud, cfg:CFG, open:function(k){ return card.open(k||'dock'); }, end:endRun, step:step, ship:function(){ return ship; },
+  showQ:function(){ return card.open('dock'); } };
+})();
+</script>
+</body>
+</html>
