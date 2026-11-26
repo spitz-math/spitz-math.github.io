@@ -360,6 +360,98 @@ for old, new in [
 ]:
     t = swap(t, old, new)
 t = swap(t, '</body>', TITLE_ARROWS)
+# ---- v17: painted zone skies (art/skies/skies.js, made by make_skies.py from the approved Task Drop PNGs)
+t = swap(t, "/* ================= START / END", parts['V17'] + "\n/* ================= START / END")
+t = swap(t, '<script src="scorecode.js"></script>', '<script>\n' + read(os.path.join(HERE, 'art', 'skies', 'skies.js')) + '</script>\n<script src="scorecode.js"></script>')
+# ---- v18: start screen art (Kody approved e5f2b258) + hub-matched logo 18043edd (art/make_title.py)
+TBG = read(os.path.join(HERE, 'art', 'title_bg.webp.b64')).strip(); TLOGO = read(os.path.join(HERE, 'art', 'title_logo.png.b64')).strip()
+t = swap(t, '<h2 class="jm-big"><small class="jm-super">SUPER</small><b>JUMP</b> <i>MAN</i></h2>',
+         '<h2 class="jm-big jm-logoimg"><img src="data:image/png;base64,' + TLOGO + '" alt="Super Jump Man" width="218" height="165"></h2>')
+t = swap(t, '</head>', '<style>#jm-start{ background:linear-gradient(rgba(10,14,40,.18),rgba(10,14,40,.18)),url(data:image/webp;base64,' + TBG + ') center/cover no-repeat; }\n'
+         '#jm-start .jmr-hero{ display:none; } .jm-logoimg{ margin:0 0 4px; line-height:0; } .jm-logoimg img{ display:block; margin:0 auto; height:250px; width:auto; filter:drop-shadow(0 4px 0 rgba(8,10,30,.35)); }</style>\n</head>')
+# ---- v19 (Kody 2026-11-26): start screen like the finished games (logo, then one framed card) + arcade-cabinet side panels
+t = swap(t, "/* ================= START / END", parts['V19'] + "\n/* ================= START / END")
+a = t.index('<p class="jm-sub"><span class="sz-setname">'); b = t.index('</div>\n  </div><span class="jm-credit', a)
+assert t.count('<p class="jm-sub"><span class="sz-setname">') == 1 and b - a < 3000
+t = t[:a] + '''<div class="jmr-card">
+    <p class="jm-sub jmr-set"><span class="sz-setname">Multiplication facts, 0 to 12.</span></p>
+    <div class="jmr-cols">
+      <div class="jmr-c1"><b>Climb</b>Run fast to jump higher. Stay above the fog.</div>
+      <div class="jmr-c2"><b>Waystones</b>Answer 2 right to learn a new move.</div>
+      <div class="jmr-c3"><b>Summit</b>In the last minute, race to the golden lanterns!</div>
+    </div>
+    <label class="jmr-lab" for="jm-nameinput">Your name</label>
+    <div class="jm-row"><input class="jm-input" id="jm-nameinput" maxlength="24" placeholder="First name + last initial" autocomplete="off"><button class="sz-mus" id="sz-mus" aria-label="Music on or off, key N">♪ Music on</button></div>
+    <button class="jm-go" id="jm-go" disabled>Start</button>
+    <p class="jmr-gohint" id="jmr-gohint">Type your name to unlock Start.</p>
+    <div class="jm-keys"><div class="sz-ctl" data-ctl="LR/AD=Run | Space=Jump | X/K=Dash | 1234=Answer"></div></div>
+    <details class="jmr-allkeys"><summary>All controls</summary><div class="jmr-kg">
+      <span><b>Wall kick</b> jump at a wall</span><span><b>Double jump</b> jump in the air</span><span><b>Glide</b> hold up</span><span><b>Air dash</b> X or K</span>
+    </div></details>
+  </div>''' + t[b + len('</div>'):]
+t = swap(t, '<h1 class="jm-logo"><small class="jm-super">SUPER</small><b>JUMP</b> <i>MAN</i></h1>', '<h1 class="jm-logo jmr-mlogo"><img alt="Super Jump Man" width="436" height="330"></h1>')
+t = swap(t, '</head>', '''<style>
+/* v19 start screen: big logo, then one framed card (like Rook & Ruin) */
+#jm-start .jm-box{ width:1200px !important; }
+.jm-logoimg img{ height:300px !important; }
+.jmr-card{ background:#16264A; border:6px solid #FFC23D; box-shadow:0 0 0 6px #0B0F1C, inset 0 0 0 4px #0B0F1C, inset 0 0 0 8px #C98A1E, 10px 12px 0 6px rgba(8,10,30,.55); padding:26px 40px 22px; }
+.jmr-set{ margin:0 0 18px !important; font:800 32px/1.2 var(--body) !important; color:#FFFFFF !important; }
+.jmr-cols{ display:grid; grid-template-columns:repeat(3,1fr); gap:14px; text-align:left; margin-bottom:22px; }
+.jmr-cols > div{ background:#0F1B38; border:4px solid #2C3F6E; padding:14px 18px; font:700 24px/1.3 var(--body); color:#C9D6F5; }
+.jmr-cols b{ display:block; font:500 34px/1.1 var(--display); margin-bottom:6px; }
+.jmr-c1 b{ color:#7CF0FF; } .jmr-c2 b{ color:#FFC23D; } .jmr-c3 b{ color:#FF8A00; }
+.jmr-lab{ display:block; font:800 24px/1 var(--body); color:#C9D6F5; margin:0 0 10px; }
+#jm-start .jm-row{ margin-bottom:16px; }
+#jm-start .jm-input{ border-radius:0; border:4px solid #3C5590; background:#0F1B38; height:76px; }
+#jm-start .jm-input:focus{ border-color:#FFC23D; }
+#jm-start .sz-mus{ border-radius:0; }
+#jm-start .jm-go{ border-radius:0; width:560px; height:88px; background:#FFC23D; color:#0B0F1C; box-shadow:0 0 0 6px #0B0F1C, 0 10px 0 6px #0B0F1C; font:500 46px/1 var(--display); }
+#jm-start .jm-go:disabled{ background:#2C3F6E; color:#8FA3CF; }
+.jmr-gohint{ margin:22px 0 4px; font:800 24px/1 var(--body); color:#FFC23D; }
+#jm-start .jm-keys{ margin-top:12px; }
+.jmr-allkeys{ margin-top:10px; font:700 22px/1.3 var(--body); color:#C9D6F5; }
+.jmr-allkeys summary{ cursor:pointer; list-style:none; font:800 22px/1 var(--body); color:#A9C2EE; } .jmr-allkeys summary::-webkit-details-marker{ display:none; }
+.jmr-allkeys summary::after{ content:' \\203A'; } .jmr-allkeys[open] summary::after{ content:' \\2039'; }
+.jmr-kg{ display:grid; grid-template-columns:repeat(2,auto); justify-content:center; gap:10px 26px; margin-top:14px; }
+.jmr-kg kbd{ display:inline-block; min-width:36px; padding:4px 8px; background:#E8EEFF; color:#0B0F1C; font:800 20px/1 var(--body); box-shadow:0 4px 0 #8A9BC4; margin-right:4px; }
+.jmr-kg b{ color:#FFFFFF; }
+/* v19 game screen: the logo sits in the left cabinet's lit marquee */
+.jm-brand{ left:40px !important; top:34px !important; width:284px; height:234px; align-items:center !important; justify-content:center; gap:6px !important; }
+.jmr-mlogo{ margin:0 !important; line-height:0; } .jmr-mlogo img{ display:block; height:166px; width:auto; filter:drop-shadow(0 4px 0 rgba(8,10,30,.6)); }
+.jm-brand .jm-credit{ font-size:16px; color:#C9D6F5; }
+</style>
+</head>''')
+# ---- v20 (Kody 2026-11-26: the stacked logo didn't sit well on the title; Made by Spitz looked wrong in the marquee)
+# start screen: the same approved lettering set on one line (art/make_logo_line.py); marquee: stacked logo, no credit
+TLINE = read(os.path.join(HERE, 'art', 'title_logo_line.png.b64')).strip()
+t = swap(t, '<h2 class="jm-big jm-logoimg"><img src="data:image/png;base64,' + TLOGO + '" alt="Super Jump Man" width="218" height="165"></h2>',
+         '<h2 class="jm-big jm-logoimg jmr-line"><img src="data:image/png;base64,' + TLINE + '" alt="Super Jump Man" width="1463" height="137"></h2>')
+t = swap(t, '<h1 class="jm-logo jmr-mlogo"><img alt="Super Jump Man" width="436" height="330"></h1>', '<h1 class="jm-logo jmr-mlogo"><img src="data:image/png;base64,' + TLOGO + '" alt="Super Jump Man" width="436" height="330"></h1>')
+t = swap(t, '</head>', '<style>.jmr-line img{ height:auto !important; width:940px !important; max-width:none; } .jmr-line{ margin:14px 0 34px !important; display:flex; justify-content:center; }\n'
+         '#jm-start .jm-box{ width:960px !important; } #jm-start .jm-keys{ zoom:.82; } .jmr-card{ padding:22px 28px 18px !important; } .jmr-cols{ gap:10px !important; } .jmr-cols > div{ padding:12px 14px !important; font-size:22px !important; } #jm-start .jm-input{ width:440px !important; font-size:30px !important; } #jm-start .jm-go{ width:480px !important; }\n'
+         '.jm-brand .jm-credit{ display:none !important; } .jmr-mlogo img{ height:180px !important; }</style>\n</head>')
+# ---- v22 (Kody 2026-11-26): approved ledge/rock sheet 1e63b628 + hero move poses 5e95af29 (art/make_play_art.py)
+t = swap(t, "/* ================= START / END", parts['V22'] + "\n/* ================= START / END")
+t = swap(t, '<script src="scorecode.js"></script>', '<script>\n' + read(os.path.join(HERE, 'art', 'play_art.js')) + '</script>\n<script src="scorecode.js"></script>')
+t = swap(t, "var fr=heroFrame(), r=PIX&&PIX.heroF[fr], img=ghost?tinted(ghost):(ready(HERO)?HERO:null);\n  if(r&&img){",
+         "var fr=heroFrame(), r=PIX&&PIX.heroF[fr], img=ghost?tinted(ghost):(ready(HERO)?HERO:null), pz=typeof heroPose==='function'?heroPose(ghost):null;\n  if(pz){ var pw=pz.width||pz.naturalWidth, ph=pz.height||pz.naturalHeight; cx.scale(f,1); cx.drawImage(pz,-Math.round(pw/2),-ph,pw,ph); cx.scale(f,1); }\n  else if(r&&img){")
+t = swap(t, "if(!ghost&&P.glide){ var Lc=", "if(!ghost&&P.glide&&!(typeof heroPose==='function'&&heroPose())){ var Lc=")
+# ---- v24: painted floors + end screen logo (props art comes later)
+t = swap(t, "/* ================= START / END", parts['V24'] + "\n/* ================= START / END")
+t = swap(t, '<p class="jm-sub" style="margin:0" id="jmr-endwhy">Time!</p>', '<div class="jmr-endlogo"><img alt="Super Jump Man" width="1463" height="137"></div>\n    <p class="jm-sub" style="margin:0" id="jmr-endwhy">Time!</p>')
+t = swap(t, '</head>', '<style>.jmr-endlogo{ display:flex; justify-content:center; margin:0 0 18px; } .jmr-endlogo img{ width:760px; height:auto; }</style>\n</head>')
+# ---- v25: approved props sheet d27e32c2 (art/make_props.py) + moves rows kept inside the control panel
+t = swap(t, "/* ================= START / END", parts['V25'] + "\n/* ================= START / END")
+t = swap(t, '<script src="scorecode.js"></script>', '<script>\n' + read(os.path.join(HERE, 'art', 'props.js')) + '</script>\n<script src="scorecode.js"></script>')
+# ---- v27: game feel pass (presentation only: stretch, sparkles, sparks, debris, short hit-stop)
+t = swap(t, "/* ================= START / END", parts['V27'] + "\n/* ================= START / END")
+# ---- v28: the 6 balance fixes Kody picked (wall kick once per wall, Shift+R box pauses, New move card auto-closes, 4 s rock safety, second tab, long answers)
+t = swap(t, "/* ================= START / END", parts['V28'] + "\n/* ================= START / END")
+t = swap(t, '</head>', '<style>#jm-choices .jm-ch.jmr-long{ font-size:30px !important; line-height:1.08 !important; }</style>\n</head>')
+# ---- v29: gold gem = approved blue gem recoloured in code
+t = swap(t, "/* ================= START / END", parts['V29'] + "\n/* ================= START / END")
+# ---- v30: one pixel arrow style for every canvas arrow
+t = swap(t, "/* ================= START / END", parts['V30'] + "\n/* ================= START / END")
 for gone in ['S.energy+=', "U('energy')"]:
     assert gone not in t, gone
 open(os.path.join(O, 'jump_man_multiplication.html'), 'w', encoding='utf-8').write(t)
