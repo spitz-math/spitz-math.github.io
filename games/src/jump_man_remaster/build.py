@@ -292,6 +292,34 @@ GEN_SWAPS = [
 ]
 for a_, b_ in GEN_SWAPS:
     t = swap(t, a_, b_)
+# ---- v12 (Kody 2026-11-25, remake spec): a spare Waystone question, the fog pushed back by right answers and combos and
+# never fast enough to win on math alone, a featured ledge type per stretch, a faster start, and the balance-check fixes.
+t = swap(t, "/* ================= START / END", parts['V12'] + "\n/* ================= START / END")
+for old, new in [
+  ("function fresh(){ return { ver:4,", "function fresh(){ return { ver:5,"),
+  ("if(v&&v.ver===4&&v.topics", "if(v&&v.ver===5&&v.topics"),
+  ("function newQ(){ clearTimeout(nextT); if(S.way&&S.way.n>=3){ closeWay(); return; }", "function newQ(){ clearTimeout(nextT); if(S.over) return; if(S.way&&wayDone(S.way)){ closeWay(); return; }"),
+  ("S.way.n>=3?700:450", "1500"),
+  ("pick:function(){ pickOffer(0); }", "pick:function(){ offerAt=0; pickOffer(0); }"),   # test hook skips the card's 0.8 s read lock                                          # a right answer's explanation stays 1.5 s (Enter skips it)
+  ("fogCalm(CALM_PER); SND.correct();", "fogPush(FOG_PUSH); SND.correct();"),
+  ("if(fogOn()) fogCalm(Math.min(4,Math.floor(f/4)));", "if(fogOn()) fogPush(COMBO_PUSH*Math.min(4,Math.floor(f/4)));"),
+  ("function comboPts(f){ return Math.round(f*f/2); }", "function comboPts(f){ f=Math.min(f,COMBO_CAPF); return Math.round(f*f/2); }"),
+  ("rockStep(dt); rushStep();", "rockStep(dt); rushStep(); stretchStep(); idleStep(dt);"),
+  ("drawKickHint(); drawFog();\n", "drawKickHint(); drawFog(); drawNudge();\n"),
+  ("      if(!p.amp){ if(i>8&&r[6]<0.10", "      if(i<=3) p.cx=W/2+(i%2?-1:1)*(70+r[3]*50);   /* v12: the first ledges sit close to the start */\n      if(!p.amp){ if(i>8&&r[6]<0.10"),
+  ("      if(p.kind!=='spring'&&r[11]<0.3){", "      stretchGen(p,prev,r);\n      if(p.kind!=='spring'&&r[11]<0.3){"),
+  ("document.addEventListener('keyup',function(e){ var d=keyDir(e); if(d) keys[d]=false; });", "document.addEventListener('keyup',function(e){ var d=keyDir(e); if(d){ keys[d]=false; held[d]=false; } });"),
+  ("  if(d){ e.preventDefault(); if(!S.started||S.over) return; if(d==='j')", "  if(d){ e.preventDefault(); held[d]=true; if(!S.started||S.over) return; if(d==='j')"),
+  ("var armT=0; $('jm-again').addEventListener('click',function(){ var b=this; if(!b.classList.contains('arm')){ b.classList.add('arm');",
+   "var armT=0, armAt=0; $('jm-again').addEventListener('click',function(){ var b=this; if(b.classList.contains('arm')&&now()-armAt<AGAIN_LOCK) return; if(!b.classList.contains('arm')){ armAt=now(); b.classList.add('arm');"),
+  (".jm-next:disabled{ visibility:hidden; }", ".jm-next:disabled{ opacity:.35; cursor:default; }"),
+  ("$('jmr-endwhy').textContent=S.fogOut?'The fog caught you!':'Time!';", "$('jmr-endwhy').textContent=S.fogOut?'The fog caught you! Right answers push it back, so keep going next time.':'Time!';"),
+  ("[0,1,2].map(function(k){ var r=S.way.res[k];", "[0,1,2,3].slice(0,waySlots(S.way)).map(function(k){ var r=S.way.res[k];"),
+  ("Every 40 ledges: 3 questions. Right answers hold back the fog; all 3 right teaches a new move and gives back a heart.",
+   "Every 40 ledges a Waystone asks questions. Each right answer pushes the fog back; 3 right teaches a new move and gives back a heart. Miss one? You get a spare question."),
+  ("All 3 right: a new move and a heart back. Each right answer holds the fog 3 s.", "3 right: a new move and a heart back. Miss one and you get a spare question. Each right answer pushes the fog back."),
+]:
+    t = swap(t, old, new)
 for gone in ['S.energy+=', "U('energy')"]:
     assert gone not in t, gone
 open(os.path.join(O, 'jump_man_multiplication.html'), 'w', encoding='utf-8').write(t)

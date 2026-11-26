@@ -61,3 +61,11 @@ Kody on v10: "those running jumps are mean lol", then picked "Soften a lot".
 - Most rises are back to standing-jump height (108-138 px, standing reach 147). From ledge 10 to 140 up to 1 ledge in 5 becomes a tall one (175-220 px) that needs a running jump; floors and ledges after a crumble ledge are never tall. Narrow, far, moving and crumbling ledges from v10 stay.
 - Fog: a second dip within 4 game seconds of a hit only lifts you again (no second heart), and the lift picks a steady ledge (not moving, ice, crumble or spring).
 - Test bots: clumsy climber at 70% right survives 7 of 8 runs (0-2 hearts lost); all-right 7,147-7,237; always-wrong and random guessing fall to the fog (1,900-2,300); idle loses fast.
+
+## v12 (2026-11-25, remake spec approved by Kody)
+Balance check first (/mnt/project-files/reviews/balance_jump_man_v11_2026-11-26/RESULTS.md), spec doc "Jump Man remake spec", then:
+- Waystones: 3 right teaches the move; after one miss a spare 4th question; two misses end it (wayDone, waySlots).
+- Right answers push the fog back 180 px (FOG_PUSH) and combos 60 px per 4 floors; the push is real distance (S.drop). The fog starts and restarts after a hit 700 px below (FOG_NEAR) but may trail up to 1200 (FOG_GAP). Combo pay capped at 30 floors.
+- Each stretch right after a Waystone features one ledge type (moving, springs, crumble, ice; stretchGen/stretchStep) with a banner. First 3 ledges sit near the middle; arrow over the next ledge for the first 3 jumps; a nudge after 6 s standing still.
+- Fixes from the balance check: no Waystone pay after the buzzer, Play again double-click guard, 0.8 s card read lock (the __G.pick hook skips it), held arrow keys survive a Waystone, Next greyed during the lock, right-answer explanation 1.5 s, "Not this time"/"So close!", FOG! on a fog hit, kinder fog-loss line. Save ver 5.
+Tests: tests/v12.js (new rules), tests/v4.js (updated for v12), tests/sets.js, tests/fps.js, tests/reach.js.

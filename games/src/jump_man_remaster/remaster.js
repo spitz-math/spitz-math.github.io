@@ -177,24 +177,25 @@ SND.dash=function(){ tone(520,1040,0,0.12,'triangle',0.09); tone(260,520,0.02,0.
 SND.way=function(){ [523.25,783.99,1046.5].forEach(function(f,i){ tone(f,f,i*0.09,0.22,'triangle',0.11); }); };
 function openWay(){ S.way={i:P.on.i,got:0,n:0,res:[]}; keys.l=keys.r=keys.j=false; ptr={}; jumpQ=false; dashQ=false; P.vx=0; SND.way();
   newQ(); save(); hud(); nudge(); }
-function closeWay(){ var w=S.way, r=w.got; S.way=null; S.ways++; S.nextWay=nextWayAfter(w.i); S.q=null; S.qDone=false; S.bonus+=r*20+(r===3?300:0);
+function closeWay(){ if(S.over||!S.way) return; var w=S.way, r=w.got; S.way=null; S.ways++; S.nextWay=nextWayAfter(w.i); S.q=null; S.qDone=false; S.bonus+=r*20+(r===3?300:0);
   if(r===3){ SND.goal(); var q=stagePoint(cv,P.x,sy(P.h)-80); confetti(q[0],q[1],60,2.4); } else SND.miss();
-  var healed=r===3&&wayHeal(); S.offer=makeOffer().concat([r,healed?1:0]); showOffer(); showQ(); save(); hud(); }
+  var healed=r===3&&wayHeal(); S.offer=makeOffer().concat([r,healed?1:0]); showOffer(); showQ(); save(); hud();
+  if(r>0&&fogOn()) pop(P.x,P.h+300,'FOG PUSHED BACK',r+' right answer'+(r===1?'':'s'),'#7CF0FF'); }
 /* the reward is fixed: the next move in order, then the boosts in turn (each up to 3 times), then points */
 var BOOST_ORDER=['jump','speed','combo','magnet'];
 function makeOffer(){ var m=MOVES.filter(function(x){ return !S.mv[x.id]&&(!x.need||S.mv[x.need]); })[0]; if(m) return [m.id];
   var nb=S.learned.filter(isBoost).length; for(var k=0;k<12;k++){ var id=BOOST_ORDER[(nb+k)%4]; if(S.lv[id]<3) return [id]; } return ['pts']; }
 function isBoost(id){ return BOOSTS.some(function(x){ return x.id===id; }); }
 function showOffer(){ var el=$('jmr-offer'); if(!S.offer){ el.hidden=true; return; } var id=S.offer[0], r=S.offer[1]===undefined?3:S.offer[1], d=moveDef(id), win=r===3;
-  $('jmr-offerh').textContent=!win?'Almost!':isBoost(id)?'Upgrade!':id==='pts'?'Bonus!':'New move!';
+  $('jmr-offerh').textContent=!win?(r===2?'So close!':'Not this time'):isBoost(id)?'Upgrade!':id==='pts'?'Bonus!':'New move!';
   $('jmr-offer').classList.toggle('miss',!win);
-  var score='<span class="jmr-score">'+r+' of 3 right'+(S.offer[2]?' · +1 heart':'')+(r===3?' · +300':'')+(win?'':' · get all 3 right next time to learn it')+'</span>';
+  var score='<span class="jmr-score">'+r+' right'+(S.offer[2]?' · +1 heart':'')+(r===3?' · +300':'')+(win?'':' · 3 right at the next Waystone learns it')+'</span>';
   $('jmr-picks').innerHTML='<button class="jmr-pick'+(win?'':' locked')+'" data-i="0">'+score+'<b>'+d.name+(isBoost(id)?' <small>level '+(S.lv[id]+1)+' of 3</small>':'')+'</b><span class="d">'+d.d+'</span>'+(d.how&&win?'<span class="jmr-how">'+d.how+'</span>':'')+'</button>';
-  el.hidden=false; }
+  el.hidden=false; offerAt=now(); }
 var LASTR=3;
-function pickOffer(i){ if(!S.offer||!S.offer[0]||S.over) return; var id=S.offer[0], d=moveDef(id); LASTR=S.offer[1]===undefined?3:S.offer[1]; S.offer=null; $('jmr-offer').hidden=true;
+function pickOffer(i){ if(!S.offer||!S.offer[0]||S.over) return; if(now()-offerAt<CARD_LOCK) return; var id=S.offer[0], d=moveDef(id); LASTR=S.offer[1]===undefined?3:S.offer[1]; S.offer=null; $('jmr-offer').hidden=true;
   var won=LASTR===3;
-  if(won){ if(id==='pts') S.bonus+=150; else if(isBoost(id)) S.lv[id]=Math.min(3,S.lv[id]+1); else S.mv[id]=1; S.learned.push(id); } SND.goal(); keys.l=keys.r=keys.j=false; jumpQ=false; save(); showQ(); hud(); }
+  if(won){ if(id==='pts') S.bonus+=150; else if(isBoost(id)) S.lv[id]=Math.min(3,S.lv[id]+1); else S.mv[id]=1; S.learned.push(id); } SND.goal(); keys.l=!!held.l; keys.r=!!held.r; keys.j=!!held.j; jumpQ=false; save(); showQ(); hud(); }
 $('jmr-picks').addEventListener('click',function(e){ var b=e.target.closest('.jmr-pick'); if(b) pickOffer(+b.dataset.i); });
 /* between Waystones the question panel shows the moves you have */
 function idleQ(){ $('jm-tag').textContent='Climb'; $('jm-reward').textContent=''; $('jm-q').classList.remove('vis'); $('jm-visual').innerHTML='';
@@ -202,7 +203,7 @@ function idleQ(){ $('jm-tag').textContent='Climb'; $('jm-reward').textContent=''
   var rows=[['Run','← →'],['Jump','Space or ↑']]; MOVES.forEach(function(m){ if(S.mv[m.id]) rows.push([m.name,m.how]); });
   BOOSTS.forEach(function(b){ if(S.lv[b.id]) rows.push([b.name,'Level '+S.lv[b.id]]); });
   $('jm-choices').innerHTML='<div class="jmr-moves"><div class="jmr-mh">Your moves</div>'+rows.map(function(r){ return '<div class="jmr-mv"><b>'+r[0]+'</b><span>'+r[1]+'</span></div>'; }).join('')+'</div>';
-  var fb=$('jm-fb'); fb.className='jm-fb'; fb.innerHTML='Each Waystone asks 3 questions. Every right answer holds the fog back 3 seconds. All 3 right teaches a new move and gives back a heart.'; $('jm-next').disabled=true; }
+  var fb=$('jm-fb'); fb.className='jm-fb'; fb.innerHTML='At each Waystone, every right answer pushes the fog back. 3 right teaches a new move and gives back a heart. Miss one and you get a spare question.'; $('jm-next').disabled=true; }
 var idleLeft=-1; setInterval(function(){ if(S&&S.started&&!S.over&&!S.way){ var l=(S.rush?'r':'')+(S.nextWay-(S.pi||0)); if(l!==idleLeft){ idleLeft=l; idleQ(); } } },300);
 
 //@@ WAYDRAW
@@ -212,14 +213,14 @@ function drawWaystone(x,py,done,active){ var L='#1B1328', rune=done?'#FFC23D':'#
   cx.fillStyle=L; cx.fillRect(x-22,py-86,44,86); cx.fillRect(x-26,py-12,52,12);
   cx.fillStyle='#8A8FA6'; cx.fillRect(x-18,py-82,36,72); cx.fillStyle='#A9AEC2'; cx.fillRect(x-18,py-82,36,6); cx.fillStyle='#6E7388'; cx.fillRect(x+10,py-76,8,66); cx.fillRect(x-22,py-8,44,6);
   cx.fillStyle=rune; [[-6,-70,12,4],[-2,-66,4,22],[-10,-56,20,4],[-6,-42,4,12],[2,-42,4,12],[-6,-30,12,4]].forEach(function(r){ cx.fillRect(x+r[0],py+r[1],r[2],r[3]); });
-  if(active){ for(var k=0;k<3;k++){ cx.fillStyle=L; cx.fillRect(x-28+k*20,py-112,16,16); var rr2=S.way?S.way.res[k]:undefined; cx.fillStyle=rr2===1?'#FFC23D':rr2===0?'#FF6B6B':'#3A3550'; cx.fillRect(x-26+k*20,py-110,12,12); } } }
+  if(active){ var ns=waySlots(S.way), x0=x-ns*10; for(var k=0;k<ns;k++){ cx.fillStyle=L; cx.fillRect(x0+2+k*20,py-112,16,16); var rr2=S.way?S.way.res[k]:undefined; cx.fillStyle=rr2===1?'#FFC23D':rr2===0?'#FF6B6B':'#3A3550'; cx.fillRect(x0+4+k*20,py-110,12,12); } } }
 
 //@@ FOG
 /* ================= hearts and the rising fog (Kody 2026-11-17) =================
    3 hearts. After the first Waystone a fog rises up the tower, a little faster the higher you are, and never more than
    about 5 ledges below you. Sinking into it costs a heart and lifts you to a safe ledge above it; at 0 hearts the run ends.
    The fog stops at every Waystone, and passing one gives a heart back and pushes the fog down. */
-var FOG_GAP=700, HEART_MAX=3, FOG_START=20, CALM_PER=3, CALM_MAX=12;
+var FOG_GAP=1200, HEART_MAX=3, FOG_START=20, CALM_PER=3, CALM_MAX=12;   /* v12: 1200 (was 700) so one fall on the hard upper tower is not a heart; speed unchanged */
 /* v4: the fog also starts 20 s into the climb (so standing still loses), each right answer holds it 3 s (shown under the
    hearts), combos of 4+ floors hold it too, and it runs 25% faster in the Summit Rush */
 function fogOn(){ return S.ways>0||(S.climbT||0)>=FOG_START; }
@@ -227,16 +228,17 @@ function fogSpeed(){ return Math.min(FOG_CAP,FOG_V0+Math.floor(S.top/20)*FOG_RAM
 var FOG_V0=24, FOG_RAMP=0.07, FOG_CAP=85;    /* v8: Kody 'way too easy' (v4 was 24 + 0.07/m, cap 85, gap 560) */
 function fogCalm(s){ S.calm=Math.min(CALM_MAX,(S.calm||0)+s); }
 function fogStep(dt){ var was=fogOn(); S.climbT=(S.climbT||0)+dt; if(!was&&fogOn()&&!S.ways){ pop(P.x,P.h+260,'THE FOG RISES!','climb up and away','#D6C8F0',true); SND.crash(); }
-  if(!fogOn()){ S.fog=P.h-FOG_GAP; return; }
-  if(S.calm>0){ S.calm=Math.max(0,S.calm-dt); S.fog=Math.max(S.fog,P.h-FOG_GAP); }
-  else S.fog=Math.max(S.fog+fogSpeed()*dt, P.h-FOG_GAP);
+  if(!fogOn()){ S.fog=P.h-FOG_NEAR; return; }
+  var low=P.h-FOG_GAP-(S.drop||0);
+  if(S.calm>0){ S.calm=Math.max(0,S.calm-dt); S.fog=Math.max(S.fog,low); }
+  else { S.fog=Math.max(S.fog+fogSpeed()*dt, low); if(S.drop) S.drop=Math.max(0,S.drop-fogSpeed()*dt); }
   if(P.h+PH*0.45<S.fog) fogHit(); }
 var lastHit=-1e9;   /* game seconds (S.climbT), not the wall clock */
 function fogHit(){ var again=(S.climbT||0)-lastHit<4; lastHit=S.climbT||0; if(!again) S.hearts=Math.max(0,S.hearts-1); SND.crash(); shk=10; endCombo();   /* v11: a second dip within 4 s only lifts you again */
   if(S.hearts<=0){ S.fogOut=true; endRun(); return; }
   var tgt=null; for(var i=Math.max(0,S.pi-20);i<plats.length;i++){ var p=plats[i]; if(p.h>S.fog+300&&solid(p)&&p.kind!=='spring'&&p.kind!=='crumble'&&p.kind!=='ice'&&!p.amp){ tgt=p; break; } }
   if(tgt){ P.on=tgt; P.h=tgt.h; P.x=tgt.floor?W/2:cxAt(tgt,gt); P.vx=0; P.vy=0; P.lastI=tgt.i; S.pi=tgt.i; P.airJ=0; P.dashed=false; P.glide=false; }
-  S.fog=P.h-FOG_GAP; S.calm=Math.max(S.calm||0,3); cam=P.h;   /* v8: 3 s of held fog after a hit, so one mistake never costs two hearts */ pop(P.x,P.h+160,'OUCH!',S.hearts+(S.hearts===1?' heart left':' hearts left'),'#FF8FA3',true); hud(); save(); }
+  S.fog=P.h-FOG_NEAR; S.drop=0; S.calm=Math.max(S.calm||0,3); cam=P.h;   /* v8: 3 s of held fog after a hit, so one mistake never costs two hearts */ pop(P.x,P.h+160,'FOG!',S.hearts+(S.hearts===1?' heart left':' hearts left'),'#FF8FA3',true); hud(); save(); }
 function wayHeal(){ if(S.hearts<HEART_MAX){ S.hearts++; pop(P.x,P.h+230,'+1 HEART','','#FF8FA3'); return true; } return false; }
 var FOGC=null;
 function fogTop(){ return FOGC||(FOGC=pxc(64,8,4,function(g){ for(var x=0;x<64;x++){ var h=3+Math.round(2*Math.sin(x/5)+1.5*Math.sin(x/2.3)); g.fillStyle='rgba(214,200,240,.55)'; g.fillRect(x,8-h-2,1,2); g.fillStyle='rgba(176,156,214,.78)'; g.fillRect(x,8-h,1,h); } })); }
@@ -400,3 +402,37 @@ function towerHud(t,live){
   if(live&&!S.way&&!S.offer&&S.jumps<3&&!banner){ otext(cx,'← → Run     ↑ Jump',W/2,320,'400 60px '+WF,'#FFFFFF','center',12);
     otext(cx,S.jumps===0&&(S.climbT||0)>6?'Press ← or → to run, then ↑ to jump!':'Run fast to jump higher. Skip floors to combo!',W/2,374,'800 30px Inter, sans-serif','#FFC93C','center',8); }
   sideHud(); }
+
+//@@ V12
+/* ================= v12 (Nov 25 remake spec, approved by Kody) =================
+   - Waystones: 3 right teaches the move (and a heart, +300). After a miss you get one spare question; two misses end it.
+   - The fog never wins on math alone: its top speed sits below a steady climber's pace with no moves. Right answers and
+     combos push it back (real distance the fog has to climb again), shown as FOG PUSHED BACK.
+   - Each stretch between Waystones features one ledge type (moving, springs, crumble, ice), easy the first time round.
+   - A faster start: the first ledges sit close, an arrow marks the next ledge, and standing still 6 s shows a nudge. */
+var FOG_NEAR=700, FOG_PUSH=180,   /* the fog starts (and restarts after a hit) 700 px below; while you climb it may trail up to FOG_GAP */
+    COMBO_PUSH=60, COMBO_CAPF=30, CARD_LOCK=800, AGAIN_LOCK=500, NUDGE_S=6;
+var held={}, offerAt=0;
+function wayDone(w){ return w.got>=3||(w.n-w.got)>=2; }
+function waySlots(w){ return w&&w.n>w.got?4:3; }   /* the spare slot appears after the first miss */
+function fogPush(px){ if(!fogOn()) return; S.drop=(S.drop||0)+px; S.fog-=px; }
+var STRETCH=[{k:'move',txt:'Moving ledges!',sub:'time your jump'},{k:'spring',txt:'Spring stairs!',sub:'bounce up'},
+             {k:'crumble',txt:'Crumble steps!',sub:'keep moving'},{k:'ice',txt:'Ice ledges!',sub:'slippery'}];
+function stretchAt(i){ if(i<WAY_FIRST) return null; var s=Math.floor((i-WAY_FIRST)/WAY_EVERY), o=(i-WAY_FIRST)%WAY_EVERY;
+  if(o<3||o>12) return null; return {s:s,def:STRETCH[s%STRETCH.length],hard:s>=STRETCH.length}; }
+function stretchGen(p,prev,r){ var st=stretchAt(p.i); if(!st||p.floor||p.tall) return; var k=st.def.k, x=(r[7]*13.7)%1;
+  if(x>(st.hard?0.75:0.5)) return;            /* first time round about half the ledges, later most of them */
+  if(k==='move'){ if(!p.amp){ delete p.kind; p.amp=Math.round(45+r[9]*(st.hard?60:25)); p.spd=1.0+r[10]*(st.hard?0.7:0.35); p.ph=r[5]*6.28; } }
+  else if(k==='spring'){ if(prev.kind==='spring') return; p.amp=0; p.kind='spring'; delete p.gem; }
+  else if(k==='crumble'){ if(prev.kind==='crumble') return; p.amp=0; p.kind='crumble'; }
+  else if(k==='ice'){ if(p.kind!=='ice'){ p.amp=0; p.kind='ice'; p.w+=30; } }
+  p.cx=Math.max(p.w/2+20+p.amp,Math.min(W-p.w/2-20-p.amp,p.cx)); }
+function stretchStep(){ var st=stretchAt(P.lastI||0); if(st&&S.stretch!==st.s&&!S.rush){ S.stretch=st.s; banner={t0:now(),txt:st.def.txt,sub:st.def.sub,kind:'stretch'}; } }
+/* nobody moving for 6 s gets a nudge; the next ledge is marked for the first few jumps */
+function idleStep(dt){ if(keys.l||keys.r||keys.j||ptrDir()||!P.on) S.idleT=0; else S.idleT=(S.idleT||0)+dt; }
+function drawNudge(){ if(!S.started||S.over||S.way||S.offer) return; var bob=RM()?0:Math.round(Math.sin(gt*5)*5);
+  if((S.jumps||0)<3){ var p=plats[(P.lastI||0)+1]; if(p){ var x=Math.round(p.floor?P.x:cxAt(p,gt)), y=Math.round(sy(p.h))-70+bob;
+      cx.fillStyle='#1B1328'; cx.fillRect(x-20,y-26,40,20); cx.fillRect(x-28,y-8,56,8); cx.fillRect(x-20,y,40,8); cx.fillRect(x-12,y+8,24,8); cx.fillRect(x-4,y+16,8,6);
+      cx.fillStyle='#FFC23D'; cx.fillRect(x-14,y-22,28,16); cx.fillRect(x-22,y-6,44,6); cx.fillRect(x-14,y,28,6); cx.fillRect(x-6,y+6,12,8); } }
+  if((S.idleT||0)>NUDGE_S){ var py=Math.round(sy(P.h))-170+bob; panel(W/2-250,py-40,500,62); cx.textAlign='center'; cx.fillStyle='#FFC23D'; cx.font='400 34px '+DF;
+    cx.fillText(fogOn()?'CLIMB! THE FOG IS COMING ↑':'CLIMB! RUN AND JUMP ↑',W/2,py+2); } }
