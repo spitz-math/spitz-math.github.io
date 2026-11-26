@@ -318,6 +318,7 @@ svg.hs .spot[aria-checked="true"]{fill:rgba(90,80,210,.35);stroke:#4b3fc4;stroke
 .hswrap{margin:.2em 0}
 .hsimg{position:relative;margin:.4em 0;line-height:0} .hsimg img{width:100%;height:auto;display:block}
 .hsdot{position:absolute;width:28px;height:28px;margin:-14px 0 0 -14px;border-radius:50%;border:2px solid #4b3fc4;background:rgba(255,255,255,.55);cursor:pointer;padding:0}
+.hsdot.hsbox{margin:0;border-radius:4px;background:transparent} .hsdot.hsbox[aria-checked="true"]{background:rgba(90,80,210,.22);box-shadow:none;border-width:3px} /* spot [x,y,w,h] in % = a clickable box (e.g. a city name on a map) */
 .hsdot:hover{background:rgba(130,120,220,.25)} .hsdot[aria-checked="true"]{background:rgba(90,80,210,.5);box-shadow:inset 0 0 0 4px #fff}
 /* graphing tools */
 .eq.ctr{text-align:center;margin-left:0}
@@ -1266,6 +1267,13 @@ function build(it){
     inp.addEventListener('input',()=>{ inp.value=inp.value.replace(/[^0-9.\-\/−]/g,''); if(inp.value.trim()) S.answers[id]=inp.value.trim(); else delete S.answers[id]; refresh(); });
     root.appendChild(e);
   }
+  else if(it.type==='word'){   /* type one word (STAAR text entry, like Grade 8 Reading 2026 Q1) */
+    const e=document.createElement('div'); e.className='entry';
+    e.innerHTML=`<div><label for="ans${id}">Answer</label><input class="mathin wordin" id="ans${id}" type="text" maxlength="40" autocomplete="off" autocapitalize="off" spellcheck="false" aria-label="Answer for question ${id}"></div>`;
+    const inp=e.querySelector('input');
+    inp.addEventListener('input',()=>{ const v=inp.value.replace(/[<>]/g,''); if(v!==inp.value) inp.value=v; if(v.trim()) S.answers[id]=v.trim(); else delete S.answers[id]; refresh(); });
+    root.appendChild(e);
+  }
   else if(it.type==='inline'){
     const p=document.createElement('p'); p.className='inline-stem';
     let html=it.text;
@@ -1329,7 +1337,7 @@ function kbGrids(root){ root.querySelectorAll('svg[data-kb]').forEach(svg=>{ con
 function hydrate(it,root){ const a=S.answers[it.n]; if(a==null) return;
   if(it.type==='text'){ const e=root.querySelector('.txed'); if(e){ e.innerHTML=a; root.querySelector('.txcnt span').textContent=e.textContent.length; } return; }
   if(it.type==='mc'||it.type==='ms') root.querySelectorAll('.choice').forEach(el=>{ const k=+el.dataset.k; el.setAttribute('aria-checked',it.type==='mc'?a===k:(a||[]).includes(k)); });
-  else if(it.type==='num'){ const i=root.querySelector('input.mathin'); if(i) i.value=a; }
+  else if(it.type==='num'||it.type==='word'){ const i=root.querySelector('input.mathin'); if(i) i.value=a; }
   else if(it.type==='inline') root.querySelectorAll('select.inl').forEach(sel=>{ const v=a[+sel.dataset.k]; sel.value=v==null?'':String(v); sel.classList.toggle('filled',v!=null); });
   else if(it.type==='table') root.querySelectorAll('.gcell').forEach(b=>b.setAttribute('aria-checked',a[+b.dataset.r]===+b.dataset.c));
   else if(it.type==='dnd') Object.entries(a).forEach(([t,z])=>{ const tile=root.querySelector(`.tile[data-t="${t}"]`), slot=root.querySelector(`.dz[data-zone="${z}"] .slot`); if(tile&&slot) slot.appendChild(tile); });
@@ -1433,13 +1441,16 @@ function vennGeo(v){
 }
 
 function buildGraph(it,root){
-  const id=it.n, g=coordSVG(it.R,{live:true});
+  /* options: R; halfStep: true snaps to every half unit (answer may be like [-0.5,-1]); fixed: [[x,y],...] points already on the grid (blue, not clickable) */
+  const id=it.n, g=coordSVG(it.R,{live:true}), st=it.halfStep?2:1;
   const w=document.createElement('div'); w.className='gwrap';
   w.innerHTML=`<div>${g.html}</div><div><p style="margin:0 0 .4em" class="hint">Click again on your point to remove it.</p><p style="margin:0 0 .6em">Your point: <span class="gread">none</span></p><button type="button" class="btnline">Clear point</button></div>`;
   const svg=w.querySelector('svg'), pts=svg.querySelector('.pts'), read=w.querySelector('.gread');
+  if(it.halfStep) svg.dataset.kb=[g.pad,g.cell/st,g.cell/st,g.R*st,g.R*st].join(',');   /* arrow keys move half a unit */
+  (it.fixed||[]).forEach(([fx,fy])=>{ const c=document.createElementNS('http://www.w3.org/2000/svg','circle'); c.setAttribute('cx',g.X(fx)); c.setAttribute('cy',g.Y(fy)); c.setAttribute('r',7); c.setAttribute('fill','#1aa3e0'); c.setAttribute('pointer-events','none'); pts.before(c); });
   const hov=document.createElementNS('http://www.w3.org/2000/svg','circle'); hov.setAttribute('class','hov'); hov.setAttribute('r',6); hov.style.display='none'; svg.appendChild(hov);
   const toGrid=e=>{ const p=svg.createSVGPoint(); p.x=e.clientX; p.y=e.clientY; const q=p.matrixTransform(svg.getScreenCTM().inverse());
-    const gx=Math.round((q.x-g.pad)/g.cell-g.R), gy=Math.round(g.R-(q.y-g.pad)/g.cell);
+    const gx=Math.round(((q.x-g.pad)/g.cell-g.R)*st)/st, gy=Math.round((g.R-(q.y-g.pad)/g.cell)*st)/st;
     if(Math.abs(gx)>g.R||Math.abs(gy)>g.R) return null; return [gx,gy]; };
   const paint=()=>{ pts.innerHTML=''; const a=S.answers[id];
     if(a){ const c=document.createElementNS('http://www.w3.org/2000/svg','circle'); c.setAttribute('class','pt'); c.setAttribute('cx',g.X(a[0])); c.setAttribute('cy',g.Y(a[1])); c.setAttribute('r',7); pts.appendChild(c);
@@ -1638,7 +1649,7 @@ function buildHotspot(it,root){
 const hsPts=(it,a)=>[].concat(a).map(q=>it.img?(it.spotNames?it.spotNames[q]:'Spot '+'ABCDEFGHIJKL'[q]):`(${fmtN(it.spots[q][0])}, ${fmtN(it.spots[q][1])})`).join(', ');
 /* hot spot on a picture (teachers' own tests): spots are [left %, top %] on the picture */
 function buildHotImg(it,root,multi){ const id=it.n, w=document.createElement('div'); w.className='hsimg'; w.style.maxWidth=(it.imgw||400)+'px';
-  w.innerHTML=`<img src="${it.img}" alt="Picture with spots to choose">`+it.spots.map(([x,y],q)=>`<button type="button" class="hsdot" style="left:${x}%;top:${y}%" role="${multi?'checkbox':'radio'}" aria-checked="false" aria-label="${it.spotNames?'Point '+it.spotNames[q]:'Spot '+'ABCDEFGHIJKL'[q]}" data-k="${q}"></button>`).join('');
+  w.innerHTML=`<img src="${it.img}" alt="Picture with spots to choose">`+it.spots.map(([x,y,bw,bh],q)=>{ const box=+bw>0&&+bh>0; return `<button type="button" class="hsdot${box?' hsbox':''}" style="left:${x}%;top:${y}%${box?`;width:${+bw}%;height:${+bh}%`:''}" role="${multi?'checkbox':'radio'}" aria-checked="false" aria-label="${it.spotNames?'Point '+it.spotNames[q]:'Spot '+'ABCDEFGHIJKL'[q]}" data-k="${q}"></button>`; }).join('');
   const has=q=>multi?(S.answers[id]||[]).includes(q):S.answers[id]===q;
   const sync=()=>{ w.querySelectorAll('.hsdot').forEach(c=>c.setAttribute('aria-checked',has(+c.dataset.k))); refresh(); };
   w.addEventListener('click',e=>{ const c=e.target.closest('.hsdot'); if(!c) return; const q=+c.dataset.k;
@@ -1986,7 +1997,7 @@ if(window.SPITZ_SELFCHECK) window.__EQX=EQX;   /* answer-key checks only */
 function buildEqFull(it,root){
   const id=it.n, w=document.createElement('div'); w.className='eqe eqx';
   const T=(d)=>`<svg viewBox="0 0 20 20"><path d="${d}" fill="none" stroke="currentColor" stroke-width="2"/></svg>`;
-  w.innerHTML=`<div class="eqrow">${it.lead||''}<div class="eqfield" tabindex="0" role="textbox" aria-label="Answer"></div></div>
+  w.innerHTML=`<div class="eqrow">${it.lead||''}<div class="eqfield" tabindex="0" role="textbox" aria-label="Answer"></div>${it.trail||''}</div>
    <div class="eqtools"><button type="button" data-k="left" aria-label="Move left">${T('M15 10H5M9 6l-4 4 4 4')}</button><button type="button" data-k="right" aria-label="Move right">${T('M5 10h10M11 6l4 4-4 4')}</button><button type="button" data-k="undo" aria-label="Undo">${T('M7 7l-3 3 3 3M4 10h8a4 4 0 0 1 0 8')}</button><button type="button" data-k="redo" aria-label="Redo">${T('M13 7l3 3-3 3M16 10H8a4 4 0 0 0 0 8')}</button><button type="button" data-k="bksp" aria-label="Delete">${T('M7 5h10v10H7l-4-5zM10 8l4 4M14 8l-4 4')}</button></div>
    <div class="eqpad"><div class="eqkeys full"></div></div>`;
   const field=w.querySelector('.eqfield'), keys=w.querySelector('.eqkeys');
@@ -2242,15 +2253,17 @@ function buildTwoPart(it,root){
 }
 
 function answered(it){ const a=S.answers[it.n]; if(a==null) return false;
-  switch(it.type){ case 'text': return txPlain(a).trim()!==''; case 'mc': return true; case 'ms': return a.length>0; case 'num': return String(a).trim()!=='';
+  switch(it.type){ case 'text': return txPlain(a).trim()!==''; case 'mc': return true; case 'ms': return a.length>0; case 'num': case 'word': return String(a).trim()!=='';
     case 'inline': case 'table': return a.every(v=>v!==null); case 'dnd': return Object.keys(a).length===it.tiles.length; case 'graph': return true; case 'graphline': return a.lines.length>0;
     case 'boxes': return a.every(q=>q!=null); case 'hotspot': case 'graphexp': return true; case 'graphineq': return a.pts.length===2&&!!a.shade; case 'cline': return a.pts.length===2; case 'graphsys': return a.g.every(L=>L.pts.length===2)&&!!a.region; case 'graphfunc': return true; case 'numline': return it.mode==='ineq'?a.k!=null&&!!a.dir:a.length>0; case 'filltable': return a.every(v=>v!=null); case 'datadisp': return true; case 'shade': return a.length>0; case 'figure': return a.length>=3; case 'blanks': return a.every(v=>v!=null); case 'label': return a.length===it.spots.length&&a.every(v=>v!=null); case 'order': return true; case 'hottext': return a.length>0; case 'twopart': return a.a!=null&&a.b.length>0; case 'eq': return String(a).replace(/\//g,'').trim()!==''; } }
+const wordNorm=s=>String(s).toLowerCase().replace(/[’‘]/g,"'").replace(/[\s.,!?;:"“”]+/g,'');   /* capitals, spaces and end punctuation don't count */
 function parseNum(s){ s=String(s).replace(/−/g,'-').trim(); const m=s.match(/^(-?\d+(?:\.\d+)?)\/(-?\d+(?:\.\d+)?)$/); if(m) return +m[1]/+m[2]; return s===''||isNaN(+s)?NaN:+s; }
 function score(it){ const a=S.answers[it.n]; if(a==null||NOKEY(it)) return null;
   switch(it.type){
     case 'mc': return a===it.answer;
     case 'ms': return a.length===it.answer.length&&it.answer.every(v=>a.includes(v));
     case 'num': return Math.abs(parseNum(a)-it.answer)<1e-9;
+    case 'word': return [].concat(it.answer).some(w=>wordNorm(w)===wordNorm(a));
     case 'inline': case 'table': return it.answer.every((v,k)=>a[k]===v);
     case 'dnd': return it.answer.every((z,t)=>a[t]===z);
     case 'graph': return a[0]===it.answer[0]&&a[1]===it.answer[1];
@@ -2281,6 +2294,7 @@ function show(it,a){ if(a==null) return '—';
     case 'mc': return `${it.letters[a]}`;
     case 'ms': return a.map(k=>it.letters[k]).join(', ')||'—';
     case 'num': return String(a).replace(/-/g,'−');
+    case 'word': return esc0(a);
     case 'inline': return a.map((v,k)=>v==null?'—':it.drops[k][v]).join(' · ');
     case 'table': return a.map((v,k)=>v==null?'—':(it.cols[v]||'')).join(', ');
     case 'graphsys': return a.g.map((L,k)=>`Graph ${k+1}: `+(L.pts.length===2?`${L.dash?'dashed':'solid'} line through (${fmtN(L.pts[0][0])}, ${fmtN(L.pts[0][1])}) and (${fmtN(L.pts[1][0])}, ${fmtN(L.pts[1][1])})`:'no line')).join('<br>')+(a.region?'<br>Region selected':'<br>No region selected');
@@ -2309,6 +2323,7 @@ function key(it){ if(NOKEY(it)) return 'Your teacher has not released the answer
     case 'mc': return `${it.letters[it.answer]}`;
     case 'ms': return it.answer.map(k=>it.letters[k]).join(', ');
     case 'num': return String(it.answer);
+    case 'word': return [].concat(it.answer).map(esc0).join(' or ');
     case 'inline': return it.answer.map((v,k)=>it.drops[k][v]).join(' · ');
     case 'table': return it.answer.map(v=>it.cols[v]).join(', ');
     case 'cline': return it.keyText||'Line on the given equation';
@@ -2342,6 +2357,7 @@ const lattice=(R,f)=>{ const P=[]; for(let x=-R;x<=R&&P.length<2;x++){ const y=f
     case 'hotspot': return Array.isArray(it.answer)?it.answer.slice():it.answer;
     case 'ms': case 'inline': case 'table': case 'boxes': case 'graph': return it.answer.slice();
     case 'num': case 'eq': return String(it.answer);
+    case 'word': return [].concat(it.answer)[0];
     case 'dnd': { const o={}; it.answer.forEach((z,t)=>o[t]=z); return o; }
     case 'graphline': { let P=lattice(R,x=>it.eq[1]?(it.eq[2]-it.eq[0]*x)/it.eq[1]:null);
       if(P.length<2&&it.eq[0]&&!it.eq[1]&&Number.isInteger(it.eq[2]/it.eq[0])) P=[[it.eq[2]/it.eq[0],0],[it.eq[2]/it.eq[0],1]];   // vertical line
@@ -2542,7 +2558,8 @@ ${PAPER_CSS}
 };
 function earn(it){ const a=S.answers[it.n]; if(a==null||it.type==='text') return null; /* written answers: the teacher scores them */ if(NOKEY(it)){ const p=OWNPTS&&OWNPTS[it.n]; return p==null?null:+p; } const full=score(it)===true; if(it.max===1||full) return full?it.max:0;
   let hit=0, parts=2;
-  if(it.type==='boxes'){ if(it.unordered){ const left=[...it.answer]; a.forEach(q=>{ const i=left.indexOf(q); if(q!=null&&i>=0){ hit++; left.splice(i,1); } }); } else hit=it.answer.filter((q,i)=>a[i]===q).length; parts=it.answer.length; }
+  if(it.type==='boxes'){ if(it.unordered){ const left=[...it.answer]; a.forEach(q=>{ const i=left.indexOf(q); if(q!=null&&i>=0){ hit++; left.splice(i,1); } }); } else hit=Math.max(...[it.answer,...(it.alt||[])].map(K=>K.filter((q,i)=>a[i]===q).length)); parts=it.answer.length;
+    if(it.half) return hit*2>=parts?1:0; }   /* half:true = TEA's "half or more right earns 1 point" (2024 Grade 8 Science Q6, Q19); alt keys count too (Q19 row 4 takes Comet or Meteor) */
   else if(it.type==='ms'||(it.type==='hotspot'&&Array.isArray(it.answer))){ hit=Math.max(0,a.filter(q=>it.answer.includes(q)).length-Math.max(0,a.length-it.answer.length)); parts=it.answer.length; }
   else if(it.type==='inline'){ hit=it.answer.filter((q,i)=>a[i]===q).length; parts=it.answer.length; }
   else if(it.type==='graphsys'){ const r=sysParts(it,a); hit=(r.lines?1:0)+(r.region?1:0); }
@@ -2769,6 +2786,7 @@ const TUT={
   datadisp:'<p><b>Data Display</b></p><p>Click inside a column to set how tall its bar is, or how many dots it has. Click the top again to remove it. You can also use the arrow keys.</p>',
   shade:'<p><b>Shade a Model</b></p><p>Click a part of the model to shade it. Click it again to unshade it.</p>',
   figure:'<p><b>Draw a Figure</b></p><p>Click grid points for the corners of the figure, in order around it. Click a corner again to remove it.</p>',
+  word:'<p><b>Text Entry</b></p><p>Type your answer in the box. Capital letters do not matter.</p>',
   blanks:'<p><b>Fill in the Blanks</b></p><p>Type a number in each box. You can enter whole numbers, decimals, negatives, and fractions such as 3/4.</p>',
   label:'<p><b>Label a Picture</b></p><p>Click a label, then click the spot where it goes. Click a placed label to take it back.</p>',
   order:'<p><b>Put in Order</b></p><p>Use the up and down arrows next to each item, or drag an item, to put the list in order from first to last.</p>',
@@ -3299,7 +3317,7 @@ document.getElementById('rvClose').onclick=()=>{ document.getElementById('review
    Shows many questions stacked, each built by the same engine students use, with its answer key. The dashboard sends the
    questions (as code, so graph functions survive) and the details shown beside each one; Add / Remove go back to it. */
 function browseStart(){
-  const BTYPES={mc:'Multiple choice',ms:'Multiselect',num:'Number entry',eq:'Equation editor',inline:'Drop-down',table:'Match table',dnd:'Drag and drop',graph:'Plot a point',graphline:'Graph a line',cline:'Graph a line',graphsys:'Graph a system of inequalities',boxes:'Drag into boxes',hotspot:'Hot spot',graphineq:'Graph an inequality',graphexp:'Graph a function',graphfunc:'Graph a function',numline:'Number line',filltable:'Fill in a table',datadisp:'Data display',shade:'Shade a model',figure:'Draw a figure',blanks:'Fill in the blanks',label:'Label a picture',order:'Put in order',hottext:'Hot text',twopart:'Two-part'};
+  const BTYPES={mc:'Multiple choice',ms:'Multiselect',num:'Number entry',word:'Text entry',eq:'Equation editor',inline:'Drop-down',table:'Match table',dnd:'Drag and drop',graph:'Plot a point',graphline:'Graph a line',cline:'Graph a line',graphsys:'Graph a system of inequalities',boxes:'Drag into boxes',hotspot:'Hot spot',graphineq:'Graph an inequality',graphexp:'Graph a function',graphfunc:'Graph a function',numline:'Number line',filltable:'Fill in a table',datadisp:'Data display',shade:'Shade a model',figure:'Draw a figure',blanks:'Fill in the blanks',label:'Label a picture',order:'Put in order',hottext:'Hot text',twopart:'Two-part'};
   const TOK=String(window.SPITZ_BROWSE), post=m=>parent.postMessage(Object.assign({bview:TOK},m),'*');
   const esc=t=>String(t==null?'':t).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
   document.body.classList.add('browse');

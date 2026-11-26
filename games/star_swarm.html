@@ -116,7 +116,8 @@ button:disabled{ cursor:default; }
 /* v25: approved logo cf9ae1ee; the painting is 1536x1024 with the words at x 62-1489, y 306-782, so the box shows just that part (k = 840/1427) */
 #sw-start .sw-logo{ position:relative; width:840px; height:280px; margin:0 auto 4px; overflow:hidden; filter:drop-shadow(0 8px 18px rgba(3,5,12,.85)); }
 #sw-start .sw-logo .sw-logoimg{ position:absolute; width:904px; height:603px; left:-36px; top:-180px; }
-#sw-start .sz-eyebrow::after{ content:none; }
+#sw-start .sz-eyebrow{ display:none; }   /* v70 (Kody 2026-11-25): no "Spitz Arcade" header on the title screen. The element stays in the page because kit.js finds the start box through it (slide-in and fit-to-screen) */
+#sw-start .spz-hub.r, #sw-end .spz-hub.r{ left:24px; right:auto; }   /* v70 (Kody 2026-11-25): Back to Arcade sits top left like every other game. scorecode.js still puts Star Swarm's top right (the old game's title was on the left); this line wins over it */
 .sw-name{ font:400 52px/1.1 var(--display); color:var(--cyan); margin:8px 0 2px; word-break:break-word; }
 .sw-final{ font:400 120px/1 var(--display); color:var(--lime); margin:4px 0 0; font-variant-numeric:tabular-nums; }
 .sw-medal{ font:400 38px/1.2 var(--display); color:var(--gold); min-height:46px; margin-top:6px; }
