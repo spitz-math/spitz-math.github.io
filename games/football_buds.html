@@ -346,6 +346,8 @@ html.sz-alg .fb-next{ height:68px; }
 .fb-badge.done{ border-color:var(--ok); color:var(--text); } .fb-badge.done b{ color:var(--ok); }
 .fb-badge.pro{ border-color:var(--gold); color:var(--gold); }
 .sz-ctl .t kbd:nth-child(2){ grid-column:1; }   /* arrow keys card: the left arrow starts the second row */
+#fb-start .sz-ctl .k .or{ align-self:flex-end; margin:0 6px 10px; }   /* the "or" between the arrow keys and W A S D sits level with the bottom row of keys (it floated between the two rows) */
+#fb-start .sz-eyebrow.sz-eyebrow{ display:none; }   /* Kody 2026-11-25: no Spitz Arcade header on the title screen. Hidden, not removed: the shared kit uses this element to find the start box (fit to screen, slide in) */
 
 /* ================= v7 FULL SCREEN (2026-11-20): the field is the whole screen. On top of it: one scoreboard strip (score, clock, down),
    a small points tag, and the huddle card. Streak and challenges only show during the huddle. ================= */
@@ -533,7 +535,7 @@ var szm=/[?&]set=([a-z]+)/.exec(location.search); if(szm) document.documentEleme
   </div>
 
   <div class="fb-over" id="fb-start"><div class="fb-titleart" id="fb-titleart" aria-hidden="true"></div><div class="fb-box">
-    <div class="sz-eyebrow">Spitz <b>Arcade</b></div><img class="fb-titlelogo" id="fb-titlelogo" alt=""><h2 class="fb-big"><b>FOOTBALL BUDS</b> <i>BLITZ</i></h2>
+    <div class="sz-eyebrow" aria-hidden="true">Spitz <b>Arcade</b></div><img class="fb-titlelogo" id="fb-titlelogo" alt=""><h2 class="fb-big"><b>FOOTBALL BUDS</b> <i>BLITZ</i></h2>
     <p class="fb-sub"><span class="sz-setname">Multiplication facts, 0 to 12.</span> One 8-minute game, four quarters. Every point on the scoreboard = 1,000 points.</p>
     <div class="fb-steps">
       <div class="fb-step"><b>Huddle</b><p>Answer before every snap: 2 questions on 1st down, 1 after.</p><p class="hi">More right = bigger powers.</p><div class="ks"><kbd>1</kbd><kbd>2</kbd><kbd>3</kbd><kbd>4</kbd></div></div>
