@@ -69,3 +69,10 @@ Balance check first (/mnt/project-files/reviews/balance_jump_man_v11_2026-11-26/
 - Each stretch right after a Waystone features one ledge type (moving, springs, crumble, ice; stretchGen/stretchStep) with a banner. First 3 ledges sit near the middle; arrow over the next ledge for the first 3 jumps; a nudge after 6 s standing still.
 - Fixes from the balance check: no Waystone pay after the buzzer, Play again double-click guard, 0.8 s card read lock (the __G.pick hook skips it), held arrow keys survive a Waystone, Next greyed during the lock, right-answer explanation 1.5 s, "Not this time"/"So close!", FOG! on a fog hit, kinder fog-loss line. Save ver 5.
 Tests: tests/v12.js (new rules), tests/v4.js (updated for v12), tests/sets.js, tests/fps.js, tests/reach.js.
+
+## v13 (2026-11-25, Kody's v12 play notes)
+"two questions and a spare third if needed", "rocks should take out a heart", "make the fog climb faster, especially as you get closer to the end. once i had all the upgrades i was FLYING".
+- WAY_NEED=2: 2 right teaches the move (+ heart, +300); a miss brings a spare 3rd; two misses end it. Save ver 6.
+- Rocks cost a heart (never the last) and no longer knock you off; ROCK_EVERY 1.8 s (was 1.15), ROCK_WARN 1.0 s (was 0.8).
+- Fog: speed x(1 + 0.04 per learned move) x(1 + 0.25 x lateK), lateK 0 -> 1 from 1:30 to the end; trailing room fogGap() = 1200 - 60 per move - 200 x lateK (min 600).
+Tests: tests/v12.js and tests/v4.js updated for v13.

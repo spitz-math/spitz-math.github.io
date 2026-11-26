@@ -320,6 +320,16 @@ for old, new in [
   ("All 3 right: a new move and a heart back. Each right answer holds the fog 3 s.", "3 right: a new move and a heart back. Miss one and you get a spare question. Each right answer pushes the fog back."),
 ]:
     t = swap(t, old, new)
+# ---- v13 (Kody's v12 play notes): 2 right teaches the move with a spare 3rd question, rocks take a heart, faster late fog
+for old, new in [
+  ("function fresh(){ return { ver:5,", "function fresh(){ return { ver:6,"),
+  ("if(v&&v.ver===5&&v.topics", "if(v&&v.ver===6&&v.topics"),
+  ("Each right answer pushes the fog back; 3 right teaches a new move and gives back a heart. Miss one? You get a spare question.",
+   "2 right teaches a new move and gives back a heart. Miss one? You get a spare question. Each right answer pushes the fog back."),
+  ("3 right: a new move and a heart back. Miss one and you get a spare question. Each right answer pushes the fog back.",
+   "2 right: a new move and a heart back. Miss one and you get a spare question. Each right answer pushes the fog back."),
+]:
+    t = swap(t, old, new)
 for gone in ['S.energy+=', "U('energy')"]:
     assert gone not in t, gone
 open(os.path.join(O, 'jump_man_multiplication.html'), 'w', encoding='utf-8').write(t)
