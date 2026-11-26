@@ -1,0 +1,30 @@
+{
+  "title": "Example: a night-race look",
+  "name": "Night <b>Racer</b>",
+  "tagline": "Outrun the clock. Answer well at each pit stop for gears and upgrades.",
+  "set": "slope",
+  "fonts": ["../../../fonts/racingsansone-inter-f32000.css"],
+  "vars": {
+    "--rk-word": "\"Racing Sans One\",\"Inter\",sans-serif",
+    "--rk-word-scale": "1.5",
+    "--rk-ink": "#0B0718",
+    "--rk-text": "#FFFFFF",
+    "--rk-muted": "#C6B8F0",
+    "--rk-accent": "#FF3DB4",
+    "--rk-gold": "#FFE14D",
+    "--rk-win": "#1B1240",
+    "--rk-frame": "#FF3DB4",
+    "--rk-tile": "#2C1E66",
+    "--rk-go": "#FFE14D",
+    "--rk-go-text": "#1B1240",
+    "--rk-over": "linear-gradient(#1B1240,#4A1D6E)",
+    "--rk-radius": "10px",
+    "--rk-key-face": "linear-gradient(#3A2A86,#241858)",
+    "--rk-key-rim": "#FF3DB4",
+    "--rk-key-low": "#7A1B58",
+    "--rk-heart": "#FF3DB4",
+    "--sz-mark": "#FF3DB4",
+    "--sz-ink": "#C6B8F0"
+  },
+  "pal": { "sky": "#140C30", "star": "#6C5BB8", "ship": "#FFE14D", "gem": "#3DE0FF", "rock": "#8C7BA3", "ink": "#0B0718" }
+}
