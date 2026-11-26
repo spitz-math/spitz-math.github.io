@@ -80,6 +80,7 @@ hud.flag('time', 'warn', secondsLeft <= 20);                                    
 
 - **Left = you and your survival** (hearts, time, the thing chasing you). **Right = score and progress.** Kody's split from Jump Man v15.
 - Nothing is boxed: no chips, no panels, no corner brackets. Words and numbers sit on the play field with a dark outline.
+- No "Made by Spitz" in the HUD or anywhere in the in-game view. The credit shows only bottom right on the title and end screens, which `RK.title` and `RK.end` already do (Kody, 2026-11-26).
 - Types: `num`, `hearts` (pass `icon:'🍔'` for burgers as lives), `bar`, `text`. `cols:true` stacks each side as a column (Jump Man's side columns).
 
 ### Question card: 2 questions plus a spare
