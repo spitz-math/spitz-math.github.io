@@ -383,6 +383,7 @@ body.dn-big .dn-arena, body.dn-shrink .dn-arena{ z-index:41; }
 #dn-start .dn-go.dn-next:not(:disabled):hover{ filter:brightness(1.08); }
 #dn-start .dn-keyline{ margin-top:30px; }
 #dn-start:not([hidden]) ~ #dn-toast.dn-toast{ left:960px; top:996px; }
+#stage:has(#dn-qwrap:not([hidden])) #dn-toast.dn-toast, #stage:has(#dn-pick:not([hidden])) #dn-toast.dn-toast{ left:1060px; top:1016px; }   /* during a question or a pick the toast sits under the card, not on its top edge */
 .dn-snd .dn-bdbox{ width:1640px; max-height:1000px; }
 .dn-snd h4{ margin:16px 0 8px; font:800 20px/1 var(--body); color:var(--rr-gold); }
 .dn-sndrow{ display:flex; flex-wrap:wrap; gap:8px; }
@@ -517,6 +518,27 @@ body.dn-cine .dn-top, body.dn-cine .dn-side{ opacity:0; pointer-events:none; tra
 .dn-lsg b{ display:block; height:100%; width:100%; background:#E8566E; }
 .dn-lsg.hot .v{ color:#FFE07A; } .dn-lsg.hot b{ background:#FFC93C; }
 .dn-lsw{ width:290px; } .dn-lsw b{ background:#B56BFF; } .dn-lsw.stun b{ background:#FFC93C; }
+
+/* ===== 11 px pass (v82, 2026-11-26 overnight check): every word on screen is at least 11 px at 1366x620, where the stage shows at 0.574,
+   so nothing in the stage is under 20 px. Cards are wider to take the bigger text. ===== */
+.dn-top .dn-chip .l{ font-size:20px; } .dn-top .dn-credit.sz-credit{ font-size:20px !important; letter-spacing:.12em !important; }
+.dn-lsg .l{ font-size:20px; }
+.dn-keys{ font-size:20px; } .dn-keys div{ margin-bottom:5px; gap:8px; } .dn-keys kbd{ font-size:20px; min-width:40px; padding:4px 6px 5px; }
+.dn-buildmore, .dn-buildmore kbd{ font-size:20px; }
+#dn-buildlist.inv .dn-bi .lvl, #dn-buildlist.inv.many .dn-bi .lvl, #dn-buildlist.inv.g4 .dn-bi .lvl, #dn-buildlist.inv .dn-bi.evo .lvl{ font-size:20px !important; letter-spacing:0; }
+#dn-buildlist.inv .rd{ font-size:20px; }
+.dn-card{ width:470px; }
+.dn-card .dn-fam, .dn-rar, .dn-st, .dn-card .d.base, .dn-combos .t, .dn-co, .dn-co b, .dn-conote{ font-size:20px; }
+.dn-card .lv{ font-size:21px; }
+.dn-pickbox h2{ font-size:58px; } .dn-pickbox p{ margin:8px 0 18px; }
+#dn-buildlist .dn-lp{ display:none; gap:4px; justify-content:center; height:10px; align-items:center; }
+#dn-buildlist .dn-lp i{ width:8px; height:8px; background:var(--pc,#F4ECD8); } #dn-buildlist .dn-bi.max .dn-lp i{ background:var(--rr-gold); } #dn-buildlist .dn-lp i.s{ width:10px; height:10px; transform:rotate(45deg); background:#B56BFF; }
+#dn-buildlist.inv.many .dn-bi .lvl, #dn-buildlist.inv.g4 .dn-bi.evo .lvl::after{ display:none; } #dn-buildlist.inv.many .dn-lp{ display:flex; }   /* 10+ powers: level pips under each icon instead of 20 px words (B shows the details) */
+.dn-tabcover{ position:absolute; inset:0; z-index:60; display:grid; place-items:center; background:rgba(12,6,22,.92); text-align:center; }
+.dn-tabcover h2{ margin:0 0 14px; font:800 48px/1.1 var(--head); color:var(--rr-gold); } .dn-tabcover p{ margin:0 0 28px; font:600 28px/1.3 var(--body); color:#F4ECD8; } .dn-tabcover button{ padding:16px 36px; font:800 30px/1 var(--head); }
+#dn-buildlist.inv.g4.g5{ grid-template-columns:repeat(5,minmax(0,1fr)); gap:3px 1px; } #dn-buildlist.inv.g4.g5 .dn-bi{ gap:2px; } #dn-buildlist.inv.g4.g5 .dn-bi .ic{ width:27px !important; height:27px !important; font-size:19px !important; }   /* a huge build (20+ powers) */
+#dn-buildlist.inv.g4.g5 .dn-lp{ gap:2px; height:7px; } #dn-buildlist.inv.g4.g5 .dn-lp i{ width:6px; height:6px; } #dn-buildlist.inv.g4.g5 .dn-lp i.s{ width:7px; height:7px; }
+#dn-buildlist.inv .dn-bi.evo .lvl{ display:none; } #dn-buildlist.inv .dn-bi.evo .dn-lp{ display:flex; }   /* a synergy shows a purple diamond: the word "Synergy" at 20 px is wider than its column */
 </style>
 <script src="kit.js"></script>
 </head>
