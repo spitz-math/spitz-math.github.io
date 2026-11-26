@@ -658,7 +658,9 @@ var CFG={
   shipSpeed:640, dashDist:250, dashTime:0.18, dashSafe:0.38, dashCool:1.4,
   fireGap:0.17, beamSpeed:1500, hitSafe:2.0, hitSafeLight:1.3,
   // v12 hull bar: 6 blocks. A light hit costs 1 block, a heavy hit 2 (and a gun level). A right hangar answer repairs `fix` blocks.
-  hull:6, fix:3, escFix:2, dmg:{shot:1,shard:1,dive:2,rock:2,bolt:1,beam:2}, chainSecs:2.5,
+  hull:6, fix:3, escFix:2, revHull:2, bothPicks:1, bothPts:1500,   // v71: bothPicks = upgrades when both hangar answers are right (1 = one upgrade + bothPts points)
+    // v71: revHull = hull blocks after the one rebuild a run
+  dmg:{shot:1,shard:1,dive:2,rock:2,bolt:1,beam:2}, chainSecs:2.5,
   // heat 1..5: how hard the swarm pushes. It follows how the student is doing; it never moves the timeline.
   // heatCap: the most heat each sector allows, so the run ramps up sector by sector. On the last 2 hull blocks the swarm eases off one step.
   heatCap:[2,3,4],             // v69 (Kody picked "one step less enemy fire" after the v68 balance check: good bots won ~1 run in 15): was [3,4,5] since v37
@@ -722,12 +724,12 @@ function cardOpen(){ return !$('sw-q').hidden; }
 function draftOpen(){ return !$('sw-draft').hidden; }
 function hp(){ return S.hp==null?CFG.hull:S.hp; }
 function showQ(){ var q=S.q, el=$('sw-q'); el.classList.toggle('fast',FAST&&!q.visual); el.classList.toggle('strike',cardKind==='strike');
-  $('sw-safe').textContent=cardKind==='strike'?'Boss strike':'Hangar'; $('sw-safe2').textContent=cardKind==='strike'?'Charged shot ready.':'Ship docked. You are safe.';
+  $('sw-safe').textContent=cardKind==='strike'?'Boss strike':cardKind==='revive'?'Last chance':'Hangar · '+((S.hq||0)+1)+' of 2'; $('sw-safe2').textContent=cardKind==='strike'?'Charged shot ready.':cardKind==='revive'?'One rebuild per run.':'Ship docked. You are safe.';
   $('sw-tag').textContent=q.topic; $('sw-prompt').innerHTML=q.prompt; $('sw-visual').innerHTML=q.visual||''; el.classList.toggle('vis',!!q.visual);
   var long=q.choices.some(function(c){ return c.html.replace(/<[^>]+>/g,'').length>14; });
   var ch=$('sw-choices'); ch.classList.toggle('one',long||!!q.visual);
   ch.innerHTML=q.choices.map(function(c,i){ return '<button class="sw-ch" data-i="'+i+'"><span class="k">'+(i+1)+'</span><span class="t">'+c.html+'</span><span class="m"></span></button>'; }).join('');
-  var fb=$('sw-fb'); fb.className='sw-fb'; fb.innerHTML=cardKind==='strike'?'A right answer fires the charged shot at the glowing part.':'A right answer repairs your hull and lets you pick an upgrade.'; $('sw-launch').disabled=true;
+  var fb=$('sw-fb'); fb.className='sw-fb'; fb.innerHTML=cardKind==='strike'?'A right answer fires the charged shot at the glowing part.':cardKind==='revive'?'A right answer rebuilds your ship with '+CFG.revHull+' hull blocks.':S.hq?(S.hok?'Get this one right too for '+(CFG.bothPicks>1?'a <b>second upgrade</b>.':'<b>bonus points</b>.'):'Get this one right to repair your hull and pick an upgrade.'):'Get 1 right to repair and pick an upgrade. Get <b>both</b> right for '+(CFG.bothPicks>1?'two upgrades.':'bonus points too.'); $('sw-launch').disabled=true;
   if(S.qDone) markAnswered(S.picked,false); }
 function newQ(){ clearTimeout(nextT); cardAt=Math.max(cardAt,now()-100); S.q=nextQuestion(); S.qDone=false; S.picked=-1; save(); showQ(); }
 function openCard(kind){ if(!S.started||S.over||cardOpen()||draftOpen()) return; frozen=true; away=false; letGo(); cardAt=holdAt=now(); cardKind=kind; S.pend=kind;
@@ -737,21 +739,30 @@ function closeCard(){ clearTimeout(nextT); clearTimeout(lockT); $('sw-q').hidden
 function markAnswered(i,live){ var q=S.q, btns=$('sw-choices').querySelectorAll('.sw-ch'), c=q.choices[i], fb=$('sw-fb'), strike=cardKind==='strike';
   btns.forEach(function(b,j){ b.disabled=true; if(q.choices[j].ok){ b.classList.add('right'); b.querySelector('.m').textContent='✓'; } });
   if(!c.ok){ btns[i].classList.add('wrong'); btns[i].querySelector('.m').textContent='✗'; }
-  if(c.ok){ fb.className='sw-fb ok'; fb.innerHTML='<span class="h">✓ Correct!</span>'+(strike?'Charged shot away!':(S.fixed?'Hull repaired. ':'')+'Pick your upgrade.')+(S.streak>=3?' · streak '+S.streak+' = ×'+streakMult()+' points':''); $('sw-launch').disabled=false; }
+  if(c.ok){ fb.className='sw-fb ok'; fb.innerHTML='<span class="h">✓ Correct!</span>'+(strike?'Charged shot away!':cardKind==='revive'?'Ship rebuilt. Back in the fight!':!S.hq?(S.fixed?'Hull repaired. ':'')+'One more: get it right for '+(CFG.bothPicks>1?'a second upgrade.':'bonus points.'):S.hok>1?(CFG.bothPicks>1?'Both right: pick <b>two</b> upgrades!':'Both right: +'+CFG.bothPts.toLocaleString()+' points and an upgrade!'):(S.fixed?'Hull repaired. ':'')+'Pick your upgrade.')+(S.streak>=3?' · streak '+S.streak+' = ×'+streakMult()+' points':''); $('sw-launch').disabled=false; }
   else { fb.className='sw-fb bad'; fb.innerHTML='<span class="h">✗ Not quite.</span>'+(c.why||'')+' '+(function(ex){ ex=ex||''; var tx=function(h){ return String(h||'').replace(/<[^>]*>/g,'').replace(/\s+/g,' ').replace(/[.!?:\s]+$/,'').trim(); }; if(tx(ex)&&tx(c.why).indexOf(tx(ex))>=0) return ''; if(c.why){ var wy=tx(c.why).toLowerCase(); ex=ex.split(/(?<=[.!?])\s+(?![^<]*>)/).filter(function(st){ var t=tx(st).toLowerCase(), u=t.replace(/^[a-z]{2,6}:\s*/,''); if(!t||(st.match(/<[a-z]/gi)||[]).length!==(st.match(/<\//g)||[]).length) return true; return wy.indexOf(t)<0&&(u.length<12||wy.indexOf(u)<0); }).join(' '); }   /* v68: some sets repeat the rule in both lines (hoy, int); say it once */ return /[.!?:]\s*$/.test(ex.replace(/<[^>]*>/g,''))||!ex?ex:ex+'.'; })(q.explain)+' <b>'+(strike?'The shot fizzled: weaken it again.':'No upgrade this time.')+'</b>';
     $('sw-launch').disabled=!!live; if(live){ clearTimeout(lockT); lockT=setTimeout(function(){ $('sw-launch').disabled=false; },wrongRun>=2?2500:2000); } } }
 function answer(i){ if(!S.started||S.over||!cardOpen()||S.qDone||!S.q||now()-cardAt<250) return; var c=S.q.choices[i]; if(!c) return;
   S.qDone=true; S.picked=i; S.answered++; if(S.topics[S.q.topic]) S.topics[S.q.topic][1]++;
-  if(c.ok){ S.correct++; if(S.topics[S.q.topic]) S.topics[S.q.topic][0]++; S.streak++; S.best=Math.max(S.best,S.streak); wrongRun=0; S.pend=cardKind==='strike'?'strikeOk':'pick'; if(cardKind!=='strike'){ S.fixed=hp()<CFG.hull?1:0; if(S.fixed) S.hp=Math.min(CFG.hull,hp()+CFG.fix); }   // v40: the repair is saved with the answer, so a quick reload can't lose it
+  if(c.ok){ S.correct++; if(S.topics[S.q.topic]) S.topics[S.q.topic][0]++; S.streak++; S.best=Math.max(S.best,S.streak); wrongRun=0; S.pend=cardKind==='strike'?'strikeOk':cardKind==='revive'?'reviveOk':'hangar'; if(cardKind==='hangar'){ S.hok=(S.hok||0)+1; S.fixed=0; if(S.hok===1){ S.fixed=hp()<CFG.hull?1:0; if(S.fixed) S.hp=Math.min(CFG.hull,hp()+CFG.fix); } }   // v71: two hangar questions; the first right one repairs   // v40: the repair is saved with the answer, so a quick reload can't lose it
     SND.correct();    /* v61 (Kody): confetti only on the win screen */
     markAnswered(i,true); nextT=setTimeout(proceed,FAST?550:750); }
   else { S.streak=0; wrongRun++; SND.miss(); markAnswered(i,true); var el=$('sw-q'); el.classList.remove('shake','pop'); if(!REDUCE){ void el.offsetWidth; el.classList.add('shake'); } }
   save(); hud(); }
 /* on from an answered card: Space, Enter, the button, or by itself a moment after a right answer */
 function proceed(){ if(S.over||!cardOpen()||!S.qDone||$('sw-launch').disabled||!$('sw-confirm').hidden) return; clearTimeout(nextT);
-  var ok=!!S.q.choices[S.picked].ok, kind=cardKind; closeCard();
+  var ok=!!S.q.choices[S.picked].ok, kind=cardKind;
+  if(kind==='hangar'&&!S.hq){ hangarNext(); return; }   // v71: straight on to the second hangar question, the card stays up
+  closeCard();
   if(kind==='strike'){ resume(ok); if(ok) strikeHit(); else strikeMiss(); }
-  else if(ok) openHangar(); else hangarDone(false); }
+  else if(kind==='revive'){ if(ok) doRevive(); else endRun(); }
+  else hangarNext(); }
+/* v71 (Kody: as many questions as Rook & Ruin): the hangar asks two in a row, like R&R's level-up. 0 right = no upgrade, 1 right = repair + one pick, 2 right = repair + two picks */
+function hangarNext(){ if(!S.hq){ S.hq=1; S.pend='hangar'; S.q=null; S.qDone=false; if(!cardOpen()){ openCard('hangar'); return; } cardAt=holdAt=now(); newQ(); save(); return; }   // a reload between the two lands on the second question
+  var n=S.hok||0; S.hq=0; S.hok=0; closeCard(); if(n){ S.pickLeft=Math.min(CFG.bothPicks,n); S.bothBonus=n>1&&CFG.bothPicks<2?1:0; openHangar(); } else hangarDone(false); }
+/* v71: one rebuild per run. The hull hits 0, then one question: right = back in the fight with CFG.revHull blocks, wrong = the run ends */
+function reviveGate(){ if(S.pend==='reviveOk') doRevive(); else if(S.pend==='revive'&&S.q&&S.qDone) endRun(); else openCard('revive'); }
+function doRevive(){ closeCard(); S.dead=false; S.hp=CFG.revHull; S.revived=1; resume(true); ship.safeUntil=Math.max(ship.safeUntil,gt+2.5); pop(W/2,440,'SHIP REBUILT!','',1.4); save(); }
 /* back to the fight. After a right answer the enemy shots around the ship are cleared and it gets a second of cover */
 function resume(good){ frozen=false; away=false; resumeAt=gt+(good?0.45:0.3); letGo(); S.pend='';
   if(good){ shots=[]; ship.safeUntil=Math.max(ship.safeUntil,gt+1.45); ring(ship.x,SHIP_Y,'#3DE0FF',320,0.45); pfx('warp',ship.x,SHIP_Y+46,2.5,0,{back:1,follow:1}); SND.launch(); }
@@ -771,7 +782,8 @@ function hangarSet(){ return HANGAR.map(function(h){ var o={id:h.id,name:h.name,
   return o; }); }
 function openHangar(){ S.pend='pick'; draftSet=hangarSet(); draftAt=holdAt=now(); closeCard(); frozen=true; $('sw-dim').hidden=false; $('sw-draft').hidden=false;
   if(draftSet.every(function(o){ return o.off; })) draftSet=[{id:'bonus',name:'BONUS',col:'#FFC82E',d:'Your ship is fully loaded: <b>+2,000 points</b>',pips:0,lv:0}];
-  $('sw-drafttip').textContent=S.fixed?'Right answer! Hull repaired. Now pick one upgrade.':'Right answer! Pick one upgrade for your ship.';
+  var both=0; if(S.bothBonus){ S.bothBonus=0; S.bothShown=1; both=1; addScore(CFG.bothPts); }
+  $('sw-drafttip').textContent=S.bothShown?'Both right! +'+CFG.bothPts.toLocaleString()+' points. Now pick one upgrade.':(S.pickLeft||1)>1?'Both right! Pick two upgrades. First one:':S.picks2?'Now pick your second upgrade.':S.fixed?'Right answer! Hull repaired. Now pick one upgrade.':'Right answer! Pick one upgrade for your ship.';
   $('sw-cards').className='sw-cards n'+draftSet.length;
   $('sw-cards').innerHTML=draftSet.map(function(c,i){
     return '<button class="sw-card'+(c.off?' off':'')+'" data-i="'+i+'"'+(c.off?' disabled':'')+'><span class="k">'+(i+1)+'</span><canvas width="120" height="120" data-icon="'+c.id+'"></canvas>'+(c.rec?'<span class="rec">Best pick</span>':'')+'<span class="n">'+c.name+'</span><span class="d">'+c.d+'</span></button>'; }).join('');
@@ -782,10 +794,11 @@ function pickCard(i){ if(!draftOpen()||now()-draftAt<350) return; var c=draftSet
   else if(c.id==='wing'){ S.wingHp[S.wing]=2; S.wing++; toast(S.wing>1?'Two wingmen!':'Wingman joined!'); }
   else if(c.id==='shield'){ S.shield=1; toast('Shield up!'); }
   else { addScore(2000); toast('+2,000 points!'); }
-  $('sw-draft').hidden=true; SND.power(); hangarDone(true); }
+  SND.power(); if((S.pickLeft||1)>1){ S.pickLeft=1; S.picks2=1; save(); openHangar(); return; }
+  S.pickLeft=0; S.picks2=0; S.bothShown=0; $('sw-draft').hidden=true; hangarDone(true); }
 function hangarDone(good){ $('sw-draft').hidden=true; $('sw-dim').hidden=true; resume(good); S.wave++; later(0.5,startWave); save(); }
 /* the hangar stage: called by startWave. A reload lands back on the same step */
-function hangarGate(){ if(S.pend==='pick'){ frozen=true; openHangar(); } else if(S.pend==='hangar'&&S.q&&S.qDone){ hangarDone(false); } else openCard('hangar'); }
+function hangarGate(){ if(S.pend==='pick'){ frozen=true; openHangar(); } else if(S.pend==='hangar'&&S.q&&S.qDone){ hangarNext(); } else openCard('hangar'); }
 $('sw-cards').addEventListener('click',function(e){ var b=e.target.closest('.sw-card'); if(b) pickCard(+b.dataset.i); });
 
 /* ================= THE SWARM =================
@@ -987,7 +1000,7 @@ function hurt(why){ if(shipSafe()) return false; lastHurt=gt; clearGrazePops(); 
   shots=shots.filter(function(b){ return Math.hypot(b.x-ship.x,b.y-SHIP_Y)>330; });
   if(S.shield){ S.shield=0; ship.safeUntil=gt+1.0; pop(ship.x,SHIP_Y-80,'SHIELD!','BLOCKED'); ring(ship.x,SHIP_Y,'#4ADE80',140,0.35); pfx('cap_S',ship.x,SHIP_Y+40,2.5,0,{follow:1}); SND.hit(); save(); return true; }
   var dmg=CFG.dmg[why]||1; if(why==='dive'&&wv&&wv.def&&(S.wave<=2||wv.def.k==='set')) dmg=1;   /* v59: dives in the first two waves and in set pieces cost 1 */
-  hullWas=hp(); hullAt=gt; S.hp=hp()-dmg; if(S.hp<=0){ S.hp=0; S.dead=true; S.deadAt=Math.round(S.wall); burst(ship.x,SHIP_Y,'#FF9A2E',40,420,9); pfx('nova',ship.x,SHIP_Y-60,3.5); light(ship.x,SHIP_Y,'orange',700,0.8); shake(1); stopAt=-9; stop(150); SND.bigboom(); pop(W/2,440,'SHIP DESTROYED','',1.6); frozen=true; setTimeout(endRun,1400); save(); return true; }   // 3 hearts; the last one ends the run
+  hullWas=hp(); hullAt=gt; S.hp=hp()-dmg; if(S.hp<=0){ S.hp=0; S.dead=true; S.deadAt=Math.round(S.wall); burst(ship.x,SHIP_Y,'#FF9A2E',40,420,9); pfx('nova',ship.x,SHIP_Y-60,3.5); light(ship.x,SHIP_Y,'orange',700,0.8); shake(1); stopAt=-9; stop(150); SND.bigboom(); pop(W/2,440,'SHIP DESTROYED','',1.6); frozen=true; if(!S.revUsed){ S.revUsed=1; S.pend='revive'; S.q=null; setTimeout(reviveGate,1400); } else setTimeout(endRun,1400); save(); return true; }   // v71: one rebuild question a run   // 3 hearts; the last one ends the run
   ship.safeUntil=gt+(dmg>1?CFG.hitSafe:CFG.hitSafeLight); breakChain(); var down=''; if(dmg>1&&S.gun>1){ S.gun--; down=' · GUN: '+GUN_NAME[S.gun]; }
   burst(ship.x,SHIP_Y,'#FF4F6D',14,300); pfx('hurt',ship.x,SHIP_Y+20,3,0,{follow:1}); light(ship.x,SHIP_Y,'red',420,0.35);
   pop(ship.x,SHIP_Y-130,dmg>1?'BIG HIT!':'HIT!',MINUS+dmg+' HULL'+down); SND.hurt(); save(); return true; }
@@ -2423,7 +2436,7 @@ $('sz-mus').addEventListener('click',function(e){ e.stopPropagation(); ac(); mus
 
 /* ================= BOOT ================= */
 S=load()||fresh(); fit(); makeArt(); applyHazArt(); applyShips(); applyCreatures(); applyPlayer(); resetField();
-if(S.started){ $('sw-start').hidden=true; bestAtStart=bestToday(); if(S.over) showEnd(false); else if(S.dead) endRun(); else { playUI(true); S.chain=0; if(S.paused){ S.paused=false; if(!S.pend) openPause(); } } }   /* v64 (final check #5): a reload while paused comes back paused */   // a reload lands on the same wave, hangar or strike (startWave reads S.pend)
+if(S.started){ $('sw-start').hidden=true; bestAtStart=bestToday(); if(S.over) showEnd(false); else if(S.dead&&!/^revive/.test(S.pend||'')) endRun(); else if(S.dead){ playUI(true); frozen=true; reviveGate(); } else { playUI(true); S.chain=0; if(S.paused){ S.paused=false; if(!S.pend) openPause(); } } }   /* v64 (final check #5): a reload while paused comes back paused */   // a reload lands on the same wave, hangar or strike (startWave reads S.pend)
 else { $('sw-nameinput').value=S.name||''; $('sw-go').disabled=!S.name; }
 hud(); setInterval(tick,250); requestAnimationFrame(loop);
 
