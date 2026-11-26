@@ -46,8 +46,15 @@ const A = {
     const q = await pg.evaluate(() => { const S = __G.state(); return { open: !!(S.q && !S.qDone && __G.cardOpen()), right: S.q ? S.q.choices.findIndex(c => c.ok) : -1 }; });
     return { ...q, before };
   },
-  /* A right answer opens the upgrade pick: press 1 (GUN UP) the way a student does, then the next wave starts. */
+  /* The hangar asks two questions (v71). After the first, the second comes up on the same card: answer it right with its number key.
+     Then the upgrade pick opens: press 1 (GUN UP) the way a student does (twice if both were right), then the next wave starts. */
   async continueQuestion(pg) {
+    await pg.waitForFunction(() => { const S = __G.state(); return __G.draftOpen() || (__G.cardOpen() && S.q && !S.qDone); }, null, { timeout: 6000 }).catch(() => {});
+    if (await pg.evaluate(() => { const S = __G.state(); return __G.cardOpen() && S.q && !S.qDone; })) {
+      await sleep(400);
+      const k = await pg.evaluate(() => __G.state().q.choices.findIndex(c => c.ok));
+      await pg.keyboard.press('Digit' + (k + 1));
+    }
     await pg.waitForFunction(() => __G.draftOpen(), null, { timeout: 6000 }).catch(() => {});
     for (let i = 0; i < 6; i++) { if (!(await pg.evaluate(() => __G.draftOpen()))) break; await pg.keyboard.press('Digit1'); await sleep(500); }
     await pg.waitForFunction(() => !__G.frozen() && !__G.cardOpen() && !__G.draftOpen(), null, { timeout: 8000 }).catch(() => {});
