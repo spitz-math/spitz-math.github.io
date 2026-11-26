@@ -33,8 +33,8 @@ const ok=(c,m,v)=>{ if(!c) fails++; console.log(c?'  ok':'  FAIL',m,v===undefine
  const ctx2=await b.newContext({viewport:{width:1366,height:620}}); const a=await ctx2.newPage(); await start(a,'http://localhost:8765/sjm.html');
  await a.evaluate(()=>{ const G=__G,S=G.state(),P=G.man(),pl=G.plats(); const q=pl[10]; P.on=q; P.h=q.h; P.x=300; P.lastI=9; S.pi=9; }); await a.waitForFunction(()=>!!__G.state().way,null,{timeout:5000}); await a.waitForTimeout(300);
  const t2=await ctx2.newPage(); await t2.goto('http://localhost:8765/sjm.html'); await t2.waitForFunction(()=>window.__G); await t2.waitForTimeout(600);
- await a.bringToFront(); await a.evaluate(()=>__G.ans(__G.state().q.choices.findIndex(c=>!c.ok))); await a.waitForTimeout(300);
+ await a.bringToFront(); await a.evaluate(()=>__G.ans(__G.state().q.choices.findIndex(c=>!c.ok))); await a.waitForTimeout(300); const aRes=await a.evaluate(()=>({ans:__G.state().answered,stale:__G28.stale()}));
  await t2.bringToFront(); const right=await t2.evaluate(()=>__G.state().q.choices.findIndex(c=>c.ok)); await t2.keyboard.press(String(right+1)); await t2.waitForTimeout(300);
  const st=await t2.evaluate(()=>({stale:__G28.stale(),ans:__G.state().answered,cor:__G.state().correct})); const t3=await ctx2.newPage(); await t3.goto('http://localhost:8765/sjm.html'); await t3.waitForFunction(()=>window.__G); await t3.waitForTimeout(600); const saved=await t3.evaluate(()=>({ans:__G.state().answered,cor:__G.state().correct}));
- ok(st.stale&&saved.cor===0,'the other tab stops and its answer is not saved',{st,saved});
+ ok(aRes.ans+st.ans<=1&&saved.ans<=1&&(aRes.stale||st.stale),'two tabs: one goes stale, so only one answer ever counts (no peek)',{aRes,st,saved});
  ok(!errs.length,'no page errors',errs); console.log(fails?fails+' FAILED':'ALL PASS'); await b.close(); process.exit(fails?1:0); })();

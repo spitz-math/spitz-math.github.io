@@ -817,3 +817,15 @@ var gemArt29=gemArt; gemArt=function(gold){ return gold&&goldGem()?goldGem():gem
 })();
 /* the tower canvas has its own fillText/strokeText (a 700 px max width, set where cx is made): point them at the patched ones */
 ['fillText','strokeText'].forEach(function(m){ var f=CanvasRenderingContext2D.prototype[m]; cx[m]=function(t,x,y,mw){ return f.call(cx,t,x,y,mw||700); }; });
+//@@ V31
+/* v31: approved hero everyday frames 0144bbb4 (art/make_frames.py -> frames.js, window.SJMFRAMES) replace the old Lantern Peak
+   frames: idle, a 4-step run (A B C B), jump, fall and land. The move poses still win (hurt > dash > glide > wall > flip). */
+var FR={}; Object.keys(window.SJMFRAMES||{}).forEach(function(k){ FR[k]=artIm(window.SJMFRAMES[k]); });
+function frameIm(nm,ghost){ var im=FR[nm]; if(!im||!ready(im)) return null; if(!ghost) return im;
+  var key='f'+nm+ghost; if(POSE_T[key]) return POSE_T[key];
+  var c=document.createElement('canvas'); c.width=im.naturalWidth; c.height=im.naturalHeight; var g=c.getContext('2d'); g.drawImage(im,0,0); g.globalCompositeOperation='source-in'; g.fillStyle=ghost; g.fillRect(0,0,c.width,c.height); return POSE_T[key]=c; }
+var heroPose31=heroPose;
+heroPose=function(ghost){ var z=heroPose31(ghost); if(z) return z; var f=heroFrame(), nm;
+  if(f==='run'||f==='idle'&&P.on&&Math.abs(P.vx)>40) nm=['runA','runB','runC','runB'][Math.floor((P.walk||0)*32/Math.PI)%4];
+  else nm=f==='jump'?'jump':f==='fall'?'fall':f==='land'?'land':'idle';
+  return frameIm(nm,ghost); };

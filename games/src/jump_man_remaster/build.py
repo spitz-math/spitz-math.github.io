@@ -452,6 +452,9 @@ t = swap(t, '</head>', '<style>#jm-choices .jm-ch.jmr-long{ font-size:30px !impo
 t = swap(t, "/* ================= START / END", parts['V29'] + "\n/* ================= START / END")
 # ---- v30: one pixel arrow style for every canvas arrow
 t = swap(t, "/* ================= START / END", parts['V30'] + "\n/* ================= START / END")
+# ---- v31: approved hero everyday frames 0144bbb4 (art/make_frames.py -> frames.js)
+t = swap(t, "/* ================= START / END", parts['V31'] + "\n/* ================= START / END")
+t = swap(t, '<script src="scorecode.js"></script>', '<script>\n' + read(os.path.join(HERE, 'art', 'frames.js')) + '</script>\n<script src="scorecode.js"></script>')
 for gone in ['S.energy+=', "U('energy')"]:
     assert gone not in t, gone
 open(os.path.join(O, 'jump_man_multiplication.html'), 'w', encoding='utf-8').write(t)
