@@ -1440,13 +1440,16 @@ function vennGeo(v){
 }
 
 function buildGraph(it,root){
-  const id=it.n, g=coordSVG(it.R,{live:true});
+  /* options: R; halfStep: true snaps to every half unit (answer may be like [-0.5,-1]); fixed: [[x,y],...] points already on the grid (blue, not clickable) */
+  const id=it.n, g=coordSVG(it.R,{live:true}), st=it.halfStep?2:1;
   const w=document.createElement('div'); w.className='gwrap';
   w.innerHTML=`<div>${g.html}</div><div><p style="margin:0 0 .4em" class="hint">Click again on your point to remove it.</p><p style="margin:0 0 .6em">Your point: <span class="gread">none</span></p><button type="button" class="btnline">Clear point</button></div>`;
   const svg=w.querySelector('svg'), pts=svg.querySelector('.pts'), read=w.querySelector('.gread');
+  if(it.halfStep) svg.dataset.kb=[g.pad,g.cell/st,g.cell/st,g.R*st,g.R*st].join(',');   /* arrow keys move half a unit */
+  (it.fixed||[]).forEach(([fx,fy])=>{ const c=document.createElementNS('http://www.w3.org/2000/svg','circle'); c.setAttribute('cx',g.X(fx)); c.setAttribute('cy',g.Y(fy)); c.setAttribute('r',7); c.setAttribute('fill','#1aa3e0'); c.setAttribute('pointer-events','none'); pts.before(c); });
   const hov=document.createElementNS('http://www.w3.org/2000/svg','circle'); hov.setAttribute('class','hov'); hov.setAttribute('r',6); hov.style.display='none'; svg.appendChild(hov);
   const toGrid=e=>{ const p=svg.createSVGPoint(); p.x=e.clientX; p.y=e.clientY; const q=p.matrixTransform(svg.getScreenCTM().inverse());
-    const gx=Math.round((q.x-g.pad)/g.cell-g.R), gy=Math.round(g.R-(q.y-g.pad)/g.cell);
+    const gx=Math.round(((q.x-g.pad)/g.cell-g.R)*st)/st, gy=Math.round((g.R-(q.y-g.pad)/g.cell)*st)/st;
     if(Math.abs(gx)>g.R||Math.abs(gy)>g.R) return null; return [gx,gy]; };
   const paint=()=>{ pts.innerHTML=''; const a=S.answers[id];
     if(a){ const c=document.createElementNS('http://www.w3.org/2000/svg','circle'); c.setAttribute('class','pt'); c.setAttribute('cx',g.X(a[0])); c.setAttribute('cy',g.Y(a[1])); c.setAttribute('r',7); pts.appendChild(c);
