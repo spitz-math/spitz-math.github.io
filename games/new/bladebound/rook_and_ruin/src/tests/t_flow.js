@@ -48,9 +48,10 @@ const {chromium}=require('playwright'); const D=process.argv[2]||require('path')
  await pg.waitForFunction(()=>__G.state().mode==='pick'); await wait(150);
  const solid=await ev(()=>({arming:!!document.querySelector('.arming'),op:[...document.querySelectorAll('.dn-card')].map(c=>getComputedStyle(c).opacity)})); await pg.screenshot({path:D+'/tour/flow_05b_gate.png'});
  check('cardsSolidInGate',solid.arming&&solid.op.every(o=>o==='1'),solid);
- const p2=await st(); const h2=await ev(()=>document.getElementById('dn-picktitle').getBoundingClientRect().toJSON());
+ const p2=await st(); const h2=await ev(()=>document.getElementById('dn-picktitle').getBoundingClientRect().toJSON()), cardsR=await ev(()=>document.getElementById('dn-cards').getBoundingClientRect().toJSON());
  check('earnedScreen',p2.title==='Earned upgrade'&&p2.step==='Reward 2 of 2'&&p2.cards===3&&/Choose 1 of 3/.test(p2.note)&&p2.picks===1,p2);
- check('toastClear',toastBox&&toastBox.bottom<=h2.top,{toastBox,h2});
+ const clear=(a,b)=>a.bottom<=b.top||a.top>=b.bottom||a.right<=b.left||a.left>=b.right;   /* v82: during a pick the toast sits under the cards; it must not cover the title or a card */
+ check('toastClear',toastBox&&clear(toastBox,h2)&&clear(toastBox,cardsR),{toastBox,h2,cardsR});
  await wait(450); await pg.screenshot({path:D+'/tour/flow_05_earned.png'});
  const tp=(await st()).t; await wait(500); check('frozenPick',(await st()).t===tp,{});
  await pg.keyboard.press('2'); await wait(300); check('pickedEarned',(await st()).mode!=='pick'&&(await st()).picks===2,await st());

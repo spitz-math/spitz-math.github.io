@@ -131,3 +131,14 @@ Save key `bladebound_v3`, score id `starter` until go-live, prefix `dn`. Goblin 
 - XP that is still flying in when a room clears now lands BEFORE the level-up opens (wait up to 2.5 s, then any left is counted at once), so all of it is in
   one batch. It used to land after the cards and open a second round of questions right away. A chest also waits for the gems.
 - src/kit.js and src/scorecode.js refreshed from the site copies (the _mult copy had older ones).
+
+## Overnight-check fixes (v82, 2026-11-26, Kody: "do the fixes, allow for the spare question in second wind")
+- Second Wind is the spare question: a wrong revive answer with Second Wind in hand asks one more ("Second Wind!", `revive2`). A second knockout with it unspent asks `revive2` too.
+- End screen: Space does nothing (it is the attack key, mashing it skipped the score code). Enter plays again only 2.5 s after the end screen shows; the button still works.
+- Doors stay shut to Rook while gems are flying or earned level-ups are unpaid (a few seconds at most), so XP can't be left behind.
+- No overlaps: during a question or pick the toast sits under the card; ROOM CLEAR and other non-tip banners clear when a question or pick opens; the combo and banners are not drawn behind question, pick and pause screens.
+- 11 px pass: nothing in the stage is under 20 px (0.574 scale at 1366x620), cards 470 wide. The build list shows level pips instead of words from 10 powers up, synergies always show a purple diamond, and a 5-column grid (`g5`) holds 20+ powers.
+- Top bar hearts shrink when the bar would run past the stage (Last Stand + Warden bars) and always fit 7 hearts + 6 armor + Second Wind.
+- A reload during the ending scene plays it again (`S.endKind`), instead of skipping to the results.
+- One tab at a time: the newest tab owns the run (`KEY_tab` in localStorage); an older tab stops, stops saving, and offers "Play in this tab" (a reload).
+- Not changed (Kody's calls): the Shift+R box does not pause; Space still doesn't continue after a question.
