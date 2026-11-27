@@ -455,6 +455,10 @@ t = swap(t, "/* ================= START / END", parts['V30'] + "\n/* ===========
 # ---- v31: approved hero everyday frames 0144bbb4 (art/make_frames.py -> frames.js)
 t = swap(t, "/* ================= START / END", parts['V31'] + "\n/* ================= START / END")
 t = swap(t, '<script src="scorecode.js"></script>', '<script>\n' + read(os.path.join(HERE, 'art', 'frames.js')) + '</script>\n<script src="scorecode.js"></script>')
+# ---- v32: approved patchwork glider wing 35579846 (art/make_glider.py -> glider.js), drawn above the glide pose
+t = swap(t, "/* ================= START / END", parts['V32'] + "\n/* ================= START / END")
+t = swap(t, '<script src="scorecode.js"></script>', '<script>\n' + read(os.path.join(HERE, 'art', 'glider.js')) + '</script>\n<script src="scorecode.js"></script>')
+t = swap(t, "cx.scale(f,1); cx.drawImage(pz,-Math.round(pw/2),-ph,pw,ph);", "cx.scale(f,1); if(!ghost&&typeof glideWing==='function') glideWing(pz,ph); cx.drawImage(pz,-Math.round(pw/2),-ph,pw,ph);")
 for gone in ['S.energy+=', "U('energy')"]:
     assert gone not in t, gone
 open(os.path.join(O, 'jump_man_multiplication.html'), 'w', encoding='utf-8').write(t)

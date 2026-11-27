@@ -829,3 +829,17 @@ heroPose=function(ghost){ var z=heroPose31(ghost); if(z) return z; var f=heroFra
   if(f==='run'||f==='idle'&&P.on&&Math.abs(P.vx)>40) nm=['runA','runB','runC','runB'][Math.floor((P.walk||0)*32/Math.PI)%4];
   else nm=f==='jump'?'jump':f==='fall'?'fall':f==='land'?'land':'idle';
   return frameIm(nm,ghost); };
+//@@ V32
+/* v32: approved patchwork cloth glider wing 35579846 (art/make_glider.py -> glider.js, window.SJMGLIDER).
+   While gliding, the wing rides above the hero's head (mirrored with the hero) with two short dark cords down to the hands.
+   Called from drawMan right before the glide pose is drawn, so the cords sit behind the arms. */
+var GLW=window.SJMGLIDER?artIm(window.SJMGLIDER):null;
+function cord32(x0,y0,x1,y1){ var n=Math.max(1,Math.ceil(Math.max(Math.abs(x1-x0),Math.abs(y1-y0))/2));
+  for(var i=0;i<=n;i++){ var k=i/n; cx.fillRect(Math.round(x0+(x1-x0)*k)-1,Math.round(y0+(y1-y0)*k)-1,2,2); } }
+function glideWing(pz,ph){ if(!P.glide||!GLW||!ready(GLW)||!AL||pz!==AL.pose.glide) return;
+  var bob=RM()?0:Math.round(Math.sin(gt*5)), top=-ph-38+bob, L=-64;
+  cx.fillStyle='#2A1B2E'; cord32(L+34,top+32,-25,-ph+40); cord32(L+98,top+21,29,-ph+38);
+  cx.drawImage(GLW,L,top); }
+var drawMan32=drawMan;                                // a wall-kick spin keeps turning in the air; while gliding the hero hangs upright under the wing
+drawMan=function(x,y,ghost){ if(!P.glide) return drawMan32(x,y,ghost); var r=P.rot; P.rot=0; try{ drawMan32(x,y,ghost); } finally{ P.rot=r; } };
+window.__G32={GLW:GLW, glideWing:glideWing};
