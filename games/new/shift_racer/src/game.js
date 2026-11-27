@@ -20,7 +20,7 @@ var CFG={ start:45, cap:55, V:400, GR:[0.36,0.54,0.70,0.86,1], GT:[0.9,1.1,1.4,1
   flag:1000, ramp:150, air:0.95, pad:35, close:100, closeN:12, fast:[1,1,1,1,1.25,1.5], fastN:2, oncK:2, rb:[0.3,0.55,0.8], perfect:50, star:50, gold:150, goal:500, win:5000, perSec:100, dist:12,
   pitNitro:[0,40,100], copV:0.68, copWait:4, copMax:260, copStart:160, bust:5, copK:0.5,
   /* heat: flashy driving fills it from stretch 2; full = a police chase. Their speed is a share of YOUR top unlocked gear, so clean driving always escapes. */
-  heat:{close:9, nitro:14, air:8, V:[0.76,0.82,0.88], K:0.3, start:215, away:4, bust:2, pay:500, time:2},
+  heat:{close:9, nitro:14, air:8, crash:22, V:[0.76,0.82,0.88], K:0.3, start:215, away:4, bust:2, pay:500, time:2},
   /* the 8 stretches: length, traffic gap, pace (the flag before it adds length/pace seconds), and what is new. Only 1, 7 and 8 are fixed; the rest roll scenery, hazard and goal. */
   plan:[ {len:9500, gap:430, pace:0,   scen:'forest', goal:'perfect3'},
          {len:11000,gap:390, pace:300, pick:1},
@@ -30,7 +30,7 @@ var CFG={ start:45, cap:55, V:400, GR:[0.36,0.54,0.70,0.86,1], GT:[0.9,1.1,1.4,1
          {len:13500,gap:290, pace:420, haz:1, trucks:1},
          {len:11500,gap:800, pace:410, scen:'sunrise', breather:1},
          {len:19000,gap:280, pace:490, scen:'getaway', trucks:1, cop:1} ] };
-var SPD=+prm.spd||1; CFG.V*=SPD; CFG.TV*=SPD; CFG.pace*=SPD; CFG.dist/=SPD; CFG.copK/=SPD; CFG.heat.K/=SPD; CFG.plan.forEach(function(p){ p.len=Math.round(p.len*SPD); p.gap=Math.round(p.gap*SPD); if(p.pace) p.pace*=SPD; });   /* test knob only (?spd=1.3): it made the bots crash a third more, so speed feel comes from denser road texture instead */
+var SPD=1; CFG.V*=SPD; CFG.TV*=SPD; CFG.pace*=SPD; CFG.dist/=SPD; CFG.copK/=SPD; CFG.heat.K/=SPD; CFG.plan.forEach(function(p){ p.len=Math.round(p.len*SPD); p.gap=Math.round(p.gap*SPD); if(p.pace) p.pace*=SPD; });   /* test knob only (?spd=1.3): it made the bots crash a third more, so speed feel comes from denser road texture instead */
 var NL=4, LW=76, RX=(960-NL*LW)/2, W=960, H=540, PY=420, CARL=74;
 var TESTBOX=/^(localhost|127\.0\.0\.1)$/.test(location.hostname)||(location.protocol==='file:'&&/_(mult|test|candidate)/.test(location.pathname));
 if(TESTBOX&&+prm.short>0) CFG.plan.forEach(function(p){ p.len=Math.round(p.len*(+prm.short)); });   /* bots: ?short=0.25 makes every stretch a quarter as long */
@@ -128,7 +128,7 @@ var hud=RK.hud({ left:[ {id:'time',type:'num',label:'Time',size:'big'}, {id:'cop
 
 var PIT={ safe:'The clock is stopped.', rewards:['Gears 4 and 5 stay locked for this stretch.','4th gear and some nitro','4th and 5th gear and a FULL nitro bar'], done:pitDone };
 var card=RK.card({ fast:!!(QS&&QS.set==='mult')||!QS, kinds:{ grid:{ title:'Starting grid', safe:PIT.safe, rewards:PIT.rewards, done:pitDone }, pit:{ title:'Pit stop', safe:PIT.safe, rewards:PIT.rewards, done:pitDone } } });
-function pitDone(r){ RES.push(r); var R=S.r; R.maxGear=3+Math.min(2,r.right); R.jam=r.right<2?1:0; S.boost=Math.min(100,S.boost+CFG.pitNitro[Math.min(2,r.right)]);
+function pitDone(r){ RES.push(r); var R=S.r; R.maxGear=3+Math.min(2,r.right); R.jam=r.right<2?1:0; if(R.jam) S.jams=(S.jams||0)+1; S.boost=Math.min(100,S.boost+CFG.pitNitro[Math.min(2,r.right)]);
   if(r.perfect&&rollOffer()) pick.open(1,'Perfect pit! Pick a tune-up.'); else lights(); }
 function rollOffer(){ var ids=Object.keys(TUNE).filter(function(k){ return k==='shield'?!S.shield:k==='time'?true:S.lv[k]<TUNE[k].max; }); ids.sort(function(){ return Math.random()-0.5; }); S.offer=ids.slice(0,2); return S.offer.length>0; }
 var pick=RK.pick({ title:'Tune-up', options:function(){ return (S.offer||[]).map(function(k){ return { id:k, name:TUNE[k].name, desc:TUNE[k].desc, icon:TUNE[k].icon }; }); },
@@ -136,6 +136,7 @@ var pick=RK.pick({ title:'Tune-up', options:function(){ return (S.offer||[]).map
 function tuneUp(id){ if(id==='shield') S.shield=1; else if(id==='time') S.left=Math.min(CFG.cap,S.left+5); else S.lv[id]++; S.offer=null; }
 
 var end=RK.end({ name:NAME, onAgain:function(){ S=fresh(S.name); save(); toTitle(); } });
+var askAt=0; window.addEventListener('keydown',function(e){ var box=$('sr-confirm'); if(e.shiftKey&&/^r$/i.test(e.key)&&box&&box.hidden) askAt=Date.now(); else if(/^y$/i.test(e.key)&&box&&!box.hidden&&Date.now()-askAt<1000){ e.stopImmediatePropagation(); e.preventDefault(); } },true);
 RK.ask({ when:function(){ return S&&S.started&&!S.over; }, onYes:function(){ S=fresh(S.name); save(); toTitle(); } });
 RK.pause({ when:function(){ return S&&S.started&&!S.over; }, controls:CONTROLS, stats:function(){ return [['Score',S.score],['Stretch',(S.n+1)+' of '+CFG.plan.length],['Best streak',S.best]]; }, onPause:function(){ last=0; engine(false); } });
 RK.idle({ after:6, text:'Left and Right to dodge!', when:function(){ return S&&S.started&&!S.over&&S.phase==='drive'; } });
@@ -145,12 +146,15 @@ function toTitle(){ hud.show(false); card.close(); pick.close(); RK.fx.clear(); 
 function play(fromStart){ title.hide(); end.hide(); hud.show(true); last=0;
   if(!fromStart){ begin(); buildRoad(); car.x=laneX(S.r.lane); if(S.phase==='drive'){ S.r.gear=1; S.r.rpm=0; S.r.nitro=0; nextTD=S.r.pd+500; nextSD=S.r.pd+400; }   /* a reload: same spot, from a stop */
     else if(S.phase==='pit'){ if(!card.resume()&&!pick.resume()) S.pitT=0.2; } } }
+var MEDAL=[[3,'Bronze'],[6,'Silver'],[8,'Gold']];
+function medalAt(f,won){ return won?'Gold':f>=6?'Silver':f>=3?'Bronze':''; }
+function medalNext(f){ return f<3?'Bronze medal in '+(3-f)+' more flag'+(3-f===1?'':'s'):f<6?'Silver medal in '+(6-f)+' more flag'+(6-f===1?'':'s'):'Gold medal at the state line'; }
 function endRun(won){ if(S.over) return; S.over=true; S.won=!!won; S.card=null; S.pick=null; S.phase='over'; save(); if(SIM) return; hud.show(false); card.close(); pick.close(); RK.fx.clear(); engine(false);
   var topWas=0; try{ topWas=+localStorage.getItem(CARKEY+'_top')||0; }catch(e){} topWas=Math.max(topWas,RK.best.get());
   var was=RK.best.keep(S.score), np=CFG.plan.length, got=CARS.filter(function(k){ return k.need>topWas&&k.need<=S.score; }), nxt=CARS.filter(function(k){ return k.need>Math.max(topWas,S.score); })[0];
-  end.show({ score:S.score, headline:won?'You crossed the state line!':'Out of time on stretch '+(S.n+1)+' of '+np+'.', goal:RK.goal({ score:S.score, was:was, streak:S.best }),
-    stats:[ ['Correct',S.correct+' / '+S.answered], ['Flags',S.flags+' of '+np], ['Best near-miss combo','×'+S.bestCombo] ].concat(got.length?[['New car unlocked',got[got.length-1].nm]]:nxt?[['Next car',nxt.nm+' at '+nxt.need.toLocaleString('en-US')]]:[]), topics:S.topics, code:'' });   /* at go-live: pass gameId to RK.end and drop code:'' */
-  if(won) KIT.confetti(960,300,90,2.6);
+  end.show({ score:S.score, headline:won?'Gold medal! You crossed the state line.':medalAt(S.flags,0)?medalAt(S.flags,0)+' medal! '+S.flags+' flags, out of time on stretch '+(S.n+1)+'.':'Out of time on stretch '+(S.n+1)+' of '+np+'. '+medalNext(S.flags)+'.', goal:RK.goal({ score:S.score, was:was, streak:S.best }),
+    stats:[ ['Right answers',S.correct+' of '+S.answered], ['Flags',S.flags+' of '+np], ['Top gears locked',(S.jams||0)?(S.jams+' of '+(S.n+1)+' stretches (missed pit questions)'):'never'], ['Crashes',String(S.crashes)] ].concat(S.chases?[['Police chases escaped',(S.escapes||0)+' of '+S.chases]]:[]).concat(got.length?[['New car unlocked',got[got.length-1].nm]]:nxt?[['Next car',nxt.nm+' at '+nxt.need.toLocaleString('en-US')]]:[]), topics:S.topics, code:'' });   /* at go-live: pass gameId to RK.end and drop code:'' */
+  if(won) KIT.confetti(960,300,90,2.6); else if(S.flags>=3) KIT.confetti(960,300,S.flags>=6?60:36,2.2);
   var nu=CARS.filter(function(k){ return k.need>was&&k.need<=S.score; }); if(nu.length) setTimeout(function(){ KIT.toast('New car colour: '+nu[nu.length-1].nm+'!'); },900); }
 
 /* ---------------- the car ---------------- */
@@ -170,12 +174,12 @@ function ri(a,b){ return a+Math.floor(Math.random()*(b-a+1)); }
 
 /* ---------------- a stretch: rolled fresh each run (scenery, hazard, goal), except 1, 7 and 8 ---------------- */
 function newStretch(n){ var P=CFG.plan[n], R=rnd(S.seed+n*7919), scen=P.scen, haz=[], goal=P.goal;
-  if(!scen){ var pool=ROLL.filter(function(k){ return k!==S.lastScen&&(n>1||k!=='forest'); }); scen=pool[Math.floor(R()*pool.length)]; }
+  if(!scen){ var used=S.scens||(S.scens=['forest']), pool=ROLL.filter(function(k){ return used.indexOf(k)<0; }); if(!pool.length) pool=ROLL.filter(function(k){ return k!==S.lastScen; }); scen=pool[Math.floor(R()*pool.length)]; }
   if(P.haz){ var hz=['ice','sand','oil','night']; haz.push(scen==='city'&&R()<0.5?'night':scen==='snow'?'ice':scen==='desert'||scen==='coast'?'sand':hz[Math.floor(R()*3)]); }
   if(P.cop) haz.push('oil');
   if(n===5&&P.haz&&CFG.plan.length===8) haz=['onc'];
   if(!goal){ goal=GOALROLL[Math.floor(R()*GOALROLL.length)]; }
-  S.lastScen=scen; S.n=n;
+  S.lastScen=scen; S.n=n; if(S.scens&&S.scens.indexOf(scen)<0) S.scens.push(scen);
   S.r={ n:n, L:P.len, pd:0, lane:S.r?S.r.lane:1, gear:1, rpm:0, nitro:0, cc:0, ccT:0, scen:scen, haz:haz, goal:goal, gs:{air:0,perfect:0,close:0,stars:0,combo:0,top:0,nitro:0,crashes:0}, gdone:false, maxGear:3, jam:0, bog:0, stall:0 };
   S.cop=P.cop?{gap:CFG.copStart,x:laneX(S.r.lane),warn:0,wait:CFG.copWait}:null; S.phase='pit'; S.pitT=n?1.0:0.4;
   buildRoad(); }
@@ -199,8 +203,8 @@ function goalHit(){ var r=S.r; if(r.gdone) return; r.gdone=true; S.goals++; var 
 
 /* green light: one press of Space. On the green = a flying start. Too early = a slow start. No press = an ordinary start. The clock waits. */
 function lights(){ S.phase='lights'; S.lt=0; S.lg=1.5+Math.random()*0.8; S.lp=0; save();
-  if(!SIM&&!S.r.jam) RK.fx.banner('All 5 gears!','full nitro: hit Space in 5th',{kind:'good',ms:1500});
-  if(!SIM&&S.r.jam) RK.fx.banner('Gear jammed!',(S.r.maxGear===3?'4th and 5th are':'5th is')+' locked for this stretch',{kind:'bad',ms:1500}); }
+  if(!SIM&&!S.r.jam) RK.fx.banner('All 5 gears!',mult()>1?'full nitro, and your answer streak pays ×'+mult()+' points':'full nitro: hit Space in 5th',{kind:'good',ms:1700});
+  if(!SIM&&S.r.jam) RK.fx.banner('Gear jammed!',(S.r.maxGear===3?'4th and 5th are':'5th is')+' locked: get 2 right at the next pit',{kind:'bad',ms:1900}); }
 function go(kind){ var r=S.r; S.phase='drive'; r.gear=1; r.rpm=0; limT=0;
   if(kind==='perfect'){ r.gear=2; setV(hiG(1)*0.95); S.boost=Math.min(100,S.boost+15); var p=add(CFG.perfect); pop(car.x,r.pd+70,'Flying start! +'+p,'good'); SND.perfect(); }
   else if(kind==='early'){ r.bog=1.2; pop(car.x,r.pd+70,'Too early!','bad'); SND.bog(); }
@@ -209,7 +213,9 @@ function go(kind){ var r=S.r; S.phase='drive'; r.gear=1; r.rpm=0; limT=0;
   if(S.cop&&!SIM){ RK.fx.banner('The Getaway!','stay ahead of the police to the state line',{kind:'bad',ms:2200}); SND.siren(); }
   if(CFG.plan[r.n].breather){ S.boost=100; if(!SIM) RK.fx.banner('Open highway','free nitro and a line of gold stars',{kind:'good',ms:2000}); }
   else if(r.haz.length&&!S.cop&&!SIM) RK.fx.banner(HAZ[r.haz[0]]+'!',r.haz[0]==='ice'?'you slide one lane too far':r.haz[0]==='sand'?'sand slows you down':r.haz[0]==='oil'?'oil spins you sideways':r.haz[0]==='onc'?'the left lane comes at you: near-misses there pay double':'watch your headlights',{kind:'bad',ms:2400});
-  else if(works.length&&!works[0].rb&&!SIM) RK.fx.banner('Roadworks!','a lane is closed ahead',{kind:'bad',ms:2000}); }
+  else if(works.length&&!works[0].rb&&!SIM) RK.fx.banner('Roadworks!','a lane is closed ahead',{kind:'bad',ms:2000});
+  else if(r.n===1&&!SIM) RK.fx.banner('The heat is on!','near misses, nitro and jumps fill Heat. Full Heat brings the police',{kind:'bad',ms:2600});
+  else if(CFG.plan[r.n].trucks&&!S.cop&&!SIM) RK.fx.banner('Rush hour!','big rigs ahead: squeeze past for near-miss points',{kind:'bad',ms:2000}); }
 function pressShift(){ if(!S||!S.started||S.over) return; var r=S.r;
   if(S.phase==='lights'){ if(S.lp) return; S.lp=1; if(S.lt<S.lg) go('early'); else go(S.lt-S.lg<=0.4?'perfect':'ok'); return; }
   if(S.phase!=='drive') return;
@@ -252,7 +258,7 @@ function spawnAhead(){ var r=S.r, P=CFG.plan[r.n];
 function blockerV(o){ var best=null, bd=1e9; traffic.forEach(function(q){ if(q!==o&&!q.out&&!q.on&&q.lane===o.lane&&q.d>o.d&&q.d-o.d<160&&q.d-o.d<bd){ bd=q.d-o.d; best=q; } }); return best; }
 function crash(o,side){ var r=S.r; if(o){ o.hit=1; o.out=(o.x>=car.x?1:-1)*330; }
   if(S.shield){ S.shield=0; inv=gt+0.6; pop(car.x,r.pd+70,'Shield!','gold'); if(!SIM) SND.star(); return; }
-  r.nitro=0; multV=1; car.vx=0; var v=baseV()*CFG.crashKeep; while(r.gear>1&&v<loG(r.gear)) r.gear--; setV(v); car.v=v; r.bog=CFG.crashBog; r.stall=CFG.stall; r.cc=0; r.ccT=0; S.crashes++; r.gs.crashes++; inv=gt+CFG.inv+CFG.stall;
+  r.nitro=0; multV=1; car.vx=0; var v=baseV()*CFG.crashKeep; while(r.gear>1&&v<loG(r.gear)) r.gear--; setV(v); car.v=v; r.bog=CFG.crashBog; r.stall=CFG.stall; r.cc=0; r.ccT=0; S.crashes++; r.gs.crashes++; if(S.boost>0&&!SIM) pop(car.x,r.pd+110,'Nitro lost','bad'); S.boost=0; heatAdd(CFG.heat.crash); inv=gt+CFG.inv+CFG.stall;
   if(side!=null) r.lane=side;
   if(!SIM){ RK.fx.shake(0.5); RK.fx.stop(70); SND.crash(); pop(car.x,r.pd+70,'Crash!','bad'); puff(car.x-20,'#8A86A8',6); puff(car.x+20,'#8A86A8',6); for(var i=0;i<12;i++) parts.push({x:car.x,d:r.pd+30,vx:(Math.random()-0.5)*300,vd:60+Math.random()*200,t:0.5,c:i%3?'#FFB23D':'#FFF4C2'}); } }
 function closeCall(o){ var r=S.r; r.cc=r.ccT>0?r.cc+1:1; r.ccT=2.6; r.gs.combo=Math.max(r.gs.combo,r.cc); S.bestCombo=Math.max(S.bestCombo,r.cc); var fk=(r.nitro>0?CFG.fastN:CFG.fast[r.gear])*(o.on?CFG.oncK:1), p=add(CFG.close*Math.min(r.cc,5)*fk); r.gs.close++; S.closes++; heatAdd(CFG.heat.close); S.boost=Math.min(100,S.boost+CFG.closeN);
@@ -320,7 +326,7 @@ function flagReached(){ var r=S.r, np=CFG.plan.length, p;
   S.flags++; p=add(CFG.flag);
   if(r.n>=np-1){ var tb=add(CFG.win), sb=add(Math.ceil(S.left)*CFG.perSec); S.phase='win'; S.pitT=SIM?0:1.6; slow=REDUCE?0:1.6; if(!SIM){ RK.fx.banner('State line! +'+(tb+sb).toLocaleString('en-US'),Math.ceil(S.left)+' seconds left on the clock',{kind:'good',ms:1600}); SND.flag(); } save(); return; }
   var t=bonusTime(r.n+1); S.left=Math.min(CFG.cap,S.left+t);
-  J.fw=gt; if(!SIM){ SND.flag(); RK.fx.banner('Flag '+(r.n+1)+'! +'+p.toLocaleString('en-US'),'+'+t+' seconds',{kind:'good',ms:1000}); var pt=KIT.stagePoint?KIT.stagePoint($('sr-canvas'),480,200):[960,400]; KIT.confetti(pt[0],pt[1],40,2.2); }
+  J.fw=gt; if(!SIM){ SND.flag(); RK.fx.banner((S.flags===3?'Bronze medal! ':S.flags===6?'Silver medal! ':'')+'Flag '+(r.n+1)+'! +'+p.toLocaleString('en-US'),'+'+t+' seconds. '+medalNext(S.flags),{kind:'good',ms:S.flags===3||S.flags===6?1700:1200}); var pt=KIT.stagePoint?KIT.stagePoint($('sr-canvas'),480,200):[960,400]; KIT.confetti(pt[0],pt[1],40,2.2); }
   newStretch(r.n+1); save(); }
 
 /* ================= DRAWING ================= */
@@ -456,7 +462,7 @@ function bar(){ var r=S.r, x=112, y=500, w=250, h=8, rpm=Math.max(0,r.rpm), z=pz
   cx.fillStyle='rgba(255,255,255,.18)'; rr(cx,x,y+15,w,5,2.5); cx.fill(); cx.fillStyle=r.nitro>0?'#fff':'#3DE0FF'; rr(cx,x,y+15,Math.max(3,w*(r.nitro>0?r.nitro/CFG.nitT[S.lv.tank]:S.boost/100)),5,2.5); cx.fill();
   if(inZone) txt('Shift: Space',x,y-12,'800 16px '+IF,'#3DFFB0','left');
   else if(full&&r.nitro<=0&&!can) txt('Nitro ready: Space',x,y-12,'800 14px '+IF,'#3DE0FF','left');
-  else if(r.maxGear<5&&S.phase==='drive') txt((r.maxGear===3?'4th and 5th':'5th')+' locked',x,y-12,'600 13px '+IF,'rgba(255,255,255,.62)','left');
+  else if(r.maxGear<5&&S.phase==='drive'){ if(r.gear>=r.maxGear&&rpm>0.85) txt((r.maxGear+1)+'th is locked: get 2 right at the next pit',x,y-12,'800 15px '+IF,'#FFD21F','left'); else txt((r.maxGear===3?'4th and 5th':'5th')+' locked',x,y-12,'600 13px '+IF,'rgba(255,255,255,.62)','left'); }
   var mph=Math.round(car.v/Math.max(1,multV)*(1+(multV-1)*0.4)*0.52); txt(String(mph),x+w+22,y+22,'400 40px '+DF,r.nitro>0?'#3DE0FF':'#fff','left'); var mphW=cx.measureText(String(mph)).width; txt('mph',x+w+30+mphW,y+22,'600 13px '+IF,'rgba(255,255,255,.7)','left'); }
 function lamp(){ var x=480, y=262, on=S.lt>=S.lg, n=on?3:S.lt>=1.0?2:S.lt>=0.5?1:0, i; cx.fillStyle='rgba(11,7,24,.88)'; rr(cx,x-92,y-34,184,68,18); cx.fill();
   for(i=0;i<3;i++){ cx.fillStyle=on?'#3DFFB0':i<n?'#FF4B4B':'#3A3360'; cx.beginPath(); cx.arc(x-56+i*56,y,20,0,6.28); cx.fill(); }
@@ -662,7 +668,7 @@ function drawFly(){ var r=S.r, t=REDUCE?20:gt, hd=REDUCE?0:hdg, A=FLYS[r.scen], 
   if(S.cop){ im=prop('copter'); if(im){ w=FLYW.copter; h=w*im.height/im.width; x=560+Math.sin(t*0.6)*150; y=70+Math.sin(t*1.3)*6; cx.drawImage(im,x-w/2,y,w,h); } }
   else if(A){ nm=A[(r.n*5+((S.seed>>>0)%7))%A.length]; im=prop(nm); if(im){ w=FLYW[nm]; h=w*im.height/im.width; x=((t*FLYV[nm]+r.n*211+300-hd*0.5)%(W+420)+(W+420))%(W+420)-210; y=Math.max(70,118-h/2+((r.n*37)%24))+Math.sin(t*0.9)*3; cx.drawImage(im,x-w/2,y,w,h); } }
   var fwT=gt-(J.fw||-9); if((S.phase==='drive'&&r.L-r.pd<1000)||fwT<2.5||S.phase==='win'){ im=prop('fireworks'); if(im) for(k=0;k<2;k++){ var ph=REDUCE?0.8:((t*0.7+k*0.5)%1), sc=0.5+0.5*Math.min(1,ph*2.5); w=150*sc; h=w*im.height/im.width; cx.globalAlpha=REDUCE?0.9:Math.min(1,(1-ph)*2.2); cx.drawImage(im,(k?700:260)-w/2,168-h*0.7,w,h); } cx.globalAlpha=1; } }
-function drawHeat(){ var r=S.r, k; if(r.n<1||CFG.plan[r.n].cop||S.phase!=='drive') return; var hc=S.cop, hk=hc?Math.min(1,hc.away/CFG.heat.away):(S.heat||0)/100, hl=hc?hc.heat:(S.heatLv||0); cx.fillStyle='rgba(8,8,14,.55)'; rr(cx,22,70,66,5,2.5); cx.fill(); if(hk>0.02){ cx.fillStyle=hc?'#3DE0FF':hk>0.75?'#FF4B4B':'#FFB23D'; rr(cx,22,70,Math.max(5,66*hk),5,2.5); cx.fill(); }
+function drawHeat(){ var r=S.r, k, mm=mult(); if(mm>1&&S.phase==='drive'&&VIEW==='chase'){ txt('×'+mm,938,92,'400 30px '+DF,'#FFD21F','right'); txt('answer streak',938,106,'700 11px '+IF,'#F2E9C0','right'); } if(r.n<1||CFG.plan[r.n].cop||S.phase!=='drive') return; var hc=S.cop, hk=hc?Math.min(1,hc.away/CFG.heat.away):(S.heat||0)/100, hl=hc?hc.heat:(S.heatLv||0); cx.fillStyle='rgba(8,8,14,.55)'; rr(cx,22,70,66,5,2.5); cx.fill(); if(hk>0.02){ cx.fillStyle=hc?'#3DE0FF':hk>0.75?'#FF4B4B':'#FFB23D'; rr(cx,22,70,Math.max(5,66*hk),5,2.5); cx.fill(); }
   txt(hc?'Escape':'Heat',22,90,'700 11px '+IF,hc?'#9BECFF':'#D8D4E6','left'); for(k=0;k<3;k++){ cx.fillStyle=k<hl?(k%2?'#5C8BFF':'#FF4B4B'):'rgba(255,255,255,.22)'; rr(cx,66+k*9,82,6,8,2); cx.fill(); } }
 function drawChase(){ var r=S.r, T=SCN[r.scen], P=CFG.plan[r.n], K=SKY[r.scen], i, k, s, y, o, dd, near=ZN-CB, list=[], RW=NL*LW, nightOn=r.haz.indexOf('night')>=0;
   var pk=REDUCE?0:Math.max(0,1-(gt-J.punch)/0.3); focT=(REDUCE?300:(r.nitro>0?214:300-52*Math.min(1,car.v/CFG.V))-pk*22)*LENS; FOC+=(focT-FOC)*(pk>0?0.3:0.08); camX+=((car.x-480)*0.62-camX)*0.2;
@@ -770,7 +776,7 @@ function hudSet(){ if(!S||!S.started||!S.r) return; var r=S.r, m=mult(), nx=RK.m
     streak:m>1?'×'+m:'',
     goal:r.gdone?g.t+' ✓':g.end?g.t:g.t+'  '+goalProg()+'/'+g.n });
   document.body.classList.toggle('sr-driving',!!S.started&&!S.over);
-  hud.hide('cop',!S.cop||VIEW==='chase'); hud.hide('streak',m<=1); hud.hide('goal',!(r.pd/r.L<0.18||S.phase!=='drive')||r.gdone); hud.flag('time','warn',S.left<=10&&S.phase==='drive'); hud.flag('cop','warn',!!S.cop&&S.cop.gap<70); hud.flag('streak','hot',m>1); hud.flag('goal','hot',r.gdone); }
+  hud.hide('cop',!S.cop||VIEW==='chase'); hud.hide('streak',m<=1||VIEW==='chase'); hud.hide('goal',!(r.pd/r.L<0.18||S.phase!=='drive')||r.gdone); hud.flag('time','warn',S.left<=10&&S.phase==='drive'); hud.flag('cop','warn',!!S.cop&&S.cop.gap<70); hud.flag('streak','hot',m>1); hud.flag('goal','hot',r.gdone); }
 function loop(ts){ var dt=last?Math.min(0.05,(ts-last)/1000):0; last=ts; step(dt); draw(); hudSet(); engine(!!S&&S.started&&!S.over&&S.phase==='drive'&&!RK.busy()); requestAnimationFrame(loop); }
 
 /* ---------------- input: two actions. Left/Right (or A/D) change lanes; Space (or Up/W) shifts, and fires nitro in top gear ---------------- */
@@ -806,7 +812,7 @@ function hint(B){ B=B||BOT.pro; var r=S.r; if(S.phase==='lights') return S.lt>=S
   return null; }
 function simPit(acc){ var got=0, miss=0, asked=0, ok; while(got<2&&miss<=1){ asked++; ok=Math.random()<acc; S.answered++; if(ok){ got++; S.correct++; S.streak++; S.best=Math.max(S.best,S.streak); } else { miss++; S.streak=0; } }
   var res={right:got,asked:asked,missed:miss,perfect:got===2&&miss===0,spare:asked>2}; S.sq=(S.sq||0)+asked;
-  var R=S.r; R.maxGear=3+Math.min(2,got); R.jam=got<2?1:0; S.boost=Math.min(100,S.boost+CFG.pitNitro[Math.min(2,got)]); if(res.perfect&&rollOffer()) tuneUp(S.offer[0]); lights(); }
+  var R=S.r; R.maxGear=3+Math.min(2,got); R.jam=got<2?1:0; if(R.jam) S.jams=(S.jams||0)+1; S.boost=Math.min(100,S.boost+CFG.pitNitro[Math.min(2,got)]); if(res.perfect&&rollOffer()) tuneUp(S.offer[0]); lights(); }
 function sim(o){ o=o||{}; var B=BOT[o.drive||'pro'], acc=o.acc==null?1:o.acc, dt=1/60, t=0, reach=[], k, keep=S, keepT=[traffic,stars,patches,works]; SIM=true; S=fresh('bot'); S.started=true; begin(); newStretch(0); bs={};
   while(!S.over&&t<1500){ if(S.phase==='pit'){ simPit(acc); continue; }
     k=hint(B); if(S.phase==='lights'){ if(B.launch>0&&S.lt>=S.lg&&!S.lp){ S.lp=1; go(Math.random()<B.launch?'perfect':'ok'); } }
