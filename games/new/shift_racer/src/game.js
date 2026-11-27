@@ -242,7 +242,7 @@ function crash(o,side){ var r=S.r; if(o){ o.hit=1; o.out=(o.x>=car.x?1:-1)*330; 
   if(S.shield){ S.shield=0; inv=gt+0.6; pop(car.x,r.pd+70,'Shield!','gold'); if(!SIM) SND.star(); return; }
   r.nitro=0; multV=1; car.vx=0; var v=baseV()*CFG.crashKeep; while(r.gear>1&&v<loG(r.gear)) r.gear--; setV(v); r.bog=CFG.crashBog; r.stall=CFG.stall; r.cc=0; r.ccT=0; S.crashes++; r.gs.crashes++; inv=gt+CFG.inv+CFG.stall;
   if(side!=null) r.lane=side;
-  if(!SIM){ RK.fx.shake(0.5); RK.fx.stop(70); SND.crash(); pop(car.x,r.pd+70,'Crash!','bad'); for(var i=0;i<12;i++) parts.push({x:car.x,d:r.pd+30,vx:(Math.random()-0.5)*300,vd:60+Math.random()*200,t:0.5,c:i%3?'#FFB23D':'#FFF4C2'}); } }
+  if(!SIM){ RK.fx.shake(0.5); RK.fx.stop(70); SND.crash(); pop(car.x,r.pd+70,'Crash!','bad'); puff(car.x-20,'#8A86A8',6); puff(car.x+20,'#8A86A8',6); for(var i=0;i<12;i++) parts.push({x:car.x,d:r.pd+30,vx:(Math.random()-0.5)*300,vd:60+Math.random()*200,t:0.5,c:i%3?'#FFB23D':'#FFF4C2'}); } }
 function closeCall(o){ var r=S.r; r.cc=r.ccT>0?r.cc+1:1; r.ccT=2.6; r.gs.combo=Math.max(r.gs.combo,r.cc); S.bestCombo=Math.max(S.bestCombo,r.cc); var fk=(r.nitro>0?CFG.fastN:CFG.fast[r.gear])*(o.on?CFG.oncK:1), p=add(CFG.close*Math.min(r.cc,5)*fk); r.gs.close++; S.closes++; S.boost=Math.min(100,S.boost+CFG.closeN);
   pop((o.x+car.x)/2,r.pd+60,(o.on?'Head-on miss +':fk>1?'Fast miss +':'Near miss +')+p+(r.cc>1?'  ×'+Math.min(r.cc,5):''),r.cc>=3||fk>1?'gold':'good');
   J.whoosh=gt; J.whooshX=o.x;
@@ -282,7 +282,7 @@ function step(dt){ if(!S||!S.started||S.over) return; if(!SIM&&(RK.busy()||RK.fx
   for(i=0;i<patches.length;i++){ var p=patches[i]; if(p.hit||r.pd<p.d-20||r.pd>p.d+p.len||car.x<RX+LW*p.l0+6||car.x>RX+LW*(p.l1+1)-6) continue;
     if(p.type==='oil'){ p.hit=1; if(gt>inv){ var dir=r.lane===0?1:r.lane===NL-1?-1:(Math.random()<0.5?-1:1); r.lane+=dir; lockT=gt+0.45; r.cc=0; r.ccT=0; pop(car.x,r.pd+70,'Oil!','bad'); if(!SIM) SND.bog(); } }
     else if(p.type==='ramp'){ p.hit=1; if(r.stall<=0&&car.v>120){ r.air=CFG.air; inv=Math.max(inv,gt+CFG.air+0.12); r.gs.air++; S.airs=(S.airs||0)+1; S.boost=Math.min(100,S.boost+10); var ap=add(CFG.ramp); pop(car.x,r.pd+90,'Big air! +'+ap,'gold'); J.punch=gt; if(!SIM){ tone(330,990,0,0.35,'triangle',0.09); RK.fx.shake(0.15); } } }
-    else if(p.type==='pad'){ p.hit=1; S.boost=Math.min(100,S.boost+CFG.pad); pop(car.x,r.pd+80,'Boost pad! Nitro +'+CFG.pad,'gold'); J.punch=gt; if(!SIM) tone(520,1040,0,0.22,'square',0.06); }
+    else if(p.type==='pad'){ p.hit=1; S.boost=Math.min(100,S.boost+CFG.pad); pop(car.x,r.pd+80,'Boost pad! Nitro +'+CFG.pad,'gold'); J.punch=gt; if(!SIM){ tone(520,1040,0,0.22,'triangle',0.08); RK.fx.shake(0.12); for(var pe=0;pe<10&&parts.length<90;pe++) parts.push({x:car.x+(Math.random()-0.5)*40,d:r.pd+10,vx:(Math.random()-0.5)*120,vd:-60-Math.random()*260,t:0.45,c:pe%2?'#3DE0FF':'#FFFFFF'}); } }
     else if(p.type==='shield'){ p.hit=1; S.shield=1; pop(car.x,r.pd+70,'Bumper shield!','gold'); if(!SIM) SND.gold(); } }
   var reach=S.lv.magnet?LW+30:36;
   for(i=0;i<stars.length;i++){ var s=stars[i]; if(!s.got&&Math.abs(s.x-car.x)<reach&&Math.abs(s.d-r.pd)<46){ s.got=1; var pts=add(s.gold?CFG.gold:CFG.star); S.starsGot++; r.gs.stars++; S.boost=Math.min(100,S.boost+(s.gold?12:6));
@@ -430,7 +430,7 @@ function dial(){ var r=S.r, x=92, y=430, R0=58, a0=Math.PI*0.75, sw=Math.PI*1.5,
 
 /* the shift bar (chase view), bottom left: a wide rev bar with a green zone, the gear number, padlocks on locked gears, nitro under it */
 function bar(){ var r=S.r, x=118, y=474, w=290, h=22, rpm=Math.max(0,r.rpm), z=pz(), can=r.gear<r.maxGear, i, inZone=can&&S.phase==='drive'&&rpm>=z&&rpm<=CFG.PZEND;
-  cx.fillStyle='#0B0718'; cx.beginPath(); cx.arc(70,y+12,40,0,6.28); cx.fill(); cx.fillStyle=inZone?'#3DFFB0':'#fff'; cx.textAlign='center'; cx.font='400 50px '+DF; cx.fillText(String(r.gear),70,y+30);
+  cx.fillStyle='#0B0718'; cx.beginPath(); cx.arc(70,y+12,40,0,6.28); cx.fill(); var gk=REDUCE?0:Math.max(0,1-(gt-Math.max(J.squat,J.punch))/0.2); cx.fillStyle=inZone?'#3DFFB0':gk>0?'#FFE14D':'#fff'; cx.textAlign='center'; cx.font='400 '+Math.round(50*(1+gk*0.4))+'px '+DF; cx.fillText(String(r.gear),70,y+30+gk*7);
   txt('Gear',70,y-34,'800 15px '+IF,'#C6B8F0');
   cx.fillStyle='#0B0718'; rr(cx,x-4,y-4,w+8,h+8,8); cx.fill(); cx.fillStyle='#3A3360'; rr(cx,x,y,w,h,5); cx.fill();
   cx.fillStyle=can?'#3DFFB0':'#5A5480'; cx.fillRect(x+w*z,y,w*(CFG.PZEND-z),h); cx.fillStyle='#FF4B4B'; cx.fillRect(x+w*CFG.PZEND,y,w*(1-CFG.PZEND),h);
@@ -439,7 +439,7 @@ function bar(){ var r=S.r, x=118, y=474, w=290, h=22, rpm=Math.max(0,r.rpm), z=p
   var bx=x+146, bw=144, by=y+h+12, full=S.boost>=100; cx.fillStyle='#0B0718'; rr(cx,bx-3,by-3,bw+6,26,7); cx.fill(); cx.fillStyle='#3A3360'; rr(cx,bx,by,bw,20,5); cx.fill();
   cx.fillStyle=r.nitro>0?'#FFFFFF':full?'#3DE0FF':'#2E9FC2'; rr(cx,bx,by,Math.max(6,bw*(r.nitro>0?r.nitro/CFG.nitT[S.lv.tank]:S.boost/100)),20,5); cx.fill();
   cx.font='800 14px '+IF; cx.textAlign='center'; cx.fillStyle=full||r.nitro>0?'#0B0718':'#FFFFFF'; cx.fillText(r.nitro>0?'Nitro!':full?(can?'Nitro ready':'Nitro: Space'):'Nitro',bx+bw/2,by+15);
-  var mph=Math.round(car.v*(1+(multV-1)*0.3)*0.4); cx.textAlign='left'; cx.lineJoin='round'; cx.font='400 44px '+DF; cx.lineWidth=7; cx.strokeStyle='#0B0718'; cx.strokeText(String(mph),x+w+22,y+26); cx.fillStyle=r.nitro>0?'#3DE0FF':'#fff'; cx.fillText(String(mph),x+w+22,y+26); var mphW=cx.measureText(String(mph)).width; txt('mph',x+w+22+mphW+24,y+26,'800 15px '+IF,'#C6B8F0');
+  var mph=Math.round(car.v/Math.max(1,multV)*(1+(multV-1)*0.4)*0.4); cx.textAlign='left'; cx.lineJoin='round'; cx.font='400 44px '+DF; cx.lineWidth=7; cx.strokeStyle='#0B0718'; cx.strokeText(String(mph),x+w+22,y+26); cx.fillStyle=r.nitro>0?'#3DE0FF':'#fff'; cx.fillText(String(mph),x+w+22,y+26); var mphW=cx.measureText(String(mph)).width; txt('mph',x+w+22+mphW+24,y+26,'800 15px '+IF,'#C6B8F0');
   if(inZone) txt('Shift! Space',x+w/2,y-14,'400 28px '+WF,'#3DFFB0');
   else if(S.phase==='drive'&&!can&&r.maxGear<5&&rpm>0.9) txt((r.maxGear+1)+'th gear is locked',x+w/2,y-14,'800 16px '+IF,'#FFE14D'); }
 function lamp(){ var x=480, y=262, on=S.lt>=S.lg, n=on?3:S.lt>=1.0?2:S.lt>=0.5?1:0, i; cx.fillStyle='rgba(11,7,24,.88)'; rr(cx,x-92,y-34,184,68,18); cx.fill();
@@ -453,12 +453,17 @@ var LENS=+prm.lens||2, HZ=205, HC=92, CB=120*LENS, F0=300*LENS, FOC=F0, ZN=CB-15
 var SKY={ forest:['#07142B','#1B4A52','#0B2A26','trees'], desert:['#2A1650','#F08A5C','#4A2440','mesa'], city:['#090720','#3A1F6E','#120E2A','city'], snow:['#16224F','#7FA3D9','#C9D9F2','peaks'],
   coast:['#10244F','#F2A07A','#123E73','sea'], canyon:['#3A1235','#F0704A','#5A1F28','mesa'], sunrise:['#5B3A8A','#FFC27A','#8A4A5A','hills'], getaway:['#0A0618','#3B1440','#120E2A','city'] };
 var SKYC=null, SKYK='';
-function sky(){ var r=S.r, K=SKY[r.scen]; if(SKYK===r.scen&&SKYC) return SKYC; SKYK=r.scen; var s=SKYC||(SKYC=document.createElement('canvas')); s.width=1200; s.height=HZ+2; var c=s.getContext('2d'), R=rnd(r.scen.length*131+r.scen.charCodeAt(1)), i, x, h, g=c.createLinearGradient(0,0,0,HZ);
+/* painted horizons (backs.js, cut from the approved sheets): [strip, height on screen, night tint]. Until a strip has loaded, the code-drawn shapes stand in. */
+var BACK={ city:['skyline',128,0.1], getaway:['cityrow',104,0.22], coast:['coastline',74,0.12], sunrise:['beachrow',86,0.12], desert:['mesas',74,0.1], canyon:['canyonwall',100,0.14], forest:['foresthills',80,0.5], snow:['snowpeaks',104,0.28] }, BKIMG={};
+function backImg(scen){ var B=BACK[scen], A=window.SRBACK, im; if(!B||!A||!A[B[0]]) return null; im=BKIMG[B[0]]; if(!im){ im=BKIMG[B[0]]=new Image(); im.src=A[B[0]]; } return im.complete&&im.naturalWidth?im:null; }
+function sky(){ var r=S.r, K=SKY[r.scen], bk=backImg(r.scen), key=r.scen+(bk?1:0); if(SKYK===key&&SKYC) return SKYC; SKYK=key; var s=SKYC||(SKYC=document.createElement('canvas')); s.width=1200; s.height=HZ+2; var c=s.getContext('2d'), R=rnd(r.scen.length*131+r.scen.charCodeAt(1)), i, x, h, g=c.createLinearGradient(0,0,0,HZ);
   g.addColorStop(0,K[0]); g.addColorStop(1,K[1]); c.fillStyle=g; c.fillRect(0,0,1200,HZ+2);
   if(K[3]!=='sea'&&r.scen!=='sunrise'&&r.scen!=='desert'&&r.scen!=='canyon'){ c.fillStyle='rgba(255,255,255,.8)'; for(i=0;i<70;i++) c.fillRect(R()*1200,R()*HZ*0.75,R()<0.2?3:2,R()<0.2?3:2); c.fillStyle='#F4F0D8'; c.beginPath(); c.arc(880,58,26,0,6.28); c.fill(); c.fillStyle=K[0]; c.beginPath(); c.arc(870,52,23,0,6.28); c.fill(); }
   else { var sun=r.scen==='sunrise'?'#FFF2B0':'#FFD98A'; c.fillStyle='rgba(255,220,150,.25)'; c.beginPath(); c.arc(600,HZ-6,120,0,6.28); c.fill(); c.fillStyle=sun; c.beginPath(); c.arc(600,HZ-6,62,0,6.28); c.fill(); c.fillStyle=K[1]; for(i=0;i<4;i++) c.fillRect(520,HZ-44+i*13,160,3+i); }
   c.fillStyle=K[2];
-  if(K[3]==='city'){ for(x=0;x<1200;){ var w=28+R()*46; h=30+R()*105; c.fillStyle=K[2]; c.fillRect(x,HZ-h,w,h+2); c.fillStyle=R()<0.5?'#FFE14D':(r.scen==='getaway'?'#FF4B4B':'#3DE0FF'); for(var a=x+5;a<x+w-6;a+=9) for(var b=HZ-h+7;b<HZ-6;b+=11) if(R()<0.45) c.fillRect(a,b,4,5); x+=w+2+R()*8; } }
+  if(bk){ var B=BACK[r.scen], bh=B[1], bw=Math.round(bk.naturalWidth*bh/bk.naturalHeight), t=document.createElement('canvas'), tc; t.width=bw; t.height=bh; tc=t.getContext('2d'); tc.drawImage(bk,0,0,bw,bh); tc.globalCompositeOperation='source-atop'; tc.globalAlpha=B[2]; tc.fillStyle=K[0]; tc.fillRect(0,0,bw,bh);
+    for(x=-Math.round(bw*0.3);x<1200;x+=bw-1) c.drawImage(t,x,HZ+2-bh); }
+  else if(K[3]==='city'){ for(x=0;x<1200;){ var w=28+R()*46; h=30+R()*105; c.fillStyle=K[2]; c.fillRect(x,HZ-h,w,h+2); c.fillStyle=R()<0.5?'#FFE14D':(r.scen==='getaway'?'#FF4B4B':'#3DE0FF'); for(var a=x+5;a<x+w-6;a+=9) for(var b=HZ-h+7;b<HZ-6;b+=11) if(R()<0.45) c.fillRect(a,b,4,5); x+=w+2+R()*8; } }
   else if(K[3]==='trees'){ for(x=-20;x<1220;x+=22+R()*16){ h=34+R()*40; c.beginPath(); c.moveTo(x-18,HZ+2); c.lineTo(x,HZ-h); c.lineTo(x+18,HZ+2); c.fill(); } }
   else if(K[3]==='peaks'){ for(x=-80;x<1250;x+=150+R()*60){ h=80+R()*70; c.fillStyle='#5E78B0'; c.beginPath(); c.moveTo(x-140,HZ+2); c.lineTo(x,HZ-h); c.lineTo(x+140,HZ+2); c.fill(); c.fillStyle=K[2]; c.beginPath(); c.moveTo(x-38,HZ-h+38*h/140*1.0); c.lineTo(x,HZ-h); c.lineTo(x+38,HZ-h+38*h/140); c.lineTo(x+14,HZ-h+30); c.lineTo(x-8,HZ-h+44); c.closePath(); c.fill(); } }
   else if(K[3]==='mesa'){ for(x=-40;x<1220;x+=170+R()*120){ var mw=70+R()*90; h=36+R()*52; c.beginPath(); c.moveTo(x-18,HZ+2); c.lineTo(x,HZ-h); c.lineTo(x+mw,HZ-h); c.lineTo(x+mw+18,HZ+2); c.fill(); } }
@@ -604,7 +609,7 @@ function drawChase(){ var r=S.r, T=SCN[r.scen], P=CFG.plan[r.n], K=SKY[r.scen], 
   var sKeep=s, yKeep=y; items(true); s=sKeep; y=yKeep;   /* anything you have passed is closer to the camera than your car */
   var wh=(gt-J.whoosh)/0.28; if(wh>=0&&wh<1&&!REDUCE){ var wx=pX(J.whooshX,s), wdir=J.whooshX<car.x?-1:1; cx.globalAlpha=0.55*(1-wh); cx.fillStyle='#FFFFFF'; for(i=0;i<3;i++) cx.fillRect(wx-18+i*18*wdir,y-mh*(0.25+i*0.22)+wh*120,6,90+i*20); cx.globalAlpha=1; }
   if(S.shield){ cx.strokeStyle='#3DE0FF'; cx.lineWidth=4; cx.beginPath(); cx.ellipse(mx,y-mh*0.45,mw*0.62,mh*0.62,0,0,6.28); cx.stroke(); }
-  for(i=0;i<parts.length;i++){ var pt=parts[i], ps=FOC/(Math.max(near+4,pt.d-r.pd)+CB); cx.globalAlpha=Math.min(1,pt.t*4); cx.fillStyle=pt.c; cx.fillRect(pX(pt.x,ps)-3,HZ+(HC-18)*ps-3,6,6); } cx.globalAlpha=1;
+  for(i=0;i<parts.length;i++){ var pt=parts[i], ps=FOC/(Math.max(near+4,pt.d-r.pd)+CB); cx.globalAlpha=Math.min(1,pt.t*4); cx.fillStyle=pt.c; var pz2=Math.max(3,2.6*ps); cx.fillRect(pX(pt.x,ps)-pz2/2,HZ+(HC-18)*ps-pz2/2,pz2,pz2); } cx.globalAlpha=1;
   /* speed streaks from the vanishing point on nitro */
   if(!REDUCE&&S.phase==='drive'&&r.nitro>0){ cx.strokeStyle='rgba(255,255,255,.35)'; cx.lineWidth=2; for(i=0;i<16;i++){ var an=i*0.3927+0.2, t0=((gt*2.2+i*0.37)%1), r0=120+t0*420; cx.beginPath(); cx.moveTo(480+Math.cos(an)*r0,HZ+Math.sin(an)*r0*0.7); cx.lineTo(480+Math.cos(an)*(r0+70),HZ+Math.sin(an)*(r0+70)*0.7); cx.stroke(); } }
   /* the police ride in the rear-view mirror: the closer they are, the bigger they get */
