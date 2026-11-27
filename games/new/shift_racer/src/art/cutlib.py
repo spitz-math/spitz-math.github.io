@@ -24,7 +24,11 @@ def shapes(reg):   # flood fill: label every connected shape
                 if 0<=yy<reg.shape[0] and 0<=xx<reg.shape[1] and reg[yy,xx] and not lab[yy,xx]: lab[yy,xx]=n; st.append((yy,xx))
         out.append((cnt,n,xa,xb))
     return lab,out
-def cut(b64name,names,keepspill=()):
+def near(m,n):   # grow a mask by n pixels
+    for _ in range(n):
+        g=m.copy(); g[1:]|=m[:-1]; g[:-1]|=m[1:]; g[:,1:]|=m[:,:-1]; g[:,:-1]|=m[:,1:]; m=g
+    return m
+def cut(b64name,names,keepspill=(),solid=()):   # solid: pink and purple paint inside the object stays fully opaque (only pixels beside pure magenta fade)
     im=load(b64name); a=np.asarray(im).astype(int)
     bg=(a[:,:,0]>190)&(a[:,:,1]<110)&(a[:,:,2]>190)&(a[:,:,0]-a[:,:,1]>110); fg=~bg
     rows=runs(fg.sum(1)>4,40,10); assert len(rows)==len(names),(b64name,rows); res={}
@@ -36,6 +40,7 @@ def cut(b64name,names,keepspill=()):
         for (x0,x1,mask),nm in zip(items,names[ri]):
             m0=(mask if mask is not None else fg[y0:y1])[:,x0:x1]; ys=np.where(m0.any(1))[0]; sub=a[y0+ys[0]:y0+ys[-1]+1,x0:x1]; m=m0[ys[0]:ys[-1]+1]
             d=np.sqrt(((sub-np.array([255,0,255]))**2).sum(2)); al=np.clip((d-60)/90,0,1)*m
+            if nm in solid: pure=(d<45)|~m; al=np.where(near(pure,3),al,1.0)*~pure
             rgb=sub.astype(float); spill=np.clip(np.minimum(rgb[:,:,0],rgb[:,:,2])-rgb[:,:,1]-20,0,255)*(al<0.999)
             if nm not in keepspill: rgb[:,:,0]-=spill; rgb[:,:,2]-=spill
             res[nm]=Image.fromarray(np.dstack([np.clip(rgb,0,255),al*255]).astype('uint8'),'RGBA')
