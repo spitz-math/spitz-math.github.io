@@ -79,14 +79,14 @@ function nextQuestion(){ if(QS) return QS.next();
 var CFG={ start:45, cap:55, V:400, GR:[0.36,0.54,0.70,0.86,1], GT:[0.9,1.1,1.4,1.7,2.0], LO:0.62, PZ:[0.70,0.61,0.52], PZEND:0.98, TV:95,
   nitM:1.9, nitT:[3.0,3.8,4.6], pace:232, own:0.42, crashKeep:0.05, crashBog:1.3, stall:1.3, inv:0.9,
   flag:1000, ramp:150, air:0.95, pad:35, close:100, closeN:12, fast:[1,1,1,1,1.25,1.5], fastN:2, oncK:2, rb:[0.3,0.55,0.8], perfect:50, star:50, gold:150, goal:500, win:5000, perSec:100, dist:12,
-  pitNitro:[0,40,100], copV:0.68, copWait:4, copMax:260, copStart:160, bust:5, copK:0.5,
+  pitNitro:[0,40,100], draft:{near:50, far:430, fill:48, pay:100}, jamAt:[0.3,0.56,0.82], swerve:0.14, copV:0.68, copWait:4, copMax:260, copStart:160, bust:5, copK:0.5,
   /* heat: flashy driving fills it from stretch 2; full = a police chase. Their speed is a share of YOUR top unlocked gear, so clean driving always escapes. */
   heat:{close:9, nitro:14, air:8, crash:22, V:[0.76,0.82,0.88], K:0.3, start:215, away:4, bust:2, pay:500, time:2},
   /* the 8 stretches: length, traffic gap, pace (the flag before it adds length/pace seconds), and what is new. Only 1, 7 and 8 are fixed; the rest roll scenery, hazard and goal. */
   plan:[ {len:9500, gap:430, pace:0,   scen:'forest', goal:'perfect3'},
          {len:11000,gap:390, pace:300, pick:1},
          {len:12000,gap:360, pace:325, haz:1},
-         {len:12500,gap:330, pace:350, trucks:1},
+         {len:12500,gap:330, pace:350, trucks:1, jam:1},
          {len:13000,gap:320, pace:380, works:1},
          {len:13500,gap:290, pace:420, haz:1, trucks:1},
          {len:11500,gap:800, pace:410, scen:'sunrise', breather:1},
@@ -121,7 +121,8 @@ var CARS=[ {id:'sun',nm:'Sunburst',c:'#FFD21F',need:0}, {id:'red',nm:'Redline',c
 try{ var cid=localStorage.getItem(CARKEY); CARS.forEach(function(k){ if(k.id===cid) myCar=k; }); }catch(e){}
 var RES=[], SIM=false;
 /* feel: presentation only. Nothing in J is read by the rules. */
-var brakeOn=0, brakeK=1;
+var brakeOn=0, brakeK=1, jams=[];
+function jamNear(d,a,b){ for(var i=0;i<jams.length;i++) if(d>jams[i].d-a&&d<jams[i].d+b) return jams[i]; return null; }
 var J={ squat:0, punch:0, whoosh:0, whooshX:0, ram:0, ramDir:1, tick:0, rbSaid:0 };
 var S=null, car={x:480,v:0,vx:0}, traffic=[], stars=[], patches=[], works=[], parts=[], marks=[], gt=0, last=0, inv=0, wantM=1, multV=1, limT=0, nextTD=0, nextSD=0, lastLane=-1, nextOD=0, zoom=1, slow=0, sandK=1, lockT=0, saveT=0, bestAtStart=0, popT=0, popN=0;
 function fresh(name){ return { ver:3, name:name||'', started:false, over:false, won:false, score:0, left:CFG.start, n:0, phase:'pit', pitT:0.4, lt:0, lg:0, seed:(Math.random()*1e9)|0,
@@ -257,6 +258,7 @@ function buildRoad(){ var r=S.r, P=CFG.plan[r.n], R=rnd(S.seed+r.n*104729+7), d;
   if(r.n>=2) for(d=3100+R()*1500;d<r.L-900;d+=4200+R()*2600){ var pl=Math.floor(R()*NL); if(r.onc&&pl===0) pl=1; if(works.some(function(w){ return w.lane===pl&&d>w.d0-420&&d<w.d1+260; })||patches.some(function(q){ return Math.abs(q.d-d)<420&&pl>=q.l0&&pl<=q.l1; })) continue; patches.push({type:'pad',l0:pl,l1:pl,d:d,len:60,hit:0}); }
   if(P.breather) for(d=900;d<r.L-500;d+=95) stars.push({d:d,x:laneX(1+Math.round(Math.sin(d/700)*0.9+0.5)),gold:1,got:0});
   if(P.pick) patches.push({type:'shield',l0:2,l1:2,d:r.L*0.45,len:40,hit:0});
+  jams=[]; if(P.jam) CFG.jamAt.forEach(function(f){ var jd=Math.round(r.L*f), ja=Math.floor(R()*3); patches=patches.filter(function(q){ return Math.abs(q.d-jd)>700; }); patches.push({type:'ramp',l0:ja,l1:ja,d:jd,len:70,hit:0,jam:1}); patches.push({type:'ramp',l0:ja+1,l1:ja+1,d:jd,len:70,hit:0,jam:1}); jams.push({d:jd,a:ja,sp:0,said:0}); });
   STRIPK=''; }
 function bonusTime(n){ return Math.round(CFG.plan[n].len/(CFG.plan[n].pace||CFG.pace)); }
 function goalProg(){ var r=S.r, g=GOALS[r.goal]; return g.end?0:Math.min(g.n,Math.floor(r.gs[g.k])); }
@@ -276,7 +278,7 @@ function go(kind){ var r=S.r; S.phase='drive'; r.gear=1; r.rpm=0; limT=0;
   else if(r.haz.length&&!S.cop&&!SIM) RK.fx.banner(HAZ[r.haz[0]]+'!',r.haz[0]==='ice'?'you slide one lane too far':r.haz[0]==='sand'?'sand slows you down':r.haz[0]==='oil'?'oil spins you sideways':r.haz[0]==='onc'?'the left lane comes at you: near-misses there pay double':'watch your headlights',{kind:'bad',ms:2400});
   else if(works.length&&!works[0].rb&&!SIM) RK.fx.banner('Roadworks!','a lane is closed ahead',{kind:'bad',ms:2000});
   else if(r.n===1&&!SIM) RK.fx.banner('The heat is on!','near misses, nitro and jumps fill Heat. Full Heat brings the police',{kind:'bad',ms:2600});
-  else if(CFG.plan[r.n].trucks&&!S.cop&&!SIM) RK.fx.banner('Rush hour!','big rigs ahead: squeeze past for near-miss points',{kind:'bad',ms:2000}); }
+  else if(CFG.plan[r.n].trucks&&!S.cop&&!SIM) RK.fx.banner('Rush hour!','tuck in behind a truck to fill your nitro',{kind:'bad',ms:2400}); }
 function pressShift(){ if(!S||!S.started||S.over) return; var r=S.r;
   if(S.phase==='lights'){ if(S.lp) return; S.lp=1; if(S.lt<S.lg) go('early'); else go(S.lt-S.lg<=0.4?'perfect':'ok'); return; }
   if(S.phase!=='drive') return;
@@ -305,11 +307,12 @@ function laneShut(l,d,pad){ for(var i=0;i<works.length;i++){ var w=works[i]; if(
 function usedLanes(d,w){ var u=[0,0,0,0], i; traffic.forEach(function(o){ if(!o.out&&Math.abs(o.d-d)<w+o.len/2) u[o.lane]=1; }); for(i=0;i<NL;i++) if(laneShut(i,d,w)) u[i]=1;
   patches.forEach(function(p){ if((p.type==='sand'||p.type==='oil')&&Math.abs(p.d+p.len/2-d)<w) for(i=p.l0;i<=p.l1;i++) u[i]=1; }); return u; }
 function rbNear(d,a,b){ for(var i=0;i<works.length;i++){ var w=works[i]; if(w.rb&&d>w.d0-a&&d<w.d0+b) return w; } return null; }
-function addCar(d,ln,truck,on){ var u=usedLanes(d,230); if(u[ln]) return false; u[ln]=1; if(!on&&(u[0]+u[1]+u[2]+u[3]>2||rbNear(d,650,200))) return false;
+function addCar(d,ln,truck,on,force){ var u=usedLanes(d,230); if(!force){ if(u[ln]) return false; u[ln]=1; if(!on&&(u[0]+u[1]+u[2]+u[3]>2||rbNear(d,650,200))) return false; }
   var cols=['#7C86A8','#B9C1DA','#5E6FA0','#A88FA0','#5B8C8C','#9C7FB0'];
   traffic.push({d:d,lane:ln,x:laneX(ln),col:cols[ri(0,5)],truck:truck?1:0,len:truck?128:CARL,v0:on?-CFG.TV*1.1:CFG.TV*(truck?0.62:0.8+Math.random()*0.35),v:on?-CFG.TV*1.1:CFG.TV,on:on?1:0,pk:ri(0,2519),pc:ri(0,7),out:0,rot:0,pass:0,hit:0,th:0}); return true; }
 function spawnAhead(){ var r=S.r, P=CFG.plan[r.n];
-  while(nextTD<r.pd+980*SPD){ if(nextTD<r.L-140){ var ln; if(Math.random()<CFG.own&&nextTD>r.pd+600&&!(r.onc&&r.lane===0)) ln=r.lane; else do{ ln=ri(r.onc?1:0,NL-1); }while(ln===lastLane); lastLane=ln;
+  jams.forEach(function(j){ if(!j.sp&&j.d<r.pd+780&&j.d+300>r.pd){ j.sp=1; for(var jr=0;jr<2;jr++) for(var jl=0;jl<NL;jl++){ if(addCar(j.d+170+jr*105+((jl*37)%30),jl,0,0,1)){ var jc=traffic[traffic.length-1]; jc.v0=0; jc.v=0; jc.jam=1; } } for(var js=0;js<3;js++) stars.push({d:j.d+130+js*85,x:laneX(j.a+(js%2)),gold:1,got:0}); } });
+  while(nextTD<r.pd+980*SPD){ if(nextTD<r.L-140&&!jamNear(nextTD,1000,520)){ var ln; if(Math.random()<CFG.own&&nextTD>r.pd+600&&!(r.onc&&r.lane===0)) ln=r.lane; else do{ ln=ri(r.onc?1:0,NL-1); }while(ln===lastLane); lastLane=ln;
       addCar(nextTD,ln,P.trucks&&Math.random()<0.2); if(r.n>=1&&Math.random()<0.3) addCar(nextTD+ri(-40,40),r.onc?(ln===1?3:1):(ln+2)%NL,0); }
     nextTD+=ri(P.gap*0.62|0,P.gap*1.2|0); }
   if(r.onc) while(nextOD<r.pd+1600){ if(nextOD<r.L-200&&nextOD>r.pd+900) addCar(nextOD,0,0,1); nextOD+=ri(420,760); }
@@ -348,12 +351,18 @@ function step(dt){ if(!S||!S.started||S.over) return; if(!SIM&&(RK.busy()||RK.fx
   else { car.vx=0; car.x+=(laneX(r.lane)-car.x)*Math.min(1,dt*14); }
   var dy=car.v*dt; r.pd+=dy; r.dacc=(r.dacc||0)+dy; if(r.dacc>=100){ var k=Math.floor(r.dacc/100); r.dacc-=k*100; S.score+=Math.round(k*CFG.dist*mult()); }
   spawnAhead();
-  var i, o, dd, dx;
+  var i, o, dd, dx, drafting=0;
+  for(i=0;i<jams.length;i++){ var jm=jams[i]; if(!jm.said&&jm.d-r.pd<1500&&jm.d>r.pd){ jm.said=1; if(!SIM){ RK.fx.banner('Traffic jam!','hit a ramp and jump it',{kind:'bad',ms:1500}); SND.siren(); } } }
   for(i=0;i<traffic.length;i++){ o=traffic[i]; if(o.out){ o.x+=o.out*dt; o.rot+=dt*7; o.d+=CFG.TV*0.5*dt; continue; }
+    if(o.sw){ o.swT-=dt; if(o.swT<=0){ var nl=o.lane+o.sw, e2=o.d-r.pd; if(e2>430&&!traffic.some(function(q){ return q!==o&&q.lane===nl&&Math.abs(q.d-o.d)<150; })&&!laneShut(nl,o.d,200)) o.lane=nl; o.sw=0; } }
+    else if(!o.sd&&!o.on&&!o.truck&&!o.jam&&o.d-r.pd<900){ o.sd=1; if(r.n>=2&&!S.cop&&!jamNear(o.d,900,500)&&Math.random()<CFG.swerve){ var sdir=o.lane===(r.onc?1:0)?1:o.lane===NL-1?-1:(Math.random()<0.5?-1:1); o.sw=sdir; o.swT=1.1; } }
+    if(!o.out) o.x+=(laneX(o.lane)-o.x)*Math.min(1,dt*3.2);
+    if(o.truck&&!o.on&&!o.jam&&!o.out&&Math.abs(o.x-car.x)<26&&r.nitro<=0&&r.stall<=0){ var bh=o.d-o.len/2-r.pd-CARL/2; if(bh>CFG.draft.near&&bh<CFG.draft.far){ drafting=1; S.boost=Math.min(100,S.boost+CFG.draft.fill*dt); o.dr=(o.dr||0)+dt; if(o.dr>=0.45&&!o.drp){ o.drp=1; var dp=add(CFG.draft.pay); pop(car.x,r.pd+90,'Draft! +'+dp,'good'); if(!SIM) tone(300,520,0,0.25,'sine',0.06); } } }
     if(o.on) o.v=o.v0; else { var b=blockerV(o); o.v=b?Math.min(o.v0,b.v*0.95):o.v0; var wb=rbNear(o.d+o.len/2,130,0); if(wb&&wb.gap!==o.lane) o.v=0; } o.d+=o.v*dt; dd=o.d-r.pd; dx=Math.abs(o.x-car.x);
     if(dd>40&&dd<o.len/2+95&&dx<25&&car.v>o.v+30) o.th=1;
     if(!o.pass&&gt>inv&&dx<38&&Math.abs(dd)<(CARL+o.len)/2-7) crash(o);
     if(!o.pass&&dd<-(CARL+o.len)/2){ o.pass=1; if(!o.hit&&o.th) closeCall(o); } }
+  J.draft=drafting?gt:J.draft||0;
   traffic=traffic.filter(function(q){ var e=q.d-r.pd; return e>-330&&e<(q.on?1750:1100*SPD)&&q.x>-90&&q.x<W+90; });
   /* roadworks: the barrier is a crash that bumps you into the open lane */
   for(i=0;i<works.length;i++){ var w=works[i]; if(w.rb&&!w.said&&w.d0-r.pd<1500&&w.d0>r.pd){ works.forEach(function(q){ if(q.d0===w.d0) q.said=1; }); if(!SIM){ RK.fx.banner('Roadblock!','thread the gap',{kind:'bad',ms:1500}); SND.siren(); } }
@@ -521,7 +530,8 @@ function bar(){ var r=S.r, x=112, y=500, w=250, h=8, rpm=Math.max(0,r.rpm), z=pz
   cx.fillStyle=can?'rgba(61,255,176,.5)':'rgba(255,255,255,.14)'; cx.fillRect(x+w*z,y,w*(CFG.PZEND-z),h); cx.fillStyle='rgba(255,75,75,.8)'; cx.fillRect(x+w*CFG.PZEND,y,w*(1-CFG.PZEND),h);
   cx.fillStyle=inZone?'#3DFFB0':'#fff'; rr(cx,x,y,Math.max(4,w*rpm),h,4); cx.fill();
   cx.fillStyle='rgba(255,255,255,.18)'; rr(cx,x,y+15,w,5,2.5); cx.fill(); cx.fillStyle=r.nitro>0?'#fff':'#3DE0FF'; rr(cx,x,y+15,Math.max(3,w*(r.nitro>0?r.nitro/CFG.nitT[S.lv.tank]:S.boost/100)),5,2.5); cx.fill();
-  if(inZone) txt('Shift: Space',x,y-12,'800 16px '+IF,'#3DFFB0','left');
+  if(gt-(J.draft||-9)<0.15&&!inZone) txt('Drafting: nitro filling',x,y-12,'800 15px '+IF,'#9BECFF','left');
+  else if(inZone) txt('Shift: Space',x,y-12,'800 16px '+IF,'#3DFFB0','left');
   else if(full&&r.nitro<=0&&!can) txt('Nitro ready: Space',x,y-12,'800 14px '+IF,'#3DE0FF','left');
   else if(r.maxGear<5&&S.phase==='drive'){ if(r.gear>=r.maxGear&&rpm>0.85) txt((r.maxGear+1)+'th is locked: get 2 right at the next pit',x,y-12,'800 15px '+IF,'#FFD21F','left'); else txt((r.maxGear===3?'4th and 5th':'5th')+' locked',x,y-12,'600 13px '+IF,'rgba(255,255,255,.62)','left'); }
   var mph=Math.round(car.v/Math.max(1,multV)*(1+(multV-1)*0.4)*0.52); txt(String(mph),x+w+22,y+22,'400 40px '+DF,r.nitro>0?'#3DE0FF':'#fff','left'); var mphW=cx.measureText(String(mph)).width; txt('mph',x+w+30+mphW,y+22,'600 13px '+IF,'rgba(255,255,255,.7)','left'); }
@@ -767,6 +777,7 @@ function drawChase(){ var r=S.r, T=SCN[r.scen], P=CFG.plan[r.n], K=SKY[r.scen], 
   /* my headlights on the road */
   cx.globalAlpha=0.13; quad(car.x-34,car.x+34,20,70,'#FFF4C2'); quad(car.x-52,car.x+52,70,300,'#FFF4C2'); cx.globalAlpha=1;
   if(S.cop&&!REDUCE){ var sl0=FOC/CB; cx.fillStyle='rgba(255,246,200,.13)'; cx.beginPath(); cx.ellipse(pX(car.x+Math.sin(gt*1.1)*70,sl0),HZ+HC*sl0-6+Math.sin(gt*0.8)*10,150,30,0,0,6.283); cx.fill(); }
+  if(gt-(J.draft||-9)<0.15&&!REDUCE){ for(k=0;k<5;k++){ var dq=40+((gt*520+k*74)%370); quad(car.x-30+k*3,car.x-27+k*3,dq,dq+46,'rgba(190,240,255,.5)'); quad(car.x+27-k*3,car.x+30-k*3,dq+20,dq+66,'rgba(190,240,255,.5)'); } }
   /* headlights only: the road past the beams goes dark, and far things fade in as they reach the light */
   if(nightOn){ var nb=HC*FOC/(330+CB), ng=cx.createLinearGradient(0,HZ,0,HZ+nb+40); ng.addColorStop(0,'rgba(4,3,14,.94)'); ng.addColorStop(0.7,'rgba(4,3,14,.88)'); ng.addColorStop(1,'rgba(4,3,14,0)'); cx.fillStyle=ng; cx.fillRect(0,HZ,W,nb+40); }
   /* standing things, far to near: roadside, stars, traffic */
@@ -786,7 +797,7 @@ function drawChase(){ var r=S.r, T=SCN[r.scen], P=CFG.plan[r.n], K=SKY[r.scen], 
     else if(it.k==='span'){ var gi=prop(it.nm); if(gi&&gi.op){ var gw=(RW+70)/gi.op*s, gh=gw*gi.height/gi.width, gxc=pX(480,s)+(0.5-gi.oc)*gw; cx.globalAlpha=Math.max(0,Math.min(fade,(it.dd+70)/50)); cx.drawImage(gi,gxc-gw/2,y-gh+4*s,gw,gh); cx.globalAlpha=1; } }
     else if(it.k==='star'){ var st=it.o, X2=pX(st.x,s), rad=(st.gold?17:13)*s; if(st.gold) cx.drawImage(glow('rgba(255,225,77,.55)'),X2-rad*2,y-rad*3.2,rad*4,rad*4); cx.save(); cx.translate(X2,y-rad*1.2-Math.sin(gt*4+st.d)*3*s); cx.scale(s,s); drawStar(0,0,st.gold?17:13,st.gold?'#FFE14D':'#FFF8D6'); cx.restore(); }
     else if(it.k==='car'){ o=it.o; if(it.dd<-6) fade=Math.max(0,Math.min(1,(it.dd+135)/70)); var cim=rear(o.truck?'truck':o.on?'front':'traffic',o.col,o), cw=(cim.dw||(o.truck?54:50))*s, chh=cw*cim.height/cim.width, X3=pX(o.x,s); cx.globalAlpha=fade;
-      if(o.out){ cx.save(); cx.translate(X3,y-chh/2); cx.rotate(o.rot); cx.drawImage(cim,-cw/2,-chh/2,cw,chh); cx.restore(); } else { cx.fillStyle='rgba(0,0,0,.34)'; cx.beginPath(); cx.ellipse(X3,y+1.5*s,cw*0.52,cw*0.1,0,0,6.283); cx.fill(); cx.drawImage(cim,X3-cw/2,y-chh+3*s,cw,chh); var brk=!o.on&&o.v<o.v0-2; if(cim.dw&&cim.dw<30&&!o.on){ cx.drawImage(glow('rgba(255,255,255,.5)'),X3-cw*1.1,y-chh*1.1,cw*2.2,chh*1.3); cx.drawImage(cim,X3-cw/2,y-chh+3*s,cw,chh); brk=1; } cx.drawImage(glow(o.on?'rgba(255,244,194,.5)':brk?'rgba(255,40,40,.9)':'rgba(255,60,60,.45)'),X3-cw*0.62,y-chh*(brk?0.75:0.9),cw*1.24,chh*(brk?0.8:1.1)); } cx.globalAlpha=1; }
+      if(o.out){ cx.save(); cx.translate(X3,y-chh/2); cx.rotate(o.rot); cx.drawImage(cim,-cw/2,-chh/2,cw,chh); cx.restore(); } else { cx.fillStyle='rgba(0,0,0,.34)'; cx.beginPath(); cx.ellipse(X3,y+1.5*s,cw*0.52,cw*0.1,0,0,6.283); cx.fill(); cx.drawImage(cim,X3-cw/2,y-chh+3*s,cw,chh); var brk=!o.on&&o.v<o.v0-2; if(o.sw&&Math.floor(gt*2.5)%2===0){ cx.fillStyle='#FFB23D'; cx.beginPath(); cx.arc(X3+o.sw*cw*0.4,y-chh*0.42,Math.max(2,cw*0.09),0,6.283); cx.fill(); cx.drawImage(glow('rgba(255,178,61,.9)'),X3+o.sw*cw*0.4-cw*0.3,y-chh*0.42-cw*0.3,cw*0.6,cw*0.6); } if(cim.dw&&cim.dw<30&&!o.on){ cx.drawImage(glow('rgba(255,255,255,.5)'),X3-cw*1.1,y-chh*1.1,cw*2.2,chh*1.3); cx.drawImage(cim,X3-cw/2,y-chh+3*s,cw,chh); brk=1; } cx.drawImage(glow(o.on?'rgba(255,244,194,.5)':brk?'rgba(255,40,40,.9)':'rgba(255,60,60,.45)'),X3-cw*0.62,y-chh*(brk?0.75:0.9),cw*1.24,chh*(brk?0.8:1.1)); } cx.globalAlpha=1; }
     else if(it.k==='bar'&&prop('barrier')){ var bi=it.v&&prop('barrels')||prop('barrier'), bw2=(LW-6)*s, bh2=bw2*bi.height/bi.width; cx.drawImage(bi,X-bw2/2,y-bh2+2*s,bw2,bh2); }
     else if(it.k==='ramp'){ var rpi=prop(it.v?'ramp_fire':'ramp')||prop('ramp'), rw2=(LW+6)*s; if(rpi){ var rh3=rw2*rpi.height/rpi.width*0.9; if(X>480){ cx.save(); cx.translate(X,0); cx.scale(-1,1); cx.drawImage(rpi,-rw2/2,y-rh3+2*s,rw2,rh3); cx.restore(); } else cx.drawImage(rpi,X-rw2/2,y-rh3+2*s,rw2,rh3); }
       else { var s9=FOC/(it.dd+70+CB), yb=HZ+HC*s9, Xb=pX(it.x,s9), wb2=(LW-8)*s9, lift=34*s9; cx.fillStyle='#0B0718'; cx.beginPath(); cx.moveTo(X-rw2/2-3*s,y+2*s); cx.lineTo(X+rw2/2+3*s,y+2*s); cx.lineTo(Xb+wb2/2+3*s9,yb-lift-3*s9); cx.lineTo(Xb-wb2/2-3*s9,yb-lift-3*s9); cx.closePath(); cx.fill();
@@ -860,7 +871,8 @@ function threat(lane,from,to){ var r=S.r, best=null, i, o, a, b;
   return best; }
 function hint(B){ B=B||BOT.pro; var r=S.r; if(S.phase==='lights') return S.lt>=S.lg+(B.launch>=1?0.05:0.2)?'Space':null; if(S.phase!=='drive') return null;
   if(!B.none){ var wb=rbNear(r.pd,car.v*B.rb+60,0); if(wb&&wb.gap!==r.lane&&gt>=(bs.rbT||0)){ bs.rbT=gt+0.16; return wb.gap<r.lane?'ArrowLeft':'ArrowRight'; }
-    var th=threat(r.lane,-10,700);
+    var jb=jamNear(r.pd,car.v*B.rb*1.4+260,40), onRamp=jb&&(r.lane===jb.a||r.lane===jb.a+1); if(jb&&!onRamp&&gt>=(bs.rbT||0)){ bs.rbT=gt+0.16; return r.lane<jb.a?'ArrowRight':'ArrowLeft'; }
+    var th=threat(r.lane,-10,700); if(th&&onRamp&&th.a>jb.d-r.pd-30) th=null;
     if(th){ if(bs.id!==th.id){ bs.id=th.id; bs.ttc=B.ttc-Math.random()*B.jit; }
       var closing=Math.max(20,car.v-th.v), ttc=th.a/closing;
       if(ttc<bs.ttc||th.a<8){ var look=closing*0.9+120, opts=[r.lane-1,r.lane+1].filter(function(l){ return l>=0&&l<NL; }), best=null, bd=-1;
