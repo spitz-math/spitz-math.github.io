@@ -244,6 +244,16 @@
         "games/new/remake_kit/",
         "tools/qa/adapters/remake_kit.js"
       ]
+    },
+    {
+      "id": "shift_racer_remake",
+      "name": "Shift Racer (remake)",
+      "tier": 2,
+      "adapter": "adapters/shift_racer_remake.js",
+      "paths": [
+        "games/new/shift_racer/",
+        "tools/qa/adapters/shift_racer_remake.js"
+      ]
     }
   ]
 }
