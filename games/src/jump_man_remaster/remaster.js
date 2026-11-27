@@ -237,9 +237,9 @@ var lastHit=-1e9;   /* game seconds (S.climbT), not the wall clock */
 /* v34 (Kody 2026-11-27 'All 4', item 1: the average climber died at ~2:00 with 4-6 questions). Softer for a hurt player, same for a clean one:
    HURT_SAFE: after ANY lost heart (rock or fog) no second heart can be lost for 8 s (was 4 s fog-only, 4 s rock-only, so a rock then a fall cost two);
    FOG_HIT_CALM: the fog waits 5 s after a hit (was 3); FOG_MERCY: the fog trails 150 px farther back for each heart you are missing. */
-var FOG_AGAIN=4, FOG_HIT_CALM=5, FOG_MERCY=150, SAFE_CALM=false, HURT_SAFE=8, hurtAt=-1e9;
+var FOG_AGAIN=4, FOG_HIT_CALM=5, FOG_MERCY=150, HURT_SAFE=8, hurtAt=-1e9;
 function hurtSafe(){ return (S.climbT||0)-hurtAt<HURT_SAFE; }
-function fogHit(){ var again=(S.climbT||0)-lastHit<FOG_AGAIN||(SAFE_CALM&&S.calm>0)||hurtSafe(); if(!again) hurtAt=S.climbT||0; lastHit=S.climbT||0; if(!again) S.hearts=Math.max(0,S.hearts-1); SND.crash(); shk=10; endCombo();   /* v11: a second dip within 4 s only lifts you again */
+function fogHit(){ var again=(S.climbT||0)-lastHit<FOG_AGAIN||hurtSafe(); if(!again) hurtAt=S.climbT||0; lastHit=S.climbT||0; if(!again) S.hearts=Math.max(0,S.hearts-1); SND.crash(); shk=10; endCombo();   /* v11: a second dip within 4 s only lifts you again */
   if(S.hearts<=0){ S.fogOut=true; endRun(); return; }
   var tgt=null; for(var i=Math.max(0,S.pi-20);i<plats.length;i++){ var p=plats[i]; if(p.h>S.fog+300&&solid(p)&&p.kind!=='spring'&&p.kind!=='crumble'&&p.kind!=='ice'&&!p.amp){ tgt=p; break; } }
   if(tgt){ P.on=tgt; P.h=tgt.h; P.x=tgt.floor?W/2:cxAt(tgt,gt); P.vx=0; P.vy=0; P.lastI=tgt.i; S.pi=tgt.i; P.airJ=0; P.dashed=false; P.glide=false; }
@@ -812,5 +812,26 @@ function loop(){ var t=now(), raw=(t-lastF)/1000, dt=Math.min(0.033,raw), gd=dt;
   if(hold&&S.offer&&offerAt) offerAt+=raw*1000;                                                                    /* the card's 5 s wait too */
   if(!hold){ update(gd); popStep(); juiceStep(dt); if(S.offer&&offerAt&&t-offerAt>OFFER_AUTO&&!S.over) pickOffer(0); }
   render(); if(paused) drawPause(); if(STALE) drawStale(); requestAnimationFrame(loop); }
-window.__G34={tune:function(o){ if('again' in o) FOG_AGAIN=o.again; if('hitCalm' in o) FOG_HIT_CALM=o.hitCalm; if('mercy' in o) FOG_MERCY=o.mercy; if('safe' in o) SAFE_CALM=o.safe; if('per' in o) CALM_PER=o.per; if('max' in o) CALM_MAX=o.max; if('hurt' in o) HURT_SAFE=o.hurt; if('healAll' in o) HEAL_ALL=o.healAll; if('rockEvery' in o) ROCK_EVERY=o.rockEvery; }};
+window.__G34={tune:function(o){ if('again' in o) FOG_AGAIN=o.again; if('hitCalm' in o) FOG_HIT_CALM=o.hitCalm; if('mercy' in o) FOG_MERCY=o.mercy; if('per' in o) CALM_PER=o.per; if('max' in o) CALM_MAX=o.max; if('hurt' in o) HURT_SAFE=o.hurt; if('healAll' in o) HEAL_ALL=o.healAll; if('rockEvery' in o) ROCK_EVERY=o.rockEvery; }};
 window.__G33={askLocked:askLocked, dedupe:dedupe33, CARD_CLOCK:CARD_CLOCK, Q_LOCK:Q_LOCK};
+//@@ V35
+/* v35 (Kody 2026-11-27 "test and clean up the code and the game"): the small bugs left on the v33 list
+   1 the "open in another tab" message is a real overlay above the question card (it was drawn on the canvas, under the card)
+   2 a run that comes back from a reload in the middle of climbing comes back paused, not running
+   3 Enter or Space on a focused button of the restart box presses it (after its 1 s lock); the box opens with No focused
+   4 pop-up words are cleared when the New move card opens, so none sits under its title
+   5 (build.py) on spitzmath.com the test hooks are read-only; test copies, localhost and the QA checks keep them */
+var STALE_EL=null;
+function staleDom(){ if(!STALE||STALE_EL) return; var host=$('stage')||document.body;   /* the whole stage, above the question card (z 6) and under the restart box (z 40) */
+  STALE_EL=document.createElement('div'); STALE_EL.id='jmr-stale'; STALE_EL.setAttribute('role','alert');
+  STALE_EL.innerHTML='<b>This run is open in another tab</b><span>Keep playing there, or reload this page</span>'; host.appendChild(STALE_EL); }
+setInterval(staleDom,300);
+var resumePause35=false;
+function resume35(){ if(!resumePause35&&S.started&&!S.over&&!S.way&&!S.offer){ resumePause35=true; setPause(true); } }
+setTimeout(resume35,0);   /* runs once the saved run has loaded (the load is further down the file) */
+new MutationObserver(function(){ var a=$('sz-ask'), n=$('sz-askno'); if(a&&!a.hidden&&n&&document.activeElement!==n&&document.activeElement!==$('sz-askyes')){ try{ n.focus({preventScroll:true}); }catch(e){} } })
+  .observe(document.documentElement,{attributes:true,attributeFilter:['hidden'],subtree:true});
+addEventListener('keydown',function(e){ var a=$('sz-ask'); if(!a||a.hidden||askLocked()||e.repeat) return; var el=document.activeElement;
+  if((e.key==='Enter'||e.key===' ')&&el&&(el.id==='sz-askyes'||el.id==='sz-askno')){ e.preventDefault(); e.stopImmediatePropagation(); el.click(); } },true);
+var showOffer35=showOffer; showOffer=function(){ if(S.offer&&$('jmr-offer').hidden) pops.length=0; return showOffer35(); };
+window.__G35={staleEl:function(){ return STALE_EL; }, resume:resume35};
