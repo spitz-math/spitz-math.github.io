@@ -11,7 +11,7 @@ const {chromium}=require('playwright'); const D=process.argv[2];
  R.push(await pg.evaluate(()=>{ const S=__G.state(); S.w.p.hp=1; S.w.p.inv=0; for(let i=0;i<1200&&!S.over;i++){ __G.step(1/60); if(S.mode==='ask'){ return 'asked again'; } } return {over:S.over,win:S.win,title:document.getElementById('dn-endtitle').textContent,endVisible:!document.getElementById('dn-end').hidden}; }));
  await pg.waitForTimeout(400); await pg.keyboard.press('Enter'); await pg.waitForTimeout(300);
  R.push(await pg.evaluate(()=>({earlyEnterIgnored:__G.state().over})));
- await pg.waitForTimeout(1200); await pg.keyboard.press('Enter'); await pg.waitForTimeout(400); const cutMode=await pg.evaluate(()=>__G.state().mode); await pg.keyboard.press('Escape'); await pg.waitForTimeout(200); console.log('after restart mode',cutMode);
+ await pg.waitForTimeout(2300); await pg.keyboard.press('Enter'); await pg.waitForTimeout(400); const cutMode=await pg.evaluate(()=>__G.state().mode); await pg.keyboard.press('Escape'); await pg.waitForTimeout(200); console.log('after restart mode',cutMode);
  R.push(await pg.evaluate(()=>{ const S=__G.state(); return {restarted:!S.over, room:S.w.rid, hp:S.w.p.hp, score:S.score, revUsed:S.revUsed, build:Object.keys(S.w.b).length, name:S.name, endHidden:document.getElementById('dn-end').hidden}; }));
  // 3) revive wrong answer -> over
  R.push(await pg.evaluate(()=>{ const S=__G.state(); S.w.p.hp=1; S.w.p.inv=0; __G.room('guard','s'); S.w.p.inv=0; for(let i=0;i<900&&S.mode==='play';i++) __G.step(1/60); const i=S.q.choices.findIndex(c=>c.ok); __G.answer((i+1)%S.q.choices.length); __G.askNext(); return {mode:S.mode, over:S.over}; }));

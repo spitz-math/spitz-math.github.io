@@ -9,7 +9,7 @@ window.SpitzGames=[
    '<path d="M104 60v14q0 5 3 5t3-5v-12zM126 62v22q0 5 3 5t3-5v-20z" fill="#B6FF3D"/>'+
    '<circle cx="52" cy="40" r="10" fill="#FF2E93"/><circle cx="32" cy="46" r="5" fill="#FF2E93" opacity=".6"/><circle cx="18" cy="50" r="3" fill="#FF2E93" opacity=".35"/>'+
    '<circle cx="40" cy="76" r="8" fill="#2DE2E6"/><circle cx="24" cy="80" r="4" fill="#2DE2E6" opacity=".6"/>'},
-  {id:'star_swarm',name:'Star Swarm',d:'Blast the alien swarm',font:"'Bungee'",paper:'#03050C',panel:'#0A1122',acc:'#3DE0FF',
+  {id:'star_swarm',name:'Star Swarm HD',d:'Blast the alien swarm',font:"'Bungee'",paper:'#03050C',panel:'#0A1122',acc:'#3DE0FF',
    art:'<rect width="200" height="110" fill="#03050C"/>'+
    '<g fill="#EAF6FF"><rect x="14" y="12" width="2" height="2"/><rect x="60" y="30" width="2" height="2"/><rect x="170" y="16" width="3" height="3"/><rect x="186" y="60" width="2" height="2"/><rect x="30" y="74" width="2" height="2"/><rect x="128" y="8" width="2" height="2"/></g>'+
    '<g fill="#FF4F6D"><rect x="40" y="16" width="20" height="8"/><rect x="36" y="20" width="4" height="8"/><rect x="60" y="20" width="4" height="8"/><rect x="44" y="24" width="4" height="4" fill="#03050C"/><rect x="52" y="24" width="4" height="4" fill="#03050C"/>'+
@@ -30,7 +30,7 @@ window.SpitzGames=[
    '<g transform="translate(150 6)"><path d="M6 0l6 8-6 8-6-8z" fill="#FFC93C"/></g>'+
    '<g transform="translate(88 30)"><rect x="4" y="0" width="16" height="8" fill="#FFC93C"/><rect x="4" y="8" width="16" height="10" fill="#F2C29B"/><rect x="14" y="10" width="3" height="3" fill="#0D1A3A"/>'+
    '<rect x="2" y="18" width="20" height="14" fill="#3E6BC4"/><rect x="-4" y="16" width="6" height="6" fill="#F2C29B"/><rect x="22" y="12" width="6" height="6" fill="#F2C29B"/><rect x="2" y="32" width="8" height="10" fill="#15295A"/><rect x="14" y="30" width="8" height="8" fill="#15295A"/></g>'},
-  {id:'football_buds',name:'Football Buds',d:'Four quarters vs the Rivals',font:"'Graduate'",paper:'#0A101E',panel:'#121B30',acc:'#E8344A',
+  {id:'football_buds',name:'Football Buds BLITZ',d:'Arcade football vs the Rivals',font:"'Graduate'",paper:'#0A101E',panel:'#121B30',acc:'#FF6070',
    art:'<rect width="200" height="110" fill="#2E7D3A"/><g fill="#348A41"><rect x="0" y="0" width="40" height="110"/><rect x="80" y="0" width="40" height="110"/><rect x="160" y="0" width="40" height="110"/></g>'+
    '<g stroke="#F7F3E3" stroke-width="2" opacity=".85"><path d="M40 0v110M80 0v110M120 0v110M160 0v110"/></g>'+
    '<g fill="#F7F3E3" font-family="Graduate,serif" font-size="14" text-anchor="middle"><text x="40" y="104">20</text><text x="120" y="104">40</text></g>'+
@@ -95,10 +95,6 @@ window.SpitzGames=[
    '<path d="M-36 51q0-26 36-26t36 26z" fill="#E8A24A"/><g fill="#F6E3C2"><ellipse cx="-14" cy="38" rx="2" ry="1.2"/><ellipse cx="0" cy="33" rx="2" ry="1.2"/><ellipse cx="14" cy="38" rx="2" ry="1.2"/><ellipse cx="-4" cy="43" rx="2" ry="1.2"/><ellipse cx="8" cy="44" rx="2" ry="1.2"/></g></g>'+
    '<g transform="translate(150 16)"><rect width="36" height="44" rx="3" fill="#F6E3C2"/><path d="M6 12h24M6 20h18M6 28h22M6 36h14" stroke="#C4AA98" stroke-width="3" stroke-linecap="round"/><circle cx="18" cy="0" r="3" fill="#43302A"/></g>'+
    '<g transform="translate(22 40)"><rect x="0" y="10" width="16" height="38" rx="5" fill="#FF3B2E"/><rect x="4" y="2" width="8" height="10" rx="2" fill="#FF3B2E"/><rect x="5" y="-4" width="6" height="7" rx="1.5" fill="#F6E3C2"/><rect x="3" y="22" width="10" height="12" rx="2" fill="#F6E3C2" opacity=".85"/></g>'},
-  {id:'dig_buds',name:'Dig Buds',d:'Dig down and rescue the lost Buds',font:"'Fredoka'",paper:'#0D0A14',panel:'#1A1424',acc:'#3EE6D0',
-   art:'<rect width="200" height="110" fill="#8CC8F5"/><rect y="58" width="200" height="52" fill="#8A5A3C"/><rect y="52" width="200" height="12" fill="#5FCB8A"/>'+
-   '<rect x="88" y="64" width="24" height="46" fill="#2A1F38"/><rect x="92" y="84" width="16" height="16" rx="2" fill="#FFC857"/><rect x="95" y="89" width="3" height="4" fill="#3A2412"/><rect x="102" y="89" width="3" height="4" fill="#3A2412"/>'+
-   '<g fill="#3EE6D0"><rect x="30" y="76" width="8" height="8"/><rect x="150" y="90" width="8" height="8"/></g><g fill="#FFC93C"><rect x="56" y="94" width="8" height="8"/><rect x="134" y="72" width="8" height="8"/></g>'},
   {id:'fit_check',name:'Fit Check',d:'Dress up for the runway',font:"'Paytone One'",paper:'#130A1A',panel:'#1F1229',acc:'#FF6CB3',
    art:'<defs><radialGradient id="fcspot" cx=".5" cy="0" r="1"><stop offset="0" stop-color="#FF6CB3" stop-opacity=".55"/><stop offset=".7" stop-color="#FF6CB3" stop-opacity="0"/></radialGradient></defs><rect width="200" height="110" fill="#130A1A"/><path d="M70 0H130L170 110H30Z" fill="url(#fcspot)"/>'+
    '<path d="M60 110L84 70H116L140 110Z" fill="#2A1A36"/>'+
@@ -172,7 +168,8 @@ window.SpitzGames=[
      and leaderboard until its date (UTC); null = locked until Kody says so. To unlock, set the date: the game appears then with a NEW badge.
      Games not listed here are always shown. Hidden games' files stay on the site. */
   /* Kody approved this schedule 2026-10-12 (Mondays 12:00 UTC) */
-  var UNLOCK={ dig_buds:null, /* Dig Buds: locked until Kody picks its date */
+  var UNLOCK={ football_buds:null, /* Football Buds BLITZ (2026-11-22): live at games/football_buds.html as a secret link, off the hub until Kody picks its date */
+    star_swarm:null, /* Star Swarm HD (2026-11-25): live at games/star_swarm.html as a secret link, off the hub until Kody picks its date */
     mini_golf:'2026-10-19T12:00', brick_breaker:'2026-10-19T12:00', snake_arena:'2026-10-19T12:00',
     burger_blaster:'2026-10-26T12:00', pinball:'2026-10-26T12:00',
     rocket_buds:'2026-11-02T12:00', brawl_buds:'2026-11-02T12:00',
@@ -180,8 +177,7 @@ window.SpitzGames=[
     rook_and_ruin:'2026-11-16T12:00' /* Kody 2026-11-16: "make it live" (moved up from Nov 23) */ };
   /* Updated games (Kody, 2026-10-30): a big change to a live game shows an UPDATED badge and a short line saying what changed (more = the hover text) on its hub card
      for NEW_DAYS days, and the game sorts up with the new ones. at = when it went live (UTC). */
-  var UPDATED={ football_buds:{ at:'2026-10-30T15:00', what:'New: points & All-Pro', more:'Now with a real points score, All-Pro mode and 3 challenges every game' },
-    hoop_buds:{ at:'2026-10-30T16:00', what:'New: points & All-Pro', more:'Now with a real points score, All-Pro mode and 3 challenges every game' },
+  var UPDATED={ hoop_buds:{ at:'2026-10-30T16:00', what:'New: points & All-Pro', more:'Now with a real points score, All-Pro mode and 3 challenges every game' },
     pinball:{ at:'2026-11-09T18:15', what:'New: All-Pro & challenges', more:'All-Pro mode, 3 challenges every game and double points in the last 30 seconds' },
     shift_racer:{ at:'2026-11-09T18:15', what:'New: police chases', more:'Outrun the police, plus All-Pro mode, 3 challenges and double points in the last 30 seconds' },
     skate:{ at:'2026-11-09T18:15', what:'New: special tricks', more:'Fill the Special meter for triple-point tricks, plus All-Pro mode, 3 challenges and a double-points finish' },
@@ -198,7 +194,7 @@ window.SpitzGames=[
 /* Real screenshots on the cards (2026-10-24): a game listed in SHOTS shows a picture from the game itself (games/cards/<id>.webp, 400x220)
    instead of its drawing. Take a game out of the list to bring its drawing back (kept in g.drawn). */
 (function(){
-  var SHOTS=['brawl_buds','brick_breaker','burger_blaster','dig_buds','fishing','football_buds','hill_climb','hoop_buds','pinball','rocket_buds','rook_and_ruin','skate'];
+  var SHOTS=['brawl_buds','brick_breaker','burger_blaster','fishing','football_buds','hill_climb','hoop_buds','pinball','rocket_buds','rook_and_ruin','skate','star_swarm'];
   /* pictures also ready in games/cards/ (busier at card size, so they keep their drawings for now): burger_shop, fit_check, paint_royale, snake_arena, splat_range */
   var me=document.currentScript&&document.currentScript.src, base=me?me.replace(/catalog\.js(\?.*)?$/,''):'/games/';
   window.SpitzGames.forEach(function(g){ if(SHOTS.indexOf(g.id)<0) return; g.drawn=g.art;

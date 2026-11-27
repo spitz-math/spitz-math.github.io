@@ -204,7 +204,7 @@ function skipScene(){ if(S.mode==='cut') cutEnd(); }
    fall:   Rook goes down, the horde closes in, the camera pulls up and away.  ~6 s */
 var ECUT=null;
 function finishRun(win,kind){ if(S.over||S.mode==='endcut') return; var w=S.w, p=w.p;
-  ['dn-qwrap','dn-pick'].forEach(function(id){ $(id).hidden=true; }); S.endWin=!!win; S.mode='endcut'; HELD={}; BUF.s=BUF.r=0;
+  ['dn-qwrap','dn-pick'].forEach(function(id){ $(id).hidden=true; }); S.endWin=!!win; S.endKind=kind; S.mode='endcut'; HELD={}; BUF.s=BUF.r=0;
   ECUT={t:0,kind:kind,dur:6.2,x0:p.x,y0:p.y,cues:{},cap:'',capT:0}; p.roll=0; p.sw=0; p.rec=0; p.cutPose=null; w.orbs=[]; w.rings=[]; w.shots=[]; w.spawns=[]; w.gems=[]; w.coinsF=[]; w.hearts=[]; w.en.forEach(function(e){ e.fl=0; });
   if(kind==='escape'){ w.rub=[]; } else { p.cutPose=['rook_idle',0,2,false]; w.rub=[]; }
   $('dn-skip').hidden=true; cine(true); save(); }

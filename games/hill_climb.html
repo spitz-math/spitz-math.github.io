@@ -938,7 +938,7 @@ function showEnd(celebrate){ $('hc-endname').textContent=S.name; $('hc-endscore'
   /* LEADERBOARD HOOK: the shared score code (scorecode.js) shows the student's code here */
   if(window.SpitzCode&&SpitzCode.show) try{ SpitzCode.show('hc','hill_climb',S); }catch(e){}
   $('hc-end').hidden=false;
-  if(celebrate){ SND.win(); [0,350,700,1100].forEach(function(ms,i){ setTimeout(function(){ confetti(200+i*500,1070,90,1.3); confetti(1720-i*500,1070,90,1.3); },ms); }); } }
+  if(celebrate&&S.score>0){ SND.win(); [0,350,700,1100].forEach(function(ms,i){ setTimeout(function(){ confetti(200+i*500,1070,90,1.3); confetti(1720-i*500,1070,90,1.3); },ms); }); } }
 var armT=0; $('hc-again').addEventListener('click',function(){ var b=this; if(!b.classList.contains('arm')){ b.classList.add('arm'); b.textContent='Tap again to start over'; clearTimeout(armT); armT=setTimeout(function(){ b.classList.remove('arm'); b.textContent='Play again'; },3000); return; }
   b.classList.remove('arm'); b.textContent='Play again'; var keepName=S.name; S=fresh(); S.name=keepName; boot0(); fx.length=0; pops.length=0; lastChal=''; modeDraw();
   $('hc-end').hidden=true; $('hc-start').hidden=false; $('hc-nameinput').value=keepName; $('hc-go-start').disabled=!keepName; save(); hud(); dirty=true;

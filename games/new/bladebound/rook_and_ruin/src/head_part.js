@@ -241,7 +241,7 @@ function tspr(str,px,col,ol){ var k=px+'|'+col+'|'+(ol||'')+'|'+str, s=TXC[k]; i
   s.by=by; s.pad=pad; TXC[k]=s; return s; }
 /* draw cached text. al: 'left' | 'right' | 'center' (default). ol: outline colour (optional) */
 function dtx(c,str,x,y,px,col,al,ol){ var s=tspr(String(str),px,col,ol); c.drawImage(s,Math.round(al==='left'?x-s.pad:al==='right'?x-s.width+s.pad:x-s.width/2),Math.round(y-s.by)); }
-function textFlush(){ TXC={}; TXN=0; FONTS={}; }
+function textFlush(){ TXC={}; TXN=0; FONTS={}; VITK=''; }   /* VITK: the top-bar vitals redraw with the real font */
 if(document.fonts){ if(document.fonts.ready) document.fonts.ready.then(textFlush); if(document.fonts.addEventListener) document.fonts.addEventListener('loadingdone',textFlush); }
 var FX={};
 function ringSpr(r,lw,col,dash){ var s=r*2+lw*2+2; return mk(s,s,function(x){ x.strokeStyle=col; x.lineWidth=lw; if(dash) x.setLineDash(dash); x.beginPath(); x.arc(s/2,s/2,r,0,6.2832); x.stroke(); }); }

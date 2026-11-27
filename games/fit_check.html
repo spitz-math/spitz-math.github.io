@@ -892,7 +892,7 @@ function showEnd(celebrate){ $('fc-endname').textContent=S.name; $('fc-endscore'
   /* LEADERBOARD HOOK: the shared score code (scorecode.js) shows the student's code here.
      RENAME: 'starter' must become the game's id in GAMES in scorecode.js (the sharing thread adds it at go-live); until then no code shows. */
   if(window.SpitzCode&&SpitzCode.show) try{ SpitzCode.show('fc','fit_check',S); }catch(e){}
-  $('fc-end').hidden=false; if(celebrate){ SND.win(); [0,350,700,1100].forEach(function(ms,i){ setTimeout(function(){ confetti(200+i*500,1070,90,1.3); confetti(1720-i*500,1070,90,1.3); },ms); }); } }
+  $('fc-end').hidden=false; if(celebrate&&S.score>0){ SND.win(); [0,350,700,1100].forEach(function(ms,i){ setTimeout(function(){ confetti(200+i*500,1070,90,1.3); confetti(1720-i*500,1070,90,1.3); },ms); }); } }
 var armT=0; $('fc-again').addEventListener('click',function(){ var b=this; if(!b.classList.contains('arm')){ b.classList.add('arm'); b.textContent='Tap again to start over'; clearTimeout(armT); armT=setTimeout(function(){ b.classList.remove('arm'); b.textContent='Play again'; },3000); return; }
   b.classList.remove('arm'); b.textContent='Play again'; var keepName=S.name; S=fresh(); S.name=keepName; fx=[]; cards={}; themeCv=null; modelDirty=true;
   $('fc-end').hidden=true; $('fc-start').hidden=false; $('fc-nameinput').value=keepName; $('fc-go').disabled=!keepName; save(); hud(); timerDraw();

@@ -46,10 +46,10 @@ const {chromium}=require('playwright'); const D=process.argv[2]||'out', O=D+'/to
  const sw=await s.evaluate(()=>{ const S=__G.state(), w=S.w; return {id:w.shop[5].id,coins:w.coins,ex:S.revExtra,sold:!!w.shop[5].sold,n:w.shop.length,xs:w.shop.map(i=>i.x)}; });
  check('secondWindBuy',sw.id==='rev'&&sw.coins===10&&sw.ex===1&&sw.sold&&sw.n===6&&sw.xs[0]>100&&sw.xs[5]<860,sw);
  await s.evaluate(()=>{ __G.room('shop','s'); __G.state().mode='play'; __G.state().w.dealt=1; }); check('secondWindOncePerRun',await s.evaluate(()=>!!__G.state().w.shop[5].sold),'');
- const ko=async()=>{ await s.evaluate(()=>{ const S=__G.state(); S.mode='play'; S.w.p.inv=0; S.w.p.hp=1; __G.hurt(5); }); await s.waitForFunction(()=>{ const S=__G.state(); return S.mode!=='play'||S.over; },null,{timeout:3000}).catch(()=>{}); await s.waitForTimeout(50); const r=await s.evaluate(()=>{ const S=__G.state(); return {mode:S.mode,why:S.ask&&S.ask.why,over:S.over,rev:S.revUsed,ex:S.revExtra}; });
-   if(r.why==='revive'){ await s.evaluate(()=>{ const S=__G.state(); __G.askNext(); __G.answer(S.q.choices.findIndex(c=>c.ok)); __G.askNext(); }); await s.waitForTimeout(200); await s.evaluate(()=>{ const S=__G.state(); for(let i=0;i<400&&S.mode==='reentry';i++) __G.step(1/60); }); } return r; };
+ const ko=async()=>{ await s.evaluate(()=>{ const S=__G.state(); S.mode='play'; S.w.p.inv=0; S.w.p.hp=1; S.w.p.arm=0; S.w.p.sh=1e6; __G.hurt(5); });   /* sh: a random Aegis starter relic would block the hit (the test used to fail about 1 run in 4) */ await s.waitForFunction(()=>{ const S=__G.state(); return S.mode!=='play'||S.over; },null,{timeout:3000}).catch(()=>{}); await s.waitForTimeout(50); const r=await s.evaluate(()=>{ const S=__G.state(); return {mode:S.mode,why:S.ask&&S.ask.why,over:S.over,rev:S.revUsed,ex:S.revExtra}; });
+   if(r.why==='revive'||r.why==='revive2'){ await s.evaluate(()=>{ const S=__G.state(); __G.askNext(); __G.answer(S.q.choices.findIndex(c=>c.ok)); __G.askNext(); }); await s.waitForTimeout(200); await s.evaluate(()=>{ const S=__G.state(); for(let i=0;i<400&&S.mode==='reentry';i++) __G.step(1/60); }); } return r; };
  const k1=await ko(), k2=await ko(), k3=await ko();
- check('secondWindRevives',k1.why==='revive'&&k1.ex===1&&k2.why==='revive'&&k2.ex===2&&k3.why!=='revive'&&(k3.mode==='endcut'||k3.over),{k1,k2,k3});
+ check('secondWindRevives',k1.why==='revive'&&k1.ex===1&&k2.why==='revive2'&&k2.ex===2&&k3.why!=='revive'&&(k3.mode==='endcut'||k3.over),{k1,k2,k3});
 
  // 3. boss: plate, enraged, stunned
  const bo=await page(1366,768);

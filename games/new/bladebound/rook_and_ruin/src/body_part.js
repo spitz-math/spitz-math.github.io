@@ -115,7 +115,7 @@ function freshWorld(){
     waves:[], wave:0, waveT:0.9, cleared:false, open:false, door:false, chest:null, resolve:0, siegeT:0, crack:0, shop:null, boss:null, victory:0,
     tm:{spark:1.5, rico:1, spawn:0.5, swarm:22}, oa:0, banner:null, fork:Math.random()<0.5?1:0, impV:Math.random()<0.5?1:0, secL:Math.random()<0.5?1:0, batch:null }; }
 function loadRoom(id,from){ var w=S.w, R=ROOMS[id]; applyFork(); w.bannerQ=[]; w.batch=null; w.aeg=0; w.hurtRoom=0; w.roomT0=w.runT; w.rid=id; w.from=from||'s'; w.seen[id]=1; buildMap(R.kind);
-  w.en=[]; w.spawns=[]; w.gems=[]; w.coinsF=[]; w.hearts=[]; w.shots=[]; w.orbs=[]; w.fx=[]; w.booms=[]; w.tele=[]; w.t=0; w.fires=[]; w.p.burn=0;
+  w.en=[]; w.spawns=[]; w.gems=[]; w.coinsF=[]; w.hearts=[]; w.shots=[]; w.orbs=[]; w.fx=[]; w.booms=[]; w.tele=[]; w.t=0; w.fires=[]; w.p.burn=0; w.gemWait=0;
   w.waves=(R.waves||[]).map(function(v){ return v.slice(); });
   var pe=pathE(id); if(pe&&!R.after){ var wi=1+Math.floor(Math.random()*(w.waves.length-1)); w.waves[wi].push([pe,1]); if(id==='arena') w.waves[w.waves.length-1].push([pe,1]); }   /* a taste of this side's new enemy in its first room */
   if(R.after==='arena') w.waves.shift();   /* the Proving Ground side already fought 4 waves, so its second room has 3: both paths stay about even */
@@ -290,7 +290,8 @@ function update(dt){ var w=S.w, p=w.p, s=stat(), i, e;
   if(HELD[' ']||BUF.s>0){ if(p.cd<=0&&p.roll<=0){ BUF.s=0; swing(); } }
   if(p.sw>0&&p.sid){ if(!p.struck&&(p.spin?0.26:0.2)-p.sw>=RR_WIND-1e-6) strike(); else if(p.struck) swingHits(); }
   /* doorways */
-  if(w.open){ var ex=ROOMS[w.rid].exits;
+  /* the doors wait until flying XP has landed and earned level-ups are paid (at most about 3 s after a clear), so XP can't be left behind (overnight check 2026-11-26) */
+  if(w.open&&!w.gems.length&&!(w.cleared&&w.pend>0)){ var ex=ROOMS[w.rid].exits;
     if(ex.n&&p.y<(ROOMART?FLR[1]-6:p.r+6)&&p.x>14*TS&&p.x<18*TS){ goRoom(ex.n,'s'); return; }
     if(ex.w&&p.x<(ROOMART?FLR[0]-4:p.r+6)){ goRoom(ex.w,'w'); return; }
     if(ex.e&&p.x>(ROOMART?FLR[2]+4:W-p.r-6)){ goRoom(ex.e,'e'); return; } }
@@ -334,11 +335,13 @@ function update(dt){ var w=S.w, p=w.p, s=stat(), i, e;
   /* chests */
   /* a chest that lands on top of Rook waits: it opens once he steps off and back, or after a beat once the level-ups are done (so nobody gets stuck standing on it) */
   if(w.chest&&!w.chest.arm){ if(Math.hypot(p.x-w.chest.x,p.y-w.chest.y)>p.r+34) w.chest.arm=1; else if(w.pend<=0){ w.chest.wait=(w.chest.wait||0)+dt; if(w.chest.wait>1.2) w.chest.arm=1; } }
-  if(w.chest&&!w.chest.open&&w.chest.arm&&w.pend<=0&&Math.hypot(p.x-w.chest.x,p.y-w.chest.y)<p.r+18){ w.chest.open=true; SND.chest(); var gold=w.chest.type==='gold'; w.coins+=gold?10:6; toast('+'+(gold?10:6)+' coins'); openAsk('chest',{w:gold?'gold':'chest',g:gold?1:0.3,c:gold?8:4}); return; }
+  if(w.chest&&!w.chest.open&&w.chest.arm&&w.pend<=0&&!w.gems.length&&Math.hypot(p.x-w.chest.x,p.y-w.chest.y)<p.r+18){ w.chest.open=true; SND.chest(); var gold=w.chest.type==='gold'; w.coins+=gold?10:6; toast('+'+(gold?10:6)+' coins'); openAsk('chest',{w:gold?'gold':'chest',g:gold?1:0.3,c:gold?8:4}); return; }
   var sc=w.secretChest; if(sc&&w.secretOpen&&!sc.open&&Math.hypot(p.x-sc.x,p.y-sc.y)<p.r+18){ sc.open=true; SND.chest(); w.coins+=10; p.hp=p.max; toast('Secret treasure! +10 coins, full hearts'); openAsk('chest',{w:'secret',g:0.5,c:6}); return; }
   stepFx(dt);
   /* banked level-ups get answered at the end of the fight, never in the middle of it */
-  if(w.cleared&&w.pend>0&&S.mode==='play'){ w.resolve-=dt; if(w.resolve<=0) levelUp(); }
+  /* Kody 2026-11-25: XP still flying in after the room clears is counted BEFORE the level-up opens, so it all lands in one batch
+     (it used to arrive after the cards and open a second round of questions right away). Gems fly home at 480 px/s; after 2.5 s any left are counted at once. */
+  if(w.cleared&&S.mode==='play'&&(w.pend>0||w.gems.length)){ w.resolve-=dt; if(w.resolve<=0){ if(w.gems.length&&(w.gemWait=(w.gemWait||0)+dt)<2.5){} else { if(w.gems.length){ var gv=0; w.gems.forEach(function(g){ gv+=g.v; }); w.gems=[]; gainXP(gv,1); } w.gemWait=0; if(w.pend>0) levelUp(); } } }
   hud(); }
 function stepFx(dt){ var w=S.w; for(var i=w.fx.length-1;i>=0;i--){ var f=w.fx[i]; f.t+=dt; if(f.k==='bit'||f.k==='goo'){ f.x+=f.vx*dt; f.y+=f.vy*dt; f.vy+=300*dt; }
     var life=f.k==='bit'?0.5:f.k==='goo'?0.4:f.k==='splat'?0.6:f.k==='die'?0.16:f.k==='pop'?0.18:f.k==='zap'||f.k==='arc'?0.22:f.k==='ring'?0.35:f.k==='boom'?0.3:f.k==='spark'?0.14:f.k==='hurt'?0.3:f.k==='puff'?0.4:0.8; if(f.t>life) w.fx.splice(i,1); } }
@@ -682,7 +685,7 @@ function transTick(dt){ var w=S.w, p=w.p, d=w.tdir||[0,-1], was=trans; trans-=dt
 /* ---------- levels, picks and questions ---------- */
 function gainXP(v,quiet){ var w=S.w; w.xp+=v; if(!quiet) SND.gem(); while(w.xp>=w.need){ w.xp-=w.need; w.lv++; w.need=2+3*w.lv; w.pend++; if(!w.cleared&&!quiet) w.fx.push({k:'txt',x:w.p.x,y:w.p.y-44,t:0,v:'Upgrade banked!',c:'#FFC93C'}); } }
 function levelUp(){ var w=S.w; w.pend--; if(w.batch==null){ SND.level(); openAsk('level'); } else { w.batch.i=(w.batch.i||1)+1; openPick('level',w.batch.n,w.batch.g,w.batch.pm); } }
-function knockedOut(){ var w=S.w; HELD={}; SND.ko(); if(!S.revUsed){ S.revUsed=1; openAsk('revive'); } else if(S.revExtra===1){ S.revExtra=2; openAsk('revive'); }   /* Second Wind from the shop: the same question, once more */ else finishRun(!!w.won,'fall'); }
+function knockedOut(){ var w=S.w; HELD={}; SND.ko(); if(!S.revUsed){ S.revUsed=1; openAsk('revive'); } else if(S.revExtra===1){ S.revExtra=2; openAsk('revive2'); }   /* Second Wind from the shop: the same question, once more */ else finishRun(!!w.won,'fall'); }
 /* starter relic (playtest handoff 2026-11-15): dealt as Rook walks into the Entry Hall, before the first wave, with no screen to accept.
    Still random from the same three families; a Bulwark starter comes at Lv 2 as before (they are weaker on their own). w.starter = its id, so a reload never deals a second one. */
 function dealStarter(){ var w=S.w; if(w.starter||w.picks) return; var ST=[['wave','whirl'],['spark','orbit','volatile'],['bash','thorns','aegis']], pth=ST[Math.floor(Math.random()*3)];
@@ -710,7 +713,7 @@ function reroll(){ if(!canReroll()||!gateOpen()) return; var w=S.w, c=rerollCost
   if(w.coins<c){ toast('Reroll costs '+c+' coins'); SND.tick(); return; }
   var a=S.pickArgs||[S.cards.length,0,S.cards.some(function(x){ return x.pm; })]; w.coins-=c; w.rrN=(w.rrN||0)+1;
   S.cards=cardsFor(a[0],a[1],a[2]); SND.pick(); showPick(); renderBuild(); save(); }
-function openPick(why,n,goldChance,perfect){ S.pickArgs=[n||3,goldChance||0,perfect]; S.cards=cardsFor(n||3,goldChance||0,perfect); S.pickWhy=why; S.mode='pick'; HELD={}; showPick(); arm($('dn-pick').querySelector('.dn-pickbox')); save(); }
+function openPick(why,n,goldChance,perfect){ dropBanner(); S.pickArgs=[n||3,goldChance||0,perfect]; S.cards=cardsFor(n||3,goldChance||0,perfect); S.pickWhy=why; S.mode='pick'; HELD={}; showPick(); arm($('dn-pick').querySelector('.dn-pickbox')); save(); }
 var PATHN={blade:'Blade',storm:'Storm',bulwark:'Bulwark',any:'Extra'};
 /* every family has one color everywhere: cards, combo chips and the build list */
 /* power icons: the Nov 14 pixel icons (RRICON in rr_art.js, one 24x24 image per power, sized by font-size: 1em).
@@ -748,7 +751,9 @@ function showPick(){ var why=S.pickWhy;
     return '<button class="dn-card fam p-'+u.path+(c.gold?' gold':'')+'" data-i="'+i+'"><span class="k">'+(i+1)+'</span><span class="dn-fam">'+PATHN[u.path]+(u.path==='any'?'':' power')+'</span><span class="ic">'+ICON(u)+'</span><span class="n">'+u.n+'</span><span class="lv">'+tier+'</span><span class="dn-how">'+INFO[c.id].how+'</span>'+body+cn+(c.pm?'<span class="dn-rar">Perfect math · +2 levels</span>':c.gold?'<span class="dn-rar">Gold card · skips a level</span>':'')+'</button>'; }).join('');
   $('dn-readynote').textContent='';
   var rb=$('dn-reroll'), rc=rerollCost(); rb.hidden=!canReroll(); rb.disabled=w.coins<rc; rb.innerHTML='Reroll (R) · <b>'+rc+'</b> coins';
-  $('dn-pick').hidden=false; }
+  $('dn-pick').hidden=false; fitPick(); }
+/* the cards and the Reroll button always fit inside the arena: shrink the whole box when it is taller (or wider) than the arena */
+function fitPick(){ var bx=$('dn-pick').querySelector('.dn-pickbox'); bx.style.transform=''; var h=bx.offsetHeight, wd=Math.max(bx.offsetWidth,$('dn-cards').scrollWidth), s2=Math.min(1,(936-40)/h,(1664-40)/wd); if(s2<1) bx.style.transform='scale('+s2.toFixed(3)+')'; }
 function pick(i){ if(S.mode!=='pick') return; var c=S.cards[i]; if(!c) return; var w=S.w, p=w.p;
   if(c.id==='snack'){ p.hp=p.max; }
   else if(c.syn){ w.b[c.id]=1; }
@@ -792,7 +797,7 @@ document.addEventListener('keydown',function(e){ var k=(e.key||'').toLowerCase()
 document.addEventListener('keyup',function(e){ var k=(e.key||'').toLowerCase(); delete DOWNK[k]; if(e.key==='Shift') delete DOWNK.shift; },true);
 addEventListener('blur',function(){ DOWNK={}; });
 if(FAST) $('dn-q').classList.add('fast');
-var ASKTXT={ level:['Power up!',''], revive:['Knocked out!','Right answer: get back up with 3 hearts'],
+var ASKTXT={ level:['Power up!',''], revive:['Knocked out!','Right answer: get back up with 3 hearts'], revive2:['Second Wind!','One more chance. Right answer: get back up with 3 hearts'],
   chest:['Unlock the chest','Right answer: bonus coins and better odds of gold treasure'], deal:["The merchant's deal",'Each right answer: +6 coins'], rally:['Rally!','Right answer: +1 heart (or armor if full)'] };
 /* what a level-up's questions really pay (2026-11-14 flow pass): 1+ right = pick from 3 cards (0 right = 2), both right = each card has a 1 in 5 gold chance.
    The starter relic is dealt at the start of the Entry Hall instead (dealStarter). */
@@ -801,7 +806,8 @@ function levelPromise(){ var w=S.w, more=w.pend||0;
 /* the question card never shrinks during one ask (Kody 2026-11-15: it bounced up and down after each answer); it starts fresh on the next ask */
 var QMIN=0;
 if(window.ResizeObserver) new ResizeObserver(function(){ var q=$('dn-q'); if(!S||S.mode!=='ask') return; var h=q.offsetHeight; if(h>QMIN){ QMIN=h; q.style.minHeight=h+'px'; } }).observe($('dn-q'));
-function openAsk(why,o){ QMIN=0; $('dn-q').style.minHeight=''; S.mode='ask'; HELD={}; S.ask={why:why, need:why==='level'||why==='deal'?2:1, got:0, n:0, o:o||null}; newQ(); $('dn-qwrap').hidden=false; arm($('dn-q')); save(); }
+function dropBanner(){ var w=S.w; if(w&&w.banner&&!w.banner.tip) w.banner=null; }   /* ROOM CLEAR and the like are done once a question or pick opens; teaching tips wait */
+function openAsk(why,o){ dropBanner(); QMIN=0; $('dn-q').style.minHeight=''; S.mode='ask'; HELD={}; S.ask={why:why, need:why==='level'||why==='deal'?2:1, got:0, n:0, o:o||null}; newQ(); $('dn-qwrap').hidden=false; arm($('dn-q')); save(); }
 function showQ(){ var q=S.q, a=S.ask; if(!q||!a) return; var t=ASKTXT[a.why];
   $('dn-qtitle').innerHTML=t[0]+(a.need>1?' <small>Question '+Math.min(a.n+1,a.need)+' of '+a.need+'</small>':'');
   $('dn-tag').textContent=q.topic; $('dn-reward').textContent='';
@@ -819,7 +825,7 @@ function markAnswered(i,fresh){ var q=S.q, btns=$('dn-choices').querySelectorAll
   else { fb.className='dn-fb bad'; fb.innerHTML='<span class="h">Not quite.</span>'+c.why+(FAST?' ':'<br>')+q.explain; }
   /* the explanation stays until the student presses Continue (or Enter); it unlocks after a short beat so the answering press can't skip it */
   nx.disabled=true; clearTimeout(lockT); var wait=Math.max(0,NEXTGATE-performance.now()); lockT=setTimeout(function(){ if(S.qDone) nx.disabled=false; },wait); }
-function answer(i){ if(S.mode!=='ask'||S.qDone||!S.q) return; var c=S.q.choices[i]; if(!c) return; S.qDone=true; S.picked=i; S.answered++; S.ask.n++;
+function answer(i){ if(TABLOST) return; if(S.mode!=='ask'||S.qDone||!S.q) return; var c=S.q.choices[i]; if(!c) return; S.qDone=true; S.picked=i; S.answered++; S.ask.n++;
   if(!S.topics[S.q.topic]) S.topics[S.q.topic]=[0,0]; S.topics[S.q.topic][1]++;
   var btn=$('dn-choices').querySelectorAll('.dn-ch')[i];
   if(c.ok){ S.correct++; S.topics[S.q.topic][0]++; S.streak++; S.best=Math.max(S.best,S.streak); S.ask.got++; SND.correct(); markAnswered(i,true);
@@ -829,7 +835,9 @@ function answer(i){ if(S.mode!=='ask'||S.qDone||!S.q) return; var c=S.q.choices[
 function askNext(){ clearTimeout(nextT); var a=S.ask; if(!a||!S.qDone||performance.now()<NEXTGATE) return; if(a.n<a.need){ newQ(); arm($('dn-q')); return; } closeAsk(); }
 function closeAsk(){ var a=S.ask, w=S.w, p=w.p, all=a.got>=a.need; $('dn-qwrap').hidden=true; S.ask=null; S.q=null; S.mode='play';
   if(a.why==='level'){ var n=a.got?3:2; w.batch={n:n,g:all?0.2:0,pm:all?1:0,tot:1+(w.pend||0),i:1}; if(all) toast('Perfect! A gold card is guaranteed'); openPick('level',n,w.batch.g,w.batch.pm); }
-  else if(a.why==='revive'){ if(all){ p.burn=0; w.fires=[]; p.hp=Math.min(p.max,3); p.inv=2.2; S.mode='reentry'; S.reT=REENTRY; HELD={}; BUF.s=0; Object.keys(DOWNK).forEach(function(k){ EAT[k]=1; }); w.orbs=[]; w.rings=[]; w.en.forEach(function(e){ var dx=e.x-p.x, dy=e.y-p.y, d=Math.hypot(dx,dy)||1; if(d<240){ e.kx=dx/d*460; e.ky=dy/d*460; e.st=0; e.cd=1.2; } }); w.fx.push({k:'ring',x:p.x,y:p.y,t:0}); SND.level(); }
+  else if(a.why==='revive'||a.why==='revive2'){ if(all){ p.burn=0; w.fires=[]; p.hp=Math.min(p.max,3); p.inv=2.2; S.mode='reentry'; S.reT=REENTRY; HELD={}; BUF.s=0; Object.keys(DOWNK).forEach(function(k){ EAT[k]=1; }); w.orbs=[]; w.rings=[]; w.en.forEach(function(e){ var dx=e.x-p.x, dy=e.y-p.y, d=Math.hypot(dx,dy)||1; if(d<240){ e.kx=dx/d*460; e.ky=dy/d*460; e.st=0; e.cd=1.2; } }); w.fx.push({k:'ring',x:p.x,y:p.y,t:0}); SND.level(); }
+    /* Kody 2026-11-26: Second Wind is the spare question. A wrong revive answer with Second Wind in hand spends it on one more question */
+    else if(a.why==='revive'&&S.revExtra===1){ S.revExtra=2; openAsk('revive2'); }
     else finishRun(!!w.won,'fall'); }
   else if(a.why==='chest'){ var o=a.o||{w:'chest',g:0.3,c:4}; if(all){ w.coins+=o.c; toast('Unlocked! +'+o.c+' coins'); } openPick(o.w,3,all?Math.min(1,o.g+0.4):o.g); }
   else if(a.why==='deal'){ setTimeout(function(){ if(S.w&&S.w.shop) say('enter'); },0); if(a.got){ w.mA='nod'; w.mAt=w.t; w.coins+=6*a.got; toast('+'+(6*a.got)+' coins from the merchant'); SND.chest(); } else toast('No deal this time'); }
@@ -1052,32 +1060,45 @@ function heartEmpty(){ if(HEARTE) return HEARTE; var im=SPR.heart2; if(!im||!im.
       var edge=q<2||y<2||q>=W2-2||y>=H2-2; if(!edge) for(var dy=-2;dy<=2&&!edge;dy++) for(var dx=-2;dx<=2;dx++){ if(Math.abs(dx)+Math.abs(dy)>2) continue; if(a[((y+dy)*W2+q+dx)*4+3]<128){ edge=true; break; } }
       if(edge){ o[k]=0xD8; o[k+1]=0xCC; o[k+2]=0xE6; o[k+3]=255; } else { o[k]=0x2A; o[k+1]=0x18; o[k+2]=0x3C; o[k+3]=255; } }
     d.data.set(o); x.putImageData(d,0,0); }); return HEARTE; }
+/* the top-bar vitals (Kody 2026-11-25): hearts (+ armor, Second Wind) on top, level + a short XP bar under them. Redrawn only when something changes
+   (or while the last heart beats / a heart burns). Text is 19 px or more in stage pixels, so 11 px or more at 1366x620. */
+var VITK='', VITC=null, VITSM=0, VITLS='', VITTOP=null;
+function drawVit(t,w,p,low){ var cv=VITC||(VITC=$('dn-vitc')); if(!cv) return;
+  /* when the top bar runs out of room (Last Stand + Warden bars, big score, every heart and armor) the hearts draw smaller; re-checked whenever those bars change */
+  var lsk=['dn-ls','dn-goal','dn-lsw'].map(function(id){ var e=$(id); return e&&!e.hidden?1:0; }).join(''); var chk=0; if(lsk!==VITLS){ VITLS=lsk; VITSM=0; VITK=''; chk=1; }
+  var na=p.arm||0, rv=S.revExtra===1?1:0, beat=low&&!RM?1+0.12*Math.max(0,Math.sin(t*5.5)):1, burn=p.burn>0&&p.hp>0,
+    pend=w.pend>0&&!(w.last>0), k=[p.hp,p.max,na,rv,low?1:0,w.lv,w.xp,w.need,pend?w.pend:0,w.cleared?1:0,VITSM].join();
+  if(k===VITK) return; VITK=beat>1||burn?'':k;
+  var nIc=p.max+na+(S.revExtra===1?1:0), ST=Math.min(VITSM?24:30,Math.floor(336/Math.max(1,nIc))), HS=Math.min(27,ST-3), f=HS/18,   /* every heart and armor always fits (7 hearts + 6 armor + Second Wind) */ i, HE=heartEmpty(), hw=(p.max+na+rv)*ST, lvs='Lv '+w.lv, lvw=tspr(lvs,22,'#FFC93C','#12081C').width, xpw=tspr('XP',20,'#9AF2FF','#12081C').width,
+    pts=pend?'⬆ '+w.pend+(w.cleared?' ready':' banked'):'', ptw=pend?tspr(pts,20,'#FFE08A','#12081C').width+8:0, lowOn=low&&hw+120<=340,
+    need=Math.min(340,Math.max(hw+(lowOn?120:0),lvw+6+100+8+xpw+ptw)+4);   /* only as wide as it needs to be, so the Last Stand bars always fit beside it */
+  if(cv.width!==need){ cv.width=need; cv.style.width=need+'px'; chk=1; }
+  if(chk&&!VITSM){ var tp=VITTOP||(VITTOP=document.querySelector('.dn-top')); if(tp&&tp.offsetLeft+tp.offsetWidth>1920-tp.offsetLeft+1){ VITSM=1; VITK=''; return; } }   /* the bar grows past the stage's right margin instead of scrolling */
+  var c=cv.getContext('2d'); c.clearRect(0,0,cv.width,cv.height); c.imageSmoothingEnabled=false;
+  for(i=0;i<p.max;i++){ var hx=i*ST, hy=2; if(i<p.hp){ if(i===p.hp-1&&beat>1){ var hs=Math.round(HS*beat); c.drawImage(SPR.heart2,hx+HS/2-hs/2,hy+HS/2-hs/2,hs,hs); } else c.drawImage(SPR.heart2,hx,hy,HS,HS); } else c.drawImage(HE,hx,hy,HS,HS); }
+  if(burn){ var bh=(p.hp-1)*ST, bf=Math.max(0,Math.min(1,1-(p.bseg||FIRE.tick)/FIRE.tick)); c.save(); c.beginPath(); c.rect(bh-2,0,HS+4,Math.round((HS+4)*bf)); c.clip(); c.drawImage(HE,bh,2,HS,HS); c.restore(); c.fillStyle='#FF8A2A'; c.fillRect(bh,2+Math.round(HS*bf),HS,3); }   /* the heart that is burning drains from the top */
+  for(i=0;i<na;i++){ c.save(); c.translate((p.max+i)*ST,2); c.scale(f,f); c.fillStyle='#141026'; c.fillRect(1,-1,18,20); c.fillStyle='#7DC8FF'; c.fillRect(3,1,14,10); c.fillRect(5,11,10,4); c.fillRect(8,15,4,2); c.fillStyle='#D8F0FF'; c.fillRect(5,3,4,6); c.restore(); }
+  if(rv) c.drawImage(SPR.rev2,(p.max+na)*ST,2,HS,HS);   /* Second Wind in hand: a cyan heart after the hearts and armor */
+  if(lowOn) dtx(c,'Low health',hw+6,24,20,'#FF8FA3','left','#12081C');
+  dtx(c,lvs,0,60,22,'#FFC93C','left','#12081C'); var bx=lvw+6, bw=100, fw=Math.round((bw-4)*Math.min(1,w.xp/w.need));
+  c.fillStyle='#0B0614'; c.fillRect(bx-1,43,bw+2,16); c.fillStyle='#45346A'; c.fillRect(bx,44,bw,14); c.fillStyle='#150C25'; c.fillRect(bx+2,46,bw-4,10);
+  /* gems fill it, so it is relic cyan */ c.fillStyle='#38C8F0'; c.fillRect(bx+2,46,fw,10); c.fillStyle='#9AF2FF'; c.fillRect(bx+2,46,fw,2); c.fillStyle='#1784C4'; c.fillRect(bx+2,54,fw,2);
+  var x2=bx+bw+8; dtx(c,'XP',x2,60,20,'#9AF2FF','left','#12081C'); x2+=xpw+8;
+  if(pend) dtx(c,pts,x2,60,20,'#FFE08A','left','#12081C'); }
 function plate(c,x,y,w2,h2,warn){ c.fillStyle='rgba(18,8,28,.9)'; c.fillRect(x,y,w2,h2); c.fillStyle=warn?'#C8324E':'#45346A'; c.fillRect(x,y,w2,2); c.fillRect(x,y+h2-2,w2,2); c.fillRect(x,y,2,h2); c.fillRect(x+w2-2,y,2,h2); }
 function drawHUD(t){ var c=cx, w=S.w, p=w.p, i, R=ROOMS[w.rid], na=p.arm||0, low=LOWHP(p)&&S.mode!=='cut';
   if(SHOWFPS) dtx(c,Math.round(1000/PERF.ema)+' fps'+(LITE?' · lite':''),10,H-10,14,'#F4ECD8','left','#141026');
   if(w.shop) drawBubble(c,w);
-  /* vitals plate */
-  var rv=S.revExtra===1?1:0, hw=(p.max+na+rv)*22, pend=w.pend>0&&!(w.last>0), ptx=pend?(w.cleared?'⬆ '+w.pend+' upgrade'+(w.pend>1?'s':'')+' ready to choose':'⬆ '+w.pend+' upgrade'+(w.pend>1?'s':'')+' banked · '+(R.boss?'beat the Warden':R.siege?'survive':'clear this room')+' to claim'):'', pw=Math.max(hw+(low?118:0),262,pend?tspr(ptx,14,'#FFE08A').width+8:0)+16, ph=pend?78:56;
-  plate(c,4,4,pw,ph,low);
-  var beat=low&&!RM?1+0.12*Math.max(0,Math.sin(t*5.5)):1, HE=heartEmpty();
-  for(i=0;i<p.max;i++){ var hx=12+i*22, hy=9; if(i<p.hp){ if(i===p.hp-1&&beat>1){ var hs=Math.round(18*beat); c.drawImage(SPR.heart2,hx+9-hs/2,hy+8-hs/2,hs,hs); } else c.drawImage(SPR.heart2,hx,hy); } else c.drawImage(HE,hx,hy); }
-  if(p.burn>0&&p.hp>0){ var bh=12+(p.hp-1)*22, bf=Math.max(0,Math.min(1,1-(p.bseg||FIRE.tick)/FIRE.tick)); c.save(); c.beginPath(); c.rect(bh-2,7,24,Math.round(22*bf)); c.clip(); c.drawImage(HE,bh,9); c.restore(); c.fillStyle='#FF8A2A'; c.fillRect(bh,9+Math.round(18*bf),18,2); }   /* the heart that is burning drains from the top */
-  for(i=0;i<na;i++){ var ax=14+(p.max+i)*22; c.fillStyle='#141026'; c.fillRect(ax-1,8,18,20); c.fillStyle='#7DC8FF'; c.fillRect(ax+1,10,14,10); c.fillRect(ax+3,20,10,4); c.fillRect(ax+6,24,4,2); c.fillStyle='#D8F0FF'; c.fillRect(ax+3,12,4,6); }
-  if(rv) c.drawImage(SPR.rev2,12+(p.max+na)*22,9);   /* Second Wind in hand: a cyan heart after the hearts and armor */
-  if(low) dtx(c,'Low health',16+hw+6,24,14,'#FF8FA3','left','#12081C');
-  var bx=56, bw=pw-56-34, fw=Math.round((bw-4)*Math.min(1,w.xp/w.need));
-  dtx(c,'Lv '+w.lv,12,49,15,'#FFC93C','left');
-  c.fillStyle='#0B0614'; c.fillRect(bx-1,35,bw+2,16); c.fillStyle='#45346A'; c.fillRect(bx,36,bw,14); c.fillStyle='#150C25'; c.fillRect(bx+2,38,bw-4,10);
-  /* gems fill it, so it is relic cyan (UI pass 2026-11-14) */ c.fillStyle='#38C8F0'; c.fillRect(bx+2,38,fw,10); c.fillStyle='#9AF2FF'; c.fillRect(bx+2,38,fw,2); c.fillStyle='#1784C4'; c.fillRect(bx+2,46,fw,2);
-  dtx(c,'XP',bx+bw+6,48,13,'#9AF2FF','left');
-  if(pend) dtx(c,ptx,12,72,14,'#FFE08A','left');
+  /* hearts and XP live in the page top bar now (Kody 2026-11-25: off the game screen); drawn into their own small canvas */
+  drawVit(t,w,p,low);
   /* the castle map (the room name is in the top bar now) */
   plate(c,W-46,4,42,94,false);
   for(var id in MAPPOS){ var m=MAPPOS[id], X=W-25+m[0]*12, Y=6+m[1]*9; c.fillStyle=id===w.rid?'#FFC93C':w.seen[id]?'#8E86B4':'rgba(142,134,180,.3)'; c.fillRect(X-5,Y-4,10,7); }
-  if(w.shop){ var cst='Your coins: '+w.coins, csw=tspr(cst,15,'#FFE07A').width+40; plate(c,4,ph+8,csw,28,false); c.drawImage(SPR.coin2,12,ph+15); dtx(c,cst,32,ph+28,15,'#FFE07A','left'); }
+  if(w.shop){ var cst='Your coins: '+w.coins, csw=tspr(cst,15,'#FFE07A').width+40; plate(c,4,4,csw,28,false); c.drawImage(SPR.coin2,12,11); dtx(c,cst,32,24,15,'#FFE07A','left'); }
   /* the Warden's health is in the top bar now (lsTop) */
   /* combo: top right, under the room plate (never over Rook). A new multiplier pops there too. */
-  if(w.combo>=3){ var cm=cMult(), big=(w.comboPop>0?2:0)+(cm>=3?3:cm>=2?2:0), col=cm>=4?'#FF5A6E':cm>=3?'#FF8A3D':cm>=2?'#FFC93C':'#E8ECFF', cxr=W-54;
+  var cov=S.mode==='ask'||S.mode==='pick'||S.mode==='build';   /* a question, upgrade or pause screen is up: no combo or banner peeking out behind it (overnight check 2026-11-26) */
+  if(w.combo>=3&&!cov){ var cm=cMult(), big=(w.comboPop>0?2:0)+(cm>=3?3:cm>=2?2:0), col=cm>=4?'#FF5A6E':cm>=3?'#FF8A3D':cm>=2?'#FFC93C':'#E8ECFF', cxr=W-54;
     var cs='Combo '+w.combo+(cm>1?'  ×'+cm:'');
     dtx(c,cs,cxr,26+big/2,18+big,col,'right','#0A0B16');
     c.fillStyle='#0A0B16'; c.fillRect(cxr-120,32+big/2,120,6); c.fillStyle=col; c.fillRect(cxr-119,33+big/2,Math.round(118*Math.max(0,w.comboT/COMBOT)),4);
@@ -1087,7 +1108,7 @@ function drawHUD(t){ var c=cx, w=S.w, p=w.p, i, R=ROOMS[w.rid], na=p.arm||0, low
   if(obj){ var os=tspr(obj,18,'#FFE08A'), tw=os.width+30; c.fillStyle='rgba(7,8,18,.75)'; c.fillRect(Math.round(W/2-tw/2),H-58,tw,28); dtx(c,obj,W/2,H-38,18,'#FFE08A'); }
   /* Kody 2026-11-16: teaching notes are a small plate along the top wall, not a full-width banner */
   /* Kody 2026-11-18: every on-screen notice (room names, Room Clear, starter relic, swarms, Wardens...) uses this same plate, size and spot as the Shield Knight tip */
-  if(w.banner){ var tb=w.banner, ga2=c.globalAlpha, pw=Math.max(660,Math.min(W-40,Math.max(tspr(tb.txt,17,'#FFC23A').width,tb.sub?tspr(tb.sub,14,'#F4ECD8').width:0)+48)), ph=tb.sub?54:34, px=Math.round(W/2-pw/2), py=64; c.globalAlpha=ga2*Math.min(1,tb.t*2);
+  if(w.banner&&!cov){ var tb=w.banner, ga2=c.globalAlpha, pw=Math.max(660,Math.min(W-40,Math.max(tspr(tb.txt,17,'#FFC23A').width,tb.sub?tspr(tb.sub,14,'#F4ECD8').width:0)+48)), ph=tb.sub?54:34, px=Math.round(W/2-pw/2), py=64; c.globalAlpha=ga2*Math.min(1,tb.t*2);
     c.fillStyle='#120A1F'; c.fillRect(px-2,py-2,pw+4,ph+4); c.fillStyle='#1E1233'; c.fillRect(px,py,pw,ph); c.fillStyle='#FFC23A'; c.fillRect(px,py,4,ph);
     dtx(c,tb.txt,W/2,py+17,17,'#FFC23A'); if(tb.sub) dtx(c,tb.sub,W/2,py+39,14,'#F4ECD8'); c.globalAlpha=ga2; }
   if(w.victory){ dtx(c,'VICTORY!',W/2,H/2,64,'#FFC93C',0,'#141026'); dtx(c,'The Warden is beaten. You win!',W/2,H/2+46,24,'#F4ECD8',0,'#141026'); }
@@ -1112,7 +1133,7 @@ function lsTop(w){ var live=!!(w&&S.started&&!S.over&&S.mode!=='endcut'&&S.mode!
   if(!bb&&live&&w.boss&&!w.boss.dead){ bb=w.boss; nW=1; }
   lsSet('dn-lsw','hidden',!bb);
   if(bb){ lsSet('dn-lswn','text',(nW>1?'Iron Wardens ×'+nW:'The Iron Warden')+(nW>1?'':bb.st===9?' · stunned':bb.raged?' · enraged':'')); lsSet('dn-lswfill','w',Math.round(100*Math.max(0,bb.hp/bb.max))+'%'); lsSet('dn-lsw','cls','dn-lsg dn-lsw'+(bb.st===9?' stun':'')); }
-  lsSet('dn-ls','hidden',!(gl||bb)); }
+  lsSet('dn-ls','hidden',!(gl||bb)); lsSet('dn-vit','hidden',!live); }
 var lastF=performance.now();
 var lastF0=0;
 /* slow-Chromebook guard (Kody's playtest 2026-11-15): if play runs under about 33 fps for 3 s, LITE mode turns on for the rest of
@@ -1120,7 +1141,7 @@ var lastF0=0;
 var LITE=0, PERF={ema:16.7,slowT:0}, SHOWFPS=/[?&#]fps\b/.test(location.search+location.hash);
 function perfTick(ft){ if(!S||!S.started||S.over||S.mode!=='play'||document.hidden||ft>250) return; PERF.ema=PERF.ema*0.95+ft*0.05;
   if(PERF.ema>30) PERF.slowT+=ft/1000; else PERF.slowT=Math.max(0,PERF.slowT-ft/2000); if(!LITE&&PERF.slowT>3) LITE=1; }
-function loop(){ var t=performance.now(), dt=Math.min(0.05,(t-lastF)/1000); perfTick(t-lastF); lastF=t; lsTop(S&&S.w);
+function loop(){ var t=performance.now(), dt=TABLOST?0:Math.min(0.05,(t-lastF)/1000); perfTick(t-lastF); lastF=t; lsTop(S&&S.w);
   /* total session time (classroom length): everything but the pause screen and a hidden tab; real time, not slowed */
   if(S&&S.started&&!S.over&&!document.hidden&&S.mode!=='build') S.sess=(S.sess||0)+Math.min(0.25,(t-(lastF0||t))/1000); lastF0=t; if(S&&S.slow>0){ S.slow-=dt; dt*=0.4; }
   if(S.started&&!S.over){ if(S.mode==='cut') cutTick(dt); else if(S.mode==='endcut') endTick(dt); else if(S.mode==='trans') transTick(dt); else if(S.mode==='reentry'){ S.reT-=dt; if(S.reT<=0){ S.mode='play'; S.reT=0; } } else if(canPlay()){ if(S.hs>0) S.hs-=dt; else update(dt); } }
@@ -1130,7 +1151,14 @@ function loop(){ var t=performance.now(), dt=Math.min(0.05,(t-lastF)/1000); perf
 var S;
 function fresh(){ return { name:'', started:false, over:false, win:false, score:0, answered:0, correct:0, streak:0, best:0, revUsed:0, revExtra:0, hs:0,
   topics:QS?QS.topicTable():{}, q:null, qDone:false, picked:-1, mode:'play', ask:null, cards:[], pickWhy:'', w:null }; }
-function save(){ try{ localStorage.setItem(KEY,JSON.stringify(S,function(k,v){ return k==='hit'||k==='rollHit'||k==='fx'?[]:v; })); localStorage.setItem(KEY+'_mute',muted?'1':'0'); }catch(e){} }
+/* one tab at a time (overnight check 2026-11-26: a second tab let a kid see the right answer there, then answer it here). The newest tab owns the run;
+   an older tab stops, stops saving, and offers to take the run back (a reload loads the newest save). */
+var TABID=Math.random().toString(36).slice(2), TABLOST=0;
+function tabClaim(){ try{ localStorage.setItem(KEY+'_tab',TABID); }catch(e){} }
+function tabLost(){ if(TABLOST) return; TABLOST=1; HELD={}; var d=document.createElement('div'); d.className='dn-tabcover'; d.innerHTML='<div><h2>Rook &amp; Ruin is open in another tab</h2><p>Your run moved there. Play it in one tab at a time.</p><button class="dn-next" type="button">Play in this tab</button></div>';
+  d.querySelector('button').addEventListener('click',function(){ location.reload(); }); $('stage').appendChild(d); }
+addEventListener('storage',function(e){ if(e.key===KEY+'_tab'&&e.newValue&&e.newValue!==TABID) tabLost(); });
+function save(){ if(TABLOST) return; try{ localStorage.setItem(KEY,JSON.stringify(S,function(k,v){ return k==='hit'||k==='rollHit'||k==='fx'?[]:v; })); localStorage.setItem(KEY+'_mute',muted?'1':'0'); }catch(e){} }
 function load(){ try{ var v=JSON.parse(localStorage.getItem(KEY)||'null'); muted=localStorage.getItem(KEY+'_mute')==='1'; if(v&&v.topics&&'mode' in v) return v; }catch(e){} return null; }
 function canPlay(){ return !!(S.started&&!S.over&&S.mode==='play'); }
 
@@ -1147,8 +1175,8 @@ function renderBuild(){ var w=S.w, held=w?UP.concat(SYN).filter(function(u){ ret
   held.sort(function(a,b){ return (a.syn?1:0)-(b.syn?1:0); });
   bl.className=held.length>9?'inv many':'inv';
   bl.innerHTML=held.map(function(u){ var rdy=!u.syn&&synFor(u.id).some(synReady);
-    return '<div class="dn-bi'+(u.syn?' evo':L(u.id)>=3?' max':'')+(u.syn?'':' p-'+u.path)+'" title="'+u.n+'"><span class="ic">'+ICON(u)+(rdy?'<b class="rd">✦</b>':'')+'</span><span class="lvl">'+lvTxt(u)+'</span></div>'; }).join('');
-  $('dn-buildmore').hidden=false; var bp=$('dn-build'); ['inv many','inv many g4'].forEach(function(k){ if(bp.scrollHeight>bp.clientHeight+2) bl.className=k; }); }
+    return '<div class="dn-bi'+(u.syn?' evo':L(u.id)>=3?' max':'')+(u.syn?'':' p-'+u.path)+'" title="'+u.n+'"><span class="ic">'+ICON(u)+(rdy?'<b class="rd">✦</b>':'')+'</span><span class="lvl">'+lvTxt(u)+'</span><span class="dn-lp">'+(u.syn?'<i class="s"></i>':new Array(Math.min(3,L(u.id))+1).join('<i></i>'))+'</span></div>'; }).join('');   /* dn-lp: level pips, shown instead of the words when the list is too packed for 20 px text */
+  $('dn-buildmore').hidden=false; var bp=$('dn-build'); ['inv many','inv many g4','inv many g4 g5'].forEach(function(k){ if(bp.scrollHeight>bp.clientHeight+2) bl.className=k; }); }
 function buildDetails(){ var w=S.w, held=UP.concat(SYN).filter(function(u){ return L(u.id)>0; });
   function card(u){ var l=L(u.id);
     return '<div class="dn-bd'+(u.syn?' evo':' p-'+u.path)+'"><span class="ic">'+ICON(u)+'</span><div><div class="nm">'+u.n+' <em>'+(u.syn?'Synergy':PATHN[u.path]+(u.path==='any'?'':' power'))+' · '+(u.syn?'Active':l>=3?'Lv 3 (MAX)':'Lv '+l+' of 3')+'</em></div>'
@@ -1214,10 +1242,12 @@ function fullscreen(){ var d=document, e=d.documentElement; if(d.fullscreenEleme
   else { var r=e.requestFullscreen||e.webkitRequestFullscreen; if(r){ var p=r.call(e); if(p&&p.catch) p.catch(function(){}); } } }
 function k0(e){ return (e.key||'').toLowerCase(); }
 var MOVE={arrowup:1,arrowdown:1,arrowleft:1,arrowright:1,w:1,a:1,s:1,d:1,' ':1};
-document.addEventListener('keydown',function(e){ if(e.metaKey||e.ctrlKey||e.altKey) return; if(e.target&&/^(INPUT|TEXTAREA)$/.test(e.target.tagName)) return;
+document.addEventListener('keydown',function(e){ if(TABLOST){ e.preventDefault(); return; } if(e.metaKey||e.ctrlKey||e.altKey) return; if(e.target&&/^(INPUT|TEXTAREA)$/.test(e.target.tagName)) return;
   if(!$('sz-ask').hidden){ e.preventDefault(); if(k0(e)==='y') newRun(); else if(k0(e)==='n'||e.key==='Escape') askNew(false); return; }
   if(k0(e)==='r'&&e.shiftKey){ e.preventDefault(); if(S.started) askNew(true); return; } var k=k0(e);
-  if(S.over&&S.started&&(e.key==='Enter'||k===' ')&&!e.repeat){ e.preventDefault(); playAgain(); return; }
+  /* Kody 2026-11-26 (overnight check): Space is the attack key, so mashing it at a knockout skipped the end screen in about 1 s and the score code was never seen.
+     Now only Enter plays again from the keyboard, and only 2.5 s after the end screen shows. Space does nothing there. */
+  if(S.over&&S.started&&(e.key==='Enter'||k===' ')){ e.preventDefault(); if(e.key==='Enter'&&!e.repeat&&performance.now()-endShownAt>=2500) playAgain(); return; }
   if((S.mode==='cut'||S.mode==='endcut')&&S.started&&!S.over){ if(k!=='f'&&k!=='n'&&k!=='m') EAT[k]=1; if(e.key==='Shift') EAT.shift=1; if(e.key==='Enter'||e.key==='Escape'||k===' '||k==='j'){ e.preventDefault(); if(!e.repeat) skipScene(); } else if(MOVE[k]) e.preventDefault(); if(k!=='f'&&k!=='n'&&k!=='m') return; }
   if(EAT[k]||(e.key==='Shift'&&EAT.shift)){ e.preventDefault(); return; }
   if(k==='j'||k===' '){ e.preventDefault(); if(canPlay()){ HELD[' ']=true; if(!e.repeat) BUF.s=0.3; } return; }
@@ -1259,7 +1289,7 @@ if(!QS){ $('dn-prompt').textContent='questions.js is missing: keep it in the sam
 if(S.started){ $('dn-start').hidden=true;
   if(S.over){ if(S.w) restoreMap(); showEnd(false); }
   else { if(!S.w){ S.w=freshWorld(); loadRoom('entry','s'); } else { restoreMap(); if(S.w.rid==='entry') dealStarter(); } if(S.mode==='cut'){ CUT={t:12,gob:{show:0},cues:{}}; S.mode='cut'; cutEnd(); }
-    if(S.mode==='endcut'){ S.mode='play'; endRun(!!S.endWin); }
+    if(S.mode==='endcut'){ S.mode='play'; finishRun(!!S.endWin,S.endKind||'fall'); }   /* a reload during the ending scene plays it again (it is not skippable) */
     if(S.mode==='reentry'||S.mode==='build') S.mode='play';
     if(S.mode==='trans'){ S.mode='play'; if(S.w.next){ loadRoom(S.w.next[0],S.w.next[1]); S.w.next=null; } else loadRoom(S.w.rid,S.w.from); }
 
@@ -1267,6 +1297,7 @@ if(S.started){ $('dn-start').hidden=true;
     else if(S.mode==='pick'){ if(S.cards&&S.cards.length) showPick(); else S.mode='play'; } } }
 else { $('dn-nameinput').value=S.name||''; goState(); }
 renderBuild(); hud(1); timerDraw(); setInterval(timerDraw,250); setInterval(function(){ if(S.started&&!S.over) save(); },2500); requestAnimationFrame(loop); window.__ready=1; }
+tabClaim();
 (function waitArt(n){ if(artReady()||n>150) boot(); else setTimeout(function(){ waitArt(n+1); },20); })(0);
 
 /* test hooks */
