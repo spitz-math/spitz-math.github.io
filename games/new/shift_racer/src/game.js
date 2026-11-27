@@ -555,10 +555,72 @@ function rbCar(){ var pi=painted('cop_side'); if(pi) return pi; if(RBS) return R
   c.fillStyle='#FFE14D'; c.font='800 17px Inter,sans-serif'; c.textAlign='center'; c.fillText('POLICE',112,76); return s; }
 function pX(x,s){ return 480+(x-480-camX)*s; }
 function quad(x0,x1,dd0,dd1,col){ var s0=FOC/(dd0+CB), s1=FOC/(dd1+CB); cx.fillStyle=col; cx.beginPath(); cx.moveTo(pX(x0,s0),HZ+HC*s0); cx.lineTo(pX(x1,s0),HZ+HC*s0); cx.lineTo(pX(x1,s1),HZ+HC*s1); cx.lineTo(pX(x0,s1),HZ+HC*s1); cx.closePath(); cx.fill(); }
+/* ================= CODE-BUILT SKIES (no image files) =================
+   Everything above each scenery's painted horizon strip is drawn by code each frame: a colour fade, a sun or moon with a halo,
+   layers of ink-outlined cartoon clouds that drift and slide as the car steers, twinkling stars, and one extra per sky
+   (gulls, a shooting star, northern lights). Four skies: night, sunset, sunrise, cold dusk; each scenery is a colour variant of one.
+   Reduce-motion freezes it. Clouds, sun and moon are built once into small canvases. */
+var PSKY=1, PSKT=-9, PSC={};
+var PSNIGHT={ g:[[0,'#070516'],[0.5,'#1C1050'],[1,'#6A1F78']], stars:[70,125], moon:1, shoot:1,
+    L:[[3,100,128,130,210,18,24,4,0.04,'#34186A','#4A2484','#C0489A','#0B0520',0],[2,62,90,210,300,22,28,9,0.09,'#2E1560','#44207A','#D0509E','#0B0520',0]] },
+  PSSET={ g:[[0,'#1B0D38'],[0.22,'#2C1352'],[0.42,'#5A1E78'],[0.58,'#A12F86'],[0.7,'#E0507E'],[0.8,'#FF8862'],[1,'#FFC069']], stars:[30,58], sun:['#FFB24E','#FFD86A','#FFF2B8','#FFC872',0.07,6], gulls:1,
+    L:[[5,118,132,100,160,16,22,3,0.03,'#B0388A','#D9548E','#FFC27A','#4A1240',0],[3,90,108,160,230,24,32,7,0.07,'#6A2378','#8E3184','#FFA06E','#2A0D35',0],[2,62,80,230,310,30,40,12,0.12,'#3E1760','#5A2172','#FF7FA0','#150826',0]] };
+var PSDEF={ city:PSNIGHT,
+  getaway:{ g:[[0,'#0A0618'],[0.5,'#2A0E3C'],[1,'#7A1840']], stars:[60,125], moon:1, shoot:1,
+    L:[[3,100,128,130,210,18,24,4,0.04,'#421648','#5E2058','#FF5A6A','#0B0514',0],[2,62,90,210,300,22,28,9,0.09,'#3A1242','#541C52','#FF6A70','#0B0514',0]] },
+  forest:{ g:[[0,'#050E24'],[0.55,'#0F2E4A'],[1,'#1F5A5E']], stars:[90,130], moon:1, shoot:1,
+    L:[[3,96,122,130,210,18,24,4,0.04,'#1E4266','#2E5C86','#8FC0DC','#040A16',1],[2,88,106,210,300,20,24,9,0.09,'#1C3C60','#2A5680','#A8D4EC','#040A16',1]] },
+  coast:PSSET,
+  desert:{ g:[[0,'#2A1650'],[0.4,'#7A2A70'],[0.68,'#E86A5A'],[1,'#FFB862']], stars:[18,50], sun:['#FF9E42','#FFC85A','#FFEAA8','#FFC06A',0.06,6],
+    L:[[3,112,128,110,170,14,19,3,0.03,'#A03C78','#C8527C','#FFC27A','#4A1240',0],[2,74,96,190,270,22,28,8,0.08,'#6E2870','#94387C','#FFAA6A','#2A0D35',0]] },
+  canyon:{ g:[[0,'#3A1235'],[0.45,'#8A2548'],[0.75,'#F0704A'],[1,'#FFB65A']], stars:[14,44], sun:['#FF8A3A','#FFB24E','#FFE08A','#FFA85A',0.07,6],
+    L:[[3,84,100,120,180,15,20,3,0.03,'#7A2444','#A83450','#FFB06A','#3A0E24',0],[2,52,72,200,280,22,28,8,0.08,'#5A1838','#84284A','#FF9A5A','#2A0A1C',0]] },
+  sunrise:{ g:[[0,'#34449A'],[0.35,'#6E74C4'],[0.62,'#E89AA8'],[0.8,'#FFC8A0'],[1,'#FFE8A8']], stars:[0,0], sun:['#FFE28A','#FFF2B0','#FFFFFF','#FFF0B0',0.08,24], gulls:1,
+    L:[[4,112,124,90,150,12,16,3,0.03,'#F6DCEC','#FFC6D6','#FF9AB6','#8A62A8',0],[3,104,116,150,220,17,21,7,0.07,'#F0E4F6','#FFD2DE','#FF9EB4','#7A5A9A',0]] },
+  snow:{ g:[[0,'#0A1238'],[0.5,'#1F3A78'],[1,'#8FB4E0']], stars:[60,110], moon:1, aurora:1,
+    L:[[3,112,130,130,210,18,24,4,0.04,'#2A4680','#3C5E9C','#BCE0F4','#0A1230',1]] } };
+function psTint(m,col){ var c=document.createElement('canvas'); c.width=m.width; c.height=m.height; var g=c.getContext('2d'); g.drawImage(m,0,0); g.globalCompositeOperation='source-in'; g.fillStyle=col; g.fillRect(0,0,c.width,c.height); return c; }
+function psCloud(w,h,R,body,mid,rim,ink,up){ var P=4, m=document.createElement('canvas'), W2=Math.ceil(w+P*2), H2=Math.ceil(h*1.9+P*2), g, i, s=document.createElement('canvas'), sg, t, tg, n=6+Math.floor(R()*4), bot=H2-P, sgn=up?1:-1;
+  m.width=s.width=W2; m.height=s.height=H2; g=m.getContext('2d'); g.fillStyle='#fff';
+  for(i=0;i<n;i++){ var u=0.08+0.84*((i+R()*0.6)/n), bell=Math.sin(u*Math.PI), rr=h*(0.22+0.55*bell)*(0.8+R()*0.4), cxp=P+w*u, cyp=bot-rr*(0.55+R()*0.35); g.beginPath(); g.arc(cxp,cyp,rr,0,6.283); g.fill(); }
+  for(i=0;i<5;i++){ var u2=0.15+0.7*(i+R())/5, r2=h*(0.18+R()*0.14)*(0.6+Math.sin(u2*Math.PI)*0.6); g.beginPath(); g.arc(P+w*u2,bot-r2*0.9,r2,0,6.283); g.fill(); }
+  sg=s.getContext('2d'); var o=psTint(m,ink), d=[[-1.5,0],[1.5,0],[0,-1.5],[0,1.5]];
+  for(i=0;i<d.length;i++) sg.drawImage(o,d[i][0],d[i][1]);
+  sg.drawImage(psTint(m,body),0,0);
+  t=psTint(m,mid); tg=t.getContext('2d'); tg.globalCompositeOperation='destination-out'; tg.drawImage(m,Math.round(h*0.08),sgn*Math.round(h*0.28)); sg.drawImage(t,0,0);
+  t=psTint(m,rim); tg=t.getContext('2d'); tg.globalCompositeOperation='destination-out'; tg.drawImage(m,1,sgn*Math.max(2,Math.round(h*0.12))); sg.drawImage(t,0,0);
+  return s; }
+function psBuild(scen,bk){ var D=PSDEF[scen], R=rnd(7177+scen.length*31+scen.charCodeAt(0)), i, k, b=document.createElement('canvas'), g, P={D:D,L:[],st:[]};
+  b.width=W; b.height=HZ+2; g=b.getContext('2d'); var gr=g.createLinearGradient(0,0,0,HZ); for(i=0;i<D.g.length;i++) gr.addColorStop(D.g[i][0],D.g[i][1]); g.fillStyle=gr; g.fillRect(0,0,W,HZ+2); P.base=b;
+  for(i=0;i<D.L.length;i++){ var l=D.L[i], cl=[]; for(k=0;k<l[0];k++){ var w=l[3]+R()*(l[4]-l[3]), h=l[5]+R()*(l[6]-l[5]); cl.push({im:psCloud(w,h,R,l[9],l[10],l[11],l[12],l[13]), x:(k+R()*0.6)*(1500/l[0]), y:l[1]+R()*(l[2]-l[1])-h*1.9}); } P.L.push({v:l[7],p:l[8],cl:cl}); }
+  for(i=0;i<D.stars[0];i++) P.st.push([R()*W,R()*D.stars[1],R()<0.25?3:2,R()*6.28,0.6+R()*1.6]);
+  var su=document.createElement('canvas'), sc; su.width=su.height=128; sc=su.getContext('2d');
+  if(D.sun){ sc.beginPath(); sc.arc(64,64,62,0,6.283); sc.clip(); sc.fillStyle=D.sun[0]; sc.fillRect(0,0,128,128); sc.fillStyle=D.sun[1]; sc.beginPath(); sc.arc(56,54,58,0,6.283); sc.fill(); sc.fillStyle=D.sun[2]; sc.beginPath(); sc.arc(46,34,22,0,6.283); sc.fill(); }
+  else { sc.beginPath(); sc.arc(64,64,30,0,6.283); sc.clip(); sc.fillStyle='#D9CFA6'; sc.fillRect(0,0,128,128); sc.fillStyle='#FFF6D6'; sc.beginPath(); sc.arc(59,59,30,0,6.283); sc.fill(); sc.fillStyle='#E4D9AE'; sc.beginPath(); sc.arc(52,54,7,0,6.283); sc.fill(); sc.beginPath(); sc.arc(72,70,5,0,6.283); sc.fill(); sc.beginPath(); sc.arc(60,78,3.5,0,6.283); sc.fill(); sc.beginPath(); sc.arc(74,50,3,0,6.283); sc.fill(); }
+  P.orb=su;
+  if(D.aurora){ var au=document.createElement('canvas'), ag, agr; au.width=3; au.height=32; ag=au.getContext('2d'); agr=ag.createLinearGradient(0,0,0,32); agr.addColorStop(0,'rgba(120,255,210,0)'); agr.addColorStop(0.55,'rgba(90,240,180,.3)'); agr.addColorStop(0.88,'rgba(80,255,160,.7)'); agr.addColorStop(1,'rgba(200,255,225,.9)'); ag.fillStyle=agr; ag.fillRect(0,0,3,32); P.au=au; P.ab=document.createElement('canvas'); P.ab.width=240; P.ab.height=36; P.af=0; }
+  var B=BACK[scen], bh=B[1], bw=Math.round(bk.naturalWidth*bh/bk.naturalHeight), tt=document.createElement('canvas'), tc; tt.width=bw; tt.height=bh; tc=tt.getContext('2d'); tc.drawImage(bk,0,0,bw,bh); tc.globalCompositeOperation='source-atop'; tc.globalAlpha=B[2]; tc.fillStyle=SKY[scen][0]; tc.fillRect(0,0,bw,bh); P.strip=tt;
+  return P; }
+function procSky(){ var r=S.r, scen=r.scen; if(!PSKY||!PSDEF[scen]) return false;
+  var bk=backImg(scen); if(!bk) return false; var P=PSC[scen]||(PSC[scen]=psBuild(scen,bk)), D=P.D;
+  var t=REDUCE?0:gt, i, k, l, c, x, q, ox=-120-camX*0.12, sx, sy;
+  cx.drawImage(P.base,0,0);
+  cx.fillStyle='#FFF4DA'; for(i=0;i<P.st.length;i++){ q=P.st[i]; cx.globalAlpha=0.35+0.65*Math.max(0,Math.sin(t*q[4]+q[3])); cx.fillRect(q[0],q[1],q[2],q[2]); } cx.globalAlpha=1;
+  if(D.shoot&&!REDUCE){ var sp=(t%11)/0.7; if(sp<1){ var hx=760-sp*230+((Math.floor(t/11)*197)%300)-150, hy=24+sp*60; cx.strokeStyle='#FFF4DA'; cx.lineWidth=2; cx.globalAlpha=1-sp; cx.beginPath(); cx.moveTo(hx,hy); cx.lineTo(hx+46,hy-12); cx.stroke(); cx.globalAlpha=1; } }
+  if(D.aurora){ if(P.af++%3===0){ var ac=P.ab.getContext('2d'); ac.clearRect(0,0,240,36); for(k=0;k<2;k++) for(x=0;x<240;x+=3){ var ax=x*4+k*40, wv=Math.sin(ax*0.011+t*0.35+k*2.1)+0.5*Math.sin(ax*0.027-t*0.5+k), ay=(58+k*26+wv*14)/4, ah=(34+18*Math.sin(ax*0.019+t*0.7+k*4)+k*8)/4; ac.globalAlpha=0.55+0.35*Math.sin(ax*0.006+t*0.4+k*3); ac.drawImage(P.au,x,ay-ah,3,ah); } } cx.drawImage(P.ab,0,0,W,144); }
+  if(D.sun){ sx=480-camX*0.03; sy=HZ-BACK[scen][1]+D.sun[5];
+    cx.save(); cx.beginPath(); cx.rect(0,0,W,HZ); cx.clip(); cx.globalAlpha=D.sun[4]; cx.fillStyle='#FFE8B0'; cx.beginPath();
+    for(i=0;i<9;i++){ var a=t*0.04+i*0.698, a2=a+0.16; cx.moveTo(sx,sy); cx.lineTo(sx+Math.cos(a)*700,sy+Math.sin(a)*700); cx.lineTo(sx+Math.cos(a2)*700,sy+Math.sin(a2)*700); cx.closePath(); } cx.fill(); cx.restore(); cx.globalAlpha=1;
+    var pul=1+0.03*Math.sin(t*1.3); cx.fillStyle=D.sun[3]; cx.globalAlpha=0.12; cx.beginPath(); cx.arc(sx,sy,100*pul,0,6.283); cx.fill(); cx.globalAlpha=0.18; cx.beginPath(); cx.arc(sx,sy,80*pul,0,6.283); cx.fill(); cx.globalAlpha=1; cx.drawImage(P.orb,sx-64,sy-64); }
+  else { sx=250-camX*0.03; sy=84; cx.fillStyle='#FFF2C8'; cx.globalAlpha=0.07+0.015*Math.sin(t*1.1); cx.beginPath(); cx.arc(sx,sy,62,0,6.283); cx.fill(); cx.globalAlpha=0.1; cx.beginPath(); cx.arc(sx,sy,44,0,6.283); cx.fill(); cx.globalAlpha=1; cx.drawImage(P.orb,sx-64,sy-64); }
+  for(k=0;k<P.L.length;k++){ l=P.L[k]; for(i=0;i<l.cl.length;i++){ c=l.cl[i]; x=((c.x-t*l.v-camX*l.p)%1500+1500)%1500-320; if(x>W) continue; cx.drawImage(c.im,Math.round(x),Math.round(c.y)); } }
+  if(D.gulls&&!REDUCE){ var gp=(t%22)/22, gx=W+80-gp*(W+260); if(gp<0.95){ cx.strokeStyle='#22102E'; cx.lineWidth=2; cx.beginPath(); for(i=0;i<5;i++){ var bx=gx+[0,16,30,14,32][i], byy=78+[0,-7,-14,9,4][i]+Math.sin(t*1.7+i)*2, f=Math.sin(t*9+i*1.3)*3.5; cx.moveTo(bx-6,byy-f); cx.quadraticCurveTo(bx-3,byy-2,bx,byy); cx.quadraticCurveTo(bx+3,byy-2,bx+6,byy-f); } cx.stroke(); } }
+  var sw=P.strip.width, shh=P.strip.height; for(x=-Math.round(sw*0.3);x<1200;x+=sw-1){ if(ox+x+sw<0||ox+x>W) continue; cx.drawImage(P.strip,ox+x,HZ+2-shh); }
+  return true; }
 function sidePut(list,arr,k,dd,x,sd,h,base){ var nm=arr[((k%arr.length)+arr.length)%arr.length]; if(nm) list.push({dd:dd,k:'side',x:x,sd:sd,nm:nm,m:h,kind:base,v:0}); }
 function drawChase(){ var r=S.r, T=SCN[r.scen], P=CFG.plan[r.n], K=SKY[r.scen], i, k, s, y, o, dd, near=ZN-CB, list=[], RW=NL*LW, nightOn=r.haz.indexOf('night')>=0;
   var pk=REDUCE?0:Math.max(0,1-(gt-J.punch)/0.3); focT=(REDUCE?300:(r.nitro>0?232:300-34*Math.min(1,car.v/CFG.V))-pk*22)*LENS; FOC+=(focT-FOC)*(pk>0?0.3:0.08); camX+=((car.x-480)*0.62-camX)*0.2;
-  cx.drawImage(sky(),-120-camX*0.12,0);
+  if(!procSky()) cx.drawImage(sky(),-120-camX*0.12,0);   /* skies.js draws the sky in code; the old flat sky stands in until the horizon strip has loaded */
   /* ground in bands that slide toward you, then the road, its neon edges and the lane dashes */
   var BL=64, k0=Math.floor((r.pd+near)/BL), k1=Math.floor((r.pd+FAR)/BL);   /* band length: long enough that dashes do not strobe at nitro speed */
   cx.fillStyle=T.g; cx.fillRect(0,HZ,W,H-HZ);
