@@ -21,8 +21,8 @@ const ok=(c,m,v)=>{ if(!c) fails++; console.log(c?'  ok':'  FAIL',m,v===undefine
  const o1=await p.evaluate(()=>!!__G.state().offer); await p.waitForTimeout(5600); const o2=await p.evaluate(()=>({offer:!!__G.state().offer,mv:__G.state().mv.wall}));
  ok(o1&&!o2.offer&&o2.mv,'New move! card closes after 5 s and the move is learned',{o1,o2});
  // 4 4 s rock safety
- const rk=await p.evaluate(()=>{ const G=__G,S=G.state(),P=G.man(); S.hearts=3; const hit=()=>{ G.rocks().push({x:P.x,h:P.h+40,warn:0}); G.step(1/60); }; hit(); const h1=S.hearts; for(let i=0;i<180;i++){ G.rocks().length=0; G.step(1/60); } hit(); const h2=S.hearts; for(let i=0;i<70;i++){ G.rocks().length=0; G.step(1/60); } hit(); return {h1,after3s:h2,after4s:S.hearts}; });
- ok(rk.h1===2&&rk.after3s===2&&rk.after4s===1,'a second rock within 4 s does nothing, after 4 s it hits',rk);
+ const rk=await p.evaluate(()=>{ const G=__G,S=G.state(),P=G.man(); S.hearts=3; const hit=()=>{ G.rocks().push({x:P.x,h:P.h+40,warn:0}); G.step(1/60); }; hit(); const h1=S.hearts; for(let i=0;i<180;i++){ G.rocks().length=0; G.step(1/60); } hit(); const h2=S.hearts; for(let i=0;i<70;i++){ G.rocks().length=0; G.step(1/60); } hit(); const h3=S.hearts; for(let i=0;i<300;i++){ G.rocks().length=0; G.step(1/60); } hit(); return {h1,after3s:h2,after4s:h3,after9s:S.hearts}; });
+ ok(rk.h1===2&&rk.after3s===2&&rk.after4s===2&&rk.after9s===1,'a second rock within 4 s does nothing; v34: no second heart for 8 s, then it hits',rk);
  // 6 long answers get the small font (?set=hoy has the two-line answers)
  const h=await ctx.newPage(); await start(h,'file://'+F+'?set=hoy'); await h.evaluate(()=>{ const G=__G,S=G.state(),P=G.man(),pl=G.plats(); const q=pl[10]; P.on=q; P.h=q.h; P.x=300; P.lastI=9; S.pi=9; }); await h.waitForFunction(()=>!!__G.state().way,null,{timeout:5000}); await h.waitForTimeout(300);
  await h.evaluate(()=>{ for(let i=0;i<30;i++){ if([...document.querySelectorAll('#jm-choices .jm-ch')].some(x=>x.textContent.length>18)) break; __G.newQ(); } }); await h.waitForTimeout(200);

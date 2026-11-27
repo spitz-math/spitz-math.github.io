@@ -151,7 +151,7 @@ function drawGem(gx,gy,gold){ var a=gemArt(gold); cx.imageSmoothingEnabled=false
    right or wrong (Kody 2026-11-19: math well = a better game, never a wall). 2 or 3 right teaches the next move; 3 of 3 also
    gives a heart back; 0 or 1 right means no move this time (it is offered again next Waystone). Moves come in a fixed order:
    Wall Kick, Double Jump, Glide, Air Dash, Triple Jump, then boosts that stack up to 3 times. */
-var WAY_FIRST=10, WAY_EVERY=40;   /* v4: every 40 ledges (v3's 30 left a middling climber standing still ~45% of the round) */
+var WAY_FIRST=10, WAY_EVERY=30;   /* v34: every 30 ledges again (v4 chose 40 because cards cost clock time; since v33 the clock stops behind cards). All-right strong bot: 24 questions, slower climber 6-10 */
 function isWayFloor(i){ return i>=WAY_FIRST&&(i-WAY_FIRST)%WAY_EVERY===0; }
 function nextWayAfter(i){ return WAY_FIRST+WAY_EVERY*(Math.floor((i-WAY_FIRST)/WAY_EVERY)+1); }
 var MOVES=[ {id:'wall', name:'Wall Kick', d:'Jump just as you hit a side wall to kick up off it', how:'Jump at a side wall'},
@@ -234,12 +234,18 @@ function fogStep(dt){ var was=fogOn(); S.climbT=(S.climbT||0)+dt; if(!was&&fogOn
   else { S.fog=Math.max(S.fog+fogSpeed()*dt, low); if(S.drop) S.drop=Math.max(0,S.drop-fogSpeed()*dt); }
   if(P.h+PH*0.45<S.fog) fogHit(); }
 var lastHit=-1e9;   /* game seconds (S.climbT), not the wall clock */
-function fogHit(){ var again=(S.climbT||0)-lastHit<4; lastHit=S.climbT||0; if(!again) S.hearts=Math.max(0,S.hearts-1); SND.crash(); shk=10; endCombo();   /* v11: a second dip within 4 s only lifts you again */
+/* v34 (Kody 2026-11-27 'All 4', item 1: the average climber died at ~2:00 with 4-6 questions). Softer for a hurt player, same for a clean one:
+   HURT_SAFE: after ANY lost heart (rock or fog) no second heart can be lost for 8 s (was 4 s fog-only, 4 s rock-only, so a rock then a fall cost two);
+   FOG_HIT_CALM: the fog waits 5 s after a hit (was 3); FOG_MERCY: the fog trails 150 px farther back for each heart you are missing. */
+var FOG_AGAIN=4, FOG_HIT_CALM=5, FOG_MERCY=150, SAFE_CALM=false, HURT_SAFE=8, hurtAt=-1e9;
+function hurtSafe(){ return (S.climbT||0)-hurtAt<HURT_SAFE; }
+function fogHit(){ var again=(S.climbT||0)-lastHit<FOG_AGAIN||(SAFE_CALM&&S.calm>0)||hurtSafe(); if(!again) hurtAt=S.climbT||0; lastHit=S.climbT||0; if(!again) S.hearts=Math.max(0,S.hearts-1); SND.crash(); shk=10; endCombo();   /* v11: a second dip within 4 s only lifts you again */
   if(S.hearts<=0){ S.fogOut=true; endRun(); return; }
   var tgt=null; for(var i=Math.max(0,S.pi-20);i<plats.length;i++){ var p=plats[i]; if(p.h>S.fog+300&&solid(p)&&p.kind!=='spring'&&p.kind!=='crumble'&&p.kind!=='ice'&&!p.amp){ tgt=p; break; } }
   if(tgt){ P.on=tgt; P.h=tgt.h; P.x=tgt.floor?W/2:cxAt(tgt,gt); P.vx=0; P.vy=0; P.lastI=tgt.i; S.pi=tgt.i; P.airJ=0; P.dashed=false; P.glide=false; }
-  S.fog=P.h-FOG_NEAR; S.drop=0; S.calm=Math.max(S.calm||0,3); cam=P.h;   /* v8: 3 s of held fog after a hit, so one mistake never costs two hearts */ pop(P.x,P.h+160,'FOG!',S.hearts+(S.hearts===1?' heart left':' hearts left'),'#FF8FA3',true); hud(); save(); }
-function wayHeal(){ if(S.hearts<HEART_MAX){ S.hearts++; pop(P.x,P.h+230,'+1 HEART','','#FF8FA3'); return true; } return false; }
+  S.fog=P.h-FOG_NEAR; S.drop=0; S.calm=Math.max(S.calm||0,FOG_HIT_CALM); cam=P.h;   /* v8: 3 s of held fog after a hit, so one mistake never costs two hearts */ pop(P.x,P.h+160,'FOG!',S.hearts+(S.hearts===1?' heart left':' hearts left'),'#FF8FA3',true); hud(); save(); }
+var HEAL_ALL=false;
+function wayHeal(){ if(S.hearts<HEART_MAX){ var n=HEAL_ALL?HEART_MAX-S.hearts:1; S.hearts+=n; pop(P.x,P.h+230,n>1?'HEARTS FULL':'+1 HEART','','#FF8FA3'); return true; } return false; }
 var FOGC=null;
 function fogTop(){ return FOGC||(FOGC=pxc(64,8,4,function(g){ for(var x=0;x<64;x++){ var h=3+Math.round(2*Math.sin(x/5)+1.5*Math.sin(x/2.3)); g.fillStyle='rgba(214,200,240,.55)'; g.fillRect(x,8-h-2,1,2); g.fillStyle='rgba(176,156,214,.78)'; g.fillRect(x,8-h,1,h); } })); }
 function drawFog(){ if(!S.started||!fogOn()) return; var y=Math.min(Math.round(sy(S.fog)),H-40);   /* it always peeks in at the bottom, so you know it is there */ var ft=fogTop(), off=Math.round((gt*20)%256);
@@ -295,7 +301,7 @@ function rockStep(dt){ var i=P.lastI||0, live=inRocks(i)&&!S.rush;
 function bonk(r){ bonkT=2; var d=P.x>=r.x?1:-1; P.vx=d*340; if(P.on){ P.on=null; P.vy=-120; } else P.vy=Math.min(P.vy,-120);   /* v13: a hit knocks you AND costs a heart (Kody: 'they're a real threat, let them') */
   endCombo(); CB.on=false; shk=RM()?0:8; SND.crack(); fxAdd('bonk',P.x,P.h);
   /* v10: back to a knock with no heart lost: on the narrow v10 ledges a knock already costs height (v8-v9 took a heart) */
-  if(S.hearts>1){ S.hearts--; pop(P.x,P.h+160,'BONK!',S.hearts+(S.hearts===1?' heart left':' hearts left'),'#FFB020',true); hud(); save(); } else pop(P.x,P.h+160,'BONK!','','#FFB020'); }
+  if(S.hearts>1&&!hurtSafe()){ S.hearts--; hurtAt=S.climbT||0; pop(P.x,P.h+160,'BONK!',S.hearts+(S.hearts===1?' heart left':' hearts left'),'#FFB020',true); hud(); save(); } else pop(P.x,P.h+160,'BONK!','','#FFB020'); }
 var ROCKC=null;
 function rockPx(){ return ROCKC||(ROCKC=pxc(12,12,5,function(g){ var M=['...####.....','..#bbbb##...','.#bbhbbbb#..','#bbhhbbbbb#.','#bbbbbbbsb#.','#bbbbbbbsbb#','#bsbbbbbbbb#','.#bbbbbbsb#.','.#bbbbbbbb#.','..##bbbb##..','....####....','............'];
   M.forEach(function(row,y){ for(var x=0;x<12;x++){ var c=row[x]; if(c==='.') continue; g.fillStyle=c==='#'?'#1B1328':c==='h'?'#E8C79A':c==='s'?'#6B3F22':'#A8693A'; g.fillRect(x,y,1,1); } }); })); }
@@ -355,44 +361,7 @@ var SKYD=document.getElementById('jmr-sky'), SL=document.getElementById('jmr-sl'
 function sideLayer(i,key){ if(sideKey[i]===key) return false; sideKey[i]=key; return true; }
 var SW=1920, SH=1080, TX=352, TW=1216, INK='#0B0F1C', WF="'Pixelify Sans', Inter, sans-serif", NF="'Spitz Digits', 'Pixelify Sans', Inter, sans-serif";
 function otext(c,txt,x,y,font,col,al,lw,mw){ c.font=font; c.textAlign=al||'left'; c.lineJoin='round'; c.lineWidth=lw||9; c.strokeStyle=INK; if(mw){ c.strokeText(txt,x,y,mw); c.fillStyle=col; c.fillText(txt,x,y,mw); return; } c.strokeText(txt,x,y); c.fillStyle=col; c.fillText(txt,x,y); }
-function sideHud(force){ var t=now(); if(!force&&t-sideT<100) return; sideT=t;
-  var live=S.started&&!S.over, m=cam/20, left=S.started?Math.max(0,S.endAt-t):S.len*60000, secs=Math.ceil(left/1000), clock=Math.floor(secs/60)+':'+('0'+(secs%60)).slice(-2);
-  var wayLeft=Math.max(0,S.nextWay-(S.pi||0)), rushLeft=S.rush?Math.max(0,S.rush.i-(S.pi||0)):0, gap=Math.max(0,Math.round((P.h-S.fog)/20));
-  if(force) sideKey=['','',''];
-  var sk=skyAt(Math.floor(m/10)*10); if(sideLayer(0,sk.join())) SKYD.style.background='linear-gradient(rgba(6,10,26,.62),rgba(6,10,26,.62)),linear-gradient('+sk[0]+','+sk[1]+')';
-  var c=SL, tb=turbo();
-  if(sideLayer(1,[S.started,clock,S.score,JSON.stringify(S.goals&&S.goals.map(function(g){ return [g.txt,Math.min(goalProg(g),g.n)]; })),S.streak,tb,JSON.stringify(S.mv)].join('|'))){
-  c.setTransform(1,0,0,1,0,0); c.clearRect(0,0,352,SH); c.fillStyle=INK; c.fillRect(TX-8,0,8,SH);
-  if(S.started){
-  var L=44;
-  otext(c,'Time',L,190,'500 36px '+WF,'#A9C2EE'); otext(c,clock,L,272,'400 88px '+NF,secs<=30?'#FF8FA3':'#FFFFFF');
-  otext(c,'Score',L,350,'500 36px '+WF,'#A9C2EE'); otext(c,S.score.toLocaleString(),L,432,'400 88px '+NF,'#FFC93C');
-  if(S.goals){ otext(c,'Goals',L,520,'500 32px '+WF,'#A9C2EE'); S.goals.forEach(function(g,j){ var y=566+j*78, pr=Math.min(goalProg(g),g.n);
-      otext(c,'★',L,y,'400 30px '+WF,'#FFC93C',null,7); otext(c,g.txt,L+38,y,'800 24px Inter, sans-serif','#FFFFFF',null,7,248);
-      c.fillStyle=INK; c.fillRect(L+32,y+14,176,22); c.fillStyle='#242936'; c.fillRect(L+36,y+18,168,14); c.fillStyle='#FFC93C'; c.fillRect(L+36,y+18,Math.round(168*pr/g.n),14);
-      otext(c,pr+' / '+g.n,L+218,y+34,'800 20px Inter, sans-serif','#A9C2EE',null,6); }); }
-  var nx=tb>=3?0:[5,10,15][tb];
-  otext(c,tb?'Turbo '+tb+'!':'Turbo',L,720,'500 32px '+WF,tb?['','#FFC93C','#FF8A1F','#FF6BD6'][tb]:'#A9C2EE');
-  otext(c,tb>=3?'Top speed!':(nx-S.streak)+' more right in a row',L,760,'800 22px Inter, sans-serif','#FFFFFF',null,6);
-  otext(c,'Moves',L,836,'500 32px '+WF,'#A9C2EE'); var rows=[['Run','← →'],['Jump','↑ / Space']]; MOVES.forEach(function(mv){ if(S.mv[mv.id]) rows.push([mv.name,mv.id==='dash'?'X or K':mv.id==='wall'?'at a wall':mv.id==='glide'?'hold ↑':'↑ in air']); });
-  rows.slice(0,6).forEach(function(r,j){ var y=878+j*34; otext(c,r[0],L,y,'800 22px Inter, sans-serif','#FFFFFF',null,6); otext(c,r[1],L+270,y,'800 20px Inter, sans-serif','#7CF0FF','right',6); });
-  } }
-  // right column (its canvas starts at x=1568, so draw in stage coordinates shifted left)
-  c=SR; if(!sideLayer(2,[S.started,Math.floor(Math.max(0,P.h)/20),S.hearts,Math.ceil(S.calm||0),fogOn()?gap:-1,wayLeft,rushLeft,!!S.rush,live&&CB.on?CB.floors+':'+Math.round(CB.t*10):0,S.ways].join('|'))) return;
-  c.setTransform(1,0,0,1,0,0); c.clearRect(0,0,352,SH); c.setTransform(1,0,0,1,-(TX+TW),0); c.fillStyle=INK; c.fillRect(TX+TW,0,8,SH);
-  if(!S.started) return;
-  var R=TX+TW+44;
-  otext(c,'Height',R,190,'500 36px '+WF,'#A9C2EE'); otext(c,Math.floor(Math.max(0,P.h)/20)+' m',R,272,'400 88px '+NF,'#FFFFFF');
-  heartPx(-99,-99,true); heartPx(-99,-99,false); for(var k=0;k<HEART_MAX;k++) c.drawImage(HEARTS[k<S.hearts?'on':'off'],R+k*92,320,77,70);
-  if(fogOn()){ var held=S.calm>0; otext(c,held?'Safe from fog '+Math.ceil(S.calm)+' s':'Fog '+gap+' m below',R,450,'800 28px Inter, sans-serif',held?'#7CF0FF':gap<17?'#FF8FA3':'#D6C8F0',null,7); }
-  else otext(c,'Fog starts soon',R,450,'800 28px Inter, sans-serif','#D6C8F0',null,7);
-  var rush=!!S.rush, n=rush?rushLeft:wayLeft, tot=rush?(S.rush.n?SUMMIT_NEXT:SUMMIT_UP):(S.nextWay>WAY_FIRST?WAY_EVERY:WAY_FIRST), lv=Math.max(0,Math.min(1,1-n/tot)), col=rush?'#FFC23D':'#7CF0FF';
-  otext(c,rush?'Summit':'Next Waystone',R,540,'500 32px '+WF,col); otext(c,n+(n===1?' ledge':' ledges'),R,588,'800 30px Inter, sans-serif','#FFFFFF',null,7);
-  c.fillStyle=INK; c.fillRect(R-6,616,264,40); c.fillStyle='#242936'; c.fillRect(R,622,252,28); c.fillStyle=col; c.fillRect(R,622,Math.round(252*lv),28);
-  if(CB.on&&live){ var w=comboWord(Math.max(4,CB.floors)), lvl=Math.max(0,CB.t/U('combo'));
-    otext(c,'Combo',R,760,'500 32px '+WF,'#A9C2EE'); otext(c,''+CB.floors,R,836,'400 72px '+NF,CB.jumps>=2&&CB.floors>=4?w[2]:'#FFFFFF'); otext(c,CB.floors===1?'floor':'floors',R+12+c.measureText(''+CB.floors).width,836,'800 30px Inter, sans-serif','#FFFFFF',null,7);
-    c.fillStyle=INK; c.fillRect(R-6,862,264,32); c.fillStyle='#242936'; c.fillRect(R,868,252,20); c.fillStyle=lvl>0.3?'#FFC93C':'#FF7A7A'; c.fillRect(R,868,Math.round(252*lvl),20); }
-  otext(c,'Waystones cleared',R,676,'800 22px Inter, sans-serif','#A9C2EE',null,6); otext(c,''+S.ways,R+252,676,'800 22px Inter, sans-serif','#FFFFFF','right',6); }
+/* (an older sideHud() lived here; the one that runs is further down) */
 /* the in-tower layer keeps only what belongs in the world: the zone banner, first-time hints and touch buttons */
 function towerHud(t,live){
   if(banner){ var bk=(t-banner.t0)/2200; if(bk>=1) banner=null; else { cx.globalAlpha=Math.min(1,bk*6,(1-bk)*4); cx.textAlign='center';
@@ -445,7 +414,7 @@ var WAY_NEED=2, FOG_LATE=0.25, FOG_PER_MOVE=0.04, LATE_FROM=90;
 function rockEvery(){ var k=Math.max(0,Math.min(1,((P.lastI||0)-ROCK_FROM)/240)); return ROCK_EVERY*(1-0.48*k); }
 function moveN(){ var n=0; MOVES.forEach(function(m){ if(S.mv[m.id]) n++; }); return n; }
 function lateK(){ var len=(S.len||5)*60, el=len-Math.max(0,(S.endAt-now())/1000); return Math.max(0,Math.min(1,(el-LATE_FROM)/(len-LATE_FROM))); }
-function fogGap(){ return Math.max(600,FOG_GAP-60*moveN()-200*lateK()); }
+function fogGap(){ return Math.max(600,FOG_GAP-60*moveN()-200*lateK())+FOG_MERCY*Math.max(0,HEART_MAX-S.hearts); }
 /* v15 side columns (Kody 2026-11-25: "maybe more score to the right and put hearts on the left"). Grouped by job:
    LEFT = you and your survival: time, hearts, the fog, Turbo, your moves. RIGHT = score and progress: score, height,
    the next Waystone (or Summit), goals, combo. This later declaration replaces the v6 sideHud. */
@@ -455,41 +424,7 @@ function arwDraw(c,ch,x,y,col){ var m=ARW[ch], u=3, ox=x+2, oy=y-19; c.fillStyle
 function keyText(c,txt,right,y,col){ var font='800 22px Inter, sans-serif', AW=25, parts=[], w=0; c.font=font;
   txt.split(/([←→↑])/).forEach(function(p){ if(!p) return; if(ARW[p]){ parts.push([p,AW]); w+=AW; } else { var pw=c.measureText(p).width; parts.push([p,pw]); w+=pw; } });
   var x=right-w; parts.forEach(function(p){ if(ARW[p[0]]) arwDraw(c,p[0],x,y,col); else otext(c,p[0],x,y,font,col,'left',6); x+=p[1]; }); }
-function sideHud(force){ var t=now(); if(!force&&t-sideT<100) return; sideT=t;
-  var live=S.started&&!S.over, m=cam/20, left=S.started?Math.max(0,S.endAt-t):S.len*60000, secs=Math.ceil(left/1000), clock=Math.floor(secs/60)+':'+('0'+(secs%60)).slice(-2);
-  var wayLeft=Math.max(0,S.nextWay-(S.pi||0)), rushLeft=S.rush?Math.max(0,S.rush.i-(S.pi||0)):0, gap=Math.max(0,Math.round((P.h-S.fog)/20)), tb=turbo();
-  if(force) sideKey=['','',''];
-  var sk=skyAt(Math.floor(m/10)*10); if(sideLayer(0,sk.join())) SKYD.style.background='linear-gradient(rgba(6,10,26,.62),rgba(6,10,26,.62)),linear-gradient('+sk[0]+','+sk[1]+')';
-  var c=SL, L=44, lab='500 34px '+WF, sm='800 24px Inter, sans-serif';
-  if(sideLayer(1,[S.started,clock,S.hearts,Math.ceil(S.calm||0),fogOn()?gap:-1,S.streak,tb,JSON.stringify(S.mv)].join('|'))){
-    c.setTransform(1,0,0,1,0,0); c.clearRect(0,0,352,SH); c.fillStyle=INK; c.fillRect(TX-8,0,8,SH);
-    if(S.started){
-      otext(c,'Time',L,190,lab,'#A9C2EE'); otext(c,clock,L,272,'400 88px '+NF,secs<=30?'#FF8FA3':'#FFFFFF');
-      heartPx(-99,-99,true); heartPx(-99,-99,false); for(var k=0;k<HEART_MAX;k++) c.drawImage(HEARTS[k<S.hearts?'on':'off'],L+k*92,316,77,70);
-      if(fogOn()){ var held=S.calm>0; otext(c,held?'Safe from fog '+Math.ceil(S.calm)+' s':'Fog '+gap+' m below',L,444,'800 28px Inter, sans-serif',held?'#7CF0FF':gap<17?'#FF8FA3':'#D6C8F0',null,7); }
-      else otext(c,'Fog starts soon',L,444,'800 28px Inter, sans-serif','#D6C8F0',null,7);
-      var nx=tb>=3?0:[5,10,15][tb];
-      otext(c,tb?'Turbo '+tb+'!':'Turbo',L,540,lab,tb?['','#FFC93C','#FF8A1F','#FF6BD6'][tb]:'#A9C2EE');
-      otext(c,tb>=3?'Top speed!':(nx-S.streak)+' more right in a row',L,580,'800 22px Inter, sans-serif','#FFFFFF',null,6);
-      otext(c,'Moves',L,670,lab,'#A9C2EE'); var rows=[['Run','← → or A D'],['Jump','↑ / Space']]; MOVES.forEach(function(mv){ if(S.mv[mv.id]) rows.push([mv.name,mv.id==='dash'?'X or K':mv.id==='wall'?'at a wall':mv.id==='glide'?'hold ↑':'↑ in air']); });
-      rows.slice(0,7).forEach(function(r,j){ var y=716+j*38; otext(c,r[0],L,y,sm,'#FFFFFF',null,6); keyText(c,r[1],L+270,y,'#7CF0FF'); }); } }
-  c=SR; if(!sideLayer(2,[S.started,S.score,Math.floor(Math.max(0,P.h)/20),wayLeft,rushLeft,!!S.rush,S.ways,JSON.stringify(S.goals&&S.goals.map(function(g){ return [g.txt,Math.min(goalProg(g),g.n)]; })),live&&CB.on?CB.floors+':'+Math.round(CB.t*10):0].join('|'))) return;
-  c.setTransform(1,0,0,1,0,0); c.clearRect(0,0,352,SH); c.setTransform(1,0,0,1,-(TX+TW),0); c.fillStyle=INK; c.fillRect(TX+TW,0,8,SH);
-  if(!S.started) return;
-  var R=TX+TW+44;
-  otext(c,'Score',R,190,lab,'#A9C2EE'); otext(c,S.score.toLocaleString(),R,272,'400 88px '+NF,'#FFC93C');
-  otext(c,'Height',R,340,lab,'#A9C2EE'); otext(c,Math.floor(Math.max(0,P.h)/20)+' m',R,408,'400 64px '+NF,'#FFFFFF');
-  var rush=!!S.rush, n=rush?rushLeft:wayLeft, tot=rush?(S.rush.n?SUMMIT_NEXT:SUMMIT_UP):(S.nextWay>WAY_FIRST?WAY_EVERY:WAY_FIRST), lv=Math.max(0,Math.min(1,1-n/tot)), col=rush?'#FFC23D':'#7CF0FF';
-  otext(c,rush?'Summit':'Next Waystone',R,490,lab,col); otext(c,n+(n===1?' ledge':' ledges'),R,534,'800 28px Inter, sans-serif','#FFFFFF',null,7);
-  c.fillStyle=INK; c.fillRect(R-6,552,264,40); c.fillStyle='#242936'; c.fillRect(R,558,252,28); c.fillStyle=col; c.fillRect(R,558,Math.round(252*lv),28);
-  otext(c,'Waystones cleared',R,626,'800 22px Inter, sans-serif','#A9C2EE',null,6); otext(c,''+S.ways,R+252,626,'800 22px Inter, sans-serif','#FFFFFF','right',6);
-  if(S.goals){ otext(c,'Goals',R,706,lab,'#A9C2EE'); S.goals.forEach(function(g,j){ var y=752+j*78, pr=Math.min(goalProg(g),g.n);
-      otext(c,'★',R,y,'400 30px '+WF,'#FFC93C',null,7); otext(c,g.txt,R+38,y,'800 24px Inter, sans-serif','#FFFFFF',null,7,248);
-      c.fillStyle=INK; c.fillRect(R+32,y+14,136,22); c.fillStyle='#242936'; c.fillRect(R+36,y+18,128,14); c.fillStyle='#FFC93C'; c.fillRect(R+36,y+18,Math.round(128*pr/g.n),14);
-      otext(c,pr+' / '+g.n,R+258,y+34,'800 20px Inter, sans-serif','#A9C2EE','right',6); }); }
-  if(CB.on&&live){ var w=comboWord(Math.max(4,CB.floors)), lvl=Math.max(0,CB.t/U('combo'));
-    otext(c,'Combo',R,940,lab,'#A9C2EE'); otext(c,''+CB.floors,R,1004,'400 64px '+NF,CB.jumps>=2&&CB.floors>=4?w[2]:'#FFFFFF'); otext(c,CB.floors===1?'floor':'floors',R+12+c.measureText(''+CB.floors).width,1004,'800 28px Inter, sans-serif','#FFFFFF',null,7);
-    c.fillStyle=INK; c.fillRect(R-6,1020,264,32); c.fillStyle='#242936'; c.fillRect(R,1026,252,20); c.fillStyle=lvl>0.3?'#FFC93C':'#FF7A7A'; c.fillRect(R,1026,Math.round(252*lvl),20); } }
+/* (an older sideHud() lived here; the one that runs is further down) */
 //@@ V16
 /* ================= v16 (overnight check 2026-11-26) =================
    - pops wait in a line: none while a Waystone or New move! card is open, then one at a time, so words never stack
@@ -498,7 +433,7 @@ function sideHud(force){ var t=now(); if(!force&&t-sideT<100) return; sideT=t;
 var popQ=[], popNext=0, paused=false, touchSeen=false;
 function pop(x,h,txt,lab,col,big){ popQ.push({dh:h-P.h,txt:txt,lab:lab||'',col:col||'#fff',big:!!big}); if(popQ.length>4) popQ.splice(popQ.findIndex(function(o){ return !o.big; })>=0?popQ.findIndex(function(o){ return !o.big; }):0,1); }
 function popStep(){ var t=now(); if(!popQ.length||S.way||S.offer||t<popNext) return; var o=popQ.shift();
-  pops.push({x:P.x,h:P.h+Math.max(120,Math.min(200,o.dh)),t0:t,txt:o.txt,lab:o.lab,col:o.col,big:o.big}); popNext=t+(o.big?1300:850); }
+  pops.push({x:Math.max(250,Math.min(W-250,P.x)),h:P.h+Math.max(120,Math.min(200,o.dh)),t0:t,txt:o.txt,lab:o.lab,col:o.col,big:o.big}); popNext=t+(o.big?1300:850); }
 function touchUI(){ try{ return touchSeen||(matchMedia('(pointer: coarse)').matches&&!matchMedia('(any-pointer: fine)').matches); }catch(e){ return touchSeen; } }
 cv.addEventListener('pointerdown',function(e){ if(e.pointerType==='touch'||e.pointerType==='pen') touchSeen=true; },true);
 function canPause(){ return S.started&&!S.over&&!S.way&&!S.offer; }
@@ -511,9 +446,7 @@ cv.addEventListener('pointerdown',function(e){ if(paused){ setPause(false); e.st
 function drawPause(){ cx.save(); cx.fillStyle='rgba(8,9,20,.66)'; cx.fillRect(0,0,W,H); var y=H*0.62; panel(W/2-330,y-92,660,170); cx.textAlign='center'; cx.lineJoin='round';
   cx.font='400 76px '+DF; cx.lineWidth=10; cx.strokeStyle='#000'; cx.strokeText('Paused',W/2,y-10); cx.fillStyle='#FFFFFF'; cx.fillText('Paused',W/2,y-10);
   cx.font='800 30px Inter, sans-serif'; cx.lineWidth=7; cx.strokeText('Press P or any key to keep climbing',W/2,y+50); cx.fillStyle='#7CF0FF'; cx.fillText('Press P or any key to keep climbing',W/2,y+50); cx.restore(); }
-function loop(){ var t=now(), raw=(t-lastF)/1000, dt=Math.min(0.033,raw); lastF=t;
-  if(S.started&&!S.over&&raw>0){ var lost=paused?raw:Math.max(0,raw-dt); if(lost>0){ S.endAt+=lost*1000; } }   /* the clock only counts time the game really played */
-  if(!paused){ update(dt); popStep(); } render(); if(paused) drawPause(); requestAnimationFrame(loop); }
+/* (an older loop() lived here; the one that runs is further down) */
 window.__G16={ pops:function(){ return pops; }, popQ:function(){ return popQ; }, paused:function(){ return paused; }, touchUI:touchUI, pop:pop, gt:function(){ return gt; } };
 //@@ V17
 /* v17: one painted sky per zone (Task Drop art, art/skies/), scrolling up the painting as you climb, crossfading between zones.
@@ -742,10 +675,7 @@ var drawFx27=drawFx; drawFx=function(){ drawFx27(); jDraw(); };
 var drawMan27=drawMan;
 drawMan=function(x,y,ghost){ if(ghost||!J.hs) return drawMan27(x,y,ghost); var s=P.sq, e=J.hs>1?1:J.hs; P.sq=s-e*e*(3-2*e)*0.9;   /* sq<0 = stretch tall and thin */
   try{ drawMan27(x,y,ghost); } finally { P.sq=s; } };
-function loop(){ var t=now(), raw=(t-lastF)/1000, dt=Math.min(0.033,raw), gd=dt; lastF=t;
-  if(J.stop>0&&!paused){ J.stop-=dt; gd=dt*0.05; }                                         /* hit-stop: the world crawls, input keeps buffering */
-  if(S.started&&!S.over&&raw>0){ var lost=paused?raw:Math.max(0,raw-gd); if(lost>0){ S.endAt+=lost*1000; } }   /* the clock only counts time the game really played */
-  if(!paused){ update(gd); popStep(); juiceStep(dt); } render(); if(paused) drawPause(); requestAnimationFrame(loop); }
+/* (an older loop() lived here; the one that runs is further down) */
 window.__G27={J:J,juiceStep:juiceStep,jStop:jStop};
 //@@ V28
 /* v28 balance fixes from the 2026-11-26 balance check (Kody picked "the 6 fixes only"):
@@ -772,17 +702,12 @@ var answer28=answer; answer=function(i){ if(STALE) return; answer28(i); };
 var pickOffer28=pickOffer; pickOffer=function(i){ if(STALE) return; pickOffer28(i); };
 addEventListener('storage',function(e){ if(e.key===KEY&&S.started&&!S.over&&!STALE){ STALE=true; keys.l=keys.r=keys.j=false; } });
 var askAt=0;
-addEventListener('keydown',function(e){ var a=$('sz-ask'); if(a&&!a.hidden&&now()-askAt<ASK_LOCK){ e.preventDefault(); e.stopImmediatePropagation(); } },true);
+function askLocked(){ var a=$('sz-ask'); return !!a&&!a.hidden&&S.started&&!S.over&&(!askAt||now()-askAt<ASK_LOCK); }   /* askAt is set on the box's first frame, so "not set yet" counts as locked */
+addEventListener('keydown',function(e){ if(askLocked()){ e.preventDefault(); e.stopImmediatePropagation(); } },true);
 function drawStale(){ cx.save(); cx.fillStyle='rgba(8,9,20,.78)'; cx.fillRect(0,0,W,H); cx.textAlign='center'; cx.lineJoin='round'; var y=H*0.5;
   cx.font='800 40px Inter, sans-serif'; cx.lineWidth=8; cx.strokeStyle='#000'; cx.strokeText('This run is open in another tab',W/2,y); cx.fillStyle='#FFFFFF'; cx.fillText('This run is open in another tab',W/2,y);
   cx.font='800 28px Inter, sans-serif'; cx.lineWidth=6; cx.strokeText('Keep playing there, or reload this page',W/2,y+50); cx.fillStyle='#7CF0FF'; cx.fillText('Keep playing there, or reload this page',W/2,y+50); cx.restore(); }
-function loop(){ var t=now(), raw=(t-lastF)/1000, dt=Math.min(0.033,raw), gd=dt; lastF=t;
-  var ask=$('sz-ask'), asking=!!ask&&!ask.hidden&&S.started&&!S.over; if(asking){ if(!askAt) askAt=t; } else askAt=0;
-  var hold=paused||asking||STALE;
-  if(J.stop>0&&!hold){ J.stop-=dt; gd=dt*0.05; }
-  if(S.started&&!S.over&&raw>0){ var lost=hold?raw:Math.max(0,raw-gd); if(lost>0){ S.endAt+=lost*1000; } }   /* the clock only counts time the game really played */
-  if(!hold){ update(gd); popStep(); juiceStep(dt); if(S.offer&&offerAt&&t-offerAt>OFFER_AUTO&&!S.over) pickOffer(0); }
-  render(); if(paused) drawPause(); if(STALE) drawStale(); requestAnimationFrame(loop); }
+/* (the main loop now lives in V33, the only loop() in this file) */
 window.__G28={stale:function(){ return STALE; }, askAt:function(){ return askAt; }, BONK_S:BONK_S};
 //@@ V29
 /* v29: the gold gem is the approved blue gem (props d27e32c2) recoloured gold in code, by brightness: outline stays, then
@@ -843,3 +768,49 @@ function glideWing(pz,ph){ if(!P.glide||!GLW||!ready(GLW)||!AL||pz!==AL.pose.gli
 var drawMan32=drawMan;                                // a wall-kick spin keeps turning in the air; while gliding the hero hangs upright under the wing
 drawMan=function(x,y,ghost){ if(!P.glide) return drawMan32(x,y,ghost); var r=P.rot; P.rot=0; try{ drawMan32(x,y,ghost); } finally{ P.rot=r; } };
 window.__G32={GLW:GLW, glideWing:glideWing};
+//@@ V33
+/* v33 (Kody 2026-11-27, "do all but 1" from the v32 checks):
+   1 the round clock stops behind the question card and the New move! card (reading never costs climbing time)
+   2 the Start a new game? box ignores CLICKS for its first second too, and its buttons look dim until they work
+   3 after a miss, a sentence that the reason and the explanation share prints once
+   4 a refused same-wall kick says so ("Land first")
+   5 the New move! card's 5 s only count while the card can be used (not behind pause or the restart box)
+   6 pop-up words next to a side wall are kept inside the tower (popStep in V16; they used to be cut off by the wall)
+   This is the only loop() in the file: older versions' loops were removed from the source. */
+var CARD_CLOCK=true, KICK_HINT_S=4, kickHintAt=-99;
+/* 7 (overnight masher test) a HELD key never answers: key repeats of 1-9, Enter, Y and N are dropped, so holding the right answer
+     can't also answer the next question unseen, and a held Y can't wipe the run when the restart box's lock ends.
+   8 a brand-new question ignores number keys for its first 0.3 s (mashing Enter then a number used to answer it 40 ms after it appeared) */
+var Q_LOCK=300, lastQ33=null, qAt33=0;
+addEventListener('keydown',function(e){ if(e.target&&e.target.tagName==='INPUT') return; var k=(e.key||'').toLowerCase(), dig=/^[1-9]$/.test(k);
+  if(e.repeat&&(dig||k==='enter'||k==='y'||k==='n')){ e.preventDefault(); e.stopImmediatePropagation(); return; }
+  if(dig&&S.started&&!S.over&&S.way&&S.q&&!S.qDone&&now()-qAt33<Q_LOCK){ e.preventDefault(); e.stopImmediatePropagation(); } },true);
+['click','pointerdown','mousedown','pointerup','mouseup','touchstart','touchend'].forEach(function(ev){
+  addEventListener(ev,function(e){ var a=$('sz-ask'); if(a&&askLocked()&&a.contains(e.target)){ e.preventDefault(); e.stopImmediatePropagation(); } },true); });
+/* the miss text is "reason<br>explanation"; drop any sentence of the reason that the explanation (or the reason itself) already says */
+function sentences33(h){ return String(h||'').split(/(?<=[.!?])\s+(?![^<]*>)/).filter(function(x){ return x.trim(); }); }
+function plain33(h){ var d=document.createElement('div'); d.innerHTML=h; return (d.textContent||'').replace(/\s+/g,' ').trim().toLowerCase(); }
+function dedupe33(why,explain){ var seen={}, ex=sentences33(explain).filter(function(s){ var k=plain33(s); if(seen[k]) return false; seen[k]=1; return true; });
+  var own={}, wy=sentences33(why).filter(function(s){ var k=plain33(s); if(k.length<8) return true; if(seen[k]||own[k]) return false; own[k]=1; return true; });
+  return [wy.join(' '),ex.join(' ')]; }
+var markAnswered33=markAnswered;
+markAnswered=function(i,fresh){ var q=S.q, c=q&&q.choices[i]; if(!c||c.ok||!c.why||!q.explain) return markAnswered33(i,fresh);
+  var why0=c.why, ex0=q.explain, d=dedupe33(why0,ex0); c.why=d[0]; q.explain=d[1];
+  try{ markAnswered33(i,fresh); } finally { c.why=why0; q.explain=ex0; }
+  if(!d[0]){ var fb=$('jm-fb'); fb.innerHTML=fb.innerHTML.replace('</span><br>','</span>'); } };
+var doJump33=doJump;
+doJump=function(vm){ var k0=S.kicks||0, vy0=P.vy, air=!P.on, atWall=P.x<PW/2+10||P.x>W-PW/2-10, had=!!P.kickSide;
+  doJump33(vm);
+  if(air&&had&&atWall&&S.mv.wall&&(S.kicks||0)===k0&&P.vy===vy0&&gt-kickHintAt>KICK_HINT_S){ kickHintAt=gt; pop(P.x,P.h+90,'LAND FIRST','or kick off the other wall','#FFC93C'); } };
+function loop(){ var t=now(), raw=(t-lastF)/1000, dt=Math.min(0.033,raw), gd=dt; lastF=t;
+  var ask=$('sz-ask'), asking=!!ask&&!ask.hidden&&S.started&&!S.over; if(asking){ if(!askAt) askAt=t; } else askAt=0;
+  if(ask) ask.classList.toggle('jmr-wait',asking&&t-askAt<ASK_LOCK);
+  if(S.q!==lastQ33){ lastQ33=S.q; qAt33=t; }
+  var hold=paused||asking||STALE, card=CARD_CLOCK&&!!(S.way||S.offer);
+  if(J.stop>0&&!hold){ J.stop-=dt; gd=dt*0.05; }
+  if(S.started&&!S.over&&raw>0){ var lost=(hold||card)?raw:Math.max(0,raw-gd); if(lost>0){ S.endAt+=lost*1000; } }   /* the clock only counts time the game really played */
+  if(hold&&S.offer&&offerAt) offerAt+=raw*1000;                                                                    /* the card's 5 s wait too */
+  if(!hold){ update(gd); popStep(); juiceStep(dt); if(S.offer&&offerAt&&t-offerAt>OFFER_AUTO&&!S.over) pickOffer(0); }
+  render(); if(paused) drawPause(); if(STALE) drawStale(); requestAnimationFrame(loop); }
+window.__G34={tune:function(o){ if('again' in o) FOG_AGAIN=o.again; if('hitCalm' in o) FOG_HIT_CALM=o.hitCalm; if('mercy' in o) FOG_MERCY=o.mercy; if('safe' in o) SAFE_CALM=o.safe; if('per' in o) CALM_PER=o.per; if('max' in o) CALM_MAX=o.max; if('hurt' in o) HURT_SAFE=o.hurt; if('healAll' in o) HEAL_ALL=o.healAll; if('rockEvery' in o) ROCK_EVERY=o.rockEvery; }};
+window.__G33={askLocked:askLocked, dedupe:dedupe33, CARD_CLOCK:CARD_CLOCK, Q_LOCK:Q_LOCK};

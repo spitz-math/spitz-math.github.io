@@ -85,3 +85,19 @@ Tests: tests/v12.js and tests/v4.js updated for v13.
 
 ## v16 (overnight check fixes, 2026-11-26)
 - Pop line (no pops over cards, one at a time), stale feedback fixed, no header, renamed Super Jump Man, P/Esc pause + hidden-tab pause, clock on game time, touch buttons only on touch. tests/v16.js.
+
+## v17 to v33 (2026-11-26/27): where things are now
+The notes above stop at v16. Since then (each version is one `//@@ Vnn` part in remaster.js and one block in build.py):
+- v17 painted zone skies; v19 start card + arcade-cabinet side panels; v20/v21 one-line logo; v22 painted ledges, rocks and move poses;
+  v23-v25 springs, floors, props (Waystone, lantern, post, gem); v26 Jump on Space; v27 game feel (J, juiceStep, hit-stop);
+  v28 six balance fixes (same-wall kick block, 4 s rock safety, New move card auto-pick, restart box pause + key lock, two-tab stop, long answers);
+  v29 gold gem; v30 one pixel arrow everywhere (patches canvas text drawing); v31 hero run/jump/fall/land frames; v32 glider wing.
+- v33: clock stops behind cards, click lock on the restart box, no doubled miss sentence, "LAND FIRST" hint, pop-ups kept inside the tower,
+  Up arrow on the Jump keycaps. Clean-up: ONE loop() and ONE sideHud() in remaster.js (older copies removed; same seeded bot runs score the same),
+  and the build reads base_jump_man.html (frozen old game) instead of the live file.
+
+Tests: `bash run_tests.sh` builds and runs v12, v16, v28, v33 and v4 (port 8765 must be free). tests/v2.js no longer exists.
+Balance tools: /mnt/project-files/reviews/checks_super_jump_man_v32_2026-11-26/ (sim_baseline.js = seeded fast-forward bots; verify/sim_weak.js = slower climber).
+Go-live steps: GO_LIVE.md. Gameplay check adapter draft: qa_adapter_jump_man.js.
+- v33 also (overnight masher test): key repeats of 1-9, Enter, Y, N are dropped (a held key never answers or wipes), and a new question ignores number keys for 0.3 s (Q_LOCK). Tests that press an answer key must wait 0.35 s or more after a question appears.
+- v34 (Kody 2026-11-27 "All 4"): WAY_EVERY 30 (was 40), HURT_SAFE 8 s (one heart at most per 8 s from rock or fog), FOG_HIT_CALM 5, FOG_MERCY 150 px per missing heart, small quiet Yes on the restart box (CSS in build.py). `__G34.tune({...})` changes these live for balance sims. tests/v34.js.

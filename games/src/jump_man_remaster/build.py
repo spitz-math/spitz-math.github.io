@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """Jump Man, remastered: the live tower game with the Lantern Peak climber and pixel art.
 
-Starts from the live games/jump_man_multiplication.html and swaps only the drawing (remaster.js), so the gameplay,
-score key, save key, controls and shop stay exactly as students know them. Writes to out/:
+Starts from base_jump_man.html (a frozen copy of the old live Jump Man) and patches it with remaster.js: new art, Waystones,
+moves, hearts, fog, Summit Rush. The old shop is hidden. The score key and save key are still the old game's until go-live (see GO_LIVE.md). Writes to out/:
   jump_man_multiplication.html   site candidate (replaces the live file only on Kody's "push it")
   jump_man_remaster_mult.html    self-contained test copy (fonts, kit, questions, scorecode, art inside); opens
                                  straight into multiplication facts. Never goes on the site.
@@ -16,7 +16,9 @@ ROOT = os.path.dirname(G)
 O = os.path.join(HERE, 'out'); os.makedirs(O, exist_ok=True)
 read = lambda p: open(p, encoding='utf-8').read()
 
-src = read(os.path.join(G, 'jump_man_multiplication.html'))
+# The base is a frozen copy of the old live Jump Man (games/jump_man_multiplication.html as of 2026-11-26, before Super Jump Man
+# replaces it). The build must not read the live file: after go-live that file IS this build's output.
+src = read(os.path.join(HERE, 'base_jump_man.html'))
 parts = dict(re.findall(r'//@@ (\w+)\n(.*?)(?=//@@ |\Z)', read(os.path.join(HERE, 'remaster.js')), re.S))
 art = read(os.path.join(G, 'src', 'lantern_peak', 'art_data.js'))
 
@@ -459,6 +461,14 @@ t = swap(t, '<script src="scorecode.js"></script>', '<script>\n' + read(os.path.
 t = swap(t, "/* ================= START / END", parts['V32'] + "\n/* ================= START / END")
 t = swap(t, '<script src="scorecode.js"></script>', '<script>\n' + read(os.path.join(HERE, 'art', 'glider.js')) + '</script>\n<script src="scorecode.js"></script>')
 t = swap(t, "cx.scale(f,1); cx.drawImage(pz,-Math.round(pw/2),-ph,pw,ph);", "cx.scale(f,1); if(!ghost&&typeof glideWing==='function') glideWing(pz,ph); cx.drawImage(pz,-Math.round(pw/2),-ph,pw,ph);")
+# ---- v33: clock stops behind cards, click lock on the restart box, no doubled miss sentence, same-wall kick hint; Jump keycaps show the Up arrow
+t = swap(t, "/* ================= START / END", parts['V33'] + "\n/* ================= START / END")
+t = swap(t, '</head>', '<style>.sz-ask.jmr-wait .sz-askrow button{ opacity:.45; }</style>\n</head>')
+t = swap(t, 'data-ctl="LR/AD=Run | Space=Jump | X/K=Dash | 1234=Answer"', 'data-ctl="LR/AD=Run | ↑/Space=Jump | X/K=Dash | 1234=Answer"')
+# ---- v34 (Kody 2026-11-27 "All 4"): softer fog for a hurt player + Waystones every 30 (values live in remaster.js), and the restart
+#      box's Yes is a small quiet button with "No, keep playing" as the big bright one, so mashing clicks rarely land on Yes
+t = swap(t, '</head>', '<style>html .sz-ask.sz-ask .sz-askrow{ align-items:center; } html .sz-ask.sz-ask #sz-askyes{ height:52px; padding:0 18px; border-radius:14px; font:700 20px/1 Inter,system-ui,sans-serif; background:transparent; border:2px solid var(--border); color:var(--text); }'
+         ' html .sz-ask.sz-ask #sz-askno{ background:var(--sz-mark); border-color:var(--sz-mark); color:#111; }</style>\n</head>')
 for gone in ['S.energy+=', "U('energy')"]:
     assert gone not in t, gone
 open(os.path.join(O, 'jump_man_multiplication.html'), 'w', encoding='utf-8').write(t)
