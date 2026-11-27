@@ -236,6 +236,18 @@
       ]
     },
     {
+      "id": "jump_man_multiplication",
+      "name": "Super Jump Man",
+      "tier": 1,
+      "adapter": "adapters/jump_man_multiplication.js",
+      "paths": [
+        "games/jump_man_multiplication.html",
+        "games/src/jump_man_remaster/",
+        "games/cards/jump_man_multiplication.webp",
+        "tools/qa/adapters/jump_man_multiplication.js"
+      ]
+    },
+    {
       "id": "remake_kit",
       "name": "Remake kit (demo)",
       "tier": 2,
