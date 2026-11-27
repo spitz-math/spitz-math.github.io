@@ -2,7 +2,7 @@
 """Jump Man, remastered: the live tower game with the Lantern Peak climber and pixel art.
 
 Starts from base_jump_man.html (a frozen copy of the old live Jump Man) and patches it with remaster.js: new art, Waystones,
-moves, hearts, fog, Summit Rush. The old shop is hidden. The score key and save key are still the old game's until go-live (see GO_LIVE.md). Writes to out/:
+moves, hearts, fog, Summit Rush. The old shop is hidden. Save key super_jump_man_v1; scores go on the Super Jump Man board (id 31 in scorecode.js). Writes to out/:
   jump_man_multiplication.html   site candidate (replaces the live file only on Kody's "push it")
   jump_man_remaster_mult.html    self-contained test copy (fonts, kit, questions, scorecode, art inside); opens
                                  straight into multiplication facts. Never goes on the site.
@@ -469,6 +469,8 @@ t = swap(t, 'data-ctl="LR/AD=Run | Space=Jump | X/K=Dash | 1234=Answer"', 'data-
 #      box's Yes is a small quiet button with "No, keep playing" as the big bright one, so mashing clicks rarely land on Yes
 t = swap(t, '</head>', '<style>html .sz-ask.sz-ask .sz-askrow{ align-items:center; } html .sz-ask.sz-ask #sz-askyes{ height:52px; padding:0 18px; border-radius:14px; font:700 20px/1 Inter,system-ui,sans-serif; background:transparent; border:2px solid var(--border); color:var(--text); }'
          ' html .sz-ask.sz-ask #sz-askno{ background:var(--sz-mark); border-color:var(--sz-mark); color:#111; }</style>\n</head>')
+# ---- go-live: the new game saves under its own key, so a run saved by the old Jump Man is never loaded (scorecode.js lists the same key)
+t = swap(t, "var KEY='jump_man_facts_v1';", "var KEY='super_jump_man_v1';")
 for gone in ['S.energy+=', "U('energy')"]:
     assert gone not in t, gone
 open(os.path.join(O, 'jump_man_multiplication.html'), 'w', encoding='utf-8').write(t)
