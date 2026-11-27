@@ -1,4 +1,18 @@
 {
- "updated": "2026-11-22T16:00:00.000Z",
- "games": {}
+ "updated": "2026-11-26T03:16:43.246Z",
+ "games": {
+  "rook_and_ruin": {
+   "name": "Rook & Ruin",
+   "top": [
+    {
+     "name": "Spitz",
+     "score": "270,621",
+     "acc": 96,
+     "set": "Slide and Slice",
+     "date": "2026-11-25",
+     "bonus": 1
+    }
+   ]
+  }
+ }
 }
