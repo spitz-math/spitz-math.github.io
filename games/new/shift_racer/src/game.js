@@ -223,7 +223,7 @@ function usedLanes(d,w){ var u=[0,0,0,0], i; traffic.forEach(function(o){ if(!o.
 function rbNear(d,a,b){ for(var i=0;i<works.length;i++){ var w=works[i]; if(w.rb&&d>w.d0-a&&d<w.d0+b) return w; } return null; }
 function addCar(d,ln,truck,on){ var u=usedLanes(d,230); if(u[ln]) return false; u[ln]=1; if(!on&&(u[0]+u[1]+u[2]+u[3]>2||rbNear(d,650,200))) return false;
   var cols=['#7C86A8','#B9C1DA','#5E6FA0','#A88FA0','#5B8C8C','#9C7FB0'];
-  traffic.push({d:d,lane:ln,x:laneX(ln),col:cols[ri(0,5)],truck:truck?1:0,len:truck?128:CARL,v0:on?-CFG.TV*1.1:CFG.TV*(truck?0.62:0.8+Math.random()*0.35),v:on?-CFG.TV*1.1:CFG.TV,on:on?1:0,out:0,rot:0,pass:0,hit:0,th:0}); return true; }
+  traffic.push({d:d,lane:ln,x:laneX(ln),col:cols[ri(0,5)],truck:truck?1:0,len:truck?128:CARL,v0:on?-CFG.TV*1.1:CFG.TV*(truck?0.62:0.8+Math.random()*0.35),v:on?-CFG.TV*1.1:CFG.TV,on:on?1:0,pk:ri(0,2),pc:ri(0,7),out:0,rot:0,pass:0,hit:0,th:0}); return true; }
 function spawnAhead(){ var r=S.r, P=CFG.plan[r.n];
   while(nextTD<r.pd+980){ if(nextTD<r.L-140){ var ln; if(Math.random()<CFG.own&&nextTD>r.pd+600&&!(r.onc&&r.lane===0)) ln=r.lane; else do{ ln=ri(r.onc?1:0,NL-1); }while(ln===lastLane); lastLane=ln;
       addCar(nextTD,ln,P.trucks&&Math.random()<0.2); if(r.n>=1&&Math.random()<0.3) addCar(nextTD+ri(-40,40),r.onc?(ln===1?3:1):(ln+2)%NL,0); }
@@ -459,10 +459,17 @@ function sky(){ var r=S.r, K=SKY[r.scen]; if(SKYK===r.scen&&SKYC) return SKYC; S
 /* roadside things, seen standing up from the road: one small picture each, drawn once */
 var SIDEGAP=240, SIDE={}, PROP={}, PRIMG={}, TINT={ forest:['#07142B',0.42], snow:['#16224F',0.2], desert:['#4A2440',0.18], canyon:['#5A1F28',0.2], coast:['#3A2A50',0.18], sunrise:['#8A4A5A',0.15], city:['#120E2A',0.12], getaway:['#2A0A20',0.2] };
 /* painted roadside (props.js, cut from the approved sheet), toned a little toward each scenery's light. lw and lh are its size in game units. */
-function prop(name,tall){ var A=window.SRPROPS, P=A&&A[name], scen=S.r.scen, key=scen+name+(tall||0), im, s, c, t; if(!P) return null; if(PROP[key]) return PROP[key]; im=PRIMG[name]; if(!im){ im=PRIMG[name]=new Image(); im.src=P.u; } if(!im.complete||!im.naturalWidth) return null;
-  s=document.createElement('canvas'); s.width=im.naturalWidth; s.height=im.naturalHeight; c=s.getContext('2d'); c.drawImage(im,0,0); t=TINT[scen]; if(t){ c.globalCompositeOperation='source-atop'; c.globalAlpha=t[1]; c.fillStyle=t[0]; c.fillRect(0,0,s.width,s.height); }
-  s.lw=P.w*(1+(tall||0)*0.12); s.lh=P.h*(1+(tall||0)*0.12); PROP[key]=s; return s; }
-function side(kind,v){ var pp=prop(kind==='block'?(v===1?'flats':'tower'):kind,kind==='block'?0:v); if(pp) return pp; var key=S.r.scen+kind+v; if(SIDE[key]) return SIDE[key]; var T=SCN[S.r.scen], s=document.createElement('canvas'), c, w=120, h=200; if(kind==='block'){ w=200; h=300+v*60; } s.width=w; s.height=h; c=s.getContext('2d'); var m=w/2, i, j;
+var PVAR={ tree:[null,{R:[70,160,0.2,1,0.1,0.9],V:{dh:-22,l:1.05}},{R:[70,160,0.2,1,0.1,0.9],V:{dh:28,s:0.85,l:0.9}},{R:[70,160,0.2,1,0.1,0.9],V:{h:30,s:1.05}}], cactus:[null,{R:[80,160,0.2,1,0.1,0.9],V:{dh:26,s:0.8,l:0.9}},{R:[80,160,0.2,1,0.1,0.9],V:{dh:-24,s:0.85}}],
+  pine:[null,{R:[120,180,0.2,1,0.1,0.6],V:{dh:22,l:0.9}}], palm:[null,{R:[70,160,0.2,1,0.1,0.9],V:{dh:24,s:0.85,l:0.9}}], rock:[null,{R:[0,40,0.2,1,0.1,0.9],V:{dh:14,s:0.75,l:1.08}},{R:[0,40,0.2,1,0.1,0.9],V:{dh:-12,s:0.9,l:0.88}},{R:[0,40,0.2,1,0.1,0.9],V:{h:222,s:0.22,l:1.0}}],
+  tower:[null,{R:[205,240,0.2,0.85,0.08,0.45],V:{h:268}},{R:[205,240,0.2,0.85,0.08,0.45],V:{h:186,s:0.9}},{R:[205,240,0.2,0.85,0.08,0.45],V:{h:322,s:0.8}}], flats:[null,{R:[205,240,0.2,0.85,0.08,0.45],V:{h:268}},{R:[205,240,0.2,0.85,0.08,0.45],V:{h:160,s:0.7}},{R:[205,240,0.2,0.85,0.08,0.45],V:{h:10,s:0.7}}], pole:[null] };
+/* what stands by the road in each scenery: [painted piece, how often, colour variants it may use] */
+var MIX={ forest:[['tree',6,[0,1,2]],['pole',1,[0]]], desert:[['cactus',4,[0,1,2]],['rock',2,[0,1]]], snow:[['pine',5,[0,1]],['rock',1,[3]]], coast:[['palm',4,[0,1]],['rock',1,[1]]], canyon:[['rock',5,[0,1,2]],['cactus',1,[1]]],
+  city:[['tower',3,[0,1,2,3]],['flats',3,[0,1,2,3]]], getaway:[['tower',3,[0,1,3]],['flats',3,[0,1,3]]], sunrise:[['pole',3,[0]],['tree',2,[0,3]],['cactus',1,[0]]] };
+function mixPick(h){ var M=MIX[S.r.scen]||MIX.forest, n=0, i, k; for(i=0;i<M.length;i++) n+=M[i][1]; k=h%n; for(i=0;i<M.length;i++){ if(k<M[i][1]) break; k-=M[i][1]; } return { name:M[i][0], vr:M[i][2][(h>>3)%M[i][2].length], sc:0.78+((h>>5)%6)*0.11, flip:(h>>9)&1 }; }
+function prop(name,vr){ var A=window.SRPROPS, P=A&&A[name], scen=S.r.scen, key=scen+name+(vr||0), im, s, c, t, pv; if(!P) return null; if(PROP[key]) return PROP[key]; im=PRIMG[name]; if(!im){ im=PRIMG[name]=new Image(); im.src=P.u; } if(!im.complete||!im.naturalWidth) return null;
+  s=document.createElement('canvas'); s.width=im.naturalWidth; s.height=im.naturalHeight; c=s.getContext('2d'); c.drawImage(im,0,0); pv=(PVAR[name]||[])[vr||0]; if(pv) repaint(s,pv.R,pv.V); t=TINT[scen]; if(t){ c.globalCompositeOperation='source-atop'; c.globalAlpha=t[1]; c.fillStyle=t[0]; c.fillRect(0,0,s.width,s.height); }
+  s.lw=P.w; s.lh=P.h; PROP[key]=s; return s; }
+function side(kind,v){ var key=S.r.scen+kind+v; if(SIDE[key]) return SIDE[key]; var T=SCN[S.r.scen], s=document.createElement('canvas'), c, w=120, h=200; if(kind==='block'){ w=200; h=300+v*60; } s.width=w; s.height=h; c=s.getContext('2d'); var m=w/2, i, j;
   if(kind==='tree'){ c.fillStyle='#3A2418'; c.fillRect(m-7,h-70,14,70); c.fillStyle=T.a; c.beginPath(); c.arc(m,h-110,56,0,6.28); c.fill(); c.fillStyle=T.b; c.beginPath(); c.arc(m-12,h-124,38,0,6.28); c.fill(); c.fillStyle=T.c; c.beginPath(); c.arc(m-22,h-136,16,0,6.28); c.fill(); }
   else if(kind==='pine'){ c.fillStyle='#3A2418'; c.fillRect(m-6,h-34,12,34); for(i=0;i<3;i++){ c.fillStyle=T.a; c.beginPath(); c.moveTo(m-54+i*10,h-30-i*46); c.lineTo(m,h-110-i*40); c.lineTo(m+54-i*10,h-30-i*46); c.fill(); c.fillStyle=T.b; c.beginPath(); c.moveTo(m-20+i*3,h-84-i*42); c.lineTo(m,h-110-i*40); c.lineTo(m+20-i*3,h-84-i*42); c.lineTo(m+6,h-78-i*42); c.lineTo(m-8,h-88-i*42); c.fill(); } }
   else if(kind==='cactus'){ c.fillStyle=T.a; rr(c,m-13,h-150,26,150,13); c.fill(); rr(c,m-46,h-104,18,50,9); c.fill(); c.fillRect(m-46,h-70,40,16); rr(c,m+28,h-128,18,58,9); c.fill(); c.fillRect(m+6,h-88,40,16); c.fillStyle='#49B88A'; rr(c,m-8,h-144,7,120,3); c.fill(); }
@@ -472,11 +479,21 @@ function side(kind,v){ var pp=prop(kind==='block'?(v===1?'flats':'tower'):kind,k
   else { c.fillStyle='#5A3A2A'; c.fillRect(m-4,h-150,8,150); c.fillRect(m-34,h-142,68,7); c.fillStyle=T.c; c.fillRect(m-30,h-136,4,10); c.fillRect(m+26,h-136,4,10); }   /* telephone pole on the open highway */
   SIDE[key]=s; return s; }
 /* cars seen from behind: body, cabin and rear window in flat tones */
-var REAR={}, PIMG={}, PTYPE=['sedan','hatch','pickup'];
+var REAR={}, PIMG={}, PCAN={}, PTYPE=['sedan','hatch','pickup'];
 /* painted cars (cars.js, cut from the approved sheet): each gets a soft ground shadow once. Until a picture has loaded, the code-drawn car below stands in. */
-function painted(name){ var A=window.SRCARS, im; if(!A||!A[name]) return null; if(PIMG[name]&&PIMG[name].tagName==='CANVAS') return PIMG[name]; im=PIMG[name]; if(!im){ im=PIMG[name]=new Image(); im.src=A[name]; } if(!im.complete||!im.naturalWidth) return null;
-  var s=document.createElement('canvas'), c; s.width=im.naturalWidth+12; s.height=im.naturalHeight+8; c=s.getContext('2d'); c.fillStyle='rgba(0,0,0,.35)'; c.beginPath(); c.ellipse(s.width/2,s.height-9,s.width/2-2,9,0,0,6.28); c.fill(); c.drawImage(im,6,0); PIMG[name]=s; return s; }
-function rear(kind,col){ var pn=kind==='me'?'me_'+myCar.id:kind==='truck'?'truck':kind==='cop'?'cop':PTYPE[(col.charCodeAt(1)+col.charCodeAt(3))%3]+(kind==='front'?'_f':''), pi=painted(pn); if(pi) return pi;
+/* repaint: every pixel whose hue, saturation and lightness fall in a range gets a new hue (and saturation / lightness scale). One painted car or tree becomes many. */
+function repaint(s,R,V){ var c=s.getContext('2d'), d, p, i, r, g, b, mx, mn, l, sa, h, q, t; try{ d=c.getImageData(0,0,s.width,s.height); }catch(e){ return; } p=d.data;
+  function hue(t){ t=(t%1+1)%1; return t<1/6?mn+(mx-mn)*6*t:t<0.5?mx:t<2/3?mn+(mx-mn)*(2/3-t)*6:mn; }
+  for(i=0;i<p.length;i+=4){ if(p[i+3]<8) continue; r=p[i]/255; g=p[i+1]/255; b=p[i+2]/255; mx=Math.max(r,g,b); mn=Math.min(r,g,b); l=(mx+mn)/2; if(mx===mn){ h=0; sa=0; } else { q=mx-mn; sa=l>0.5?q/(2-mx-mn):q/(mx+mn); h=mx===r?((g-b)/q+(g<b?6:0)):mx===g?(b-r)/q+2:(r-g)/q+4; h*=60; }
+    if(h<R[0]||h>R[1]||sa<R[2]||sa>R[3]||l<R[4]||l>R[5]) continue;
+    h=(V.h==null?h+(V.dh||0):V.h)/360; sa=Math.min(1,sa*(V.s==null?1:V.s)); l=Math.min(0.97,l*(V.l==null?1:V.l)); mx=l<0.5?l*(1+sa):l+sa-l*sa; mn=2*l-mx; p[i]=hue(h+1/3)*255; p[i+1]=hue(h)*255; p[i+2]=hue(h-1/3)*255; }
+  c.putImageData(d,0,0); }
+var CARBODY={ sedan:[196,226,0.2,0.76,0.2,0.75], hatch:[250,292,0.2,1,0.2,0.85], pickup:[168,198,0.5,1,0.15,0.6], truck:[0,360,0,0.16,0.78,1] },
+    CARCOL=[ null, {h:2,s:1.15}, {h:26,s:1.2}, {h:46,s:1.25,l:1.08}, {h:128,s:0.9}, {h:215,s:0.1,l:1.5}, {h:232,s:0.25,l:0.5}, {h:328,s:1.1} ], BOXCOL=[ null, null, null, {h:46,s:6,l:0.9}, {h:190,s:6,l:0.9}, {h:330,s:6,l:0.92}, null, {h:130,s:5,l:0.9} ];
+function painted(name,vr){ var A=window.SRCARS, im, key=name+'#'+(vr||0); if(!A||!A[name]) return null; if(PCAN[key]) return PCAN[key]; im=PIMG[name]; if(!im){ im=PIMG[name]=new Image(); im.src=A[name]; } if(!im.complete||!im.naturalWidth) return null;
+  var s=document.createElement('canvas'), c, t=document.createElement('canvas'), base=name.replace('_f',''), V=base==='truck'?BOXCOL[vr||0]:CARCOL[vr||0]; t.width=im.naturalWidth; t.height=im.naturalHeight; t.getContext('2d').drawImage(im,0,0); if(V&&CARBODY[base]) repaint(t,CARBODY[base],V);
+  s.width=t.width+12; s.height=t.height+8; c=s.getContext('2d'); c.fillStyle='rgba(0,0,0,.35)'; c.beginPath(); c.ellipse(s.width/2,s.height-9,s.width/2-2,9,0,0,6.28); c.fill(); c.drawImage(t,6,0); PCAN[key]=s; return s; }
+function rear(kind,col,o){ var pn=kind==='me'?'me_'+myCar.id:kind==='truck'?'truck':kind==='cop'?'cop':PTYPE[o?o.pk:0]+(kind==='front'?'_f':''), pi=painted(pn,o&&kind!=='me'&&kind!=='cop'?o.pc:0); if(pi) return pi;
   var key=kind+col; if(REAR[key]) return REAR[key]; var s=document.createElement('canvas'), tr=kind==='truck', fr=kind==='front'; s.width=156; s.height=tr?200:126; var c=s.getContext('2d'), h=s.height, m=78;
   c.fillStyle='rgba(0,0,0,.35)'; c.beginPath(); c.ellipse(m,h-8,72,9,0,0,6.28); c.fill();
   c.fillStyle='#0A0A12'; rr(c,8,h-40,26,34,6); c.fill(); rr(c,122,h-40,26,34,6); c.fill();
@@ -534,15 +551,16 @@ function drawChase(){ var r=S.r, T=SCN[r.scen], P=CFG.plan[r.n], K=SKY[r.scen], 
   if(nightOn){ var nb=HC*FOC/(330+CB), ng=cx.createLinearGradient(0,HZ,0,HZ+nb+40); ng.addColorStop(0,'rgba(4,3,14,.94)'); ng.addColorStop(0.7,'rgba(4,3,14,.88)'); ng.addColorStop(1,'rgba(4,3,14,0)'); cx.fillStyle=ng; cx.fillRect(0,HZ,W,nb+40); }
   /* standing things, far to near: roadside, stars, traffic */
   var j0=Math.floor((r.pd+near+40)/SIDEGAP), j1=Math.floor((r.pd+FAR)/SIDEGAP), kinds={tree:'tree',cactus:'cactus',block:'block',pine:'pine',palm:'palm',rock:'rock',grass:'pole'};
-  for(k=j1;k>=j0;k--){ var hsh=(k*2654435761>>>0)%97; list.push({dd:k*SIDEGAP-r.pd,k:'side',x:RX-70-(hsh%3)*26,v:hsh%3,kind:T.deco==='palm'?'rock':kinds[T.deco],sd:0}); list.push({dd:k*SIDEGAP-r.pd+60,k:'side',x:RX+RW+70+((hsh>>2)%3)*26,v:(hsh>>1)%3,kind:kinds[T.deco],sd:1});
-    if(T.deco!=='grass'&&k%2===0){ list.push({dd:k*SIDEGAP-r.pd+30,k:'side',x:RX-250-(hsh%5)*20,v:(hsh+1)%3,kind:T.deco==='palm'?'rock':kinds[T.deco]}); list.push({dd:k*SIDEGAP-r.pd+100,k:'side',x:RX+RW+250+(hsh%4)*24,v:(hsh+2)%3,kind:kinds[T.deco]}); } }
+  for(k=j1;k>=j0;k--){ var hsh=(k*2654435761>>>0)%97, h2=Math.imul(k+r.n*131,2246822519)>>>0, base=T.deco==='palm'?'rock':kinds[T.deco];
+    list.push({dd:k*SIDEGAP-r.pd,k:'side',x:RX-74-(hsh%3)*30,v:hsh%3,kind:base,sd:0,m:h2>>>3}); list.push({dd:k*SIDEGAP-r.pd+60,k:'side',x:RX+RW+74+((hsh>>2)%3)*30,v:(hsh>>1)%3,kind:kinds[T.deco],sd:1,m:h2>>>7});
+    if(T.deco!=='grass'&&k%2===0){ list.push({dd:k*SIDEGAP-r.pd+30,k:'side',x:RX-270-(hsh%5)*24,v:(hsh+1)%3,kind:base,m:h2>>>11}); list.push({dd:k*SIDEGAP-r.pd+100,k:'side',x:RX+RW+270+(hsh%4)*28,v:(hsh+2)%3,kind:kinds[T.deco],m:h2>>>15}); } }
   for(i=0;i<stars.length;i++){ dd=stars[i].d-r.pd; if(dd>near+10&&dd<FAR) list.push({dd:dd,k:'star',o:stars[i]}); }
   for(i=0;i<traffic.length;i++){ o=traffic[i]; dd=o.d-o.len/2-r.pd; if(dd>near+6&&dd<FAR) list.push({dd:dd,k:'car',o:o}); }
   list.sort(function(u,v){ return v.dd-u.dd; });
   for(i=0;i<list.length;i++){ var it=list[i]; s=FOC/(it.dd+CB); y=HZ+HC*s; var X=pX(it.x||0,s), fade=Math.min(1,(FAR-it.dd)/260); if(nightOn) fade=Math.max(it.k==='side'?0.12:0,Math.min(fade,(470-it.dd)/150));
-    if(it.k==='side'){ if(it.kind==='rock'&&T.deco==='palm'&&it.sd===0) continue; var im=side(it.kind,it.v), sw=(im.lw||im.width)*0.72*s, sh=(im.lh||im.height)*0.72*s; if(X+sw<0||X-sw>W) continue; cx.globalAlpha=fade; cx.drawImage(im,X-sw/2,y-sh,sw,sh); cx.globalAlpha=1; }
+    if(it.k==='side'){ if(it.kind==='rock'&&T.deco==='palm'&&it.sd===0) continue; var mp=mixPick(it.m), im=prop(mp.name,mp.vr), k2=im?mp.sc:1; if(!im) im=side(it.kind,it.v); var sw=(im.lw||im.width)*0.72*s*k2, sh=(im.lh||im.height)*0.72*s*k2; if(X+sw<0||X-sw>W) continue; cx.globalAlpha=fade; if(im.lw&&mp.flip){ cx.save(); cx.translate(X,0); cx.scale(-1,1); cx.drawImage(im,-sw/2,y-sh,sw,sh); cx.restore(); } else cx.drawImage(im,X-sw/2,y-sh,sw,sh); cx.globalAlpha=1; }
     else if(it.k==='star'){ var st=it.o, X2=pX(st.x,s), rad=(st.gold?17:13)*s; if(st.gold) cx.drawImage(glow('rgba(255,225,77,.55)'),X2-rad*2,y-rad*3.2,rad*4,rad*4); cx.save(); cx.translate(X2,y-rad*1.2-Math.sin(gt*4+st.d)*3*s); cx.scale(s,s); drawStar(0,0,st.gold?17:13,st.gold?'#FFE14D':'#FFF8D6'); cx.restore(); }
-    else if(it.k==='car'){ o=it.o; var cim=rear(o.truck?'truck':o.on?'front':'traffic',o.col), cw=(o.truck?54:50)*s, chh=cw*cim.height/cim.width, X3=pX(o.x,s); cx.globalAlpha=fade;
+    else if(it.k==='car'){ o=it.o; var cim=rear(o.truck?'truck':o.on?'front':'traffic',o.col,o), cw=(o.truck?54:50)*s, chh=cw*cim.height/cim.width, X3=pX(o.x,s); cx.globalAlpha=fade;
       if(o.out){ cx.save(); cx.translate(X3,y-chh/2); cx.rotate(o.rot); cx.drawImage(cim,-cw/2,-chh/2,cw,chh); cx.restore(); } else { cx.drawImage(cim,X3-cw/2,y-chh+3*s,cw,chh); cx.drawImage(glow(o.on?'rgba(255,244,194,.5)':'rgba(255,60,60,.45)'),X3-cw*0.62,y-chh*0.9,cw*1.24,chh*1.1); } cx.globalAlpha=1; }
     else if(it.k==='bar'&&prop('barrier')){ var bi=prop('barrier'), bw2=(LW-6)*s, bh2=bw2*bi.height/bi.width; cx.drawImage(bi,X-bw2/2,y-bh2+2*s,bw2,bh2); }
     else if(it.k==='cone'&&prop('cone')){ var ci=prop('cone'), ch2=24*s, cw2=ch2*ci.width/ci.height; cx.drawImage(ci,X-cw2/2,y-ch2+1.5*s,cw2,ch2); }
