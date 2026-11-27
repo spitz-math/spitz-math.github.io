@@ -24,7 +24,7 @@ window.SpitzGames=[
    '<g transform="translate(62 18)"><rect x="-4" y="12" width="8" height="16" rx="2" fill="#0B0B0D"/><rect x="24" y="12" width="8" height="16" rx="2" fill="#0B0B0D"/><rect x="-4" y="54" width="8" height="16" rx="2" fill="#0B0B0D"/><rect x="24" y="54" width="8" height="16" rx="2" fill="#0B0B0D"/>'+
    '<rect x="0" y="4" width="28" height="74" rx="10" fill="#E8322E"/><rect x="4" y="26" width="20" height="16" rx="4" fill="#0B0B0D"/><rect x="11" y="4" width="6" height="74" fill="#FFD60A"/></g>'+
    '<path d="M120 80l10-58" stroke="#FFD60A" stroke-width="3"/><path d="M130 22h30v20h-30z" fill="#F6F6F8"/><path d="M130 22h10v10h-10zM150 22h10v10h-10zM140 32h10v10h-10z" fill="#0B0B0D"/>'},
-  {id:'jump_man_multiplication',name:'Jump Man',d:'Climb the tower',font:"'Pixelify Sans'",paper:'#0D1A3A',panel:'#15295A',acc:'#FFC93C',
+  {id:'jump_man_multiplication',name:'Super Jump Man',d:'Climb the tower',font:"'Pixelify Sans'",paper:'#0D1A3A',panel:'#15295A',acc:'#FFC93C',
    art:'<rect width="200" height="110" fill="#5AA7F0"/><rect x="0" y="80" width="200" height="30" fill="#6B4A2B"/><rect x="0" y="78" width="200" height="6" fill="#7CE04A"/>'+
    '<rect x="20" y="58" width="50" height="8" rx="2" fill="#7CE04A"/><rect x="20" y="64" width="50" height="6" fill="#6B4A2B"/><rect x="120" y="22" width="56" height="8" rx="2" fill="#7CE04A"/><rect x="120" y="28" width="56" height="6" fill="#6B4A2B"/>'+
    '<g transform="translate(150 6)"><path d="M6 0l6 8-6 8-6-8z" fill="#FFC93C"/></g>'+
@@ -170,6 +170,7 @@ window.SpitzGames=[
   /* Kody approved this schedule 2026-10-12 (Mondays 12:00 UTC) */
   var UNLOCK={ football_buds:null, /* Football Buds BLITZ (2026-11-22): live at games/football_buds.html as a secret link, off the hub until Kody picks its date */
     star_swarm:null, /* Star Swarm HD (2026-11-25): live at games/star_swarm.html as a secret link, off the hub until Kody picks its date */
+    jump_man_multiplication:null, /* Super Jump Man (2026-11): live at games/jump_man_multiplication.html as a secret link, off the hub until Kody picks its date */
     mini_golf:'2026-10-19T12:00', brick_breaker:'2026-10-19T12:00', snake_arena:'2026-10-19T12:00',
     burger_blaster:'2026-10-26T12:00', pinball:'2026-10-26T12:00',
     rocket_buds:'2026-11-02T12:00', brawl_buds:'2026-11-02T12:00',
@@ -194,7 +195,7 @@ window.SpitzGames=[
 /* Real screenshots on the cards (2026-10-24): a game listed in SHOTS shows a picture from the game itself (games/cards/<id>.webp, 400x220)
    instead of its drawing. Take a game out of the list to bring its drawing back (kept in g.drawn). */
 (function(){
-  var SHOTS=['brawl_buds','brick_breaker','burger_blaster','fishing','football_buds','hill_climb','hoop_buds','pinball','rocket_buds','rook_and_ruin','skate','star_swarm'];
+  var SHOTS=['brawl_buds','brick_breaker','burger_blaster','fishing','football_buds','hill_climb','hoop_buds','pinball','rocket_buds','jump_man_multiplication','rook_and_ruin','skate','star_swarm'];
   /* pictures also ready in games/cards/ (busier at card size, so they keep their drawings for now): burger_shop, fit_check, paint_royale, snake_arena, splat_range */
   var me=document.currentScript&&document.currentScript.src, base=me?me.replace(/catalog\.js(\?.*)?$/,''):'/games/';
   window.SpitzGames.forEach(function(g){ if(SHOTS.indexOf(g.id)<0) return; g.drawn=g.art;

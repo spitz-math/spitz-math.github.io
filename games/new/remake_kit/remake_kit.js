@@ -15,7 +15,7 @@
    No live game loads this file yet. A remake's build inlines it, the same way kit.js is inlined into test copies. */
 (function(){
 'use strict';
-var VERSION=2;
+var VERSION=3;
 
 function esc(s){ return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
 function plain(h){ return String(h||'').replace(/<[^>]*>/g,'').replace(/\s+/g,' ').trim(); }
@@ -28,7 +28,7 @@ return [
 '  --rk-win:#0B1430; --rk-frame:#DCE6F5; --rk-tile:#17233F; --rk-tile-text:#FFFFFF; --rk-go:#A6FF4D; --rk-go-text:#10130A; --rk-dim:rgba(3,5,12,.6);',
 '  --rk-over:rgba(3,5,12,.9); --rk-radius:4px; --rk-word:"Press Start 2P","Inter",system-ui,sans-serif; --rk-num:"Spitz Digits","Inter",system-ui,sans-serif;',
 '  --rk-body:"Inter",system-ui,sans-serif; --rk-word-scale:1; --rk-key-face:linear-gradient(#22366A,#142249); --rk-key-text:#EAF6FF; --rk-key-rim:#3DE0FF; --rk-key-low:#0F6F8E;',
-'  --rk-heart:#FF4F6D; --rk-heart-off:#3A4458;',
+'  --rk-heart:#FF4F6D; --rk-heart-off:#3A4458; --rk-coin:#FFC53D; --rk-coin-text:#2B1B14;',
 '  --rk-ol:-3px 0 var(--rk-ink),3px 0 var(--rk-ink),0 -3px var(--rk-ink),0 3px var(--rk-ink),-3px -3px var(--rk-ink),3px 3px var(--rk-ink),-3px 3px var(--rk-ink),3px -3px var(--rk-ink); }',
 '.rk-hud [hidden],.rk-dim[hidden],.rk-over[hidden],.rk-hud[hidden],.rk-banner[hidden],.rk-nudge[hidden],.rk-topics[hidden]{ display:none !important; }',
 
@@ -51,33 +51,48 @@ return [
 /* --- the game window: the ONE framed thing on screen (question card, new-game box). Solid fill, light frame, dark outline, hard shadow --- */
 '.rk-dim{ position:absolute; inset:0; z-index:8; display:grid; place-items:center; background:var(--rk-dim); }',
 '.rk-win{ box-sizing:border-box; background:var(--rk-win); border:4px solid var(--rk-frame); border-radius:var(--rk-radius); box-shadow:0 0 0 4px var(--rk-ink), 10px 10px 0 4px rgba(0,0,0,.45); color:var(--rk-text); }',
-'.rk-q{ width:1120px; padding:24px 30px 26px; display:flex; flex-direction:column; gap:16px; font-family:var(--rk-body); }',
+/* the question card (Kody's standard, from Burger Blaster v21): ONE paper card with a thick border, a hard offset shadow and a slight tilt.
+   Display-font title, reward slots top right, coin-numbered chunky answers, one footer line. Place it with --rk-q-x / --rk-q-y so it leaves the play area in view. */
+'.rk-q{ position:relative; width:1120px; padding:30px 42px 30px; display:flex; flex-direction:column; gap:14px; font-family:var(--rk-body); border-width:7px; border-radius:var(--rk-q-radius,calc(var(--rk-radius)*2));',
+'  box-shadow:0 0 0 4px var(--rk-ink), 16px 16px 0 4px var(--rk-q-shadow,rgba(0,0,0,.5)); transform:translate(var(--rk-q-x,0px),var(--rk-q-y,0px)) rotate(var(--rk-q-tilt,-1deg)) scale(var(--rk-q-scale,1)); }',
 '.rk-q.vis{ width:1340px; } .rk-q,.rk-q *{ transition:none !important; }',
-'.rk-q.pop{ animation:rkPop .12s ease-out; } @keyframes rkPop{ from{ opacity:0; transform:scale(.96); } }',
-'.rk-q.shake{ animation:rkShake .15s 2; } @keyframes rkShake{ 25%{ transform:translateX(-9px); } 75%{ transform:translateX(9px); } }',
-'.rk-qhead{ display:flex; align-items:center; gap:18px; min-height:52px; }',
-'.rk-qt{ font:400 calc(30px*var(--rk-word-scale))/1.1 var(--rk-word); color:var(--rk-accent); white-space:nowrap; }',
-'.rk-qn{ font:800 28px/1 var(--rk-body); color:var(--rk-text); white-space:nowrap; } .rk-qn.spare{ color:var(--rk-gold); }',
-'.rk-qs{ font:700 26px/1 var(--rk-body); color:var(--rk-muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; min-width:0; }',
+'.rk-q.pop{ animation:rkPop .14s ease-out; } @keyframes rkPop{ from{ opacity:0; translate:0 16px; } }',
+'.rk-q.shake{ animation:rkShake .15s 2; } @keyframes rkShake{ 25%{ translate:-9px 0; } 75%{ translate:9px 0; } }',
+'.rk-q.nudge{ animation:rkQBob 1.2s ease-in-out infinite; } @keyframes rkQBob{ 50%{ translate:0 -10px; } }',
+'.rk-qtip{ display:none; position:absolute; left:50%; bottom:-58px; transform:translateX(-50%) rotate(1.5deg); white-space:nowrap; padding:10px 24px; background:var(--rk-coin); color:var(--rk-coin-text); border:5px solid var(--rk-ink); border-radius:var(--rk-radius); box-shadow:5px 5px 0 var(--rk-ink); font:400 calc(26px*var(--rk-word-scale))/1 var(--rk-word); letter-spacing:.04em; }',
+'.rk-q.nudge .rk-qtip{ display:block; }',
+'.rk-qhead{ display:flex; align-items:center; gap:22px; min-height:80px; }',
+'.rk-qt{ font:400 calc(36px*var(--rk-word-scale))/1 var(--rk-word); letter-spacing:.04em; color:var(--rk-accent); white-space:nowrap; -webkit-text-stroke:5px var(--rk-ink); paint-order:stroke fill; text-shadow:3px 3px 0 var(--rk-ink); }',
+'.rk-qline{ display:flex; align-items:baseline; gap:16px; font:800 26px/1 var(--rk-body); color:var(--rk-muted); white-space:nowrap; min-height:26px; } .rk-qline.none{ display:none; }',
+'.rk-qn{ color:inherit; } .rk-qline.spare .pre{ display:none; } .rk-qline.spare .rk-qn{ color:var(--rk-gold); }',
+'.rk-qs{ font-weight:700; overflow:hidden; text-overflow:ellipsis; min-width:0; } .rk-qs:not(:empty)::before{ content:"\\00B7"; margin-right:16px; }',
 '.rk-sp{ flex:1; }',
-'.rk-pips{ display:flex; gap:10px; flex:none; } .rk-pip{ width:44px; height:44px; box-sizing:border-box; display:grid; place-items:center; border:4px solid var(--rk-muted); border-radius:var(--rk-radius); font:800 28px/1 var(--rk-body); color:var(--rk-ink); }',
-'.rk-pip.now{ border-color:var(--rk-text); } .rk-pip.ok{ background:var(--rk-good); border-color:var(--rk-good); } .rk-pip.no{ background:var(--rk-bad); border-color:var(--rk-bad); } .rk-pip.spare{ border-style:dashed; border-color:var(--rk-gold); } .rk-pip.spare.ok{ border-style:solid; border-color:var(--rk-good); } .rk-pip.spare.no{ border-style:solid; border-color:var(--rk-bad); }',
-'.rk-qp{ font:700 40px/1.28 var(--rk-body); min-height:102px; } .rk-q.fast .rk-qp{ font-size:88px; line-height:1.1; min-height:0; text-align:center; padding:6px 0 10px; } .rk-q.vis .rk-qp{ min-height:0; }',
-'.rk-qbody{ display:flex; flex-direction:column; gap:14px; min-width:0; } .rk-q.vis .rk-qbody{ flex-direction:row; align-items:flex-start; gap:26px; }',
-'.rk-choices{ display:grid; grid-template-columns:1fr 1fr; gap:14px; } .rk-choices.one,.rk-q.vis .rk-choices{ grid-template-columns:1fr; flex:1; min-width:0; }',
-'.rk-ch{ min-height:84px; display:flex; align-items:center; gap:18px; padding:8px 18px; border-radius:var(--rk-radius); background:var(--rk-tile); color:var(--rk-tile-text); border:3px solid transparent; box-shadow:0 0 0 3px var(--rk-ink); text-align:left; font:800 38px/1.15 var(--rk-body); min-width:0; cursor:pointer; }',
-'.rk-ch .t{ min-width:0; overflow-wrap:anywhere; } .rk-ch .m{ flex:none; margin-left:auto; font:800 34px/1 var(--rk-body); }',
-'.rk-ch:not(:disabled):hover{ border-color:var(--rk-accent); } .rk-ch.right{ border-color:var(--rk-good); } .rk-ch.right .m{ color:var(--rk-good); } .rk-ch.wrong{ border-color:var(--rk-bad); } .rk-ch.wrong .m{ color:var(--rk-bad); }',
+'.rk-pips{ display:flex; gap:14px; flex:none; } .rk-pip{ width:76px; height:76px; box-sizing:border-box; display:grid; place-items:center; border:5px dashed var(--rk-muted); border-radius:50%; font:800 40px/1 var(--rk-body); color:var(--rk-text); overflow:hidden; }',
+'.rk-pip canvas,.rk-pip img{ width:60px; height:60px; } .rk-pip.spare{ border-color:var(--rk-gold); }',
+'.rk-pip.ok{ border:5px solid var(--rk-good); background:rgba(74,222,128,.2); background:color-mix(in srgb,var(--rk-good) 22%,transparent); color:var(--rk-good); } .rk-pip.no{ border:5px solid var(--rk-bad); background:rgba(255,122,122,.16); background:color-mix(in srgb,var(--rk-bad) 16%,transparent); color:var(--rk-bad); }',
+'.rk-pip.popin{ animation:rkSlot .38s cubic-bezier(.34,1.56,.64,1); box-shadow:0 0 0 6px rgba(255,197,61,.55); } @keyframes rkSlot{ 0%{ scale:.55; } }',
+'.rk-fb{ min-height:74px; font:700 28px/1.3 var(--rk-body); color:var(--rk-muted); } .rk-fb .h{ font-weight:800; margin-right:10px; } .rk-fb.ok .h{ color:var(--rk-good); } .rk-fb.bad .h{ color:var(--rk-bad); } .rk-fb b{ color:var(--rk-text); }',
+/* "Space or Enter" is the last words of the footer line, not a big button. It shows once the card can move on. */
+'.rk-next{ float:right; margin:0 0 0 24px; padding:0; border:0; background:none; box-shadow:none; height:auto; color:var(--rk-text); font:800 28px/1.3 var(--rk-body); cursor:pointer; animation:rkNx 1.1s ease-in-out 3s infinite alternate; } @keyframes rkNx{ to{ color:var(--rk-accent); } }',
+'.rk-next:disabled{ display:none; } .rk-foot.hold .rk-next:disabled{ display:block; visibility:hidden; }',
+'.rk-q.vis '+p+'graph{ width:384px; height:384px; } .rk-q.vis .rk-ch{ min-height:92px; } .rk-q.vis .rk-choices{ gap:22px; }',
+'@media (prefers-reduced-motion: reduce){ .rk-q.nudge,.rk-next,.rk-pip.popin{ animation:none; } }',
+'.rk-qp{ font:800 48px/1.2 var(--rk-body); min-height:116px; margin:0 0 6px; } .rk-q.fast .rk-qp{ font-size:92px; line-height:1.1; min-height:0; text-align:center; padding:0 0 12px; } .rk-q.vis .rk-qp{ min-height:0; font-size:42px; }',
+'.rk-qbody{ display:flex; flex-direction:column; gap:14px; min-width:0; } .rk-q.vis .rk-qbody{ flex-direction:row; align-items:flex-start; gap:28px; } .rk-qr{ display:flex; flex-direction:column; flex:1; min-width:0; }',
+'.rk-choices{ display:grid; grid-template-columns:1fr 1fr; gap:18px 22px; padding:0 6px 6px 0; } .rk-choices.one{ grid-template-columns:1fr; gap:14px; }',
+'.rk-ch{ min-height:88px; display:flex; align-items:center; gap:20px; padding:10px 20px; border-radius:var(--rk-q-radius,calc(var(--rk-radius)*1.3)); background:var(--rk-tile); color:var(--rk-tile-text); border:5px solid var(--rk-frame); box-shadow:6px 6px 0 var(--rk-ink); text-align:left; font:800 42px/1.1 var(--rk-body); min-width:0; cursor:pointer; }',
+'.rk-q.vis .rk-ch{ min-height:76px; font-size:38px; padding:8px 14px; gap:14px; } .rk-choices.one .rk-ch{ min-height:72px; font-size:36px; }',
+'.rk-coin{ flex:none; width:58px; height:58px; box-sizing:border-box; display:grid; place-items:center; border-radius:var(--rk-coin-radius,50%); background:var(--rk-coin); color:var(--rk-coin-text); border:4px solid var(--rk-ink); font:400 36px/1 var(--rk-num); } .rk-q.vis .rk-coin,.rk-choices.one .rk-coin{ width:50px; height:50px; font-size:30px; }',
+'.rk-ch .t{ min-width:0; overflow-wrap:anywhere; } .rk-ch .m{ flex:none; margin-left:auto; font:800 36px/1 var(--rk-body); }',
+'.rk-ch:not(:disabled):hover{ translate:-2px -2px; box-shadow:8px 8px 0 var(--rk-ink); }',
+'.rk-ch.right{ border-color:var(--rk-good); background:color-mix(in srgb,var(--rk-good) 30%,var(--rk-tile)); } .rk-ch.right .m{ color:var(--rk-good); } .rk-ch.wrong{ border-color:var(--rk-bad); background:color-mix(in srgb,var(--rk-bad) 26%,var(--rk-tile)); } .rk-ch.wrong .m{ color:var(--rk-bad); }',
 '.rk-ch:disabled{ cursor:default; } .rk-ch:disabled:not(.right):not(.wrong){ opacity:.45; }',
-'.rk-fb{ min-height:80px; font:600 30px/1.3 var(--rk-body); color:var(--rk-muted); } .rk-fb .h{ font-weight:800; margin-right:10px; } .rk-fb.ok .h{ color:var(--rk-good); } .rk-fb.bad{ color:var(--rk-text); } .rk-fb.bad .h{ color:var(--rk-bad); } .rk-fb b{ color:var(--rk-text); }',
-'.rk-next{ height:80px; border-radius:var(--rk-radius); background:var(--rk-go); color:var(--rk-go-text); font:400 calc(28px*var(--rk-word-scale))/1 var(--rk-word); box-shadow:0 0 0 3px var(--rk-ink); cursor:pointer; border:0; }',
-'.rk-next:disabled{ background:var(--rk-tile); color:var(--rk-muted); cursor:default; }',
 /* what the question bank writes (classes carry the game prefix) */
 p+'graph{ display:block; flex:none; width:440px; height:440px; border-radius:6px; background:#12151D; border:2px solid var(--rk-ink); }',
 p+'eq{ white-space:nowrap; font-weight:800; }',
 p+'fr{ display:inline-flex; flex-direction:column; vertical-align:middle; text-align:center; font-size:.78em; line-height:1.05; margin:0 .08em; } '+p+'fr span:first-child{ border-bottom:.08em solid currentColor; padding:0 .12em; }',
 p+'table{ border-collapse:collapse; font:800 34px/1 var(--rk-body); align-self:flex-start; } '+p+'table td,'+p+'table th{ border:2px solid var(--rk-muted); padding:8px 20px; text-align:center; min-width:78px; }',
-'.rk-q .c-m{ color:var(--c-m,#FFC82E); white-space:nowrap; } .rk-q .c-pt{ color:var(--c-pt,#FFF04D); } .rk-q .c-b{ color:var(--c-b,#FF7AD0); } .rk-q .c-x{ color:var(--c-x,#2DE2C8); } .rk-q .c-ans{ color:var(--c-ans,#D9A6FF); }',
+'.rk-qp [class^="c-"]{ white-space:nowrap; } .rk-q .c-m{ color:var(--c-m,#FFC82E); white-space:nowrap; } .rk-q .c-pt{ color:var(--c-pt,#FFF04D); } .rk-q .c-b{ color:var(--c-b,#FF7AD0); } .rk-q .c-x{ color:var(--c-x,#2DE2C8); } .rk-q .c-ans{ color:var(--c-ans,#D9A6FF); }',
 
 /* --- one key cap everywhere: controls card, the small keys line, the F hint, answer numbers, Continue, Play again --- */
 'html body .sz-ctl kbd, html body .sz-meta kbd, html body .sz-fs kbd, .rk-key{ display:inline-grid; place-items:center; box-sizing:border-box; background:var(--rk-key-face); color:var(--rk-key-text); border:2px solid var(--rk-key-rim); border-radius:var(--rk-radius);',
@@ -244,13 +259,18 @@ function make(env){
      The card writes the run's own save (S.q, S.qDone, S.picked, S.answered, S.correct, S.streak, S.best, S.topics, S.card) and calls save()
      right after every answer. That is the shape scorecode.js reads for the answer log and for bringing missed questions back,
      and the shape the Gameplay checks read, so both keep working with no extra code.
-     A kind can set need (default 2) and spare (default 1). need:1, spare:0 is a single question (a boss strike, a revive). */
+     A kind can set need (default 2) and spare (default 1). need:1, spare:0 is a single question (a boss strike, a revive).
+     THE LOOK is Kody's standard for every game (2026-11-27, from Burger Blaster v21): one tilted paper card with a thick border and a hard shadow,
+     a game-flavoured title, reward slots that fill top right (kind.icon = what a right answer puts in a slot), coin-numbered chunky answers,
+     one footer line. A miss waits for Space or Enter; a right answer moves on by itself; 15 s idle makes the card bob with a sticker. */
   RK.card=function(o){
-    var kinds=o.kinds, kind='', openAt=0, nextT=0, lockT=0, wrongRun=0, FAST=!!o.fast;
+    var kinds=o.kinds, kind='', openAt=0, nextT=0, lockT=0, wrongRun=0, FAST=!!o.fast, lastIn=Date.now(), popAt=0;
     var dim=add('<div class="rk-dim" id="'+P+'-qdim" hidden><div class="rk-win rk-q" id="'+P+'-q" role="dialog" aria-modal="true" aria-label="Question. The game is paused.">'+
-      '<div class="rk-qhead"><span class="rk-qt" id="'+P+'-qtitle"></span><span class="rk-qn" id="'+P+'-qn"></span><span class="rk-qs" id="'+P+'-qsafe"></span><span class="rk-sp"></span><span class="rk-pips" id="'+P+'-qpips"></span></div>'+
-      '<div class="rk-qp" id="'+P+'-qp"></div><div class="rk-qbody"><div id="'+P+'-qvisual"></div><div class="rk-choices" id="'+P+'-choices"></div></div>'+
-      '<div class="rk-fb" id="'+P+'-fb" aria-live="polite"></div><button class="rk-next" id="'+P+'-next" type="button" disabled><span class="rk-key sm">Space</span>Continue</button></div></div>');
+      '<div class="rk-qhead"><span class="rk-qt" id="'+P+'-qtitle"></span><span class="rk-sp"></span><span class="rk-pips" id="'+P+'-qpips"></span></div>'+
+      '<div class="rk-qline" id="'+P+'-qline"><span><span class="pre">Question </span><span class="rk-qn" id="'+P+'-qn"></span></span><span class="rk-qs" id="'+P+'-qsafe"></span></div>'+
+      '<div class="rk-qbody"><div id="'+P+'-qvisual"></div><div class="rk-qr"><div class="rk-qp" id="'+P+'-qp"></div><div class="rk-choices" id="'+P+'-choices"></div></div></div>'+
+      '<div class="rk-foot"><button class="rk-next" id="'+P+'-next" type="button" disabled>Space or Enter ›</button><div class="rk-fb" id="'+P+'-fb" aria-live="polite"></div></div>'+
+      '<div class="rk-qtip" aria-hidden="true">'+esc(o.nudge||'Pick an answer: 1-4')+'</div></div></div>');
     var win=$('q');
     function K(){ return kinds[kind]||{}; }
     function need(){ return K().need||2; } function spare(){ return K().spare==null?1:K().spare; }
@@ -261,8 +281,12 @@ function make(env){
     function earned(n){ var r=reward(n); return !r?'':n?'You earned '+r+'.':r; }
     function marker(c){ return c.n>need()?'Spare question':need()>1?c.n+' of '+need():''; }
     function pips(c){ var h=c.h||'', n=need()+(c.miss>0?spare():0), s=''; if(need()+spare()<2) return '';
-      for(var i=0;i<n;i++){ var d=h.charAt(i), sp=i>=need(); s+='<span class="rk-pip'+(sp?' spare':'')+(d==='R'?' ok':d==='W'?' no':i===c.n-1?' now':'')+'">'+(d==='R'?'✓':d==='W'?'✗':'')+'</span>'; }
+      for(var i=0;i<n;i++){ var d=h.charAt(i), sp=i>=need(), stt=d==='R'?'ok':d==='W'?'no':'';
+        s+='<span class="rk-pip'+(sp?' spare':'')+(stt?' '+stt:i===c.n-1?' now':'')+(stt&&i===h.length-1&&Date.now()-popAt<600&&!reduce()?' popin':'')+'">'+slotIcon(stt,i)+'</span>'; }
       return s; }
+    /* what sits in a reward slot: the kind's own icon (a string, or a function of 'ok' | 'no' | '' and the slot number that returns HTML), else a tick or a cross */
+    function slotIcon(stt,i){ var ic=K().icon; if(typeof ic==='function'){ try{ return ic(stt,i)||''; }catch(e){ return ''; } }
+      if(ic&&stt==='ok') return ic; return stt==='ok'?'✓':stt==='no'?'✗':''; }
     function intro(c){ if(K().intro) return K().intro(c); var top=reward(need());
       if(need()===1) return top?'A right answer: '+top+'.':'';
       if(c.n>need()) return 'Spare question: get it right'+(top?' for '+top:'')+'.';
@@ -270,29 +294,29 @@ function make(env){
       return c.got?'Get this one right too'+(top?' for <b>'+top+'</b>':'')+'.':spare()?'Get this one right, then the spare question.':''; }
     function show(){ var s=S(), q=s.q, c=st(); if(!q||!c) return;
       win.classList.toggle('fast',FAST&&!q.visual); win.classList.toggle('vis',!!q.visual); win.setAttribute('data-kind',kind);
-      $('qtitle').textContent=K().title||''; var qn=$('qn'); qn.textContent=marker(c); qn.classList.toggle('spare',c.n>need()); $('qsafe').textContent=K().safe||''; $('qpips').innerHTML=pips(c);
-      $('qp').innerHTML=q.prompt; $('qvisual').innerHTML=q.visual||''; $('qvisual').hidden=!q.visual;
+      $('qtitle').textContent=K().title||''; var mk=marker(c), ql=$('qline'); $('qn').textContent=mk; ql.classList.toggle('spare',c.n>need()); ql.classList.toggle('none',!mk&&!K().safe); ql.querySelector('.pre').hidden=!mk; $('qsafe').textContent=K().safe||''; $('qpips').innerHTML=pips(c);
+      $('qp').innerHTML=String(q.prompt).replace(/\b([xy]-intercepts?)\b(?![^<]*>)/g,'<span class="c-nb">$1</span>');   /* a term never breaks at its hyphen */ $('qvisual').innerHTML=q.visual||''; $('qvisual').hidden=!q.visual;
       var long=q.choices.some(function(x){ return plain(x.html).length>14; }), ch=$('choices'); ch.classList.toggle('one',long);
-      ch.innerHTML=q.choices.map(function(x,i){ return '<button class="rk-ch" type="button" data-i="'+i+'"><span class="rk-key">'+(i+1)+'</span><span class="t">'+x.html+'</span><span class="m"></span></button>'; }).join('');
-      var fb=$('fb'); fb.className='rk-fb'; fb.innerHTML=intro(c); $('next').disabled=true;
+      ch.innerHTML=q.choices.map(function(x,i){ return '<button class="rk-ch" type="button" data-i="'+i+'"><span class="rk-coin">'+(i+1)+'</span><span class="t">'+x.html+'</span><span class="m"></span></button>'; }).join('');
+      var fb=$('fb'); fb.className='rk-fb'; fb.parentNode.classList.remove('hold'); fb.innerHTML=intro(c); $('next').disabled=true;
       if(s.qDone) mark(s.picked,false);
       fitWin(); }
     function fitWin(){ win.style.zoom=''; var h=win.offsetHeight; if(h>1030) win.style.zoom=(1030/h).toFixed(3); }
     function mark(i,live){ var s=S(), q=s.q, c=st(), x=q.choices[i], btns=$('choices').querySelectorAll('.rk-ch'), fb=$('fb'), fin=finished(c), tail;
       btns.forEach(function(b,j){ b.disabled=true; if(q.choices[j].ok){ b.classList.add('right'); b.querySelector('.m').textContent='✓'; } });
-      $('qpips').innerHTML=pips(c);
+      $('qpips').innerHTML=pips(c); fb.parentNode.classList.add('hold');
       if(x&&x.ok){ tail=fin?earned(c.got):(K().more?K().more(c):'One more'+(reward(need())?' for '+reward(need()):'')+'.');
-        fb.className='rk-fb ok'; fb.innerHTML='<span class="h">✓ Correct!</span>'+tail; $('next').disabled=false; }
+        fb.className='rk-fb ok'; fb.innerHTML='<span class="h">Right!</span>'+tail; $('next').disabled=false; }
       else { if(btns[i]){ btns[i].classList.add('wrong'); btns[i].querySelector('.m').textContent='✗'; }
         tail=fin?(earned(c.got)||''):c.n>=need()?'You get a spare question.':'Keep going: one miss still leaves you a spare question.';
-        fb.className='rk-fb bad'; fb.innerHTML='<span class="h">✗ Not quite.</span>'+((x&&x.why)||'')+' '+explainOnce(x&&x.why,q.explain)+' <b>'+tail+'</b>';
+        fb.className='rk-fb bad'; fb.innerHTML='<span class="h">Not quite.</span>'+((x&&x.why)||'')+' '+explainOnce(x&&x.why,q.explain)+' <b>'+tail+'</b>';
         $('next').disabled=!!live; if(live){ clearTimeout(lockT); lockT=setTimeout(function(){ $('next').disabled=false; },wrongRun>=2?2500:2000); } }   /* a miss holds for 2 s so the reason gets read */
       fitWin(); }
-    function newQ(){ var s=S(); s.q=env.next(); s.qDone=false; s.picked=-1; openAt=Date.now(); save(); show(); }
+    function newQ(){ var s=S(); s.q=env.next(); s.qDone=false; s.picked=-1; openAt=lastIn=Date.now(); save(); show(); }
     function open(k){ var s=S(); if(isOpen()) return false; kind=k; if(!kinds[k]) throw new Error('SpitzRemake card: unknown kind '+k);
       var fresh=!s.card||s.card.kind!==k; if(fresh) s.card={ kind:k, n:1, got:0, miss:0, h:'' };
       dim.hidden=false; win.classList.remove('pop','shake'); if(!reduce()){ void win.offsetWidth; win.classList.add('pop'); }
-      openAt=Date.now(); snd('open'); if(fresh||!pendingQ(s)) newQ(); else show();   /* a saved card comes back on the same question, answered or not */
+      openAt=lastIn=Date.now(); snd('open'); if(fresh||!pendingQ(s)) newQ(); else show();   /* a saved card comes back on the same question, answered or not */
       return true; }
     /* is S.q the question this card is on? (a fresh card after an old answered question needs a new one) */
     function pendingQ(s){ var c=s.card; return !!s.q&&(!s.qDone||(c.h||'').length===c.n); }
@@ -303,14 +327,17 @@ function make(env){
       else { s.streak=0; c.miss++; c.h+='W'; wrongRun++; }
       try{ if(o.onAnswer) o.onAnswer(!!x.ok,s.q,kind,c); }catch(e){}
       save();                                      /* saved with the answer: a reload can't win a second try or lose a right answer */
-      snd(x.ok?'right':'wrong'); mark(i,true);
-      if(x.ok) nextT=setTimeout(proceed,FAST?550:750);
+      popAt=Date.now(); win.classList.remove('nudge'); snd(x.ok?'right':'wrong'); mark(i,true);
+      if(x.ok) nextT=setTimeout(function tick(){ if(document.hidden){ nextT=setTimeout(tick,500); return; } proceed(); },FAST?500:900);   /* a right answer moves on by itself; a miss waits for the student */
       else { win.classList.remove('shake','pop'); if(!reduce()){ void win.offsetWidth; win.classList.add('shake'); } }
       return true; }
     function proceed(){ var s=S(), c=st(); if(!isOpen()||!c||!s.qDone||$('next').disabled) return; clearTimeout(nextT);
       if(!finished(c)){ c.n++; newQ(); return; }
       var res={ kind:kind, right:c.got, asked:c.n, missed:c.miss, need:need(), perfect:c.miss===0&&c.got>=need(), spare:c.n>need() };
       s.card=null; close(); snd('next'); try{ if(K().done) K().done(res); }finally{ save(); } }
+    /* 15 s with no key or click on an open question: the card bobs and a sticker says what to do */
+    ['keydown','pointerdown','pointermove'].forEach(function(ev){ document.addEventListener(ev,function(){ lastIn=Date.now(); },true); });
+    setInterval(function(){ var s=S(); win.classList.toggle('nudge',!!(isOpen()&&s&&s.q&&!s.qDone&&!s.over&&Date.now()-Math.max(openAt,lastIn)>(o.nudgeAfter||15)*1000)); },500);
     win.addEventListener('click',function(e){ var b=e.target.closest?e.target.closest('.rk-ch'):null; if(b){ answer(+b.dataset.i); return; } if(e.target.closest&&e.target.closest('.rk-next')) proceed(); });
     /* while the card is up it owns the keyboard: 1-4 answer, Space or Enter go on. The game never sees those presses. */
     document.addEventListener('keydown',function(e){ if(!isOpen()||e.ctrlKey||e.metaKey||e.altKey||idOpen('confirm')||idOpen('pause')) return;
