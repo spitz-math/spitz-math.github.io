@@ -106,9 +106,9 @@ var hud=RK.hud({ left:[ {id:'hearts',type:'hearts',max:CFG.hearts}, {id:'time',t
 
 /* the question moment: two questions plus a spare. 0 right still goes on (math is not fuel); 1 right = a heart; 2 right = a heart and an upgrade pick */
 var card=RK.card({ fast:!!(QS&&QS.set==='mult')||!QS, kinds:{
-  dock:{ title:'Dock', safe:'You are safe here.', rewards:['No reward this time.','a heart back','a heart back and an upgrade'],
+  dock:{ title:'Dock repairs!', safe:'You are safe here.', icon:'❤️', rewards:['No reward this time.','a heart back','a heart back and an upgrade'],
     done:function(r){ RES.push(r); S.docks++; S.sinceDock=0; rocks=[]; if(r.right>=1) S.hearts=Math.min(CFG.hearts,S.hearts+1); if(r.right>=2) pick.open(1,'Both right! Pick an upgrade.'); } },
-  revive:{ title:'Last chance', safe:'One rescue per run.', need:1, spare:0, rewards:['The run ends here.','one heart: back in the run'],
+  revive:{ title:'Last chance!', safe:'One rescue per run.', need:1, spare:0, rewards:['The run ends here.','one heart: back in the run'],
     done:function(r){ RES.push(r); if(r.right){ S.hearts=1; S.revived=1; rocks=[]; RK.fx.banner('Back in the run!','',{kind:'good'}); } else endRun(); } } } });
 
 var pick=RK.pick({ title:'Upgrade', options:function(){ return [

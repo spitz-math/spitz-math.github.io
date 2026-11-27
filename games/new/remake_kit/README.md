@@ -104,8 +104,17 @@ The rule (Kody, 2026-11-25, "the new standard"):
 | one miss in the first two | a spare third question appears: 2 right or 1 right |
 | wrong, wrong | 0 right, no spare |
 
-- The header shows "1 of 2", "2 of 2", then "Spare question", with a row of boxes that fill in green or red. The spare box only appears after a miss.
-- Keys 1 to 4 answer, Space or Enter goes on. A right answer moves on by itself. A miss holds for 2 seconds so the reason gets read.
+**The look is Kody's standard for every game (2026-11-27, from Burger Blaster v21: "emulate that across other games"):**
+
+- ONE paper card: thick border, hard offset shadow with no blur, tilted about 1 degree. It should read as part of the game's world, not a quiz overlay.
+- Title in the game's display font with an ink outline. Give it game-flavoured wording (`title:'Load your burgers!'`, not "Question").
+- Reward slots top right fill as you answer (green ring right, red ring wrong, a pop when one fills). `icon` puts the prize in the slot: a string shown on a right answer (`icon:'🍔'`), or a function `icon(state, i)` that returns HTML (an `<img>` or a `<canvas>` you draw into) for `'ok'`, `'no'` and `''` (empty). With no icon the slots show a tick or a cross. The spare slot only appears after a miss.
+- Small "Question 1 of 2" line, then the big prompt with the key terms coloured (they never wrap mid-term), a graph on the left when the question has one.
+- Four chunky answer buttons in a 2 by 2 grid, each with a round numbered coin (keys 1 to 4), a thick border and a hard shadow. Right turns green, the picked wrong one turns red, the others dim.
+- One footer line. Before an answer it says what a right answer wins. After a miss: "Not quite." plus one explanation, and it waits for Space or Enter (it never moves on by itself; the first 2 seconds are held so the reason gets read). A right answer moves on by itself after 0.9 s.
+- 15 seconds with no key or click: the card bobs and a "Pick an answer: 1-4" sticker appears (`nudge:'...'` and `nudgeAfter:15` change it).
+- Place it so it does not cover what the student needs to see: `--rk-q-x` and `--rk-q-y` move it, `--rk-q-scale` sizes it, `--rk-q-tilt` tilts it, `--rk-dim` sets how much the game behind is dimmed (`transparent` keeps the game fully visible, as in Burger Blaster).
+- Colours come from the game's own variables: `--rk-win` (paper), `--rk-frame` (border), `--rk-tile` (answer buttons), `--rk-coin` and `--rk-coin-text` (number coins), `--rk-accent` (title).
 - While it is open the card owns the keyboard, and it ignores keys for the first quarter second so a key held from play never answers.
 - **Reload-safe.** The card writes the run's own save (`S.q`, `S.qDone`, `S.picked`, `S.answered`, `S.correct`, `S.streak`, `S.best`, `S.topics`, `S.card`) and saves with every answer. A reload comes back on the same question, and a missed question stays missed. That save shape is also what scorecode.js reads for the answer log and for bringing missed questions back, so both keep working with no extra code.
 - Works with all 20 question sets, including graph questions (the card widens and puts the graph on the left) and long answers (one column).
@@ -181,8 +190,9 @@ Set these on `:root` (the F hint sits outside the stage). Anything not set keeps
 | `--rk-text`, `--rk-muted`, `--rk-accent`, `--rk-gold`, `--rk-good`, `--rk-bad` | Text and state colours |
 | `--rk-win`, `--rk-frame`, `--rk-tile`, `--rk-tile-text`, `--rk-radius` | The one game window: fill, frame, answer buttons, corners |
 | `--rk-go`, `--rk-go-text` | Start and Continue |
-| `--rk-key-face`, `--rk-key-text`, `--rk-key-rim`, `--rk-key-low` | Every key cap: controls card, small keys line, F hint, answer numbers |
+| `--rk-key-face`, `--rk-key-text`, `--rk-key-rim`, `--rk-key-low` | Every key cap: controls card, small keys line, F hint |
 | `--rk-heart`, `--rk-heart-off` | Hearts |
+| `--rk-coin`, `--rk-coin-text`, `--rk-q-x`, `--rk-q-y`, `--rk-q-scale`, `--rk-q-tilt` | Question card: the number coins, and where the card sits, its size and its tilt |
 | `--rk-dim`, `--rk-over` | The dim behind a card, and the title and end screen background (put the title painting here) |
 
 Sizes are set so no kit text is under 11px on a 1366 by 620 Chromebook screen. Keep `--rk-word` text in mixed case when the font is Pixelify Sans (its capitals are hard to read).
