@@ -471,6 +471,20 @@ t = swap(t, '</head>', '<style>html .sz-ask.sz-ask .sz-askrow{ align-items:cente
          ' html .sz-ask.sz-ask #sz-askno{ background:var(--sz-mark); border-color:var(--sz-mark); color:#111; }</style>\n</head>')
 # ---- go-live: the new game saves under its own key, so a run saved by the old Jump Man is never loaded (scorecode.js lists the same key)
 t = swap(t, "var KEY='jump_man_facts_v1';", "var KEY='super_jump_man_v1';")
+# ---- v35: small bugs from the v33 list (stale-tab overlay, resume paused, Enter on the restart box buttons) and read-only hooks on the site
+t = swap(t, "/* ================= START / END", parts['V35'] + "\n/* ================= START / END")
+t = swap(t, '</head>', '<style>#jmr-stale{ position:absolute; inset:0; z-index:30; background:rgba(8,9,20,.86); display:flex; flex-direction:column; align-items:center; justify-content:center; gap:18px; text-align:center; }'
+         ' #jmr-stale b{ font:800 44px/1.1 Inter,system-ui,sans-serif; color:#fff; } #jmr-stale span{ font:800 30px/1.2 Inter,system-ui,sans-serif; color:#7CF0FF; }</style>\n</head>')
+HOOKS = r"""<script>
+/* v35: the full test hooks stay only where tests run: a test copy opened from disk (name ends _mult, _test or _candidate, or
+   it sits in the build's out/ folder), or localhost (QA checks). On the site __G.state() hands out a copy and the other
+   hooks are gone, so nothing typed in a console can move the climber or answer a question. */
+(function(){ var test=(location.protocol==='file:'&&(/(_mult|_test|_candidate)[^\/]*\.html?$/.test(location.pathname)||/\/out\/[^\/]*$/.test(location.pathname)))||/^(localhost|127\.0\.0\.1)$/.test(location.hostname);
+  if(test||!window.__G) return; var g=window.__G; window.__G={ state:function(){ return JSON.parse(JSON.stringify(g.state())); } };
+  Object.keys(window).forEach(function(k){ if(/^__G\d+$/.test(k)){ try{ delete window[k]; }catch(e){ window[k]=undefined; } } }); })();
+</script>
+</body>"""
+t = swap(t, '</body>', HOOKS)
 for gone in ['S.energy+=', "U('energy')"]:
     assert gone not in t, gone
 open(os.path.join(O, 'jump_man_multiplication.html'), 'w', encoding='utf-8').write(t)

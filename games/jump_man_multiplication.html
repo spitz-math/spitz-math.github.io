@@ -335,6 +335,7 @@ var szm=/[?&]set=([a-z]+)/.exec(location.search); if(szm) document.documentEleme
 <style>#jm-choices .jm-ch.jmr-long{ font-size:30px !important; line-height:1.08 !important; }</style>
 <style>.sz-ask.jmr-wait .sz-askrow button{ opacity:.45; }</style>
 <style>html .sz-ask.sz-ask .sz-askrow{ align-items:center; } html .sz-ask.sz-ask #sz-askyes{ height:52px; padding:0 18px; border-radius:14px; font:700 20px/1 Inter,system-ui,sans-serif; background:transparent; border:2px solid var(--border); color:var(--text); } html .sz-ask.sz-ask #sz-askno{ background:var(--sz-mark); border-color:var(--sz-mark); color:#111; }</style>
+<style>#jmr-stale{ position:absolute; inset:0; z-index:30; background:rgba(8,9,20,.86); display:flex; flex-direction:column; align-items:center; justify-content:center; gap:18px; text-align:center; } #jmr-stale b{ font:800 44px/1.1 Inter,system-ui,sans-serif; color:#fff; } #jmr-stale span{ font:800 30px/1.2 Inter,system-ui,sans-serif; color:#7CF0FF; }</style>
 </head>
 <body>
 <div id="stage">
@@ -951,9 +952,9 @@ var lastHit=-1e9;   /* game seconds (S.climbT), not the wall clock */
 /* v34 (Kody 2026-11-27 'All 4', item 1: the average climber died at ~2:00 with 4-6 questions). Softer for a hurt player, same for a clean one:
    HURT_SAFE: after ANY lost heart (rock or fog) no second heart can be lost for 8 s (was 4 s fog-only, 4 s rock-only, so a rock then a fall cost two);
    FOG_HIT_CALM: the fog waits 5 s after a hit (was 3); FOG_MERCY: the fog trails 150 px farther back for each heart you are missing. */
-var FOG_AGAIN=4, FOG_HIT_CALM=5, FOG_MERCY=150, SAFE_CALM=false, HURT_SAFE=8, hurtAt=-1e9;
+var FOG_AGAIN=4, FOG_HIT_CALM=5, FOG_MERCY=150, HURT_SAFE=8, hurtAt=-1e9;
 function hurtSafe(){ return (S.climbT||0)-hurtAt<HURT_SAFE; }
-function fogHit(){ var again=(S.climbT||0)-lastHit<FOG_AGAIN||(SAFE_CALM&&S.calm>0)||hurtSafe(); if(!again) hurtAt=S.climbT||0; lastHit=S.climbT||0; if(!again) S.hearts=Math.max(0,S.hearts-1); SND.crash(); shk=10; endCombo();   /* v11: a second dip within 4 s only lifts you again */
+function fogHit(){ var again=(S.climbT||0)-lastHit<FOG_AGAIN||hurtSafe(); if(!again) hurtAt=S.climbT||0; lastHit=S.climbT||0; if(!again) S.hearts=Math.max(0,S.hearts-1); SND.crash(); shk=10; endCombo();   /* v11: a second dip within 4 s only lifts you again */
   if(S.hearts<=0){ S.fogOut=true; endRun(); return; }
   var tgt=null; for(var i=Math.max(0,S.pi-20);i<plats.length;i++){ var p=plats[i]; if(p.h>S.fog+300&&solid(p)&&p.kind!=='spring'&&p.kind!=='crumble'&&p.kind!=='ice'&&!p.amp){ tgt=p; break; } }
   if(tgt){ P.on=tgt; P.h=tgt.h; P.x=tgt.floor?W/2:cxAt(tgt,gt); P.vx=0; P.vy=0; P.lastI=tgt.i; S.pi=tgt.i; P.airJ=0; P.dashed=false; P.glide=false; }
@@ -1620,8 +1621,29 @@ function loop(){ var t=now(), raw=(t-lastF)/1000, dt=Math.min(0.033,raw), gd=dt;
   if(hold&&S.offer&&offerAt) offerAt+=raw*1000;                                                                    /* the card's 5 s wait too */
   if(!hold){ update(gd); popStep(); juiceStep(dt); if(S.offer&&offerAt&&t-offerAt>OFFER_AUTO&&!S.over) pickOffer(0); }
   render(); if(paused) drawPause(); if(STALE) drawStale(); requestAnimationFrame(loop); }
-window.__G34={tune:function(o){ if('again' in o) FOG_AGAIN=o.again; if('hitCalm' in o) FOG_HIT_CALM=o.hitCalm; if('mercy' in o) FOG_MERCY=o.mercy; if('safe' in o) SAFE_CALM=o.safe; if('per' in o) CALM_PER=o.per; if('max' in o) CALM_MAX=o.max; if('hurt' in o) HURT_SAFE=o.hurt; if('healAll' in o) HEAL_ALL=o.healAll; if('rockEvery' in o) ROCK_EVERY=o.rockEvery; }};
+window.__G34={tune:function(o){ if('again' in o) FOG_AGAIN=o.again; if('hitCalm' in o) FOG_HIT_CALM=o.hitCalm; if('mercy' in o) FOG_MERCY=o.mercy; if('per' in o) CALM_PER=o.per; if('max' in o) CALM_MAX=o.max; if('hurt' in o) HURT_SAFE=o.hurt; if('healAll' in o) HEAL_ALL=o.healAll; if('rockEvery' in o) ROCK_EVERY=o.rockEvery; }};
 window.__G33={askLocked:askLocked, dedupe:dedupe33, CARD_CLOCK:CARD_CLOCK, Q_LOCK:Q_LOCK};
+
+/* v35 (Kody 2026-11-27 "test and clean up the code and the game"): the small bugs left on the v33 list
+   1 the "open in another tab" message is a real overlay above the question card (it was drawn on the canvas, under the card)
+   2 a run that comes back from a reload in the middle of climbing comes back paused, not running
+   3 Enter or Space on a focused button of the restart box presses it (after its 1 s lock); the box opens with No focused
+   4 pop-up words are cleared when the New move card opens, so none sits under its title
+   5 (build.py) on spitzmath.com the test hooks are read-only; test copies, localhost and the QA checks keep them */
+var STALE_EL=null;
+function staleDom(){ if(!STALE||STALE_EL) return; var host=$('stage')||document.body;   /* the whole stage, above the question card (z 6) and under the restart box (z 40) */
+  STALE_EL=document.createElement('div'); STALE_EL.id='jmr-stale'; STALE_EL.setAttribute('role','alert');
+  STALE_EL.innerHTML='<b>This run is open in another tab</b><span>Keep playing there, or reload this page</span>'; host.appendChild(STALE_EL); }
+setInterval(staleDom,300);
+var resumePause35=false;
+function resume35(){ if(!resumePause35&&S.started&&!S.over&&!S.way&&!S.offer){ resumePause35=true; setPause(true); } }
+setTimeout(resume35,0);   /* runs once the saved run has loaded (the load is further down the file) */
+new MutationObserver(function(){ var a=$('sz-ask'), n=$('sz-askno'); if(a&&!a.hidden&&n&&document.activeElement!==n&&document.activeElement!==$('sz-askyes')){ try{ n.focus({preventScroll:true}); }catch(e){} } })
+  .observe(document.documentElement,{attributes:true,attributeFilter:['hidden'],subtree:true});
+addEventListener('keydown',function(e){ var a=$('sz-ask'); if(!a||a.hidden||askLocked()||e.repeat) return; var el=document.activeElement;
+  if((e.key==='Enter'||e.key===' ')&&el&&(el.id==='sz-askyes'||el.id==='sz-askno')){ e.preventDefault(); e.stopImmediatePropagation(); el.click(); } },true);
+var showOffer35=showOffer; showOffer=function(){ if(S.offer&&$('jmr-offer').hidden) pops.length=0; return showOffer35(); };
+window.__G35={staleEl:function(){ return STALE_EL; }, resume:resume35};
 
 /* ================= START / END ================= */
 document.querySelectorAll('.jm-len').forEach(function(b){ b.addEventListener('click',function(){ document.querySelectorAll('.jm-len').forEach(function(x){ x.classList.toggle('on',x===b); }); S.len=+b.dataset.len; timerDraw(); }); });
@@ -1723,6 +1745,14 @@ window.__G={ state:function(){ return S; }, man:function(){ return P; }, plats:f
   function svg(m){ var r=''; m.forEach(function(row,y){ for(var x=0;x<7;x++) if(row[x]==='#') r+='<rect x="'+x+'" y="'+y+'" width="1.02" height="1.02"/>'; }); return '<svg viewBox="0 0 7 7" style="width:30px;height:30px;display:block" fill="#15151D" shape-rendering="crispEdges" aria-hidden="true">'+r+'</svg>'; }
   function run(){ document.querySelectorAll('.jm-keys .sz-ctl kbd').forEach(function(k){ var ch=k.textContent.trim(); if(M[ch]){ k.innerHTML=svg(M[ch]); k.setAttribute('aria-label',ch==='←'?'Left arrow':ch==='→'?'Right arrow':'Up arrow'); } }); }
   if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',run); else run(); })();
+</script>
+<script>
+/* v35: the full test hooks stay only where tests run: a test copy opened from disk (name ends _mult, _test or _candidate, or
+   it sits in the build's out/ folder), or localhost (QA checks). On the site __G.state() hands out a copy and the other
+   hooks are gone, so nothing typed in a console can move the climber or answer a question. */
+(function(){ var test=(location.protocol==='file:'&&(/(_mult|_test|_candidate)[^\/]*\.html?$/.test(location.pathname)||/\/out\/[^\/]*$/.test(location.pathname)))||/^(localhost|127\.0\.0\.1)$/.test(location.hostname);
+  if(test||!window.__G) return; var g=window.__G; window.__G={ state:function(){ return JSON.parse(JSON.stringify(g.state())); } };
+  Object.keys(window).forEach(function(k){ if(/^__G\d+$/.test(k)){ try{ delete window[k]; }catch(e){ window[k]=undefined; } } }); })();
 </script>
 </body>
 </html>
