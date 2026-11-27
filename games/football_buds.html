@@ -1213,9 +1213,9 @@ function anyThrow(){ var me=PL.me; if(!PL||!PL.live||!me||PL.off<0||PL.ret||PL.b
   if(!best) return false;
   var l=lead(me,best,'bullet'); PL.thrower=me; PL.any=1; throwAt(l[0],l[1],0.3,'bullet'); PL.target=best; PL.anyN=(PL.anyN||0)+1; me.st='run';
   pop(['FLING IT!','HOT POTATO!','KEEP IT ALIVE!','BACKYARD BALL!'][Math.min(PL.anyN-1,3)],'','#3BE8FF'); return true; }
-var flyClk=0;
-  function flyOff(o,dx,big){ if(big&&STG.ok&&!o.cannon&&!(o.fly&&flyClk-o.fly.t<0.6)) powHit(P(o.x,o.y)); if(PL&&PL.live&&o.team===1&&!(o.fly&&flyClk-o.fly.t<0.6)) comboHit(o); if(STG.ok){ var ip=P(o.x,o.y); sfx(4,ip.x,ip.y-34*ip.s/20,(big?95:62)*ip.s/20,0.32,Math.random()*0.6-0.3); } var rr0=0.8+Math.random()*0.5; o.fly={ t:flyClk+0.12, dur:(big?1.35:0.7)*(0.9+0.2*Math.random()), dx:dx||(-(o.face||1)), h:(big?235:95)*rr0, rot:(big?26+Math.random()*10:9)*(Math.random()<0.25?-1:1), big:!!big, r:rr0, tw:Math.random()*6 }; o.fv={ x:(dx||(-(o.face||1)))*(big?19:8)*rr0, y:(Math.random()-0.5)*(big?11:4) }; o.moon=0; o.slid=0;
-    if(PL&&PL.pow==='moon'&&PL.live){ o.moon=1; o.fly.dur*=1.9; o.fly.h*=1.6; if(o.team===1&&(PL.moonN||0)<5){ PL.moonN=(PL.moonN||0)+1; var ht=Math.round(o.fly.dur*10)/10; powPts(Math.round(o.fly.dur*60/10)*10,'MOON SHOT '+ht+'s',o.x,o.y,'#D8D2FF'); } } }   /* v49 MOON GRAVITY: launched Rivals float; hang time pays */
+var flyClk=0, RAGFREE=0;   /* v81 MAYHEM (Kody: bring back the flying bodies): RAGFREE launches are for show only: no combo, no points, can't tackle a carrier */
+  function flyOff(o,dx,big){ if(big&&STG.ok&&!o.cannon&&!(o.fly&&flyClk-o.fly.t<0.6)) powHit(P(o.x,o.y)); if(PL&&PL.live&&o.team===1&&!RAGFREE&&!(o.fly&&flyClk-o.fly.t<0.6)) comboHit(o); if(STG.ok){ var ip=P(o.x,o.y); sfx(4,ip.x,ip.y-34*ip.s/20,(big?95:62)*ip.s/20,0.32,Math.random()*0.6-0.3); } var rr0=0.8+Math.random()*0.5; o.fly={ t:flyClk+0.12, dur:(big?1.35:0.7)*(0.9+0.2*Math.random()), dx:dx||(-(o.face||1)), h:(big?235:95)*rr0, rot:(big?26+Math.random()*10:9)*(Math.random()<0.25?-1:1), big:!!big, r:rr0, tw:Math.random()*6 }; o.fv={ x:(dx||(-(o.face||1)))*(big?19:8)*rr0, y:(Math.random()-0.5)*(big?11:4) }; o.moon=0; o.slid=0; o.free=RAGFREE?1:0;
+    if(PL&&PL.pow==='moon'&&PL.live){ o.moon=1; o.fly.dur*=1.9; o.fly.h*=1.6; if(o.team===1&&!RAGFREE&&(PL.moonN||0)<5){ PL.moonN=(PL.moonN||0)+1; var ht=Math.round(o.fly.dur*10)/10; powPts(Math.round(o.fly.dur*60/10)*10,'MOON SHOT '+ht+'s',o.x,o.y,'#D8D2FF'); } } }   /* v49 MOON GRAVITY: launched Rivals float; hang time pays */
 /* ===== v30 MORE MAYHEM: bouncy walls, the crowd, goalposts, cannons, bumpers, flips (Kody: 'more crazy arcady flipping flying rag doll') ===== */
 function wallHit(o,v,side){ var sp=Math.abs(v.y); if(sp<6) return false; var tp=P(o.x,side>0?FW:0);
   if(side>0&&o.team===1&&PL.live&&Math.random()<0.35){ o.crowd=1; o.y=FW+3+Math.random()*4; o.fv=null; o.dur=99; fx.push({k:'r',x:tp.x,y:tp.y,r:16,c:'#FFE14D',t:0,life:0.4}); sfx(4,tp.x,tp.y-30,80,0.35); pop('INTO THE CROWD!','','#FFE14D'); SND.crash(); if(!o.pin){ o.pin=1; addPts(200,'play'); } return true; }
@@ -1246,12 +1246,13 @@ function rag(dt){ if(!PL||!PL.all) return; PL.all.forEach(function(o){ var v=o.f
   o.x+=v.x*dt; o.y+=v.y*dt; var k=Math.exp(-(o.moon?0.45:o.slid?0.7:1.0)*dt); v.x*=k; v.y*=k;
   if(o.cannon&&o.fly&&flyClk-o.fly.t>=o.fly.dur*0.8){ o.cannon=0; o.fv=null; return; }   /* lands and stops: a cannon shot never starts a chain reaction */
   if(!o.cannon&&!o.crowd){ if(o.y<0.8){ o.y=0.8; wallHit(o,v,-1); v.y=Math.abs(v.y)*0.95; } if(o.y>FW-0.8){ if(wallHit(o,v,1)) return; o.y=FW-0.8; v.y=-Math.abs(v.y)*0.95; } if(o.x<-9||o.x>109){ postHit(o,v); o.x=clamp(o.x,-9,109); v.x=-v.x*0.9; } }
-  var sp=Math.hypot(v.x,v.y); if(sp<0.4){ o.fv=null; return; } if(o.cannon) return; bumpRag(o,v,sp); if(sp<4) return;
-  PL.all.forEach(function(p){ if(p===PL.carrier&&p.team===1&&p!==o&&PL.live&&!PL.ball&&p.st!=='down'&&sp>6&&dist(o,p)<=1.3&&!(p===PL.qb&&qbProt())){ pop('HIT BY A FLYING BUD!','','#FFE14D'); tackled(p,true); return; }
-    if(p===o||p.st==='down'||p===PL.carrier||p===PL.me||dist(o,p)>1.9) return;   /* v30: bigger chain-reaction reach */
-    p.st='down'; p.t=0; p.dur=1.4; flyOff(p,v.x>0?1:-1,true); p.fv.x=v.x*0.85; p.fv.y=v.y*0.6+(p.y-o.y)*4; v.x*=0.55; v.y*=0.55;
+  var sp=Math.hypot(v.x,v.y); if(sp<0.4){ o.fv=null; return; } if(o.cannon) return; bumpRag(o,v,sp); if(sp<3) return;
+  PL.all.forEach(function(p){ if(p===PL.carrier&&p.team===1&&p!==o&&!o.free&&PL.live&&!PL.ball&&p.st!=='down'&&sp>6&&dist(o,p)<=1.3&&!(p===PL.qb&&qbProt())){ pop('HIT BY A FLYING BUD!','','#FFE14D'); tackled(p,true); return; }
+    var dd=dist(o,p); if(p===o||p.st==='down'||p===PL.carrier||p===PL.me||p.clone||p.crowd||dd>2.6) return;   /* v30: bigger chain-reaction reach. v81: reach 2.6 (was 1.9) and slower bodies (3, was 4) still knock people over, for show */
+    var xtra=!!(o.free||sp<4||dd>1.9); if(xtra&&PL.live) return;   /* extra hits only after the whistle: during the play the old chain rules stand (scores stayed the same) */
+    p.st='down'; p.t=0; p.dur=1.4; RAGFREE=xtra?1:0; flyOff(p,v.x>0?1:-1,true); RAGFREE=0; p.fv.x=v.x*0.85; p.fv.y=v.y*0.6+(p.y-o.y)*4; v.x*=xtra?0.7:0.55; v.y*=xtra?0.7:0.55;
     PL.chain=(PL.chain||0)+1; SND.crash(); feedback(PL.chain>2||PL.pow==='mega'?'small':'medium',p.x,p.y,null,'#FFE14D');
-    if(PL.live){ if(PL.chain===2&&PL.pow!=='mega') pop('CHAIN REACTION!','','#FFE14D'); if(p.team===1&&!p.pin){ p.pin=1; addPts(100,'play'); } }   /* v63 (Kody: too much visual noise): one banner a play, no +100 on every pin */ }); }); }
+    if(PL.live){ if(PL.chain===2&&PL.pow!=='mega') pop('CHAIN REACTION!','','#FFE14D'); if(p.team===1&&!p.pin&&!xtra){ p.pin=1; addPts(100,'play'); } }   /* v63 (Kody: too much visual noise): one banner a play, no +100 on every pin */ }); }); }
 var YD=20, ZY=11.4, FW=53.3, VW=53.3, XST=1.3, FT=300, CAMX=470;
 /* 2026-11-18 TV camera: a low sideline camera, like a broadcast. Near sideline at the bottom (big players), far sideline at the top (smaller),
    yard lines lean and pinch toward the far side. P(x,y) turns field yards into canvas pixels; s = pixels per yard at that depth. */
@@ -1540,6 +1541,7 @@ function hurry(){ return PL&&PL.off>0&&(S.qtr===2||S.qtr===4)&&S.clock-qtrEnd()<
 function incomplete(msg,col){ PL.stopClk=1; nextDown(msg,col); }      // incompletions stop the clock
 function nextDown(msg,col){ S.down++; if(S.down>4){ setDrive(-S.poss,S.los); SND.whistle(); finish('TURNOVER ON DOWNS',team(S.poss)+' ball at '+spotText(),S.poss>0?'#7CE04A':'#FF7A7A',1.7); }
   else finish(msg,downText()+' at '+spotText(),col); }
+function pileOn(c){ if(!PL||!PL.all) return; RAGFREE=1; PL.all.forEach(function(o){ if(o===c||o===PL.me||o.st==='down'||o.crowd||o.clone||o.cannon) return; var d=dist(o,c); if(d>3.4) return; o.st='down'; o.t=0; o.dur=1.3; flyOff(o,o.x>=c.x?1:-1,d<2.4); o.fv.y+=(o.y-c.y)*5; }); RAGFREE=0; }
 function tackled(c,mine,oob,quiet){ if(mine&&c.team===1) S.drvT=1; if(PL&&PL.live&&c.team===1&&!oob&&!quiet) powTackle(c,mine); if(oob) chalk(c.x,Math.max(0,Math.min(FW,c.y)),120,4); else if(!quiet) chalk(c.x,c.y,80,2); var d=S.poss, ct=c.team===0?1:-1, y=Math.max(1,Math.min(99,ct>0?Math.floor(c.x):Math.ceil(c.x)));
   var hard=!oob, hit0=!oob&&(mine||c.team===0&&c===PL.me&&(PL.burst||0)>0.6); /* v18: every tackle launches the carrier, whoever made it */ c.st=oob?'idle':'down'; c.t=0; if(quiet) SND.whistle(); else if(oob) SND.whistle(); else { if(c.team===0) fbSfx('oof'); else SND.crash(); feedback(hard?'large':'medium',c.x,c.y,null,c.team===0?'#FF4A4A':'#FFE14D',c.team===0);   /* v47: getting hit = red shards + oof; your tackle = gold bits + thud */ flyOff(c,c.team===0?-1:1,hard); PL.all.forEach(function(o){ if(o!==c&&o!==PL.me&&o.team===c.team&&o.st!=='down'&&dist(o,c)<1.9){ o.st='down'; o.t=0; o.dur=1.3; flyOff(o,o.x>c.x?1:-1,true); o.fv.y+=(o.y-c.y)*6; } }); }
   /* 2026-11-20 LIVE FUMBLES: a hit can knock the ball loose, and then it is a scramble (nobody is handed the ball).
@@ -1551,6 +1553,7 @@ function tackled(c,mine,oob,quiet){ if(mine&&c.team===1) S.drvT=1; if(PL&&PL.liv
     else if(c.team===1&&!mine&&Math.random()<0.12*BAL.fum) fz=0.5; else if(c.team===0&&!mine&&Math.random()<0.12) fz=0.45;
     else if(c.team===0&&c===PL.me&&c.st==='stumble'&&(PL.offBal||0)>PL.t&&Math.random()<0.4) fz=0.45; }
   if(fz&&!(NOFUM&&fz<0.7)){ fumble(c,fz); return; }
+  if(!oob&&!quiet) pileOn(c);   /* v81: the whistle has blown, everyone close piles in and goes flying (show only) */
   if(oob) PL.stopClk=1;
   /* end zones (2026-11-20): a carrier downed in his own end zone gives up a SAFETY (+2, and the scoring team gets the ball),
      unless he took the ball over in that end zone on a turnover: then it is a touchback */
