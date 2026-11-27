@@ -5,7 +5,7 @@
 import os, subprocess, sys
 here = os.path.dirname(os.path.abspath(__file__))
 head = open(os.path.join(here, 'head.html'), encoding='utf8').read()
-js = open(os.path.join(here, 'game.js'), encoding='utf8').read()
+js = open(os.path.join(here, 'cars.js'), encoding='utf8').read() + open(os.path.join(here, 'game.js'), encoding='utf8').read()   # cars.js = painted car sprites (art/cutcars.py)
 assert '</script>' not in js
 open(os.path.join(here, 'game.html'), 'w', encoding='utf8').write(head + '<script>\n' + js + '</script>\n</body>\n</html>\n')
 print('built game.html')
