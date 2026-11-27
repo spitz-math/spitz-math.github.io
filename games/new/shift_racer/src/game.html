@@ -546,6 +546,19 @@ var MIX={ forest:[['tree',6,[0,1,2]],['autumn',2,[0]],['bush',2,[0,1]],['deadtre
   city:[['tower',3,[0,1,2,3]],['flats',3,[0,1,2,3]],['skyscraper',3,[0]],['hotel',2,[0]],['lamp',1,[0]],['diner',1,[0]],['gas',1,[0]],['billboard',1,[0]],['neon',3,[0]],['garage',2,[0]],['graffiti',2,[0]],['light',2,[0]],['carwash',1,[0]],['burger',1,[0]],['court',1,[0]],['busstop',1,[0]],['hydrant',1,[0]],['signstack',1,[0]],['donut',1,[0]]],
   getaway:[['tower',3,[0,1,3]],['flats',3,[0,1,3]],['skyscraper',3,[0]],['hotel',2,[0]],['lamp',2,[0]],['billboard',1,[0]],['neon',3,[0]],['garage',1,[0]],['graffiti',2,[0]],['light',2,[0]],['signstack',1,[0]],['gate',1,[0]]],
   sunrise:[['pole',3,[0]],['tree',2,[0,3]],['autumn',1,[0]],['bush',2,[0,2]],['billboard',1,[0]],['gas',1,[0]],['watertower',1,[0]],['diner',1,[0]],['blossom',2,[0]],['windmill',1,[0]],['gate',1,[0]],['toll',1,[0]],['busstop',1,[0]],['donut',1,[0]]] };
+/* each scenery is laid out as a place: a regular row right beside the road (lamps, palms, poles), a second row set back (buildings, landmarks), both in a fixed repeating order */
+var LAY={
+  city:{ no:52, fo:230, nL:['lamp','lamp','light','lamp','hydrant','lamp','busstop','lamp'], nR:['lamp','signstack','lamp','lamp','light','lamp','hydrant','lamp'],
+         fL:['flats','neon','graffiti','garage','tower','burger','hotel','court','skyscraper','diner'], fR:['hotel','carwash','tower','flats','donut','neon','gas','skyscraper','garage','billboard'] },
+  getaway:{ no:52, fo:230, nL:['lamp','lamp','lamp','light'], nR:['lamp','light','lamp','lamp'], fL:['tower','flats','neon','garage','skyscraper','graffiti','hotel'], fR:['skyscraper','hotel','gate','tower','neon','flats','billboard'] },
+  coast:{ no:70, fo:300, nL:['palm','lightpalm'], nR:['lightpalm','palm','bush','palm'], fL:[null,null,'boulder',null,'lighthouse',null,null,'rock'], fR:['beachhut','palm','burger','beachhut','palm','ferris','diner','palm','donut','billboard'] },
+  forest:{ no:80, fo:260, nL:['tree','bush','tree','autumn'], nR:['tree','pole','autumn','bush'], fL:['tree','tree','cabin','autumn','tree','deadtree','blossom','tree'], fR:['tree','autumn','tree','windmill','tree','boulder','tree','tree'] },
+  desert:{ no:70, fo:280, nL:['cactus',null,'bush',null], nR:['pole','cactus','pole','bush'], fL:['rock','mesa',null,'gas','rock','watertower','mesa',null], fR:['mesa','rock','billboard','rock',null,'signstack','mesa','deadtree'] },
+  canyon:{ no:70, fo:250, nL:['boulder','cactus','bush',null], nR:[null,'boulder','deadtree','bush'], fL:['rock','rock','mesa','rock'], fR:['rock','mesa','rock','rock','watertower'] },
+  snow:{ no:80, fo:260, nL:['pine','pine','boulder','pine'], nR:['pine','pole','pine','pine'], fL:['pine','cabin','pine','pine','rock'], fR:['pine','pine','cabin','deadtree','pine'] },
+  sunrise:{ no:64, fo:270, nL:['pole','bush','pole','bush'], nR:['blossom','bush','tree','bush'], fL:['windmill','tree','gate','autumn','watertower','tree'], fR:['diner','tree','gas','billboard','toll','donut','busstop','tree'] } };
+/* the ground beside the road: [from, to, colour] measured outward from the road edge, both sides. sea = open water past the sand on the left. */
+var GRD={ city:[[0,118,'#2E2B48'],[0,7,'#8A86A8']], getaway:[[0,118,'#2A2540'],[0,7,'#7A7490']], coast:[[0,170,'#B79A82'],[0,6,'#E8D9C0']], forest:[[0,74,'#1A4534']], desert:[[0,84,'#7A5560']], canyon:[[0,84,'#8A4038']], snow:[[0,96,'#C9D9F2'],[96,104,'#9FB4DA']], sunrise:[[0,78,'#C97A62']] };
 function mixPick(h){ var M=MIX[S.r.scen]||MIX.forest, n=0, i, k; for(i=0;i<M.length;i++) n+=M[i][1]; k=h%n; for(i=0;i<M.length;i++){ if(k<M[i][1]) break; k-=M[i][1]; } return { name:M[i][0], vr:M[i][2][(h>>3)%M[i][2].length], sc:FIXSZ[M[i][0]]?0.9+((h>>5)%3)*0.08:M[i][0]==='bush'||M[i][0]==='boulder'?0.9+((h>>5)%4)*0.2:0.78+((h>>5)%6)*0.11, flip:(h>>9)&1 }; }
 function prop(name,vr){ var A=window.SRPROPS, P=A&&A[name], scen=S.r.scen, key=scen+name+(vr||0), im, s, c, t, pv; if(!P) return null; if(PROP[key]) return PROP[key]; im=PRIMG[name]; if(!im){ im=PRIMG[name]=new Image(); im.src=P.u; } if(!im.complete||!im.naturalWidth) return null;
   s=document.createElement('canvas'); s.width=im.naturalWidth; s.height=im.naturalHeight; c=s.getContext('2d'); c.drawImage(im,0,0); pv=(PVAR[name]||[])[vr||0]; if(pv) repaint(s,pv.R,pv.V); t=TINT[scen]; if(t){ c.globalCompositeOperation='source-atop'; c.globalAlpha=t[1]; c.fillStyle=t[0]; c.fillRect(0,0,s.width,s.height); }
@@ -601,6 +614,7 @@ function rbCar(){ var pi=painted('cop_side'); if(pi) return pi; if(RBS) return R
   c.fillStyle='#FFE14D'; c.font='800 17px Inter,sans-serif'; c.textAlign='center'; c.fillText('POLICE',112,76); return s; }
 function pX(x,s){ return 480+(x-480-camX)*s; }
 function quad(x0,x1,dd0,dd1,col){ var s0=FOC/(dd0+CB), s1=FOC/(dd1+CB); cx.fillStyle=col; cx.beginPath(); cx.moveTo(pX(x0,s0),HZ+HC*s0); cx.lineTo(pX(x1,s0),HZ+HC*s0); cx.lineTo(pX(x1,s1),HZ+HC*s1); cx.lineTo(pX(x0,s1),HZ+HC*s1); cx.closePath(); cx.fill(); }
+function sidePut(list,arr,k,dd,x,sd,h,base){ var nm=arr[((k%arr.length)+arr.length)%arr.length]; if(nm) list.push({dd:dd,k:'side',x:x,sd:sd,nm:nm,m:h,kind:base,v:0}); }
 function drawChase(){ var r=S.r, T=SCN[r.scen], P=CFG.plan[r.n], K=SKY[r.scen], i, k, s, y, o, dd, near=ZN-CB, list=[], RW=NL*LW, nightOn=r.haz.indexOf('night')>=0;
   var pk=REDUCE?0:Math.max(0,1-(gt-J.punch)/0.3); focT=(REDUCE?300:(r.nitro>0?232:300-34*Math.min(1,car.v/CFG.V))-pk*22)*LENS; FOC+=(focT-FOC)*(pk>0?0.3:0.08); camX+=((car.x-480)*0.62-camX)*0.2;
   cx.drawImage(sky(),-120-camX*0.12,0);
@@ -608,8 +622,12 @@ function drawChase(){ var r=S.r, T=SCN[r.scen], P=CFG.plan[r.n], K=SKY[r.scen], 
   var BL=64, k0=Math.floor((r.pd+near)/BL), k1=Math.floor((r.pd+FAR)/BL);   /* band length: long enough that dashes do not strobe at nitro speed */
   cx.fillStyle=T.g; cx.fillRect(0,HZ,W,H-HZ);
   for(k=k1;k>=k0;k--){ if(((k>>1)&1)===0) continue; var a=Math.max(near,k*BL-r.pd), b=(k+1)*BL-r.pd, ya=HZ+HC*FOC/(a+CB), yb=HZ+HC*FOC/(b+CB); cx.fillStyle=T.g2; cx.fillRect(0,yb,W,ya-yb+0.6); }
+  var GS=GRD[r.scen]||[], gi;
+  if(r.scen==='coast'){ quad(-6000,RX-16-170,near,FAR,'#1F5A94'); for(k=k1;k>=k0;k--){ if(k%3) continue; var sa=Math.max(near,k*BL-r.pd), sb2=sa+14; quad(-6000,RX-16-176,sa,sb2,'rgba(190,225,245,.28)'); } quad(RX-16-178,RX-16-170,near,FAR,'#D6ECF2'); }
+  for(gi=0;gi<GS.length;gi++){ quad(RX-16-GS[gi][1],RX-16-GS[gi][0],near,FAR,GS[gi][2]); quad(RX+RW+16+GS[gi][0],RX+RW+16+GS[gi][1],near,FAR,GS[gi][2]); }
   quad(RX-16,RX+RW+16,near,FAR,'#0B0718'); quad(RX,RX+RW,near,FAR,'#211D3A');
   for(k=k1;k>=k0;k--){ var a2=Math.max(near,k*BL-r.pd), b2=(k+1)*BL-r.pd; if(b2<=a2) continue; if(((k>>1)&1)===0) quad(RX,RX+RW,a2,b2,'#272248'); if((k&1)===0) for(i=r.onc?2:1;i<NL;i++) quad(RX+LW*i-2.5,RX+LW*i+2.5,a2,b2,'rgba(236,232,255,.7)'); }
+  if(r.scen==='city'||r.scen==='getaway'){ for(k=Math.floor((r.pd+near)/1440);k<=Math.floor((r.pd+FAR)/1440);k++){ var zd=k*1440+700-r.pd; if(zd>near+2&&zd<FAR) for(i=0;i<NL*4;i++) quad(RX+i*19+4,RX+i*19+14,zd,zd+36,'rgba(236,232,255,.5)'); } }   /* zebra crossings at city junctions */
   if(r.onc){ quad(RX+LW-6,RX+LW-2,near,FAR,'#FFD21F'); quad(RX+LW+2,RX+LW+6,near,FAR,'#FFD21F'); }
   quad(RX-11,RX-3,near,FAR,T.edge); quad(RX+RW+3,RX+RW+11,near,FAR,T.edge); quad(RX-8,RX-6,near,FAR,'rgba(255,255,255,.75)'); quad(RX+RW+6,RX+RW+8,near,FAR,'rgba(255,255,255,.75)');
   /* far haze: the road fades into the sky colour at the horizon */
@@ -636,13 +654,14 @@ function drawChase(){ var r=S.r, T=SCN[r.scen], P=CFG.plan[r.n], K=SKY[r.scen], 
   /* standing things, far to near: roadside, stars, traffic */
   var j0=Math.floor((r.pd+near+40)/SIDEGAP), j1=Math.floor((r.pd+FAR)/SIDEGAP), kinds={tree:'tree',cactus:'cactus',block:'block',pine:'pine',palm:'palm',rock:'rock',grass:'pole'};
   for(k=j1;k>=j0;k--){ var hsh=(k*2654435761>>>0)%97, h2=Math.imul(k+r.n*131,2246822519)>>>0, base=T.deco==='palm'?'rock':kinds[T.deco];
-    list.push({dd:k*SIDEGAP-r.pd,k:'side',x:RX-74-(hsh%3)*30,v:hsh%3,kind:base,sd:0,m:h2>>>3}); list.push({dd:k*SIDEGAP-r.pd+60,k:'side',x:RX+RW+74+((hsh>>2)%3)*30,v:(hsh>>1)%3,kind:kinds[T.deco],sd:1,m:h2>>>7});
-    if(T.deco!=='grass'&&k%2===0){ list.push({dd:k*SIDEGAP-r.pd+30,k:'side',x:RX-270-(hsh%5)*24,v:(hsh+1)%3,kind:base,m:h2>>>11}); list.push({dd:k*SIDEGAP-r.pd+100,k:'side',x:RX+RW+270+(hsh%4)*28,v:(hsh+2)%3,kind:kinds[T.deco],m:h2>>>15}); } }
+    var LY=LAY[r.scen]||LAY.forest, e0=RX-16, e1=RX+RW+16;
+    sidePut(list,LY.nL,k,k*SIDEGAP-r.pd,e0-LY.no,0,h2>>>3,base); sidePut(list,LY.nR,k,k*SIDEGAP-r.pd+120,e1+LY.no,1,h2>>>7,base);
+    sidePut(list,LY.fL,k,k*SIDEGAP-r.pd+40,e0-LY.fo,0,h2>>>11,base); sidePut(list,LY.fR,k,k*SIDEGAP-r.pd+160,e1+LY.fo,1,h2>>>15,base); }
   for(i=0;i<stars.length;i++){ dd=stars[i].d-r.pd; if(dd>near+10&&dd<FAR) list.push({dd:dd,k:'star',o:stars[i]}); }
   for(i=0;i<traffic.length;i++){ o=traffic[i]; dd=o.d-o.len/2-r.pd; if(dd>near+6&&dd<FAR) list.push({dd:dd,k:'car',o:o}); }
   list.sort(function(u,v){ return v.dd-u.dd; });
   function items(behind){ for(i=0;i<list.length;i++){ var it=list[i]; if(it.k==='ramp'?(behind||it.dd<-40):(it.dd<-6)!==behind||(it.dd<-40&&(it.k==='star'||it.k==='shield'||it.k==='pad'||it.k==='cone'))) continue; s=FOC/(it.dd+CB); y=HZ+HC*s; var X=pX(it.x||0,s), fade=Math.min(1,(FAR-it.dd)/260); if(nightOn) fade=Math.max(it.k==='side'?0.12:0,Math.min(fade,(470-it.dd)/150));
-    if(it.k==='side'){ if(it.kind==='rock'&&T.deco==='palm'&&it.sd===0) continue; var mp=mixPick(it.m), im=prop(mp.name,mp.vr), k2=im?mp.sc:1; if(!im) im=side(it.kind,it.v); var sw=(im.lw||im.width)*0.72*s*k2, sh=(im.lh||im.height)*0.72*s*k2; if(im.lw&&sw>88*s) X+=(it.x<480?-1:1)*(sw/2-44*s); if(X+sw<0||X-sw>W) continue; cx.globalAlpha=fade; if(im.lw&&mp.flip&&!FIXSZ[mp.name]){ cx.save(); cx.translate(X,0); cx.scale(-1,1); cx.drawImage(im,-sw/2,y-sh,sw,sh); cx.restore(); } else cx.drawImage(im,X-sw/2,y-sh,sw,sh); cx.globalAlpha=1; }
+    if(it.k==='side'){ var pvN=(PVAR[it.nm]||[0]).length, mp={ name:it.nm, vr:it.m%pvN, sc:FIXSZ[it.nm]?1:it.nm==='bush'||it.nm==='boulder'?1+((it.m>>3)%3)*0.2:0.86+((it.m>>3)%3)*0.12, flip:(it.m>>6)&1 }, im=prop(mp.name,mp.vr), k2=im?mp.sc:1; if(!im) im=side(it.kind,it.v); var sw=(im.lw||im.width)*0.72*s*k2, sh=(im.lh||im.height)*0.72*s*k2; if(im.lw&&sw>88*s) X+=(it.x<480?-1:1)*(sw/2-44*s); if(X+sw<0||X-sw>W) continue; cx.globalAlpha=fade; if(im.lw&&mp.flip&&!FIXSZ[mp.name]){ cx.save(); cx.translate(X,0); cx.scale(-1,1); cx.drawImage(im,-sw/2,y-sh,sw,sh); cx.restore(); } else cx.drawImage(im,X-sw/2,y-sh,sw,sh); cx.globalAlpha=1; }
     else if(it.k==='star'){ var st=it.o, X2=pX(st.x,s), rad=(st.gold?17:13)*s; if(st.gold) cx.drawImage(glow('rgba(255,225,77,.55)'),X2-rad*2,y-rad*3.2,rad*4,rad*4); cx.save(); cx.translate(X2,y-rad*1.2-Math.sin(gt*4+st.d)*3*s); cx.scale(s,s); drawStar(0,0,st.gold?17:13,st.gold?'#FFE14D':'#FFF8D6'); cx.restore(); }
     else if(it.k==='car'){ o=it.o; if(it.dd<-6) fade=Math.max(0,Math.min(1,(it.dd+135)/70)); var cim=rear(o.truck?'truck':o.on?'front':'traffic',o.col,o), cw=(cim.dw||(o.truck?54:50))*s, chh=cw*cim.height/cim.width, X3=pX(o.x,s); cx.globalAlpha=fade;
       if(o.out){ cx.save(); cx.translate(X3,y-chh/2); cx.rotate(o.rot); cx.drawImage(cim,-cw/2,-chh/2,cw,chh); cx.restore(); } else { cx.drawImage(cim,X3-cw/2,y-chh+3*s,cw,chh); cx.drawImage(glow(o.on?'rgba(255,244,194,.5)':'rgba(255,60,60,.45)'),X3-cw*0.62,y-chh*0.9,cw*1.24,chh*1.1); } cx.globalAlpha=1; }
