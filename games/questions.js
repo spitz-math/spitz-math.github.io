@@ -1741,7 +1741,7 @@ var HIDDEN=TOPICS.hidden, OFF=TOPICS.off, ASSIGN=TOPICS.assign.filter(function(k
 var FALLBACK=ASSIGN.length?ASSIGN[0].id:HIDDEN.indexOf('slope')<0?'slope':Object.keys(SETS).filter(function(s){ return HIDDEN.indexOf(s)<0; })[0]||'slope';
 (function(){ var qs=params(), id=qs.set, k=null;
   if(ASSIGN.length){ k=ASSIGN.filter(function(a){ return a.id===id; })[0]||ASSIGN[0]; id=k.id; }
-  else if(!SETS[id]||HIDDEN.indexOf(id)>=0) id=FALLBACK;
+  else if(!hasSet(id)||HIDDEN.indexOf(id)>=0) id=FALLBACK;
   var set=SETS[id], all=set.topics.map(function(t){ return t[0]; }), on=all.filter(function(t){ return (OFF[id]||[]).indexOf(t)<0; });
   if(!on.length) on=all;
   var ok=k&&k.topics.length?on.filter(function(t){ return k.topics.indexOf(t)>=0; }):on; if(!ok.length) ok=on;
@@ -1751,13 +1751,19 @@ var FALLBACK=ASSIGN.length?ASSIGN[0].id:HIDDEN.indexOf('slope')<0?'slope':Object
   if(id===qs.set&&want.join(',')===(qs.topics||'')) return;
   try{ history.replaceState(history.state,'',location.pathname+'?set='+id+'&topics='+want.join(',')+location.hash); }catch(e){} })();
 
+/* only the sets in SETS count: ?set=__proto__ or ?set=constructor used to reach Object.prototype and throw (2026-11-28) */
+function hasSet(id){ return typeof id==='string'&&Object.prototype.hasOwnProperty.call(SETS,id); }
+/* A miss shows the choice's "why" and then the explanation. Some generators repeat a sentence in both (Integers: "Check the sign. Same signs
+   give a positive." then "Same signs give a positive. ..."), so drop any "why" sentence the explanation already says (2026-11-28). */
+function dedupe(q){ try{ var ex=' '+plain(q.explain||'').replace(/\s+/g,' ')+' ';
+    q.choices.forEach(function(c){ if(!c.why) return; var keep=String(c.why).split(/(?<=[.!?])\s+/).filter(function(h){ var t=plain(h).replace(/\s+/g,' ').trim(); return !(t.length>8&&ex.indexOf(' '+t+' ')>=0); }); c.why=keep.join(' '); }); }catch(e){} return q; }
 function plain(h){ return String(h).replace(/<span class="[a-z]+-fr"><span>(.*?)<\/span><span>(.*?)<\/span><\/span>/g,'$1/$2').replace(/<[^>]+>/g,''); }
 function params(){ var qs={}; try{ (location.search||'').replace(/^\?/,'').split('&').forEach(function(kv){ var p=kv.split('='); if(p[0]) qs[decodeURIComponent(p[0])]=decodeURIComponent(p[1]||''); }); }catch(e){} return qs; }
 
 /* Returns null when the link names no set, so a game opened on its own plays exactly as it always has. */
 var live=null;
 function forGame(PFX){
-  var qs=params(), id=qs.set; if(!SETS[id]) return null;
+  var qs=params(), id=qs.set; if(!hasSet(id)) return null;
   var set=SETS[id], want=(qs.topics||'').split(',').map(function(t){ return set.alias&&set.alias[t]||t; }), picked=set.topics.filter(function(t){ return want.indexOf(t[0])>=0; });
   if(!picked.length) picked=set.topics;
   /* sentence-length prompts: the facts games set their prompt at 104px on one line, so give it room to wrap (big sets keep the one-line prompt) */
@@ -1780,7 +1786,7 @@ function forGame(PFX){
     return keep(fresh(),0); }
   function fresh(){ var q; for(var n=0;n<20;n++){ if(!topicBag.length) topicBag=bag.slice().sort(function(){ return Math.random()-0.5; });
       var t=topicBag.pop(), list=t[2], type; do{ type=list[Math.floor(Math.random()*list.length)]; }while(type===lastType&&list.length>1); lastType=type;
-      q=Q.build(type); q.topic=t[1];
+      q=dedupe(Q.build(type)); q.topic=t[1];
       if(id!=='mult') return q;
       var k=Math.min(q.data.a,q.data.b)+'x'+Math.max(q.data.a,q.data.b); if(k!==lastFact){ lastFact=k; return q; } }
     return q; }
@@ -1789,7 +1795,7 @@ function forGame(PFX){
   function short(max){ var q; for(var n=0;n<60;n++){ q=fresh(); if(fits(q,max)) return keep(q,0); }
     /* the picked topics are all pictures (a graphs-only link): borrow a picture-free question from the same set */
     var all=[]; set.topics.forEach(function(t){ all=all.concat(t[2]); });
-    for(n=0;n<60;n++){ var b=Q.build(all[Math.floor(Math.random()*all.length)]); if(fits(b,max)){ b.topic=picked[0][1]; return b; } }
+    for(n=0;n<60;n++){ var b=dedupe(Q.build(all[Math.floor(Math.random()*all.length)])); if(fits(b,max)){ b.topic=picked[0][1]; return b; } }
     return q; }
   var api={ set:id, name:set.name, custom:true, suffix:'_'+id+'_'+picked.map(function(t){ return t[0]; }).join('-'),
     topicTable:function(){ var o={}; picked.forEach(function(t){ o[t[1]]=[0,0]; }); return o; },
