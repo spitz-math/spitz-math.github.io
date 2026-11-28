@@ -27,7 +27,7 @@ var GAMES={                     /* id: [number in the code, display name, how it
   fishing:[10,'Go Fish','points'],
   brick_breaker:[11,'Brick Breaker','points'],
   burger_shop:[12,'Burger Shop','points'],
-  burger_blaster_v1:[13,'Burger Blaster (before remake)','points'],   /* codes from before the Burger Blaster remake went live */
+  burger_blaster:[13,'Burger Blaster','points'],   /* the 2026-11 remake keeps id 13: the code holds the game in 5 bits (1 to 31) and every id is taken, so old and new Burger Blaster codes share one board. A new game id needs a wider code layout first. */
   rocket_buds_v1:[14,'Rocket Buds (classic)','versus'],   /* codes from before 2026-11-02, when Rocket Buds scored Buds vs Rivals */
   paint_royale:[15,'Paint Royale','points'],
   snake_arena:[16,'Snake Arena','points'],
@@ -45,8 +45,7 @@ var GAMES={                     /* id: [number in the code, display name, how it
   football_buds:[29,'Football Buds BLITZ','points',10],   /* Football Buds BLITZ (2026-11): bot runs score about 100,000 to 450,000; the code holds the score in tens, so runs up to 10,485,750 fit (id 21 is the older Football Buds) */
   star_swarm_v2:[27,'Star Swarm (before HD)','points',10],   /* codes from 2026-11-17 until Star Swarm HD went live: the score in tens, so runs up to 10,485,750 fit (id 2 capped at 1,048,575) */
   star_swarm:[30,'Star Swarm HD','points',10],   /* Star Swarm HD (2026-11-25): bot runs score about 10,000 to 130,000; the code holds the score in tens (ids 2 and 27 are the older Star Swarm) */
-  jump_man_multiplication:[31,'Super Jump Man','points'],   /* Super Jump Man (2026-11): bot runs score about 1,300 to 11,400, well under the 1,048,575 cap (id 4 is the older Jump Man) */
-  burger_blaster:[32,'Burger Blaster','points']   /* Burger Blaster remake (2026-11): bot runs score about 15,000 to 250,000, under the 1,048,575 cap (id 13 is the older Burger Blaster) */
+  jump_man_multiplication:[31,'Super Jump Man','points']   /* Super Jump Man (2026-11): bot runs score about 1,300 to 11,400, well under the 1,048,575 cap (id 4 is the older Jump Man) */
 };
 /* question sets in the order questions.js lists them; 0 means the game's own questions. Add new sets at the end.
    New codes (layout C, since Oct 21 2026) have 6 bits for the set and 5 for topics, so up to 63 sets with up to 5 topics each fit. */
