@@ -485,6 +485,8 @@ t = swap(t, "['Height points',Math.floor(S.top/20).toLocaleString()]", "['Height
 t = swap(t, "g.txt='Bounce off a wall 3 times';", "g.txt='Wall Kick 3 times';")
 t = swap(t, "2 right: a new move and a heart back. Miss one", "2 right: a new move and all your hearts back. Miss one")
 t = swap(t, "S.fogOut?'The fog caught you! Right answers push it back, so keep going next time.':'Time!'", "S.fogOut?(S.answered<6?'The fog caught you! Take a running jump to climb faster.':'The fog caught you! Right answers push it back, so keep going next time.'):'Time!'")
+# ---- v38: small polish (welcome back after a reload, kinder low-score board line)
+t = swap(t, "/* ================= START / END", parts['V38'] + "\n/* ================= START / END")
 HOOKS = r"""<script>
 /* v35: the full test hooks stay only where tests run: a test copy opened from disk (name ends _mult, _test or _candidate, or
    it sits in the build's out/ folder), or localhost (QA checks). On the site __G.state() hands out a copy and the other
