@@ -478,6 +478,13 @@ t = swap(t, '</head>', '<style>#jmr-stale{ position:absolute; inset:0; z-index:3
 # ---- v36: instant save when the score changes (no gem lost or gained on a reload); the full screen hint moves to the right side panel
 t = swap(t, "/* ================= START / END", parts['V36'] + "\n/* ================= START / END")
 t = swap(t, '</head>', '<style>:root{ --sz-fs-x:0.908; }</style>\n</head>')
+# ---- v37: balance check fixes (stuck help, full heal, real wall kicks for the goal, height pays 2 a metre, restart box, end advice)
+t = swap(t, "/* ================= START / END", parts['V37'] + "\n/* ================= START / END")
+t = swap(t, "S.score=Math.floor(S.top/20)+S.bonus;", "S.score=Math.floor(S.top/20)*2+S.bonus;")
+t = swap(t, "['Height points',Math.floor(S.top/20).toLocaleString()]", "['Height points',(Math.floor(S.top/20)*2).toLocaleString()]")
+t = swap(t, "g.txt='Bounce off a wall 3 times';", "g.txt='Wall Kick 3 times';")
+t = swap(t, "2 right: a new move and a heart back. Miss one", "2 right: a new move and all your hearts back. Miss one")
+t = swap(t, "S.fogOut?'The fog caught you! Right answers push it back, so keep going next time.':'Time!'", "S.fogOut?(S.answered<6?'The fog caught you! Take a running jump to climb faster.':'The fog caught you! Right answers push it back, so keep going next time.'):'Time!'")
 HOOKS = r"""<script>
 /* v35: the full test hooks stay only where tests run: a test copy opened from disk (name ends _mult, _test or _candidate, or
    it sits in the build's out/ folder), or localhost (QA checks). On the site __G.state() hands out a copy and the other

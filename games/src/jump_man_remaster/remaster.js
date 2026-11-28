@@ -841,6 +841,50 @@ window.__G35={staleEl:function(){ return STALE_EL; }, resume:resume35};
    2 a reload keeps the score to the point: the run is saved the moment the score changes (gem, landing, combo, heart), within a
      tenth of a second, instead of waiting for the once-a-second save. save() already skips a stale second tab. */
 var sig36=null;   /* the first look only notes the score: a tab that has just loaded a run must not save (that would mark the other tab stale) */
-function sig(){ return [S.bonus,S.top,S.pi,S.gems,S.hearts,S.combos,S.ways].join('|'); }
+function sig(){ return [S.bonus,S.top,S.pi,S.gems,S.hearts,S.combos,S.ways,Math.floor((S.climbT||0)*4)].join('|'); }   /* v37: plus 4 saves a second while climbing, so a reload rewinds the fog by 0.25 s at most */
 setInterval(function(){ if(!S.started||S.over) return; var g=sig(); if(sig36===null){ sig36=g; return; } if(g!==sig36){ sig36=g; save(); } },100);
 window.__G36={sig:sig};
+//@@ V37
+/* v37 (balance check 2026-11-27, Kody "Fix all")
+   1 STUCK HELP: no new height for 6 s while the keys are in use = a "RUN, THEN JUMP" hint and the fog slows to 40%; at 10 s every ground
+     jump is a BOOST JUMP (a full running jump and a bit more) until you get higher. Hands-off idling gets none of it.
+   2 2 right at a Waystone fills ALL hearts (was one), so right answers keep an average climber in the run. One heart at most per 12 s (was 8),
+     the fog waits 8 s after a hit (was 5) and trails 300 px farther per missing heart (was 150).
+   3 the wall goal counts real Wall Kicks only (plain bumps counted before) and is not offered before Wall Kick is learned.
+   4 (build.py) height pays 2 points a metre (was 1), so climbing is a bigger share of the score.
+   5 the restart box closes on any key that is not Y (after its lock), and after a restart the name box ignores typing for 1.5 s.
+   6 (build.py) a short run that ends in the fog gets climbing advice, not "answer more".
+   7 Waystone pace (below). */
+var STUCK_HINT=6, STUCK_BOOST=10, STUCK_FOG=0.4, BOOST_K=1.12, stuckT=0, stuckTop=-1, stuckSaid=0, inputAt=-9, boostOn=false;
+HEAL_ALL=true; HURT_SAFE=12; FOG_HIT_CALM=8; FOG_MERCY=300;   /* v37 mercy (was 8 s, 5 s, 150 px): with the pace rule the slower-climber bot with all answers right reaches 5:00 with 14-22 questions; all wrong is out at 2:43-4:00 */
+var update37=update; update=function(dt){ if(!S.started||S.over) return update37(dt);
+  var j0=S.jumps, b0=S.bounces, k0=S.kicks||0, on0=!!P.on; if(keys.l||keys.r||keys.j||jumpQ) inputAt=gt;
+  update37(dt);
+  if(S.bounces>b0&&(S.kicks||0)===k0) S.bounces=b0;   /* a bump is not a kick */
+  if(S.way||S.offer||S.over) return;
+  wayPace();
+  if(S.top!==stuckTop){ stuckTop=S.top; stuckT=0; stuckSaid=0; boostOn=false; } else if(gt-inputAt<2) stuckT+=dt;
+  if(STUCK_HINT>0&&stuckT>=STUCK_HINT&&stuckSaid<1){ stuckSaid=1; pop(P.x,P.h+200,'RUN, THEN JUMP','a running jump goes higher','#FFC93C',true); }
+  if(STUCK_BOOST>0&&stuckT>=STUCK_BOOST&&stuckSaid<2){ stuckSaid=2; boostOn=true; pop(P.x,P.h+200,'BOOST JUMP!','your jumps go higher','#7CF0FF',true); }
+  if(boostOn&&on0&&S.jumps>j0&&P.vy>0) P.vy=Math.max(P.vy,(JV+JK*VMAX)*BOOST_K); };
+var fogSpeed37=fogSpeed; fogSpeed=function(){ return fogSpeed37()*(STUCK_HINT>0&&stuckT>=STUCK_HINT?STUCK_FOG:1); };
+var pickGoal37=pickGoal; pickGoal=function(not){ return pickGoal37(S.mv&&S.mv.wall?not:not.concat(['bounce'])); };
+addEventListener('keydown',function(e){ var a=$('sz-ask'); if(!a||a.hidden) return; var k=(e.key||'').toLowerCase();
+  if(k==='y'&&!askLocked()&&!e.repeat){ try{ sessionStorage.setItem('jmr_wiped','1'); }catch(x){} return; }
+  if(askLocked()||e.repeat||k==='y'||k==='n'||k==='escape'||k==='enter'||k===' '||k==='tab'||k==='shift'||k==='control'||k==='alt'||k==='meta'||k==='r') return;
+  e.preventDefault(); e.stopImmediatePropagation(); $('sz-askno').click(); },true);
+document.addEventListener('click',function(e){ if(e.target&&e.target.id==='sz-askyes'){ try{ sessionStorage.setItem('jmr_wiped','1'); }catch(x){} } },true);
+(function(){ var w=false; try{ w=sessionStorage.getItem('jmr_wiped')==='1'; sessionStorage.removeItem('jmr_wiped'); }catch(x){} var n=$('jm-nameinput'); if(!w||!n) return; n.readOnly=true; setTimeout(function(){ n.readOnly=false; },1500); })();
+/* 7 WAYSTONE PACE: a Waystone still comes every 30 ledges, but after WAY_PACE_S seconds of climbing since the last one the next Waystone
+     moves down to the next full floor above you. A slower climber meets about as many Waystones (questions, moves, heart refills) as a fast one. */
+var WAY_PACE_S=18, WAY_MIN_S=0, KICK_AIR=false;   /* WAY_MIN_S and KICK_AIR are balance switches for sims, both off: a minimum gap between Waystones cut a strong climber to 16-18 questions, and making a Wall Kick use up the air jumps did not slow Jump mashing */
+var doJump37=doJump; doJump=function(vm){ var k0=S.kicks||0; doJump37(vm); if(KICK_AIR&&(S.kicks||0)>k0) P.airJ=airMax(); };
+isWayFloor=function(i){ return i===S.nextWay||(S.wayAt?S.wayAt.indexOf(i)>=0:(i<S.nextWay&&i>=WAY_FIRST&&(i-WAY_FIRST)%WAY_EVERY===0)); };
+nextWayAfter=function(i){ return i+WAY_EVERY; };
+var closeWay37=closeWay; closeWay=function(){ var w=S.way, nw=S.nextWay; closeWay37(); if(w&&!S.way){ (S.wayAt=S.wayAt||[]).push(nw); S.nextWay=nw+WAY_EVERY; S.wayT=S.climbT||0; idleLeft=-1; save(); hud(); } };
+function wayPace(){ if(S.rush||S.way||S.offer||!S.ways) return; var since=(S.climbT||0)-(S.wayT||0);
+  if(since<WAY_MIN_S){ if(S.nextWay-(S.pi||0)<=9){ S.nextWay+=FLOOR_EVERY; idleLeft=-1; hud(); } return; }
+  if(WAY_PACE_S<=0||since<WAY_PACE_S) return; var f=(Math.floor((S.pi||0)/FLOOR_EVERY)+1)*FLOOR_EVERY;
+  if(f<S.nextWay){ S.nextWay=f; idleLeft=-1; pop(P.x,P.h+230,'WAYSTONE AHEAD','on the next floor','#7CF0FF',true); save(); hud(); } }
+window.__G37={pace:function(s,m){ WAY_PACE_S=s; if(m!==undefined) WAY_MIN_S=m; }, kickAir:function(b){ KICK_AIR=!!b; }, stuck:function(){ return {t:stuckT,boost:boostOn,said:stuckSaid}; }, tune:function(o){ if('hint' in o) STUCK_HINT=o.hint; if('boost' in o) STUCK_BOOST=o.boost; if('fog' in o) STUCK_FOG=o.fog; if('k' in o) BOOST_K=o.k; if('healAll' in o) HEAL_ALL=o.healAll; }};
+
