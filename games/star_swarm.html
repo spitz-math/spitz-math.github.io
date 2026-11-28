@@ -287,6 +287,19 @@ html body .sw-pkeys b{ font-size:15px; padding:8px 10px; }
 html body .sw-pkeys span:first-child b{ font:800 20px/1 var(--body); padding:5px 10px; }
 html body .sw-skip{ font-size:18px; padding:14px 20px; }
 html body .sz-ctl .t:first-child kbd{ font:800 21px/1 var(--body); }   /* the pixel font's left/right arrows are tiny: the arrow keys keep Inter's even arrows */
+
+/* v75: the revive question's choices wait 1.5 s */
+.sw-choices.sw-wait .sw-ch{ opacity:.45; pointer-events:none; transition:opacity .3s; }
+/* v75 (balance check #5: Play again was cut off at 1366x620 when the topic row and the 70% line show): a shorter end screen on short windows */
+@media (max-height:700px){
+  #sw-end .sw-endlogo{ height:116px; width:360px; margin:-10px auto -6px; }
+  #sw-end .sw-endlogo .sw-logoimg{ width:387px; height:258px; left:-14px; top:-76px; }
+  #sw-end .sw-final{ font-size:92px; }
+  #sw-end .sw-medal{ min-height:0; margin-top:2px; }
+  #sw-end .sw-stats{ margin:8px auto 2px; }
+  #sw-end .sw-topics{ margin:0 auto 8px; }
+  #sw-end .sw-again{ height:60px; }
+}
 </style>
 <script>/* a hub link with an algebra set (anything but mult and int): answers can be long, so layouts that tile short answers fall back to a list */
 if(/[?&]set=(?!(?:mult|int)\b)[a-z]/.test(location.search)) document.documentElement.classList.add('sz-alg');
@@ -734,7 +747,7 @@ function showQ(){ var q=S.q, el=$('sw-q'); el.classList.toggle('fast',FAST&&!q.v
   var fb=$('sw-fb'); fb.className='sw-fb'; fb.innerHTML=cardKind==='strike'?'A right answer fires the charged shot at the glowing part.':cardKind==='revive'?'Your ship is down. A right answer rebuilds it with '+CFG.revHull+' hull blocks and you fly on. A wrong answer ends the run.':S.hq?(S.hok?'Get this one right too for '+(CFG.bothPicks>1?'a <b>second upgrade</b>.':'<b>bonus points</b>.'):'Get this one right to repair your hull and pick an upgrade.'):'Get 1 right to repair and pick an upgrade. Get <b>both</b> right for '+(CFG.bothPicks>1?'two upgrades.':'bonus points too.'); $('sw-launch').disabled=true;
   launchLabel(); if(S.qDone) markAnswered(S.picked,false); }
 function newQ(){ clearTimeout(nextT); cardAt=Math.max(cardAt,now()-100); S.q=nextQuestion(); S.qDone=false; S.picked=-1; save(); showQ(); }
-function openCard(kind){ if(!S.started||S.over||cardOpen()||draftOpen()) return; frozen=true; away=false; letGo(); cardAt=holdAt=now(); cardKind=kind; S.pend=kind;
+function openCard(kind){ if(!S.started||S.over||cardOpen()||draftOpen()) return; frozen=true; away=false; letGo(); cardAt=holdAt=now(); cardKind=kind; S.pend=kind; if(kind==='revive'){ $('sw-choices').classList.add('sw-wait'); setTimeout(function(){ $('sw-choices').classList.remove('sw-wait'); },1500); }
   var el=$('sw-q'); $('sw-dim').hidden=false; el.hidden=false; el.classList.remove('pop'); if(!REDUCE){ void el.offsetWidth; el.classList.add('pop'); }
   if(!S.q||S.qDone) newQ(); else showQ(); SND.dock(); save(); }
 function closeCard(){ clearTimeout(nextT); clearTimeout(lockT); $('sw-q').hidden=true; $('sw-dim').hidden=true; }
@@ -744,7 +757,7 @@ function markAnswered(i,live){ launchLabel(); var q=S.q, btns=$('sw-choices').qu
   if(c.ok){ fb.className='sw-fb ok'; fb.innerHTML='<span class="h">✓ Correct!</span>'+(strike?'Charged shot away!':cardKind==='revive'?'Ship rebuilt. Back in the fight!':!S.hq?(S.fixed?'Hull repaired. ':'')+'One more: get it right for '+(CFG.bothPicks>1?'a second upgrade.':'bonus points.'):S.hok>1?(CFG.bothPicks>1?'Both right: pick <b>two</b> upgrades!':'Both right: +'+CFG.bothPts.toLocaleString()+' points and an upgrade!'):(S.fixed?'Hull repaired. ':'')+'Pick your upgrade.')+(S.streak>=3?' · streak '+S.streak+' = ×'+streakMult()+' points':''); $('sw-launch').disabled=false; }
   else { fb.className='sw-fb bad'; fb.innerHTML='<span class="h">✗ Not quite.</span>'+(c.why||'')+' '+(function(ex){ ex=ex||''; var tx=function(h){ return String(h||'').replace(/<[^>]*>/g,'').replace(/\s+/g,' ').replace(/[.!?:\s]+$/,'').trim(); }; if(tx(ex)&&tx(c.why).indexOf(tx(ex))>=0) return ''; if(c.why){ var wy=tx(c.why).toLowerCase(); ex=ex.split(/(?<=[.!?])\s+(?![^<]*>)/).filter(function(st){ var t=tx(st).toLowerCase(), u=t.replace(/^[a-z]{2,6}:\s*/,''); if(!t||(st.match(/<[a-z]/gi)||[]).length!==(st.match(/<\//g)||[]).length) return true; return wy.indexOf(t)<0&&(u.length<12||wy.indexOf(u)<0); }).join(' '); }   /* v68: some sets repeat the rule in both lines (hoy, int); say it once */ return /[.!?:]\s*$/.test(ex.replace(/<[^>]*>/g,''))||!ex?ex:ex+'.'; })(q.explain)+' <b>'+(strike?'The shot fizzled: weaken it again.':cardKind==='revive'?'Your ship is lost. The run is over.':!S.hq?'One more question: get it right to repair and pick an upgrade.':S.hok?'You still get your upgrade from the first one.':'No upgrade this time.')+'</b>';   /* v72 (overnight check #1, #2): the miss line says what really happens next */
     $('sw-launch').disabled=!!live; if(live){ clearTimeout(lockT); lockT=setTimeout(function(){ $('sw-launch').disabled=false; },wrongRun>=2?2500:2000); } } }
-function answer(i){ if(!S.started||S.over||!cardOpen()||S.qDone||!S.q||now()-cardAt<250) return; var c=S.q.choices[i]; if(!c) return;
+function answer(i){ if(!S.started||S.over||!cardOpen()||S.qDone||!S.q||now()-cardAt<(cardKind==='revive'?1500:250)) return;   /* v75 (balance check #4: mashing answered the revive in 0.4 s): the one revive waits 1.5 s, the choices show dimmed until then */ var c=S.q.choices[i]; if(!c) return;
   S.qDone=true; S.picked=i; S.answered++; if(S.topics[S.q.topic]) S.topics[S.q.topic][1]++;
   if(c.ok){ S.correct++; if(S.topics[S.q.topic]) S.topics[S.q.topic][0]++; S.streak++; S.best=Math.max(S.best,S.streak); wrongRun=0; S.pend=cardKind==='strike'?'strikeOk':cardKind==='revive'?'reviveOk':'hangar'; if(cardKind==='hangar'){ S.hok=(S.hok||0)+1; S.fixed=0; if(S.hok===1){ S.fixed=hp()<CFG.hull?1:0; if(S.fixed) S.hp=Math.min(CFG.hull,hp()+CFG.fix); } }   // v71: two hangar questions; the first right one repairs   // v40: the repair is saved with the answer, so a quick reload can't lose it
     SND.correct();    /* v61 (Kody): confetti only on the win screen */
@@ -945,6 +958,7 @@ function startWave(){ if(S.over) return; if(S.wave>=stages().length){ endRun(); 
   if(d.k==='rush'){ var R=RUSHP[d.pat]||RUSHP.classic; rush={T:-0.8,hit:0,total:24,done:false,bugs:[],R:R}; for(var g=0;g<3;g++) for(var i=0;i<8;i++) rush.bugs.push({g:g,i:i,type:g%2?'fly':'bee',sv:shipLook(d.sec,g,i),dead:false,on:false,x:-99,y:-99});
     if(WM.rhit){ rush.spoiled=true; rush.hit=WM.rhit; for(var rk=0;rk<WM.rhit&&rk<24;rk++) rush.bugs[rk].dead=true; } SND.wave(); return; }
   spawnRows(d.rows,d.gold||1,warp); if(WM.dead){ var orig=enemies.filter(function(a){ return !a.drone&&!a.dead; }); for(var dk=0;dk<WM.dead&&orig.length>1;dk++) orig.splice(Math.floor(Math.random()*orig.length),1)[0].dead=true; enemies=enemies.filter(function(a){ return !a.dead; }); } nextDive=gt+(S.wave===0?5.5:3.4); nextVolley=gt+4; nextHaz=gt+3.2; if(!d.first) SND.wave(); }   // v55 (Kody): a sector's first wave has no chime, the new song is playing
+  if(wv&&wv.resumed&&d.k==='swarm'){ enemies.forEach(function(a){ a.reIn=1; }); nextDive=gt+1.2; nextVolley=gt+1.5; }   /* v75 (balance check #6: a reload cleared the shots and paid x2 for the bugs flying back in): no intercept bonus, and the swarm fires again within 1.5 s */
 /* ship look or creature look: an even mix in the Outer Rim; the ship sectors are mostly ships, the creature sectors mostly creatures */
 function shipLook(sec,r,n){ var m=SECT[sec||'rim'].mix; return m==='ships'?r!==n-1:m==='bugs'?(r===0&&n>2):(r+S.wave)%2===0; }
 function spawnRows(rows,goldK,allGold){ var cols=8, mid=(cols-1)/2, sec=sectorNow(); F={cols:cols,amp:(W-(cols-1)*SPX-150)/2-20};
@@ -1011,7 +1025,7 @@ function hurt(why){ if(S.dead||shipSafe()) return false;   // v72 (overnight #3)
   if(hp()<=3) S.heat=Math.max(1,Math.min(S.heat,CFG.heatCap[Math.min(2,wv&&wv.def?(wv.def.si||0):0)])-1);   // v37: only a ship on its last 3 hull blocks makes the swarm ease off a step (it used to ease on every heavy hit, so it never got dangerous)
   shots=shots.filter(function(b){ return Math.hypot(b.x-ship.x,b.y-SHIP_Y)>330; });
   if(S.shield){ S.shield=0; ship.safeUntil=gt+1.0; pop(ship.x,SHIP_Y-80,'SHIELD!','BLOCKED'); ring(ship.x,SHIP_Y,'#4ADE80',140,0.35); pfx('cap_S',ship.x,SHIP_Y+40,2.5,0,{follow:1}); SND.hit(); save(); return true; }
-  var dmg=CFG.dmg[why]||1; if(why==='dive'&&wv&&wv.def&&(S.wave<=2||wv.def.k==='set')) dmg=1;   /* v59: dives in the first two waves and in set pieces cost 1 */
+  var dmg=CFG.dmg[why]||1; if(why==='dive'&&wv&&wv.def&&(S.wave<=2||wv.def.k==='set')) dmg=1;   if(why==='rock'&&SP&&SP.kind==='haul') dmg=1;   /* v75: Rock Hauler rocks are small: 1 hull each */   /* v59: dives in the first two waves and in set pieces cost 1 */
   hullWas=hp(); hullAt=gt; S.hp=hp()-dmg; if(S.hp<=0){ S.hp=0; S.dead=true; hullAt=-9;   /* v72: the hull bar shows 0, no fading blocks */ S.deadAt=Math.round(S.wall); burst(ship.x,SHIP_Y,'#FF9A2E',40,420,9); pfx('nova',ship.x,SHIP_Y-60,3.5); light(ship.x,SHIP_Y,'orange',700,0.8); shake(1); stopAt=-9; stop(150); SND.bigboom(); pop(W/2,440,'SHIP DESTROYED','',1.6); frozen=true; if(!S.revUsed){ S.revUsed=1; S.pend='revive'; S.q=null; setTimeout(reviveGate,1400); } else setTimeout(endRun,1400); save(); return true; }   // v71: one rebuild question a run   // 3 hearts; the last one ends the run
   ship.safeUntil=gt+(dmg>1?CFG.hitSafe:CFG.hitSafeLight); breakChain(); var down=''; if(dmg>1&&S.gun>1){ S.gun--; down=' · GUN: '+GUN_NAME[S.gun]; }
   burst(ship.x,SHIP_Y,'#FF4F6D',14,300); pfx('hurt',ship.x,SHIP_Y+20,3,0,{follow:1}); light(ship.x,SHIP_Y,'red',420,0.35);
@@ -1038,7 +1052,7 @@ function wingHit(k){ if(k<0||k>=S.wing||gt<wingSafe[k]||gt<resumeAt) return fals
 /* ---------- hits and kills ---------- */
 function hitEnemy(a,dmg){ if(a.dead) return; a.hp-=dmg||1; S.dmg+=dmg||1; a.flash=gt;
   if(a.hp>0){ addScore(pts(10)); SND.tick(); burst(a.x,a.y,'#FFFFFF',4,160,5); pfx('spark',a.x,a.y+8,2.5); return; }
-  a.dead=true; S.kills++; tutKills++; addChain(); if(a.haul&&SP) SP.popped++; if(!a.drone&&S.wm&&wv&&wv.def.k==='swarm') S.wm.dead++; var gold=a.gold, dive=a.state==='dive'||a.state==='bomb', icpt=a.state==='in', p=pts(BASE[a.type]*(gold?5:1)*(dive||icpt?2:1)*(a.haul?3:1)); addScore(p);
+  a.dead=true; S.kills++; tutKills++; addChain(); if(a.haul&&SP) SP.popped++; if(!a.drone&&S.wm&&wv&&wv.def.k==='swarm') S.wm.dead++; var gold=a.gold, dive=a.state==='dive'||a.state==='bomb', icpt=a.state==='in'&&!a.reIn, p=pts(BASE[a.type]*(gold?5:1)*(dive||icpt?2:1)*(a.haul?3:1)); addScore(p);
   var col=gold?'#FFC82E':a.type==='cmd'?'#4ADE80':a.type==='fly'?'#FF4F6D':a.type==='bomber'?'#C77DFF':'#FFD23D'; burst(a.x,a.y,col,gold||a.type!=='bee'?16:10,gold?340:260); flashes.push({x:a.x,y:a.y,c:col,t0:gt}); pfx(gold?'k_gold':KILL_FX[a.type]||'k_bee',a.x,a.y,gold||a.type==='cmd'||a.type==='bomber'?3:2.5);
   light(a.x,a.y,gold?'gold':a.type==='fly'?'red':a.type==='cmd'?'lime':'gold',gold||a.type==='bomber'?460:320,0.35);
   pop(a.x,a.y-58,'+'+p,a.haul?'HAULER!':gold?'GOLD!':dive?'DIVE ×2':icpt?'INTERCEPT ×2':'',0.8);   /* v74: lifted off the explosion */
@@ -1151,8 +1165,8 @@ function updateSet(dt,calm){ var sp=SP, h=heatNow(), i; if(!calm) sp.t+=dt; if(S
     if(sp.q) sp.q=sp.q.filter(function(b){ if(sp.t<b.at) return true; haz.push({k:'bolt',zap:1,x:b.x,w:200,t:0}); if(b.x===100||b.x===1500) SND.tele(); return false; });
     if(!run&&!(sp.q&&sp.q.length)&&!haz.some(function(o){ return o.k==='bolt'&&!o.dead; })) endSet('ALLEY CLEARED'); }
   else if(sp.kind==='haul'){   /* v74: four big haulers cross the top in turn, dropping small rocks. Shoot them down (5 hits each) before they fly off */
-    if(run&&sp.t>=sp.next&&sp.n<4){ sp.next=sp.t+3.8; var L=sp.n%2===0, hy=175+(sp.n%2)*80;
-      enemies.push({type:'bomber',sv:true,row:0,col:sp.n,hp:5,gold:false,state:'haul',haul:1,drone:true,t:0,x:L?-90:W+90,y:hy,hy:hy,dirx:L?1:-1,drop:0.9,dead:false,fire:[],flash:-9}); sp.total++; sp.n++; SND.tele(); }
+    if(run&&sp.t>=sp.next&&sp.n<4){ sp.next=sp.t+3.0; var L=sp.n%2===0, hy=175+(sp.n%2)*80;   /* v75 (balance check #3: 8 s empty start, 26-34 s long): they fly in from just off screen, faster and closer together (about 20 s) */
+      enemies.push({type:'bomber',sv:true,row:0,col:sp.n,hp:5,gold:false,state:'haul',haul:1,drone:true,t:0,x:L?-50:W+50,y:hy,hy:hy,dirx:L?1:-1,drop:0.5,dead:false,fire:[],flash:-9}); sp.total++; sp.n++; SND.tele(); }
     if(sp.n>=4&&!enemies.some(function(o){ return o.haul&&!o.dead; })) endSet(sp.popped>=sp.total?'HAULERS WIPED OUT':'HAULERS · '+sp.popped+' OF '+sp.total+' DOWN',sp.popped>=sp.total); }
   else if(sp.kind==='wall'){
     if(!sp.built){ sp.built=1; for(var r=0;r<2;r++) for(i=0;i<16;i++) haz.push({k:'xtal',x:50+i*100,y:-70-r*62+Math.max(0,sp.t)*(52+h*3),vy:52+h*3,w:96,h:56,r:50,hp:3,row:r,t:0,flash:-9,seed:(i*7+r*3)%5}); sp.total=32; sp.next=2.5; }
@@ -1393,8 +1407,10 @@ function update(dt){ if(!S.started||S.over||frozen) return;
     else if(a.state==='bomb'){ if(a.t<1){ e=a.t; e=e*e*(3-2*e); a.x=a.bx; a.y=a.by+(390-a.by)*e; }
       else { a.x+=a.dirx*170*dt; a.y=390+Math.sin(a.t*3)*8; a.drop-=dt; if(a.drop<=0){ a.drop=0.75; efire(a.x,a.y,1,0,true,a.sv?'plasma':'acid'); }
         if(a.t>5.2||a.x<70||a.x>W-70){ a.state='back'; a.t=0; a.bx=a.x; a.by=a.y; } } }
-    else if(a.state==='haul'){ a.x+=a.dirx*120*dt; a.y=a.hy+Math.sin(a.t*2.2)*10; a.drop-=dt;
-      if(a.drop<=0&&a.x>80&&a.x<W-80){ a.drop=1.35*(mercy()?1.4:1); addRock(a.x-a.dirx*80,a.y+30,-a.dirx*30+(Math.random()-0.5)*50,165,false);   /* rocks drop from its tail so they never shield it from a ship right below */ SND.thunk(); }
+    else if(a.state==='haul'){ a.x+=a.dirx*150*dt; a.y=a.hy+Math.sin(a.t*2.2)*10; a.drop-=dt;
+      if(a.drop<=0&&a.x>80&&a.x<W-80){ a.drop=1.1*(mercy()?1.4:1); a.nd=(a.nd||0)+1;
+        if(a.nd%2){ var ft=(SHIP_Y-(a.y+34))/190; addRock(a.x,a.y+34,clamp((ship.x-a.x)/ft,-420,420),190,false); }   /* v75 (balance check #1: a parked ship took 0 hits): every other rock is thrown at the ship; right under the hauler your own shots break it */
+        else addRock(a.x-a.dirx*80,a.y+30,-a.dirx*30+(Math.random()-0.5)*50,165,false);   /* the others drop from its tail so they never shield it */ SND.thunk(); }
       if(a.x<-120||a.x>W+120){ a.dead=true; return; } }
     else if(a.state==='flee'){ a.y-=620*dt; if(a.y<-120){ a.dead=true; return; } }
     else { u=Math.min(1,a.t/1.0); e=1-(1-u)*(1-u); var bx=a.bx==null?slotX(a):a.bx; a.x=bx+(slotX(a)-bx)*e; a.y=a.by+(slotY(a)-a.by)*e; if(u>=1) a.state='form'; }
@@ -1433,7 +1449,7 @@ function update(dt){ if(!S.started||S.over||frozen) return;
       if(bossHull(b.x,b.y,y0)&&!(PAINTC[boss.id]&&ps.some(function(p){ var q=bpos(p); return B.hp[p]>0&&Math.abs(b.x-q[0])<q[2]+hw0&&q[1]<b.y; }))){ burst(b.x,b.y+20,'#3DE0FF',1,90,4); bodyChip(b.x,b.dmg); return false; } }   // v16: on a painting, a shot lined up under a live weak point flies on to it
     for(k=0;k<haz.length;k++){ a=haz[k]; if(a.dead||a.k==='bolt'||b.seen.indexOf(a)>=0) continue; if(Math.abs(b.x-a.x)<a.r+hw0&&a.y+a.r>=b.y&&a.y-a.r<=y0){ b.seen.push(a); hazHit(a,b.dmg); if(--b.left<=0) return false; } }
     if(rush&&!rush.done){ rush.bugs.forEach(function(q){ if(stopBeam||q.dead||!q.on||b.seen.indexOf(q)>=0) return; if(Math.abs(b.x-q.x)<34+hw0&&q.y+24>=b.y&&q.y-24<=y0){ b.seen.push(q); rushHit(q); if(--b.left<=0) stopBeam=true; } }); if(stopBeam) return false; }
-    for(k=0;k<enemies.length;k++){ a=enemies[k]; if(a.dead||a.state==='flee'||(a.state==='in'&&a.t<0)||b.seen.indexOf(a)>=0) continue; var hw=(a.haul?66:a.type==='bomber'?42:a.type==='cmd'?38:34)+hw0, hh=26;
+    for(k=0;k<enemies.length;k++){ a=enemies[k]; if(a.dead||a.state==='flee'||(a.state==='in'&&a.t<0)||b.seen.indexOf(a)>=0) continue; var hw=(a.haul?66:a.type==='bomber'?42:a.type==='cmd'?38:34)+hw0, hh=a.haul?46:26;
       if(Math.abs(b.x-a.x)<hw&&a.y+hh>=b.y&&a.y-hh<=y0){ b.seen.push(a); hitEnemy(a,b.dmg); if(--b.left<=0) return false; } }
     return b.y>-40&&b.x>-40&&b.x<W+40; });
   for(var s=0;s<256;s++){ var p=SPK[s]; if(!p.on) continue; p.life+=dt; if(p.life>=p.max){ p.on=false; continue; } p.x+=p.vx*dt; p.y+=p.vy*dt; var dr=Math.pow(0.02,dt); p.vx*=dr; p.vy*=dr; }
@@ -1642,7 +1658,7 @@ function drawEnemy(a){ var fr=Math.floor(formT*(a.state==='form'?2.4:7)+a.col)%2
   if((a.state==='dive'||a.state==='bomb')){ add(1); stamp('red',x,y,150,0.9); add(0); }                 // divers glow red: these hurt
   if(a.state==='tele'){ add(1); stamp('white',a.x,y,130,0.75); add(0); }
   else if(a.gold){ add(1); stamp('gold',x,y,110,0.4); add(0); }
-  else if(a.haul){ add(1); stamp('gold',x,y,150,0.32); add(0); }   // v74: Rock Haulers glow amber, the big target of the Outer Rim set piece
+  else if(a.haul){ add(1); stamp('gold',x,y,240,0.62); add(0); sprK(s,x,y,1.75); add(1); stamp('gold',x,y,170,0.34); add(0); if(gt-a.flash<0.07){ add(1); stamp('white',x,y,150,0.9); add(0); } return; }   // v74: Rock Haulers glow amber. v75 (balance check #2: they read as bug-sized): drawn 1.75x with a stronger glow
   spr(s,x,y);
   if(fx&&fx.bl){ add(1); cx.globalAlpha=fx.ba*(REDUCE?0.6:0.5+0.22*Math.sin(gt*2.6+ph)); cx.drawImage(fx.bl,Math.round(x-s.width/2-fx.B),Math.round(y-s.height/2-fx.B)); cx.globalAlpha=1; add(0); }   // eyes and cores glow
   if(fx&&!REDUCE){ var gk=(gt*0.42+ph*0.13)%1; if(gk<0.09){ var gs=Math.sin(gk/0.09*Math.PI), gx=Math.round(x-s.width*0.22), gy=Math.round(y-s.height*0.26), ln=Math.round(4+12*gs);   // a pixel star glints on its top-left edge now and then
@@ -2415,7 +2431,7 @@ function showEnd(celebrate){ playUI(false); if(window.SpitzCode) setTimeout(func
 function newGame(){ clearTimeout(nextT); clearTimeout(lockT); var keepName=S.name; S=fresh(); S.name=keepName; resetField(); playUI(false);
   $('sw-end').hidden=true; $('sw-start').hidden=false; $('sw-nameinput').value=keepName; $('sw-go').disabled=!keepName; hudKey=''; save(); hud(); }
 /* v2: one tap (or Enter) on Play again starts the next run straight away with the same name (replay hook). The button waits 2 s after the end so a stray key can't skip the score */
-function playAgain(){ var b=$('sw-again'); if(b.disabled||!S.over||now()-endAt<2000) return; var n=S.name; newGame(); if(n){ $('sw-nameinput').value=n; $('sw-go').disabled=false; $('sw-go').click(); } }
+function playAgain(key){ var b=$('sw-again'); if(b.disabled||!S.over||now()-endAt<(key===true?5000:2000)) return;   /* v75 (balance check #5: mashing Enter skipped the end screen in 4 s): Enter waits 5 s, a click 2 s */ var n=S.name; newGame(); if(n){ $('sw-nameinput').value=n; $('sw-go').disabled=false; $('sw-go').click(); } }
 $('sw-again').addEventListener('click',playAgain);
 
 /* ================= KEYS ================= */
@@ -2436,7 +2452,7 @@ document.addEventListener('keydown',function(e){ lastInput=now(); if(e.metaKey||
   if(k==='n'){ e.preventDefault(); musicToggle(); return; }
   if(k==='b'&&TESTBOX&&!e.repeat){ e.preventDefault(); HD.on=!HD.on; if(HD.on){ HD.tier=2; HD.fn=HD.sn=0; HD.t=0; HD.skip=0.5; } toast(HD.on?'HD glow on':'HD glow off'); return; }   // v68: test copies only, compare the look with and without the bloom + vignette pass
   if(k==='m'){ e.preventDefault(); muted=!muted; save(); toast(muted?'Sound off':'Sound on'); if(!muted) SND.tick(); return; }
-  if(S.over&&e.key==='Enter'&&!$('sw-end').hidden){ e.preventDefault(); if(!e.repeat) playAgain(); return; }
+  if(S.over&&e.key==='Enter'&&!$('sw-end').hidden){ e.preventDefault(); if(!e.repeat) playAgain(true); return; }
   if(!S.started||S.over) return;
   if(CUT){ e.preventDefault(); if(!e.repeat&&(e.key==='Enter'||e.key===' '||e.key==='Escape')) cutEnd(); return; }   // v42: the opening scene eats keys; Enter, Space or Esc skips it
   if(pauseOpen()){ e.preventDefault(); if(!e.repeat&&(k==='p'||e.key==='Escape')) closePause(); return; }   // only P, Esc or Resume closes the pause screen
