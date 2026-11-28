@@ -165,8 +165,8 @@ function makeLinear(PFX){
   hvType:function(){ var hz=Math.random()<0.5, c=nz(-9,9), e=(hz?'y':'x')+' = '+num(c);
     var HOY='HOY: y = a number is Horizontal with 0 slope.', VUX='VUX: x = a number is Vertical with Undefined slope.';
     var opts=[['Horizontal, slope 0','H0'],['Vertical, undefined slope','VU'],['Horizontal, undefined slope','HU'],['Vertical, slope 0','V0']];
-    var why=hz? {VU:'That is VUX. '+HOY, HU:'Right direction, wrong slope. '+HOY, V0:'Right slope, wrong direction. '+HOY}
-              : {H0:'That is HOY. '+VUX, V0:'Right direction, wrong slope. '+VUX, HU:'Right slope, wrong direction. '+VUX};
+    var why=hz? {VU:'Vertical with undefined slope is VUX, for x = a number. This line is y = a number. '+HOY, HU:'Right direction, wrong slope. '+HOY, V0:'Right slope, wrong direction. '+HOY}
+              : {H0:'Horizontal with 0 slope is HOY, for y = a number. This line is x = a number. '+VUX, V0:'Right direction, wrong slope. '+VUX, HU:'Right slope, wrong direction. '+VUX};
     var ok=hz?'H0':'VU', ch=[C(opts.filter(function(o){ return o[1]===ok; })[0][0],{hv:ok})];
     opts.forEach(function(o){ if(o[1]!==ok) ch.push(C(o[0],{hv:o[1]},why[o[1]])); });
     return { topic:'HOY & VUX', prompt:'Describe the line '+eq(e)+'.', data:{hz:hz}, check:function(v){ return v.hv===(e.charAt(0)==='y'?'H0':'VU'); }, choices:ch,

@@ -873,9 +873,18 @@ function burst(x,y,c,n,sp,sz){ if(REDUCE) n=Math.ceil(n/3); for(var i=0;i<n;i++)
   p.on=true; p.x=x; p.y=y; p.vx=Math.cos(an)*v; p.vy=Math.sin(an)*v; p.life=0; p.max=0.35+Math.random()*0.4; p.c=i%3?c:'#FFFFFF'; p.s=(sz||7)*(0.6+Math.random()*0.7); } }
 function ring(x,y,c,r,d){ rings.push({x:x,y:y,c:c,r:r,d:d||0.5,t0:gt}); if(rings.length>10) rings.shift(); }
 function pop(x,y,txt,lab,d){ x=clamp(x,150,W-150); y=Math.max(150,y);
-  /* v59 (audit #2: "HIT! -1 HULL" landed on "GRAZE +30"): a new pop steps up above any live pop it would overlap */
-  for(var k=0;k<4;k++){ var hitp=pops.some(function(p){ return gt-p.t0<p.d&&Math.abs(p.x-x)<240&&Math.abs((p.y-(gt-p.t0)/p.d*46)-y)<(lab?70:46); }); if(!hitp) break; y-=lab?74:50; } y=Math.max(150,y);
-  pops.push({x:x,y:y,t0:gt,txt:txt,lab:lab||'',d:d||1.0}); if(pops.length>8) pops.shift(); }
+  /* v59 (audit #2: "HIT! -1 HULL" landed on "GRAZE +30"): a new pop steps up above any live pop it would overlap.
+     v74 (Kody: "fix the pop-up pileups"): a plain "+40" right beside a fresh one adds into it; the pop also tries left and right of its spot;
+     a plain score pop with no free spot is skipped (the score still counts); a message that must show pushes out the plain score pops it would cover. */
+  var live=pops.filter(function(p){ return gt-p.t0<p.d; }), plain=!lab&&/^\+[\d,]+$/.test(txt);
+  function cy(p){ return p.y-(gt-p.t0)/p.d*46; }
+  function over(px,py,p){ return Math.abs(p.x-px)<240&&Math.abs(cy(p)-py)<((lab||p.lab)?70:46); }
+  if(plain){ var m=live.filter(function(p){ return !p.lab&&/^\+[\d,]+$/.test(p.txt)&&gt-p.t0<0.4&&Math.abs(p.x-x)<200&&Math.abs(cy(p)-y)<70; })[0];
+    if(m){ m.txt='+'+(parseInt(m.txt.slice(1).replace(/,/g,''),10)+parseInt(txt.slice(1).replace(/,/g,''),10)).toLocaleString(); return; } }
+  var tries=[[0,0]]; for(var k=1;k<=4;k++) tries.push([0,-(lab?74:50)*k],[k<3?-260:260,-(lab?74:50)*(k-1)],[k<3?260:-260,-(lab?74:50)*(k-1)]);
+  var spot=null; for(k=0;k<tries.length&&!spot;k++){ var tx=clamp(x+tries[k][0],150,W-150), ty=Math.max(150,y+tries[k][1]); if(!live.some(function(p){ return over(tx,ty,p); })) spot=[tx,ty]; }
+  if(!spot){ if(plain) return; spot=[x,y]; pops=pops.filter(function(p){ return p.lab||!/^\+[\d,]+$/.test(p.txt)||!over(x,y,p); }); }
+  pops.push({x:spot[0],y:spot[1],t0:gt,txt:txt,lab:lab||'',d:d||1.0}); if(pops.length>8) pops.shift(); }
 function shake(v){ trauma=Math.min(1,Math.max(trauma,v)); }
 function stop(ms){ if(hitStop<=0&&gt-stopAt>0.3){ hitStop=(REDUCE?Math.min(40,ms):ms)/1000; stopAt=gt; } } var stopAt=-9;
 /* a pool of light: a soft glow added over the sprites and the sky around a blast (HD-2D) */
@@ -885,7 +894,7 @@ function light(x,y,name,size,d){ lights.push({x:x,y:y,n:name||'white',s:Math.min
    Every sector: wave, HANGAR, wave (with the sector's hazard), rush, HANGAR, boss, then the fork. Deadlines are shares of the 8:00 clock, so
    every student reaches all three bosses. A wave cleared early brings gold bonus squads until its deadline; a wave that is not cleared flies off. */
 var SECT={
-  rim:  {name:'OUTER RIM',     mix:'even',  boss:'mom',     haz:'rock',      rush:'classic', rushT:'SWARM RUSH',
+  rim:  {name:'OUTER RIM',     mix:'even',  boss:'mom',     haz:'rock',      rush:'classic', rushT:'SWARM RUSH', set:{kind:'haul',title:'ROCK HAULERS',sub:'SHOOT THE BIG HAULERS · DODGE THEIR ROCKS',dur:18},   /* v74 (Kody: sector 1 waves felt samey) */
          waves:[{rows:['bee','bee'],title:'SCOUTS',sub:'ZAP THE BUGS · DODGE THE RED DIVERS'},{rows:['fly','bee','bee'],title:'RED FLIES',sub:'THEY ZIGZAG AND SHOOT'},{rows:['cmd','fly','fly','bee'],title:'ESCORT WING',sub:'THE GREEN ONES ARE TOUGH'}]},
   belt: {name:'ASTEROID BELT', mix:'ships', boss:'crusher', haz:'rock',  rush:'vee',     rushT:'SQUADRON RUSH', set:{kind:'canyon',title:'ROCK CANYON',sub:'STAY IN THE GAP · SHOOT ROCKS TO OPEN IT',dur:22},
          waves:[{rows:['cmd','fly','bee'],title:'MINING FLEET',sub:'SHOOT THE ROCKS OR DODGE THEM'},{rows:['top','fly','bee','bee'],title:'BOMBER WING',sub:'KEEP MOVING'},{rows:['top','cmd','fly','bee','bee'],title:'ROCK STORM',sub:'THE ROCKS COME FASTER'}]},
@@ -1029,10 +1038,10 @@ function wingHit(k){ if(k<0||k>=S.wing||gt<wingSafe[k]||gt<resumeAt) return fals
 /* ---------- hits and kills ---------- */
 function hitEnemy(a,dmg){ if(a.dead) return; a.hp-=dmg||1; S.dmg+=dmg||1; a.flash=gt;
   if(a.hp>0){ addScore(pts(10)); SND.tick(); burst(a.x,a.y,'#FFFFFF',4,160,5); pfx('spark',a.x,a.y+8,2.5); return; }
-  a.dead=true; S.kills++; tutKills++; addChain(); if(!a.drone&&S.wm&&wv&&wv.def.k==='swarm') S.wm.dead++; var gold=a.gold, dive=a.state==='dive'||a.state==='bomb', icpt=a.state==='in', p=pts(BASE[a.type]*(gold?5:1)*(dive||icpt?2:1)); addScore(p);
+  a.dead=true; S.kills++; tutKills++; addChain(); if(a.haul&&SP) SP.popped++; if(!a.drone&&S.wm&&wv&&wv.def.k==='swarm') S.wm.dead++; var gold=a.gold, dive=a.state==='dive'||a.state==='bomb', icpt=a.state==='in', p=pts(BASE[a.type]*(gold?5:1)*(dive||icpt?2:1)*(a.haul?3:1)); addScore(p);
   var col=gold?'#FFC82E':a.type==='cmd'?'#4ADE80':a.type==='fly'?'#FF4F6D':a.type==='bomber'?'#C77DFF':'#FFD23D'; burst(a.x,a.y,col,gold||a.type!=='bee'?16:10,gold?340:260); flashes.push({x:a.x,y:a.y,c:col,t0:gt}); pfx(gold?'k_gold':KILL_FX[a.type]||'k_bee',a.x,a.y,gold||a.type==='cmd'||a.type==='bomber'?3:2.5);
   light(a.x,a.y,gold?'gold':a.type==='fly'?'red':a.type==='cmd'?'lime':'gold',gold||a.type==='bomber'?460:320,0.35);
-  pop(a.x,a.y-34,'+'+p,gold?'GOLD!':dive?'DIVE ×2':icpt?'INTERCEPT ×2':'',0.8);
+  pop(a.x,a.y-58,'+'+p,a.haul?'HAULER!':gold?'GOLD!':dive?'DIVE ×2':icpt?'INTERCEPT ×2':'',0.8);   /* v74: lifted off the explosion */
   if(gold||a.type==='cmd'||a.type==='bomber'){ SND.big(gold); stop(30); shake(0.22); } else { SND.kill(S.chain); shake(0.12); }
   if(wv&&wv.def.k==='swarm'&&!wv.done&&!enemies.some(function(o){ return !o.dead&&o.state!=='flee'&&!o.drone; })) waveOver(true); hud(); }
 var flashes=[];
@@ -1125,7 +1134,7 @@ function updateHaz(dt,inDash){ var live=[];
 var SP=null;
 function startSet(d){ SP={kind:d.kind,dur:d.dur,t:-1.4,next:0,n:0,popped:0,total:0,broke:0,drone:3.5,ended:false}; nextHaz=gt+99; }
 function updateSet(dt,calm){ var sp=SP, h=heatNow(), i; if(!calm) sp.t+=dt; if(S.wm) S.wm.set={t:sp.t,next:sp.next,n:sp.n,popped:sp.popped,total:sp.total,broke:sp.broke}; if(sp.t<0) return; var run=sp.t<sp.dur;
-  if(sp.kind!=='nest'&&sp.kind!=='alley'&&run&&h>=2&&(sp.drone-=dt)<=0){ sp.drone=4.2-h*0.15; spawnDrone(200+Math.random()*(W-400),150,Math.random()<0.5?'bee':'fly',Math.random()<0.25); }
+  if(sp.kind!=='nest'&&sp.kind!=='alley'&&run&&h>=(sp.kind==='haul'?3:2)&&(sp.drone-=dt)<=0){ sp.drone=4.2-h*0.15; spawnDrone(200+Math.random()*(W-400),150,Math.random()<0.5?'bee':'fly',Math.random()<0.25); }
   if(sp.kind==='canyon'){
     if(run&&sp.t>=sp.next){ sp.next=sp.t+0.62; var k=Math.min(1,sp.t/4), gc=W/2+Math.sin(sp.t*0.5)*380*k+Math.sin(sp.t*1.3)*60*k, gw=560-170*Math.min(1,sp.t/sp.dur);
       sp.gc=gc; sp.gw=gw; var rowL=null, rowR=null; for(var x=56;x<W;x+=112){ if(Math.abs(x-gc)<gw/2) continue; haz.push({k:'rock',wall:1,x:x+(Math.random()-0.5)*14,y:-60,vx:0,vy:290+h*6,r:44,hp:3,big:true,rot:Math.random()*6,spin:(Math.random()-0.5)*0.8,seed:Math.floor(Math.random()*4),t:0,flash:-9}); var nr=haz[haz.length-1]; if(x<gc) rowL=nr; else if(!rowR) rowR=nr; }
@@ -1141,6 +1150,10 @@ function updateSet(dt,calm){ var sp=SP, h=heatNow(), i; if(!calm) sp.t+=dt; if(S
       for(i=0;i<8;i++){ if(i===safe||i===safe+1) continue; var ord=dir>0?i:7-i; sp.q.push({at:sp.t+ord*0.09,x:100+i*200}); } }
     if(sp.q) sp.q=sp.q.filter(function(b){ if(sp.t<b.at) return true; haz.push({k:'bolt',zap:1,x:b.x,w:200,t:0}); if(b.x===100||b.x===1500) SND.tele(); return false; });
     if(!run&&!(sp.q&&sp.q.length)&&!haz.some(function(o){ return o.k==='bolt'&&!o.dead; })) endSet('ALLEY CLEARED'); }
+  else if(sp.kind==='haul'){   /* v74: four big haulers cross the top in turn, dropping small rocks. Shoot them down (5 hits each) before they fly off */
+    if(run&&sp.t>=sp.next&&sp.n<4){ sp.next=sp.t+3.8; var L=sp.n%2===0, hy=175+(sp.n%2)*80;
+      enemies.push({type:'bomber',sv:true,row:0,col:sp.n,hp:5,gold:false,state:'haul',haul:1,drone:true,t:0,x:L?-90:W+90,y:hy,hy:hy,dirx:L?1:-1,drop:0.9,dead:false,fire:[],flash:-9}); sp.total++; sp.n++; SND.tele(); }
+    if(sp.n>=4&&!enemies.some(function(o){ return o.haul&&!o.dead; })) endSet(sp.popped>=sp.total?'HAULERS WIPED OUT':'HAULERS · '+sp.popped+' OF '+sp.total+' DOWN',sp.popped>=sp.total); }
   else if(sp.kind==='wall'){
     if(!sp.built){ sp.built=1; for(var r=0;r<2;r++) for(i=0;i<16;i++) haz.push({k:'xtal',x:50+i*100,y:-70-r*62+Math.max(0,sp.t)*(52+h*3),vy:52+h*3,w:96,h:56,r:50,hp:3,row:r,t:0,flash:-9,seed:(i*7+r*3)%5}); sp.total=32; sp.next=2.5; }
     if(run&&sp.t>=sp.next){ sp.next=sp.t+(h>=4?2.0:2.6); haz.push({k:'shard',x:clamp(ship.x+(Math.random()-0.5)*300,60,W-60),y:-70,t:0,r:22,hp:1,flash:-9}); SND.tele(); }
@@ -1380,6 +1393,9 @@ function update(dt){ if(!S.started||S.over||frozen) return;
     else if(a.state==='bomb'){ if(a.t<1){ e=a.t; e=e*e*(3-2*e); a.x=a.bx; a.y=a.by+(390-a.by)*e; }
       else { a.x+=a.dirx*170*dt; a.y=390+Math.sin(a.t*3)*8; a.drop-=dt; if(a.drop<=0){ a.drop=0.75; efire(a.x,a.y,1,0,true,a.sv?'plasma':'acid'); }
         if(a.t>5.2||a.x<70||a.x>W-70){ a.state='back'; a.t=0; a.bx=a.x; a.by=a.y; } } }
+    else if(a.state==='haul'){ a.x+=a.dirx*120*dt; a.y=a.hy+Math.sin(a.t*2.2)*10; a.drop-=dt;
+      if(a.drop<=0&&a.x>80&&a.x<W-80){ a.drop=1.35*(mercy()?1.4:1); addRock(a.x-a.dirx*80,a.y+30,-a.dirx*30+(Math.random()-0.5)*50,165,false);   /* rocks drop from its tail so they never shield it from a ship right below */ SND.thunk(); }
+      if(a.x<-120||a.x>W+120){ a.dead=true; return; } }
     else if(a.state==='flee'){ a.y-=620*dt; if(a.y<-120){ a.dead=true; return; } }
     else { u=Math.min(1,a.t/1.0); e=1-(1-u)*(1-u); var bx=a.bx==null?slotX(a):a.bx; a.x=bx+(slotX(a)-bx)*e; a.y=a.by+(slotY(a)-a.by)*e; if(u>=1) a.state='form'; }
     live.push(a); });
@@ -1417,7 +1433,7 @@ function update(dt){ if(!S.started||S.over||frozen) return;
       if(bossHull(b.x,b.y,y0)&&!(PAINTC[boss.id]&&ps.some(function(p){ var q=bpos(p); return B.hp[p]>0&&Math.abs(b.x-q[0])<q[2]+hw0&&q[1]<b.y; }))){ burst(b.x,b.y+20,'#3DE0FF',1,90,4); bodyChip(b.x,b.dmg); return false; } }   // v16: on a painting, a shot lined up under a live weak point flies on to it
     for(k=0;k<haz.length;k++){ a=haz[k]; if(a.dead||a.k==='bolt'||b.seen.indexOf(a)>=0) continue; if(Math.abs(b.x-a.x)<a.r+hw0&&a.y+a.r>=b.y&&a.y-a.r<=y0){ b.seen.push(a); hazHit(a,b.dmg); if(--b.left<=0) return false; } }
     if(rush&&!rush.done){ rush.bugs.forEach(function(q){ if(stopBeam||q.dead||!q.on||b.seen.indexOf(q)>=0) return; if(Math.abs(b.x-q.x)<34+hw0&&q.y+24>=b.y&&q.y-24<=y0){ b.seen.push(q); rushHit(q); if(--b.left<=0) stopBeam=true; } }); if(stopBeam) return false; }
-    for(k=0;k<enemies.length;k++){ a=enemies[k]; if(a.dead||a.state==='flee'||(a.state==='in'&&a.t<0)||b.seen.indexOf(a)>=0) continue; var hw=(a.type==='bomber'?42:a.type==='cmd'?38:34)+hw0, hh=26;
+    for(k=0;k<enemies.length;k++){ a=enemies[k]; if(a.dead||a.state==='flee'||(a.state==='in'&&a.t<0)||b.seen.indexOf(a)>=0) continue; var hw=(a.haul?66:a.type==='bomber'?42:a.type==='cmd'?38:34)+hw0, hh=26;
       if(Math.abs(b.x-a.x)<hw&&a.y+hh>=b.y&&a.y-hh<=y0){ b.seen.push(a); hitEnemy(a,b.dmg); if(--b.left<=0) return false; } }
     return b.y>-40&&b.x>-40&&b.x<W+40; });
   for(var s=0;s<256;s++){ var p=SPK[s]; if(!p.on) continue; p.life+=dt; if(p.life>=p.max){ p.on=false; continue; } p.x+=p.vx*dt; p.y+=p.vy*dt; var dr=Math.pow(0.02,dt); p.vx*=dr; p.vy*=dr; }
@@ -1626,6 +1642,7 @@ function drawEnemy(a){ var fr=Math.floor(formT*(a.state==='form'?2.4:7)+a.col)%2
   if((a.state==='dive'||a.state==='bomb')){ add(1); stamp('red',x,y,150,0.9); add(0); }                 // divers glow red: these hurt
   if(a.state==='tele'){ add(1); stamp('white',a.x,y,130,0.75); add(0); }
   else if(a.gold){ add(1); stamp('gold',x,y,110,0.4); add(0); }
+  else if(a.haul){ add(1); stamp('gold',x,y,150,0.32); add(0); }   // v74: Rock Haulers glow amber, the big target of the Outer Rim set piece
   spr(s,x,y);
   if(fx&&fx.bl){ add(1); cx.globalAlpha=fx.ba*(REDUCE?0.6:0.5+0.22*Math.sin(gt*2.6+ph)); cx.drawImage(fx.bl,Math.round(x-s.width/2-fx.B),Math.round(y-s.height/2-fx.B)); cx.globalAlpha=1; add(0); }   // eyes and cores glow
   if(fx&&!REDUCE){ var gk=(gt*0.42+ph*0.13)%1; if(gk<0.09){ var gs=Math.sin(gk/0.09*Math.PI), gx=Math.round(x-s.width*0.22), gy=Math.round(y-s.height*0.26), ln=Math.round(4+12*gs);   // a pixel star glints on its top-left edge now and then
@@ -2382,6 +2399,7 @@ function showEnd(celebrate){ playUI(false); if(window.SpitzCode) setTimeout(func
   if(!goal) goal=S.best<3?'Next run: get 3 right in a row for ×1.5 points.':S.best<6?'Best streak '+S.best+': get 6 in a row for ×2 points.':S.best<10?'Best streak '+S.best+': get 10 in a row for ×3 points.':S.route[1]?'Next run: try the '+other+'.':'';
   /* v40 (balance check: an early death left a weak kid nothing to hold on to): say what hit the ship last and what the run did get */
   var HITBY={shot:'an enemy shot',dive:'a diving bug',rock:'a rock',bolt:'lightning',shard:'an ice shard',beam:'the Mothership beam'}, lh=S.hlog&&S.hlog.length?S.hlog[S.hlog.length-1][1]:'';
+  if(S.answered&&!S.correct) goal='After a miss, the right answer shows on the card. Read it, and the next question is yours.';   // v74 (Kody: tip that fits a 0-right run)
   if(S.dead&&HITBY[lh]) goal='Last hit: '+HITBY[lh]+'. '+goal;
   if(!S.score) goal='Every run counts. Next time, hold Space to fire and answer the hangar questions to upgrade your ship.';   // v72 (overnight): a kind word on a 0-point run
   $('sw-endmedal').textContent=S.dead?'Ship destroyed in sector '+Math.min(3,(waveDef().si||0)+1)+' · '+(beat===1?'1 boss':beat+' bosses')+' beaten':beat===3?'All three bosses destroyed in '+clockOf(S.doneAt||S.wall)+'!':beat?beat+' of 3 bosses destroyed':'No bosses destroyed yet';
