@@ -336,6 +336,7 @@ var szm=/[?&]set=([a-z]+)/.exec(location.search); if(szm) document.documentEleme
 <style>.sz-ask.jmr-wait .sz-askrow button{ opacity:.45; }</style>
 <style>html .sz-ask.sz-ask .sz-askrow{ align-items:center; } html .sz-ask.sz-ask #sz-askyes{ height:52px; padding:0 18px; border-radius:14px; font:700 20px/1 Inter,system-ui,sans-serif; background:transparent; border:2px solid var(--border); color:var(--text); } html .sz-ask.sz-ask #sz-askno{ background:var(--sz-mark); border-color:var(--sz-mark); color:#111; }</style>
 <style>#jmr-stale{ position:absolute; inset:0; z-index:30; background:rgba(8,9,20,.86); display:flex; flex-direction:column; align-items:center; justify-content:center; gap:18px; text-align:center; } #jmr-stale b{ font:800 44px/1.1 Inter,system-ui,sans-serif; color:#fff; } #jmr-stale span{ font:800 30px/1.2 Inter,system-ui,sans-serif; color:#7CF0FF; }</style>
+<style>:root{ --sz-fs-x:0.908; }</style>
 </head>
 <body>
 <div id="stage">
@@ -596,7 +597,7 @@ function now(){ return Date.now(); }
 function buffOn(id){ return S.buff[id]>now(); }
 
 /* ================= HUD ================= */
-function hudLive(){ S.score=Math.floor(S.top/20)+S.bonus; var a=S.score.toLocaleString(), e=$('jm-score'); if(e.textContent!==a) e.textContent=a; }
+function hudLive(){ S.score=Math.floor(S.top/20)*2+S.bonus; var a=S.score.toLocaleString(), e=$('jm-score'); if(e.textContent!==a) e.textContent=a; }
 function hud(){ hudLive(); $('jm-q').classList.toggle('on',!!(S.way&&S.q&&!S.offer)); if(S.way) $('jm-wayn').innerHTML=[0,1,2,3].slice(0,waySlots(S.way)).map(function(k){ var r=S.way.res[k]; return '<i class="'+(r===1?'ok':r===0?'no':k===S.way.n?'now':'')+'"></i>'; }).join(''); $('jm-en').textContent=S.ways; $('jm-streak').textContent=S.streak; $('jm-reward').textContent=S.way?'Waystone · question '+Math.min(3,S.way.n+1)+' of 3':''; }
 function streakBonus(st){ return Math.min(Math.floor(st/5),4); }
 var saveN=0;
@@ -610,7 +611,7 @@ function timerDraw(){ var left=S.started? Math.max(0,S.endAt-now()) : S.len*6000
 var nextT=0, lockT=0;
 function showQ(){ var q=S.q; if(!S.way||!q){ idleQ(); hud(); return; } $('jm-tag').textContent=q.topic; $('jm-prompt').innerHTML=q.prompt; $('jm-visual').innerHTML=q.visual; $('jm-q').classList.toggle('vis',!!q.visual);
   $('jm-choices').innerHTML=q.choices.map(function(c,i){ return '<button class="jm-ch" data-i="'+i+'"><span class="k">'+(i+1)+'</span><span class="t">'+c.html+'</span></button>'; }).join('');
-  var fb=$('jm-fb'); if(!S.qDone){ fb.className='jm-fb'; fb.innerHTML='2 right: a new move and a heart back. Miss one and you get a spare question. Each right answer pushes the fog back.'; } $('jm-next').disabled=true;
+  var fb=$('jm-fb'); if(!S.qDone){ fb.className='jm-fb'; fb.innerHTML='2 right: a new move and all your hearts back. Miss one and you get a spare question. Each right answer pushes the fog back.'; } $('jm-next').disabled=true;
   if(S.qDone) markAnswered(S.picked,false); hud(); }
 function newQ(){ clearTimeout(nextT); if(S.over) return; if(S.way&&wayDone(S.way)){ closeWay(); return; } if(!S.way){ S.q=null; S.qDone=false; S.picked=-1; showQ(); return; } S.q=nextQuestion(); S.qDone=false; S.picked=-1; save(); showQ(); }
 function markAnswered(i,fresh){ var q=S.q, btns=$('jm-choices').querySelectorAll('.jm-ch'), c=q.choices[i], fb=$('jm-fb');
@@ -722,7 +723,7 @@ function makeGoal(k){ var g={k:k,pts:40}, m=Math.floor(S.top/20);
   if(k==='height'){ g.n=(Math.floor((m+20)/50)+1)*50; g.pts=60; g.txt='Reach '+g.n+' m'; }
   else if(k==='combo'){ var L=[6,10,15,20,30,40,50]; g.n=L[Math.min(L.length-1,S.gn.combo||0)]; g.pts=g.n*6; g.best=0; g.txt='Land a '+g.n+'-floor combo'; }
   else if(k==='gems'){ g.n=3; g.base=S.gems; g.txt='Grab 3 gems'; }
-  else if(k==='bounce'){ g.n=3; g.base=S.bounces; g.txt='Bounce off a wall 3 times'; }
+  else if(k==='bounce'){ g.n=3; g.base=S.bounces; g.txt='Wall Kick 3 times'; }
   else if(k==='spring'){ g.n=2; g.base=S.springs; g.txt='Ride 2 springs'; }
   else { var Ls=[5,10,15,20,25,30,40]; g.n=Ls.filter(function(v){ return v>S.streak; })[0]||S.streak+10; g.pts=g.n*5; g.txt='Answer '+g.n+' in a row'; }
   return g; }
@@ -1645,6 +1646,59 @@ addEventListener('keydown',function(e){ var a=$('sz-ask'); if(!a||a.hidden||askL
 var showOffer35=showOffer; showOffer=function(){ if(S.offer&&$('jmr-offer').hidden) pops.length=0; return showOffer35(); };
 window.__G35={staleEl:function(){ return STALE_EL; }, resume:resume35};
 
+/* v36 (Kody 2026-11-27 "fix those two small left overs")
+   1 (build.py) "Press F for full screen" sits at the bottom of the right side panel, off the tower, so it never covers a ledge or a card
+   2 a reload keeps the score to the point: the run is saved the moment the score changes (gem, landing, combo, heart), within a
+     tenth of a second, instead of waiting for the once-a-second save. save() already skips a stale second tab. */
+var sig36=null;   /* the first look only notes the score: a tab that has just loaded a run must not save (that would mark the other tab stale) */
+function sig(){ return [S.bonus,S.top,S.pi,S.gems,S.hearts,S.combos,S.ways,Math.floor((S.climbT||0)*4)].join('|'); }   /* v37: plus 4 saves a second while climbing, so a reload rewinds the fog by 0.25 s at most */
+setInterval(function(){ if(!S.started||S.over) return; var g=sig(); if(sig36===null){ sig36=g; return; } if(g!==sig36){ sig36=g; save(); } },100);
+window.__G36={sig:sig};
+
+/* v37 (balance check 2026-11-27, Kody "Fix all")
+   1 STUCK HELP: no new height for 6 s while the keys are in use = a "RUN, THEN JUMP" hint and the fog slows to 40%; at 10 s every ground
+     jump is a BOOST JUMP (a full running jump and a bit more) until you get higher. Hands-off idling gets none of it.
+   2 2 right at a Waystone fills ALL hearts (was one), so right answers keep an average climber in the run. One heart at most per 12 s (was 8),
+     the fog waits 8 s after a hit (was 5) and trails 300 px farther per missing heart (was 150).
+   3 the wall goal counts real Wall Kicks only (plain bumps counted before) and is not offered before Wall Kick is learned.
+   4 (build.py) height pays 2 points a metre (was 1), so climbing is a bigger share of the score.
+   5 the restart box closes on any key that is not Y (after its lock), and after a restart the name box ignores typing for 1.5 s.
+   6 (build.py) a short run that ends in the fog gets climbing advice, not "answer more".
+   7 Waystone pace (below). */
+var STUCK_HINT=6, STUCK_BOOST=10, STUCK_FOG=0.4, BOOST_K=1.12, stuckT=0, stuckTop=-1, stuckSaid=0, inputAt=-9, boostOn=false;
+HEAL_ALL=true; HURT_SAFE=12; FOG_HIT_CALM=8; FOG_MERCY=300;   /* v37 mercy (was 8 s, 5 s, 150 px): with the pace rule the slower-climber bot with all answers right reaches 5:00 with 14-22 questions; all wrong is out at 2:43-4:00 */
+var update37=update; update=function(dt){ if(!S.started||S.over) return update37(dt);
+  var j0=S.jumps, b0=S.bounces, k0=S.kicks||0, on0=!!P.on; if(keys.l||keys.r||keys.j||jumpQ) inputAt=gt;
+  update37(dt);
+  if(S.bounces>b0&&(S.kicks||0)===k0) S.bounces=b0;   /* a bump is not a kick */
+  if(S.way||S.offer||S.over) return;
+  wayPace();
+  if(S.top!==stuckTop){ stuckTop=S.top; stuckT=0; stuckSaid=0; boostOn=false; } else if(gt-inputAt<2) stuckT+=dt;
+  if(STUCK_HINT>0&&stuckT>=STUCK_HINT&&stuckSaid<1){ stuckSaid=1; pop(P.x,P.h+200,'RUN, THEN JUMP','a running jump goes higher','#FFC93C',true); }
+  if(STUCK_BOOST>0&&stuckT>=STUCK_BOOST&&stuckSaid<2){ stuckSaid=2; boostOn=true; pop(P.x,P.h+200,'BOOST JUMP!','your jumps go higher','#7CF0FF',true); }
+  if(boostOn&&on0&&S.jumps>j0&&P.vy>0) P.vy=Math.max(P.vy,(JV+JK*VMAX)*BOOST_K); };
+var fogSpeed37=fogSpeed; fogSpeed=function(){ return fogSpeed37()*(STUCK_HINT>0&&stuckT>=STUCK_HINT?STUCK_FOG:1); };
+var pickGoal37=pickGoal; pickGoal=function(not){ return pickGoal37(S.mv&&S.mv.wall?not:not.concat(['bounce'])); };
+addEventListener('keydown',function(e){ var a=$('sz-ask'); if(!a||a.hidden) return; var k=(e.key||'').toLowerCase();
+  if(k==='y'&&!askLocked()&&!e.repeat){ try{ sessionStorage.setItem('jmr_wiped','1'); }catch(x){} return; }
+  if(askLocked()||e.repeat||k==='y'||k==='n'||k==='escape'||k==='enter'||k===' '||k==='tab'||k==='shift'||k==='control'||k==='alt'||k==='meta'||k==='r') return;
+  e.preventDefault(); e.stopImmediatePropagation(); $('sz-askno').click(); },true);
+document.addEventListener('click',function(e){ if(e.target&&e.target.id==='sz-askyes'){ try{ sessionStorage.setItem('jmr_wiped','1'); }catch(x){} } },true);
+(function(){ var w=false; try{ w=sessionStorage.getItem('jmr_wiped')==='1'; sessionStorage.removeItem('jmr_wiped'); }catch(x){} var n=$('jm-nameinput'); if(!w||!n) return; n.readOnly=true; setTimeout(function(){ n.readOnly=false; },1500); })();
+/* 7 WAYSTONE PACE: a Waystone still comes every 30 ledges, but after WAY_PACE_S seconds of climbing since the last one the next Waystone
+     moves down to the next full floor above you. A slower climber meets about as many Waystones (questions, moves, heart refills) as a fast one. */
+var WAY_PACE_S=18, WAY_MIN_S=0, KICK_AIR=false;   /* WAY_MIN_S and KICK_AIR are balance switches for sims, both off: a minimum gap between Waystones cut a strong climber to 16-18 questions, and making a Wall Kick use up the air jumps did not slow Jump mashing */
+var doJump37=doJump; doJump=function(vm){ var k0=S.kicks||0; doJump37(vm); if(KICK_AIR&&(S.kicks||0)>k0) P.airJ=airMax(); };
+isWayFloor=function(i){ return i===S.nextWay||(S.wayAt?S.wayAt.indexOf(i)>=0:(i<S.nextWay&&i>=WAY_FIRST&&(i-WAY_FIRST)%WAY_EVERY===0)); };
+nextWayAfter=function(i){ return i+WAY_EVERY; };
+var closeWay37=closeWay; closeWay=function(){ var w=S.way, nw=S.nextWay; closeWay37(); if(w&&!S.way){ (S.wayAt=S.wayAt||[]).push(nw); S.nextWay=nw+WAY_EVERY; S.wayT=S.climbT||0; idleLeft=-1; save(); hud(); } };
+function wayPace(){ if(S.rush||S.way||S.offer||!S.ways) return; var since=(S.climbT||0)-(S.wayT||0);
+  if(since<WAY_MIN_S){ if(S.nextWay-(S.pi||0)<=9){ S.nextWay+=FLOOR_EVERY; idleLeft=-1; hud(); } return; }
+  if(WAY_PACE_S<=0||since<WAY_PACE_S) return; var f=(Math.floor((S.pi||0)/FLOOR_EVERY)+1)*FLOOR_EVERY;
+  if(f<S.nextWay){ S.nextWay=f; idleLeft=-1; pop(P.x,P.h+230,'WAYSTONE AHEAD','on the next floor','#7CF0FF',true); save(); hud(); } }
+window.__G37={pace:function(s,m){ WAY_PACE_S=s; if(m!==undefined) WAY_MIN_S=m; }, kickAir:function(b){ KICK_AIR=!!b; }, stuck:function(){ return {t:stuckT,boost:boostOn,said:stuckSaid}; }, tune:function(o){ if('hint' in o) STUCK_HINT=o.hint; if('boost' in o) STUCK_BOOST=o.boost; if('fog' in o) STUCK_FOG=o.fog; if('k' in o) BOOST_K=o.k; if('healAll' in o) HEAL_ALL=o.healAll; }};
+
+
 /* ================= START / END ================= */
 document.querySelectorAll('.jm-len').forEach(function(b){ b.addEventListener('click',function(){ document.querySelectorAll('.jm-len').forEach(function(x){ x.classList.toggle('on',x===b); }); S.len=+b.dataset.len; timerDraw(); }); });
 $('jm-nameinput').addEventListener('input',function(){ $('jm-go').disabled=!this.value.trim(); });
@@ -1652,9 +1706,9 @@ $('jm-nameinput').addEventListener('keydown',function(e){ if(e.key==='Enter'&&th
 $('jm-go').addEventListener('click',function(){ var n=$('jm-nameinput').value.trim(); if(!n) return; ac(); S.name=n; S.started=true; S.endAt=now()+S.len*60000; $('jm-start').hidden=true;
   $('jm-nameinput').blur(); S.seed=(Math.random()*2147483647)|0; S.pi=0; resetTower(); initGoals(); newQ(); save(); hud(); });
 function endRun(){ S.over=true; S.offer=null; $('jmr-offer').hidden=true; rocks=[]; hudLive(); clearTimeout(nextT); openShop(false); $('jm-shop').hidden=true; save(); showEnd(true); }
-function showEnd(celebrate){ $('jmr-endwhy').textContent=S.fogOut?'The fog caught you! Right answers push it back, so keep going next time.':'Time!'; if(window.SpitzCode) setTimeout(function(){ window.SpitzCode.show('jm','jump_man_multiplication',S); },0); $('jm-endname').textContent=S.name; $('jm-endscore').textContent=S.score.toLocaleString();
+function showEnd(celebrate){ $('jmr-endwhy').textContent=S.fogOut?(S.answered<6?'The fog caught you! Take a running jump to climb faster.':'The fog caught you! Right answers push it back, so keep going next time.'):'Time!'; if(window.SpitzCode) setTimeout(function(){ window.SpitzCode.show('jm','jump_man_multiplication',S); },0); $('jm-endname').textContent=S.name; $('jm-endscore').textContent=S.score.toLocaleString();
   var acc=S.answered?Math.round(100*S.correct/S.answered):0;
-  $('jm-endstats').innerHTML=[['Correct',S.correct+' of '+S.answered],['Accuracy',acc+'%'],['Height points',Math.floor(S.top/20).toLocaleString()],['Bonus points','+'+S.bonus.toLocaleString()]].map(function(a){ return '<div class="jm-stat"><div class="l">'+a[0]+'</div><div class="v">'+a[1]+'</div></div>'; }).join('');
+  $('jm-endstats').innerHTML=[['Correct',S.correct+' of '+S.answered],['Accuracy',acc+'%'],['Height points',(Math.floor(S.top/20)*2).toLocaleString()],['Bonus points','+'+S.bonus.toLocaleString()]].map(function(a){ return '<div class="jm-stat"><div class="l">'+a[0]+'</div><div class="v">'+a[1]+'</div></div>'; }).join('');
   $('jm-endtopics').innerHTML=Object.keys(S.topics).map(function(k){ var t=S.topics[k]; return '<div class="jm-stat"><div class="l">'+k+'</div><div class="v">'+t[0]+' / '+t[1]+'</div></div>'; }).join('');
   $('jm-end').hidden=false; $('jm-again').disabled=true; if(S.fogOut&&SND.over) SND.over(); setTimeout(function(){ $('jm-again').disabled=false; },2000); if(celebrate&&!S.fogOut&&S.correct>0){ SND.win(); [0,350,700,1100].forEach(function(ms,i){ setTimeout(function(){ confetti(200+i*500,1070,90,1.3); confetti(1720-i*500,1070,90,1.3); },ms); }); } }
 var armT=0, armAt=0; $('jm-again').addEventListener('click',function(){ var b=this; if(b.classList.contains('arm')&&now()-armAt<AGAIN_LOCK) return; if(!b.classList.contains('arm')){ armAt=now(); b.classList.add('arm'); b.textContent='Tap again to start over'; clearTimeout(armT); armT=setTimeout(function(){ b.classList.remove('arm'); b.textContent='Play again'; },3000); return; }

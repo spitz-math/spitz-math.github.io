@@ -68,7 +68,7 @@ const ok=(c,m,v)=>{ if(!c) fails++; console.log(c?'  ok':'  FAIL',m,v===undefine
   const hl=await p.evaluate(()=>{ const G=__G, S=G.state(), P=G.man(); while(G.plats().length<=S.nextWay+5){ P.on=null; P.h+=2500; P.vy=0; G.step(1/60); } const h0=S.hearts, pl=G.plats(), q=pl[S.nextWay]; S.fog=q.h-1500; P.on=null; P.x=q.floor?300:G.cxAt(q); P.h=q.h+30; P.vy=-10; P.lastI=q.i-1; for(let k=0;k<20;k++) G.step(1/60);
     const f0=S.fog; for(let k=0;k<60;k++) G.step(1/60); const frozen=S.fog===f0; for(let k=0;k<2;k++){ const i=S.q.choices.findIndex(c=>c.ok); S.qDone=false; G.ans(i); G.newQ(); } G.pick(); return {h0,h1:S.hearts,frozen}; });
   ok(hl.frozen&&hl.h1===hl.h0+1,'the fog stops at a Waystone, and passing it gives a heart back',hl);
-  const go=await p.evaluate(()=>{ const G=__G, S=G.state(), P=G.man(); S.hearts=1; S.climbT+=10; S.fog=P.h+100; G.step(1/60); return {over:S.over,why:document.getElementById('jmr-endwhy').textContent}; });
+  const go=await p.evaluate(()=>{ const G=__G, S=G.state(), P=G.man(); S.hearts=1; S.climbT+=14; S.fog=P.h+100; G.step(1/60); return {over:S.over,why:document.getElementById('jmr-endwhy').textContent}; });
   ok(go.over&&go.why.indexOf('The fog caught you!')===0,'0 hearts ends the run',go);
   if(rm==='no-preference') await p.screenshot({path:OUT+'v2_fogend.png'});
 
@@ -81,14 +81,14 @@ const ok=(c,m,v)=>{ if(!c) fails++; console.log(c?'  ok':'  FAIL',m,v===undefine
     // the fog is held while calm > 0
     const f0=S.fog; P.on=null; P.h=S.fog+700; P.vy=0; G.step(1/60); out.heldGap=Math.round(P.h-S.fog); for(let k=0;k<30;k++){ P.h=S.fog+700; P.vy=0; G.step(1/60); } out.calmAfter=+S.calm.toFixed(2);
     // rockfall: stand in a rock stretch for 4 s; rocks fall and a hit never costs a heart
-    pl=G.plats(); let ri=S.nextWay-25; while(pl[ri].amp||pl[ri].kind) ri++; const rq=pl[ri]; S.calm=99; P.on=rq; P.h=rq.h; P.x=G.cxAt(rq); P.vx=0; P.vy=0; P.lastI=ri; S.pi=ri;
+    pl=G.plats(); let ri=S.nextWay-18; /* rocks fall on ledges 10 to 19 after a Waystone since v34 (Waystones every 30); -25 was left from every 40 and only passed on lucky towers */ while(pl[ri].amp||pl[ri].kind) ri++; const rq=pl[ri]; S.calm=99; P.on=rq; P.h=rq.h; P.x=G.cxAt(rq); P.vx=0; P.vy=0; P.lastI=ri; S.pi=ri;
     S.fog=rq.h-2000; const seenS=new Set(); for(let k=0;k<240;k++){ P.on=rq; P.h=rq.h; P.vy=0; P.vx=0; G.step(1/60); G.rocks().forEach(r=>seenS.add(r)); } const seen=seenS.size; out.rockOn=S.rockOn; out.seen=seen; 
     return out; });
   ok(v4.opened&&v4.hearts===3&&v4.offer[1]===2&&v4.offer[2]===1,'v13: 2 right gives a heart back',v4);
   ok(v4.calm===0,'v12: right answers push the fog back instead of holding it',v4);
   ok(v4.heldGap>=530,'the fog stays below you',v4);
   ok(v4.rockOn&&v4.seen>=2,'rockfall starts halfway between Waystones',v4);
-  const bk=await p.evaluate(()=>{ const G=__G, S=G.state(), P=G.man(); for(let k=0;k<260;k++){ G.rocks().length=0; G.step(1/60); } /* 4 s rock safety since v28 */ G.rocks().length=0; const r={x:P.x,h:P.h+40,warn:0}; G.rocks().push(r); S.hearts=3; const h0=S.hearts, c0=S.combos; G.step(1/60); const one=S.hearts===h0; for(let k=0;k<260;k++){ G.rocks().length=0; G.step(1/60); } S.hearts=1; G.rocks().push({x:P.x,h:P.h+40,warn:0}); G.step(1/60); const last=S.hearts===1&&!S.over; S.hearts=3; return {bonked:G.rocks().indexOf(r)<0, hearts:one&&last, vx:Math.round(P.vx)}; });
+  const bk=await p.evaluate(()=>{ const G=__G, S=G.state(), P=G.man(); for(let k=0;k<260;k++){ G.rocks().length=0; G.step(1/60); } /* 4 s rock safety since v28 */ S.climbT+=14; /* v37: one heart at most per 12 s */ G.rocks().length=0; const r={x:P.x,h:P.h+40,warn:0}; G.rocks().push(r); S.hearts=3; const h0=S.hearts, c0=S.combos; G.step(1/60); const one=S.hearts===h0; for(let k=0;k<260;k++){ G.rocks().length=0; G.step(1/60); } S.hearts=1; G.rocks().push({x:P.x,h:P.h+40,warn:0}); G.step(1/60); const last=S.hearts===1&&!S.over; S.hearts=3; return {bonked:G.rocks().indexOf(r)<0, hearts:one&&last, vx:Math.round(P.vx)}; });
   ok(bk.bonked&&!bk.hearts,'v13: a rock hit costs a heart (never the last one)',bk);
   // Summit Rush in the last minute
   const ru=await p.evaluate(()=>{ const G=__G, S=G.state(), P=G.man(), out={}; G.rocks().length=0; S.calm=99; S.endAt=Date.now()+59000; G.step(1/60); out.rush=!!S.rush; if(!S.rush) return {dbg:{over:S.over,way:!!S.way,offer:S.offer,left:S.endAt-Date.now(),hearts:S.hearts}}; out.ti=S.rush.i-S.pi;
