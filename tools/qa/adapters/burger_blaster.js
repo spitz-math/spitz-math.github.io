@@ -117,7 +117,7 @@ const A = {
       const pg = await r.page('chromebook'); await A.open(pg); await A.start(pg);
       for (let i = 0; i < 8; i++) { const t = await tray(pg); if (!t) break; if (t.done) await pg.keyboard.press('Space'); else await pg.keyboard.press('Digit' + ((t.r + 1) % t.n + 1)); await sleep(1400); }
       const a = await A.snapshot(pg);
-      r.check('two misses close the card with no special and every burger kept', JSON.stringify([false, 0, 12]), JSON.stringify([a.qOpen, a.spec, a.burgers]));
+      r.check('two misses close the card with no special and every burger kept', JSON.stringify([false, 0, 11]), JSON.stringify([a.qOpen, a.spec, a.burgers]));
       await pg.waitForFunction(() => __G.canFire(), null, { timeout: 6000 }).catch(() => {});
       await pg.keyboard.press('Space'); await sleep(300);
       r.check('Space before aiming does not fire ("Aim first!")', 0, (await A.snapshot(pg)).shots);
@@ -133,15 +133,18 @@ const A = {
       await pg.context().close();
     } },
 
-    { name: 'forts start at different aims, and the King gets a question card', async run(r) {
+    { name: 'forts start at different aims, and the King drops in, then gets a question card', async run(r) {
       const pg = await r.page('chromebook'); const aims = new Set();
       for (let i = 0; i < 4; i++) { await A.open(pg); await A.start(pg); aims.add(await pg.evaluate(() => __G.state().aim.join('/'))); }
       r.check('four fresh runs do not all start at the same aim', true, aims.size > 1);
       await pg.evaluate(() => { const k = Object.keys(localStorage).find(k => { try { const v = JSON.parse(localStorage.getItem(k)); return v && v.order; } catch (e) { return false; } }); const v = JSON.parse(localStorage.getItem(k)); v.level = 9; v.tray = null; v.world = null; localStorage.setItem(k, JSON.stringify(v)); });
       await pg.reload({ waitUntil: 'load' }); await pg.waitForFunction(() => window.__G && __G.state().started, null, { timeout: 8000 }); await sleep(600);
-      await pg.evaluate(() => document.getElementById('bl-skip').click()); await sleep(700);   // the hidden test button steps to the next level the way a clear does
+      await pg.evaluate(() => document.getElementById('bl-skip').click()); await sleep(400);   // the hidden test button steps to the next level the way a clear does
+      const early = await pg.evaluate(() => ({ card: !!__G.state().tray, fired: __G.fire(30, 0.8) }));   /* v26: the King drops in first, and nothing fires before his card */
+      r.check('the King drops in before his card, and no burger flies meanwhile', JSON.stringify({ card: false, fired: false }), JSON.stringify(early));
+      await pg.waitForFunction(() => !!__G.state().tray, null, { timeout: 4000 }).catch(() => {});
       const k = await pg.evaluate(() => ({ king: __G.world().munchers.length > 0 && __G.state().level === 10, card: !!__G.state().tray }));
-      r.check('the King level opens with a question card', JSON.stringify({ king: true, card: true }), JSON.stringify(k));
+      r.check('the King level then opens with a question card', JSON.stringify({ king: true, card: true }), JSON.stringify(k));
       await r.shot(pg, 'king_card'); await pg.context().close();
     } },
 

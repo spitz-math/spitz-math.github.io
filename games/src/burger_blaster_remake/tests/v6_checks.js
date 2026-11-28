@@ -21,11 +21,11 @@ const sleep=ms=>new Promise(r=>setTimeout(r,ms)); let bad=0; const ok=(n,c,d)=>{
  await pg.waitForFunction(()=>{ const T=__G.state().tray; return !T||!T.done; },null,{timeout:3000}).catch(()=>{});
  const before=await pg.evaluate(()=>__G.state().answered); await pg.keyboard.press(String(r+1)); await sleep(100);
  s=await pg.evaluate(()=>__G.state().answered); ok('a key right after the card flips does not answer the next question',s===before,before+' -> '+s);
- // King: win, then Space skips to the end screen after 1 s
+ // King: win, then Space skips to the end screen after 2 s
  await pg.evaluate(()=>{ const S=__G.state(); S.tray=null; document.getElementById('bb-tray').hidden=true; __G.goLevel(10); S.tray=null; document.getElementById('bb-tray').hidden=true; S.clearing=true; S.lvStars=3; __G2.finish(); });
- await sleep(1200); await pg.keyboard.press('Space'); await sleep(400);
+ await sleep(1200); await pg.keyboard.press('Space'); await sleep(300); const early=await pg.evaluate(()=>__G.state().over); await sleep(800); await pg.keyboard.press('Space'); await sleep(400);
  s=await pg.evaluate(()=>({over:__G.state().over,won:__G.state().won,end:!document.getElementById('bl-end').hidden}));
- ok('Space skips the King win to the end screen after 1 s',s.over&&s.won&&s.end,JSON.stringify(s));
+ s.early=early; ok('Space skips the King win to the end screen after 2 s (not at 1.2 s)',!s.early&&s.over&&s.won&&s.end,JSON.stringify(s));
  // out of burgers: ends within ~3.5 s of the world going quiet; kind line on a rough run
  await pg.goto(F+'?set=mult'); await pg.evaluate(()=>localStorage.clear()); await pg.reload(); await sleep(400); await pg.fill('#bl-nameinput','T S'); await pg.click('#bl-go'); await sleep(400);
  await pg.evaluate(()=>{ const S=__G.state(); S.tray=null; document.getElementById('bb-tray').hidden=true; S.burgers=0; }); const t0=Date.now();

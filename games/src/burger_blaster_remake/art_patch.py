@@ -361,7 +361,7 @@ rep("tier===1?['bridge','dominoes','stilts','bunker']:['stilts','bunker','sky','
 rep("  king:function(){ tone(196,98,0,0.3,'triangle',0.16); tone(392,330,0.08,0.22,'sine',0.08); },",
     """  king:function(){ tone(196,98,0,0.3,'triangle',0.16); tone(392,330,0.08,0.22,'sine',0.08); },
   land:function(){ tone(150,45,0,0.4,'sine',0.26); tone(330,150,0,0.22,'triangle',0.14); noise(0,0.12,200,0,600); brass(G4*0.5,0.18,0.3,0.1); brass(G4*0.5*0.75,0.42,0.5,0.1); },   // the King drops in: a thud, then two low horn notes
-  belly:function(n){ var f=[C5,E5,G5][Math.max(0,Math.min(2,n-1))]; tone(f,f,0.1,0.12,'triangle',0.1); tone(f*2,f*2,0.17,0.2,'sine',0.07); },   // each bite: one step up the C chord
+  belly:function(n){ var f=[C5,E5,G5,C6][Math.max(0,Math.min(3,n-1))]; tone(f,f,0.1,0.12,'triangle',0.1); tone(f*2,f*2,0.17,0.2,'sine',0.07); },   // each bite: one step up the C chord
   crown:function(){ tone(G5,G5,0,0.1,'triangle',0.09); tone(C6,C6,0.07,0.3,'sine',0.08); tone(E6,E6,0.14,0.3,'sine',0.05); },
   pop:function(){ if(limited('pp',250)) return; var f=[G5,C6,E6][Math.floor(Math.random()*3)]; tone(f,f*0.9,0,0.09,'triangle',0.04); },""")
 # --- v25 sound fixes from the ears check (2026-11-27): wood, stone and the boom sat under 250 Hz (Chromebook speakers barely play that), so each gets a brighter layer;
@@ -378,5 +378,56 @@ rep("[G4,B4,D5].forEach(function(f){ tone(f*2,f*2,t+0.5,1.2,'triangle',0.07); to
     "[G4,B4,D5].forEach(function(f){ tone(f*2,f*2,t+0.5,1.2,'triangle',0.1); tone(f,f,t+0.5,1.2,'sine',0.08); });")
 # --- v25 retune: with no spare question a miss costs more, so the run starts with one more burger (typical bot back to fort 6.9) ---
 rep("var START_BURGERS=11,", "var START_BURGERS=12,")
+# ===== v26: fixes for all 13 finds of the v25 balance check (Kody 2026-11-27 "Fix all.") =====
+# 1. the big end score uses the clear digit font (Bangers drew 7 like 1: 78,350 read 18,350)
+CSS += r"""
+#bl-end .bl-final{ font-family:'Spitz Digits','Bangers',sans-serif !important; }
+"""
+# 6. end-screen confetti bursts from the far sides only, so it never rains on the score code
+rep("confetti(200+i*500,1070,90,1.3); confetti(1720-i*500,1070,90,1.3);", "confetti(110+(i%2)*90,1070,70,0.55); confetti(1810-(i%2)*90,1070,70,0.55);")
+# 2. King: the card waits until he has landed (no shooting meanwhile), a reload during the wait still opens it
+rep("if(S.started&&!S.over){ S.aim=[Math.round(26+Math.random()*26),Math.round((0.55+Math.random()*0.33)*100)/100]; trayOpen(); } } }",
+    """if(S.started&&!S.over){ S.aim=[Math.round(26+Math.random()*26),Math.round((0.55+Math.random()*0.33)*100)/100]; S.fly=null; bbFirstAim();
+      if(code==='king'&&!FASTSIM&&!RM){ S.tray=null; S.trayDue=1; save(); setTimeout(function(){ if(!S.over&&!S.won&&!S.clearing&&!S.tray&&S.trayDue&&fortOf(S.level).d==='king') trayOpen(); },1150); } else trayOpen(); } } }""")
+rep("function trayOpen(){ S.tray={", "function trayOpen(){ S.trayDue=0; S.tray={")
+rep("  if(!haveBurger()){ outOfBurgers(); return false; } if(!canFire()) return false;", "  if(!haveBurger()){ outOfBurgers(); return false; } if(!canFire()) return false; if(S.trayDue&&!FASTSIM) return false;")
+# 2/5/8. feeding the King wins (the rest of his court cheers and goes), he takes 4 bites, one meter: no Muncher faces at the King
+rep("d.munchers.push({x:800,y:GY-KING_R-2,k:1,hp:3+Math.min(2,bl)});", "d.munchers.push({x:800,y:GY-KING_R-2,k:1,hp:4});")
+rep("d.tip='Feed the King: 3 hits!'; }", "d.tip='Feed the King 4 burgers!'; }")
+rep("  kill.push(m); var last=!munchers.some(function(x){ return x.state==='hungry'; });",
+    "  kill.push(m); if(m.king) munchers.forEach(function(x){ if(x!==m&&x.state==='hungry'){ x.state='fed'; x.t=0; kill.push(x); } }); var last=!munchers.some(function(x){ return x.state==='hungry'; });")
+rep("var faces=munchers.filter(function(m){ return m.state==='hungry'; }).length, tot=munchers.length;", "var faces=munchers.filter(function(m){ return m.state==='hungry'; }).length, tot=fc==='king'?0:munchers.length;")
+# 8. the win moment can be skipped only after 2 s, so the crown pop is always seen
+rep("function skipClear(){ if(S.won&&!S.over){ if(now()-wonAt>1000) endRun(); return true; }", "function skipClear(){ if(S.won&&!S.over){ if(now()-wonAt>2000) endRun(); return true; }")
+# 3. a plain burger that has hit something is done 2.8 s later (rolling on for 7 s was the main dead time); hard cap 7 s
+rep("var bg=a.kind==='burger'?a:b.kind==='burger'?b:null;", "var bg=a.kind==='burger'?a:b.kind==='burger'?b:null; if(bg&&!bg.hitAt) bg.hitAt=stepN;")
+rep("||age>540||(age>60&&(b.still>45||b.isSleeping))||b.slow>40;", "||age>420||(age>60&&(b.still>45||b.isSleeping))||b.slow>40||(!b.spec&&b.hitAt&&stepN-b.hitAt>170);")
+# 4. the fort's tip stays on windy forts; late forts get a big piece more often, and the new pieces more often
+rep("sub:d.wind?'Wind! Watch the arrow':d.tip||munchers.length+' hungry Munchers'}", "sub:d.tip?(d.wind?d.tip+' Wind!':d.tip):d.wind?'Wind! Watch the arrow':munchers.length+' hungry Munchers'}")
+rep("r()<(tier===0?0.3:tier===1?0.45:0.6)", "r()<(tier===0?0.3:tier===1?0.55:0.85)")
+rep("['stilts','bunker','sky','stilts','bunker','bridge','dominoes','rockslide','fuse'];", "['stilts','bunker','sky','bridge','dominoes','rockslide','fuse','rockslide','fuse'];")
+rep("['stack','pyramid','pillars','tnthut','tower','hill','sky','stilts','seesaw'];", "['stack','pyramid','pillars','tnthut','tower','hill','sky','stilts','seesaw','seesaw'];")
+# 7. a full burger pile pays 1,000 a burger and the clear banner says so
+rep("BURGER_CAP=15, EXTRA_PTS=500;", "BURGER_CAP=15, EXTRA_PTS=1000;")
+rep(":'Burger pile full · ')+'+'+(pts+gb.pts).toLocaleString()+' points'", ":'Pile full! ')+'+'+(pts+gb.pts).toLocaleString()+' points'")
+# 9. a reload while a burger is flying gives that burger (and its special) back, because the world goes back to before the shot
+rep("var sp=loadedSpec(); if(S.spec.length) S.spec.shift(); S.burgers--; lastInput=now();", "var sp=loadedSpec(); if(S.spec.length) S.spec.shift(); S.burgers--; S.fly={spec:sp}; lastInput=now();")
+rep("function snapshot(){ if(!engine||S.clearing) return;", "function snapshot(){ S.fly=null; if(!engine||S.clearing) return;")
+rep("function levelClear(){ if(S.clearing) return; S.clearing=true;", "function levelClear(){ if(S.clearing) return; S.fly=null; S.trayDue=0; S.clearing=true;")
+rep("} else buildLevel(true); banner=null;\n    if(S.tray) trayRender(); } }",
+    """} else { if(S.fly){ S.burgers++; if(S.fly.spec) S.spec.unshift(S.fly.spec); S.shots=Math.max(0,S.shots-1); S.lvShots=Math.max(0,S.lvShots-1); S.fly=null; save(); } buildLevel(true); } banner=null;
+    if(S.trayDue&&!S.tray&&!S.clearing&&!S.won) trayOpen(); if(S.tray){ trayReadyAt=now()+450; trayRender(); } } }""")
+# 10. "SLIDERS LOADED" waits until the card is closed
+rep("else if(lsp&&!flying.length) {", "else if(lsp&&!flying.length&&!S.tray) {")
+# 11. the combo readout says what it counts
+rep("canvasText('combo x'+Math.min(2,1+0.1*(S.combo-1)).toFixed(1),", "canvasText('hit combo x'+Math.min(2,1+0.1*(S.combo-1)).toFixed(1),")
+# 12. holding Enter does not step through cards
+rep("  if(e.key==='Enter'){ if(S.tray){ e.preventDefault(); trayNext(); } return; }", "  if(e.key==='Enter'){ if(S.tray){ e.preventDefault(); if(e.repeat) return; trayNext(); } return; }")
+# 13. fort 1 starts aimed at a Muncher (a nudge still counts as aiming), so the first YUM comes sooner
+rep("function snapshot(){", """function bbFirstAim(){ if(S.level!==0) return; var tg=munchers.filter(function(m){ return m.state==='hungry'; })[0]; if(!tg) return;
+  for(var a=14;a<=60;a+=2) for(var pw=0.5;pw<=1.001;pw+=0.02){ var pts=path(a,pw,420); for(var i=0;i<pts.length;i++) if(Math.hypot(pts[i][0]-tg.position.x,pts[i][1]-tg.position.y)<18){ S.aim=[a,Math.round(pw*100)/100]; return; } } }
+function snapshot(){""")
+# retune after the v26 fixes (feeding the King wins, more late-fort pieces): 40-run sims put the typical bot at fort 7.8 with 12 burgers, 7.2 with 11, so back to 11
+rep("var START_BURGERS=12,", "var START_BURGERS=11,")
 rep("</style>", CSS + "</style>", h.count("</style>"))
 open(dst, 'w').write(h); print('art_patch ok', len(h))

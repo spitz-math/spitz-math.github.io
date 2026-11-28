@@ -10,6 +10,6 @@ The live page games/burger_blaster.html is built from the frozen old game plus t
 - `qa_adapter_burger_blaster.js`: the copy of tools/qa/adapters/burger_blaster.js (baseline + 6 scenarios).
 - `briefs/`: the title slingshot art brief (not sent).
 
-Rules that are locked (Kody): exactly 2 questions per fort, no spare (2026-11-27). 12 starting burgers, cap 15. Wrong answers never take a burger. "Made by Spitz" only on the start and end screens.
+Rules that are locked (Kody): exactly 2 questions per fort, no spare (2026-11-27). 11 starting burgers, cap 15 (extras pay 1,000). Feeding the King (4 bites) wins. Wrong answers never take a burger. "Made by Spitz" only on the start and end screens.
 
-Balance targets (40 fast bot runs each, v25): strong (all right, tight aim) reaches fort 9.4 and wins about 2 in 3; typical (70% right) reaches fort 6.9; weak (50% right, loose aim) reaches fort 4.4.
+Balance targets (40 fast bot runs each, v26): strong (all right, tight aim) reaches fort 9.4 and wins about 2 in 3; typical (70% right) reaches fort 6.7; weak (50% right, loose aim) reaches fort 5.0.

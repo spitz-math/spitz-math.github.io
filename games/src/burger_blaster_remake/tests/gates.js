@@ -17,18 +17,18 @@ const sleep=ms=>new Promise(r=>setTimeout(r,ms)); const R=[]; const ok=(n,c,d)=>
  await sleep(1100);
  // answer wrong by click
  const wrong=await pg.evaluate(()=>__G.state().tray.q.choices.findIndex(c=>!c.ok)); await pg.click(`#bb-tray .c[data-i="${wrong}"]`); await sleep(300);
- s=await pg.evaluate(()=>({b:__G.state().burgers,res:__G.state().tray.res.join(),st:__G.state().streak})); ok('wrong answer keeps every burger, resets streak',s.b===12&&s.st===0,JSON.stringify(s));
+ s=await pg.evaluate(()=>({b:__G.state().burgers,res:__G.state().tray.res.join(),st:__G.state().streak})); ok('wrong answer keeps every burger, resets streak',s.b===11&&s.st===0,JSON.stringify(s));
  // reload during the miss card: tray survives
  await pg.reload(); await sleep(900); s=await pg.evaluate(()=>({tray:!!__G.state().tray,vis:!document.getElementById('bb-tray').hidden,res:__G.state().tray&&__G.state().tray.res.join()}));
  ok('reload mid-tray keeps the tray and answers',s.tray&&s.vis&&s.res==='ok,no',JSON.stringify(s));
  await sleep(1400); await pg.keyboard.press('Enter'); await sleep(300);
  s=await pg.evaluate(()=>({tray:!!__G.state().tray,spec:__G.state().spec.length,b:__G.state().burgers,vis:!document.getElementById('bb-tray').hidden}));
  ok('a miss brings no spare: the card closes after two questions',!s.tray&&!s.vis,JSON.stringify(s));
- ok('one right, one miss = 1 special and every burger',s.spec===1&&s.b===12,JSON.stringify(s));
+ ok('one right, one miss = 1 special and every burger',s.spec===1&&s.b===11,JSON.stringify(s));
  // keyboard aim + Space fires; WASD changes aim
  const a0=await pg.evaluate(()=>__G.state().aim.slice()); await pg.keyboard.press('w'); await pg.keyboard.press('d'); const a1=await pg.evaluate(()=>__G.state().aim.slice());
  ok('W/D change aim like arrows',a1[0]>a0[0]&&a1[1]>a0[1],JSON.stringify([a0,a1]));
- await pg.keyboard.press('Space'); await sleep(300); s=await pg.evaluate(()=>({shots:__G.state().shots,b:__G.state().burgers})); ok('Space fires and costs a burger',s.shots===1&&s.b===11,JSON.stringify(s));
+ await pg.keyboard.press('Space'); await sleep(300); s=await pg.evaluate(()=>({shots:__G.state().shots,b:__G.state().burgers})); ok('Space fires and costs a burger',s.shots===1&&s.b===10,JSON.stringify(s));
  // click while a special flies pops it (does not start a drag)
  await sleep(250); s=await pg.evaluate(()=>({f:__G.world().flying}));
  { const bx=await pg.locator('#bl-canvas').boundingBox(); await pg.mouse.click(bx.x+bx.width*0.5,bx.y+bx.height*0.4); await sleep(200); }
