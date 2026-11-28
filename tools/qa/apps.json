@@ -32,10 +32,12 @@
     {
       "id": "burger_blaster",
       "name": "Burger Blaster",
-      "tier": 1,
+      "tier": 2,
       "adapter": "adapters/burger_blaster.js",
       "paths": [
         "games/burger_blaster.html",
+        "games/src/burger_blaster_remake/",
+        "games/cards/burger_blaster.webp",
         "tools/qa/adapters/burger_blaster.js"
       ]
     },

@@ -27,7 +27,7 @@ var GAMES={                     /* id: [number in the code, display name, how it
   fishing:[10,'Go Fish','points'],
   brick_breaker:[11,'Brick Breaker','points'],
   burger_shop:[12,'Burger Shop','points'],
-  burger_blaster:[13,'Burger Blaster','points'],
+  burger_blaster:[13,'Burger Blaster','points'],   /* the 2026-11 remake keeps id 13: the code holds the game in 5 bits (1 to 31) and every id is taken, so old and new Burger Blaster codes share one board. A new game id needs a wider code layout first. */
   rocket_buds_v1:[14,'Rocket Buds (classic)','versus'],   /* codes from before 2026-11-02, when Rocket Buds scored Buds vs Rivals */
   paint_royale:[15,'Paint Royale','points'],
   snake_arena:[16,'Snake Arena','points'],
@@ -185,7 +185,7 @@ function button(link,code){ return prefilled()? '<a href="'+link+'" target="_bla
 (function(){
   var K={ splat_range:'splat_range_v5', star_swarm:'star_swarm_v2', shift_racer:'shift_racer_v1', jump_man_multiplication:'super_jump_man_v1',
     football_buds:'football_buds_game_v3', hoop_buds:'hoop_buds_game_v1', dash:'dash_facts_game_v3', skate:'skate_game_v1', mini_golf:'mini_golf_v1',
-    fishing:'go_fish_v1', brick_breaker:'brick_breaker_v1', burger_shop:'burger_shop_v1', burger_blaster:'burger_blaster_v1', rocket_buds:'rocket_buds_v1',
+    fishing:'go_fish_v1', brick_breaker:'brick_breaker_v1', burger_shop:'burger_shop_v1', burger_blaster:'burger_blaster_v2', rocket_buds:'rocket_buds_v1',
     paint_royale:'paint_royale_v1', snake_arena:'snake_arena_v1', brawl_buds:'brawl_buds_v1', pinball:'pinball_v1', hill_climb:'hill_climb_v1', fit_check:'fit_check_v1', dig_buds:'dig_buds_v10', rook_and_ruin:'bladebound_v3' };
   var f=(location.pathname.split('/').pop()||'').replace(/\.html?$/,'').replace(/_(mult|v\d|test)$/,''), key=K[f]; if(!key) return;
   var run=function(k){ return k.indexOf(key)===0&&!/_(mute|t)$/.test(k); };   /* KEY may carry the set and topics after it */
