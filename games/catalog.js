@@ -172,7 +172,8 @@ window.SpitzGames=[
     star_swarm:null, /* Star Swarm HD (2026-11-25): live at games/star_swarm.html as a secret link, off the hub until Kody picks its date */
     jump_man_multiplication:null, /* Super Jump Man (2026-11): live at games/jump_man_multiplication.html as a secret link, off the hub until Kody picks its date */
     mini_golf:'2026-10-19T12:00', brick_breaker:'2026-10-19T12:00', snake_arena:'2026-10-19T12:00',
-    burger_blaster:'2026-10-26T12:00', pinball:'2026-10-26T12:00',
+    burger_blaster:null, /* Burger Blaster remake (2026-11): live at games/burger_blaster.html as a secret link, off the hub until Kody picks its date (was 2026-10-26T12:00) */
+    pinball:'2026-10-26T12:00',
     rocket_buds:'2026-11-02T12:00', brawl_buds:'2026-11-02T12:00',
     paint_royale:'2026-11-09T12:00', hill_climb:'2026-11-09T12:00',
     rook_and_ruin:'2026-11-16T12:00' /* Kody 2026-11-16: "make it live" (moved up from Nov 23) */ };

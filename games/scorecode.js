@@ -27,7 +27,7 @@ var GAMES={                     /* id: [number in the code, display name, how it
   fishing:[10,'Go Fish','points'],
   brick_breaker:[11,'Brick Breaker','points'],
   burger_shop:[12,'Burger Shop','points'],
-  burger_blaster:[13,'Burger Blaster','points'],
+  burger_blaster_v1:[13,'Burger Blaster (before remake)','points'],   /* codes from before the Burger Blaster remake went live */
   rocket_buds_v1:[14,'Rocket Buds (classic)','versus'],   /* codes from before 2026-11-02, when Rocket Buds scored Buds vs Rivals */
   paint_royale:[15,'Paint Royale','points'],
   snake_arena:[16,'Snake Arena','points'],
@@ -45,7 +45,8 @@ var GAMES={                     /* id: [number in the code, display name, how it
   football_buds:[29,'Football Buds BLITZ','points',10],   /* Football Buds BLITZ (2026-11): bot runs score about 100,000 to 450,000; the code holds the score in tens, so runs up to 10,485,750 fit (id 21 is the older Football Buds) */
   star_swarm_v2:[27,'Star Swarm (before HD)','points',10],   /* codes from 2026-11-17 until Star Swarm HD went live: the score in tens, so runs up to 10,485,750 fit (id 2 capped at 1,048,575) */
   star_swarm:[30,'Star Swarm HD','points',10],   /* Star Swarm HD (2026-11-25): bot runs score about 10,000 to 130,000; the code holds the score in tens (ids 2 and 27 are the older Star Swarm) */
-  jump_man_multiplication:[31,'Super Jump Man','points']   /* Super Jump Man (2026-11): bot runs score about 1,300 to 11,400, well under the 1,048,575 cap (id 4 is the older Jump Man) */
+  jump_man_multiplication:[31,'Super Jump Man','points'],   /* Super Jump Man (2026-11): bot runs score about 1,300 to 11,400, well under the 1,048,575 cap (id 4 is the older Jump Man) */
+  burger_blaster:[32,'Burger Blaster','points']   /* Burger Blaster remake (2026-11): bot runs score about 15,000 to 250,000, under the 1,048,575 cap (id 13 is the older Burger Blaster) */
 };
 /* question sets in the order questions.js lists them; 0 means the game's own questions. Add new sets at the end.
    New codes (layout C, since Oct 21 2026) have 6 bits for the set and 5 for topics, so up to 63 sets with up to 5 topics each fit. */
@@ -185,7 +186,7 @@ function button(link,code){ return prefilled()? '<a href="'+link+'" target="_bla
 (function(){
   var K={ splat_range:'splat_range_v5', star_swarm:'star_swarm_v2', shift_racer:'shift_racer_v1', jump_man_multiplication:'super_jump_man_v1',
     football_buds:'football_buds_game_v3', hoop_buds:'hoop_buds_game_v1', dash:'dash_facts_game_v3', skate:'skate_game_v1', mini_golf:'mini_golf_v1',
-    fishing:'go_fish_v1', brick_breaker:'brick_breaker_v1', burger_shop:'burger_shop_v1', burger_blaster:'burger_blaster_v1', rocket_buds:'rocket_buds_v1',
+    fishing:'go_fish_v1', brick_breaker:'brick_breaker_v1', burger_shop:'burger_shop_v1', burger_blaster:'burger_blaster_v2', rocket_buds:'rocket_buds_v1',
     paint_royale:'paint_royale_v1', snake_arena:'snake_arena_v1', brawl_buds:'brawl_buds_v1', pinball:'pinball_v1', hill_climb:'hill_climb_v1', fit_check:'fit_check_v1', dig_buds:'dig_buds_v10', rook_and_ruin:'bladebound_v3' };
   var f=(location.pathname.split('/').pop()||'').replace(/\.html?$/,'').replace(/_(mult|v\d|test)$/,''), key=K[f]; if(!key) return;
   var run=function(k){ return k.indexOf(key)===0&&!/_(mute|t)$/.test(k); };   /* KEY may carry the set and topics after it */
