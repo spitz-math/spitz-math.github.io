@@ -189,7 +189,7 @@ function isBoost(id){ return BOOSTS.some(function(x){ return x.id===id; }); }
 function showOffer(){ var el=$('jmr-offer'); if(!S.offer){ el.hidden=true; return; } var id=S.offer[0], r=S.offer[1]===undefined?WAY_NEED:S.offer[1], d=moveDef(id), win=r>=WAY_NEED;
   $('jmr-offerh').textContent=!win?(r===WAY_NEED-1?'So close!':'Not this time'):isBoost(id)?'Upgrade!':id==='pts'?'Bonus!':'New move!';
   $('jmr-offer').classList.toggle('miss',!win);
-  var score='<span class="jmr-score">'+r+' right'+(S.offer[2]?' · +1 heart':'')+(win?' · +300':'')+(win?'':' · 2 right at the next Waystone learns it')+'</span>';
+  var score='<span class="jmr-score">'+r+' right'+(S.offer[2]?' · +1 heart':'')+(win?' · +300':'')+(win?'':' · next Waystone in 30 ledges or less, 2 right learns it')+'</span>';
   $('jmr-picks').innerHTML='<button class="jmr-pick'+(win?'':' locked')+'" data-i="0">'+score+'<b>'+d.name+(isBoost(id)?' <small>level '+(S.lv[id]+1)+' of 3</small>':'')+'</b><span class="d">'+d.d+'</span>'+(d.how&&win?'<span class="jmr-how">'+d.how+'</span>':'')+'</button>';
   el.hidden=false; offerAt=now(); }
 var LASTR=3;
@@ -887,4 +887,22 @@ function wayPace(){ if(S.rush||S.way||S.offer||!S.ways) return; var since=(S.cli
   if(WAY_PACE_S<=0||since<WAY_PACE_S) return; var f=(Math.floor((S.pi||0)/FLOOR_EVERY)+1)*FLOOR_EVERY;
   if(f<S.nextWay){ S.nextWay=f; idleLeft=-1; pop(P.x,P.h+230,'WAYSTONE AHEAD','on the next floor','#7CF0FF',true); save(); hud(); } }
 window.__G37={pace:function(s,m){ WAY_PACE_S=s; if(m!==undefined) WAY_MIN_S=m; }, kickAir:function(b){ KICK_AIR=!!b; }, stuck:function(){ return {t:stuckT,boost:boostOn,said:stuckSaid}; }, tune:function(o){ if('hint' in o) STUCK_HINT=o.hint; if('boost' in o) STUCK_BOOST=o.boost; if('fog' in o) STUCK_FOG=o.fog; if('k' in o) BOOST_K=o.k; if('healAll' in o) HEAL_ALL=o.healAll; }};
+//@@ V38
+/* v38 (Kody 2026-11-28 "fix the small polishes")
+   1 a run that comes back from a reload says "Welcome back!" on the pause card (it said only "Paused")
+   2 the "Not this time" card says when the next Waystone comes (above, in showOffer)
+   3 a run under 30% right is not told "Get 70% right to make the board. You got 0%." (shared scorecode.js untouched): the game swaps the
+     line for one about the next run. 30% and up keep the board line. */
+var drawPause38=drawPause, back38=false;
+drawPause=function(){ if(!back38) return drawPause38(); cx.save(); cx.fillStyle='rgba(8,9,20,.66)'; cx.fillRect(0,0,W,H); var y=H*0.62; panel(W/2-330,y-92,660,170); cx.textAlign='center'; cx.lineJoin='round';
+  cx.font='400 70px '+DF; cx.lineWidth=10; cx.strokeStyle='#000'; cx.strokeText('Welcome back!',W/2,y-10); cx.fillStyle='#FFFFFF'; cx.fillText('Welcome back!',W/2,y-10);
+  cx.font='800 30px Inter, sans-serif'; cx.lineWidth=7; cx.strokeText('Press any key to keep climbing',W/2,y+50); cx.fillStyle='#7CF0FF'; cx.fillText('Press any key to keep climbing',W/2,y+50); cx.restore(); };
+var setPause38=setPause; setPause=function(on){ setPause38(on); if(!on) back38=false; };
+var resume38=resume35; resume35=function(){ var was=resumePause35; resume38(); if(!was&&resumePause35&&paused) back38=true; };
+setTimeout(function(){ if(resumePause35&&paused) back38=true; },0);
+var LOW_BOARD=0.3;
+new MutationObserver(function(){ var e=document.querySelector('#jm-end .spz-board'); if(!e||e.dataset.j38) return; var a=+S.answered||0, c=+S.correct||0;
+  if(/^🎯/.test(e.textContent)&&a>0&&c/a<LOW_BOARD){ e.dataset.j38='1'; e.textContent=c>0?'⭐ You got '+c+' right. Get 2 right at a Waystone to learn a new move!':'⭐ Every right answer pushes the fog back. Try for 2 right at a Waystone next time!'; } })
+  .observe(document.documentElement,{childList:true,subtree:true,characterData:true});
+window.__G38={back:function(){ return back38; }};
 

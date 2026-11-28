@@ -81,7 +81,7 @@ const ok=(c,m,v)=>{ if(!c) fails++; console.log(c?'  ok':'  FAIL',m,v===undefine
     // the fog is held while calm > 0
     const f0=S.fog; P.on=null; P.h=S.fog+700; P.vy=0; G.step(1/60); out.heldGap=Math.round(P.h-S.fog); for(let k=0;k<30;k++){ P.h=S.fog+700; P.vy=0; G.step(1/60); } out.calmAfter=+S.calm.toFixed(2);
     // rockfall: stand in a rock stretch for 4 s; rocks fall and a hit never costs a heart
-    pl=G.plats(); let ri=S.nextWay-18; /* rocks fall on ledges 10 to 19 after a Waystone since v34 (Waystones every 30); -25 was left from every 40 and only passed on lucky towers */ while(pl[ri].amp||pl[ri].kind) ri++; const rq=pl[ri]; S.calm=99; P.on=rq; P.h=rq.h; P.x=G.cxAt(rq); P.vx=0; P.vy=0; P.lastI=ri; S.pi=ri;
+    pl=G.plats(); let ri=21; /* rocks fall on ledges 20-29 (then 50-59 ...): ROCK_FROM 20, every 30. Stay inside that stretch: skipping every moving or special ledge used to walk past 29 on about 1 tower in 4 */ while(ri<28&&(pl[ri].kind==='crumble'||pl[ri].kind==='spring'||pl[ri].floor)) ri++; const rq=pl[ri]; S.calm=99; P.on=rq; P.h=rq.h; P.x=G.cxAt(rq); P.vx=0; P.vy=0; P.lastI=ri; S.pi=ri;
     S.fog=rq.h-2000; const seenS=new Set(); for(let k=0;k<240;k++){ P.on=rq; P.h=rq.h; P.vy=0; P.vx=0; G.step(1/60); G.rocks().forEach(r=>seenS.add(r)); } const seen=seenS.size; out.rockOn=S.rockOn; out.seen=seen; 
     return out; });
   ok(v4.opened&&v4.hearts===3&&v4.offer[1]===2&&v4.offer[2]===1,'v13: 2 right gives a heart back',v4);
