@@ -1754,9 +1754,9 @@ var FALLBACK=ASSIGN.length?ASSIGN[0].id:HIDDEN.indexOf('slope')<0?'slope':Object
 /* only the sets in SETS count: ?set=__proto__ or ?set=constructor used to reach Object.prototype and throw (2026-11-28) */
 function hasSet(id){ return typeof id==='string'&&Object.prototype.hasOwnProperty.call(SETS,id); }
 /* A miss shows the choice's "why" and then the explanation. Some generators repeat a sentence in both (Integers: "Check the sign. Same signs
-   give a positive." then "Same signs give a positive. ..."), so drop any "why" sentence the explanation already says (2026-11-28). */
+   give a positive." then "Same signs give a positive. ..."), so drop any "why" sentence the explanation already says (2026-11-28). No lookbehind in the regex: older Safari can't parse it. */
 function dedupe(q){ try{ var ex=' '+plain(q.explain||'').replace(/\s+/g,' ')+' ';
-    q.choices.forEach(function(c){ if(!c.why) return; var keep=String(c.why).split(/(?<=[.!?])\s+/).filter(function(h){ var t=plain(h).replace(/\s+/g,' ').trim(); return !(t.length>8&&ex.indexOf(' '+t+' ')>=0); }); c.why=keep.join(' '); }); }catch(e){} return q; }
+    q.choices.forEach(function(c){ if(!c.why) return; var keep=String(c.why).replace(/([.!?])\s+/g,'$1\u0001').split('\u0001').filter(function(h){ var t=plain(h).replace(/\s+/g,' ').trim(); return !(t.length>8&&ex.indexOf(' '+t+' ')>=0); }); c.why=keep.join(' '); }); }catch(e){} return q; }
 function plain(h){ return String(h).replace(/<span class="[a-z]+-fr"><span>(.*?)<\/span><span>(.*?)<\/span><\/span>/g,'$1/$2').replace(/<[^>]+>/g,''); }
 function params(){ var qs={}; try{ (location.search||'').replace(/^\?/,'').split('&').forEach(function(kv){ var p=kv.split('='); if(p[0]) qs[decodeURIComponent(p[0])]=decodeURIComponent(p[1]||''); }); }catch(e){} return qs; }
 
