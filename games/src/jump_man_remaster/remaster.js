@@ -835,3 +835,12 @@ addEventListener('keydown',function(e){ var a=$('sz-ask'); if(!a||a.hidden||askL
   if((e.key==='Enter'||e.key===' ')&&el&&(el.id==='sz-askyes'||el.id==='sz-askno')){ e.preventDefault(); e.stopImmediatePropagation(); el.click(); } },true);
 var showOffer35=showOffer; showOffer=function(){ if(S.offer&&$('jmr-offer').hidden) pops.length=0; return showOffer35(); };
 window.__G35={staleEl:function(){ return STALE_EL; }, resume:resume35};
+//@@ V36
+/* v36 (Kody 2026-11-27 "fix those two small left overs")
+   1 (build.py) "Press F for full screen" sits at the bottom of the right side panel, off the tower, so it never covers a ledge or a card
+   2 a reload keeps the score to the point: the run is saved the moment the score changes (gem, landing, combo, heart), within a
+     tenth of a second, instead of waiting for the once-a-second save. save() already skips a stale second tab. */
+var sig36=null;   /* the first look only notes the score: a tab that has just loaded a run must not save (that would mark the other tab stale) */
+function sig(){ return [S.bonus,S.top,S.pi,S.gems,S.hearts,S.combos,S.ways].join('|'); }
+setInterval(function(){ if(!S.started||S.over) return; var g=sig(); if(sig36===null){ sig36=g; return; } if(g!==sig36){ sig36=g; save(); } },100);
+window.__G36={sig:sig};
